@@ -407,6 +407,31 @@
     .example-chip { padding: 6px 12px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent); background: color-mix(in srgb, var(--color-primary) 6%, transparent); color: var(--color-text); font-size: var(--text-sm); cursor: pointer; transition: background var(--transition-interactive), border-color var(--transition-interactive); }
     .example-chip:hover { background: color-mix(in srgb, var(--color-primary) 18%, transparent); border-color: var(--color-primary); }
     .result-helper { font-size: var(--text-sm); color: var(--color-text-muted); margin-top: var(--space-2); }
+    .save-tip {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: var(--space-3);
+      padding: 8px 10px 8px 12px;
+      background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+      border-radius: var(--radius-lg);
+      font-size: var(--text-sm);
+      color: var(--color-text);
+      line-height: 1.4;
+    }
+    .save-tip.is-visible { display: flex; }
+    .save-tip-text { flex: 1 1 auto; }
+    .save-tip-close {
+      flex: 0 0 auto;
+      width: 28px; height: 28px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: transparent; border: 0; cursor: pointer;
+      color: var(--color-text-muted); font-size: 18px; line-height: 1;
+      border-radius: 50%;
+    }
+    .save-tip-close:hover { background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-primary); }
     .panel.is-highlight { animation: panelHighlight 1.4s ease-out; }
     @keyframes panelHighlight {
       0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 55%, transparent); }
@@ -1106,6 +1131,10 @@
             <div class="actions-row">
               <button class="btn btn-primary" type="button" id="copy-btn">Copy Prompt</button>
               <button class="btn btn-secondary" type="button" id="print-btn" title="Print or save as PDF">Print / Save PDF</button>
+            </div>
+            <div class="save-tip" id="save-tip" role="status" aria-live="polite">
+              <span class="save-tip-text">Tip: Export your prompts to keep them safe.</span>
+              <button class="save-tip-close" type="button" id="save-tip-close" aria-label="Dismiss tip">&times;</button>
             </div>
             <div class="open-in-block" aria-label="Use your prompt in an AI tool">
               <span class="open-in-label">Use Your Prompt In:</span>
@@ -1906,6 +1935,37 @@ Context:
         showToast.timeoutId = setTimeout(() => toast.classList.remove('show'), 1800);
       }
 
+      const SAVE_TIP_DISMISSED_KEY = 'promptmegood:saveTipDismissed:v1';
+      const SAVE_TIP_COUNT_KEY = 'promptmegood:saveTipCount:v1';
+      const SAVE_TIP_LIFETIME_LIMIT = 4;
+      let saveTipShownThisSession = false;
+      const saveTipEl = document.getElementById('save-tip');
+      const saveTipCloseEl = document.getElementById('save-tip-close');
+      if (saveTipCloseEl) {
+        saveTipCloseEl.addEventListener('click', function () {
+          if (saveTipEl) saveTipEl.classList.remove('is-visible');
+          try { localStorage.setItem(SAVE_TIP_DISMISSED_KEY, '1'); } catch (e) {}
+          clearTimeout(showSavePromptTip.timeoutId);
+        });
+      }
+      function showSavePromptTip() {
+        if (!saveTipEl || saveTipShownThisSession) return;
+        let dismissed = '0';
+        let count = 0;
+        try {
+          dismissed = localStorage.getItem(SAVE_TIP_DISMISSED_KEY) || '0';
+          count = parseInt(localStorage.getItem(SAVE_TIP_COUNT_KEY) || '0', 10) || 0;
+        } catch (e) {}
+        if (dismissed === '1' || count >= SAVE_TIP_LIFETIME_LIMIT) return;
+        saveTipShownThisSession = true;
+        try { localStorage.setItem(SAVE_TIP_COUNT_KEY, String(count + 1)); } catch (e) {}
+        saveTipEl.classList.add('is-visible');
+        clearTimeout(showSavePromptTip.timeoutId);
+        showSavePromptTip.timeoutId = setTimeout(function () {
+          if (saveTipEl) saveTipEl.classList.remove('is-visible');
+        }, 12000);
+      }
+
       const HISTORY_KEY = 'promptmegood:history:v1';
       const HISTORY_LIMIT = 25;
       const historyListEl = document.getElementById('history-list');
@@ -2380,6 +2440,7 @@ Context:
           try {
             await navigator.clipboard.writeText(item.prompt);
             showToast('Copied to clipboard.');
+            showSavePromptTip();
           } catch (e) {
             showToast('Copy failed. Try restoring then copying.');
           }
@@ -2982,6 +3043,7 @@ Context:
         resultBox.textContent = prompt;
         addToHistory(data, prompt);
         scrollToResult();
+        showSavePromptTip();
       });
 
       const WEEKLY_GOAL_KEY = 'promptmegood:weeklyGoal:v1';
@@ -3203,6 +3265,7 @@ Context:
         try {
           await navigator.clipboard.writeText(text);
           showToast('Copied to clipboard.');
+          showSavePromptTip();
         } catch (error) {
           const selection = window.getSelection();
           const range = document.createRange();
