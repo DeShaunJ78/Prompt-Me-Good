@@ -1,0 +1,67 @@
+Fix two UX issues: dropdown visibility and onboarding popup behavior. Do not change core functionality.
+
+========================
+1. FIX DROPDOWN / SELECT BOX STYLE
+========================
+
+Current issue:
+Dropdown boxes are still plain white and blend into the white/header background.
+
+Fix:
+- Apply styling to ALL select/dropdown fields:
+  - Background: very light tinted color, not pure white (#F7FBFA or similar)
+  - Border: 1px solid brand teal/accent color
+  - Border radius: consistent with other inputs
+  - Padding: comfortable for mobile tapping
+  - Text color: dark and readable
+  - Visible dropdown arrow/caret
+- On focus/tap:
+  - Border becomes slightly stronger teal
+  - Add subtle glow/shadow
+- Ensure styling works on mobile and desktop
+- Do not affect text inputs unless necessary for consistency
+
+========================
+2. CHANGE ONBOARDING POPUP BEHAVIOR
+========================
+
+Current issue:
+The onboarding popup appears automatically and feels annoying.
+
+New behavior:
+Do NOT show the explanation popup automatically.
+
+Instead:
+- On first visit, show a small, non-intrusive prompt/banner near the top that asks:
+  “Want a quick 30-second tour of how PromptMeGood works?”
+
+Include two buttons:
+- “Show Me”
+- “No Thanks”
+
+Behavior:
+- If user clicks “Show Me”:
+  - Launch the existing onboarding walkthrough/popup
+- If user clicks “No Thanks”:
+  - Dismiss the prompt
+  - Store preference in localStorage so it does not show again
+- If user completes the tour:
+  - Store completed state in localStorage so it does not show again
+
+Important:
+- The prompt must not block scrolling
+- No overlay should remain after dismissing
+- Page must stay smooth and usable
+- Keep it mobile-friendly
+
+========================
+FINAL CHECK
+========================
+
+After changes:
+- Dropdowns no longer look plain white
+- Dropdowns clearly look clickable
+- Onboarding no longer launches automatically
+- User is asked first before the tour appears
+- Dismissing does not make the page choppy
+- No JavaScript errors
