@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PromptMeGood</title>
+  <meta name="description" content="PromptMeGood turns vague ideas into strong AI prompts for ChatGPT, Claude, and other AI tools." />
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet" />
+  <style>
+    /* Art direction: lightweight prompt-builder SaaS → clean, direct, conversion-first.
+       Palette: neutral surfaces with restrained teal accent.
+       Typography: Satoshi for both display and body for speed, clarity, and product feel.
+       Density: balanced, roomy on landing, compact in form. */
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --text-2xl: clamp(2rem, 1.2rem + 2.5vw, 3.5rem);
+
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.25rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-10: 2.5rem;
+      --space-12: 3rem;
+      --space-16: 4rem;
+      --space-20: 5rem;
+
+      --color-bg: #f7f6f2;
+      --color-surface: #fbfbf9;
+      --color-surface-2: #f1efea;
+      --color-border: #d8d4cd;
+      --color-divider: #dfdcd5;
+      --color-text: #24211c;
+      --color-text-muted: #67655f;
+      --color-text-faint: #9a9892;
+      --color-text-inverse: #f8f7f4;
+      --color-primary: #01696f;
+      --color-primary-hover: #0c4e54;
+      --color-primary-highlight: #d7e5e2;
+      --radius-sm: 0.5rem;
+      --radius-md: 0.875rem;
+      --radius-lg: 1.25rem;
+      --radius-xl: 1.5rem;
+      --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px rgba(18, 19, 18, 0.06);
+      --shadow-md: 0 10px 30px rgba(18, 19, 18, 0.08);
+      --shadow-lg: 0 18px 50px rgba(18, 19, 18, 0.12);
+      --transition-interactive: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+      --font-display: 'Satoshi', Inter, sans-serif;
+      --font-body: 'Satoshi', Inter, sans-serif;
+      --content-default: 1120px;
+      --content-narrow: 740px;
+    }
+
+    [data-theme="dark"] {
+      --color-bg: #151412;
+      --color-surface: #1c1b18;
+      --color-surface-2: #23211f;
+      --color-border: #34312d;
+      --color-divider: #2b2926;
+      --color-text: #ece9e2;
+      --color-text-muted: #b9b4ab;
+      --color-text-faint: #8f8a81;
+      --color-text-inverse: #161513;
+      --color-primary: #5ba8b0;
+      --color-primary-hover: #73b8bf;
+      --color-primary-highlight: #213438;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+      --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.25);
+      --shadow-lg: 0 18px 50px rgba(0, 0, 0, 0.35);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme]) {
+        --color-bg: #151412;
+        --color-surface: #1c1b18;
+        --color-surface-2: #23211f;
+        --color-border: #34312d;
+        --color-divider: #2b2926;
+        --color-text: #ece9e2;
+        --color-text-muted: #b9b4ab;
+        --color-text-faint: #8f8a81;
+        --color-text-inverse: #161513;
+        --color-primary: #5ba8b0;
+        --color-primary-hover: #73b8bf;
+        --color-primary-highlight: #213438;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body {
+      min-height: 100dvh;
+      background:
+        radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 10%, transparent), transparent 24%),
+        var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      line-height: 1.6;
+    }
+    img, svg { display: block; max-width: 100%; }
+    button, input, select, textarea { font: inherit; color: inherit; }
+    button { border: none; cursor: pointer; }
+    a { color: inherit; text-decoration: none; }
+    :focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 3px;
+      border-radius: var(--radius-sm);
+    }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+    }
+    .skip-link {
+      position: absolute; left: var(--space-4); top: -3rem;
+      background: var(--color-primary); color: var(--color-text-inverse);
+      padding: var(--space-3) var(--space-4); border-radius: var(--radius-full); z-index: 100;
+    }
+    .skip-link:focus { top: var(--space-4); }
+    .container {
+      width: min(calc(100% - 2rem), var(--content-default));
+      margin-inline: auto;
+    }
+    .topbar {
+      position: sticky; top: 0; z-index: 20;
+      backdrop-filter: blur(14px);
+      background: color-mix(in srgb, var(--color-bg) 84%, transparent);
+      border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+    }
+    .topbar-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: var(--space-4); padding: var(--space-4) 0;
+    }
+    .brand {
+      display: inline-flex; align-items: center; gap: var(--space-3); font-size: var(--text-sm); font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .logo {
+      width: 38px; height: 38px; border-radius: 12px; padding: 8px;
+      background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
+      color: var(--color-primary);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 14%, transparent);
+    }
+    .top-actions { display: flex; align-items: center; gap: var(--space-3); }
+    .theme-toggle, .ghost-link {
+      min-height: 44px; padding: 0 var(--space-4); border-radius: var(--radius-full);
+      background: var(--color-surface); border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+      transition: transform var(--transition-interactive), background var(--transition-interactive), border-color var(--transition-interactive);
+    }
+    .theme-toggle:hover, .ghost-link:hover { transform: translateY(-1px); }
+    .hero {
+      padding: clamp(var(--space-12), 10vw, var(--space-20)) 0 var(--space-10);
+    }
+    .hero-grid {
+      display: grid; grid-template-columns: 1.1fr 0.9fr; gap: var(--space-8); align-items: center;
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-4);
+      font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--color-primary);
+    }
+    .hero h1 {
+      font-family: var(--font-display); font-size: var(--text-2xl); line-height: 0.98; letter-spacing: -0.04em;
+      max-width: 11ch;
+    }
+    .hero p {
+      margin-top: var(--space-5); color: var(--color-text-muted); max-width: 58ch;
+    }
+    .hero-actions {
+      display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-6);
+    }
+    .btn {
+      min-height: 48px; padding: 0 var(--space-5); border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: 700;
+      transition: transform var(--transition-interactive), background var(--transition-interactive), box-shadow var(--transition-interactive);
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary {
+      background: var(--color-primary); color: var(--color-text-inverse); box-shadow: var(--shadow-sm);
+    }
+    .btn-primary:hover { background: var(--color-primary-hover); }
+    .btn-secondary {
+      background: var(--color-surface); border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+    }
+    .hero-card {
+      background: linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 92%, white), var(--color-surface));
+      border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+      border-radius: var(--radius-xl); padding: var(--space-6);
+      box-shadow: var(--shadow-lg);
+    }
+    .mini-label {
+      font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-text-muted);
+    }
+    .hero-list {
+      margin-top: var(--space-4); display: grid; gap: var(--space-3);
+    }
+    .hero-list li {
+      list-style: none; display: grid; grid-template-columns: auto 1fr; gap: var(--space-3); align-items: start;
+      color: var(--color-text-muted);
+    }
+    .hero-list span:first-child {
+      width: 26px; height: 26px; display: inline-grid; place-items: center; border-radius: 999px;
+      background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-primary); font-weight: 700; font-size: var(--text-xs);
+    }
+    .app-section { padding: 0 0 var(--space-16); }
+    .app-shell {
+      display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6);
+      align-items: start;
+    }
+    .panel {
+      background: var(--color-surface);
+      border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+    .panel-head {
+      padding: var(--space-5) var(--space-5) var(--space-4);
+      border-bottom: 1px solid var(--color-divider);
+    }
+    .panel-head h2 { font-size: var(--text-lg); line-height: 1.2; }
+    .panel-head p { margin-top: var(--space-2); color: var(--color-text-muted); font-size: var(--text-sm); }
+    .form-wrap { padding: var(--space-5); }
+    .form-grid { display: grid; gap: var(--space-4); }
+    .field { display: grid; gap: var(--space-2); }
+    .field label { font-size: var(--text-sm); font-weight: 700; }
+    .field input, .field select, .field textarea {
+      min-height: 52px; width: 100%; border-radius: var(--radius-md); padding: 0 var(--space-4);
+      border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+      background: var(--color-surface-2);
+    }
+    .field textarea { min-height: 112px; padding: var(--space-4); resize: vertical; }
+    .field input::placeholder, .field textarea::placeholder { color: var(--color-text-faint); }
+    .helper { color: var(--color-text-muted); font-size: var(--text-xs); }
+    .actions-row {
+      display: flex; flex-wrap: wrap; gap: var(--space-3); padding-top: var(--space-2);
+    }
+    .result-wrap { padding: var(--space-5); display: grid; gap: var(--space-4); }
+    .result-box {
+      min-height: 420px; white-space: pre-wrap;
+      background: var(--color-surface-2);
+      border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      font-size: var(--text-sm);
+      line-height: 1.7;
+    }
+    .pill-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .pill {
+      padding: 0.45rem 0.7rem; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 700;
+      background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-primary);
+    }
+    .toggle-row {
+      display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+      padding: var(--space-4); border-radius: var(--radius-lg); background: var(--color-surface-2);
+      border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+    }
+    .toggle-row strong { display: block; font-size: var(--text-sm); }
+    .toggle-row span { display: block; color: var(--color-text-muted); font-size: var(--text-xs); }
+    .switch { position: relative; width: 54px; height: 30px; flex: 0 0 auto; }
+    .switch input { position: absolute; opacity: 0; inset: 0; }
+    .slider { position: absolute; inset: 0; border-radius: var(--radius-full); background: var(--color-border); transition: background var(--transition-interactive); }
+    .slider::before { content: ''; position: absolute; width: 24px; height: 24px; left: 3px; top: 3px; border-radius: 50%; background: var(--color-surface); box-shadow: var(--shadow-sm); transition: transform var(--transition-interactive); }
+    .switch input:checked + .slider { background: var(--color-primary); }
+    .switch input:checked + .slider::before { transform: translateX(24px); }
+    .use-case-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); margin-top: var(--space-5); }
+    .use-case { background: var(--color-surface); border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); border-radius: var(--radius-lg); padding: var(--space-4); box-shadow: var(--shadow-sm); }
+    .use-case strong { display: block; margin-bottom: var(--space-2); font-size: var(--text-sm); }
+    .use-case p { color: var(--color-text-muted); font-size: var(--text-xs); line-height: 1.5; }
+    @media (max-width: 920px) { .use-case-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 640px) { .use-case-grid { grid-template-columns: 1fr; } }
+    .footer {
+      padding: 0 0 var(--space-8);
+      color: var(--color-text-muted); font-size: var(--text-sm);
+    }
+    .toast {
+      position: fixed; right: var(--space-4); bottom: var(--space-4); z-index: 30;
+      background: var(--color-text); color: var(--color-text-inverse);
+      padding: var(--space-3) var(--space-4); border-radius: var(--radius-full);
+      box-shadow: var(--shadow-lg); opacity: 0; transform: translateY(8px); pointer-events: none;
+      transition: opacity var(--transition-interactive), transform var(--transition-interactive);
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 920px) {
+      .hero-grid, .app-shell { grid-template-columns: 1fr; }
+      .hero h1 { max-width: 13ch; }
+    }
+
+    @media (max-width: 640px) {
+      .container { width: min(calc(100% - 1rem), var(--content-default)); }
+      .topbar-inner { padding: var(--space-3) 0; }
+      .theme-toggle, .ghost-link, .btn { width: 100%; justify-content: center; }
+      .top-actions { width: 100%; flex-direction: column; }
+      .hero-actions, .actions-row { flex-direction: column; }
+      .hero-card, .form-wrap, .result-wrap { padding: var(--space-4); }
+      .result-box { min-height: 360px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="#top" aria-label="PromptMeGood home">
+        <svg class="logo" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="PromptMeGood logo">
+          <rect x="6" y="6" width="36" height="36" rx="12" stroke="currentColor" stroke-width="3"></rect>
+          <path d="M16 31V17H25.5C29.0899 17 32 19.9101 32 23.5C32 27.0899 29.0899 30 25.5 30H21" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="M21 25H29" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
+        </svg>
+        <span>PromptMeGood</span>
+      </a>
+      <div class="top-actions">
+        <a class="ghost-link" href="#builder">Open builder</a>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="container hero-grid">
+        <div>
+          <div class="eyebrow">Prompt builder MVP</div>
+          <h1>Turn messy ideas into prompts that actually get results.</h1>
+          <p>PromptMeGood helps people stop guessing what to ask AI. Enter the problem, choose the lane, and get a copy-ready prompt built for clarity, action, and outcomes.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#builder">Build a prompt</a>
+            <a class="btn btn-secondary" href="#use-cases">See use cases</a>
+          </div>
+        </div>
+        <aside class="hero-card" aria-label="Product benefits">
+          <div class="mini-label">What this MVP does</div>
+          <ul class="hero-list">
+            <li><span>1</span><span>Turns vague problems into sharper instructions AI can actually use.</span></li>
+            <li><span>2</span><span>Adds role, context, constraints, tone, output format, and next actions.</span></li>
+            <li><span>3</span><span>Includes Money Mode for users who need speed, income, and practical execution.</span></li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section class="app-section" id="builder">
+      <div class="container app-shell">
+        <section class="panel" aria-labelledby="builder-title">
+          <div class="panel-head">
+            <h2 id="builder-title">Prompt builder</h2>
+            <p>Use the form below to turn a rough idea into a stronger prompt.</p>
+          </div>
+          <div class="form-wrap">
+            <form id="prompt-form" class="form-grid">
+              <div class="field">
+                <label for="goal">Goal</label>
+                <input id="goal" name="goal" type="text" placeholder="Example: Help me start a small online business selling custom mugs" required />
+                <p class="helper">Describe the result the user wants from the AI.</p>
+              </div>
+
+              <div class="field">
+                <label for="category">Category</label>
+                <select id="category" name="category">
+                  <option value="business">Business</option>
+                  <option value="content">Content</option>
+                  <option value="money">Money</option>
+                  <option value="personal">Personal</option>
+                  <option value="faith">Faith</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="skillLevel">Skill level</label>
+                <select id="skillLevel" name="skillLevel">
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="tone">Tone</label>
+                <select id="tone" name="tone">
+                  <option value="professional">Professional</option>
+                  <option value="aggressive">Aggressive</option>
+                  <option value="casual">Casual</option>
+                  <option value="expert">Expert</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="outputFormat">Output format</label>
+                <select id="outputFormat" name="outputFormat">
+                  <option value="step-by-step">Step-by-step</option>
+                  <option value="list">List</option>
+                  <option value="detailed breakdown">Detailed breakdown</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="details">Extra details <span class="helper">(optional)</span></label>
+                <textarea id="details" name="details" placeholder="Example: I have $50, I’m using Shopify, and I need something I can execute this week."></textarea>
+                <p class="helper">Add budget, timeline, platform, audience, constraints, or anything the AI should respect.</p>
+              </div>
+
+              <div class="toggle-row">
+                <div>
+                  <strong>Money Mode</strong>
+                  <span>Push the prompt toward income, speed, and practical execution.</span>
+                </div>
+                <label class="switch" aria-label="Turn Money Mode on or off">
+                  <input id="moneyMode" name="moneyMode" type="checkbox" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="actions-row">
+                <button class="btn btn-primary" type="submit">Generate Prompt</button>
+                <button class="btn btn-secondary" type="button" id="fill-demo">Use demo values</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="result-title">
+          <div class="panel-head">
+            <h2 id="result-title">Generated prompt</h2>
+            <p>The app creates a structured prompt with role, context, constraints, and expected output.</p>
+          </div>
+          <div class="result-wrap">
+            <div class="pill-row" aria-hidden="true">
+              <span class="pill">Role assignment</span>
+              <span class="pill">Clear constraints</span>
+              <span class="pill">Useful output format</span>
+            </div>
+            <div class="result-box" id="resultBox">Your generated prompt will appear here.</div>
+            <div class="actions-row">
+              <button class="btn btn-primary" type="button" id="copy-btn">Copy Prompt</button>
+              <button class="btn btn-secondary" type="button" data-remix="detailed">Make more detailed</button>
+              <button class="btn btn-secondary" type="button" data-remix="aggressive">Make more aggressive</button>
+              <button class="btn btn-secondary" type="button" data-remix="beginner">Make beginner-friendly</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="app-section" id="use-cases">
+      <div class="container">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>What can this do?</h2>
+            <p>Start narrow. Help people get better answers for problems they actually care about.</p>
+          </div>
+          <div class="form-wrap">
+            <div class="use-case-grid">
+              <div class="use-case"><strong>Make money online</strong><p>Generate prompts for side hustles, service offers, pricing, and first-customer plans.</p></div>
+              <div class="use-case"><strong>Dropshipping</strong><p>Create prompts for product research, store audits, bundles, ads, and conversion fixes.</p></div>
+              <div class="use-case"><strong>Content creation</strong><p>Build prompts for TikTok scripts, hooks, captions, newsletters, and short-form ideas.</p></div>
+              <div class="use-case"><strong>Faith questions</strong><p>Create Scripture-centered prompts that demand clarity, context, conviction, and action.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="footer" id="deploy">
+      <div class="container">
+        Built as a single-file static MVP for fast deployment on Vercel, Netlify, or any static host.
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">Copied to clipboard.</div>
+
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const toggle = document.querySelector('[data-theme-toggle]');
+      let theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      root.setAttribute('data-theme', theme);
+
+      function renderThemeIcon(mode) {
+        toggle.innerHTML = mode === 'dark'
+          ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>'
+          : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+        toggle.setAttribute('aria-label', mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+      }
+
+      renderThemeIcon(theme);
+      toggle.addEventListener('click', function () {
+        theme = theme === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', theme);
+        renderThemeIcon(theme);
+      });
+
+      const form = document.getElementById('prompt-form');
+      const resultBox = document.getElementById('resultBox');
+      const copyBtn = document.getElementById('copy-btn');
+      const fillDemoBtn = document.getElementById('fill-demo');
+      const toast = document.getElementById('toast');
+
+      const categoryContext = {
+        business: 'business strategy, execution, and practical decision-making',
+        content: 'content strategy, writing, publishing, and audience engagement',
+        money: 'money decisions, financial planning ideas, and income strategy',
+        personal: 'personal growth, habits, life planning, and self-management',
+        faith: 'faith-centered reflection, biblical encouragement, and values-aligned action'
+      };
+
+      function titleCase(value) {
+        return value.charAt(0).toUpperCase() + value.slice(1);
+      }
+
+      function generatePrompt(data, remixMode = '') {
+        const roleMap = {
+          beginner: 'patient teacher and practical strategist',
+          intermediate: 'experienced coach, operator, and systems thinker',
+          advanced: 'top 1% expert operator, senior strategist, and execution advisor'
+        };
+
+        const categoryContext = {
+          business: 'business strategy, sales, operations, positioning, and practical decision-making',
+          content: 'content strategy, writing, publishing, audience psychology, and platform growth',
+          money: 'income strategy, side hustles, offers, monetization, and practical financial decision-making',
+          personal: 'personal growth, habits, life planning, problem-solving, and self-management',
+          faith: 'Scripture-centered discernment, biblical wisdom, repentance, obedience, and values-aligned action'
+        };
+
+        const complexityMap = {
+          beginner: 'Explain things clearly. Avoid jargon unless you define it. Give examples simple enough for a beginner to execute today.',
+          intermediate: 'Assume basic familiarity. Focus on practical execution, tradeoffs, prioritization, and avoiding common mistakes.',
+          advanced: 'Skip the obvious basics. Focus on leverage, sequencing, risk, optimization, edge cases, and high-level strategic reasoning.'
+        };
+
+        const formatMap = {
+          'step-by-step': 'Return the answer as a numbered step-by-step plan with clear sequence and action items.',
+          list: 'Return the answer as a concise but complete bullet list grouped by priority.',
+          'detailed breakdown': 'Return the answer as a detailed breakdown with strong section headings, examples, warnings, and next steps.'
+        };
+
+        const toneInstruction = {
+          professional: 'Use a polished, professional tone with direct language and zero fluff.',
+          aggressive: 'Use a bold, high-agency tone that pushes decisive action without encouraging recklessness.',
+          casual: 'Use a casual, conversational tone that still stays sharp, useful, and clear.',
+          expert: 'Use an expert tone with confident reasoning, strong structure, and specific recommendations.'
+        };
+
+        const remixInstructions = {
+          detailed: 'Make the answer more detailed than normal. Add examples, decision criteria, risks, templates, and a concrete execution checklist.',
+          aggressive: 'Make the answer more direct, urgent, and action-oriented. Challenge weak assumptions. Cut vague advice. Push toward execution.',
+          beginner: 'Make the answer beginner-friendly. Slow down the explanation, define key terms, and give a simple first-step path.'
+        };
+
+        const extraDetails = data.details
+          ? `
+Additional context the AI must respect:
+${data.details}`
+          : '';
+
+        const moneyMode = data.moneyMode
+          ? `
+Money Mode is ON:
+- Prioritize actions that can create income quickly.
+- Focus on speed, simplicity, and realistic execution.
+- Avoid long theory, vanity metrics, and complicated plans.
+- Suggest practical ways to validate demand, get attention, and make the first sale.
+- Include a low-cost path whenever possible.`
+          : '';
+
+        const remixBlock = remixMode && remixInstructions[remixMode]
+          ? `
+Special upgrade request:
+- ${remixInstructions[remixMode]}`
+          : '';
+
+        return `Act as a ${roleMap[data.skillLevel]} with deep expertise in ${categoryContext[data.category]}.
+
+Your mission:
+Help me achieve this specific outcome:
+"${data.goal}"
+
+Before answering, sharpen the problem:
+- Identify the real objective behind my request.
+- Point out missing assumptions or risks that could affect the result.
+- Reframe the goal into a clearer problem statement if needed.
+
+Instructions:
+- ${toneInstruction[data.tone]}
+- ${complexityMap[data.skillLevel]}
+- ${formatMap[data.outputFormat]}
+- Give clear recommendations, not vague motivation.
+- Make the answer practical enough to use immediately.
+- Include examples, templates, frameworks, checklists, or scripts where useful.
+- Call out what NOT to do so I avoid wasting time.
+- End with the top 3 actions I should take next.
+- Do not give filler. Make every sentence earn its place.${moneyMode}${extraDetails}${remixBlock}
+
+Output expectations:
+1. Start with the clearest interpretation of my goal.
+2. Give the strongest answer in the requested format.
+3. Include any warnings, shortcuts, or leverage points.
+4. End with immediate next actions.
+
+Context:
+- Category: ${titleCase(data.category)}
+- Skill level: ${titleCase(data.skillLevel)}
+- Tone: ${titleCase(data.tone)}
+- Output format: ${titleCase(data.outputFormat)}`;
+      }
+
+      function getFormData() {
+        return {
+          goal: document.getElementById('goal').value.trim(),
+          category: document.getElementById('category').value,
+          skillLevel: document.getElementById('skillLevel').value,
+          tone: document.getElementById('tone').value,
+          outputFormat: document.getElementById('outputFormat').value,
+          details: document.getElementById('details').value.trim(),
+          moneyMode: document.getElementById('moneyMode').checked
+        };
+      }
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(showToast.timeoutId);
+        showToast.timeoutId = setTimeout(() => toast.classList.remove('show'), 1800);
+      }
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const data = getFormData();
+
+        if (!data.goal) {
+          resultBox.textContent = 'Please enter a goal so PromptMeGood can generate a strong prompt.';
+          document.getElementById('goal').focus();
+          return;
+        }
+
+        resultBox.textContent = generatePrompt(data);
+      });
+
+      copyBtn.addEventListener('click', async function () {
+        const text = resultBox.textContent.trim();
+        if (!text || text === 'Your generated prompt will appear here.') {
+          showToast('Generate a prompt first.');
+          return;
+        }
+
+        try {
+          await navigator.clipboard.writeText(text);
+          showToast('Copied to clipboard.');
+        } catch (error) {
+          const selection = window.getSelection();
+          const range = document.createRange();
+          range.selectNodeContents(resultBox);
+          selection.removeAllRanges();
+          selection.addRange(range);
+          showToast('Press Ctrl+C or Cmd+C to copy.');
+        }
+      });
+
+      document.querySelectorAll('[data-remix]').forEach(function (button) {
+        button.addEventListener('click', function () {
+          const data = getFormData();
+          if (!data.goal) {
+            resultBox.textContent = 'Please enter a goal first, then choose an upgrade button.';
+            document.getElementById('goal').focus();
+            return;
+          }
+          resultBox.textContent = generatePrompt(data, button.dataset.remix);
+        });
+      });
+
+      fillDemoBtn.addEventListener('click', function () {
+        document.getElementById('goal').value = 'Help me make my first $100 online using AI prompts';
+        document.getElementById('category').value = 'money';
+        document.getElementById('skillLevel').value = 'beginner';
+        document.getElementById('tone').value = 'aggressive';
+        document.getElementById('outputFormat').value = 'step-by-step';
+        document.getElementById('details').value = 'I need a low-cost plan, something I can sell fast, and I do not want complicated tech setup.';
+        document.getElementById('moneyMode').checked = true;
+        resultBox.textContent = generatePrompt(getFormData());
+      });
+    })();
+  </script>
+</body>
+</html>

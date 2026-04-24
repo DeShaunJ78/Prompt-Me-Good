@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "PromptMeGood"
+version = "1.0.0"
+id = "artifacts/promptmegood"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20882
+
+[services.development]
+run = "pnpm --filter @workspace/promptmegood run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/promptmegood", "run", "build" ]
+publicDir = "artifacts/promptmegood/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20882"
+BASE_PATH = "/"
