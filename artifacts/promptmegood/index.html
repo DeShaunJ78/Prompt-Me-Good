@@ -3485,9 +3485,8 @@ Context:
       const collapse = document.getElementById('manual-collapse');
       const subEl = document.getElementById('manual-toggle-sub');
       if (!toggle || !collapse) return;
-      const SUB_OPEN = 'The full PromptMeGood manual — tap to open';
-      const SUB_CLOSE = 'The full PromptMeGood manual — tap to close';
-      function setSubText(isOpen) { if (subEl) subEl.textContent = isOpen ? SUB_CLOSE : SUB_OPEN; }
+      const SUB_BASE = 'The full PromptMeGood manual — tap to ';
+      function setSubText(isOpen) { if (subEl) subEl.textContent = SUB_BASE + (isOpen ? 'close' : 'open'); }
 
       const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       let inTransition = false;
