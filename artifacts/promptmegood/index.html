@@ -665,6 +665,39 @@
     }
     .bk-hint { font-size: var(--text-xs); color: var(--color-text-muted); font-style: italic; }
     .bk-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-2); }
+    .ob-overlay {
+      position: fixed; inset: 0; z-index: 60; pointer-events: none; display: none;
+    }
+    .ob-overlay.is-open { display: block; }
+    .ob-backdrop {
+      position: absolute; inset: 0; background: color-mix(in srgb, #000 36%, transparent);
+      pointer-events: auto; opacity: 0; transition: opacity 0.18s ease-out;
+    }
+    .ob-overlay.is-open .ob-backdrop { opacity: 1; }
+    .ob-highlight {
+      position: absolute; pointer-events: none; border-radius: 12px;
+      box-shadow: 0 0 0 3px var(--color-primary), 0 0 0 6px color-mix(in srgb, var(--color-primary) 40%, transparent), 0 0 0 9999px color-mix(in srgb, #000 0%, transparent);
+      transition: top 0.18s ease-out, left 0.18s ease-out, width 0.18s ease-out, height 0.18s ease-out;
+    }
+    .ob-tooltip {
+      position: absolute; pointer-events: auto; max-width: 320px; min-width: 240px;
+      background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg); padding: var(--space-4); box-shadow: 0 12px 32px rgba(0,0,0,0.24);
+      display: flex; flex-direction: column; gap: var(--space-3);
+      transition: top 0.18s ease-out, left 0.18s ease-out;
+    }
+    .ob-step { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-primary); }
+    .ob-text { font-size: var(--text-sm); line-height: 1.45; margin: 0; }
+    .ob-actions { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); }
+    .ob-actions .btn { min-height: 36px; padding: 0 var(--space-3); font-size: var(--text-xs); }
+    .ob-skip { background: transparent; border: 0; color: var(--color-text-muted); cursor: pointer; font-size: var(--text-xs); padding: 8px 4px; text-decoration: underline; }
+    .ob-skip:hover { color: var(--color-text); }
+    @media (max-width: 640px) {
+      .ob-tooltip { max-width: calc(100vw - 24px); min-width: 0; left: 12px !important; right: 12px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .ob-backdrop, .ob-highlight, .ob-tooltip { transition: none; }
+    }
     .stats-grid {
       display: grid; gap: var(--space-3);
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -1766,6 +1799,19 @@
     <div class="print-meta" id="print-meta"></div>
     <pre id="print-content"></pre>
     <div class="print-footer">Generated with PromptMeGood</div>
+  </div>
+
+  <div class="ob-overlay" id="ob-overlay" role="dialog" aria-modal="false" aria-labelledby="ob-text" aria-hidden="true">
+    <div class="ob-backdrop" id="ob-backdrop"></div>
+    <div class="ob-highlight" id="ob-highlight"></div>
+    <div class="ob-tooltip" id="ob-tooltip">
+      <span class="ob-step" id="ob-step">Step 1 of 3</span>
+      <p class="ob-text" id="ob-text"></p>
+      <div class="ob-actions">
+        <button type="button" class="ob-skip" id="ob-skip">Skip</button>
+        <button type="button" class="btn btn-primary" id="ob-next">Next</button>
+      </div>
+    </div>
   </div>
   <script>
     (function () {
@@ -3394,9 +3440,11 @@ Context:
         }
         return NUDGE_IDEAS[Math.floor(Math.random() * NUDGE_IDEAS.length)];
       }
+      const NUDGE_COOLDOWN_MS = 24 * 60 * 60 * 1000;
       function showNudgeIfDue() {
         const state = loadNudgeState();
         const today = todayKey();
+        if (state.dismissedAt && (Date.now() - state.dismissedAt) < NUDGE_COOLDOWN_MS) return;
         if (state.dismissed === today || state.lastShown === today) return;
         const banner = document.getElementById('nudge-banner');
         const msgEl = document.getElementById('nudge-message');
@@ -3407,7 +3455,7 @@ Context:
       }
       document.getElementById('nudge-dismiss').addEventListener('click', function () {
         const state = loadNudgeState();
-        state.dismissed = todayKey();
+        state.dismissedAt = Date.now();
         saveNudgeState(state);
         document.getElementById('nudge-banner').hidden = true;
       });
@@ -3419,6 +3467,98 @@ Context:
         document.getElementById('goal').focus();
       });
       setTimeout(showNudgeIfDue, 800);
+
+      const ONBOARDING_KEY = 'promptmegood:onboarding:v1';
+      const OB_STEPS = [
+        { selector: '#goal', text: 'Start here\u2014tell AI what you want.' },
+        { selector: '#prompt-form button[type="submit"]', text: 'Turn your idea into a strong prompt.' },
+        { selector: '.open-in-block', text: 'Copy and use it in ChatGPT, Claude, Perplexity, or Google.' }
+      ];
+      const obOverlay = document.getElementById('ob-overlay');
+      const obBackdrop = document.getElementById('ob-backdrop');
+      const obHighlight = document.getElementById('ob-highlight');
+      const obTooltip = document.getElementById('ob-tooltip');
+      const obStepEl = document.getElementById('ob-step');
+      const obTextEl = document.getElementById('ob-text');
+      const obSkipBtn = document.getElementById('ob-skip');
+      const obNextBtn = document.getElementById('ob-next');
+      let obIndex = 0;
+      let obResizeBound = false;
+
+      function obShouldRun() {
+        try { return !localStorage.getItem(ONBOARDING_KEY); } catch (e) { return false; }
+      }
+      function obMarkDone() {
+        try { localStorage.setItem(ONBOARDING_KEY, String(Date.now())); } catch (e) {}
+      }
+      function obPositionStep() {
+        const step = OB_STEPS[obIndex];
+        if (!step) return;
+        const target = document.querySelector(step.selector);
+        if (!target) { obFinish(); return; }
+        const rect = target.getBoundingClientRect();
+        if (rect.top < 80 || rect.bottom > window.innerHeight - 80) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          window.setTimeout(obPositionStep, 350);
+          return;
+        }
+        const pad = 6;
+        const top = rect.top - pad;
+        const left = rect.left - pad;
+        const width = rect.width + pad * 2;
+        const height = rect.height + pad * 2;
+        obHighlight.style.top = top + 'px';
+        obHighlight.style.left = left + 'px';
+        obHighlight.style.width = width + 'px';
+        obHighlight.style.height = height + 'px';
+        const tipRect = obTooltip.getBoundingClientRect();
+        const tipW = tipRect.width || 280;
+        const tipH = tipRect.height || 140;
+        const margin = 12;
+        let tipTop = top + height + margin;
+        if (tipTop + tipH > window.innerHeight - margin) {
+          tipTop = Math.max(margin, top - tipH - margin);
+        }
+        let tipLeft = left + (width / 2) - (tipW / 2);
+        tipLeft = Math.max(margin, Math.min(tipLeft, window.innerWidth - tipW - margin));
+        obTooltip.style.top = tipTop + 'px';
+        obTooltip.style.left = tipLeft + 'px';
+        obStepEl.textContent = 'Step ' + (obIndex + 1) + ' of ' + OB_STEPS.length;
+        obTextEl.textContent = step.text;
+        obNextBtn.textContent = obIndex === OB_STEPS.length - 1 ? 'Done' : 'Next';
+      }
+      function obStart() {
+        obIndex = 0;
+        obOverlay.classList.add('is-open');
+        obOverlay.setAttribute('aria-hidden', 'false');
+        if (!obResizeBound) {
+          window.addEventListener('resize', obPositionStep);
+          window.addEventListener('scroll', obPositionStep, { passive: true });
+          obResizeBound = true;
+        }
+        window.setTimeout(obPositionStep, 50);
+      }
+      function obFinish() {
+        obOverlay.classList.remove('is-open');
+        obOverlay.setAttribute('aria-hidden', 'true');
+        obMarkDone();
+      }
+      function obNextStep() {
+        if (obIndex >= OB_STEPS.length - 1) { obFinish(); return; }
+        obIndex += 1;
+        obPositionStep();
+      }
+      obNextBtn.addEventListener('click', obNextStep);
+      obSkipBtn.addEventListener('click', obFinish);
+      obBackdrop.addEventListener('click', obFinish);
+      document.addEventListener('keydown', function (event) {
+        if (!obOverlay.classList.contains('is-open')) return;
+        if (event.key === 'Escape') obFinish();
+        else if (event.key === 'Enter') obNextStep();
+      });
+      if (obShouldRun()) {
+        window.setTimeout(obStart, 1200);
+      }
 
       document.getElementById('export-everything').addEventListener('click', function () {
         const payload = {
