@@ -354,6 +354,20 @@
     .compare-col-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
     .compare-col-actions .btn { min-height: 36px; padding: 0 var(--space-3); font-size: var(--text-xs); }
     .compare-foot { display: flex; justify-content: flex-end; }
+    .templates-grid {
+      display: grid; gap: var(--space-3);
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+    .template-card {
+      display: flex; flex-direction: column; gap: var(--space-2); text-align: left;
+      background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      padding: var(--space-4); cursor: pointer; color: var(--color-text);
+      transition: border-color var(--transition-interactive), transform var(--transition-interactive);
+    }
+    .template-card:hover { border-color: var(--color-primary); transform: translateY(-2px); }
+    .template-card-title { font-weight: 700; font-size: var(--text-md); }
+    .template-card-desc { font-size: var(--text-sm); color: var(--color-text-muted); }
+    .template-card-meta { font-size: var(--text-xs); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
     .panel-head-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
     .panel-head-row .btn { min-height: 36px; padding: 0 var(--space-4); font-size: var(--text-xs); flex: 0 0 auto; }
     .toast {
@@ -535,6 +549,18 @@
             </p>
           </div>
         </section>
+      </div>
+    </section>
+
+    <section class="app-section" id="templates">
+      <div class="container">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Pinned templates</h2>
+            <p>One-click starting points. Loads the form and generates a prompt instantly.</p>
+          </div>
+          <div class="templates-grid" id="templates-grid"></div>
+        </div>
       </div>
     </section>
 
@@ -1181,6 +1207,90 @@ Context:
       });
 
       renderHistory();
+
+      const TEMPLATES = [
+        {
+          title: 'Cold email that books a call',
+          desc: 'Outbound email to a stranger who needs your service.',
+          data: {
+            goal: 'Write a cold email to a small business owner that gets them to book a 15-minute call about my service',
+            category: 'business',
+            skillLevel: 'intermediate',
+            tone: 'professional',
+            outputFormat: 'step-by-step',
+            details: 'My service helps local businesses get more leads. Keep the email under 120 words. Include subject line, body, and a soft call-to-action.',
+            moneyMode: false
+          }
+        },
+        {
+          title: 'Blog post outline',
+          desc: 'SEO-friendly outline ready for drafting.',
+          data: {
+            goal: 'Create an SEO-friendly outline for a blog post on a topic of my choice',
+            category: 'content',
+            skillLevel: 'intermediate',
+            tone: 'expert',
+            outputFormat: 'detailed breakdown',
+            details: 'Include H1, H2/H3 sections, key points per section, suggested keywords, and a meta description.',
+            moneyMode: false
+          }
+        },
+        {
+          title: 'Code review checklist',
+          desc: 'Senior-engineer-style review of a pull request.',
+          data: {
+            goal: 'Act as a senior engineer and review a pull request I will paste, focusing on bugs, security, and clarity',
+            category: 'business',
+            skillLevel: 'advanced',
+            tone: 'expert',
+            outputFormat: 'list',
+            details: 'Group feedback into Critical, Important, and Nice-to-have. End with one summary sentence.',
+            moneyMode: false
+          }
+        },
+        {
+          title: 'First $100 plan',
+          desc: 'Money-mode plan to make your first $100 fast.',
+          data: {
+            goal: 'Help me make my first $100 online this week with no audience and no budget',
+            category: 'money',
+            skillLevel: 'beginner',
+            tone: 'aggressive',
+            outputFormat: 'step-by-step',
+            details: 'I have a few hours per day. I want a low-cost, fast-to-launch path with concrete daily actions.',
+            moneyMode: true
+          }
+        }
+      ];
+
+      const templatesGrid = document.getElementById('templates-grid');
+      templatesGrid.innerHTML = TEMPLATES.map(function (t, idx) {
+        return '<button type="button" class="template-card" data-template-idx="' + idx + '">' +
+          '<span class="template-card-meta">' + escapeHtml(t.data.category) + ' &middot; ' + escapeHtml(t.data.tone) + '</span>' +
+          '<span class="template-card-title">' + escapeHtml(t.title) + '</span>' +
+          '<span class="template-card-desc">' + escapeHtml(t.desc) + '</span>' +
+        '</button>';
+      }).join('');
+
+      templatesGrid.addEventListener('click', function (event) {
+        const card = event.target.closest('[data-template-idx]');
+        if (!card) return;
+        const t = TEMPLATES[Number(card.dataset.templateIdx)];
+        if (!t) return;
+        document.getElementById('goal').value = t.data.goal;
+        document.getElementById('category').value = t.data.category;
+        document.getElementById('skillLevel').value = t.data.skillLevel;
+        document.getElementById('tone').value = t.data.tone;
+        document.getElementById('outputFormat').value = t.data.outputFormat;
+        document.getElementById('details').value = t.data.details;
+        document.getElementById('moneyMode').checked = !!t.data.moneyMode;
+        const data = getFormData();
+        const prompt = generatePrompt(data);
+        resultBox.textContent = prompt;
+        addToHistory(data, prompt);
+        document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        showToast('Loaded template: ' + t.title);
+      });
 
       form.addEventListener('submit', function (event) {
         event.preventDefault();
