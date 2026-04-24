@@ -1,0 +1,137 @@
+Add Output Language, Version Label, and Photo Prompt Mode AND update the manual to match. Do not break layout or existing functionality.
+
+========================
+PART 1 — OUTPUT LANGUAGE
+========================
+
+1. Add a dropdown labeled:
+“Output Language”
+
+Options:
+- English (default)
+- Spanish
+- Portuguese
+- Russian
+- French
+- German
+
+2. When selected:
+Append to generated prompt:
+
+“Write the final response in [selected language].”
+
+3. Ensure:
+- Only output changes, not UI
+- Works with all existing features
+
+========================
+PART 2 — VERSION LABEL
+========================
+
+Add:
+“PromptMeGood v1”
+
+Placement:
+- Footer or subtle corner
+
+Style:
+- Small, muted
+
+========================
+PART 3 — PHOTO PROMPT MODE
+========================
+
+1. Add toggle:
+“Photo Prompt Mode”
+
+Helper text:
+“Generate high-quality prompts for AI image tools (Midjourney, DALL·E, etc.)”
+
+2. When enabled:
+Add to generated prompt:
+
+“Act as a professional photographer and visual director. Create a highly detailed image prompt including:
+- lighting (studio, natural, cinematic)
+- camera type and lens (e.g. 85mm, DSLR)
+- composition and framing
+- textures and environment
+- color grading
+- mood and realism
+- ultra-detailed, high-resolution output”
+
+3. Must work with:
+- Money Mode
+- Human Voice Mode
+- Clarity Boost Mode
+
+========================
+PART 4 — UPDATE USER MANUAL
+========================
+
+Update ALL help/manual sections to reflect new features.
+
+1. Add new section:
+
+Title:
+“Output Language”
+
+Content:
+“Choose the language you want the AI to respond in. This changes the final output, not the prompt structure.”
+
+---
+
+2. Add new section:
+
+Title:
+“Photo Prompt Mode”
+
+Content:
+“Photo Prompt Mode helps you generate highly detailed prompts for AI image tools like Midjourney and DALL·E. It enhances your prompts with lighting, composition, camera details, and visual depth.”
+
+---
+
+3. Update “Optional Boosts” section:
+
+“These settings fine-tune how the AI responds. You can combine them for stronger results.”
+
+Include:
+
+- Money Mode:
+Focuses on practical, results-driven answers.
+
+- Human Voice Mode:
+Makes responses sound natural and less robotic.
+
+- Clarity Boost Mode:
+Improves structure and makes responses easier to follow and act on.
+
+---
+
+4. Update “How To Use” section:
+
+Add:
+“Turn on Photo Prompt Mode if you want to generate prompts for AI image tools.”
+
+Add:
+“Choose an Output Language if you want results in a specific language.”
+
+---
+
+5. Update “Pro Tips”:
+
+Add:
+“Use Photo Prompt Mode for creating high-quality image prompts.”
+
+Add:
+“Combine all boosts for the most powerful results.”
+
+========================
+FINAL CHECK
+========================
+
+- Manual matches UI exactly
+- No duplicate or outdated references
+- All features described clearly
+- Prompt generation still works
+- No layout issues
+- No JavaScript errors
