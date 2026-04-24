@@ -319,6 +319,21 @@
     .history-item.is-compare-selected { outline: 2px solid var(--color-primary); outline-offset: 2px; }
     .compare-banner { display: none; padding: var(--space-3); margin-bottom: var(--space-3); border-radius: var(--radius-md); background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-primary); font-weight: 500; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
     .compare-banner.is-active { display: flex; }
+    .global-search { position: relative; flex: 1 1 240px; max-width: 360px; margin: 0 var(--space-3); }
+    .global-search input { width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); font-size: 14px; }
+    .global-search input:focus { outline: 2px solid var(--color-primary); outline-offset: 1px; }
+    .global-results { position: absolute; top: calc(100% + 6px); left: 0; right: 0; max-height: 360px; overflow: auto; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: 0 12px 32px rgba(0,0,0,0.18); z-index: 100; display: none; }
+    .global-results.is-open { display: block; }
+    .global-result { display: block; width: 100%; text-align: left; padding: 10px 12px; background: transparent; border: 0; border-bottom: 1px solid var(--color-border); cursor: pointer; color: var(--color-text); }
+    .global-result:last-child { border-bottom: 0; }
+    .global-result:hover, .global-result:focus { background: color-mix(in srgb, var(--color-primary) 10%, transparent); }
+    .global-result-kind { display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-right: 6px; background: color-mix(in srgb, var(--color-primary) 18%, transparent); color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.04em; }
+    .global-result-title { font-weight: 600; }
+    .global-result-snippet { display: block; font-size: 12px; color: var(--color-text-muted); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .global-empty { padding: 12px; color: var(--color-text-muted); font-size: 13px; }
+    @keyframes pulseFlash { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 60%, transparent); } 100% { box-shadow: 0 0 0 14px transparent; } }
+    .is-flash-target { animation: pulseFlash 1.4s ease-out 2; outline: 2px solid var(--color-primary); outline-offset: 3px; }
+    @media (max-width: 720px) { .global-search { order: 3; flex-basis: 100%; max-width: none; margin: var(--space-2) 0 0; } }
     .history-item.is-favorite { border-color: color-mix(in srgb, var(--color-primary) 50%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent) inset; }
     .history-item.is-favorite .history-item-meta { color: var(--color-primary); }
     .history-item.is-favorite { cursor: grab; }
@@ -443,6 +458,10 @@
         </svg>
         <span>PromptMeGood</span>
       </a>
+      <div class="global-search">
+        <input type="search" id="global-search-input" placeholder="Find anything (history, templates, tags)…" aria-label="Search across history and templates" autocomplete="off" />
+        <div class="global-results" id="global-search-results" role="listbox" aria-label="Search results"></div>
+      </div>
       <div class="top-actions">
         <a class="ghost-link" href="#builder">Open builder</a>
         <a class="ghost-link" href="#history">History</a>
@@ -1907,6 +1926,120 @@ Context:
         } else if (k === 'c') {
           event.preventDefault();
           copyBtn.click();
+        }
+      });
+      const globalSearchInput = document.getElementById('global-search-input');
+      const globalSearchResults = document.getElementById('global-search-results');
+
+      function flashTarget(el) {
+        if (!el) return;
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.remove('is-flash-target');
+        void el.offsetWidth;
+        el.classList.add('is-flash-target');
+        setTimeout(function () { el.classList.remove('is-flash-target'); }, 3000);
+      }
+
+      function buildGlobalIndex(q) {
+        const needle = q.trim().toLowerCase();
+        if (!needle) return [];
+        const results = [];
+        const items = loadHistory();
+        items.forEach(function (i) {
+          const hay = [i.nickname || '', i.data.goal || '', i.prompt || '', (i.tags || []).join(' ')].join(' ').toLowerCase();
+          if (hay.includes(needle)) {
+            results.push({
+              kind: 'History',
+              title: i.nickname || i.data.goal || 'Untitled prompt',
+              snippet: (i.prompt || '').slice(0, 120),
+              target: { type: 'history', id: i.id }
+            });
+          }
+        });
+        const tpls = loadUserTemplates();
+        tpls.forEach(function (t) {
+          const hay = [t.title || '', (t.data && t.data.goal) || ''].join(' ').toLowerCase();
+          if (hay.includes(needle)) {
+            results.push({
+              kind: 'Template',
+              title: t.title || 'Template',
+              snippet: ((t.data && t.data.goal) || '').slice(0, 120),
+              target: { type: 'template', id: t.id }
+            });
+          }
+        });
+        const tagSet = new Set();
+        items.forEach(function (i) { (i.tags || []).forEach(function (tag) { if (tag.toLowerCase().includes(needle)) tagSet.add(tag); }); });
+        tagSet.forEach(function (tag) {
+          results.push({ kind: 'Tag', title: '#' + tag, snippet: 'Filter history by this tag', target: { type: 'tag', value: tag } });
+        });
+        return results.slice(0, 12);
+      }
+
+      function renderGlobalResults(results) {
+        if (!results.length) {
+          globalSearchResults.innerHTML = '<div class="global-empty">No matches found.</div>';
+          globalSearchResults.classList.add('is-open');
+          return;
+        }
+        globalSearchResults.innerHTML = results.map(function (r, idx) {
+          return '<button class="global-result" type="button" role="option" data-result-idx="' + idx + '">' +
+            '<span class="global-result-kind">' + escapeHtml(r.kind) + '</span>' +
+            '<span class="global-result-title">' + escapeHtml(r.title) + '</span>' +
+            (r.snippet ? '<span class="global-result-snippet">' + escapeHtml(r.snippet) + '</span>' : '') +
+          '</button>';
+        }).join('');
+        globalSearchResults.classList.add('is-open');
+      }
+
+      let lastGlobalResults = [];
+      globalSearchInput.addEventListener('input', function () {
+        lastGlobalResults = buildGlobalIndex(globalSearchInput.value);
+        if (!globalSearchInput.value.trim()) { globalSearchResults.classList.remove('is-open'); return; }
+        renderGlobalResults(lastGlobalResults);
+      });
+      globalSearchInput.addEventListener('focus', function () {
+        if (globalSearchInput.value.trim()) {
+          lastGlobalResults = buildGlobalIndex(globalSearchInput.value);
+          renderGlobalResults(lastGlobalResults);
+        }
+      });
+      document.addEventListener('click', function (e) {
+        if (!e.target.closest('.global-search')) globalSearchResults.classList.remove('is-open');
+      });
+      globalSearchResults.addEventListener('click', function (e) {
+        const btn = e.target.closest('[data-result-idx]');
+        if (!btn) return;
+        const r = lastGlobalResults[parseInt(btn.dataset.resultIdx, 10)];
+        if (!r) return;
+        globalSearchResults.classList.remove('is-open');
+        globalSearchInput.value = '';
+        if (r.target.type === 'history') {
+          historyQuery = '';
+          historyTagFilter = '';
+          historySearchEl.value = '';
+          renderHistory();
+          setTimeout(function () {
+            const el = historyListEl.querySelector('[data-id="' + r.target.id + '"]');
+            flashTarget(el);
+          }, 50);
+        } else if (r.target.type === 'template') {
+          renderTemplates();
+          setTimeout(function () {
+            const el = document.querySelector('[data-template-id="' + r.target.id + '"]');
+            flashTarget(el || document.getElementById('templates'));
+          }, 50);
+        } else if (r.target.type === 'tag') {
+          historyTagFilter = r.target.value;
+          renderHistory();
+          setTimeout(function () { flashTarget(document.getElementById('history')); }, 50);
+        }
+      });
+      globalSearchInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { globalSearchInput.value = ''; globalSearchResults.classList.remove('is-open'); globalSearchInput.blur(); }
+        if (e.key === 'Enter') {
+          const first = globalSearchResults.querySelector('[data-result-idx]');
+          if (first) first.click();
         }
       });
     })();
