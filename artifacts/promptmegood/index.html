@@ -312,7 +312,9 @@
     .history-item-tag {
       padding: 0.25rem 0.55rem; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 700;
       background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-primary);
+      border: 0; cursor: pointer; transition: background var(--transition-interactive);
     }
+    .history-item-tag:hover { background: color-mix(in srgb, var(--color-primary) 22%, transparent); }
     .history-item.is-favorite { border-color: color-mix(in srgb, var(--color-primary) 50%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent) inset; }
     .history-item.is-favorite .history-item-meta { color: var(--color-primary); }
     .history-item-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
@@ -805,7 +807,7 @@ Context:
           const tags = item.tags || [];
           const tagHtml = tags.length
             ? '<div class="history-item-tags">' + tags.map(function (t) {
-                return '<span class="history-item-tag">#' + escapeHtml(t) + '</span>';
+                return '<button type="button" class="history-item-tag" data-history-action="filter-tag" data-tag-value="' + escapeHtml(t) + '" aria-label="Filter by tag ' + escapeHtml(t) + '">#' + escapeHtml(t) + '</button>';
               }).join('') + '</div>'
             : '';
           return '<div class="history-item' + (item.favorite ? ' is-favorite' : '') + '" data-id="' + escapeHtml(item.id) + '">' +
@@ -867,13 +869,20 @@ Context:
       historyListEl.addEventListener('click', async function (event) {
         const btn = event.target.closest('[data-history-action]');
         if (!btn) return;
+        const action = btn.dataset.historyAction;
+        if (action === 'filter-tag') {
+          const tag = btn.dataset.tagValue || '';
+          historyTagFilter = historyTagFilter === tag ? '' : tag;
+          renderHistory();
+          document.getElementById('history').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          return;
+        }
         const wrap = btn.closest('.history-item');
         if (!wrap) return;
         const id = wrap.dataset.id;
         const items = loadHistory();
         const item = items.find(function (i) { return i.id === id; });
         if (!item) return;
-        const action = btn.dataset.historyAction;
         if (action === 'restore') {
           restoreHistoryItem(item);
         } else if (action === 'copy') {
