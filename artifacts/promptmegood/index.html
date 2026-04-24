@@ -756,6 +756,7 @@
               <option value="newest">Newest</option>
               <option value="most-used">Most used</option>
             </select>
+            <button class="btn btn-secondary" type="button" id="filter-notes" aria-pressed="false" title="Show only prompts with notes">📝 Notes only</button>
           </div>
           <div id="history-tag-bar" class="history-tag-bar" aria-label="Filter by tag"></div>
           <div id="compare-banner" class="compare-banner" role="status">
@@ -1000,6 +1001,7 @@ Context:
       let showArchived = false;
       let compareSelectMode = false;
       let compareSelections = [];
+      let notesOnly = false;
 
       const STREAK_KEY = 'promptmegood:streak:v1';
       function todayKey() {
@@ -1276,6 +1278,7 @@ Context:
         const q = historyQuery.trim().toLowerCase();
         const filtered = items.filter(function (i) {
           if (!showArchived && i.archived) return false;
+          if (notesOnly && !(i.note && i.note.trim())) return false;
           if (historyTagFilter && !(i.tags || []).includes(historyTagFilter)) return false;
           if (!q) return true;
           return (i.nickname || '').toLowerCase().includes(q) ||
@@ -1562,6 +1565,15 @@ Context:
 
       historySearchEl.addEventListener('input', function (e) {
         historyQuery = e.target.value;
+        renderHistory();
+      });
+
+      const filterNotesBtn = document.getElementById('filter-notes');
+      filterNotesBtn.addEventListener('click', function () {
+        notesOnly = !notesOnly;
+        filterNotesBtn.setAttribute('aria-pressed', notesOnly ? 'true' : 'false');
+        filterNotesBtn.classList.toggle('btn-primary', notesOnly);
+        filterNotesBtn.classList.toggle('btn-secondary', !notesOnly);
         renderHistory();
       });
 
