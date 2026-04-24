@@ -3483,7 +3483,8 @@ Context:
       const obSkipBtn = document.getElementById('ob-skip');
       const obNextBtn = document.getElementById('ob-next');
       let obIndex = 0;
-      let obResizeBound = false;
+      let obListenersBound = false;
+      let obScrollRaf = 0;
 
       function obShouldRun() {
         try { return !localStorage.getItem(ONBOARDING_KEY); } catch (e) { return false; }
@@ -3491,7 +3492,11 @@ Context:
       function obMarkDone() {
         try { localStorage.setItem(ONBOARDING_KEY, String(Date.now())); } catch (e) {}
       }
+      function obIsOpen() {
+        return obOverlay.classList.contains('is-open');
+      }
       function obPositionStep() {
+        if (!obIsOpen()) return;
         const step = OB_STEPS[obIndex];
         if (!step) return;
         const target = document.querySelector(step.selector);
@@ -3527,20 +3532,42 @@ Context:
         obTextEl.textContent = step.text;
         obNextBtn.textContent = obIndex === OB_STEPS.length - 1 ? 'Done' : 'Next';
       }
+      function obSchedulePosition() {
+        if (!obIsOpen()) return;
+        if (obScrollRaf) return;
+        obScrollRaf = window.requestAnimationFrame(function () {
+          obScrollRaf = 0;
+          obPositionStep();
+        });
+      }
+      function obBindListeners() {
+        if (obListenersBound) return;
+        window.addEventListener('resize', obSchedulePosition);
+        window.addEventListener('scroll', obSchedulePosition, { passive: true });
+        obListenersBound = true;
+      }
+      function obUnbindListeners() {
+        if (!obListenersBound) return;
+        window.removeEventListener('resize', obSchedulePosition);
+        window.removeEventListener('scroll', obSchedulePosition, { passive: true });
+        obListenersBound = false;
+        if (obScrollRaf) { window.cancelAnimationFrame(obScrollRaf); obScrollRaf = 0; }
+      }
       function obStart() {
         obIndex = 0;
         obOverlay.classList.add('is-open');
         obOverlay.setAttribute('aria-hidden', 'false');
-        if (!obResizeBound) {
-          window.addEventListener('resize', obPositionStep);
-          window.addEventListener('scroll', obPositionStep, { passive: true });
-          obResizeBound = true;
-        }
+        obBindListeners();
         window.setTimeout(obPositionStep, 50);
       }
       function obFinish() {
         obOverlay.classList.remove('is-open');
         obOverlay.setAttribute('aria-hidden', 'true');
+        obUnbindListeners();
+        obHighlight.style.top = '-9999px';
+        obHighlight.style.left = '-9999px';
+        obHighlight.style.width = '0px';
+        obHighlight.style.height = '0px';
         obMarkDone();
       }
       function obNextStep() {
