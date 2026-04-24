@@ -316,6 +316,9 @@
     }
     .history-item-tag:hover { background: color-mix(in srgb, var(--color-primary) 22%, transparent); }
     .history-item.is-archived { opacity: 0.6; border-style: dashed; }
+    .history-item.is-compare-selected { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .compare-banner { display: none; padding: var(--space-3); margin-bottom: var(--space-3); border-radius: var(--radius-md); background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-primary); font-weight: 500; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
+    .compare-banner.is-active { display: flex; }
     .history-item.is-favorite { border-color: color-mix(in srgb, var(--color-primary) 50%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent) inset; }
     .history-item.is-favorite .history-item-meta { color: var(--color-primary); }
     .history-item.is-favorite { cursor: grab; }
@@ -625,6 +628,7 @@
               </div>
               <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
                 <button class="btn btn-secondary" type="button" id="toggle-archived" aria-pressed="false">Show archived</button>
+                <button class="btn btn-secondary" type="button" id="compare-two" aria-pressed="false">Compare two</button>
                 <button class="btn btn-secondary" type="button" id="export-history">Export</button>
                 <button class="btn btn-secondary" type="button" id="import-history">Import</button>
                 <button class="btn btn-secondary" type="button" id="clear-history">Clear all</button>
@@ -641,6 +645,10 @@
             </select>
           </div>
           <div id="history-tag-bar" class="history-tag-bar" aria-label="Filter by tag"></div>
+          <div id="compare-banner" class="compare-banner" role="status">
+            <span id="compare-banner-text">Pick two prompts to compare side-by-side.</span>
+            <button class="btn btn-secondary" type="button" id="compare-cancel">Cancel</button>
+          </div>
           <div id="history-list" class="history-list" aria-live="polite"></div>
         </div>
       </div>
@@ -871,6 +879,8 @@ Context:
       let historyTagFilter = '';
       let historySort = 'newest';
       let showArchived = false;
+      let compareSelectMode = false;
+      let compareSelections = [];
 
       const STREAK_KEY = 'promptmegood:streak:v1';
       function todayKey() {
@@ -1069,7 +1079,8 @@ Context:
             : '';
           const dragAttr = item.favorite ? ' draggable="true"' : '';
           const handleHtml = item.favorite ? '<span class="drag-handle" aria-hidden="true" title="Drag to reorder">⋮⋮</span>' : '';
-          return '<div class="history-item' + (item.favorite ? ' is-favorite' : '') + (item.archived ? ' is-archived' : '') + '" data-id="' + escapeHtml(item.id) + '"' + dragAttr + '>' +
+          const isPicked = compareSelectMode && compareSelections.indexOf(item.id) !== -1;
+          return '<div class="history-item' + (item.favorite ? ' is-favorite' : '') + (item.archived ? ' is-archived' : '') + (isPicked ? ' is-compare-selected' : '') + '" data-id="' + escapeHtml(item.id) + '"' + dragAttr + '>' +
             '<div class="history-item-head">' +
               '<span class="history-item-goal">' + handleHtml + escapeHtml(item.nickname || item.data.goal || 'Untitled prompt') + (item.nickname ? ' <span style="color: var(--color-text-muted); font-weight: 400;">&middot; ' + escapeHtml(item.data.goal || '') + '</span>' : '') + '</span>' +
               '<span class="history-item-meta">' + escapeHtml(formatTime(item.savedAt)) + (item.data.moneyMode ? ' &middot; Money Mode' : '') + favMeta + (item.useCount ? ' &middot; Used ' + item.useCount + '×' : '') + '</span>' +
@@ -1083,6 +1094,7 @@ Context:
               '<button class="btn btn-secondary" type="button" data-history-action="remix" data-remix-mode="beginner">Beginner-friendly</button>' +
             '</div>' +
             '<div class="history-item-actions">' +
+              (compareSelectMode ? '<button class="btn btn-primary" type="button" data-history-action="compare-pick">' + (isPicked ? 'Selected ✓' : 'Pick for compare') + '</button>' : '') +
               '<button class="btn btn-primary" type="button" data-history-action="restore">Restore</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="copy">Copy</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="favorite" aria-pressed="' + (item.favorite ? 'true' : 'false') + '">' + favLabel + '</button>' +
@@ -1153,7 +1165,10 @@ Context:
         const items = loadHistory();
         const item = items.find(function (i) { return i.id === id; });
         if (!item) return;
-        if (action === 'restore') {
+        if (action === 'compare-pick') {
+          handleComparePick(item, items);
+          return;
+        } else if (action === 'restore') {
           restoreHistoryItem(item);
           bumpUse(item.id);
         } else if (action === 'remix') {
@@ -1309,6 +1324,51 @@ Context:
         toggleArchivedBtn.setAttribute('aria-pressed', showArchived ? 'true' : 'false');
         renderHistory();
       });
+
+      const compareTwoBtn = document.getElementById('compare-two');
+      const compareBanner = document.getElementById('compare-banner');
+      const compareBannerText = document.getElementById('compare-banner-text');
+      const compareCancelBtn = document.getElementById('compare-cancel');
+
+      function setCompareMode(on) {
+        compareSelectMode = on;
+        compareSelections = [];
+        compareTwoBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        compareTwoBtn.textContent = on ? 'Exit compare' : 'Compare two';
+        compareBanner.classList.toggle('is-active', on);
+        if (on) compareBannerText.textContent = 'Pick the first prompt to compare.';
+        renderHistory();
+      }
+      compareTwoBtn.addEventListener('click', function () { setCompareMode(!compareSelectMode); });
+      compareCancelBtn.addEventListener('click', function () { setCompareMode(false); });
+
+      function handleComparePick(item, items) {
+        const idx = compareSelections.indexOf(item.id);
+        if (idx !== -1) {
+          compareSelections.splice(idx, 1);
+          compareBannerText.textContent = compareSelections.length === 0 ? 'Pick the first prompt to compare.' : 'Pick one more prompt to compare.';
+          renderHistory();
+          return;
+        }
+        compareSelections.push(item.id);
+        if (compareSelections.length === 1) {
+          compareBannerText.textContent = 'Pick one more prompt to compare.';
+          renderHistory();
+          return;
+        }
+        const a = items.find(function (x) { return x.id === compareSelections[0]; });
+        const b = items.find(function (x) { return x.id === compareSelections[1]; });
+        if (a && b) {
+          openCompare({
+            data: a.data,
+            original: a.prompt,
+            remix: b.prompt,
+            originalLabel: a.nickname || (a.data.goal || 'Prompt A').slice(0, 50),
+            remixLabel: b.nickname || (b.data.goal || 'Prompt B').slice(0, 50)
+          });
+        }
+        setCompareMode(false);
+      }
 
       historySortEl.addEventListener('change', function (e) {
         historySort = e.target.value;
