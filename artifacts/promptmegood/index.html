@@ -368,6 +368,19 @@
     .template-card-title { font-weight: 700; font-size: var(--text-md); }
     .template-card-desc { font-size: var(--text-sm); color: var(--color-text-muted); }
     .template-card-meta { font-size: var(--text-xs); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .template-card { position: relative; }
+    .template-card-delete {
+      position: absolute; top: var(--space-2); right: var(--space-2);
+      width: 24px; height: 24px; border-radius: var(--radius-full); border: 0;
+      background: color-mix(in srgb, var(--color-text) 8%, transparent); color: var(--color-text);
+      cursor: pointer; font-size: var(--text-sm); line-height: 1; display: flex; align-items: center; justify-content: center;
+    }
+    .template-card-delete:hover { background: color-mix(in srgb, var(--color-text) 18%, transparent); }
+    .template-card-badge {
+      align-self: flex-start; font-size: var(--text-xs); font-weight: 700;
+      background: color-mix(in srgb, var(--color-primary) 18%, transparent); color: var(--color-primary);
+      padding: 0.15rem 0.5rem; border-radius: var(--radius-full);
+    }
     .panel-head-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
     .panel-head-row .btn { min-height: 36px; padding: 0 var(--space-4); font-size: var(--text-xs); flex: 0 0 auto; }
     .toast {
@@ -929,6 +942,7 @@ Context:
               '<button class="btn btn-primary" type="button" data-history-action="restore">Restore</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="copy">Copy</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="favorite" aria-pressed="' + (item.favorite ? 'true' : 'false') + '">' + favLabel + '</button>' +
+              '<button class="btn btn-secondary" type="button" data-history-action="save-template">Save as template</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="duplicate">Duplicate</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="rename">' + (item.nickname ? 'Rename' : 'Add name') + '</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="tags">Edit tags</button>' +
@@ -1013,6 +1027,18 @@ Context:
           } catch (e) {
             showToast('Copy failed. Try restoring then copying.');
           }
+        } else if (action === 'save-template') {
+          const suggested = item.nickname || (item.data.goal || 'My template').slice(0, 60);
+          const title = window.prompt('Template name:', suggested);
+          if (title === null) return;
+          const trimmed = title.trim().slice(0, 80);
+          if (!trimmed) { showToast('Template needs a name.'); return; }
+          const list = loadUserTemplates();
+          list.push({ title: trimmed, data: JSON.parse(JSON.stringify(item.data)) });
+          saveUserTemplates(list);
+          renderTemplates();
+          showToast('Saved as template: ' + trimmed);
+          document.getElementById('templates').scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else if (action === 'duplicate') {
           const baseName = item.nickname || item.data.goal || 'Untitled prompt';
           const copy = {
@@ -1263,26 +1289,50 @@ Context:
         }
       ];
 
-      const templatesGrid = document.getElementById('templates-grid');
-      templatesGrid.innerHTML = TEMPLATES.map(function (t, idx) {
-        return '<button type="button" class="template-card" data-template-idx="' + idx + '">' +
-          '<span class="template-card-meta">' + escapeHtml(t.data.category) + ' &middot; ' + escapeHtml(t.data.tone) + '</span>' +
-          '<span class="template-card-title">' + escapeHtml(t.title) + '</span>' +
-          '<span class="template-card-desc">' + escapeHtml(t.desc) + '</span>' +
-        '</button>';
-      }).join('');
+      const TEMPLATES_KEY = 'promptmegood:templates:v1';
+      function loadUserTemplates() {
+        try {
+          const raw = localStorage.getItem(TEMPLATES_KEY);
+          if (!raw) return [];
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (e) { return []; }
+      }
+      function saveUserTemplates(list) {
+        try { localStorage.setItem(TEMPLATES_KEY, JSON.stringify(list)); } catch (e) {}
+      }
 
-      templatesGrid.addEventListener('click', function (event) {
-        const card = event.target.closest('[data-template-idx]');
-        if (!card) return;
-        const t = TEMPLATES[Number(card.dataset.templateIdx)];
-        if (!t) return;
-        document.getElementById('goal').value = t.data.goal;
-        document.getElementById('category').value = t.data.category;
-        document.getElementById('skillLevel').value = t.data.skillLevel;
-        document.getElementById('tone').value = t.data.tone;
-        document.getElementById('outputFormat').value = t.data.outputFormat;
-        document.getElementById('details').value = t.data.details;
+      const templatesGrid = document.getElementById('templates-grid');
+
+      function renderTemplates() {
+        const userTpls = loadUserTemplates();
+        const builtIn = TEMPLATES.map(function (t, idx) {
+          return '<button type="button" class="template-card" data-template-source="builtin" data-template-idx="' + idx + '">' +
+            '<span class="template-card-meta">' + escapeHtml(t.data.category) + ' &middot; ' + escapeHtml(t.data.tone) + '</span>' +
+            '<span class="template-card-title">' + escapeHtml(t.title) + '</span>' +
+            '<span class="template-card-desc">' + escapeHtml(t.desc) + '</span>' +
+          '</button>';
+        }).join('');
+        const userHtml = userTpls.map(function (t, idx) {
+          return '<button type="button" class="template-card" data-template-source="user" data-template-idx="' + idx + '">' +
+            '<span class="template-card-badge">Yours</span>' +
+            '<span class="template-card-meta">' + escapeHtml(t.data.category || '') + ' &middot; ' + escapeHtml(t.data.tone || '') + '</span>' +
+            '<span class="template-card-title">' + escapeHtml(t.title) + '</span>' +
+            '<span class="template-card-desc">' + escapeHtml((t.data.goal || '').slice(0, 90)) + '</span>' +
+            '<span class="template-card-delete" role="button" data-template-delete="' + idx + '" aria-label="Delete template" title="Delete template">×</span>' +
+          '</button>';
+        }).join('');
+        templatesGrid.innerHTML = builtIn + userHtml;
+      }
+      renderTemplates();
+
+      function applyTemplate(t) {
+        document.getElementById('goal').value = t.data.goal || '';
+        document.getElementById('category').value = t.data.category || 'business';
+        document.getElementById('skillLevel').value = t.data.skillLevel || 'beginner';
+        document.getElementById('tone').value = t.data.tone || 'professional';
+        document.getElementById('outputFormat').value = t.data.outputFormat || 'step-by-step';
+        document.getElementById('details').value = t.data.details || '';
         document.getElementById('moneyMode').checked = !!t.data.moneyMode;
         const data = getFormData();
         const prompt = generatePrompt(data);
@@ -1290,6 +1340,26 @@ Context:
         addToHistory(data, prompt);
         document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
         showToast('Loaded template: ' + t.title);
+      }
+
+      templatesGrid.addEventListener('click', function (event) {
+        const del = event.target.closest('[data-template-delete]');
+        if (del) {
+          event.stopPropagation();
+          const idx = Number(del.dataset.templateDelete);
+          const list = loadUserTemplates();
+          const removed = list.splice(idx, 1)[0];
+          saveUserTemplates(list);
+          renderTemplates();
+          showToast(removed ? 'Removed "' + removed.title + '".' : 'Template removed.');
+          return;
+        }
+        const card = event.target.closest('[data-template-idx]');
+        if (!card) return;
+        const idx = Number(card.dataset.templateIdx);
+        const source = card.dataset.templateSource;
+        const t = source === 'user' ? loadUserTemplates()[idx] : TEMPLATES[idx];
+        if (t) applyTemplate(t);
       });
 
       form.addEventListener('submit', function (event) {
