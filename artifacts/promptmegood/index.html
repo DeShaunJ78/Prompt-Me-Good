@@ -381,6 +381,9 @@
       background: color-mix(in srgb, var(--color-primary) 18%, transparent); color: var(--color-primary);
       padding: 0.15rem 0.5rem; border-radius: var(--radius-full);
     }
+    .template-card[draggable="true"] { cursor: grab; }
+    .template-card.is-dragging { opacity: 0.45; cursor: grabbing; }
+    .template-card.is-drop-target { outline: 2px dashed var(--color-primary); outline-offset: 2px; }
     .panel-head-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
     .panel-head-row .btn { min-height: 36px; padding: 0 var(--space-4); font-size: var(--text-xs); flex: 0 0 auto; }
     .toast {
@@ -1323,7 +1326,7 @@ Context:
           '</button>';
         }).join('');
         const userHtml = userTpls.map(function (t, idx) {
-          return '<button type="button" class="template-card" data-template-source="user" data-template-idx="' + idx + '">' +
+          return '<button type="button" class="template-card" draggable="true" data-template-source="user" data-template-idx="' + idx + '">' +
             '<span class="template-card-badge">Yours</span>' +
             '<span class="template-card-meta">' + escapeHtml(t.data.category || '') + ' &middot; ' + escapeHtml(t.data.tone || '') + '</span>' +
             '<span class="template-card-title">' + escapeHtml(t.title) + '</span>' +
@@ -1401,6 +1404,49 @@ Context:
         };
         reader.onerror = function () { showToast('Could not read that file.'); importTplFile.value = ''; };
         reader.readAsText(file);
+      });
+
+      let tplDragIdx = null;
+      templatesGrid.addEventListener('dragstart', function (event) {
+        const card = event.target.closest('.template-card[data-template-source="user"]');
+        if (!card) { event.preventDefault(); return; }
+        tplDragIdx = Number(card.dataset.templateIdx);
+        card.classList.add('is-dragging');
+        if (event.dataTransfer) {
+          event.dataTransfer.effectAllowed = 'move';
+          try { event.dataTransfer.setData('text/plain', String(tplDragIdx)); } catch (e) {}
+        }
+      });
+      templatesGrid.addEventListener('dragend', function () {
+        tplDragIdx = null;
+        templatesGrid.querySelectorAll('.is-dragging, .is-drop-target').forEach(function (n) {
+          n.classList.remove('is-dragging');
+          n.classList.remove('is-drop-target');
+        });
+      });
+      templatesGrid.addEventListener('dragover', function (event) {
+        if (tplDragIdx === null) return;
+        const target = event.target.closest('.template-card[data-template-source="user"]');
+        if (!target || Number(target.dataset.templateIdx) === tplDragIdx) return;
+        event.preventDefault();
+        if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+        templatesGrid.querySelectorAll('.is-drop-target').forEach(function (n) { n.classList.remove('is-drop-target'); });
+        target.classList.add('is-drop-target');
+      });
+      templatesGrid.addEventListener('drop', function (event) {
+        if (tplDragIdx === null) return;
+        const target = event.target.closest('.template-card[data-template-source="user"]');
+        if (!target) return;
+        const toIdx = Number(target.dataset.templateIdx);
+        if (toIdx === tplDragIdx) return;
+        event.preventDefault();
+        const list = loadUserTemplates();
+        const [moved] = list.splice(tplDragIdx, 1);
+        list.splice(toIdx, 0, moved);
+        saveUserTemplates(list);
+        tplDragIdx = null;
+        renderTemplates();
+        showToast('Templates reordered.');
       });
 
       templatesGrid.addEventListener('click', function (event) {
