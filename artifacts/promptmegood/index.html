@@ -284,6 +284,12 @@
     }
     .toggle-row strong { display: block; font-size: var(--text-sm); }
     .toggle-row span { display: block; color: var(--color-text-muted); font-size: var(--text-xs); }
+    .toggle-row.is-subtle {
+      background: color-mix(in srgb, var(--color-surface-2) 60%, transparent);
+      border-color: color-mix(in srgb, var(--color-text) 6%, transparent);
+      padding: var(--space-3) var(--space-4);
+    }
+    .toggle-row.is-subtle .switch { transform: scale(0.9); transform-origin: center right; }
     .switch { position: relative; width: 54px; height: 30px; flex: 0 0 auto; }
     .switch input { position: absolute; opacity: 0; inset: 0; }
     .slider { position: absolute; inset: 0; border-radius: var(--radius-full); background: var(--color-border); transition: background var(--transition-interactive); }
@@ -488,9 +494,11 @@
     .history-item.is-compare-selected { outline: 2px solid var(--color-primary); outline-offset: 2px; }
     .compare-banner { display: none; padding: var(--space-3); margin-bottom: var(--space-3); border-radius: var(--radius-md); background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-primary); font-weight: 500; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
     .compare-banner.is-active { display: flex; }
-    .global-search { position: relative; flex: 1 1 240px; max-width: 360px; margin: 0 var(--space-3); }
+    .global-search { position: relative; flex: 1 1 240px; max-width: 360px; margin: 0 var(--space-3); display: flex; flex-direction: column; gap: 3px; }
+    .global-search-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); line-height: 1; }
     .global-search input { width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); font-size: 14px; }
     .global-search input:focus { outline: 2px solid var(--color-primary); outline-offset: 1px; }
+    .global-search-helper { font-size: 11px; color: var(--color-text-faint); line-height: 1.2; margin-top: 1px; }
     .global-results { position: absolute; top: calc(100% + 6px); left: 0; right: 0; max-height: 360px; overflow: auto; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: 0 12px 32px rgba(0,0,0,0.18); z-index: 100; display: none; }
     .global-results.is-open { display: block; }
     .global-result { display: block; width: 100%; text-align: left; padding: 10px 12px; background: transparent; border: 0; border-bottom: 1px solid var(--color-border); cursor: pointer; color: var(--color-text); }
@@ -537,6 +545,17 @@
     .nudge-text strong { color: var(--color-primary); margin-right: 6px; }
     .nudge-actions { display: flex; gap: var(--space-2); }
     .weekly-goal-pin { margin-bottom: var(--space-4); padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); background: color-mix(in srgb, var(--color-primary) 8%, transparent); border: 1px dashed color-mix(in srgb, var(--color-primary) 40%, transparent); }
+    .weekly-suggestion-link {
+      display: inline-block; background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+      color: var(--color-primary); border: 0; border-radius: 6px;
+      padding: 2px 8px; margin: 0 2px; cursor: pointer;
+      font: inherit; font-weight: 600; text-decoration: underline;
+      text-underline-offset: 2px; transition: background var(--transition-interactive);
+    }
+    .weekly-suggestion-link:hover, .weekly-suggestion-link:focus-visible {
+      background: color-mix(in srgb, var(--color-primary) 22%, transparent); outline: none;
+    }
+    .weekly-suggestion-hint { display: block; margin-top: 4px; font-size: var(--text-xs); color: var(--color-text-muted); font-style: italic; }
     .weekly-goal-pin-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); margin-bottom: 4px; flex-wrap: wrap; }
     .weekly-goal-pin-label { font-size: var(--text-sm); font-weight: 600; color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.04em; }
     .weekly-goal-pin-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
@@ -864,7 +883,9 @@
         <span>PromptMeGood</span>
       </a>
       <div class="global-search">
-        <input type="search" id="global-search-input" placeholder="Find anything (history, templates, tags)…" aria-label="Search across history and templates" autocomplete="off" />
+        <label class="global-search-label" for="global-search-input">Search</label>
+        <input type="search" id="global-search-input" placeholder="Search your prompts, templates, or saved ideas…" aria-label="Search your prompts, templates, or saved ideas" autocomplete="off" />
+        <span class="global-search-helper">Quickly find past prompts or saved ideas</span>
         <div class="global-results" id="global-search-results" role="listbox" aria-label="Search results"></div>
       </div>
       <button class="nav-toggle" type="button" id="nav-toggle" aria-label="Open menu" aria-controls="top-actions" aria-expanded="false">
@@ -1057,10 +1078,10 @@
                 <p class="helper">Add budget, timeline, platform, audience, constraints, or anything the AI should respect.</p>
               </div>
 
-              <div class="toggle-row">
+              <div class="toggle-row is-subtle">
                 <div>
                   <strong>Money Mode</strong>
-                  <span>Prioritizes practical, results-driven (often money-focused) answers.</span>
+                  <span>Focuses answers on practical, results-driven outcomes (can be turned off anytime).</span>
                 </div>
                 <label class="switch" aria-label="Turn Money Mode on or off">
                   <input id="moneyMode" name="moneyMode" type="checkbox" checked />
@@ -3069,7 +3090,7 @@ Context:
           weeklyGoalClearBtn.hidden = false;
         } else {
           weeklyGoalPin.classList.add('is-empty');
-          weeklyGoalBody.innerHTML = 'Try focusing on one goal this week. Example: <button type="button" class="link-btn" data-weekly-suggestion="Improve my business idea">&ldquo;Improve my business idea&rdquo;</button>';
+          weeklyGoalBody.innerHTML = 'Try focusing on one goal this week. Example: <button type="button" class="weekly-suggestion-link" data-weekly-suggestion="Improve my business idea">&ldquo;Improve my business idea&rdquo;</button><span class="weekly-suggestion-hint">Tap the example to use it</span>';
           weeklyGoalEditBtn.textContent = 'Set';
           weeklyGoalUseBtn.hidden = true;
           weeklyGoalClearBtn.hidden = true;
