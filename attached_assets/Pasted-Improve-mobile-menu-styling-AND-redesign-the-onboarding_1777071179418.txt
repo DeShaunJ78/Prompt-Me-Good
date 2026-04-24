@@ -1,0 +1,95 @@
+Improve mobile menu styling AND redesign the onboarding prompt so it stands out and feels intentional. Do not break functionality.
+
+========================
+PART 1 — FIX MOBILE MENU (HAMBURGER)
+========================
+
+Current issue:
+Menu panel and buttons blend into the background and feel flat.
+
+Fix:
+
+1. Style the mobile menu container:
+- Background: #F1FAF8 (light tinted)
+- Border: 1px solid rgba(15, 118, 110, 0.25)
+- Border radius: 16px
+- Add soft shadow: 0 8px 24px rgba(0,0,0,0.08)
+
+2. Style each menu item (“Open Builder”, “History”, “Dark Mode”):
+- Background: #F7FBFA
+- Border: 1px solid rgba(15, 118, 110, 0.35)
+- Border radius: 14px
+- Padding: 14px 18px
+- Min height: 52px
+- Font weight: 600
+- Text color: #1f2937
+
+3. Add tap/hover state:
+- Slightly darker background tint
+- Border becomes stronger teal
+- Smooth transition
+
+4. Ensure:
+- Items feel like buttons
+- Clean spacing between items
+- No overlap or crowding
+
+========================
+PART 2 — REDESIGN “ARE YOU NEW HERE” PROMPT
+========================
+
+Current issue:
+The onboarding prompt looks like a plain box and blends in with everything else.
+
+Fix:
+
+1. Convert it into a standout card/banner:
+- Background: subtle gradient using brand colors (light teal/green)
+- Example: linear-gradient(135deg, #E6F7F5, #F1FAF8)
+- Border: none or very subtle
+- Add shadow for elevation
+
+2. Add visual hierarchy:
+- Title (bold, larger):
+  “New here? Let me show you around.”
+
+- Subtext:
+  “Get a quick 30-second walkthrough of how PromptMeGood works.”
+
+3. Add two clear buttons:
+- Primary button:
+  “Show Me”
+  (filled, brand color)
+
+- Secondary button:
+  “Skip”
+  (outline or text button)
+
+4. Improve spacing:
+- More padding inside the card
+- Clear separation from other sections
+
+5. Add subtle animation (optional but light):
+- Fade in or slide up on load
+- Must not affect performance
+
+6. Behavior (keep existing logic):
+- “Show Me” → launches walkthrough
+- “Skip” → dismisses and stores preference in localStorage
+- Do not show again after dismissal
+
+7. Important:
+- Must not block scrolling
+- Must not feel like a popup/modal
+- Must feel like a helpful suggestion
+
+========================
+FINAL CHECK
+========================
+
+- Mobile menu no longer blends into background
+- Menu items clearly look tappable
+- Onboarding prompt stands out visually
+- Prompt feels inviting, not boring
+- UX feels intentional and polished
+- No JavaScript errors

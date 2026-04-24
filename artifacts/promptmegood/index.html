@@ -633,13 +633,47 @@
       .global-search input { min-height: 44px; padding: 10px 14px; font-size: 16px; }
       .top-actions {
         order: 4; flex-basis: 100%; flex-direction: column; align-items: stretch;
-        gap: 10px; margin-top: 12px; padding: 12px; background: var(--color-surface);
-        border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
-        border-radius: var(--radius-md); display: none;
+        gap: 10px; margin-top: 12px; padding: 14px;
+        background: #F1FAF8;
+        border: 1px solid rgba(15, 118, 110, 0.25);
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        display: none;
       }
       .top-actions.is-open { display: flex; }
       .top-actions .ghost-link, .top-actions .theme-toggle {
-        width: 100%; min-height: 48px; justify-content: center; border-radius: var(--radius-md);
+        width: 100%;
+        min-height: 52px;
+        justify-content: center;
+        background: #F7FBFA;
+        border: 1px solid rgba(15, 118, 110, 0.35);
+        border-radius: 14px;
+        padding: 14px 18px;
+        font-weight: 600;
+        color: #1f2937;
+        transition: background 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
+      }
+      .top-actions .ghost-link:hover, .top-actions .theme-toggle:hover,
+      .top-actions .ghost-link:active, .top-actions .theme-toggle:active {
+        background: #E6F5F2;
+        border-color: rgba(15, 118, 110, 0.6);
+        transform: none;
+      }
+      [data-theme="dark"] .top-actions {
+        background: #0f3a3d;
+        border-color: rgba(91, 168, 176, 0.35);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      }
+      [data-theme="dark"] .top-actions .ghost-link,
+      [data-theme="dark"] .top-actions .theme-toggle {
+        background: #144749;
+        border-color: rgba(91, 168, 176, 0.4);
+        color: #e6f5f2;
+      }
+      [data-theme="dark"] .top-actions .ghost-link:hover,
+      [data-theme="dark"] .top-actions .theme-toggle:hover {
+        background: #1a5557;
+        border-color: rgba(91, 168, 176, 0.7);
       }
       .theme-toggle-label { display: inline-block; margin-left: 8px; font-weight: 600; }
     }
@@ -659,8 +693,74 @@
     .nudge-text { flex: 1 1 240px; font-size: var(--text-sm); color: var(--color-text); line-height: 1.4; }
     .nudge-text strong { color: var(--color-primary); margin-right: 6px; }
     .nudge-actions { display: flex; gap: var(--space-2); }
-    .tour-banner { background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 14%, transparent), color-mix(in srgb, var(--color-primary) 4%, transparent)); border-bottom: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent); }
-    .tour-banner .nudge-text strong { color: var(--color-primary); }
+    .tour-card-wrap { padding: 18px var(--space-4) 4px; }
+    .tour-card {
+      max-width: 720px; margin: 0 auto;
+      background: linear-gradient(135deg, #E6F7F5, #F1FAF8);
+      border: 1px solid rgba(15, 118, 110, 0.18);
+      border-radius: 18px;
+      padding: 22px 22px 20px;
+      box-shadow: 0 10px 28px rgba(15, 118, 110, 0.10), 0 1px 2px rgba(15, 118, 110, 0.06);
+      display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+      animation: tourCardIn 0.45s ease-out both;
+    }
+    @keyframes tourCardIn {
+      0% { opacity: 0; transform: translateY(8px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .tour-card { animation: none; }
+    }
+    .tour-card-icon {
+      flex: 0 0 auto;
+      width: 48px; height: 48px; border-radius: 14px;
+      background: rgba(15, 118, 110, 0.12);
+      color: #0f766e;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 26px;
+    }
+    .tour-card-body { flex: 1 1 260px; min-width: 0; }
+    .tour-card-title {
+      margin: 0 0 4px; font-size: 18px; font-weight: 700; color: #0f3a3d; line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+    .tour-card-sub { margin: 0; color: #4a5d5e; font-size: 14px; line-height: 1.45; }
+    .tour-card-actions { display: flex; gap: 10px; flex: 0 0 auto; flex-wrap: wrap; }
+    .tour-card-actions .btn { min-height: 44px; }
+    .tour-card-actions .btn-primary {
+      background: #0f766e !important; color: #ffffff !important; border-color: #0f766e !important;
+      box-shadow: 0 4px 12px rgba(15, 118, 110, 0.25);
+    }
+    .tour-card-actions .btn-primary:hover { background: #0d6660 !important; border-color: #0d6660 !important; }
+    .tour-card-actions .btn-secondary {
+      background: transparent !important; color: #0f766e !important;
+      border: 1.5px solid rgba(15, 118, 110, 0.5) !important;
+    }
+    .tour-card-actions .btn-secondary:hover {
+      background: rgba(15, 118, 110, 0.08) !important; border-color: #0f766e !important;
+    }
+    [data-theme="dark"] .tour-card {
+      background: linear-gradient(135deg, #144749, #0f3a3d);
+      border-color: rgba(91, 168, 176, 0.3);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+    }
+    [data-theme="dark"] .tour-card-icon { background: rgba(91, 168, 176, 0.18); color: #5ba8b0; }
+    [data-theme="dark"] .tour-card-title { color: #e6f5f2; }
+    [data-theme="dark"] .tour-card-sub { color: #b6cfd0; }
+    [data-theme="dark"] .tour-card-actions .btn-primary {
+      background: #5ba8b0 !important; border-color: #5ba8b0 !important; color: #062628 !important;
+    }
+    [data-theme="dark"] .tour-card-actions .btn-secondary {
+      color: #b6e3e5 !important; border-color: rgba(91, 168, 176, 0.5) !important;
+    }
+    @media (max-width: 600px) {
+      .tour-card-wrap { padding: 14px 14px 0; }
+      .tour-card { padding: 18px; gap: 14px; }
+      .tour-card-icon { width: 42px; height: 42px; font-size: 22px; }
+      .tour-card-title { font-size: 16px; }
+      .tour-card-actions { width: 100%; }
+      .tour-card-actions .btn { flex: 1 1 auto; }
+    }
     .weekly-goal-pin { margin-bottom: var(--space-4); padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); background: color-mix(in srgb, var(--color-primary) 8%, transparent); border: 1px dashed color-mix(in srgb, var(--color-primary) 40%, transparent); }
     .weekly-suggestion-link {
       display: inline-block; background: color-mix(in srgb, var(--color-primary) 10%, transparent);
@@ -1102,16 +1202,16 @@
     </div>
   </div>
 
-  <div id="tour-banner" class="nudge-banner tour-banner" hidden>
-    <div class="container nudge-inner">
-      <span class="nudge-icon" aria-hidden="true">👋</span>
-      <div class="nudge-text">
-        <strong>New here?</strong>
-        <span>Want a quick 30-second tour of how PromptMeGood works?</span>
+  <div id="tour-banner" class="tour-card-wrap" hidden>
+    <div class="tour-card" role="region" aria-label="Welcome">
+      <span class="tour-card-icon" aria-hidden="true">👋</span>
+      <div class="tour-card-body">
+        <h2 class="tour-card-title">New here? Let me show you around.</h2>
+        <p class="tour-card-sub">Get a quick 30-second walkthrough of how PromptMeGood works.</p>
       </div>
-      <div class="nudge-actions">
+      <div class="tour-card-actions">
         <button class="btn btn-primary" type="button" id="tour-show">Show Me</button>
-        <button class="btn btn-secondary" type="button" id="tour-skip">No Thanks</button>
+        <button class="btn btn-secondary" type="button" id="tour-skip">Skip</button>
       </div>
     </div>
   </div>
