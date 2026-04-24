@@ -569,8 +569,17 @@
       <div class="container">
         <div class="panel">
           <div class="panel-head">
-            <h2>Pinned templates</h2>
-            <p>One-click starting points. Loads the form and generates a prompt instantly.</p>
+            <div class="panel-head-row">
+              <div>
+                <h2>Pinned templates</h2>
+                <p>One-click starting points. Loads the form and generates a prompt instantly.</p>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+                <button class="btn btn-secondary" type="button" id="export-templates">Export yours</button>
+                <button class="btn btn-secondary" type="button" id="import-templates">Import</button>
+                <input type="file" id="import-templates-file" accept="application/json,.json" style="display:none" />
+              </div>
+            </div>
           </div>
           <div class="templates-grid" id="templates-grid"></div>
         </div>
@@ -1341,6 +1350,58 @@ Context:
         document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
         showToast('Loaded template: ' + t.title);
       }
+
+      const exportTplBtn = document.getElementById('export-templates');
+      const importTplBtn = document.getElementById('import-templates');
+      const importTplFile = document.getElementById('import-templates-file');
+
+      exportTplBtn.addEventListener('click', function () {
+        const list = loadUserTemplates();
+        if (list.length === 0) { showToast('No custom templates to export yet.'); return; }
+        const payload = { app: 'promptmegood', kind: 'templates', version: 1, exportedAt: new Date().toISOString(), templates: list };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const stamp = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = 'promptmegood-templates-' + stamp + '.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Exported ' + list.length + ' template' + (list.length === 1 ? '' : 's') + '.');
+      });
+
+      importTplBtn.addEventListener('click', function () { importTplFile.click(); });
+
+      importTplFile.addEventListener('change', function (event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function () {
+          try {
+            const parsed = JSON.parse(String(reader.result));
+            const incoming = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.templates) ? parsed.templates : null);
+            if (!incoming) throw new Error('Invalid file');
+            const valid = incoming.filter(function (t) {
+              return t && typeof t === 'object' && typeof t.title === 'string' && t.data && typeof t.data === 'object' && typeof t.data.goal === 'string';
+            }).map(function (t) {
+              return { title: String(t.title).slice(0, 80), data: t.data };
+            });
+            if (valid.length === 0) { showToast('No valid templates in that file.'); return; }
+            const replace = window.confirm('Import ' + valid.length + ' template' + (valid.length === 1 ? '' : 's') + '?\n\nOK = replace your custom templates.\nCancel = add to what you have.');
+            const next = replace ? valid : loadUserTemplates().concat(valid);
+            saveUserTemplates(next);
+            renderTemplates();
+            showToast('Imported ' + valid.length + ' template' + (valid.length === 1 ? '' : 's') + '.');
+          } catch (e) {
+            showToast('Could not read that file.');
+          }
+          importTplFile.value = '';
+        };
+        reader.onerror = function () { showToast('Could not read that file.'); importTplFile.value = ''; };
+        reader.readAsText(file);
+      });
 
       templatesGrid.addEventListener('click', function (event) {
         const del = event.target.closest('[data-template-delete]');
