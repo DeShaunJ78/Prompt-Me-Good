@@ -1,0 +1,94 @@
+Add three enhancements to PromptMeGood: Output Language selector, Version label, and Photo Prompt Mode. Do not break layout or existing functionality.
+
+========================
+PART 1 — OUTPUT LANGUAGE (LIGHTWEIGHT GLOBAL SUPPORT)
+========================
+
+1. Add a dropdown labeled:
+“Output Language”
+
+Options:
+- English (default)
+- Spanish
+- Portuguese
+- Russian
+- French
+- German
+
+2. When a language is selected:
+Modify the generated prompt by appending:
+
+“Write the final response in [selected language].”
+
+3. Ensure:
+- Only the output language changes (not UI text)
+- Prompt structure stays intact
+- Works with all existing features
+
+4. Do NOT:
+- Translate the UI
+- Add heavy libraries
+- Affect performance
+
+========================
+PART 2 — VERSION LABEL
+========================
+
+1. Add a small label:
+“PromptMeGood v1”
+
+2. Placement:
+- Footer OR subtle top corner
+
+3. Style:
+- Small
+- Muted
+- Non-distracting
+
+4. Do not affect layout or functionality
+
+========================
+PART 3 — PHOTO PROMPT MODE (HIGH-VALUE FEATURE)
+========================
+
+1. Add a new toggle:
+“Photo Prompt Mode”
+
+Helper text:
+“Generate high-quality prompts for AI image tools (Midjourney, DALL·E, etc.)”
+
+2. When enabled:
+Modify the generated prompt to include:
+
+“Act as a professional photographer and visual director. Create a highly detailed image prompt including:
+- lighting (studio, natural, cinematic)
+- camera type and lens (e.g. 85mm, DSLR)
+- composition and framing
+- textures and environment
+- color grading
+- mood and realism
+- ultra-detailed, high-resolution output”
+
+3. Ensure:
+- Output becomes highly visual and descriptive
+- Works alongside:
+  - Money Mode
+  - Human Voice Mode
+  - Clarity Boost Mode
+
+4. Do NOT:
+- Add actual image generation
+- Break existing prompt system
+- Slow down performance
+
+========================
+FINAL CHECK
+========================
+
+After implementation:
+- Output Language dropdown works correctly
+- Version label is visible but subtle
+- Photo Prompt Mode enhances output properly
+- All existing features still function
+- No layout issues
+- No JavaScript errors

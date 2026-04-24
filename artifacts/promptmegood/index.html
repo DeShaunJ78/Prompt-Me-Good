@@ -379,6 +379,7 @@
     }
     .site-footer-link:hover { background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-primary); }
     .site-footer-divider { color: var(--color-text-muted); opacity: 0.6; }
+    .site-footer-version { margin-top: var(--space-3); color: var(--color-text-muted); opacity: 0.6; font-size: var(--text-xs); letter-spacing: 0.04em; }
     @media (max-width: 600px) {
       .site-footer-social { flex-direction: column; gap: 6px; }
       .site-footer-social-label { font-size: var(--text-xs); }
@@ -1136,6 +1137,19 @@
               </div>
 
               <div class="field">
+                <label for="outputLanguage">Output Language</label>
+                <select id="outputLanguage" name="outputLanguage">
+                  <option value="english">English</option>
+                  <option value="spanish">Spanish</option>
+                  <option value="portuguese">Portuguese</option>
+                  <option value="russian">Russian</option>
+                  <option value="french">French</option>
+                  <option value="german">German</option>
+                </select>
+                <p class="helper">Only the AI&rsquo;s response language changes &mdash; the app stays in English.</p>
+              </div>
+
+              <div class="field">
                 <label for="personality">Personality Mode</label>
                 <select id="personality" name="personality">
                   <option value="none">No Personality Added</option>
@@ -1187,6 +1201,17 @@
                 </div>
                 <label class="switch" aria-label="Turn Clarity Boost Mode on or off">
                   <input id="clarityBoost" name="clarityBoost" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="toggle-row">
+                <div>
+                  <strong>Photo Prompt Mode</strong>
+                  <span>Generate high-quality prompts for AI image tools (Midjourney, DALL&middot;E, etc.)</span>
+                </div>
+                <label class="switch" aria-label="Turn Photo Prompt Mode on or off">
+                  <input id="photoMode" name="photoMode" type="checkbox" />
                   <span class="slider"></span>
                 </label>
               </div>
@@ -1755,6 +1780,7 @@
             <a class="site-footer-link" href="https://x.com/promptmegood" target="_blank" rel="noopener noreferrer">X</a>
           </span>
         </div>
+        <div class="site-footer-version" aria-label="Version">PromptMeGood v1</div>
       </div>
     </footer>
   </main>
@@ -2046,6 +2072,25 @@ ${data.details}`
 - Clarity Boost Mode: prioritize clarity. Organize the response with clear sections, define unclear terms, call out assumptions, and make each step easy to understand and act on.`
           : '';
 
+        const photoLine = data.photoMode
+          ? `
+- Photo Prompt Mode: act as a professional photographer and visual director. Create a highly detailed image prompt including:
+  - lighting (studio, natural, cinematic)
+  - camera type and lens (e.g. 85mm, DSLR)
+  - composition and framing
+  - textures and environment
+  - color grading
+  - mood and realism
+  - ultra-detailed, high-resolution output`
+          : '';
+
+        const languageLabels = { english: 'English', spanish: 'Spanish', portuguese: 'Portuguese', russian: 'Russian', french: 'French', german: 'German' };
+        const languageKey = data.outputLanguage && languageLabels[data.outputLanguage] ? data.outputLanguage : 'english';
+        const languageLine = languageKey !== 'english'
+          ? `
+- Write the final response in ${languageLabels[languageKey]}.`
+          : '';
+
         const remixLine = remixMode && remixInstructions[remixMode]
           ? `
 - Special request: ${remixInstructions[remixMode]}`
@@ -2074,7 +2119,7 @@ Here's what I need from you:
 - Format the answer as a ${titleCase(data.outputFormat)}.
 - Avoid vague advice, filler, or generic motivation.
 - Include examples, templates, checklists, or scripts when useful.
-- End with the top 3 actions I should take next.${personalityLine}${moneyMode}${humanLine}${clarityLine}${remixLine}
+- End with the top 3 actions I should take next.${personalityLine}${moneyMode}${humanLine}${clarityLine}${photoLine}${languageLine}${remixLine}
 
 Context:
 - Category: ${titleCase(data.category)}
@@ -2094,6 +2139,8 @@ Context:
           moneyMode: document.getElementById('moneyMode').checked,
           humanTone: document.getElementById('humanTone').checked,
           clarityBoost: document.getElementById('clarityBoost').checked,
+          photoMode: document.getElementById('photoMode').checked,
+          outputLanguage: document.getElementById('outputLanguage').value,
           personality: document.getElementById('personality').value
         };
       }
@@ -2565,6 +2612,8 @@ Context:
         document.getElementById('moneyMode').checked = !!item.data.moneyMode;
         document.getElementById('humanTone').checked = !!item.data.humanTone;
         document.getElementById('clarityBoost').checked = !!(item.data.clarityBoost || item.data.avoidAi);
+        document.getElementById('photoMode').checked = !!item.data.photoMode;
+        document.getElementById('outputLanguage').value = item.data.outputLanguage || 'english';
         document.getElementById('personality').value = item.data.personality || 'none';
         resultBox.textContent = item.prompt;
         document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -3204,6 +3253,8 @@ Context:
         document.getElementById('moneyMode').checked = !!t.data.moneyMode;
         document.getElementById('humanTone').checked = !!t.data.humanTone;
         document.getElementById('clarityBoost').checked = !!(t.data.clarityBoost || t.data.avoidAi);
+        document.getElementById('photoMode').checked = !!t.data.photoMode;
+        document.getElementById('outputLanguage').value = t.data.outputLanguage || 'english';
         document.getElementById('personality').value = t.data.personality || 'none';
         const data = getFormData();
         const prompt = generatePrompt(data);
