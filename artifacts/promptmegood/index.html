@@ -606,8 +606,13 @@
               </div>
             </div>
           </div>
-          <div class="history-search">
-            <input type="search" id="history-search" placeholder="Search saved prompts by goal or text" aria-label="Search history" />
+          <div class="history-search" style="display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap;">
+            <input type="search" id="history-search" placeholder="Search saved prompts by goal or text" aria-label="Search history" style="flex: 1 1 220px;" />
+            <label for="history-sort" style="font-size: var(--text-xs); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Sort</label>
+            <select id="history-sort" aria-label="Sort history" style="min-height: 36px;">
+              <option value="newest">Newest</option>
+              <option value="most-used">Most used</option>
+            </select>
           </div>
           <div id="history-tag-bar" class="history-tag-bar" aria-label="Filter by tag"></div>
           <div id="history-list" class="history-list" aria-live="polite"></div>
@@ -834,9 +839,21 @@ Context:
       const historyListEl = document.getElementById('history-list');
       const clearHistoryBtn = document.getElementById('clear-history');
       const historySearchEl = document.getElementById('history-search');
+      const historySortEl = document.getElementById('history-sort');
       const historyTagBarEl = document.getElementById('history-tag-bar');
       let historyQuery = '';
       let historyTagFilter = '';
+      let historySort = 'newest';
+
+      function bumpUse(id) {
+        const items = loadHistory();
+        const it = items.find(function (i) { return i.id === id; });
+        if (!it) return;
+        it.useCount = (it.useCount || 0) + 1;
+        it.lastUsedAt = Date.now();
+        saveHistory(items);
+        renderHistory();
+      }
 
       function loadHistory() {
         try {
@@ -924,6 +941,10 @@ Context:
         const sorted = filtered.slice().sort(function (a, b) {
           if (!!b.favorite - !!a.favorite !== 0) return (!!b.favorite) - (!!a.favorite);
           if (a.favorite && b.favorite) return (favOrderMap[a.id] - favOrderMap[b.id]);
+          if (historySort === 'most-used') {
+            const diff = (b.useCount || 0) - (a.useCount || 0);
+            if (diff !== 0) return diff;
+          }
           return b.savedAt - a.savedAt;
         });
         historyListEl.innerHTML = sorted.map(function (item) {
@@ -940,7 +961,7 @@ Context:
           return '<div class="history-item' + (item.favorite ? ' is-favorite' : '') + '" data-id="' + escapeHtml(item.id) + '"' + dragAttr + '>' +
             '<div class="history-item-head">' +
               '<span class="history-item-goal">' + handleHtml + escapeHtml(item.nickname || item.data.goal || 'Untitled prompt') + (item.nickname ? ' <span style="color: var(--color-text-muted); font-weight: 400;">&middot; ' + escapeHtml(item.data.goal || '') + '</span>' : '') + '</span>' +
-              '<span class="history-item-meta">' + escapeHtml(formatTime(item.savedAt)) + (item.data.moneyMode ? ' &middot; Money Mode' : '') + favMeta + '</span>' +
+              '<span class="history-item-meta">' + escapeHtml(formatTime(item.savedAt)) + (item.data.moneyMode ? ' &middot; Money Mode' : '') + favMeta + (item.useCount ? ' &middot; Used ' + item.useCount + '×' : '') + '</span>' +
             '</div>' +
             tagHtml +
             '<div class="history-item-preview">' + escapeHtml(item.prompt) + '</div>' +
@@ -1021,10 +1042,12 @@ Context:
         if (!item) return;
         if (action === 'restore') {
           restoreHistoryItem(item);
+          bumpUse(item.id);
         } else if (action === 'remix') {
           const mode = btn.dataset.remixMode || '';
           const remixed = generatePrompt(item.data, mode);
           const modeLabel = mode === 'detailed' ? 'More detailed' : mode === 'aggressive' ? 'More aggressive' : mode === 'beginner' ? 'Beginner-friendly' : 'Remix';
+          bumpUse(item.id);
           openCompare({
             data: item.data,
             original: item.prompt,
@@ -1160,6 +1183,11 @@ Context:
         renderHistory();
       });
 
+      historySortEl.addEventListener('change', function (e) {
+        historySort = e.target.value;
+        renderHistory();
+      });
+
       const exportBtn = document.getElementById('export-history');
       const importBtn = document.getElementById('import-history');
       const importFileEl = document.getElementById('import-history-file');
@@ -1202,6 +1230,8 @@ Context:
                 prompt: i.prompt,
                 favorite: !!i.favorite,
                 nickname: typeof i.nickname === 'string' ? i.nickname.slice(0, 80) : undefined,
+                useCount: typeof i.useCount === 'number' ? i.useCount : 0,
+                lastUsedAt: typeof i.lastUsedAt === 'number' ? i.lastUsedAt : undefined,
                 tags: Array.isArray(i.tags) ? i.tags.filter(function (t) { return typeof t === 'string'; }) : []
               };
             });
@@ -1316,8 +1346,19 @@ Context:
 
       const templatesGrid = document.getElementById('templates-grid');
 
+      function ensureTemplateIds() {
+        const list = loadUserTemplates();
+        let mutated = false;
+        list.forEach(function (t) {
+          if (!t.id) { t.id = 't_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8); mutated = true; }
+        });
+        if (mutated) saveUserTemplates(list);
+        return list;
+      }
       function renderTemplates() {
-        const userTpls = loadUserTemplates();
+        const userTpls = ensureTemplateIds().slice().sort(function (a, b) {
+          return (b.useCount || 0) - (a.useCount || 0);
+        });
         const builtIn = TEMPLATES.map(function (t, idx) {
           return '<button type="button" class="template-card" data-template-source="builtin" data-template-idx="' + idx + '">' +
             '<span class="template-card-meta">' + escapeHtml(t.data.category) + ' &middot; ' + escapeHtml(t.data.tone) + '</span>' +
@@ -1325,19 +1366,29 @@ Context:
             '<span class="template-card-desc">' + escapeHtml(t.desc) + '</span>' +
           '</button>';
         }).join('');
-        const userHtml = userTpls.map(function (t, idx) {
-          return '<button type="button" class="template-card" draggable="true" data-template-source="user" data-template-idx="' + idx + '">' +
+        const userHtml = userTpls.map(function (t) {
+          const countMeta = t.useCount ? ' &middot; Used ' + t.useCount + '×' : '';
+          return '<button type="button" class="template-card" draggable="true" data-template-source="user" data-template-id="' + escapeHtml(t.id) + '">' +
             '<span class="template-card-badge">Yours</span>' +
-            '<span class="template-card-meta">' + escapeHtml(t.data.category || '') + ' &middot; ' + escapeHtml(t.data.tone || '') + '</span>' +
+            '<span class="template-card-meta">' + escapeHtml(t.data.category || '') + ' &middot; ' + escapeHtml(t.data.tone || '') + countMeta + '</span>' +
             '<span class="template-card-title">' + escapeHtml(t.title) + '</span>' +
             '<span class="template-card-desc">' + escapeHtml((t.data.goal || '').slice(0, 90)) + '</span>' +
-            '<span class="template-card-delete" role="button" data-template-delete="' + idx + '" aria-label="Delete template" title="Delete template">×</span>' +
+            '<span class="template-card-delete" role="button" data-template-delete="' + escapeHtml(t.id) + '" aria-label="Delete template" title="Delete template">×</span>' +
           '</button>';
         }).join('');
         templatesGrid.innerHTML = builtIn + userHtml;
       }
       renderTemplates();
 
+      function bumpTemplateUse(id) {
+        const list = loadUserTemplates();
+        const it = list.find(function (x) { return x.id === id; });
+        if (!it) return;
+        it.useCount = (it.useCount || 0) + 1;
+        it.lastUsedAt = Date.now();
+        saveUserTemplates(list);
+        renderTemplates();
+      }
       function applyTemplate(t) {
         document.getElementById('goal').value = t.data.goal || '';
         document.getElementById('category').value = t.data.category || 'business';
@@ -1406,45 +1457,48 @@ Context:
         reader.readAsText(file);
       });
 
-      let tplDragIdx = null;
+      let tplDragId = null;
       templatesGrid.addEventListener('dragstart', function (event) {
         const card = event.target.closest('.template-card[data-template-source="user"]');
         if (!card) { event.preventDefault(); return; }
-        tplDragIdx = Number(card.dataset.templateIdx);
+        tplDragId = card.dataset.templateId;
         card.classList.add('is-dragging');
         if (event.dataTransfer) {
           event.dataTransfer.effectAllowed = 'move';
-          try { event.dataTransfer.setData('text/plain', String(tplDragIdx)); } catch (e) {}
+          try { event.dataTransfer.setData('text/plain', tplDragId); } catch (e) {}
         }
       });
       templatesGrid.addEventListener('dragend', function () {
-        tplDragIdx = null;
+        tplDragId = null;
         templatesGrid.querySelectorAll('.is-dragging, .is-drop-target').forEach(function (n) {
           n.classList.remove('is-dragging');
           n.classList.remove('is-drop-target');
         });
       });
       templatesGrid.addEventListener('dragover', function (event) {
-        if (tplDragIdx === null) return;
+        if (!tplDragId) return;
         const target = event.target.closest('.template-card[data-template-source="user"]');
-        if (!target || Number(target.dataset.templateIdx) === tplDragIdx) return;
+        if (!target || target.dataset.templateId === tplDragId) return;
         event.preventDefault();
         if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
         templatesGrid.querySelectorAll('.is-drop-target').forEach(function (n) { n.classList.remove('is-drop-target'); });
         target.classList.add('is-drop-target');
       });
       templatesGrid.addEventListener('drop', function (event) {
-        if (tplDragIdx === null) return;
+        if (!tplDragId) return;
         const target = event.target.closest('.template-card[data-template-source="user"]');
         if (!target) return;
-        const toIdx = Number(target.dataset.templateIdx);
-        if (toIdx === tplDragIdx) return;
+        const toId = target.dataset.templateId;
+        if (toId === tplDragId) return;
         event.preventDefault();
         const list = loadUserTemplates();
-        const [moved] = list.splice(tplDragIdx, 1);
+        const fromIdx = list.findIndex(function (t) { return t.id === tplDragId; });
+        const toIdx = list.findIndex(function (t) { return t.id === toId; });
+        if (fromIdx === -1 || toIdx === -1) { tplDragId = null; return; }
+        const [moved] = list.splice(fromIdx, 1);
         list.splice(toIdx, 0, moved);
         saveUserTemplates(list);
-        tplDragIdx = null;
+        tplDragId = null;
         renderTemplates();
         showToast('Templates reordered.');
       });
@@ -1453,20 +1507,26 @@ Context:
         const del = event.target.closest('[data-template-delete]');
         if (del) {
           event.stopPropagation();
-          const idx = Number(del.dataset.templateDelete);
+          const id = del.dataset.templateDelete;
           const list = loadUserTemplates();
+          const idx = list.findIndex(function (t) { return t.id === id; });
+          if (idx === -1) return;
           const removed = list.splice(idx, 1)[0];
           saveUserTemplates(list);
           renderTemplates();
           showToast(removed ? 'Removed "' + removed.title + '".' : 'Template removed.');
           return;
         }
-        const card = event.target.closest('[data-template-idx]');
+        const card = event.target.closest('.template-card');
         if (!card) return;
-        const idx = Number(card.dataset.templateIdx);
         const source = card.dataset.templateSource;
-        const t = source === 'user' ? loadUserTemplates()[idx] : TEMPLATES[idx];
-        if (t) applyTemplate(t);
+        if (source === 'user') {
+          const t = loadUserTemplates().find(function (x) { return x.id === card.dataset.templateId; });
+          if (t) { applyTemplate(t); bumpTemplateUse(t.id); }
+        } else {
+          const t = TEMPLATES[Number(card.dataset.templateIdx)];
+          if (t) applyTemplate(t);
+        }
       });
 
       form.addEventListener('submit', function (event) {
