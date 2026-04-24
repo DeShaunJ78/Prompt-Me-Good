@@ -301,6 +301,18 @@
       color: var(--color-text-muted); font-size: var(--text-xs); line-height: 1.6;
       display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
     }
+    .history-tag-bar { display: flex; flex-wrap: wrap; gap: var(--space-2); padding: var(--space-3) var(--space-5) 0; }
+    .history-tag-chip {
+      padding: 0.35rem 0.65rem; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 700;
+      background: var(--color-surface-2); border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+      color: var(--color-text); cursor: pointer;
+    }
+    .history-tag-chip[aria-pressed="true"] { background: var(--color-primary); color: var(--color-text-inverse); border-color: var(--color-primary); }
+    .history-item-tags { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .history-item-tag {
+      padding: 0.25rem 0.55rem; border-radius: var(--radius-full); font-size: var(--text-xs); font-weight: 700;
+      background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-primary);
+    }
     .history-item.is-favorite { border-color: color-mix(in srgb, var(--color-primary) 50%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent) inset; }
     .history-item.is-favorite .history-item-meta { color: var(--color-primary); }
     .history-item-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
@@ -501,6 +513,7 @@
           <div class="history-search">
             <input type="search" id="history-search" placeholder="Search saved prompts by goal or text" aria-label="Search history" />
           </div>
+          <div id="history-tag-bar" class="history-tag-bar" aria-label="Filter by tag"></div>
           <div id="history-list" class="history-list" aria-live="polite"></div>
         </div>
       </div>
@@ -694,7 +707,9 @@ Context:
       const historyListEl = document.getElementById('history-list');
       const clearHistoryBtn = document.getElementById('clear-history');
       const historySearchEl = document.getElementById('history-search');
+      const historyTagBarEl = document.getElementById('history-tag-bar');
       let historyQuery = '';
+      let historyTagFilter = '';
 
       function loadHistory() {
         try {
@@ -724,26 +739,55 @@ Context:
         } catch (e) { return ''; }
       }
 
+      function getAllTags(items) {
+        const set = new Set();
+        items.forEach(function (i) { (i.tags || []).forEach(function (t) { if (t) set.add(t); }); });
+        return Array.from(set).sort();
+      }
+
+      function renderTagBar(items) {
+        const tags = getAllTags(items);
+        if (tags.length === 0) {
+          historyTagBarEl.innerHTML = '';
+          historyTagBarEl.style.display = 'none';
+          return;
+        }
+        historyTagBarEl.style.display = '';
+        const chips = ['<button class="history-tag-chip" type="button" data-tag-filter="" aria-pressed="' + (historyTagFilter === '' ? 'true' : 'false') + '">All</button>']
+          .concat(tags.map(function (t) {
+            return '<button class="history-tag-chip" type="button" data-tag-filter="' + escapeHtml(t) + '" aria-pressed="' + (historyTagFilter === t ? 'true' : 'false') + '">#' + escapeHtml(t) + '</button>';
+          }));
+        historyTagBarEl.innerHTML = chips.join('');
+      }
+
       function renderHistory() {
         const items = loadHistory();
         if (items.length === 0) {
           historyListEl.innerHTML = '<div class="history-empty">No saved prompts yet. Generate one to start your history.</div>';
           clearHistoryBtn.style.display = 'none';
           historySearchEl.parentElement.style.display = 'none';
+          historyTagBarEl.style.display = 'none';
           return;
         }
         clearHistoryBtn.style.display = '';
         historySearchEl.parentElement.style.display = '';
+        renderTagBar(items);
         const q = historyQuery.trim().toLowerCase();
-        const filtered = q
-          ? items.filter(function (i) {
-              return (i.data.goal || '').toLowerCase().includes(q) ||
-                (i.prompt || '').toLowerCase().includes(q) ||
-                (i.data.details || '').toLowerCase().includes(q);
-            })
-          : items;
+        const filtered = items.filter(function (i) {
+          if (historyTagFilter && !(i.tags || []).includes(historyTagFilter)) return false;
+          if (!q) return true;
+          return (i.data.goal || '').toLowerCase().includes(q) ||
+            (i.prompt || '').toLowerCase().includes(q) ||
+            (i.data.details || '').toLowerCase().includes(q) ||
+            (i.tags || []).some(function (t) { return t.toLowerCase().includes(q); });
+        });
         if (filtered.length === 0) {
-          historyListEl.innerHTML = '<div class="history-empty">No saved prompts match "' + escapeHtml(historyQuery) + '".</div>';
+          const reason = historyTagFilter && q
+            ? 'No prompts match "' + escapeHtml(historyQuery) + '" in #' + escapeHtml(historyTagFilter) + '.'
+            : historyTagFilter
+              ? 'No prompts tagged #' + escapeHtml(historyTagFilter) + '.'
+              : 'No saved prompts match "' + escapeHtml(historyQuery) + '".';
+          historyListEl.innerHTML = '<div class="history-empty">' + reason + '</div>';
           return;
         }
         const sorted = filtered.slice().sort(function (a, b) {
@@ -753,16 +797,24 @@ Context:
         historyListEl.innerHTML = sorted.map(function (item) {
           const favLabel = item.favorite ? 'Unfavorite' : 'Favorite';
           const favMeta = item.favorite ? ' &middot; <span aria-hidden="true">★</span> Favorite' : '';
+          const tags = item.tags || [];
+          const tagHtml = tags.length
+            ? '<div class="history-item-tags">' + tags.map(function (t) {
+                return '<span class="history-item-tag">#' + escapeHtml(t) + '</span>';
+              }).join('') + '</div>'
+            : '';
           return '<div class="history-item' + (item.favorite ? ' is-favorite' : '') + '" data-id="' + escapeHtml(item.id) + '">' +
             '<div class="history-item-head">' +
               '<span class="history-item-goal">' + escapeHtml(item.data.goal || 'Untitled prompt') + '</span>' +
               '<span class="history-item-meta">' + escapeHtml(formatTime(item.savedAt)) + (item.data.moneyMode ? ' &middot; Money Mode' : '') + favMeta + '</span>' +
             '</div>' +
+            tagHtml +
             '<div class="history-item-preview">' + escapeHtml(item.prompt) + '</div>' +
             '<div class="history-item-actions">' +
               '<button class="btn btn-primary" type="button" data-history-action="restore">Restore</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="copy">Copy</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="favorite" aria-pressed="' + (item.favorite ? 'true' : 'false') + '">' + favLabel + '</button>' +
+              '<button class="btn btn-secondary" type="button" data-history-action="tags">Edit tags</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="delete">Delete</button>' +
             '</div>' +
           '</div>';
@@ -826,6 +878,17 @@ Context:
           } catch (e) {
             showToast('Copy failed. Try restoring then copying.');
           }
+        } else if (action === 'tags') {
+          const current = (item.tags || []).join(', ');
+          const input = window.prompt('Tags (comma-separated, e.g. client work, ideas):', current);
+          if (input === null) return;
+          const tags = input.split(',').map(function (t) { return t.trim().toLowerCase().replace(/\s+/g, '-'); }).filter(Boolean);
+          const unique = Array.from(new Set(tags)).slice(0, 8);
+          item.tags = unique;
+          if (historyTagFilter && !unique.includes(historyTagFilter)) historyTagFilter = '';
+          saveHistory(items);
+          renderHistory();
+          showToast(unique.length ? 'Tags updated.' : 'Tags cleared.');
         } else if (action === 'favorite') {
           item.favorite = !item.favorite;
           saveHistory(items);
@@ -837,6 +900,13 @@ Context:
           renderHistory();
           showToast('Removed from history.');
         }
+      });
+
+      historyTagBarEl.addEventListener('click', function (event) {
+        const chip = event.target.closest('[data-tag-filter]');
+        if (!chip) return;
+        historyTagFilter = chip.dataset.tagFilter || '';
+        renderHistory();
       });
 
       historySearchEl.addEventListener('input', function (e) {
