@@ -317,6 +317,14 @@
     .history-item-tag:hover { background: color-mix(in srgb, var(--color-primary) 22%, transparent); }
     .history-item.is-favorite { border-color: color-mix(in srgb, var(--color-primary) 50%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent) inset; }
     .history-item.is-favorite .history-item-meta { color: var(--color-primary); }
+    .history-item.is-favorite { cursor: grab; }
+    .history-item.is-favorite.is-dragging { opacity: 0.45; cursor: grabbing; }
+    .history-item.is-favorite.is-drop-target { outline: 2px dashed var(--color-primary); outline-offset: 2px; }
+    .drag-handle {
+      display: inline-block; margin-right: var(--space-2); color: var(--color-text-muted);
+      font-size: var(--text-md); user-select: none; cursor: grab;
+    }
+    .history-item.is-favorite.is-dragging .drag-handle { cursor: grabbing; }
     .history-item-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
     .history-item-actions .btn { min-height: 36px; padding: 0 var(--space-4); font-size: var(--text-xs); }
     .history-item-remix { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
@@ -859,8 +867,12 @@ Context:
           historyListEl.innerHTML = '<div class="history-empty">' + reason + '</div>';
           return;
         }
+        const favOrder = items.filter(function (i) { return i.favorite; }).map(function (i) { return i.id; });
+        const favOrderMap = {};
+        favOrder.forEach(function (id, idx) { favOrderMap[id] = idx; });
         const sorted = filtered.slice().sort(function (a, b) {
           if (!!b.favorite - !!a.favorite !== 0) return (!!b.favorite) - (!!a.favorite);
+          if (a.favorite && b.favorite) return (favOrderMap[a.id] - favOrderMap[b.id]);
           return b.savedAt - a.savedAt;
         });
         historyListEl.innerHTML = sorted.map(function (item) {
@@ -872,9 +884,11 @@ Context:
                 return '<button type="button" class="history-item-tag" data-history-action="filter-tag" data-tag-value="' + escapeHtml(t) + '" aria-label="Filter by tag ' + escapeHtml(t) + '">#' + escapeHtml(t) + '</button>';
               }).join('') + '</div>'
             : '';
-          return '<div class="history-item' + (item.favorite ? ' is-favorite' : '') + '" data-id="' + escapeHtml(item.id) + '">' +
+          const dragAttr = item.favorite ? ' draggable="true"' : '';
+          const handleHtml = item.favorite ? '<span class="drag-handle" aria-hidden="true" title="Drag to reorder">⋮⋮</span>' : '';
+          return '<div class="history-item' + (item.favorite ? ' is-favorite' : '') + '" data-id="' + escapeHtml(item.id) + '"' + dragAttr + '>' +
             '<div class="history-item-head">' +
-              '<span class="history-item-goal">' + escapeHtml(item.nickname || item.data.goal || 'Untitled prompt') + (item.nickname ? ' <span style="color: var(--color-text-muted); font-weight: 400;">&middot; ' + escapeHtml(item.data.goal || '') + '</span>' : '') + '</span>' +
+              '<span class="history-item-goal">' + handleHtml + escapeHtml(item.nickname || item.data.goal || 'Untitled prompt') + (item.nickname ? ' <span style="color: var(--color-text-muted); font-weight: 400;">&middot; ' + escapeHtml(item.data.goal || '') + '</span>' : '') + '</span>' +
               '<span class="history-item-meta">' + escapeHtml(formatTime(item.savedAt)) + (item.data.moneyMode ? ' &middot; Money Mode' : '') + favMeta + '</span>' +
             '</div>' +
             tagHtml +
@@ -1003,6 +1017,53 @@ Context:
           renderHistory();
           showToast('Removed from history.');
         }
+      });
+
+      let dragSourceId = null;
+      historyListEl.addEventListener('dragstart', function (event) {
+        const el = event.target.closest('.history-item.is-favorite');
+        if (!el) { event.preventDefault(); return; }
+        dragSourceId = el.dataset.id;
+        el.classList.add('is-dragging');
+        if (event.dataTransfer) {
+          event.dataTransfer.effectAllowed = 'move';
+          try { event.dataTransfer.setData('text/plain', dragSourceId); } catch (e) {}
+        }
+      });
+      historyListEl.addEventListener('dragend', function () {
+        dragSourceId = null;
+        historyListEl.querySelectorAll('.is-dragging, .is-drop-target').forEach(function (n) {
+          n.classList.remove('is-dragging');
+          n.classList.remove('is-drop-target');
+        });
+      });
+      historyListEl.addEventListener('dragover', function (event) {
+        if (!dragSourceId) return;
+        const target = event.target.closest('.history-item.is-favorite');
+        if (!target || target.dataset.id === dragSourceId) return;
+        event.preventDefault();
+        if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+        historyListEl.querySelectorAll('.is-drop-target').forEach(function (n) { n.classList.remove('is-drop-target'); });
+        target.classList.add('is-drop-target');
+      });
+      historyListEl.addEventListener('drop', function (event) {
+        if (!dragSourceId) return;
+        const target = event.target.closest('.history-item.is-favorite');
+        if (!target || target.dataset.id === dragSourceId) return;
+        event.preventDefault();
+        const targetId = target.dataset.id;
+        const all = loadHistory();
+        const favs = all.filter(function (i) { return i.favorite; });
+        const nonFavs = all.filter(function (i) { return !i.favorite; });
+        const fromIdx = favs.findIndex(function (i) { return i.id === dragSourceId; });
+        const toIdx = favs.findIndex(function (i) { return i.id === targetId; });
+        if (fromIdx === -1 || toIdx === -1) return;
+        const [moved] = favs.splice(fromIdx, 1);
+        favs.splice(toIdx, 0, moved);
+        saveHistory(favs.concat(nonFavs));
+        dragSourceId = null;
+        renderHistory();
+        showToast('Favorites reordered.');
       });
 
       historyTagBarEl.addEventListener('click', function (event) {
