@@ -280,6 +280,12 @@
       padding: 0 0 var(--space-8);
       color: var(--color-text-muted); font-size: var(--text-sm);
     }
+    .history-search { padding: var(--space-4) var(--space-5) 0; }
+    .history-search input {
+      width: 100%; min-height: 44px; border-radius: var(--radius-md); padding: 0 var(--space-4);
+      border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+      background: var(--color-surface-2); font-size: var(--text-sm);
+    }
     .history-list { display: grid; gap: var(--space-3); padding: var(--space-5); }
     .history-empty { color: var(--color-text-muted); font-size: var(--text-sm); padding: var(--space-5); text-align: center; }
     .history-item {
@@ -492,6 +498,9 @@
               <button class="btn btn-secondary" type="button" id="clear-history">Clear all</button>
             </div>
           </div>
+          <div class="history-search">
+            <input type="search" id="history-search" placeholder="Search saved prompts by goal or text" aria-label="Search history" />
+          </div>
           <div id="history-list" class="history-list" aria-live="polite"></div>
         </div>
       </div>
@@ -684,6 +693,8 @@ Context:
       const HISTORY_LIMIT = 25;
       const historyListEl = document.getElementById('history-list');
       const clearHistoryBtn = document.getElementById('clear-history');
+      const historySearchEl = document.getElementById('history-search');
+      let historyQuery = '';
 
       function loadHistory() {
         try {
@@ -718,10 +729,24 @@ Context:
         if (items.length === 0) {
           historyListEl.innerHTML = '<div class="history-empty">No saved prompts yet. Generate one to start your history.</div>';
           clearHistoryBtn.style.display = 'none';
+          historySearchEl.parentElement.style.display = 'none';
           return;
         }
         clearHistoryBtn.style.display = '';
-        const sorted = items.slice().sort(function (a, b) {
+        historySearchEl.parentElement.style.display = '';
+        const q = historyQuery.trim().toLowerCase();
+        const filtered = q
+          ? items.filter(function (i) {
+              return (i.data.goal || '').toLowerCase().includes(q) ||
+                (i.prompt || '').toLowerCase().includes(q) ||
+                (i.data.details || '').toLowerCase().includes(q);
+            })
+          : items;
+        if (filtered.length === 0) {
+          historyListEl.innerHTML = '<div class="history-empty">No saved prompts match "' + escapeHtml(historyQuery) + '".</div>';
+          return;
+        }
+        const sorted = filtered.slice().sort(function (a, b) {
           if (!!b.favorite - !!a.favorite !== 0) return (!!b.favorite) - (!!a.favorite);
           return b.savedAt - a.savedAt;
         });
@@ -812,6 +837,11 @@ Context:
           renderHistory();
           showToast('Removed from history.');
         }
+      });
+
+      historySearchEl.addEventListener('input', function (e) {
+        historyQuery = e.target.value;
+        renderHistory();
       });
 
       clearHistoryBtn.addEventListener('click', function () {
