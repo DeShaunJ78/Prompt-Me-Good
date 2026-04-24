@@ -309,7 +309,39 @@
     .popular-use-card-cta { align-self: flex-start; margin-top: var(--space-2); padding: 6px 14px; border-radius: 999px; border: 1px solid var(--color-primary); background: color-mix(in srgb, var(--color-primary) 10%, transparent); color: var(--color-primary); font-size: var(--text-xs); font-weight: 600; cursor: pointer; transition: background var(--transition-interactive), color var(--transition-interactive); }
     .popular-use-card:hover .popular-use-card-cta, .popular-use-card:focus-visible .popular-use-card-cta { background: var(--color-primary); color: #fff; }
     @media (max-width: 920px) { .popular-uses-grid { grid-template-columns: 1fr 1fr; } }
-    @media (max-width: 600px) { .popular-uses-grid { grid-template-columns: 1fr; } .popular-uses { padding: var(--space-5) 0 var(--space-4); } .popular-uses-head h2 { font-size: var(--text-xl); } }
+    @media (max-width: 600px) {
+      .popular-uses { padding: var(--space-5) 0 var(--space-4); }
+      .popular-uses-head { margin-bottom: var(--space-3); }
+      .popular-uses-head h2 { font-size: var(--text-base); }
+      .popular-uses-head p { font-size: var(--text-xs); }
+      .popular-uses-grid {
+        display: flex;
+        grid-template-columns: none;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        gap: var(--space-3);
+        padding: 4px 4px var(--space-2);
+        margin: 0;
+        mask-image: linear-gradient(to right, black calc(100% - 32px), transparent 100%);
+        -webkit-mask-image: linear-gradient(to right, black calc(100% - 32px), transparent 100%);
+      }
+      .popular-uses-grid::-webkit-scrollbar { display: none; }
+      .popular-use-card {
+        flex: 0 0 76%;
+        max-width: 260px;
+        min-width: 200px;
+        scroll-snap-align: start;
+        padding: var(--space-3);
+        gap: 6px;
+      }
+      .popular-use-card-title { font-size: var(--text-sm); }
+      .popular-use-card-desc { font-size: var(--text-xs); line-height: 1.45; }
+      .popular-use-card-cta { padding: 4px 11px; font-size: 11px; margin-top: 4px; }
+    }
     @media (prefers-reduced-motion: reduce) { .popular-use-card { transition: none; } .popular-use-card:hover, .popular-use-card:focus-visible { transform: none; } }
     .footer {
       padding: 0 0 var(--space-8);
