@@ -354,6 +354,17 @@
     .compare-col-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
     .compare-col-actions .btn { min-height: 36px; padding: 0 var(--space-3); font-size: var(--text-xs); }
     .compare-foot { display: flex; justify-content: flex-end; }
+    .stats-grid {
+      display: grid; gap: var(--space-3);
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+    .stat-card {
+      background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-1);
+    }
+    .stat-label { font-size: var(--text-xs); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+    .stat-value { font-size: var(--text-xl); font-weight: 700; color: var(--color-text); line-height: 1.1; }
+    .stat-sub { font-size: var(--text-xs); color: var(--color-text-muted); }
     .templates-grid {
       display: grid; gap: var(--space-3);
       grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -565,6 +576,18 @@
             </p>
           </div>
         </section>
+      </div>
+    </section>
+
+    <section class="app-section" id="dashboard">
+      <div class="container">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Your snapshot</h2>
+            <p>A quick look at how you're using PromptMeGood.</p>
+          </div>
+          <div class="stats-grid" id="stats-grid"></div>
+        </div>
       </div>
     </section>
 
@@ -845,6 +868,47 @@ Context:
       let historyTagFilter = '';
       let historySort = 'newest';
 
+      function renderStats() {
+        const grid = document.getElementById('stats-grid');
+        if (!grid) return;
+        const items = loadHistory();
+        const userTpls = (function () { try { return JSON.parse(localStorage.getItem('promptmegood:templates:v1')) || []; } catch (e) { return []; } })();
+        const total = items.length;
+        const favs = items.filter(function (i) { return i.favorite; }).length;
+        const tagCounts = {};
+        items.forEach(function (i) { (i.tags || []).forEach(function (t) { tagCounts[t] = (tagCounts[t] || 0) + 1; }); });
+        const topTagEntry = Object.keys(tagCounts).sort(function (a, b) { return tagCounts[b] - tagCounts[a]; })[0];
+        const topTag = topTagEntry ? '#' + topTagEntry : '—';
+        const topTagSub = topTagEntry ? 'Used on ' + tagCounts[topTagEntry] + ' prompt' + (tagCounts[topTagEntry] === 1 ? '' : 's') : 'Add tags to organize';
+        let topPrompt = items.slice().sort(function (a, b) { return (b.useCount || 0) - (a.useCount || 0); })[0];
+        const topPromptName = topPrompt && (topPrompt.useCount || 0) > 0
+          ? (topPrompt.nickname || topPrompt.data.goal || 'Untitled')
+          : '—';
+        const topPromptSub = topPrompt && (topPrompt.useCount || 0) > 0
+          ? 'Used ' + topPrompt.useCount + '×'
+          : 'Restore or remix to count uses';
+        let topTpl = userTpls.slice().sort(function (a, b) { return (b.useCount || 0) - (a.useCount || 0); })[0];
+        const topTplName = topTpl && (topTpl.useCount || 0) > 0 ? topTpl.title : '—';
+        const topTplSub = topTpl && (topTpl.useCount || 0) > 0 ? 'Used ' + topTpl.useCount + '×' : 'Save your own from history';
+        const totalUses = items.reduce(function (s, i) { return s + (i.useCount || 0); }, 0)
+          + userTpls.reduce(function (s, t) { return s + (t.useCount || 0); }, 0);
+
+        const cards = [
+          { label: 'Saved prompts', value: String(total), sub: favs + ' favorited' },
+          { label: 'Total reuses', value: String(totalUses), sub: 'Across history & templates' },
+          { label: 'Top tag', value: topTag, sub: topTagSub },
+          { label: 'Most-used prompt', value: topPromptName.length > 36 ? topPromptName.slice(0, 36) + '…' : topPromptName, sub: topPromptSub },
+          { label: 'Most-used template', value: topTplName.length > 36 ? topTplName.slice(0, 36) + '…' : topTplName, sub: topTplSub }
+        ];
+        grid.innerHTML = cards.map(function (c) {
+          return '<div class="stat-card">' +
+            '<span class="stat-label">' + escapeHtml(c.label) + '</span>' +
+            '<span class="stat-value">' + escapeHtml(c.value) + '</span>' +
+            '<span class="stat-sub">' + escapeHtml(c.sub) + '</span>' +
+          '</div>';
+        }).join('');
+      }
+
       function bumpUse(id) {
         const items = loadHistory();
         const it = items.find(function (i) { return i.id === id; });
@@ -905,6 +969,7 @@ Context:
       }
 
       function renderHistory() {
+        renderStats();
         const items = loadHistory();
         if (items.length === 0) {
           historyListEl.innerHTML = '<div class="history-empty">No saved prompts yet. Generate one to start your history.</div>';
@@ -1377,6 +1442,7 @@ Context:
           '</button>';
         }).join('');
         templatesGrid.innerHTML = builtIn + userHtml;
+        renderStats();
       }
       renderTemplates();
 
