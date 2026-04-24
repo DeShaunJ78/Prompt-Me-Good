@@ -1,0 +1,125 @@
+Add the “Personality Mode” feature AND update the “How It Works” / user manual section accordingly. Do not break any existing functionality or layout.
+
+========================
+PART 1 — ADD PERSONALITY MODE FEATURE
+========================
+
+1. Add a new section in the prompt builder labeled:
+“Personality Mode”
+
+2. Add helper text:
+“Choose the kind of voice you want the AI response to have.”
+
+3. Add a dropdown with these options:
+- No Personality Added
+- Direct & Straightforward
+- Friendly & Conversational
+- Bold & Persuasive
+- Professional & Structured
+- Creative & Expressive
+- Faith-Based & Convicting
+- Street-Smart & Practical
+- Luxury Brand Voice
+- Viral Social Media Voice
+
+4. When a personality option is selected, inject the matching instruction into the generated prompt:
+
+No Personality Added:
+Do not add extra personality instructions.
+
+Direct & Straightforward:
+“Write in a direct, clear, no-fluff style. Get to the point quickly and prioritize practical value.”
+
+Friendly & Conversational:
+“Write in a warm, natural, conversational tone that feels like a helpful person explaining things clearly.”
+
+Bold & Persuasive:
+“Write with confidence, conviction, and persuasive energy. Make the response strong, clear, and compelling without sounding fake.”
+
+Professional & Structured:
+“Write in a polished, organized, business-ready tone with clear sections, strong logic, and practical recommendations.”
+
+Creative & Expressive:
+“Write with originality, vivid language, and engaging phrasing while staying useful and clear.”
+
+Faith-Based & Convicting:
+“Write with spiritual seriousness, clarity, and conviction while keeping the response grounded, respectful, and practical.”
+
+Street-Smart & Practical:
+“Write in a practical, real-world tone with plain language, direct advice, and no unnecessary theory.”
+
+Luxury Brand Voice:
+“Write with a premium, refined, confident tone that feels elegant, polished, and high-value.”
+
+Viral Social Media Voice:
+“Write with strong hooks, punchy phrasing, curiosity, emotional pull, and short attention-grabbing lines.”
+
+5. Add a small label beside Personality Mode:
+“Pro Feature Preview”
+(Feature remains usable for now, but structured to be locked later)
+
+6. Ensure Personality Mode works alongside:
+- Tone
+- Experience Level
+- Human-sounding option
+- Reduce robotic patterns
+- Money Mode
+
+7. Keep mobile clean:
+- Dropdown full width
+- Proper spacing
+- No crowding
+
+========================
+PART 2 — UPDATE USER MANUAL / HOW IT WORKS
+========================
+
+Update the existing “How It Works” or instruction section to include Personality Mode.
+
+1. In “Feature Breakdown,” add:
+
+Title:
+“Personality Mode”
+
+Content:
+
+What it does:
+“Personality Mode lets you control how the AI sounds when it responds. It adds a specific voice or style so results feel more personal.”
+
+Why it matters:
+“Different situations require different tones. The right voice can make your results clearer, stronger, and more effective.”
+
+When to use it:
+“Use Personality Mode when you want the AI to match a specific tone, audience, or style.”
+
+2. Add short explanations for each option:
+
+- No Personality Added: Keeps the prompt neutral
+- Direct & Straightforward: Clear and no-fluff
+- Friendly & Conversational: Natural and relaxed
+- Bold & Persuasive: Strong and convincing
+- Professional & Structured: Organized and polished
+- Creative & Expressive: Engaging and imaginative
+- Faith-Based & Convicting: Spiritual clarity with conviction
+- Street-Smart & Practical: Real-world, direct advice
+- Luxury Brand Voice: Premium and refined
+- Viral Social Media Voice: Punchy and attention-grabbing
+
+3. In “How To Use” section, add:
+
+“Choose a Personality Mode to shape how the AI sounds. This is optional but can dramatically improve results.”
+
+4. In “Pro Tips,” add:
+
+“Try different Personality Modes to see how the same idea changes. This is one of the fastest ways to improve results.”
+
+========================
+FINAL CHECK
+========================
+
+After implementation:
+- Confirm prompt generation works with and without Personality Mode
+- Confirm personality instructions appear in copied prompts
+- Confirm manual displays correctly
+- Confirm mobile layout is clean
+- Confirm no JavaScript errors

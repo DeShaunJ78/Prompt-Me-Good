@@ -589,6 +589,16 @@
     .panel-head-row > div:first-child { flex: 1 1 240px; min-width: 0; }
     .panel-head-row .btn { min-height: 36px; padding: 0 var(--space-4); font-size: var(--text-xs); flex: 0 0 auto; }
     .panel-head-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .pro-pill {
+      display: inline-flex; align-items: center; vertical-align: middle;
+      margin-left: 8px; padding: 2px 8px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+      color: var(--color-primary);
+      background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-primary) 28%, transparent);
+      border-radius: var(--radius-full);
+      line-height: 1.4;
+    }
     .manual-panel { padding: 0; overflow: hidden; }
     .manual-toggle {
       width: 100%; display: flex; align-items: center; justify-content: space-between;
@@ -883,6 +893,26 @@
                   <option value="list">List</option>
                   <option value="detailed breakdown">Detailed breakdown</option>
                 </select>
+              </div>
+
+              <div class="field">
+                <label for="personality">
+                  Personality Mode
+                  <span class="pro-pill" title="Pro feature preview">Pro Feature Preview</span>
+                </label>
+                <select id="personality" name="personality">
+                  <option value="none">No Personality Added</option>
+                  <option value="direct">Direct &amp; Straightforward</option>
+                  <option value="friendly">Friendly &amp; Conversational</option>
+                  <option value="bold">Bold &amp; Persuasive</option>
+                  <option value="professional">Professional &amp; Structured</option>
+                  <option value="creative">Creative &amp; Expressive</option>
+                  <option value="faith">Faith-Based &amp; Convicting</option>
+                  <option value="street">Street-Smart &amp; Practical</option>
+                  <option value="luxury">Luxury Brand Voice</option>
+                  <option value="viral">Viral Social Media Voice</option>
+                </select>
+                <p class="helper">Choose the kind of voice you want the AI response to have.</p>
               </div>
 
               <div class="field">
@@ -1248,6 +1278,7 @@
                 <li><strong>Pick Your Experience Level.</strong> Beginner gets simpler steps and clear definitions. Intermediate skips the basics. Advanced goes deep on strategy and tradeoffs.</li>
                 <li><strong>Choose a Tone.</strong> Professional, Aggressive, Casual, or Expert. This decides how the answer will <em>feel</em>.</li>
                 <li><strong>Pick an Output Format.</strong> Step-by-step, list, or detailed breakdown — based on how you want to consume the answer.</li>
+                <li><strong>(Optional) Choose a Personality Mode</strong> to shape how the AI sounds — friendly, bold, luxury, viral, faith-based, and more. This is optional but can dramatically improve results.</li>
                 <li><strong>(Optional) Turn on the human-sounding options.</strong> Use these when you want the result to read like a real person wrote it — perfect for emails, social posts, or anything customer-facing.</li>
                 <li><strong>(Optional) Turn on Money Mode.</strong> Use it when your goal is income, speed, or execution. The AI will lean toward practical, low-cost actions over theory.</li>
                 <li><strong>Click "Generate Prompt."</strong> The full prompt appears on the right. The page automatically scrolls you to it.</li>
@@ -1313,6 +1344,25 @@
                 <p><strong>What it does:</strong> Forces the AI to focus on practical, fast-income actions — speed, simplicity, low-cost paths.</p>
                 <p><strong>Why it matters:</strong> Without it, the AI tends to go theoretical. With it, you get next-step plays.</p>
                 <p><strong>When to use:</strong> Side hustles, offers, monetization, or anything where the goal is "make money."</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Personality Mode <span class="pro-pill">Pro Feature Preview</span></h4>
+                <p><strong>What it does:</strong> Personality Mode lets you control how the AI sounds when it responds. It adds a specific voice or style so results feel more personal.</p>
+                <p><strong>Why it matters:</strong> Different situations require different tones. The right voice can make your results clearer, stronger, and more effective.</p>
+                <p><strong>When to use:</strong> Use Personality Mode when you want the AI to match a specific tone, audience, or style.</p>
+                <ul>
+                  <li><strong>No Personality Added</strong> — keeps the prompt neutral.</li>
+                  <li><strong>Direct &amp; Straightforward</strong> — clear and no-fluff.</li>
+                  <li><strong>Friendly &amp; Conversational</strong> — natural and relaxed.</li>
+                  <li><strong>Bold &amp; Persuasive</strong> — strong and convincing.</li>
+                  <li><strong>Professional &amp; Structured</strong> — organized and polished.</li>
+                  <li><strong>Creative &amp; Expressive</strong> — engaging and imaginative.</li>
+                  <li><strong>Faith-Based &amp; Convicting</strong> — spiritual clarity with conviction.</li>
+                  <li><strong>Street-Smart &amp; Practical</strong> — real-world, direct advice.</li>
+                  <li><strong>Luxury Brand Voice</strong> — premium and refined.</li>
+                  <li><strong>Viral Social Media Voice</strong> — punchy and attention-grabbing.</li>
+                </ul>
               </div>
 
               <div class="manual-feature">
@@ -1383,6 +1433,7 @@
                 <li><strong>Be specific with your goal.</strong> "Help me write a tweet" is fine. "Help me write a tweet about coffee aimed at remote workers" is way better.</li>
                 <li><strong>Use Extra Details.</strong> Budget, deadline, audience, platform — every detail you add makes the answer sharper.</li>
                 <li><strong>Try different tones for the same goal.</strong> A Professional and an Aggressive prompt will surface very different angles.</li>
+                <li><strong>Try different Personality Modes</strong> to see how the same idea changes. This is one of the fastest ways to improve results.</li>
                 <li><strong>Don't skip the Improve buttons.</strong> The fastest way to a better answer is one tap of More Detailed or More Aggressive.</li>
                 <li><strong>Test across platforms.</strong> ChatGPT, Claude, and Perplexity all answer differently — try the same prompt in each.</li>
                 <li><strong>Save winners as templates.</strong> If a prompt nails it, save it so you can reuse it in one click.</li>
@@ -1598,6 +1649,32 @@
           expert: 'Use an expert tone with confident reasoning, strong structure, and specific recommendations.'
         };
 
+        const personalityMap = {
+          none: '',
+          direct: 'Write in a direct, clear, no-fluff style. Get to the point quickly and prioritize practical value.',
+          friendly: 'Write in a warm, natural, conversational tone that feels like a helpful person explaining things clearly.',
+          bold: 'Write with confidence, conviction, and persuasive energy. Make the response strong, clear, and compelling without sounding fake.',
+          professional: 'Write in a polished, organized, business-ready tone with clear sections, strong logic, and practical recommendations.',
+          creative: 'Write with originality, vivid language, and engaging phrasing while staying useful and clear.',
+          faith: 'Write with spiritual seriousness, clarity, and conviction while keeping the response grounded, respectful, and practical.',
+          street: 'Write in a practical, real-world tone with plain language, direct advice, and no unnecessary theory.',
+          luxury: 'Write with a premium, refined, confident tone that feels elegant, polished, and high-value.',
+          viral: 'Write with strong hooks, punchy phrasing, curiosity, emotional pull, and short attention-grabbing lines.'
+        };
+
+        const personalityLabel = {
+          none: 'None',
+          direct: 'Direct & Straightforward',
+          friendly: 'Friendly & Conversational',
+          bold: 'Bold & Persuasive',
+          professional: 'Professional & Structured',
+          creative: 'Creative & Expressive',
+          faith: 'Faith-Based & Convicting',
+          street: 'Street-Smart & Practical',
+          luxury: 'Luxury Brand Voice',
+          viral: 'Viral Social Media Voice'
+        };
+
         const remixInstructions = {
           detailed: 'Make the answer more detailed than normal. Add examples, decision criteria, risks, templates, and a concrete execution checklist.',
           aggressive: 'Make the answer more direct, urgent, and action-oriented. Challenge weak assumptions. Cut vague advice. Push toward execution.',
@@ -1633,6 +1710,16 @@ ${data.details}`
 - Special request: ${remixInstructions[remixMode]}`
           : '';
 
+        const personalityKey = data.personality && personalityMap.hasOwnProperty(data.personality) ? data.personality : 'none';
+        const personalityLine = personalityMap[personalityKey]
+          ? `
+- Personality: ${personalityMap[personalityKey]}`
+          : '';
+        const personalityContext = personalityKey !== 'none'
+          ? `
+- Personality: ${personalityLabel[personalityKey]}`
+          : '';
+
         return `Act as a ${roleMap[data.skillLevel]} and help me with this goal:
 
 "${data.goal}"
@@ -1646,13 +1733,13 @@ Here's what I need from you:
 - Format the answer as a ${titleCase(data.outputFormat)}.
 - Avoid vague advice, filler, or generic motivation.
 - Include examples, templates, checklists, or scripts when useful.
-- End with the top 3 actions I should take next.${moneyMode}${humanLine}${remixLine}
+- End with the top 3 actions I should take next.${personalityLine}${moneyMode}${humanLine}${remixLine}
 
 Context:
 - Category: ${titleCase(data.category)}
 - Experience level: ${titleCase(data.skillLevel)}
 - Tone: ${titleCase(data.tone)}
-- Output format: ${titleCase(data.outputFormat)}${extraDetails}`;
+- Output format: ${titleCase(data.outputFormat)}${personalityContext}${extraDetails}`;
       }
 
       function getFormData() {
@@ -1665,7 +1752,8 @@ Context:
           details: document.getElementById('details').value.trim(),
           moneyMode: document.getElementById('moneyMode').checked,
           humanTone: document.getElementById('humanTone').checked,
-          avoidAi: document.getElementById('avoidAi').checked
+          avoidAi: document.getElementById('avoidAi').checked,
+          personality: document.getElementById('personality').value
         };
       }
 
@@ -2105,6 +2193,7 @@ Context:
         document.getElementById('moneyMode').checked = !!item.data.moneyMode;
         document.getElementById('humanTone').checked = !!item.data.humanTone;
         document.getElementById('avoidAi').checked = !!item.data.avoidAi;
+        document.getElementById('personality').value = item.data.personality || 'none';
         resultBox.textContent = item.prompt;
         document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
         showToast('Restored from history.');
@@ -2588,6 +2677,7 @@ Context:
         document.getElementById('moneyMode').checked = !!t.data.moneyMode;
         document.getElementById('humanTone').checked = !!t.data.humanTone;
         document.getElementById('avoidAi').checked = !!t.data.avoidAi;
+        document.getElementById('personality').value = t.data.personality || 'none';
         const data = getFormData();
         const prompt = generatePrompt(data);
         resultBox.textContent = prompt;
@@ -2939,6 +3029,7 @@ Context:
           'Skill: ' + (data.skillLevel || '—'),
           'Tone: ' + (data.tone || '—'),
           'Format: ' + (data.outputFormat || '—'),
+          (data.personality && data.personality !== 'none') ? 'Personality: ' + data.personality : null,
           data.moneyMode ? 'Money Mode: on' : null,
           'Date: ' + new Date().toLocaleString()
         ].filter(Boolean).join(' • ');
@@ -3015,6 +3106,8 @@ Context:
         document.getElementById('outputFormat').value = pickRandom(formats);
         document.getElementById('details').value = '';
         document.getElementById('moneyMode').checked = Math.random() < 0.4;
+        const personalities = ['none', 'direct', 'friendly', 'bold', 'professional', 'creative', 'faith', 'street', 'luxury', 'viral'];
+        document.getElementById('personality').value = pickRandom(personalities);
         const data = getFormData();
         const prompt = generatePrompt(data);
         resultBox.textContent = prompt;
@@ -3031,6 +3124,7 @@ Context:
         document.getElementById('outputFormat').value = 'step-by-step';
         document.getElementById('details').value = 'I need a low-cost plan, something I can sell fast, and I do not want complicated tech setup.';
         document.getElementById('moneyMode').checked = true;
+        document.getElementById('personality').value = 'bold';
         const demoData = getFormData();
         const demoPrompt = generatePrompt(demoData);
         resultBox.textContent = demoPrompt;
