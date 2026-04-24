@@ -619,12 +619,13 @@
               </div>
 
               <div class="field">
-                <label for="skillLevel">Skill level</label>
+                <label for="skillLevel">Your Experience Level</label>
                 <select id="skillLevel" name="skillLevel">
                   <option value="beginner">Beginner</option>
                   <option value="intermediate">Intermediate</option>
                   <option value="advanced">Advanced</option>
                 </select>
+                <p class="helper">This tells the AI how advanced or beginner you are so it can adjust the response.</p>
               </div>
 
               <div class="field">
@@ -659,6 +660,28 @@
                 </div>
                 <label class="switch" aria-label="Turn Money Mode on or off">
                   <input id="moneyMode" name="moneyMode" type="checkbox" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="toggle-row">
+                <div>
+                  <strong>Make the response sound natural and human (less robotic)</strong>
+                  <span>Asks for varied sentence structure and a natural voice.</span>
+                </div>
+                <label class="switch" aria-label="Turn human-sounding output on or off">
+                  <input id="humanTone" name="humanTone" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="toggle-row">
+                <div>
+                  <strong>Optimize to avoid obvious AI detection</strong>
+                  <span>Adds human-like imperfections and natural flow to dodge AI fingerprints.</span>
+                </div>
+                <label class="switch" aria-label="Turn AI-detection avoidance on or off">
+                  <input id="avoidAi" name="avoidAi" type="checkbox" />
                   <span class="slider"></span>
                 </label>
               </div>
@@ -966,6 +989,27 @@ Money Mode is ON:
 - Include a low-cost path whenever possible.`
           : '';
 
+        let humanBlock = '';
+        if (data.humanTone && data.avoidAi) {
+          humanBlock = `
+Human-style writing requirements:
+- Write in a natural, human tone with varied sentence structure.
+- Avoid robotic phrasing, repetitive patterns, and overly structured responses.
+- Use subtle tone shifts, varied sentence lengths, and small human-like imperfections so it does not read as obviously AI-generated.
+- Make it feel like it was written by a real person.`;
+        } else if (data.humanTone) {
+          humanBlock = `
+Human-style writing requirements:
+- Write in a natural, human tone with varied sentence structure.
+- Avoid robotic phrasing or repetitive patterns.
+- Make it feel like it was written by a real person.`;
+        } else if (data.avoidAi) {
+          humanBlock = `
+Human-style writing requirements:
+- Use human-like imperfections, natural flow, varied sentence lengths, and subtle tone shifts.
+- Avoid predictable AI patterns and overly structured responses.`;
+        }
+
         const remixBlock = remixMode && remixInstructions[remixMode]
           ? `
 Special upgrade request:
@@ -992,7 +1036,7 @@ Instructions:
 - Include examples, templates, frameworks, checklists, or scripts where useful.
 - Call out what NOT to do so I avoid wasting time.
 - End with the top 3 actions I should take next.
-- Do not give filler. Make every sentence earn its place.${moneyMode}${extraDetails}${remixBlock}
+- Do not give filler. Make every sentence earn its place.${moneyMode}${humanBlock}${extraDetails}${remixBlock}
 
 Output expectations:
 1. Start with the clearest interpretation of my goal.
@@ -1015,7 +1059,9 @@ Context:
           tone: document.getElementById('tone').value,
           outputFormat: document.getElementById('outputFormat').value,
           details: document.getElementById('details').value.trim(),
-          moneyMode: document.getElementById('moneyMode').checked
+          moneyMode: document.getElementById('moneyMode').checked,
+          humanTone: document.getElementById('humanTone').checked,
+          avoidAi: document.getElementById('avoidAi').checked
         };
       }
 
@@ -1453,6 +1499,8 @@ Context:
         document.getElementById('outputFormat').value = item.data.outputFormat || 'step-by-step';
         document.getElementById('details').value = item.data.details || '';
         document.getElementById('moneyMode').checked = !!item.data.moneyMode;
+        document.getElementById('humanTone').checked = !!item.data.humanTone;
+        document.getElementById('avoidAi').checked = !!item.data.avoidAi;
         resultBox.textContent = item.prompt;
         document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
         showToast('Restored from history.');
@@ -1934,6 +1982,8 @@ Context:
         document.getElementById('outputFormat').value = t.data.outputFormat || 'step-by-step';
         document.getElementById('details').value = t.data.details || '';
         document.getElementById('moneyMode').checked = !!t.data.moneyMode;
+        document.getElementById('humanTone').checked = !!t.data.humanTone;
+        document.getElementById('avoidAi').checked = !!t.data.avoidAi;
         const data = getFormData();
         const prompt = generatePrompt(data);
         resultBox.textContent = prompt;
