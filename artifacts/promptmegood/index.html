@@ -41,9 +41,11 @@
       --color-text-muted: #67655f;
       --color-text-faint: #9a9892;
       --color-text-inverse: #f8f7f4;
-      --color-primary: #01696f;
-      --color-primary-hover: #0c4e54;
-      --color-primary-highlight: #d7e5e2;
+      --color-primary: #1d4ed8;
+      --color-primary-hover: #1e40af;
+      --color-primary-highlight: #dbe6fb;
+      --color-accent-red: #dc2626;
+      --color-accent-red-soft: #fde4e4;
       --radius-sm: 0.5rem;
       --radius-md: 0.875rem;
       --radius-lg: 1.25rem;
@@ -68,10 +70,12 @@
       --color-text: #ece9e2;
       --color-text-muted: #b9b4ab;
       --color-text-faint: #8f8a81;
-      --color-text-inverse: #161513;
-      --color-primary: #5ba8b0;
-      --color-primary-hover: #73b8bf;
-      --color-primary-highlight: #213438;
+      --color-text-inverse: #f8f7f4;
+      --color-primary: #60a5fa;
+      --color-primary-hover: #93c5fd;
+      --color-primary-highlight: #1e3a5f;
+      --color-accent-red: #f87171;
+      --color-accent-red-soft: #3a1f1f;
       --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
       --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.25);
       --shadow-lg: 0 18px 50px rgba(0, 0, 0, 0.35);
@@ -88,9 +92,11 @@
         --color-text-muted: #b9b4ab;
         --color-text-faint: #8f8a81;
         --color-text-inverse: #161513;
-        --color-primary: #5ba8b0;
-        --color-primary-hover: #73b8bf;
-        --color-primary-highlight: #213438;
+        --color-primary: #60a5fa;
+        --color-primary-hover: #93c5fd;
+        --color-primary-highlight: #1e3a5f;
+        --color-accent-red: #f87171;
+        --color-accent-red-soft: #3a1f1f;
       }
     }
 
@@ -111,7 +117,7 @@
     button { border: none; cursor: pointer; }
     a { color: inherit; text-decoration: none; }
     :focus-visible {
-      outline: 2px solid var(--color-primary);
+      outline: 2px solid var(--color-accent-red);
       outline-offset: 3px;
       border-radius: var(--radius-sm);
     }
@@ -195,7 +201,15 @@
     }
     .btn-primary:hover { background: var(--color-primary-hover); }
     .btn-secondary {
-      background: var(--color-surface); border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+      background: var(--color-surface);
+      color: var(--color-text);
+      border: 1px solid color-mix(in srgb, var(--color-primary) 22%, var(--color-border));
+      transition: transform var(--transition-interactive), background var(--transition-interactive), border-color var(--transition-interactive), color var(--transition-interactive);
+    }
+    .btn-secondary:hover {
+      border-color: var(--color-accent-red);
+      color: var(--color-accent-red);
+      background: var(--color-accent-red-soft);
     }
     .hero-card {
       background: linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 92%, white), var(--color-surface));
@@ -372,7 +386,21 @@
     .open-in-block { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-divider); display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
     .open-in-label { font-size: var(--text-sm); font-weight: 700; color: var(--color-text); }
     .open-in-row { display: flex; flex-wrap: wrap; gap: 10px; }
-    .open-in-btn { text-decoration: none; }
+    .open-in-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #ffffff;
+      border: 1.5px solid var(--color-border);
+      text-decoration: none;
+      transition: transform var(--transition-interactive), background var(--transition-interactive), border-color var(--transition-interactive), color var(--transition-interactive);
+    }
+    .open-in-btn[data-tool="chatgpt"]    { color: #10a37f; border-color: #10a37f; }
+    .open-in-btn[data-tool="claude"]     { color: #d97706; border-color: #d97706; }
+    .open-in-btn[data-tool="perplexity"] { color: #2563eb; border-color: #2563eb; }
+    .open-in-btn[data-tool="chatgpt"]:hover    { background: #ecfdf5; border-color: #10a37f; color: #10a37f; }
+    .open-in-btn[data-tool="claude"]:hover     { background: #fff7ed; border-color: #d97706; color: #d97706; }
+    .open-in-btn[data-tool="perplexity"]:hover { background: #eff6ff; border-color: #2563eb; color: #2563eb; }
+    [data-theme="dark"] .open-in-btn { background: var(--color-surface); }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme]) .open-in-btn { background: var(--color-surface); } }
     @media (max-width: 640px) {
       .open-in-block { flex-direction: column; align-items: stretch; gap: 10px; }
       .open-in-row { flex-direction: column; gap: 12px; }
@@ -840,9 +868,9 @@
             <div class="open-in-block" aria-label="Open prompt in an AI tool">
               <span class="open-in-label">Open In:</span>
               <div class="open-in-row">
-                <a class="btn btn-secondary open-in-btn" href="https://chat.openai.com/" target="_blank" rel="noopener noreferrer">ChatGPT</a>
-                <a class="btn btn-secondary open-in-btn" href="https://claude.ai/" target="_blank" rel="noopener noreferrer">Claude</a>
-                <a class="btn btn-secondary open-in-btn" href="https://www.perplexity.ai/" target="_blank" rel="noopener noreferrer">Perplexity</a>
+                <a class="btn open-in-btn" data-tool="chatgpt" href="https://chat.openai.com/" target="_blank" rel="noopener noreferrer">ChatGPT</a>
+                <a class="btn open-in-btn" data-tool="claude" href="https://claude.ai/" target="_blank" rel="noopener noreferrer">Claude</a>
+                <a class="btn open-in-btn" data-tool="perplexity" href="https://www.perplexity.ai/" target="_blank" rel="noopener noreferrer">Perplexity</a>
               </div>
             </div>
             <div class="improve-block">
