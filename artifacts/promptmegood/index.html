@@ -1348,7 +1348,6 @@
               <span class="manual-toggle-icon" aria-hidden="true">📖</span>
               <span>
                 <span class="manual-toggle-title">How It Works</span>
-                <span class="manual-toggle-sub" id="manual-toggle-sub">The full PromptMeGood manual — tap to open</span>
               </span>
             </span>
             <span class="manual-chevron" aria-hidden="true">
@@ -3483,10 +3482,7 @@ Context:
     (function () {
       const toggle = document.getElementById('manual-toggle');
       const collapse = document.getElementById('manual-collapse');
-      const subEl = document.getElementById('manual-toggle-sub');
       if (!toggle || !collapse) return;
-      const SUB_BASE = 'The full PromptMeGood manual — tap to ';
-      function setSubText(isOpen) { if (subEl) subEl.textContent = SUB_BASE + (isOpen ? 'close' : 'open'); }
 
       const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       let inTransition = false;
@@ -3497,7 +3493,6 @@ Context:
           return;
         }
         toggle.setAttribute('aria-expanded', 'true');
-        setSubText(true);
         collapse.classList.add('is-open');
         const target = collapse.scrollHeight;
         if (reduceMotion) {
@@ -3526,7 +3521,6 @@ Context:
           collapse.style.maxHeight = '0px';
           collapse.classList.remove('is-open');
           toggle.setAttribute('aria-expanded', 'false');
-          setSubText(false);
           return;
         }
         const start = collapse.scrollHeight;
@@ -3536,7 +3530,6 @@ Context:
             collapse.style.maxHeight = '0px';
             collapse.classList.remove('is-open');
             toggle.setAttribute('aria-expanded', 'false');
-            setSubText(false);
           });
         });
       }
