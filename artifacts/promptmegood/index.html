@@ -1144,7 +1144,7 @@
               <div class="toggle-row is-subtle">
                 <div>
                   <strong>Money Mode</strong>
-                  <span>Focuses answers on practical, results-driven outcomes (can be turned off anytime).</span>
+                  <span>Focuses answers on practical, results-driven outcomes.</span>
                 </div>
                 <label class="switch" aria-label="Turn Money Mode on or off">
                   <input id="moneyMode" name="moneyMode" type="checkbox" checked />
@@ -1154,10 +1154,10 @@
 
               <div class="toggle-row">
                 <div>
-                  <strong>Make the response sound natural and human (less robotic)</strong>
-                  <span>Asks for varied sentence structure and a natural voice.</span>
+                  <strong>Human Voice Mode</strong>
+                  <span>Adds natural phrasing and reduces obvious robotic patterns.</span>
                 </div>
-                <label class="switch" aria-label="Turn human-sounding output on or off">
+                <label class="switch" aria-label="Turn Human Voice Mode on or off">
                   <input id="humanTone" name="humanTone" type="checkbox" />
                   <span class="slider"></span>
                 </label>
@@ -1165,11 +1165,11 @@
 
               <div class="toggle-row">
                 <div>
-                  <strong>Make the output sound more natural and less robotic</strong>
-                  <span>Adds human-like variation and natural flow to reduce obvious robotic patterns.</span>
+                  <strong>Clarity Boost Mode</strong>
+                  <span>Improves structure and makes the response easier to act on.</span>
                 </div>
-                <label class="switch" aria-label="Turn AI-detection avoidance on or off">
-                  <input id="avoidAi" name="avoidAi" type="checkbox" />
+                <label class="switch" aria-label="Turn Clarity Boost Mode on or off">
+                  <input id="clarityBoost" name="clarityBoost" type="checkbox" />
                   <span class="slider"></span>
                 </label>
               </div>
@@ -1394,16 +1394,16 @@
               <div class="guide-step">
                 <span class="guide-step-num">5</span>
                 <div>
-                  <h3>Turn on "Make the response sound natural and human"</h3>
-                  <p>Flip this on when you want the AI's answer to read smoothly, with varied sentences and a real-person voice instead of a textbook.</p>
+                  <h3>Turn on Human Voice Mode</h3>
+                  <p>Flip this on when you want the AI's answer to read smoothly, with varied sentences and a real-person voice. It adds natural phrasing and reduces obvious robotic patterns.</p>
                 </div>
               </div>
 
               <div class="guide-step">
                 <span class="guide-step-num">6</span>
                 <div>
-                  <h3>Turn on "Make the output sound more natural and less robotic"</h3>
-                  <p>Use this when the result needs to feel hand-written — think social posts, emails, or anything that shouldn't read like obvious AI. It adds little human imperfections and natural rhythm.</p>
+                  <h3>Turn on Clarity Boost Mode</h3>
+                  <p>Use this when you want the response organized and easy to act on — clear sections, defined terms, called-out assumptions, and steps you can actually follow.</p>
                 </div>
               </div>
 
@@ -1411,7 +1411,7 @@
                 <span class="guide-step-num">7</span>
                 <div>
                   <h3>Use Money Mode when you want results, not theory</h3>
-                  <p>Switch this on when your goal is income, speed, or execution. The prompt will push the AI toward practical actions, low-cost paths, and ways to get the first sale or first dollar — instead of long, abstract advice.</p>
+                  <p>Switch this on when your goal is execution and outcomes. The prompt will push the AI toward practical, results-driven actions instead of long, abstract advice.</p>
                 </div>
               </div>
 
@@ -1503,8 +1503,9 @@
                 <li><strong>Choose a Tone.</strong> Professional, Aggressive, Casual, or Expert. This decides how the answer will <em>feel</em>.</li>
                 <li><strong>Pick an Output Format.</strong> Step-by-step, list, or detailed breakdown — based on how you want to consume the answer.</li>
                 <li><strong>(Optional) Choose a Personality Mode</strong> to shape how the AI sounds — friendly, bold, luxury, viral, faith-based, and more. This is optional but can dramatically improve results.</li>
-                <li><strong>(Optional) Turn on the human-sounding options.</strong> Use these when you want the result to read like a real person wrote it — perfect for emails, social posts, or anything customer-facing.</li>
-                <li><strong>(Optional) Turn on Money Mode.</strong> Use it when your goal is income, speed, or execution. The AI will lean toward practical, low-cost actions over theory.</li>
+                <li><strong>(Optional) Turn on Human Voice Mode.</strong> Adds natural phrasing and reduces obvious robotic patterns — perfect for emails, social posts, or anything customer-facing.</li>
+                <li><strong>(Optional) Turn on Clarity Boost Mode.</strong> Improves structure with clear sections, defined terms, and easy-to-act-on steps.</li>
+                <li><strong>(Optional) Turn on Money Mode.</strong> Use it when your goal is execution and outcomes. The AI will lean toward practical, results-driven actions over theory.</li>
                 <li><strong>Click "Generate Prompt."</strong> The full prompt appears on the right. The page automatically scrolls you to it.</li>
                 <li><strong>Click "Copy Prompt."</strong> One tap copies the whole thing to your clipboard.</li>
                 <li><strong>Use the "Use Your Prompt In" buttons.</strong> Tap ChatGPT, Claude, or Perplexity to launch the platform in a new tab — then paste your prompt and run it.</li>
@@ -1563,24 +1564,34 @@
               </div>
 
               <div class="manual-feature">
-                <h4>Human-Sounding Output</h4>
-                <p><strong>What it does:</strong> Asks the AI to write with a natural, varied voice instead of stiff, formal text.</p>
+                <h4>Optional Boosts</h4>
+                <p>These settings fine-tune how the AI responds. You can combine them for stronger results.</p>
+                <ul>
+                  <li><strong>Money Mode:</strong> Focuses on practical, results-driven answers.</li>
+                  <li><strong>Human Voice Mode:</strong> Makes responses sound natural, conversational, and less robotic.</li>
+                  <li><strong>Clarity Boost Mode:</strong> Improves structure and makes responses easier to follow and act on.</li>
+                </ul>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Money Mode</h4>
+                <p><strong>What it does:</strong> Prioritizes practical, actionable, and results-driven answers — focused on outcomes and execution.</p>
+                <p><strong>Why it matters:</strong> Without it, the AI tends to go theoretical. With it, you get next-step plays.</p>
+                <p><strong>When to use:</strong> Side hustles, offers, monetization, or anything where the goal is "get it done."</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Human Voice Mode</h4>
+                <p><strong>What it does:</strong> Makes responses feel more human, conversational, and less AI-generated by adding natural phrasing and reducing obvious robotic patterns.</p>
                 <p><strong>Why it matters:</strong> Anything customer-facing — emails, posts, captions, scripts — needs to sound human.</p>
                 <p><strong>When to use:</strong> Turn it on when the answer will be read by other people.</p>
               </div>
 
               <div class="manual-feature">
-                <h4>Reduce Robotic Patterns</h4>
-                <p><strong>What it does:</strong> Pushes the AI to avoid predictable AI patterns — think varied sentence lengths and subtle imperfections.</p>
-                <p><strong>Why it matters:</strong> AI-generated content can feel obvious. This makes it blend in.</p>
-                <p><strong>When to use:</strong> When the writing must not look AI-generated.</p>
-              </div>
-
-              <div class="manual-feature">
-                <h4>Money Mode</h4>
-                <p><strong>What it does:</strong> Forces the AI to focus on practical, fast-income actions — speed, simplicity, low-cost paths.</p>
-                <p><strong>Why it matters:</strong> Without it, the AI tends to go theoretical. With it, you get next-step plays.</p>
-                <p><strong>When to use:</strong> Side hustles, offers, monetization, or anything where the goal is "make money."</p>
+                <h4>Clarity Boost Mode</h4>
+                <p><strong>What it does:</strong> Improves structure and makes the response easier to act on — clear sections, defined terms, called-out assumptions, and easy steps.</p>
+                <p><strong>Why it matters:</strong> A clear response saves you from re-reading and second-guessing.</p>
+                <p><strong>When to use:</strong> When you want a response that's organized and easy to follow end-to-end.</p>
               </div>
 
               <div class="manual-feature">
@@ -1675,6 +1686,7 @@
                 <li><strong>Test across platforms.</strong> ChatGPT, Claude, and Perplexity all answer differently — try the same prompt in each.</li>
                 <li><strong>Save winners as templates.</strong> If a prompt nails it, save it so you can reuse it in one click.</li>
                 <li><strong>Use the example chips when stuck.</strong> They're great unblockers if your mind goes blank.</li>
+                <li><strong>Turn on all three modes</strong> for responses that are clear, natural, and highly actionable.</li>
               </ul>
             </div>
 
@@ -2002,20 +2014,18 @@ ${data.details}`
 
         const moneyMode = data.moneyMode
           ? `
-- Money Mode: prioritize fast-income actions, speed, simplicity, low cost, and realistic execution. Avoid theory and vanity metrics.`
+- Money Mode: prioritize practical, actionable, and results-driven answers. Focus on outcomes and execution.`
           : '';
 
-        let humanLine = '';
-        if (data.humanTone && data.avoidAi) {
-          humanLine = `
-- Write in a natural human voice with varied sentence structure and small human-like imperfections so it does not read as AI-generated.`;
-        } else if (data.humanTone) {
-          humanLine = `
-- Write in a natural, human voice with varied sentence structure.`;
-        } else if (data.avoidAi) {
-          humanLine = `
-- Avoid predictable AI patterns; use natural flow and varied sentence lengths.`;
-        }
+        const humanLine = data.humanTone
+          ? `
+- Human Voice Mode: write in a natural, human tone with varied sentence structure. Avoid robotic phrasing, repetitive patterns, and overly stiff wording. Use subtle variation and natural flow to reduce obvious AI-generated patterns.`
+          : '';
+
+        const clarityLine = data.clarityBoost
+          ? `
+- Clarity Boost Mode: prioritize clarity. Organize the response with clear sections, define unclear terms, call out assumptions, and make each step easy to understand and act on.`
+          : '';
 
         const remixLine = remixMode && remixInstructions[remixMode]
           ? `
@@ -2045,7 +2055,7 @@ Here's what I need from you:
 - Format the answer as a ${titleCase(data.outputFormat)}.
 - Avoid vague advice, filler, or generic motivation.
 - Include examples, templates, checklists, or scripts when useful.
-- End with the top 3 actions I should take next.${personalityLine}${moneyMode}${humanLine}${remixLine}
+- End with the top 3 actions I should take next.${personalityLine}${moneyMode}${humanLine}${clarityLine}${remixLine}
 
 Context:
 - Category: ${titleCase(data.category)}
@@ -2064,7 +2074,7 @@ Context:
           details: document.getElementById('details').value.trim(),
           moneyMode: document.getElementById('moneyMode').checked,
           humanTone: document.getElementById('humanTone').checked,
-          avoidAi: document.getElementById('avoidAi').checked,
+          clarityBoost: document.getElementById('clarityBoost').checked,
           personality: document.getElementById('personality').value
         };
       }
@@ -2535,7 +2545,7 @@ Context:
         document.getElementById('details').value = item.data.details || '';
         document.getElementById('moneyMode').checked = !!item.data.moneyMode;
         document.getElementById('humanTone').checked = !!item.data.humanTone;
-        document.getElementById('avoidAi').checked = !!item.data.avoidAi;
+        document.getElementById('clarityBoost').checked = !!(item.data.clarityBoost || item.data.avoidAi);
         document.getElementById('personality').value = item.data.personality || 'none';
         resultBox.textContent = item.prompt;
         document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -3174,7 +3184,7 @@ Context:
         document.getElementById('details').value = t.data.details || '';
         document.getElementById('moneyMode').checked = !!t.data.moneyMode;
         document.getElementById('humanTone').checked = !!t.data.humanTone;
-        document.getElementById('avoidAi').checked = !!t.data.avoidAi;
+        document.getElementById('clarityBoost').checked = !!(t.data.clarityBoost || t.data.avoidAi);
         document.getElementById('personality').value = t.data.personality || 'none';
         const data = getFormData();
         const prompt = generatePrompt(data);

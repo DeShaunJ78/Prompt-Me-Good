@@ -1,0 +1,77 @@
+Finalize the 3-toggle system so each toggle has a distinct and clear purpose. Do not change layout or break functionality.
+
+========================
+PART 1 — TOGGLE DEFINITIONS
+========================
+
+1. Keep exactly 3 toggles:
+
+A. Money Mode
+Helper text:
+“Focuses answers on practical, results-driven outcomes.”
+
+Prompt instruction:
+“Prioritize practical, actionable, and results-driven answers. Focus on outcomes and execution.”
+
+------------------------
+
+B. Human Voice Mode
+Helper text:
+“Adds natural phrasing and reduces obvious robotic patterns.”
+
+Description (small line if space allows):
+“Makes responses feel more human, conversational, and less AI-generated.”
+
+Prompt instruction:
+“Write in a natural, human tone with varied sentence structure. Avoid robotic phrasing, repetitive patterns, and overly stiff wording. Use subtle variation and natural flow to reduce obvious AI-generated patterns.”
+
+------------------------
+
+C. Clarity Boost Mode
+Helper text:
+“Improves structure and makes the response easier to act on.”
+
+Prompt instruction:
+“Prioritize clarity. Organize the response with clear sections, define unclear terms, call out assumptions, and make each step easy to understand and act on.”
+
+========================
+PART 2 — REMOVE OVERLAP
+========================
+
+- Remove any duplicate or old toggle wording related to:
+  - “less robotic output”
+  - “avoid AI detection” as a separate concept
+  - duplicate natural output controls
+
+========================
+PART 3 — UPDATE MANUAL
+========================
+
+Update the “Optional Boosts” section:
+
+“These settings fine-tune how the AI responds. You can combine them for stronger results.”
+
+List:
+
+- Money Mode:
+Focuses on practical, results-driven answers.
+
+- Human Voice Mode:
+Makes responses sound natural, conversational, and less robotic.
+
+- Clarity Boost Mode:
+Improves structure and makes responses easier to follow and act on.
+
+Add to “Pro Tips”:
+
+“Turn on all three modes for responses that are clear, natural, and highly actionable.”
+
+========================
+FINAL CHECK
+========================
+
+- Exactly 3 toggles visible
+- Each has a unique purpose
+- No duplicate wording
+- Prompt output reflects selected toggles correctly
+- No JavaScript errors
