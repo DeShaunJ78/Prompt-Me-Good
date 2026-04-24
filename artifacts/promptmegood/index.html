@@ -673,8 +673,6 @@
       transition: transform var(--transition-interactive), background var(--transition-interactive);
     }
     .manual-toggle[aria-expanded="true"] .manual-chevron { transform: rotate(180deg); }
-    .manual-toggle[aria-expanded="true"] .manual-toggle-sub-open { display: none; }
-    .manual-toggle[aria-expanded="false"] .manual-toggle-sub-close { display: none; }
     .manual-collapse {
       max-height: 0; overflow: hidden; opacity: 0;
       transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
@@ -1350,8 +1348,7 @@
               <span class="manual-toggle-icon" aria-hidden="true">📖</span>
               <span>
                 <span class="manual-toggle-title">How It Works</span>
-                <span class="manual-toggle-sub manual-toggle-sub-open">The full PromptMeGood manual — tap to open</span>
-                <span class="manual-toggle-sub manual-toggle-sub-close">The full PromptMeGood manual — tap to close</span>
+                <span class="manual-toggle-sub" id="manual-toggle-sub">The full PromptMeGood manual — tap to open</span>
               </span>
             </span>
             <span class="manual-chevron" aria-hidden="true">
@@ -3486,7 +3483,11 @@ Context:
     (function () {
       const toggle = document.getElementById('manual-toggle');
       const collapse = document.getElementById('manual-collapse');
+      const subEl = document.getElementById('manual-toggle-sub');
       if (!toggle || !collapse) return;
+      const SUB_OPEN = 'The full PromptMeGood manual — tap to open';
+      const SUB_CLOSE = 'The full PromptMeGood manual — tap to close';
+      function setSubText(isOpen) { if (subEl) subEl.textContent = isOpen ? SUB_CLOSE : SUB_OPEN; }
 
       const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       let inTransition = false;
@@ -3497,6 +3498,7 @@ Context:
           return;
         }
         toggle.setAttribute('aria-expanded', 'true');
+        setSubText(true);
         collapse.classList.add('is-open');
         const target = collapse.scrollHeight;
         if (reduceMotion) {
@@ -3525,6 +3527,7 @@ Context:
           collapse.style.maxHeight = '0px';
           collapse.classList.remove('is-open');
           toggle.setAttribute('aria-expanded', 'false');
+          setSubText(false);
           return;
         }
         const start = collapse.scrollHeight;
@@ -3534,6 +3537,7 @@ Context:
             collapse.style.maxHeight = '0px';
             collapse.classList.remove('is-open');
             toggle.setAttribute('aria-expanded', 'false');
+            setSubText(false);
           });
         });
       }
