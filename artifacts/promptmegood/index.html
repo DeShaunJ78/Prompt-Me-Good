@@ -317,6 +317,13 @@
     .history-item-tag:hover { background: color-mix(in srgb, var(--color-primary) 22%, transparent); }
     .history-item-note { margin-top: var(--space-2); padding: 8px 12px; border-left: 3px solid var(--color-primary); background: color-mix(in srgb, var(--color-primary) 8%, transparent); border-radius: 0 var(--radius-md) var(--radius-md) 0; font-size: var(--text-sm); color: var(--color-text); white-space: pre-wrap; }
     .history-item-note::before { content: "📝 Note: "; font-weight: 600; color: var(--color-primary); }
+    .trust-line { font-size: var(--text-sm); color: var(--color-text-muted); font-style: italic; margin-top: var(--space-2); }
+    .examples-block { margin-top: var(--space-3); }
+    .examples-title { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); font-weight: 600; margin-bottom: 8px; }
+    .examples-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .example-chip { padding: 6px 12px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent); background: color-mix(in srgb, var(--color-primary) 6%, transparent); color: var(--color-text); font-size: var(--text-sm); cursor: pointer; transition: background var(--transition-interactive), border-color var(--transition-interactive); }
+    .example-chip:hover { background: color-mix(in srgb, var(--color-primary) 18%, transparent); border-color: var(--color-primary); }
+    .result-helper { font-size: var(--text-sm); color: var(--color-text-muted); margin-top: var(--space-2); }
     .pinned-note { display: none; padding: 10px 14px; margin-bottom: var(--space-3); border-left: 3px solid var(--color-primary); background: color-mix(in srgb, var(--color-primary) 10%, transparent); border-radius: 0 var(--radius-md) var(--radius-md) 0; font-size: var(--text-sm); color: var(--color-text); white-space: pre-wrap; }
     .pinned-note.is-active { display: block; }
     .pinned-note-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-primary); font-weight: 600; margin-bottom: 4px; }
@@ -555,8 +562,9 @@
       <div class="container hero-grid">
         <div>
           <div class="eyebrow">Prompt builder MVP</div>
-          <h1>Turn messy ideas into prompts that actually get results.</h1>
-          <p>PromptMeGood helps people stop guessing what to ask AI. Enter the problem, choose the lane, and get a copy-ready prompt built for clarity, action, and outcomes.</p>
+          <h1>Turn your idea into a powerful AI prompt that actually gets results.</h1>
+          <p>Most people get weak answers from AI because they ask weak questions. This fixes that instantly.</p>
+          <p class="trust-line">Built for people who want real results from AI — not fluff.</p>
           <div class="hero-actions">
             <a class="btn btn-primary" href="#builder">Build a prompt</a>
             <a class="btn btn-secondary" href="#use-cases">See use cases</a>
@@ -595,7 +603,7 @@
             <form id="prompt-form" class="form-grid">
               <div class="field">
                 <label for="goal">Goal</label>
-                <input id="goal" name="goal" type="text" placeholder="Example: Help me start a small online business selling custom mugs" required />
+                <input id="goal" name="goal" type="text" placeholder="I need to make money online fast" required />
                 <p class="helper">Describe the result the user wants from the AI.</p>
               </div>
 
@@ -661,6 +669,15 @@
                 <button class="btn btn-secondary" type="button" id="random-prompt" title="Surprise me with a random prompt">🎲 Random prompt</button>
               </div>
             </form>
+            <div class="examples-block" aria-label="Example prompts">
+              <div class="examples-title">Try one of these:</div>
+              <div class="examples-row">
+                <button type="button" class="example-chip" data-example="Make money online fast">Make money online fast</button>
+                <button type="button" class="example-chip" data-example="Find a winning dropshipping product">Find a winning dropshipping product</button>
+                <button type="button" class="example-chip" data-example="Go viral on TikTok">Go viral on TikTok</button>
+                <button type="button" class="example-chip" data-example="Fix a business problem">Fix a business problem</button>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -684,6 +701,7 @@
               <div class="pinned-note-source" id="pinned-note-source"></div>
             </div>
             <div class="result-box" id="resultBox">Your generated prompt will appear here.</div>
+            <p class="result-helper">Paste this into ChatGPT, Claude, or any AI tool to get better results.</p>
             <div class="actions-row">
               <button class="btn btn-primary" type="button" id="copy-btn">Copy Prompt</button>
               <button class="btn btn-secondary" type="button" id="print-btn" title="Print or save as PDF">Print / Save PDF</button>
@@ -870,6 +888,14 @@
       const resultBox = document.getElementById('resultBox');
       const copyBtn = document.getElementById('copy-btn');
       const fillDemoBtn = document.getElementById('fill-demo');
+      document.querySelectorAll('.example-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          const goalEl = document.getElementById('goal');
+          goalEl.value = chip.getAttribute('data-example') || '';
+          goalEl.focus();
+          goalEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+      });
       const toast = document.getElementById('toast');
 
       const categoryContext = {
