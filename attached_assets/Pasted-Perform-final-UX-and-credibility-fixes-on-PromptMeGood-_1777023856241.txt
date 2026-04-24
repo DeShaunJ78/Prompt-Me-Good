@@ -1,0 +1,87 @@
+Perform final UX and credibility fixes on PromptMeGood. Do not break layout or functionality.
+
+========================
+1. FIX “SEE USE CASES” BUTTON
+========================
+
+Current issue:
+“See Use Cases” does not scroll to the correct section.
+
+Fix:
+- Identify the section that contains the actual use case cards (e.g. “Popular Ways To Use PromptMeGood” or “What can this do?”)
+- Add an id to that section (e.g. id="use-cases")
+- Update the “See Use Cases” button to scroll to that exact section
+- Ensure smooth scrolling
+- Ensure it lands cleanly at the top of the cards on mobile and desktop
+
+========================
+2. FIX “GOAL OF THE WEEK” WIDGET
+========================
+
+Current issue:
+Shows “No focus theme set yet”
+
+Fix:
+Replace empty state with:
+
+“Try focusing on one goal this week. Example: ‘Improve my business idea’”
+
+- Make the example clickable
+- When clicked, auto-fill the “Your Goal (Start Here)” field
+- Keep it simple and clean
+
+========================
+3. REMOVE OR FIX SOCIAL LINKS
+========================
+
+Current issue:
+Footer shows:
+“TikTok | Instagram | YouTube | X”
+but links are placeholders
+
+Fix:
+- If real URLs are NOT available:
+  remove the social links entirely
+
+- If URLs exist:
+  replace placeholders with real links
+
+Do NOT leave dead links
+
+========================
+4. FIX LANGUAGE (IMPORTANT)
+========================
+
+Replace any instance of:
+“dodge AI fingerprints”
+
+With:
+“reduce obvious robotic patterns”
+
+Keep tone clean, professional, and trustworthy
+
+========================
+5. IMPROVE “OPEN IN” LABEL
+========================
+
+Change:
+“Open In:”
+
+To:
+“Use Your Prompt In:”
+
+Ensure:
+- Styling remains consistent
+- Layout is not broken
+
+========================
+FINAL CHECK
+========================
+
+After updates:
+- Confirm “See Use Cases” scroll works correctly
+- Confirm Goal of the Week shows helpful default
+- Confirm no placeholder links remain
+- Confirm updated wording is applied everywhere
+- Confirm no JavaScript errors
+- Confirm mobile layout still clean
