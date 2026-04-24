@@ -903,6 +903,7 @@ Context:
               '<button class="btn btn-primary" type="button" data-history-action="restore">Restore</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="copy">Copy</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="favorite" aria-pressed="' + (item.favorite ? 'true' : 'false') + '">' + favLabel + '</button>' +
+              '<button class="btn btn-secondary" type="button" data-history-action="duplicate">Duplicate</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="rename">' + (item.nickname ? 'Rename' : 'Add name') + '</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="tags">Edit tags</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="delete">Delete</button>' +
@@ -986,6 +987,23 @@ Context:
           } catch (e) {
             showToast('Copy failed. Try restoring then copying.');
           }
+        } else if (action === 'duplicate') {
+          const baseName = item.nickname || item.data.goal || 'Untitled prompt';
+          const copy = {
+            id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+            savedAt: Date.now(),
+            data: JSON.parse(JSON.stringify(item.data)),
+            prompt: item.prompt,
+            favorite: false,
+            nickname: 'Copy of ' + baseName,
+            tags: (item.tags || []).slice()
+          };
+          const favs = items.filter(function (i) { return i.favorite; });
+          const nonFavs = items.filter(function (i) { return !i.favorite; });
+          nonFavs.unshift(copy);
+          saveHistory(favs.concat(nonFavs.slice(0, HISTORY_LIMIT)));
+          renderHistory();
+          showToast('Duplicated as "' + copy.nickname + '".');
         } else if (action === 'rename') {
           const current = item.nickname || '';
           const input = window.prompt('Nickname for this prompt (leave blank to remove):', current);
