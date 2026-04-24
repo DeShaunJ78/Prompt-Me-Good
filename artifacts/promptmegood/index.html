@@ -322,6 +322,30 @@
     .history-item-remix { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
     .history-item-remix-label { font-size: var(--text-xs); color: var(--color-text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
     .history-item-remix .btn { min-height: 32px; padding: 0 var(--space-3); font-size: var(--text-xs); }
+    .compare-overlay {
+      position: fixed; inset: 0; z-index: 40; background: color-mix(in srgb, var(--color-bg) 80%, transparent);
+      backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: var(--space-4);
+    }
+    .compare-overlay.is-open { display: flex; }
+    .compare-modal {
+      width: min(1100px, 100%); max-height: 92vh; overflow: auto; background: var(--color-surface);
+      border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-6);
+      display: flex; flex-direction: column; gap: var(--space-4);
+    }
+    .compare-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
+    .compare-head h3 { margin: 0; }
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+    @media (max-width: 720px) { .compare-grid { grid-template-columns: 1fr; } }
+    .compare-col { display: flex; flex-direction: column; gap: var(--space-2); }
+    .compare-col h4 { margin: 0; font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); }
+    .compare-text {
+      background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      padding: var(--space-3); white-space: pre-wrap; font-family: var(--font-mono, monospace);
+      font-size: var(--text-sm); line-height: 1.5; max-height: 50vh; overflow: auto;
+    }
+    .compare-col-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .compare-col-actions .btn { min-height: 36px; padding: 0 var(--space-3); font-size: var(--text-xs); }
+    .compare-foot { display: flex; justify-content: flex-end; }
     .panel-head-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
     .panel-head-row .btn { min-height: 36px; padding: 0 var(--space-4); font-size: var(--text-xs); flex: 0 0 auto; }
     .toast {
@@ -556,6 +580,37 @@
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite">Copied to clipboard.</div>
+
+  <div class="compare-overlay" id="compare-overlay" role="dialog" aria-modal="true" aria-labelledby="compare-title" aria-hidden="true">
+    <div class="compare-modal">
+      <div class="compare-head">
+        <h3 id="compare-title">Compare prompts</h3>
+        <button class="btn btn-secondary" type="button" id="compare-close" aria-label="Close compare view">Close</button>
+      </div>
+      <div class="compare-grid">
+        <div class="compare-col">
+          <h4 id="compare-original-label">Original</h4>
+          <div class="compare-text" id="compare-original-text"></div>
+          <div class="compare-col-actions">
+            <button class="btn btn-secondary" type="button" id="compare-copy-original">Copy</button>
+            <button class="btn btn-primary" type="button" id="compare-use-original">Use this</button>
+          </div>
+        </div>
+        <div class="compare-col">
+          <h4 id="compare-remix-label">Remix</h4>
+          <div class="compare-text" id="compare-remix-text"></div>
+          <div class="compare-col-actions">
+            <button class="btn btn-secondary" type="button" id="compare-copy-remix">Copy</button>
+            <button class="btn btn-secondary" type="button" id="compare-save-remix">Save to history</button>
+            <button class="btn btn-primary" type="button" id="compare-use-remix">Use this</button>
+          </div>
+        </div>
+      </div>
+      <div class="compare-foot">
+        <button class="btn btn-secondary" type="button" id="compare-close-foot">Done</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     (function () {
@@ -896,12 +951,15 @@ Context:
           restoreHistoryItem(item);
         } else if (action === 'remix') {
           const mode = btn.dataset.remixMode || '';
-          restoreHistoryItem(item);
           const remixed = generatePrompt(item.data, mode);
-          resultBox.textContent = remixed;
-          addToHistory(item.data, remixed);
-          document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
-          showToast('Remixed: ' + (mode || 'updated') + '.');
+          const modeLabel = mode === 'detailed' ? 'More detailed' : mode === 'aggressive' ? 'More aggressive' : mode === 'beginner' ? 'Beginner-friendly' : 'Remix';
+          openCompare({
+            data: item.data,
+            original: item.prompt,
+            remix: remixed,
+            originalLabel: 'Original',
+            remixLabel: modeLabel
+          });
         } else if (action === 'copy') {
           try {
             await navigator.clipboard.writeText(item.prompt);
@@ -1091,6 +1149,68 @@ Context:
         const demoPrompt = generatePrompt(demoData);
         resultBox.textContent = demoPrompt;
         addToHistory(demoData, demoPrompt);
+      });
+      const compareOverlay = document.getElementById('compare-overlay');
+      const compareTitle = document.getElementById('compare-title');
+      const compareOriginalLabel = document.getElementById('compare-original-label');
+      const compareRemixLabel = document.getElementById('compare-remix-label');
+      const compareOriginalText = document.getElementById('compare-original-text');
+      const compareRemixText = document.getElementById('compare-remix-text');
+      const compareCopyOriginal = document.getElementById('compare-copy-original');
+      const compareCopyRemix = document.getElementById('compare-copy-remix');
+      const compareUseOriginal = document.getElementById('compare-use-original');
+      const compareUseRemix = document.getElementById('compare-use-remix');
+      const compareSaveRemix = document.getElementById('compare-save-remix');
+      const compareClose = document.getElementById('compare-close');
+      const compareCloseFoot = document.getElementById('compare-close-foot');
+
+      let compareCtx = null;
+
+      function openCompare(ctx) {
+        compareCtx = ctx;
+        compareTitle.textContent = 'Compare prompts';
+        compareOriginalLabel.textContent = ctx.originalLabel;
+        compareRemixLabel.textContent = ctx.remixLabel;
+        compareOriginalText.textContent = ctx.original;
+        compareRemixText.textContent = ctx.remix;
+        compareOverlay.classList.add('is-open');
+        compareOverlay.setAttribute('aria-hidden', 'false');
+      }
+      function closeCompare() {
+        compareOverlay.classList.remove('is-open');
+        compareOverlay.setAttribute('aria-hidden', 'true');
+        compareCtx = null;
+      }
+      compareClose.addEventListener('click', closeCompare);
+      compareCloseFoot.addEventListener('click', closeCompare);
+      compareOverlay.addEventListener('click', function (e) { if (e.target === compareOverlay) closeCompare(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && compareOverlay.classList.contains('is-open')) closeCompare(); });
+
+      async function copyText(text) {
+        try { await navigator.clipboard.writeText(text); showToast('Copied to clipboard.'); }
+        catch (e) { showToast('Copy failed.'); }
+      }
+      compareCopyOriginal.addEventListener('click', function () { if (compareCtx) copyText(compareCtx.original); });
+      compareCopyRemix.addEventListener('click', function () { if (compareCtx) copyText(compareCtx.remix); });
+      compareUseOriginal.addEventListener('click', function () {
+        if (!compareCtx) return;
+        resultBox.textContent = compareCtx.original;
+        closeCompare();
+        document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        showToast('Using original.');
+      });
+      compareUseRemix.addEventListener('click', function () {
+        if (!compareCtx) return;
+        resultBox.textContent = compareCtx.remix;
+        addToHistory(compareCtx.data, compareCtx.remix);
+        closeCompare();
+        document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        showToast('Using remix and saved to history.');
+      });
+      compareSaveRemix.addEventListener('click', function () {
+        if (!compareCtx) return;
+        addToHistory(compareCtx.data, compareCtx.remix);
+        showToast('Remix saved to history.');
       });
     })();
   </script>
