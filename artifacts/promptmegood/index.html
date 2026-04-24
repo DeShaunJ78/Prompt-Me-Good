@@ -507,7 +507,12 @@
                 <h2>Prompt history</h2>
                 <p>Your last 25 generated prompts are saved on this device. Restore one to copy or remix it again.</p>
               </div>
-              <button class="btn btn-secondary" type="button" id="clear-history">Clear all</button>
+              <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+                <button class="btn btn-secondary" type="button" id="export-history">Export</button>
+                <button class="btn btn-secondary" type="button" id="import-history">Import</button>
+                <button class="btn btn-secondary" type="button" id="clear-history">Clear all</button>
+                <input type="file" id="import-history-file" accept="application/json,.json" style="display:none" />
+              </div>
             </div>
           </div>
           <div class="history-search">
@@ -912,6 +917,81 @@ Context:
       historySearchEl.addEventListener('input', function (e) {
         historyQuery = e.target.value;
         renderHistory();
+      });
+
+      const exportBtn = document.getElementById('export-history');
+      const importBtn = document.getElementById('import-history');
+      const importFileEl = document.getElementById('import-history-file');
+
+      exportBtn.addEventListener('click', function () {
+        const items = loadHistory();
+        if (items.length === 0) { showToast('Nothing to export yet.'); return; }
+        const payload = { app: 'promptmegood', version: 1, exportedAt: new Date().toISOString(), items: items };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const stamp = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = 'promptmegood-history-' + stamp + '.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Exported ' + items.length + ' prompt' + (items.length === 1 ? '' : 's') + '.');
+      });
+
+      importBtn.addEventListener('click', function () { importFileEl.click(); });
+
+      importFileEl.addEventListener('change', function (event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function () {
+          try {
+            const parsed = JSON.parse(String(reader.result));
+            const incoming = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.items) ? parsed.items : null);
+            if (!incoming) throw new Error('Invalid file');
+            const valid = incoming.filter(function (i) {
+              return i && typeof i === 'object' && typeof i.prompt === 'string' && i.data && typeof i.data === 'object';
+            }).map(function (i) {
+              return {
+                id: i.id || ('p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8)),
+                savedAt: typeof i.savedAt === 'number' ? i.savedAt : Date.now(),
+                data: i.data,
+                prompt: i.prompt,
+                favorite: !!i.favorite,
+                tags: Array.isArray(i.tags) ? i.tags.filter(function (t) { return typeof t === 'string'; }) : []
+              };
+            });
+            if (valid.length === 0) { showToast('No valid prompts in that file.'); return; }
+            const replace = window.confirm('Import ' + valid.length + ' prompt' + (valid.length === 1 ? '' : 's') + '?\n\nOK = replace your current history.\nCancel = merge with what you have.');
+            let next;
+            if (replace) {
+              next = valid;
+            } else {
+              const existing = loadHistory();
+              const seen = new Set(existing.map(function (i) { return i.id; }));
+              const merged = existing.slice();
+              valid.forEach(function (i) {
+                if (seen.has(i.id)) i.id = 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+                seen.add(i.id);
+                merged.push(i);
+              });
+              const favs = merged.filter(function (i) { return i.favorite; });
+              const nonFavs = merged.filter(function (i) { return !i.favorite; })
+                .sort(function (a, b) { return b.savedAt - a.savedAt; }).slice(0, HISTORY_LIMIT);
+              next = favs.concat(nonFavs);
+            }
+            saveHistory(next);
+            renderHistory();
+            showToast('Imported ' + valid.length + ' prompt' + (valid.length === 1 ? '' : 's') + '.');
+          } catch (e) {
+            showToast('Could not read that file.');
+          }
+          importFileEl.value = '';
+        };
+        reader.onerror = function () { showToast('Could not read that file.'); importFileEl.value = ''; };
+        reader.readAsText(file);
       });
 
       clearHistoryBtn.addEventListener('click', function () {
