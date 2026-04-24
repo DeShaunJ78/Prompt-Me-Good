@@ -1,0 +1,86 @@
+Act as a professional product onboarding specialist and technical writer.
+
+Create a complete, user-friendly manual for a web app called “PromptMeGood.”
+
+The purpose of the app:
+PromptMeGood helps users turn their ideas into powerful, structured AI prompts that can be used in tools like ChatGPT, Claude, and Perplexity.
+
+Your goal:
+Break down EVERY function of the app clearly so a beginner can understand and use it confidently without confusion.
+
+Structure the manual as follows:
+
+1. What PromptMeGood Does
+- Simple explanation of the tool
+- Who it’s for
+- What problem it solves
+
+2. How To Use The App (Step-by-Step)
+Walk through the full user flow:
+- Starting at “Your Goal (Start Here)”
+- Selecting options (category, experience level, tone, output format)
+- Using “Human-sounding output” and related options
+- Clicking “Generate Prompt”
+- Viewing the result
+- Copying the prompt
+- Using “Open In” buttons
+
+3. Feature Breakdown (Explain Each One)
+Clearly explain:
+- Your Goal (Start Here)
+- Category selector
+- Your Experience Level
+- Tone selector
+- Output format selector
+- Human-sounding output option
+- Reduce robotic patterns option
+- Money Mode (if present)
+- Generate Prompt button
+- Copy Prompt button
+- Improve Your Prompt buttons (More Detailed, More Aggressive, Beginner Friendly)
+- Open In buttons (ChatGPT, Claude, Perplexity)
+- Your Input Summary section
+- Prompt History section
+- Export / Import features (if present)
+
+For each feature:
+- What it does
+- Why it matters
+- When to use it
+
+4. Understanding The Generated Prompt
+- Explain why the prompt is structured
+- Reassure users that it’s designed to get better AI results
+- Explain how to use it in AI platforms
+
+5. Pro Tips For Better Results
+Include 5–7 simple, powerful tips such as:
+- Be specific with your goal
+- Try different tones
+- Use “Improve Your Prompt” options
+- Test across different AI platforms
+
+6. Common Mistakes To Avoid
+- Being too vague
+- Ignoring output format
+- Not using improvement buttons
+- Overthinking the inputs
+
+7. Quick Start Guide (Short Version)
+- A fast version for users who don’t want to read everything
+
+Tone requirements:
+- Clear, confident, and human
+- No technical jargon
+- Easy to read
+- Slightly conversational but professional
+- Written for everyday users, not developers
+
+Formatting:
+- Use clean sections
+- Use bullet points where helpful
+- Keep it readable, not overwhelming
+
+Goal:
+After reading this manual, a user should feel:
+“I know exactly what this tool does and how to use it.”

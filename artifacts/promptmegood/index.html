@@ -589,6 +589,34 @@
     .panel-head-row > div:first-child { flex: 1 1 240px; min-width: 0; }
     .panel-head-row .btn { min-height: 36px; padding: 0 var(--space-4); font-size: var(--text-xs); flex: 0 0 auto; }
     .panel-head-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .manual-toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--space-3); }
+    .manual-toc a {
+      display: inline-flex; align-items: center;
+      padding: 6px 12px; border-radius: var(--radius-full);
+      background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+      color: var(--color-primary); font-size: var(--text-xs); font-weight: 600;
+      border: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent);
+      transition: background var(--transition-interactive), transform var(--transition-interactive);
+    }
+    .manual-toc a:hover { background: color-mix(in srgb, var(--color-primary) 18%, transparent); transform: translateY(-1px); }
+    .manual-section { margin-top: var(--space-6); padding-top: var(--space-5); border-top: 1px solid var(--color-divider); scroll-margin-top: var(--space-12); }
+    .manual-section:first-of-type { margin-top: 0; padding-top: 0; border-top: none; }
+    .manual-section > h3 { margin: 0 0 var(--space-3); font-size: var(--text-lg); font-weight: 700; color: var(--color-text); }
+    .manual-section p { margin: 0 0 var(--space-3); color: var(--color-text); line-height: 1.65; }
+    .manual-section ul, .manual-section ol { margin: 0 0 var(--space-3) 1.25rem; color: var(--color-text); line-height: 1.65; }
+    .manual-section li + li { margin-top: 6px; }
+    .manual-steps li { padding-left: 4px; }
+    .manual-feature {
+      margin-top: var(--space-4); padding: var(--space-4);
+      border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      background: var(--color-surface);
+    }
+    .manual-feature h4 { margin: 0 0 var(--space-2); font-size: var(--text-base); font-weight: 700; color: var(--color-primary); }
+    .manual-feature p { margin: 0 0 6px; font-size: var(--text-sm); color: var(--color-text); line-height: 1.6; }
+    .manual-feature p:last-child { margin-bottom: 0; }
+    .manual-feature ul { margin-left: 1.25rem; font-size: var(--text-sm); }
+    .manual-mistakes li { margin-top: 8px; }
+    #manual-tips { margin-top: var(--space-6); scroll-margin-top: var(--space-12); }
     .toast {
       position: fixed; right: var(--space-4); bottom: var(--space-4); z-index: 30;
       background: var(--color-text); color: var(--color-text-inverse);
@@ -1121,6 +1149,210 @@
                 <li>Try the example chips ("Try one of these") if you're stuck — they're great starting points.</li>
               </ul>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="app-section" id="manual">
+      <div class="container">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>The PromptMeGood Manual</h2>
+            <p>Everything you need to use the app with confidence — read it once and you'll never feel lost again.</p>
+            <nav class="manual-toc" aria-label="Manual sections">
+              <a href="#manual-what">1. What it does</a>
+              <a href="#manual-how">2. How to use it</a>
+              <a href="#manual-features">3. Feature breakdown</a>
+              <a href="#manual-prompt">4. Your generated prompt</a>
+              <a href="#manual-tips">5. Pro tips</a>
+              <a href="#manual-mistakes">6. Common mistakes</a>
+              <a href="#manual-quick">7. Quick start</a>
+            </nav>
+          </div>
+
+          <div class="form-wrap">
+            <article class="manual-section" id="manual-what">
+              <h3>1. What PromptMeGood Does</h3>
+              <p>PromptMeGood turns a rough idea into a clear, structured prompt you can paste into ChatGPT, Claude, Perplexity, or any other AI tool. Instead of typing one sentence and hoping for a useful answer, you describe your goal and the app builds the full prompt for you — with the right role, tone, format, and instructions baked in.</p>
+              <p><strong>Who it's for:</strong> anyone who uses AI but feels like the answers are too generic, too shallow, or just plain off. Beginners, creators, side-hustlers, students, business owners — if you've ever thought "I know what I want but I don't know how to ask for it," this is for you.</p>
+              <p><strong>The problem it solves:</strong> AI is only as good as the prompt you give it. Most people give it a sentence and get a paragraph of fluff back. PromptMeGood writes the kind of prompt that experts use — so you get sharper, more useful answers without learning prompt engineering.</p>
+            </article>
+
+            <article class="manual-section" id="manual-how">
+              <h3>2. How To Use The App (Step-by-Step)</h3>
+              <ol class="manual-steps">
+                <li><strong>Start at "Your Goal (Start Here)."</strong> Type what you actually want help with — in plain words. Example: <em>"Help me launch a podcast about personal finance."</em> Don't worry about being polished.</li>
+                <li><strong>Pick a Category.</strong> Tell the app which world your goal lives in — Business, Content, Money, Personal, or Faith. This shapes the kind of expertise the AI brings.</li>
+                <li><strong>Pick Your Experience Level.</strong> Beginner gets simpler steps and clear definitions. Intermediate skips the basics. Advanced goes deep on strategy and tradeoffs.</li>
+                <li><strong>Choose a Tone.</strong> Professional, Aggressive, Casual, or Expert. This decides how the answer will <em>feel</em>.</li>
+                <li><strong>Pick an Output Format.</strong> Step-by-step, list, or detailed breakdown — based on how you want to consume the answer.</li>
+                <li><strong>(Optional) Turn on the human-sounding options.</strong> Use these when you want the result to read like a real person wrote it — perfect for emails, social posts, or anything customer-facing.</li>
+                <li><strong>(Optional) Turn on Money Mode.</strong> Use it when your goal is income, speed, or execution. The AI will lean toward practical, low-cost actions over theory.</li>
+                <li><strong>Click "Generate Prompt."</strong> The full prompt appears on the right. The page automatically scrolls you to it.</li>
+                <li><strong>Click "Copy Prompt."</strong> One tap copies the whole thing to your clipboard.</li>
+                <li><strong>Use the "Open In" buttons.</strong> Tap ChatGPT, Claude, or Perplexity to launch the platform in a new tab — then paste your prompt and run it.</li>
+              </ol>
+            </article>
+
+            <article class="manual-section" id="manual-features">
+              <h3>3. Feature Breakdown</h3>
+
+              <div class="manual-feature">
+                <h4>Your Goal (Start Here)</h4>
+                <p><strong>What it does:</strong> Captures what you want help with in your own words.</p>
+                <p><strong>Why it matters:</strong> This is the single most important field — it's the seed the entire prompt is built from.</p>
+                <p><strong>When to use:</strong> Always. Even one honest sentence here works better than leaving it blank.</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Category Selector</h4>
+                <p><strong>What it does:</strong> Tells the AI which subject-matter expert "hat" to wear — Business, Content, Money, Personal, or Faith.</p>
+                <p><strong>Why it matters:</strong> The same goal gets different advice from a marketer vs. a financial coach. Picking a category sharpens the lens.</p>
+                <p><strong>When to use:</strong> Match it to where your goal actually lives — if you're not sure, pick the closest one.</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Your Experience Level</h4>
+                <p><strong>What it does:</strong> Tells the AI how much background knowledge you already have.</p>
+                <p><strong>Why it matters:</strong> Stops you from getting beginner-level fluff when you need depth — or jargon-heavy answers when you're just starting.</p>
+                <p><strong>When to use:</strong> Be honest with yourself. Beginner is fine; nobody is judging you.</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Tone Selector</h4>
+                <p><strong>What it does:</strong> Sets the personality of the response.</p>
+                <p><strong>Why it matters:</strong> A casual tone works for social posts; an expert tone works for strategy. Tone changes the whole feel of the answer.</p>
+                <p><strong>When to use:</strong> Match the tone to where you'll actually use the answer.</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Output Format Selector</h4>
+                <p><strong>What it does:</strong> Decides whether the answer is a step-by-step plan, a quick list, or a detailed breakdown.</p>
+                <p><strong>Why it matters:</strong> The right format makes the answer easier to actually use.</p>
+                <p><strong>When to use:</strong> Step-by-step for action plans, list for fast scanning, detailed breakdown for deeper learning.</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Human-Sounding Output</h4>
+                <p><strong>What it does:</strong> Asks the AI to write with a natural, varied voice instead of stiff, formal text.</p>
+                <p><strong>Why it matters:</strong> Anything customer-facing — emails, posts, captions, scripts — needs to sound human.</p>
+                <p><strong>When to use:</strong> Turn it on when the answer will be read by other people.</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Reduce Robotic Patterns</h4>
+                <p><strong>What it does:</strong> Pushes the AI to avoid predictable AI patterns — think varied sentence lengths and subtle imperfections.</p>
+                <p><strong>Why it matters:</strong> AI-generated content can feel obvious. This makes it blend in.</p>
+                <p><strong>When to use:</strong> When the writing must not look AI-generated.</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Money Mode</h4>
+                <p><strong>What it does:</strong> Forces the AI to focus on practical, fast-income actions — speed, simplicity, low-cost paths.</p>
+                <p><strong>Why it matters:</strong> Without it, the AI tends to go theoretical. With it, you get next-step plays.</p>
+                <p><strong>When to use:</strong> Side hustles, offers, monetization, or anything where the goal is "make money."</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Generate Prompt Button</h4>
+                <p><strong>What it does:</strong> Builds the full prompt from your inputs and shows it on the right.</p>
+                <p><strong>Why it matters:</strong> This is the moment your idea becomes a usable AI prompt.</p>
+                <p><strong>When to use:</strong> Anytime you've finished filling in the form.</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Copy Prompt Button</h4>
+                <p><strong>What it does:</strong> Copies the entire generated prompt to your clipboard.</p>
+                <p><strong>Why it matters:</strong> One click and you're ready to paste anywhere.</p>
+                <p><strong>When to use:</strong> Right before you head to ChatGPT, Claude, or any AI tool.</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Improve Your Prompt (More Detailed / More Aggressive / Beginner Friendly)</h4>
+                <p><strong>What it does:</strong> Instantly remixes the prompt with a sharper angle.</p>
+                <ul>
+                  <li><strong>More Detailed</strong> — adds examples, decision criteria, and a checklist.</li>
+                  <li><strong>More Aggressive</strong> — pushes the AI to be direct, action-first, no fluff.</li>
+                  <li><strong>Beginner Friendly</strong> — slows it down, defines terms, gives a simple first step.</li>
+                </ul>
+                <p><strong>When to use:</strong> When the first prompt is close but not perfect. Tap one and rerun.</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Open In Buttons (ChatGPT, Claude, Perplexity)</h4>
+                <p><strong>What it does:</strong> Opens the AI tool of your choice in a new tab so you can paste and run.</p>
+                <p><strong>Why it matters:</strong> Saves a step and lets you compare results across platforms.</p>
+                <p><strong>When to use:</strong> Right after you copy your prompt.</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Your Input Summary</h4>
+                <p><strong>What it does:</strong> Shows the choices behind your prompt plus weekly stats — new prompts, reuses, top tag, and a streak calendar.</p>
+                <p><strong>Why it matters:</strong> Tracks your activity so you can see your prompting habits over time.</p>
+                <p><strong>When to use:</strong> Anytime you want to look back at what you've been working on.</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Prompt History</h4>
+                <p><strong>What it does:</strong> Saves your last 25 prompts on this device. You can search, sort, tag, favorite, add notes, restore, archive, or compare two side-by-side.</p>
+                <p><strong>Why it matters:</strong> Great prompts are worth keeping. History lets you reuse a winner with one tap.</p>
+                <p><strong>When to use:</strong> Whenever you want to revisit, remix, or compare past work.</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Export &amp; Import</h4>
+                <p><strong>What it does:</strong> Export Everything downloads all your data as a JSON backup. Import Backup restores it on any device.</p>
+                <p><strong>Why it matters:</strong> Your prompts live in your browser. Exporting keeps them safe and portable.</p>
+                <p><strong>When to use:</strong> Before clearing your browser, switching devices, or just for peace of mind.</p>
+              </div>
+            </article>
+
+            <article class="manual-section" id="manual-prompt">
+              <h3>4. Understanding The Generated Prompt</h3>
+              <p>The prompt isn't just your goal copied back at you — it's a structured set of instructions that gives the AI a role, the rules to follow, the format to use, and the next steps to deliver. That structure is what makes the answer noticeably better.</p>
+              <p><strong>Why it's structured:</strong> AI tools respond to clear instructions. Vague prompts get vague answers. The structure tells the AI exactly what good looks like.</p>
+              <p><strong>How to use it:</strong> Copy the prompt, paste it into ChatGPT, Claude, Perplexity, Gemini, or any AI tool, and hit send. That's it. The first answer should already be better than what you'd normally get. If it's close but not perfect, hit one of the Improve buttons and rerun.</p>
+              <p><strong>What to expect:</strong> Sharper opening interpretations, real examples, fewer disclaimers, and a list of next actions at the end.</p>
+            </article>
+
+            <div class="guide-tips" id="manual-tips">
+              <h3>5. Pro Tips For Better Results</h3>
+              <ul>
+                <li><strong>Be specific with your goal.</strong> "Help me write a tweet" is fine. "Help me write a tweet about coffee aimed at remote workers" is way better.</li>
+                <li><strong>Use Extra Details.</strong> Budget, deadline, audience, platform — every detail you add makes the answer sharper.</li>
+                <li><strong>Try different tones for the same goal.</strong> A Professional and an Aggressive prompt will surface very different angles.</li>
+                <li><strong>Don't skip the Improve buttons.</strong> The fastest way to a better answer is one tap of More Detailed or More Aggressive.</li>
+                <li><strong>Test across platforms.</strong> ChatGPT, Claude, and Perplexity all answer differently — try the same prompt in each.</li>
+                <li><strong>Save winners as templates.</strong> If a prompt nails it, save it so you can reuse it in one click.</li>
+                <li><strong>Use the example chips when stuck.</strong> They're great unblockers if your mind goes blank.</li>
+              </ul>
+            </div>
+
+            <article class="manual-section" id="manual-mistakes">
+              <h3>6. Common Mistakes To Avoid</h3>
+              <ul class="manual-mistakes">
+                <li><strong>Being too vague.</strong> "Help me make money" tells the AI almost nothing. Add the context — what, who, where, by when.</li>
+                <li><strong>Ignoring output format.</strong> If you want a checklist, pick a list. If you want a plan, pick step-by-step. Format changes how usable the answer is.</li>
+                <li><strong>Not using the improvement buttons.</strong> The first prompt is rarely the best one. The Improve buttons exist for a reason — use them.</li>
+                <li><strong>Overthinking the inputs.</strong> A messy honest sentence beats a polished vague one. You can always remix.</li>
+                <li><strong>Skipping Money Mode when it fits.</strong> If your goal is execution and income, leaving Money Mode off softens the answer.</li>
+                <li><strong>Forgetting to save winners.</strong> Great prompts are gold. Add tags, favorite them, or save them as templates.</li>
+              </ul>
+            </article>
+
+            <article class="manual-section" id="manual-quick">
+              <h3>7. Quick Start Guide</h3>
+              <ol class="manual-steps">
+                <li>Type your goal in plain words.</li>
+                <li>Pick a category, experience level, tone, and output format.</li>
+                <li>Click <strong>Generate Prompt</strong>.</li>
+                <li>Click <strong>Copy Prompt</strong>.</li>
+                <li>Tap an <strong>Open In</strong> button (ChatGPT, Claude, or Perplexity), paste, and run.</li>
+                <li>Not perfect? Hit <strong>More Detailed</strong>, <strong>More Aggressive</strong>, or <strong>Beginner Friendly</strong> and rerun.</li>
+              </ol>
+              <p>That's it. You're prompting like a pro.</p>
+            </article>
           </div>
         </div>
       </div>
