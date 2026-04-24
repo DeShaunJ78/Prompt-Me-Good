@@ -280,6 +280,22 @@
       padding: 0 0 var(--space-8);
       color: var(--color-text-muted); font-size: var(--text-sm);
     }
+    .site-footer {
+      margin-top: var(--space-8);
+      padding: var(--space-6) 0 var(--space-7);
+      border-top: 1px solid var(--color-divider);
+      background: var(--color-surface);
+    }
+    .site-footer-inner { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); text-align: center; }
+    .site-footer-brand { font-weight: 700; color: var(--color-text); font-size: var(--text-base); }
+    .site-footer-tagline { margin: 0; color: var(--color-text-muted); font-size: var(--text-sm); max-width: 520px; }
+    .site-footer-social { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin-top: var(--space-2); }
+    .site-footer-link {
+      color: var(--color-text); text-decoration: none; font-size: var(--text-sm); font-weight: 600;
+      padding: 6px 10px; border-radius: var(--radius-sm); transition: background var(--transition-interactive), color var(--transition-interactive);
+    }
+    .site-footer-link:hover { background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-primary); }
+    .site-footer-divider { color: var(--color-text-muted); opacity: 0.6; }
     .history-search { padding: var(--space-4) var(--space-5) 0; }
     .history-search input {
       width: 100%; min-height: 44px; border-radius: var(--radius-md); padding: 0 var(--space-4);
@@ -568,7 +584,7 @@
         <div class="global-results" id="global-search-results" role="listbox" aria-label="Search results"></div>
       </div>
       <div class="top-actions">
-        <a class="ghost-link" href="#builder">Open builder</a>
+        <a class="ghost-link" href="#builder">Open Builder</a>
         <a class="ghost-link" href="#history">History</a>
         <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -601,8 +617,8 @@
           <p>Most people get weak answers from AI because they ask weak questions. This fixes that instantly.</p>
           <p class="trust-line">Built for people who want real results from AI — not fluff.</p>
           <div class="hero-actions">
-            <a class="btn btn-primary" href="#builder">Build a prompt</a>
-            <a class="btn btn-secondary" href="#use-cases">See use cases</a>
+            <a class="btn btn-primary" href="#builder">Build A Prompt</a>
+            <a class="btn btn-secondary" href="#use-cases">See Use Cases</a>
           </div>
         </div>
         <aside class="hero-card" aria-label="Product benefits">
@@ -628,7 +644,7 @@
               <div class="weekly-goal-pin-head">
                 <span class="weekly-goal-pin-label">📌 Goal of the week</span>
                 <div class="weekly-goal-pin-actions">
-                  <button type="button" class="link-btn" id="weekly-goal-use" hidden>Use as goal</button>
+                  <button type="button" class="link-btn" id="weekly-goal-use" hidden>Use As Goal</button>
                   <button type="button" class="link-btn" id="weekly-goal-edit">Set</button>
                   <button type="button" class="link-btn" id="weekly-goal-clear" hidden>Clear</button>
                 </div>
@@ -723,8 +739,8 @@
 
               <div class="actions-row">
                 <button class="btn btn-primary" type="submit">Generate Prompt</button>
-                <button class="btn btn-secondary" type="button" id="fill-demo">Use demo values</button>
-                <button class="btn btn-secondary" type="button" id="random-prompt" title="Surprise me with a random prompt">🎲 Random prompt</button>
+                <button class="btn btn-secondary" type="button" id="fill-demo">Use Demo Values</button>
+                <button class="btn btn-secondary" type="button" id="random-prompt" title="Surprise me with a random prompt">🎲 Random Prompt</button>
               </div>
             </form>
             <div class="examples-block" aria-label="Example prompts">
@@ -790,8 +806,8 @@
               <p>This is what you entered to generate your prompt.</p>
             </div>
             <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
-              <button class="btn btn-secondary" type="button" id="export-everything" title="Download all your data as a JSON backup">Export everything</button>
-              <button class="btn btn-secondary" type="button" id="import-everything" title="Restore from a JSON backup">Import backup</button>
+              <button class="btn btn-secondary" type="button" id="export-everything" title="Download all your data as a JSON backup">Export Everything</button>
+              <button class="btn btn-secondary" type="button" id="import-everything" title="Restore from a JSON backup">Import Backup</button>
               <input type="file" id="import-everything-file" accept="application/json,.json" style="display:none" />
             </div>
           </div>
@@ -813,7 +829,7 @@
                 <p>One-click starting points. Loads the form and generates a prompt instantly.</p>
               </div>
               <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
-                <button class="btn btn-secondary" type="button" id="export-templates">Export yours</button>
+                <button class="btn btn-secondary" type="button" id="export-templates">Export Yours</button>
                 <button class="btn btn-secondary" type="button" id="import-templates">Import</button>
                 <input type="file" id="import-templates-file" accept="application/json,.json" style="display:none" />
               </div>
@@ -834,11 +850,11 @@
                 <p>Your last 25 generated prompts are saved on this device. Restore one to copy or remix it again.</p>
               </div>
               <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
-                <button class="btn btn-secondary" type="button" id="toggle-archived" aria-pressed="false">Show archived</button>
-                <button class="btn btn-secondary" type="button" id="compare-two" aria-pressed="false">Compare two</button>
+                <button class="btn btn-secondary" type="button" id="toggle-archived" aria-pressed="false">Show Archived</button>
+                <button class="btn btn-secondary" type="button" id="compare-two" aria-pressed="false">Compare Two</button>
                 <button class="btn btn-secondary" type="button" id="export-history">Export</button>
                 <button class="btn btn-secondary" type="button" id="import-history">Import</button>
-                <button class="btn btn-secondary" type="button" id="clear-history">Clear all</button>
+                <button class="btn btn-secondary" type="button" id="clear-history">Clear All</button>
                 <input type="file" id="import-history-file" accept="application/json,.json" style="display:none" />
               </div>
             </div>
@@ -987,11 +1003,21 @@
       </div>
     </section>
 
-    <section class="footer" id="deploy">
-      <div class="container">
-        Built as a single-file static AI Prompt Engine for fast deployment on Vercel, Netlify, or any static host.
+    <footer class="site-footer" id="site-footer">
+      <div class="container site-footer-inner">
+        <div class="site-footer-brand">&copy; PromptMeGood</div>
+        <p class="site-footer-tagline">Built for people who want real results from AI &mdash; not fluff.</p>
+        <nav class="site-footer-social" aria-label="Social links">
+          <a class="site-footer-link" href="#" aria-label="TikTok">TikTok</a>
+          <span class="site-footer-divider" aria-hidden="true">|</span>
+          <a class="site-footer-link" href="#" aria-label="Instagram">Instagram</a>
+          <span class="site-footer-divider" aria-hidden="true">|</span>
+          <a class="site-footer-link" href="#" aria-label="YouTube">YouTube</a>
+          <span class="site-footer-divider" aria-hidden="true">|</span>
+          <a class="site-footer-link" href="#" aria-label="X">X</a>
+        </nav>
       </div>
-    </section>
+    </footer>
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite">Copied to clipboard.</div>
@@ -1008,7 +1034,7 @@
           <div class="compare-text" id="compare-original-text"></div>
           <div class="compare-col-actions">
             <button class="btn btn-secondary" type="button" id="compare-copy-original">Copy</button>
-            <button class="btn btn-primary" type="button" id="compare-use-original">Use this</button>
+            <button class="btn btn-primary" type="button" id="compare-use-original">Use This</button>
           </div>
         </div>
         <div class="compare-col">
@@ -1016,8 +1042,8 @@
           <div class="compare-text" id="compare-remix-text"></div>
           <div class="compare-col-actions">
             <button class="btn btn-secondary" type="button" id="compare-copy-remix">Copy</button>
-            <button class="btn btn-secondary" type="button" id="compare-save-remix">Save to history</button>
-            <button class="btn btn-primary" type="button" id="compare-use-remix">Use this</button>
+            <button class="btn btn-secondary" type="button" id="compare-save-remix">Save To History</button>
+            <button class="btn btn-primary" type="button" id="compare-use-remix">Use This</button>
           </div>
         </div>
       </div>
@@ -1595,16 +1621,16 @@ Context:
               '<button class="btn btn-secondary" type="button" data-history-action="remix" data-remix-mode="beginner">Beginner Friendly</button>' +
             '</div>' +
             '<div class="history-item-actions">' +
-              (compareSelectMode ? '<button class="btn btn-primary" type="button" data-history-action="compare-pick">' + (isPicked ? 'Selected ✓' : 'Pick for compare') + '</button>' : '') +
+              (compareSelectMode ? '<button class="btn btn-primary" type="button" data-history-action="compare-pick">' + (isPicked ? 'Selected ✓' : 'Pick For Compare') + '</button>' : '') +
               '<button class="btn btn-primary" type="button" data-history-action="restore">Restore</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="copy">Copy</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="favorite" aria-pressed="' + (item.favorite ? 'true' : 'false') + '">' + favLabel + '</button>' +
-              '<button class="btn btn-secondary" type="button" data-history-action="save-template">Save as template</button>' +
+              '<button class="btn btn-secondary" type="button" data-history-action="save-template">Save As Template</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="duplicate">Duplicate</button>' +
-              '<button class="btn btn-secondary" type="button" data-history-action="rename">' + (item.nickname ? 'Rename' : 'Add name') + '</button>' +
-              '<button class="btn btn-secondary" type="button" data-history-action="tags">Edit tags</button>' +
-              '<button class="btn btn-secondary" type="button" data-history-action="note">' + (item.note ? 'Edit note' : 'Add note') + '</button>' +
-              (item.note ? '<button class="btn btn-secondary" type="button" data-history-action="pin-note">' + (loadPinnedNote().id === item.id ? 'Unpin note' : 'Pin note') + '</button>' : '') +
+              '<button class="btn btn-secondary" type="button" data-history-action="rename">' + (item.nickname ? 'Rename' : 'Add Name') + '</button>' +
+              '<button class="btn btn-secondary" type="button" data-history-action="tags">Edit Tags</button>' +
+              '<button class="btn btn-secondary" type="button" data-history-action="note">' + (item.note ? 'Edit Note' : 'Add Note') + '</button>' +
+              (item.note ? '<button class="btn btn-secondary" type="button" data-history-action="pin-note">' + (loadPinnedNote().id === item.id ? 'Unpin Note' : 'Pin Note') + '</button>' : '') +
               '<button class="btn btn-secondary" type="button" data-history-action="archive">' + (item.archived ? 'Unarchive' : 'Archive') + '</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="delete">Delete</button>' +
             '</div>' +
