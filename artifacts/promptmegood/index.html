@@ -334,6 +334,16 @@
     @keyframes pulseFlash { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 60%, transparent); } 100% { box-shadow: 0 0 0 14px transparent; } }
     .is-flash-target { animation: pulseFlash 1.4s ease-out 2; outline: 2px solid var(--color-primary); outline-offset: 3px; }
     @media (max-width: 720px) { .global-search { order: 3; flex-basis: 100%; max-width: none; margin: var(--space-2) 0 0; } }
+    @media print {
+      body * { visibility: hidden !important; }
+      #print-area, #print-area * { visibility: visible !important; }
+      #print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 24px; color: #000; background: #fff; font-family: 'Helvetica', 'Arial', sans-serif; }
+      #print-area h1 { font-size: 18px; margin: 0 0 8px; }
+      #print-area .print-meta { font-size: 12px; color: #555; margin-bottom: 16px; border-bottom: 1px solid #ccc; padding-bottom: 8px; }
+      #print-area pre { white-space: pre-wrap; word-wrap: break-word; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.5; margin: 0; }
+      #print-area .print-footer { margin-top: 24px; font-size: 10px; color: #888; border-top: 1px solid #ccc; padding-top: 8px; }
+    }
+    #print-area { display: none; }
     .history-item.is-favorite { border-color: color-mix(in srgb, var(--color-primary) 50%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent) inset; }
     .history-item.is-favorite .history-item-meta { color: var(--color-primary); }
     .history-item.is-favorite { cursor: grab; }
@@ -591,6 +601,7 @@
             <div class="result-box" id="resultBox">Your generated prompt will appear here.</div>
             <div class="actions-row">
               <button class="btn btn-primary" type="button" id="copy-btn">Copy Prompt</button>
+              <button class="btn btn-secondary" type="button" id="print-btn" title="Print or save as PDF">Print / Save PDF</button>
               <button class="btn btn-secondary" type="button" data-remix="detailed">Make more detailed</button>
               <button class="btn btn-secondary" type="button" data-remix="aggressive">Make more aggressive</button>
               <button class="btn btn-secondary" type="button" data-remix="beginner">Make beginner-friendly</button>
@@ -732,6 +743,12 @@
     </div>
   </div>
 
+  <div id="print-area" aria-hidden="true">
+    <h1 id="print-title"></h1>
+    <div class="print-meta" id="print-meta"></div>
+    <pre id="print-content"></pre>
+    <div class="print-footer">Generated with PromptMeGood</div>
+  </div>
   <script>
     (function () {
       const root = document.documentElement;
@@ -1749,6 +1766,32 @@ Context:
         const prompt = generatePrompt(data);
         resultBox.textContent = prompt;
         addToHistory(data, prompt);
+      });
+
+      const printBtn = document.getElementById('print-btn');
+      const printTitleEl = document.getElementById('print-title');
+      const printMetaEl = document.getElementById('print-meta');
+      const printContentEl = document.getElementById('print-content');
+      printBtn.addEventListener('click', function () {
+        const text = resultBox.textContent || '';
+        if (!text || text === 'Your generated prompt will appear here.') {
+          showToast('Generate a prompt first.');
+          return;
+        }
+        const data = getFormData();
+        const goal = (data.goal || 'Untitled prompt').slice(0, 120);
+        const meta = [
+          'Category: ' + (data.category || '—'),
+          'Skill: ' + (data.skillLevel || '—'),
+          'Tone: ' + (data.tone || '—'),
+          'Format: ' + (data.outputFormat || '—'),
+          data.moneyMode ? 'Money Mode: on' : null,
+          'Date: ' + new Date().toLocaleString()
+        ].filter(Boolean).join(' • ');
+        printTitleEl.textContent = goal;
+        printMetaEl.textContent = meta;
+        printContentEl.textContent = text;
+        window.print();
       });
 
       copyBtn.addEventListener('click', async function () {
