@@ -589,6 +589,52 @@
     .panel-head-row > div:first-child { flex: 1 1 240px; min-width: 0; }
     .panel-head-row .btn { min-height: 36px; padding: 0 var(--space-4); font-size: var(--text-xs); flex: 0 0 auto; }
     .panel-head-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    .manual-panel { padding: 0; overflow: hidden; }
+    .manual-toggle {
+      width: 100%; display: flex; align-items: center; justify-content: space-between;
+      gap: var(--space-3); padding: var(--space-5) var(--space-6);
+      background: transparent; border: none; cursor: pointer; text-align: left;
+      color: var(--color-text); font-family: inherit;
+      transition: background var(--transition-interactive);
+      border-radius: var(--radius-lg);
+    }
+    .manual-toggle:hover { background: color-mix(in srgb, var(--color-primary) 6%, transparent); }
+    .manual-toggle:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+    .manual-toggle-label { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
+    .manual-toggle-icon {
+      flex: 0 0 44px; width: 44px; height: 44px; border-radius: var(--radius-md);
+      display: inline-flex; align-items: center; justify-content: center; font-size: 22px;
+      background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    }
+    .manual-toggle-title { display: block; font-size: var(--text-lg); font-weight: 700; line-height: 1.2; color: var(--color-text); }
+    .manual-toggle-sub { display: block; margin-top: 2px; font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.3; }
+    .manual-chevron {
+      flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: var(--radius-full);
+      color: var(--color-primary);
+      background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+      transition: transform var(--transition-interactive), background var(--transition-interactive);
+    }
+    .manual-toggle[aria-expanded="true"] .manual-chevron { transform: rotate(180deg); }
+    .manual-toggle[aria-expanded="true"] .manual-toggle-sub-open { display: none; }
+    .manual-toggle[aria-expanded="false"] .manual-toggle-sub-close { display: none; }
+    .manual-collapse {
+      max-height: 0; overflow: hidden; opacity: 0;
+      transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+    }
+    .manual-collapse.is-open { opacity: 1; }
+    .manual-collapse-inner { padding: var(--space-2) var(--space-6) var(--space-6); border-top: 1px solid var(--color-divider); }
+    @media (max-width: 600px) {
+      .manual-toggle { padding: var(--space-4); }
+      .manual-toggle-icon { flex-basis: 38px; width: 38px; height: 38px; font-size: 19px; }
+      .manual-toggle-title { font-size: var(--text-base); }
+      .manual-toggle-sub { font-size: var(--text-xs); }
+      .manual-collapse-inner { padding: var(--space-2) var(--space-4) var(--space-5); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .manual-collapse { transition: none; }
+      .manual-chevron { transition: none; }
+    }
     .manual-toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--space-3); }
     .manual-toc a {
       display: inline-flex; align-items: center;
@@ -1156,9 +1202,24 @@
 
     <section class="app-section" id="manual">
       <div class="container">
-        <div class="panel">
+        <div class="panel manual-panel">
+          <button type="button" class="manual-toggle" id="manual-toggle" aria-expanded="false" aria-controls="manual-collapse">
+            <span class="manual-toggle-label">
+              <span class="manual-toggle-icon" aria-hidden="true">📖</span>
+              <span>
+                <span class="manual-toggle-title">How It Works</span>
+                <span class="manual-toggle-sub manual-toggle-sub-open">The full PromptMeGood manual — tap to open</span>
+                <span class="manual-toggle-sub manual-toggle-sub-close">The full PromptMeGood manual — tap to close</span>
+              </span>
+            </span>
+            <span class="manual-chevron" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </span>
+          </button>
+
+          <div class="manual-collapse" id="manual-collapse" aria-labelledby="manual-toggle">
+            <div class="manual-collapse-inner">
           <div class="panel-head">
-            <h2>The PromptMeGood Manual</h2>
             <p>Everything you need to use the app with confidence — read it once and you'll never feel lost again.</p>
             <nav class="manual-toc" aria-label="Manual sections">
               <a href="#manual-what">1. What it does</a>
@@ -1353,6 +1414,8 @@
               </ol>
               <p>That's it. You're prompting like a pro.</p>
             </article>
+          </div>
+            </div>
           </div>
         </div>
       </div>
@@ -3176,6 +3239,82 @@ Context:
           if (first) first.click();
         }
       });
+    })();
+
+    (function () {
+      const toggle = document.getElementById('manual-toggle');
+      const collapse = document.getElementById('manual-collapse');
+      if (!toggle || !collapse) return;
+
+      const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let inTransition = false;
+
+      function openManual(scrollIntoView) {
+        if (toggle.getAttribute('aria-expanded') === 'true') {
+          if (scrollIntoView) collapse.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+          return;
+        }
+        toggle.setAttribute('aria-expanded', 'true');
+        collapse.classList.add('is-open');
+        const target = collapse.scrollHeight;
+        if (reduceMotion) {
+          collapse.style.maxHeight = 'none';
+        } else {
+          inTransition = true;
+          collapse.style.maxHeight = target + 'px';
+          const onEnd = function (e) {
+            if (e.propertyName !== 'max-height') return;
+            collapse.style.maxHeight = 'none';
+            inTransition = false;
+            collapse.removeEventListener('transitionend', onEnd);
+          };
+          collapse.addEventListener('transitionend', onEnd);
+        }
+        if (scrollIntoView) {
+          setTimeout(function () {
+            toggle.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+          }, reduceMotion ? 0 : 100);
+        }
+      }
+
+      function closeManual() {
+        if (toggle.getAttribute('aria-expanded') !== 'true') return;
+        if (reduceMotion) {
+          collapse.style.maxHeight = '0px';
+          collapse.classList.remove('is-open');
+          toggle.setAttribute('aria-expanded', 'false');
+          return;
+        }
+        const start = collapse.scrollHeight;
+        collapse.style.maxHeight = start + 'px';
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            collapse.style.maxHeight = '0px';
+            collapse.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+          });
+        });
+      }
+
+      toggle.addEventListener('click', function () {
+        if (inTransition) return;
+        if (toggle.getAttribute('aria-expanded') === 'true') {
+          closeManual();
+        } else {
+          openManual(false);
+        }
+      });
+
+      // Auto-expand if user navigates to a manual anchor (e.g. shared link or in-page TOC click).
+      function handleHash() {
+        const hash = (window.location.hash || '').toLowerCase();
+        if (!hash) return;
+        if (hash === '#manual' || hash.indexOf('#manual-') === 0) {
+          openManual(true);
+        }
+      }
+      window.addEventListener('hashchange', handleHash);
+      handleHash();
     })();
   </script>
 </body>
