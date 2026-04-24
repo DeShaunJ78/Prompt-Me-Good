@@ -315,6 +315,7 @@
       border: 0; cursor: pointer; transition: background var(--transition-interactive);
     }
     .history-item-tag:hover { background: color-mix(in srgb, var(--color-primary) 22%, transparent); }
+    .history-item.is-archived { opacity: 0.6; border-style: dashed; }
     .history-item.is-favorite { border-color: color-mix(in srgb, var(--color-primary) 50%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent) inset; }
     .history-item.is-favorite .history-item-meta { color: var(--color-primary); }
     .history-item.is-favorite { cursor: grab; }
@@ -623,6 +624,7 @@
                 <p>Your last 25 generated prompts are saved on this device. Restore one to copy or remix it again.</p>
               </div>
               <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+                <button class="btn btn-secondary" type="button" id="toggle-archived" aria-pressed="false">Show archived</button>
                 <button class="btn btn-secondary" type="button" id="export-history">Export</button>
                 <button class="btn btn-secondary" type="button" id="import-history">Import</button>
                 <button class="btn btn-secondary" type="button" id="clear-history">Clear all</button>
@@ -868,6 +870,7 @@ Context:
       let historyQuery = '';
       let historyTagFilter = '';
       let historySort = 'newest';
+      let showArchived = false;
 
       const STREAK_KEY = 'promptmegood:streak:v1';
       function todayKey() {
@@ -1025,6 +1028,7 @@ Context:
         renderTagBar(items);
         const q = historyQuery.trim().toLowerCase();
         const filtered = items.filter(function (i) {
+          if (!showArchived && i.archived) return false;
           if (historyTagFilter && !(i.tags || []).includes(historyTagFilter)) return false;
           if (!q) return true;
           return (i.nickname || '').toLowerCase().includes(q) ||
@@ -1065,7 +1069,7 @@ Context:
             : '';
           const dragAttr = item.favorite ? ' draggable="true"' : '';
           const handleHtml = item.favorite ? '<span class="drag-handle" aria-hidden="true" title="Drag to reorder">⋮⋮</span>' : '';
-          return '<div class="history-item' + (item.favorite ? ' is-favorite' : '') + '" data-id="' + escapeHtml(item.id) + '"' + dragAttr + '>' +
+          return '<div class="history-item' + (item.favorite ? ' is-favorite' : '') + (item.archived ? ' is-archived' : '') + '" data-id="' + escapeHtml(item.id) + '"' + dragAttr + '>' +
             '<div class="history-item-head">' +
               '<span class="history-item-goal">' + handleHtml + escapeHtml(item.nickname || item.data.goal || 'Untitled prompt') + (item.nickname ? ' <span style="color: var(--color-text-muted); font-weight: 400;">&middot; ' + escapeHtml(item.data.goal || '') + '</span>' : '') + '</span>' +
               '<span class="history-item-meta">' + escapeHtml(formatTime(item.savedAt)) + (item.data.moneyMode ? ' &middot; Money Mode' : '') + favMeta + (item.useCount ? ' &middot; Used ' + item.useCount + '×' : '') + '</span>' +
@@ -1086,6 +1090,7 @@ Context:
               '<button class="btn btn-secondary" type="button" data-history-action="duplicate">Duplicate</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="rename">' + (item.nickname ? 'Rename' : 'Add name') + '</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="tags">Edit tags</button>' +
+              '<button class="btn btn-secondary" type="button" data-history-action="archive">' + (item.archived ? 'Unarchive' : 'Archive') + '</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="delete">Delete</button>' +
             '</div>' +
           '</div>';
@@ -1224,6 +1229,12 @@ Context:
           saveHistory(items);
           renderHistory();
           showToast(item.favorite ? 'Pinned to favorites.' : 'Removed from favorites.');
+        } else if (action === 'archive') {
+          item.archived = !item.archived;
+          if (item.archived) item.favorite = false;
+          saveHistory(items);
+          renderHistory();
+          showToast(item.archived ? 'Archived.' : 'Unarchived.');
         } else if (action === 'delete') {
           const next = items.filter(function (i) { return i.id !== id; });
           saveHistory(next);
@@ -1288,6 +1299,14 @@ Context:
 
       historySearchEl.addEventListener('input', function (e) {
         historyQuery = e.target.value;
+        renderHistory();
+      });
+
+      const toggleArchivedBtn = document.getElementById('toggle-archived');
+      toggleArchivedBtn.addEventListener('click', function () {
+        showArchived = !showArchived;
+        toggleArchivedBtn.textContent = showArchived ? 'Hide archived' : 'Show archived';
+        toggleArchivedBtn.setAttribute('aria-pressed', showArchived ? 'true' : 'false');
         renderHistory();
       });
 
