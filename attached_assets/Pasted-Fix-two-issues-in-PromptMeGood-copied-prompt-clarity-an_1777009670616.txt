@@ -1,0 +1,76 @@
+Fix two issues in PromptMeGood: copied prompt clarity and mobile layout cleanliness.
+
+PART 1 — Make Copied Prompt More User-Friendly
+
+Current issue:
+When users copy the generated prompt, it includes a long structured prompt with labels like “Your mission,” “Before answering,” “Instructions,” “Output expectations,” and “Context.” This is powerful, but it can feel confusing or too technical for casual users.
+
+Goal:
+Keep the prompt strong, but make the copied version feel cleaner, more human, and easier to understand.
+
+Update the generated/copyable prompt format to this cleaner structure:
+
+“Act as a [role/persona] and help me with this goal:
+
+[USER GOAL]
+
+Here’s what I need from you:
+- Clarify the real objective behind my request.
+- Point out any missing assumptions, risks, or important details.
+- Give me a practical answer I can use immediately.
+- Use a [TONE] tone.
+- Keep the response appropriate for a [SKILL LEVEL] user.
+- Format the answer as a [OUTPUT FORMAT].
+- Avoid vague advice, filler, or generic motivation.
+- Include examples, templates, checklists, or scripts when useful.
+- End with the top 3 actions I should take next.
+
+Context:
+- Category: [CATEGORY]
+- Experience level: [SKILL LEVEL]
+- Tone: [TONE]
+- Output format: [OUTPUT FORMAT]”
+
+Important:
+- Preserve all existing functionality.
+- Keep prompt quality high.
+- Remove overly technical section labels like “Your mission,” “Before answering,” and “Output expectations.”
+- Make the copied prompt feel like something a normal person understands.
+
+PART 2 — Mobile Layout Cleanup
+
+Current issue:
+On mobile, the History and Input Summary sections look unbalanced, not centered, and too stretched. Buttons appear oversized and uneven. The section layout feels messy.
+
+Fix mobile styling only where needed.
+
+History section:
+- On mobile, stack the History buttons vertically under the text.
+- Center the buttons cleanly.
+- Make buttons full-width or near full-width with consistent max width.
+- Use consistent spacing between buttons.
+- Keep button height reasonable, around 44–52px.
+- Ensure “Prompt History” and its description are readable and not crowded.
+
+Input Summary section:
+- Center the Export Everything and Import Backup buttons.
+- Make both buttons consistent width and height.
+- Reduce excessive vertical spacing.
+- Make the section feel clean and balanced on mobile.
+- Keep the “This Week At A Glance” card aligned and padded correctly.
+- Prevent bottom browser bar overlap by adding proper bottom spacing/padding.
+
+General mobile cleanup:
+- Add consistent padding inside cards.
+- Ensure card content does not touch edges.
+- Avoid huge button borders or oversized pill shapes.
+- Maintain desktop layout unless absolutely necessary.
+- Do not remove any existing features.
+- Do not change the overall theme.
+
+After changes:
+- Test mobile layout.
+- Confirm History section looks centered and clean.
+- Confirm Input Summary section looks centered and clean.
+- Confirm copied prompt is cleaner and easier to understand.
+- Confirm no JavaScript errors.

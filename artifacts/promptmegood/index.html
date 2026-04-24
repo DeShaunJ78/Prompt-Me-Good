@@ -585,8 +585,10 @@
     .template-card[draggable="true"] { cursor: grab; }
     .template-card.is-dragging { opacity: 0.45; cursor: grabbing; }
     .template-card.is-drop-target { outline: 2px dashed var(--color-primary); outline-offset: 2px; }
-    .panel-head-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
+    .panel-head-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
+    .panel-head-row > div:first-child { flex: 1 1 240px; min-width: 0; }
     .panel-head-row .btn { min-height: 36px; padding: 0 var(--space-4); font-size: var(--text-xs); flex: 0 0 auto; }
+    .panel-head-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
     .toast {
       position: fixed; right: var(--space-4); bottom: var(--space-4); z-index: 30;
       background: var(--color-text); color: var(--color-text-inverse);
@@ -622,6 +624,43 @@
       .actions-row .btn-secondary { font-weight: 600; }
       .hero-card, .form-wrap, .result-wrap { padding: var(--space-4); }
       .result-box { min-height: 360px; }
+
+      /* Panel header: stack heading + buttons cleanly on mobile */
+      .panel-head-row { flex-direction: column; align-items: stretch; gap: var(--space-3); }
+      .panel-head-row > div:first-child { flex: 1 1 auto; text-align: left; }
+      .panel-head-actions {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        max-width: 360px;
+        margin: 0 auto;
+        gap: 10px;
+      }
+      .panel-head-actions .btn {
+        width: 100%;
+        min-height: 46px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-size: var(--text-sm);
+        font-weight: 600;
+      }
+
+      /* Panel inner padding consistency on mobile */
+      .panel { padding: var(--space-4); }
+
+      /* Weekly summary alignment */
+      .weekly-summary {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: left;
+        padding: var(--space-4);
+      }
+      .weekly-summary-stats { gap: var(--space-3); }
+
+      /* Bottom safe-area padding so the last section isn't hidden by the
+         mobile browser bar */
+      .app-section:last-of-type { padding-bottom: calc(var(--space-12) + env(safe-area-inset-bottom, 0px)); }
+      body { padding-bottom: env(safe-area-inset-bottom, 0px); }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -882,15 +921,17 @@
     <section class="app-section" id="dashboard">
       <div class="container">
         <div class="panel">
-          <div class="panel-head" style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-3); flex-wrap: wrap;">
-            <div>
-              <h2>Your Input Summary</h2>
-              <p>This is what you entered to generate your prompt.</p>
-            </div>
-            <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
-              <button class="btn btn-secondary" type="button" id="export-everything" title="Download all your data as a JSON backup">Export Everything</button>
-              <button class="btn btn-secondary" type="button" id="import-everything" title="Restore from a JSON backup">Import Backup</button>
-              <input type="file" id="import-everything-file" accept="application/json,.json" style="display:none" />
+          <div class="panel-head">
+            <div class="panel-head-row">
+              <div>
+                <h2>Your Input Summary</h2>
+                <p>This is what you entered to generate your prompt.</p>
+              </div>
+              <div class="panel-head-actions">
+                <button class="btn btn-secondary" type="button" id="export-everything" title="Download all your data as a JSON backup">Export Everything</button>
+                <button class="btn btn-secondary" type="button" id="import-everything" title="Restore from a JSON backup">Import Backup</button>
+                <input type="file" id="import-everything-file" accept="application/json,.json" style="display:none" />
+              </div>
             </div>
           </div>
           <div id="weekly-summary" class="weekly-summary" aria-label="Weekly summary"></div>
@@ -910,7 +951,7 @@
                 <h2>Pinned templates</h2>
                 <p>One-click starting points. Loads the form and generates a prompt instantly.</p>
               </div>
-              <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+              <div class="panel-head-actions">
                 <button class="btn btn-secondary" type="button" id="export-templates">Export Yours</button>
                 <button class="btn btn-secondary" type="button" id="import-templates">Import</button>
                 <input type="file" id="import-templates-file" accept="application/json,.json" style="display:none" />
@@ -931,7 +972,7 @@
                 <h2>Prompt history</h2>
                 <p>Your last 25 generated prompts are saved on this device. Restore one to copy or remix it again.</p>
               </div>
-              <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+              <div class="panel-head-actions">
                 <button class="btn btn-secondary" type="button" id="toggle-archived" aria-pressed="false">Show Archived</button>
                 <button class="btn btn-secondary" type="button" id="compare-two" aria-pressed="false">Compare Two</button>
                 <button class="btn btn-secondary" type="button" id="export-history">Export</button>
@@ -1269,80 +1310,53 @@
 
         const extraDetails = data.details
           ? `
-Additional context the AI must respect:
+
+Extra context to respect:
 ${data.details}`
           : '';
 
         const moneyMode = data.moneyMode
           ? `
-Money Mode is ON:
-- Prioritize actions that can create income quickly.
-- Focus on speed, simplicity, and realistic execution.
-- Avoid long theory, vanity metrics, and complicated plans.
-- Suggest practical ways to validate demand, get attention, and make the first sale.
-- Include a low-cost path whenever possible.`
+- Money Mode: prioritize fast-income actions, speed, simplicity, low cost, and realistic execution. Avoid theory and vanity metrics.`
           : '';
 
-        let humanBlock = '';
+        let humanLine = '';
         if (data.humanTone && data.avoidAi) {
-          humanBlock = `
-Human-style writing requirements:
-- Write in a natural, human tone with varied sentence structure.
-- Avoid robotic phrasing, repetitive patterns, and overly structured responses.
-- Use subtle tone shifts, varied sentence lengths, and small human-like imperfections so it does not read as obviously AI-generated.
-- Make it feel like it was written by a real person.`;
+          humanLine = `
+- Write in a natural human voice with varied sentence structure and small human-like imperfections so it does not read as AI-generated.`;
         } else if (data.humanTone) {
-          humanBlock = `
-Human-style writing requirements:
-- Write in a natural, human tone with varied sentence structure.
-- Avoid robotic phrasing or repetitive patterns.
-- Make it feel like it was written by a real person.`;
+          humanLine = `
+- Write in a natural, human voice with varied sentence structure.`;
         } else if (data.avoidAi) {
-          humanBlock = `
-Human-style writing requirements:
-- Use human-like imperfections, natural flow, varied sentence lengths, and subtle tone shifts.
-- Avoid predictable AI patterns and overly structured responses.`;
+          humanLine = `
+- Avoid predictable AI patterns; use natural flow and varied sentence lengths.`;
         }
 
-        const remixBlock = remixMode && remixInstructions[remixMode]
+        const remixLine = remixMode && remixInstructions[remixMode]
           ? `
-Special upgrade request:
-- ${remixInstructions[remixMode]}`
+- Special request: ${remixInstructions[remixMode]}`
           : '';
 
-        return `Act as a ${roleMap[data.skillLevel]} with deep expertise in ${categoryContext[data.category]}.
+        return `Act as a ${roleMap[data.skillLevel]} and help me with this goal:
 
-Your mission:
-Help me achieve this specific outcome:
 "${data.goal}"
 
-Before answering, sharpen the problem:
-- Identify the real objective behind my request.
-- Point out missing assumptions or risks that could affect the result.
-- Reframe the goal into a clearer problem statement if needed.
-
-Instructions:
-- ${toneInstruction[data.tone]}
-- ${complexityMap[data.skillLevel]}
-- ${formatMap[data.outputFormat]}
-- Give clear recommendations, not vague motivation.
-- Make the answer practical enough to use immediately.
-- Include examples, templates, frameworks, checklists, or scripts where useful.
-- Call out what NOT to do so I avoid wasting time.
-- End with the top 3 actions I should take next.
-- Do not give filler. Make every sentence earn its place.${moneyMode}${humanBlock}${extraDetails}${remixBlock}
-
-Output expectations:
-1. Start with the clearest interpretation of my goal.
-2. Give the strongest answer in the requested format.
-3. Include any warnings, shortcuts, or leverage points.
-4. End with immediate next actions.
+Here's what I need from you:
+- Clarify the real objective behind my request.
+- Point out any missing assumptions, risks, or important details.
+- Give me a practical answer I can use immediately.
+- Use a ${titleCase(data.tone)} tone.
+- Keep the response appropriate for a ${titleCase(data.skillLevel)} user.
+- Format the answer as a ${titleCase(data.outputFormat)}.
+- Avoid vague advice, filler, or generic motivation.
+- Include examples, templates, checklists, or scripts when useful.
+- End with the top 3 actions I should take next.${moneyMode}${humanLine}${remixLine}
 
 Context:
 - Category: ${titleCase(data.category)}
-- Skill level: ${titleCase(data.skillLevel)}
+- Experience level: ${titleCase(data.skillLevel)}
 - Tone: ${titleCase(data.tone)}
-- Output format: ${titleCase(data.outputFormat)}`;
+- Output format: ${titleCase(data.outputFormat)}${extraDetails}`;
       }
 
       function getFormData() {
