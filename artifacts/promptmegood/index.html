@@ -344,6 +344,13 @@
       #print-area .print-footer { margin-top: 24px; font-size: 10px; color: #888; border-top: 1px solid #ccc; padding-top: 8px; }
     }
     #print-area { display: none; }
+    .weekly-summary { margin-bottom: var(--space-4); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 18%, transparent), color-mix(in srgb, var(--color-primary) 6%, transparent)); border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent); display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; justify-content: space-between; }
+    .weekly-summary-title { font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-primary); font-weight: 600; }
+    .weekly-summary-line { font-size: var(--text-md); color: var(--color-text); margin: 4px 0 0; }
+    .weekly-summary-stats { display: flex; gap: var(--space-4); flex-wrap: wrap; }
+    .weekly-summary-stat { display: flex; flex-direction: column; align-items: flex-start; }
+    .weekly-summary-stat .num { font-size: var(--text-xl); font-weight: 700; color: var(--color-primary); font-variant-numeric: tabular-nums; }
+    .weekly-summary-stat .lbl { font-size: var(--text-xs); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
     .tag-insights { margin-top: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); }
     .tag-insights-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--space-2); }
     .tag-insights-head h3 { margin: 0; font-size: var(--text-md); }
@@ -634,6 +641,7 @@
             <h2>Your snapshot</h2>
             <p>A quick look at how you're using PromptMeGood.</p>
           </div>
+          <div id="weekly-summary" class="weekly-summary" aria-label="Weekly summary"></div>
           <div class="stats-grid" id="stats-grid"></div>
           <div id="tag-insights" class="tag-insights" aria-label="Tag insights"></div>
         </div>
@@ -1013,6 +1021,43 @@ Context:
           '</div>';
         }).join('');
         renderTagInsights(items);
+        renderWeeklySummary(items);
+      }
+
+      function renderWeeklySummary(items) {
+        const wrap = document.getElementById('weekly-summary');
+        if (!wrap) return;
+        const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        const created = items.filter(function (i) { return (i.savedAt || 0) >= cutoff; });
+        const usedThisWeek = items.filter(function (i) { return (i.lastUsedAt || 0) >= cutoff; });
+        const reuseSum = usedThisWeek.reduce(function (s, i) { return s + (i.useCount || 0); }, 0);
+        const tagCount = {};
+        created.concat(usedThisWeek).forEach(function (i) {
+          (i.tags || []).forEach(function (t) { tagCount[t] = (tagCount[t] || 0) + 1; });
+        });
+        const topTagEntry = Object.entries(tagCount).sort(function (a, b) { return b[1] - a[1]; })[0];
+        const topTag = topTagEntry ? '#' + topTagEntry[0] : '—';
+        const streakNow = getCurrentStreak();
+        let line;
+        if (created.length === 0 && usedThisWeek.length === 0) {
+          line = "Quiet week so far. Generate a prompt to kick things off.";
+        } else {
+          const parts = [];
+          if (created.length) parts.push('created ' + created.length + ' new prompt' + (created.length === 1 ? '' : 's'));
+          if (reuseSum) parts.push('reused saved prompts ' + reuseSum + '×');
+          if (streakNow >= 2) parts.push('on a ' + streakNow + '-day streak');
+          line = 'You ' + parts.join(', ') + '.';
+        }
+        wrap.innerHTML =
+          '<div>' +
+            '<div class="weekly-summary-title">This week at a glance</div>' +
+            '<div class="weekly-summary-line">' + escapeHtml(line) + '</div>' +
+          '</div>' +
+          '<div class="weekly-summary-stats">' +
+            '<div class="weekly-summary-stat"><span class="num">' + created.length + '</span><span class="lbl">New</span></div>' +
+            '<div class="weekly-summary-stat"><span class="num">' + reuseSum + '</span><span class="lbl">Reuses</span></div>' +
+            '<div class="weekly-summary-stat"><span class="num">' + escapeHtml(topTag) + '</span><span class="lbl">Top tag</span></div>' +
+          '</div>';
       }
 
       function renderTagInsights(items) {
