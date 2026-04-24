@@ -1,0 +1,121 @@
+Perform a final UX polish pass focused on clarity, spacing, and perceived quality. Do NOT add new features. Do NOT break layout or functionality.
+
+========================
+1. REDUCE TOP-OF-PAGE DENSITY
+========================
+
+Goal:
+Make the first screen feel lighter and easier to scan.
+
+Fix:
+- Add slightly more vertical spacing between:
+  - Hero headline
+  - Subheadline
+  - “See Use Cases” button
+- Ensure the “Popular Ways To Use PromptMeGood” section does NOT feel cramped against the hero
+- Keep everything above the fold readable without feeling crowded
+
+Do NOT:
+- Remove sections
+- Move core components
+
+========================
+2. USE CASE CARDS — MICRO POLISH
+========================
+
+Goal:
+Make cards feel more premium and less bulky.
+
+Fix:
+- Slightly reduce internal padding
+- Ensure all cards are equal height
+- Align all text consistently (no uneven spacing)
+- Ensure “Use This →” is visually consistent across all cards
+- Add subtle hover/tap feedback (slight scale or shadow)
+
+========================
+3. BUTTON CONSISTENCY
+========================
+
+Goal:
+Everything should feel intentional and uniform.
+
+Fix:
+- Ensure ALL buttons:
+  - Have consistent border radius
+  - Have consistent height
+  - Have consistent font weight
+- Remove any button that looks larger/thicker than others
+
+========================
+4. “GOAL OF THE WEEK” CLEANUP
+========================
+
+Goal:
+Make it feel intentional, not placeholder.
+
+Fix:
+- Slightly reduce vertical padding
+- Ensure text is centered cleanly
+- Make the example text subtly clickable (if not already)
+- Ensure it does not visually compete with the main builder
+
+========================
+5. SECTION SPACING (IMPORTANT)
+========================
+
+Goal:
+Clear separation between sections.
+
+Fix:
+- Add consistent vertical spacing between:
+  - Use Cases
+  - Builder
+  - Generated Prompt
+  - Input Summary
+  - History
+- Avoid any sections feeling “stacked too tightly”
+
+========================
+6. TYPOGRAPHY CONSISTENCY
+========================
+
+Goal:
+Clean hierarchy.
+
+Fix:
+- Ensure all section titles:
+  - Same font size
+  - Same weight
+- Ensure helper text:
+  - Slightly smaller than body
+  - Consistent color (muted, not competing)
+
+========================
+7. MOBILE POLISH (FINAL CHECK)
+========================
+
+Goal:
+No awkward stacking or crowding.
+
+Fix:
+- Ensure:
+  - No buttons overlap
+  - No text touches edges
+  - All sections have proper padding
+- Ensure horizontal elements wrap cleanly
+
+========================
+FINAL CHECK
+========================
+
+After changes:
+- No layout shifts or broken UI
+- No JavaScript errors
+- Site feels cleaner, lighter, more premium
+- Everything still works exactly as before
+
+DO NOT:
+- Add new features
+- Change logic
+- Reorganize structure

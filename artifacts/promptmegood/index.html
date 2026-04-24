@@ -180,10 +180,10 @@
       max-width: 11ch;
     }
     .hero p {
-      margin-top: var(--space-5); color: var(--color-text-muted); max-width: 58ch;
+      margin-top: var(--space-6); color: var(--color-text-muted); max-width: 58ch;
     }
     .hero-actions {
-      display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-6);
+      display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-8);
     }
     .btn {
       min-height: 48px; padding: 0 var(--space-5); border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: 700;
@@ -297,16 +297,16 @@
     @media (max-width: 920px) { .use-case-grid { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 640px) { .use-case-grid { grid-template-columns: 1fr; } }
 
-    .popular-uses { padding: var(--space-8) 0 var(--space-5); scroll-margin-top: var(--space-12); }
+    .popular-uses { padding: var(--space-12) 0 var(--space-8); scroll-margin-top: var(--space-12); }
     .popular-uses-head { text-align: center; max-width: 640px; margin: 0 auto var(--space-5); }
     .popular-uses-head h2 { font-size: var(--text-lg); line-height: 1.2; margin: 0 0 var(--space-2); color: var(--color-text); }
     .popular-uses-head p { color: var(--color-text-muted); font-size: var(--text-sm); margin: 0; }
     .popular-uses-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
-    .popular-use-card { display: flex; flex-direction: column; gap: var(--space-2); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-4); box-shadow: var(--shadow-sm); cursor: pointer; text-align: left; font: inherit; color: inherit; transition: border-color var(--transition-interactive), box-shadow var(--transition-interactive), transform var(--transition-interactive), background var(--transition-interactive); }
+    .popular-use-card { display: flex; flex-direction: column; gap: var(--space-2); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4); box-shadow: var(--shadow-sm); cursor: pointer; text-align: left; font: inherit; color: inherit; transition: border-color var(--transition-interactive), box-shadow var(--transition-interactive), transform var(--transition-interactive), background var(--transition-interactive); }
     .popular-use-card:hover, .popular-use-card:focus-visible { border-color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 4%, var(--color-surface)); transform: translateY(-2px); box-shadow: 0 6px 18px color-mix(in srgb, var(--color-primary) 14%, transparent); outline: none; }
     .popular-use-card-title { font-size: var(--text-base); font-weight: 700; color: var(--color-text); }
     .popular-use-card-desc { color: var(--color-text-muted); font-size: var(--text-sm); line-height: 1.5; flex: 1; margin: 0; }
-    .popular-use-card-cta { align-self: flex-start; margin-top: var(--space-2); padding: 6px 14px; border-radius: 999px; border: 1px solid var(--color-primary); background: color-mix(in srgb, var(--color-primary) 10%, transparent); color: var(--color-primary); font-size: var(--text-xs); font-weight: 600; cursor: pointer; transition: background var(--transition-interactive), color var(--transition-interactive); }
+    .popular-use-card-cta { align-self: flex-start; margin-top: auto; padding: 6px 14px; border-radius: var(--radius-full); border: 1px solid var(--color-primary); background: color-mix(in srgb, var(--color-primary) 10%, transparent); color: var(--color-primary); font-size: var(--text-xs); font-weight: 600; cursor: pointer; transition: background var(--transition-interactive), color var(--transition-interactive); }
     .popular-use-card:hover .popular-use-card-cta, .popular-use-card:focus-visible .popular-use-card-cta { background: var(--color-primary); color: #fff; }
     @media (max-width: 920px) { .popular-uses-grid { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 600px) {
@@ -536,7 +536,7 @@
     .nudge-text { flex: 1 1 240px; font-size: var(--text-sm); color: var(--color-text); line-height: 1.4; }
     .nudge-text strong { color: var(--color-primary); margin-right: 6px; }
     .nudge-actions { display: flex; gap: var(--space-2); }
-    .weekly-goal-pin { margin-bottom: var(--space-4); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: color-mix(in srgb, var(--color-primary) 8%, transparent); border: 1px dashed color-mix(in srgb, var(--color-primary) 40%, transparent); }
+    .weekly-goal-pin { margin-bottom: var(--space-4); padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); background: color-mix(in srgb, var(--color-primary) 8%, transparent); border: 1px dashed color-mix(in srgb, var(--color-primary) 40%, transparent); }
     .weekly-goal-pin-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); margin-bottom: 4px; flex-wrap: wrap; }
     .weekly-goal-pin-label { font-size: var(--text-sm); font-weight: 600; color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.04em; }
     .weekly-goal-pin-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
@@ -794,8 +794,9 @@
         width: 100%;
         min-height: 48px;
         padding: 12px 18px;
-        border-radius: 12px;
+        border-radius: var(--radius-full);
         font-size: var(--text-sm);
+        font-weight: 700;
         text-align: center;
         display: inline-flex;
         align-items: center;
