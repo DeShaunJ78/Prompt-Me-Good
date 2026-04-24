@@ -156,6 +156,14 @@
       transition: transform var(--transition-interactive), background var(--transition-interactive), border-color var(--transition-interactive);
     }
     .theme-toggle:hover, .ghost-link:hover { transform: translateY(-1px); }
+    .theme-toggle-label { display: none; }
+    .nav-toggle {
+      display: none; width: 44px; height: 44px; align-items: center; justify-content: center;
+      border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text);
+      border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); cursor: pointer;
+      transition: background var(--transition-interactive), border-color var(--transition-interactive);
+    }
+    .nav-toggle:hover { background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface)); }
     .hero {
       padding: clamp(var(--space-12), 10vw, var(--space-20)) 0 var(--space-10);
     }
@@ -384,7 +392,24 @@
     .global-empty { padding: 12px; color: var(--color-text-muted); font-size: 13px; }
     @keyframes pulseFlash { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 60%, transparent); } 100% { box-shadow: 0 0 0 14px transparent; } }
     .is-flash-target { animation: pulseFlash 1.4s ease-out 2; outline: 2px solid var(--color-primary); outline-offset: 3px; }
-    @media (max-width: 720px) { .global-search { order: 3; flex-basis: 100%; max-width: none; margin: var(--space-2) 0 0; } }
+    @media (max-width: 720px) {
+      .topbar-inner { flex-wrap: wrap; gap: var(--space-2); padding: var(--space-3) 0; }
+      .brand { flex: 1 1 auto; }
+      .nav-toggle { display: inline-flex; flex: 0 0 auto; }
+      .global-search { order: 3; flex-basis: 100%; max-width: none; margin: 10px 0 0; }
+      .global-search input { min-height: 44px; padding: 10px 14px; font-size: 16px; }
+      .top-actions {
+        order: 4; flex-basis: 100%; flex-direction: column; align-items: stretch;
+        gap: 10px; margin-top: 12px; padding: 12px; background: var(--color-surface);
+        border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+        border-radius: var(--radius-md); display: none;
+      }
+      .top-actions.is-open { display: flex; }
+      .top-actions .ghost-link, .top-actions .theme-toggle {
+        width: 100%; min-height: 48px; justify-content: center; border-radius: var(--radius-md);
+      }
+      .theme-toggle-label { display: inline-block; margin-left: 8px; font-weight: 600; }
+    }
     @media print {
       body * { visibility: hidden !important; }
       #print-area, #print-area * { visibility: visible !important; }
@@ -583,13 +608,21 @@
         <input type="search" id="global-search-input" placeholder="Find anything (history, templates, tags)…" aria-label="Search across history and templates" autocomplete="off" />
         <div class="global-results" id="global-search-results" role="listbox" aria-label="Search results"></div>
       </div>
-      <div class="top-actions">
+      <button class="nav-toggle" type="button" id="nav-toggle" aria-label="Open menu" aria-controls="top-actions" aria-expanded="false">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <line x1="4" y1="7" x2="20" y2="7"></line>
+          <line x1="4" y1="12" x2="20" y2="12"></line>
+          <line x1="4" y1="17" x2="20" y2="17"></line>
+        </svg>
+      </button>
+      <div class="top-actions" id="top-actions">
         <a class="ghost-link" href="#builder">Open Builder</a>
         <a class="ghost-link" href="#history">History</a>
         <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
           </svg>
+          <span class="theme-toggle-label">Dark Mode</span>
         </button>
       </div>
     </div>
@@ -1067,9 +1100,11 @@
       root.setAttribute('data-theme', theme);
 
       function renderThemeIcon(mode) {
-        toggle.innerHTML = mode === 'dark'
+        const icon = mode === 'dark'
           ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>'
           : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+        const label = mode === 'dark' ? 'Light Mode' : 'Dark Mode';
+        toggle.innerHTML = icon + '<span class="theme-toggle-label">' + label + '</span>';
         toggle.setAttribute('aria-label', mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
       }
 
@@ -1079,6 +1114,32 @@
         root.setAttribute('data-theme', theme);
         renderThemeIcon(theme);
       });
+
+      const navToggle = document.getElementById('nav-toggle');
+      const navPanel = document.getElementById('top-actions');
+      function setNavOpen(open) {
+        if (!navToggle || !navPanel) return;
+        navPanel.classList.toggle('is-open', open);
+        navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        navToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      }
+      if (navToggle && navPanel) {
+        navToggle.addEventListener('click', function (e) {
+          e.stopPropagation();
+          setNavOpen(navPanel.classList.contains('is-open') ? false : true);
+        });
+        navPanel.addEventListener('click', function (e) {
+          if (e.target.closest('a')) setNavOpen(false);
+        });
+        document.addEventListener('click', function (e) {
+          if (!navPanel.classList.contains('is-open')) return;
+          if (e.target.closest('#top-actions') || e.target.closest('#nav-toggle')) return;
+          setNavOpen(false);
+        });
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && navPanel.classList.contains('is-open')) setNavOpen(false);
+        });
+      }
 
       const form = document.getElementById('prompt-form');
       const resultBox = document.getElementById('resultBox');
