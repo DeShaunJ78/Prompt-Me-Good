@@ -515,7 +515,20 @@
       .topbar-inner { padding: var(--space-3) 0; }
       .theme-toggle, .ghost-link, .btn { width: 100%; justify-content: center; }
       .top-actions { width: 100%; flex-direction: column; }
-      .hero-actions, .actions-row { flex-direction: column; }
+      .hero-actions, .actions-row { flex-direction: column; gap: 12px; }
+      .actions-row .btn {
+        width: 100%;
+        min-height: 48px;
+        padding: 12px 18px;
+        border-radius: 12px;
+        font-size: var(--text-sm);
+        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .actions-row .btn-primary { box-shadow: var(--shadow-md); font-weight: 700; }
+      .actions-row .btn-secondary { font-weight: 600; }
       .hero-card, .form-wrap, .result-wrap { padding: var(--space-4); }
       .result-box { min-height: 360px; }
     }
