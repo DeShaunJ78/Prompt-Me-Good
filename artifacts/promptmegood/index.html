@@ -247,6 +247,18 @@
     .field textarea { min-height: 112px; padding: var(--space-4); resize: vertical; }
     .field input::placeholder, .field textarea::placeholder { color: var(--color-text-faint); }
     .helper { color: var(--color-text-muted); font-size: var(--text-xs); }
+    .field-primary label { font-size: var(--text-base); color: var(--color-primary); letter-spacing: 0.01em; }
+    .field-primary input {
+      border: 2px solid color-mix(in srgb, var(--color-primary) 55%, transparent);
+      background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface-2));
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 10%, transparent);
+      font-size: var(--text-base); font-weight: 600;
+    }
+    .field-primary input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 22%, transparent);
+    }
     .actions-row {
       display: flex; flex-wrap: wrap; gap: var(--space-3); padding-top: var(--space-2);
     }
@@ -685,10 +697,13 @@
               <div class="weekly-goal-pin-body" id="weekly-goal-body">No focus theme set yet. Use this to keep your prompts pulling in one direction.</div>
             </div>
             <form id="prompt-form" class="form-grid">
-              <div class="field">
-                <label for="goal">Goal</label>
+              <div class="field field-primary">
+                <label for="goal">Your Goal (Start Here)</label>
                 <input id="goal" name="goal" type="text" placeholder="I need to make money online fast" required />
-                <p class="helper">Describe the result the user wants from the AI.</p>
+                <p class="helper">
+                  Describe what you want the AI to help you do.<br />
+                  Example: &ldquo;I need to make money online fast&rdquo; or &ldquo;Help me find a winning product&rdquo;
+                </p>
               </div>
 
               <div class="field">
@@ -1114,6 +1129,17 @@
         root.setAttribute('data-theme', theme);
         renderThemeIcon(theme);
       });
+
+      const goalFieldEl = document.getElementById('goal');
+      function focusGoalIfBuilderHash() {
+        if (window.location.hash === '#builder' && goalFieldEl) {
+          window.setTimeout(function () {
+            try { goalFieldEl.focus({ preventScroll: true }); } catch (e) { goalFieldEl.focus(); }
+          }, 250);
+        }
+      }
+      focusGoalIfBuilderHash();
+      window.addEventListener('hashchange', focusGoalIfBuilderHash);
 
       const navToggle = document.getElementById('nav-toggle');
       const navPanel = document.getElementById('top-actions');
