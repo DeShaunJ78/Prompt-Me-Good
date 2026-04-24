@@ -363,12 +363,20 @@
     .site-footer-brand { font-weight: 700; color: var(--color-text); font-size: var(--text-base); }
     .site-footer-tagline { margin: 0; color: var(--color-text-muted); font-size: var(--text-sm); max-width: 520px; }
     .site-footer-social { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin-top: var(--space-2); }
+    .site-footer-social-links { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; }
     .site-footer-link {
       color: var(--color-text); text-decoration: none; font-size: var(--text-sm); font-weight: 600;
       padding: 6px 10px; border-radius: var(--radius-sm); transition: background var(--transition-interactive), color var(--transition-interactive);
     }
     .site-footer-link:hover { background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-primary); }
     .site-footer-divider { color: var(--color-text-muted); opacity: 0.6; }
+    @media (max-width: 600px) {
+      .site-footer-social { flex-direction: column; gap: 6px; }
+      .site-footer-social-label { font-size: var(--text-xs); }
+      .site-footer-social-links { gap: 6px; }
+      .site-footer-social-links .site-footer-link { font-size: var(--text-xs); padding: 4px 8px; }
+      .site-footer-social-links .site-footer-divider { font-size: var(--text-xs); }
+    }
     .history-search { padding: var(--space-4) var(--space-5) 0; }
     .history-search input {
       width: 100%; min-height: 44px; border-radius: var(--radius-md); padding: 0 var(--space-4);
@@ -1727,14 +1735,16 @@
         <p class="site-footer-tagline">Built for people who want real results from AI &mdash; not fluff.</p>
         <p class="site-footer-contact"><a class="site-footer-link" href="mailto:support@promptmegood.com">support@promptmegood.com</a></p>
         <div class="site-footer-social" aria-label="Follow PromptMeGood on social media">
-          <span class="site-footer-tagline" style="margin:0;">Follow PromptMeGood</span>
-          <a class="site-footer-link" href="https://www.tiktok.com/@promptmegood" target="_blank" rel="noopener noreferrer">TikTok</a>
-          <span class="site-footer-divider" aria-hidden="true">|</span>
-          <a class="site-footer-link" href="https://www.instagram.com/promptmegood/" target="_blank" rel="noopener noreferrer">Instagram</a>
-          <span class="site-footer-divider" aria-hidden="true">|</span>
-          <a class="site-footer-link" href="https://www.youtube.com/@promptmegood" target="_blank" rel="noopener noreferrer">YouTube</a>
-          <span class="site-footer-divider" aria-hidden="true">|</span>
-          <a class="site-footer-link" href="https://x.com/promptmegood" target="_blank" rel="noopener noreferrer">X</a>
+          <span class="site-footer-tagline site-footer-social-label" style="margin:0;">Follow PromptMeGood</span>
+          <span class="site-footer-social-links">
+            <a class="site-footer-link" href="https://www.tiktok.com/@promptmegood" target="_blank" rel="noopener noreferrer">TikTok</a>
+            <span class="site-footer-divider" aria-hidden="true">|</span>
+            <a class="site-footer-link" href="https://www.instagram.com/promptmegood/" target="_blank" rel="noopener noreferrer">Instagram</a>
+            <span class="site-footer-divider" aria-hidden="true">|</span>
+            <a class="site-footer-link" href="https://www.youtube.com/@promptmegood" target="_blank" rel="noopener noreferrer">YouTube</a>
+            <span class="site-footer-divider" aria-hidden="true">|</span>
+            <a class="site-footer-link" href="https://x.com/promptmegood" target="_blank" rel="noopener noreferrer">X</a>
+          </span>
         </div>
       </div>
     </footer>
