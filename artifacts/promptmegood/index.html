@@ -255,6 +255,41 @@
     }
     .field textarea { min-height: 112px; padding: var(--space-4); resize: vertical; }
     .field input::placeholder, .field textarea::placeholder { color: var(--color-text-faint); }
+    .field select {
+      -webkit-appearance: none; -moz-appearance: none; appearance: none;
+      border: 1px solid color-mix(in srgb, var(--color-primary) 45%, transparent);
+      background-color: color-mix(in srgb, var(--color-primary) 4%, var(--color-surface));
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'><path d='M1 1.5L6 6.5L11 1.5' stroke='%2301696f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right var(--space-4) center;
+      background-size: 12px 8px;
+      padding-right: calc(var(--space-4) + 20px);
+      font-size: 16px;
+      color: var(--color-text);
+      cursor: pointer;
+      transition: border-color var(--transition-interactive), background-color var(--transition-interactive);
+    }
+    [data-theme="dark"] .field select {
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'><path d='M1 1.5L6 6.5L11 1.5' stroke='%235ba8b0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .field select {
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'><path d='M1 1.5L6 6.5L11 1.5' stroke='%235ba8b0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+      }
+    }
+    .field select:hover {
+      border-color: color-mix(in srgb, var(--color-primary) 60%, transparent);
+      background-color: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface));
+    }
+    .field select:focus, .field select:focus-visible {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 22%, transparent), 0 1px 2px color-mix(in srgb, var(--color-primary) 12%, transparent);
+      background-color: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));
+    }
+    @media (max-width: 600px) {
+      .field select { min-height: 56px; padding-top: var(--space-2); padding-bottom: var(--space-2); }
+    }
     .helper { color: var(--color-text-muted); font-size: var(--text-xs); }
     .field-primary label { font-size: var(--text-base); color: var(--color-primary); letter-spacing: 0.01em; }
     .field-primary input {
