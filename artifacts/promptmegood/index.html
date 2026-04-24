@@ -229,8 +229,8 @@
     .app-section { padding: 0 0 var(--space-16); }
     html { scroll-behavior: smooth; }
     @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-    #history { scroll-margin-top: 96px; }
-    @media (max-width: 720px) { #history { scroll-margin-top: 150px; } }
+    #history, #builder { scroll-margin-top: 96px; }
+    @media (max-width: 720px) { #history, #builder { scroll-margin-top: 150px; } }
     .app-shell {
       display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6);
       align-items: start;
