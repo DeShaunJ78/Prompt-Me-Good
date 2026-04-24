@@ -635,6 +635,36 @@
     .compare-col-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
     .compare-col-actions .btn { min-height: 36px; padding: 0 var(--space-3); font-size: var(--text-xs); }
     .compare-foot { display: flex; justify-content: flex-end; }
+    .bk-overlay {
+      position: fixed; inset: 0; z-index: 45; background: color-mix(in srgb, var(--color-bg) 80%, transparent);
+      backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: var(--space-4);
+    }
+    .bk-overlay.is-open { display: flex; }
+    .bk-modal {
+      width: min(560px, 100%); max-height: 92vh; overflow: auto; background: var(--color-surface);
+      border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-6);
+      display: flex; flex-direction: column; gap: var(--space-4);
+    }
+    .bk-tabs { display: flex; gap: var(--space-2); border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-2); }
+    .bk-tab {
+      background: transparent; border: 0; cursor: pointer; padding: 8px 14px; border-radius: var(--radius-md);
+      font-size: var(--text-sm); font-weight: 600; color: var(--color-text-muted);
+      transition: background var(--transition-interactive), color var(--transition-interactive);
+    }
+    .bk-tab:hover { background: color-mix(in srgb, var(--color-text) 6%, transparent); color: var(--color-text); }
+    .bk-tab.is-active { background: color-mix(in srgb, var(--color-primary) 14%, transparent); color: var(--color-primary); }
+    .bk-panel { display: none; flex-direction: column; gap: var(--space-3); }
+    .bk-panel.is-active { display: flex; }
+    .bk-panel p { margin: 0; font-size: var(--text-sm); color: var(--color-text); line-height: 1.5; }
+    .bk-key-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); }
+    .bk-key-row { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
+    .bk-key {
+      flex: 1 1 220px; padding: 10px 14px; background: var(--color-bg); border: 1px solid var(--color-border);
+      border-radius: var(--radius-md); font-family: var(--font-mono, monospace); font-size: var(--text-base);
+      font-weight: 700; letter-spacing: 0.12em; color: var(--color-text); user-select: all; word-break: break-all;
+    }
+    .bk-hint { font-size: var(--text-xs); color: var(--color-text-muted); font-style: italic; }
+    .bk-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-2); }
     .stats-grid {
       display: grid; gap: var(--space-3);
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -977,7 +1007,7 @@
             <p class="popular-use-card-desc">Craft high-converting product pages with strong benefits and trust-building copy.</p>
             <span class="popular-use-card-cta">Use This →</span>
           </button>
-          <button type="button" class="popular-use-card" data-popular-goal="Help me think through a personal problem clearly and create a practical next-step plan.">
+          <button type="button" class="popular-use-card" data-popular-goal="Help me think through a personal problem clearly and create a practical next-step plan." data-money-mode="off">
             <span class="popular-use-card-title">Solve A Personal Problem</span>
             <p class="popular-use-card-desc">Think through a tough personal situation and get a calm, practical next-step plan.</p>
             <span class="popular-use-card-cta">Use This →</span>
@@ -1242,6 +1272,7 @@
                 <button class="btn btn-secondary" type="button" id="compare-two" aria-pressed="false">Compare Two</button>
                 <button class="btn btn-secondary" type="button" id="export-history">Export</button>
                 <button class="btn btn-secondary" type="button" id="import-history">Import</button>
+                <button class="btn btn-secondary" type="button" id="open-backup">🔑 Backup / Restore</button>
                 <button class="btn btn-secondary" type="button" id="clear-history">Clear All</button>
                 <input type="file" id="import-history-file" accept="application/json,.json" style="display:none" />
               </div>
@@ -1697,6 +1728,39 @@
     </div>
   </div>
 
+  <div class="bk-overlay" id="bk-overlay" role="dialog" aria-modal="true" aria-labelledby="bk-title" aria-hidden="true">
+    <div class="bk-modal">
+      <div class="compare-head">
+        <h3 id="bk-title">Backup / Restore</h3>
+        <button class="btn btn-secondary" type="button" id="bk-close" aria-label="Close backup view">Close</button>
+      </div>
+      <div class="bk-tabs" role="tablist" aria-label="Backup or restore">
+        <button type="button" class="bk-tab is-active" id="bk-tab-backup" role="tab" aria-selected="true" aria-controls="bk-panel-backup">Backup</button>
+        <button type="button" class="bk-tab" id="bk-tab-restore" role="tab" aria-selected="false" aria-controls="bk-panel-restore">Restore</button>
+      </div>
+      <div class="bk-panel is-active" id="bk-panel-backup" role="tabpanel" aria-labelledby="bk-tab-backup">
+        <p>Save all your prompts to a file you can keep safe. Your <strong>Backup Key</strong> identifies this device — write it down or save it in a password manager.</p>
+        <span class="bk-key-label">Your Backup Key</span>
+        <div class="bk-key-row">
+          <code class="bk-key" id="bk-key-value">--------</code>
+          <button class="btn btn-secondary" type="button" id="bk-copy-key">Copy</button>
+        </div>
+        <p class="bk-hint">This key stays on this device. If you ever clear browser data, this key is gone — so save it somewhere outside the browser.</p>
+        <div class="bk-actions">
+          <button class="btn btn-primary" type="button" id="bk-download">Download Backup</button>
+        </div>
+      </div>
+      <div class="bk-panel" id="bk-panel-restore" role="tabpanel" aria-labelledby="bk-tab-restore">
+        <p>Upload a backup file to restore your saved prompts on this device.</p>
+        <div class="bk-actions">
+          <button class="btn btn-primary" type="button" id="bk-restore-pick">Choose Backup File</button>
+          <input type="file" id="bk-restore-file" accept="application/json,.json" style="display:none" />
+        </div>
+        <p class="bk-hint">You'll be asked whether to merge with your current prompts or replace them.</p>
+      </div>
+    </div>
+  </div>
+
   <div id="print-area" aria-hidden="true">
     <h1 id="print-title"></h1>
     <div class="print-meta" id="print-meta"></div>
@@ -1775,6 +1839,11 @@
           goalEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
       });
+      const moneyModeEl = document.getElementById('moneyMode');
+      let moneyModeUserTouched = false;
+      if (moneyModeEl) {
+        moneyModeEl.addEventListener('change', function () { moneyModeUserTouched = true; });
+      }
       document.querySelectorAll('.popular-use-card').forEach(function (card) {
         card.addEventListener('click', function () {
           const goalEl = document.getElementById('goal');
@@ -1782,6 +1851,10 @@
           const goalText = card.getAttribute('data-popular-goal') || '';
           goalEl.value = goalText;
           goalEl.dispatchEvent(new Event('input', { bubbles: true }));
+          if (moneyModeEl && !moneyModeUserTouched) {
+            const wantOff = card.getAttribute('data-money-mode') === 'off';
+            moneyModeEl.checked = !wantOff;
+          }
           const builderSection = document.getElementById('builder');
           if (builderSection) {
             builderSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -2774,6 +2847,160 @@ Context:
         saveHistory([]);
         renderHistory();
         showToast('History cleared.');
+      });
+
+      const BACKUP_KEY_KEY = 'promptmegood:backup-key:v1';
+      function getOrCreateBackupKey() {
+        let key = '';
+        try { key = localStorage.getItem(BACKUP_KEY_KEY) || ''; } catch (e) {}
+        if (!key || key.length < 8) {
+          const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+          key = '';
+          for (let i = 0; i < 10; i++) key += chars.charAt(Math.floor(Math.random() * chars.length));
+          try { localStorage.setItem(BACKUP_KEY_KEY, key); } catch (e) {}
+        }
+        return key;
+      }
+
+      const bkOverlay = document.getElementById('bk-overlay');
+      const bkClose = document.getElementById('bk-close');
+      const bkTabBackup = document.getElementById('bk-tab-backup');
+      const bkTabRestore = document.getElementById('bk-tab-restore');
+      const bkPanelBackup = document.getElementById('bk-panel-backup');
+      const bkPanelRestore = document.getElementById('bk-panel-restore');
+      const bkKeyValue = document.getElementById('bk-key-value');
+      const bkCopyKey = document.getElementById('bk-copy-key');
+      const bkDownload = document.getElementById('bk-download');
+      const bkRestorePick = document.getElementById('bk-restore-pick');
+      const bkRestoreFile = document.getElementById('bk-restore-file');
+      const openBackupBtn = document.getElementById('open-backup');
+
+      function openBackupModal() {
+        bkKeyValue.textContent = getOrCreateBackupKey();
+        setBackupTab('backup');
+        bkOverlay.classList.add('is-open');
+        bkOverlay.setAttribute('aria-hidden', 'false');
+      }
+      function closeBackupModal() {
+        bkOverlay.classList.remove('is-open');
+        bkOverlay.setAttribute('aria-hidden', 'true');
+      }
+      function setBackupTab(name) {
+        const isBackup = name === 'backup';
+        bkTabBackup.classList.toggle('is-active', isBackup);
+        bkTabRestore.classList.toggle('is-active', !isBackup);
+        bkTabBackup.setAttribute('aria-selected', isBackup ? 'true' : 'false');
+        bkTabRestore.setAttribute('aria-selected', !isBackup ? 'true' : 'false');
+        bkPanelBackup.classList.toggle('is-active', isBackup);
+        bkPanelRestore.classList.toggle('is-active', !isBackup);
+      }
+
+      openBackupBtn.addEventListener('click', openBackupModal);
+      bkClose.addEventListener('click', closeBackupModal);
+      bkOverlay.addEventListener('click', function (event) {
+        if (event.target === bkOverlay) closeBackupModal();
+      });
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && bkOverlay.classList.contains('is-open')) closeBackupModal();
+      });
+      bkTabBackup.addEventListener('click', function () { setBackupTab('backup'); });
+      bkTabRestore.addEventListener('click', function () { setBackupTab('restore'); });
+
+      bkCopyKey.addEventListener('click', async function () {
+        const key = bkKeyValue.textContent || '';
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(key);
+          } else {
+            const range = document.createRange();
+            range.selectNodeContents(bkKeyValue);
+            const sel = window.getSelection();
+            sel.removeAllRanges(); sel.addRange(range);
+            document.execCommand('copy');
+            sel.removeAllRanges();
+          }
+          showToast('Backup key copied.');
+        } catch (e) { showToast('Could not copy key.'); }
+      });
+
+      bkDownload.addEventListener('click', function () {
+        const items = loadHistory();
+        const key = getOrCreateBackupKey();
+        const payload = { app: 'promptmegood', version: 1, exportedAt: new Date().toISOString(), backupKey: key, items: items };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const stamp = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = 'promptmegood-backup-' + key + '-' + stamp + '.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Backup downloaded (' + items.length + ' prompt' + (items.length === 1 ? '' : 's') + ').');
+      });
+
+      bkRestorePick.addEventListener('click', function () { bkRestoreFile.click(); });
+      bkRestoreFile.addEventListener('change', function (event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function () {
+          try {
+            const parsed = JSON.parse(String(reader.result));
+            const incoming = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.items) ? parsed.items : null);
+            if (!incoming) throw new Error('Invalid file');
+            const valid = incoming.filter(function (i) {
+              return i && typeof i === 'object' && typeof i.prompt === 'string' && i.data && typeof i.data === 'object';
+            }).map(function (i) {
+              return {
+                id: i.id || ('p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8)),
+                savedAt: typeof i.savedAt === 'number' ? i.savedAt : Date.now(),
+                data: i.data,
+                prompt: i.prompt,
+                favorite: !!i.favorite,
+                nickname: typeof i.nickname === 'string' ? i.nickname.slice(0, 80) : undefined,
+                useCount: typeof i.useCount === 'number' ? i.useCount : 0,
+                lastUsedAt: typeof i.lastUsedAt === 'number' ? i.lastUsedAt : undefined,
+                tags: Array.isArray(i.tags) ? i.tags.filter(function (t) { return typeof t === 'string'; }) : []
+              };
+            });
+            if (valid.length === 0) { showToast('No valid prompts in that file.'); bkRestoreFile.value = ''; return; }
+            const replace = window.confirm('Restore ' + valid.length + ' prompt' + (valid.length === 1 ? '' : 's') + '?\n\nOK = replace your current history.\nCancel = merge with what you have.');
+            let next;
+            if (replace) {
+              next = valid;
+            } else {
+              const existing = loadHistory();
+              const seen = new Set(existing.map(function (i) { return i.id; }));
+              const merged = existing.slice();
+              valid.forEach(function (i) {
+                if (seen.has(i.id)) i.id = 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+                seen.add(i.id);
+                merged.push(i);
+              });
+              const favs = merged.filter(function (i) { return i.favorite; });
+              const nonFavs = merged.filter(function (i) { return !i.favorite; })
+                .sort(function (a, b) { return b.savedAt - a.savedAt; }).slice(0, HISTORY_LIMIT);
+              next = favs.concat(nonFavs);
+            }
+            saveHistory(next);
+            renderHistory();
+            let currentKey = '';
+            try { currentKey = localStorage.getItem(BACKUP_KEY_KEY) || ''; } catch (e) {}
+            if (parsed && typeof parsed.backupKey === 'string' && parsed.backupKey && !currentKey) {
+              try { localStorage.setItem(BACKUP_KEY_KEY, parsed.backupKey); } catch (e) {}
+              bkKeyValue.textContent = parsed.backupKey;
+            }
+            showToast('Restored ' + valid.length + ' prompt' + (valid.length === 1 ? '' : 's') + '.');
+            closeBackupModal();
+          } catch (e) {
+            showToast('Could not read that file.');
+          }
+          bkRestoreFile.value = '';
+        };
+        reader.onerror = function () { showToast('Could not read that file.'); bkRestoreFile.value = ''; };
+        reader.readAsText(file);
       });
 
       renderHistory();
