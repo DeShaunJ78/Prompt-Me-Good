@@ -548,6 +548,7 @@
               <div class="actions-row">
                 <button class="btn btn-primary" type="submit">Generate Prompt</button>
                 <button class="btn btn-secondary" type="button" id="fill-demo">Use demo values</button>
+                <button class="btn btn-secondary" type="button" id="random-prompt" title="Surprise me with a random prompt">🎲 Random prompt</button>
               </div>
             </form>
           </div>
@@ -1684,6 +1685,47 @@ Context:
           resultBox.textContent = prompt;
           addToHistory(data, prompt);
         });
+      });
+
+      const RANDOM_GOALS = [
+        'Help me come up with 10 startup ideas a solo founder can launch this weekend',
+        'Write a 60-second script for a short video that explains a niche topic in plain English',
+        'Plan a 7-day social media content calendar for someone building a personal brand',
+        'Design a beginner-friendly morning routine that boosts focus and energy',
+        'Brainstorm 5 unique gift ideas for someone who already has everything',
+        'Outline a course that teaches a complete beginner how to use AI to save time at work',
+        'Draft a polite but firm email to a client who is late on payment',
+        'Create a one-page business plan for a side hustle I can run in evenings',
+        'Suggest a 30-day fitness challenge that requires no equipment',
+        'Write a cold DM that gets a busy founder to reply within 24 hours',
+        'Create a study plan to learn a new programming language in 30 days',
+        'Brainstorm names for a new productivity app aimed at students',
+        'Help me negotiate a raise — script, talking points, and counters',
+        'Draft a personal mission statement based on what matters most to me',
+        'Plan a no-budget weekend trip with friends that feels memorable',
+        'Outline a 5-email welcome sequence for new newsletter subscribers'
+      ];
+
+      function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+      document.getElementById('random-prompt').addEventListener('click', function () {
+        const categories = ['business', 'content', 'money', 'personal', 'faith'];
+        const skills = ['beginner', 'intermediate', 'advanced'];
+        const tones = ['professional', 'aggressive', 'casual', 'expert'];
+        const formats = ['step-by-step', 'list', 'detailed breakdown'];
+        document.getElementById('goal').value = pickRandom(RANDOM_GOALS);
+        document.getElementById('category').value = pickRandom(categories);
+        document.getElementById('skillLevel').value = pickRandom(skills);
+        document.getElementById('tone').value = pickRandom(tones);
+        document.getElementById('outputFormat').value = pickRandom(formats);
+        document.getElementById('details').value = '';
+        document.getElementById('moneyMode').checked = Math.random() < 0.4;
+        const data = getFormData();
+        const prompt = generatePrompt(data);
+        resultBox.textContent = prompt;
+        addToHistory(data, prompt);
+        document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        showToast('Random prompt generated.');
       });
 
       fillDemoBtn.addEventListener('click', function () {
