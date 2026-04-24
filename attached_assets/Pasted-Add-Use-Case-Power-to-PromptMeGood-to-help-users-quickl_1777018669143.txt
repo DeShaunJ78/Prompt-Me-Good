@@ -1,0 +1,61 @@
+Add “Use-Case Power” to PromptMeGood to help users quickly understand what they can use the app for. Do not break existing functionality.
+
+Goal:
+Make the app feel outcome-driven, not just like a generic prompt generator.
+
+1. Add a section near the top, preferably under the hero/subheadline and before the main builder, titled:
+“Popular Ways To Use PromptMeGood”
+
+2. Add 6 clickable use-case cards or buttons:
+- Make Money With AI
+- Start A Business
+- Create Viral Content
+- Write Better Emails
+- Build A Product Page
+- Solve A Personal Problem
+
+3. Each card/button should include:
+- A short title
+- A one-sentence description
+- A “Use This” button or clickable card behavior
+
+4. When clicked, auto-fill the “Your Goal (Start Here)” field with a strong example goal:
+
+Make Money With AI:
+“Help me find realistic ways to make money using AI based on my current skills, time, and budget.”
+
+Start A Business:
+“Help me turn a business idea into a simple step-by-step launch plan.”
+
+Create Viral Content:
+“Help me create attention-grabbing content ideas and hooks for TikTok, Instagram, or YouTube.”
+
+Write Better Emails:
+“Help me write a clear, persuasive email that gets the response I want.”
+
+Build A Product Page:
+“Help me write a high-converting product page with strong benefits, trust-building copy, and clear calls to action.”
+
+Solve A Personal Problem:
+“Help me think through a personal problem clearly and create a practical next-step plan.”
+
+5. Optional but preferred:
+When a use-case card is clicked, smoothly scroll the user to “Your Goal (Start Here)” or the builder section.
+
+6. Styling:
+- Keep the section clean and compact
+- Cards should be visually distinct but not overwhelming
+- Mobile layout should stack cleanly
+- Use consistent spacing
+- Do not make the page feel cluttered
+
+7. Important:
+- Do not remove current examples
+- Do not change prompt generation logic unless needed for autofill
+- Do not break copy, history, manual, or Open In buttons
+
+8. After implementation:
+- Test every use-case card
+- Confirm the goal field auto-fills correctly
+- Confirm mobile layout looks clean
+- Confirm no JavaScript errors
