@@ -868,6 +868,38 @@ Context:
       let historyTagFilter = '';
       let historySort = 'newest';
 
+      const STREAK_KEY = 'promptmegood:streak:v1';
+      function todayKey() {
+        const d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      }
+      function loadStreak() {
+        try { return JSON.parse(localStorage.getItem(STREAK_KEY)) || { count: 0, lastDate: '', best: 0 }; }
+        catch (e) { return { count: 0, lastDate: '', best: 0 }; }
+      }
+      function saveStreak(s) { try { localStorage.setItem(STREAK_KEY, JSON.stringify(s)); } catch (e) {} }
+      function getCurrentStreak() {
+        const s = loadStreak();
+        if (!s.lastDate) return 0;
+        const today = todayKey();
+        if (s.lastDate === today) return s.count;
+        const y = new Date(); y.setDate(y.getDate() - 1);
+        const yesterday = y.getFullYear() + '-' + String(y.getMonth() + 1).padStart(2, '0') + '-' + String(y.getDate()).padStart(2, '0');
+        if (s.lastDate === yesterday) return s.count;
+        return 0;
+      }
+      function bumpStreak() {
+        const s = loadStreak();
+        const today = todayKey();
+        if (s.lastDate === today) return;
+        const y = new Date(); y.setDate(y.getDate() - 1);
+        const yesterday = y.getFullYear() + '-' + String(y.getMonth() + 1).padStart(2, '0') + '-' + String(y.getDate()).padStart(2, '0');
+        s.count = s.lastDate === yesterday ? (s.count || 0) + 1 : 1;
+        s.lastDate = today;
+        s.best = Math.max(s.best || 0, s.count);
+        saveStreak(s);
+      }
+
       function renderStats() {
         const grid = document.getElementById('stats-grid');
         if (!grid) return;
@@ -893,7 +925,16 @@ Context:
         const totalUses = items.reduce(function (s, i) { return s + (i.useCount || 0); }, 0)
           + userTpls.reduce(function (s, t) { return s + (t.useCount || 0); }, 0);
 
+        const streakNow = getCurrentStreak();
+        const streakBest = loadStreak().best || 0;
+        const fire = streakNow >= 3 ? ' 🔥' : '';
+        const streakLabel = streakNow === 0 ? 'No streak yet' : streakNow + ' day' + (streakNow === 1 ? '' : 's') + fire;
+        const streakSub = streakNow === 0
+          ? 'Generate a prompt today to start'
+          : 'Best: ' + Math.max(streakBest, streakNow) + ' day' + (Math.max(streakBest, streakNow) === 1 ? '' : 's');
+
         const cards = [
+          { label: 'Daily streak', value: streakLabel, sub: streakSub },
           { label: 'Saved prompts', value: String(total), sub: favs + ' favorited' },
           { label: 'Total reuses', value: String(totalUses), sub: 'Across history & templates' },
           { label: 'Top tag', value: topTag, sub: topTagSub },
@@ -1051,9 +1092,10 @@ Context:
       }
 
       function addToHistory(data, prompt) {
+        bumpStreak();
         const items = loadHistory();
         const lastNonFav = items.find(function (i) { return !i.favorite; });
-        if (lastNonFav && lastNonFav.prompt === prompt) return;
+        if (lastNonFav && lastNonFav.prompt === prompt) { renderStats(); return; }
         items.unshift({
           id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
           savedAt: Date.now(),
