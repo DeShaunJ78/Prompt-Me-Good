@@ -344,6 +344,19 @@
       #print-area .print-footer { margin-top: 24px; font-size: 10px; color: #888; border-top: 1px solid #ccc; padding-top: 8px; }
     }
     #print-area { display: none; }
+    .tag-insights { margin-top: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); }
+    .tag-insights-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--space-2); }
+    .tag-insights-head h3 { margin: 0; font-size: var(--text-md); }
+    .tag-insights-head span { font-size: var(--text-xs); color: var(--color-text-muted); }
+    .tag-row { display: grid; grid-template-columns: minmax(110px, 1fr) 60px 1fr 80px; gap: var(--space-3); align-items: center; padding: 8px 12px; border-radius: var(--radius-md); background: color-mix(in srgb, var(--color-text) 4%, transparent); cursor: pointer; border: 0; text-align: left; color: inherit; font: inherit; }
+    .tag-row:hover { background: color-mix(in srgb, var(--color-primary) 12%, transparent); }
+    .tag-row .tag-name { font-weight: 600; color: var(--color-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tag-row .tag-count { font-variant-numeric: tabular-nums; color: var(--color-text-muted); font-size: var(--text-sm); }
+    .tag-bar { height: 8px; border-radius: 4px; background: color-mix(in srgb, var(--color-text) 8%, transparent); overflow: hidden; }
+    .tag-bar > span { display: block; height: 100%; background: var(--color-primary); border-radius: 4px; }
+    .tag-reuse { font-variant-numeric: tabular-nums; color: var(--color-text-muted); font-size: var(--text-sm); text-align: right; }
+    .tag-empty { color: var(--color-text-muted); font-size: var(--text-sm); padding: var(--space-2) 0; }
+    @media (max-width: 540px) { .tag-row { grid-template-columns: 1fr 50px; } .tag-bar, .tag-reuse { display: none; } }
     .history-item.is-favorite { border-color: color-mix(in srgb, var(--color-primary) 50%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent) inset; }
     .history-item.is-favorite .history-item-meta { color: var(--color-primary); }
     .history-item.is-favorite { cursor: grab; }
@@ -622,6 +635,7 @@
             <p>A quick look at how you're using PromptMeGood.</p>
           </div>
           <div class="stats-grid" id="stats-grid"></div>
+          <div id="tag-insights" class="tag-insights" aria-label="Tag insights"></div>
         </div>
       </div>
     </section>
@@ -998,7 +1012,51 @@ Context:
             '<span class="stat-sub">' + escapeHtml(c.sub) + '</span>' +
           '</div>';
         }).join('');
+        renderTagInsights(items);
       }
+
+      function renderTagInsights(items) {
+        const wrap = document.getElementById('tag-insights');
+        if (!wrap) return;
+        const tagMap = {};
+        items.forEach(function (i) {
+          (i.tags || []).forEach(function (t) {
+            if (!tagMap[t]) tagMap[t] = { count: 0, reuses: 0 };
+            tagMap[t].count += 1;
+            tagMap[t].reuses += (i.useCount || 0);
+          });
+        });
+        const rows = Object.keys(tagMap).map(function (t) {
+          return { tag: t, count: tagMap[t].count, reuses: tagMap[t].reuses, rate: tagMap[t].count ? (tagMap[t].reuses / tagMap[t].count) : 0 };
+        }).sort(function (a, b) {
+          return (b.count - a.count) || (b.reuses - a.reuses);
+        }).slice(0, 8);
+        if (rows.length === 0) {
+          wrap.innerHTML = '<div class="tag-insights-head"><h3>Tag insights</h3></div><div class="tag-empty">Tag your prompts (via Edit tags) to see which themes you lean on most.</div>';
+          return;
+        }
+        const maxCount = rows[0].count || 1;
+        wrap.innerHTML = '<div class="tag-insights-head"><h3>Tag insights</h3><span>Click a tag to filter history</span></div>' +
+          rows.map(function (r) {
+            const pct = Math.max(6, Math.round((r.count / maxCount) * 100));
+            const rateLabel = r.count ? (r.rate.toFixed(r.rate >= 10 ? 0 : 1) + '× avg') : '0× avg';
+            return '<button type="button" class="tag-row" data-tag-insight="' + escapeHtml(r.tag) + '" aria-label="Filter history by tag ' + escapeHtml(r.tag) + '">' +
+              '<span class="tag-name">#' + escapeHtml(r.tag) + '</span>' +
+              '<span class="tag-count">' + r.count + ' prompt' + (r.count === 1 ? '' : 's') + '</span>' +
+              '<span class="tag-bar"><span style="width:' + pct + '%"></span></span>' +
+              '<span class="tag-reuse">' + r.reuses + ' reuses · ' + rateLabel + '</span>' +
+            '</button>';
+          }).join('');
+      }
+
+      document.addEventListener('click', function (e) {
+        const btn = e.target.closest('[data-tag-insight]');
+        if (!btn) return;
+        const tag = btn.dataset.tagInsight;
+        historyTagFilter = historyTagFilter === tag ? '' : tag;
+        renderHistory();
+        document.getElementById('history').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
 
       function bumpUse(id) {
         const items = loadHistory();
