@@ -688,6 +688,33 @@
     .manual-feature ul { margin-left: 1.25rem; font-size: var(--text-sm); }
     .manual-mistakes li { margin-top: 8px; }
     #manual-tips { margin-top: var(--space-6); scroll-margin-top: var(--space-12); }
+
+    .manual-callout {
+      margin: var(--space-5) 0;
+      padding: var(--space-4) var(--space-5);
+      background: color-mix(in srgb, var(--color-primary) 7%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent);
+      border-left: 4px solid var(--color-primary);
+      border-radius: var(--radius-lg);
+      scroll-margin-top: var(--space-12);
+    }
+    .manual-callout h3 {
+      display: flex; align-items: center; gap: var(--space-2);
+      margin: 0 0 var(--space-3); font-size: var(--text-base); font-weight: 700;
+      color: var(--color-primary); line-height: 1.25;
+    }
+    .manual-callout h3::before {
+      content: '💡'; font-size: 1.1em; line-height: 1;
+    }
+    .manual-callout p { margin: 0 0 var(--space-2); font-size: var(--text-sm); line-height: 1.6; color: var(--color-text); }
+    .manual-callout p:last-child { margin-bottom: 0; }
+    .manual-callout ol { margin: var(--space-2) 0 0 1.25rem; padding: 0; font-size: var(--text-sm); color: var(--color-text); line-height: 1.6; }
+    .manual-callout ol li { margin-top: 4px; }
+    .manual-toc a.is-highlight { background: color-mix(in srgb, var(--color-primary) 14%, transparent); border-color: var(--color-primary); color: var(--color-primary); font-weight: 600; }
+    @media (max-width: 600px) {
+      .manual-callout { padding: var(--space-3) var(--space-4); margin: var(--space-4) 0; }
+      .manual-callout h3 { font-size: var(--text-sm); }
+    }
     .toast {
       position: fixed; right: var(--space-4); bottom: var(--space-4); z-index: 30;
       background: var(--color-text); color: var(--color-text-inverse);
@@ -1307,7 +1334,7 @@
             <nav class="manual-toc" aria-label="Manual sections">
               <a href="#manual-what">1. What it does</a>
               <a href="#manual-how">2. How to use it</a>
-              <a href="#manual-usecases">Using pre-built use cases</a>
+              <a href="#manual-usecases" class="is-highlight">⚡ Using pre-built use cases</a>
               <a href="#manual-features">3. Feature breakdown</a>
               <a href="#manual-prompt">4. Your generated prompt</a>
               <a href="#manual-tips">5. Pro tips</a>
@@ -1341,12 +1368,12 @@
               </ol>
             </article>
 
-            <article class="manual-section" id="manual-usecases">
+            <article class="manual-section manual-callout" id="manual-usecases">
               <h3>Using Pre-Built Use Cases</h3>
               <p><strong>What it does:</strong> Use Cases give you quick starting points so you don't have to think about what to type. They are designed to help you get results faster.</p>
               <p><strong>Why it matters:</strong> Most people struggle with what to ask AI. These examples remove that guesswork and help you start immediately.</p>
               <p><strong>How to use them:</strong></p>
-              <ol class="manual-steps">
+              <ol>
                 <li>Click a Use Case</li>
                 <li>It automatically fills in your goal</li>
                 <li>Adjust it if needed</li>
