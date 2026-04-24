@@ -297,7 +297,7 @@
     @media (max-width: 920px) { .use-case-grid { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 640px) { .use-case-grid { grid-template-columns: 1fr; } }
 
-    .popular-uses { padding: var(--space-8) 0 var(--space-5); }
+    .popular-uses { padding: var(--space-8) 0 var(--space-5); scroll-margin-top: var(--space-12); }
     .popular-uses-head { text-align: center; max-width: 640px; margin: 0 auto var(--space-5); }
     .popular-uses-head h2 { font-size: var(--text-lg); line-height: 1.2; margin: 0 0 var(--space-2); color: var(--color-text); }
     .popular-uses-head p { color: var(--color-text-muted); font-size: var(--text-sm); margin: 0; }
@@ -900,7 +900,7 @@
       </div>
     </section>
 
-    <section class="popular-uses" id="popular-uses" aria-labelledby="popular-uses-title">
+    <section class="popular-uses" id="use-cases" aria-labelledby="popular-uses-title">
       <div class="container">
         <div class="popular-uses-head">
           <h2 id="popular-uses-title">Popular Ways To Use PromptMeGood</h2>
@@ -1036,7 +1036,7 @@
               <div class="toggle-row">
                 <div>
                   <strong>Money Mode</strong>
-                  <span>Push the prompt toward income, speed, and practical execution.</span>
+                  <span>Prioritizes practical, money-making or results-driven answers.</span>
                 </div>
                 <label class="switch" aria-label="Turn Money Mode on or off">
                   <input id="moneyMode" name="moneyMode" type="checkbox" checked />
@@ -1602,15 +1602,6 @@
       <div class="container site-footer-inner">
         <div class="site-footer-brand">&copy; PromptMeGood</div>
         <p class="site-footer-tagline">Built for people who want real results from AI &mdash; not fluff.</p>
-        <nav class="site-footer-social" aria-label="Social links">
-          <a class="site-footer-link" href="#" aria-label="TikTok">TikTok</a>
-          <span class="site-footer-divider" aria-hidden="true">|</span>
-          <a class="site-footer-link" href="#" aria-label="Instagram">Instagram</a>
-          <span class="site-footer-divider" aria-hidden="true">|</span>
-          <a class="site-footer-link" href="#" aria-label="YouTube">YouTube</a>
-          <span class="site-footer-divider" aria-hidden="true">|</span>
-          <a class="site-footer-link" href="#" aria-label="X">X</a>
-        </nav>
         <p class="site-footer-contact"><a class="site-footer-link" href="mailto:support@promptmegood.com">support@promptmegood.com</a></p>
       </div>
     </footer>
@@ -3009,12 +3000,24 @@ Context:
           weeklyGoalClearBtn.hidden = false;
         } else {
           weeklyGoalPin.classList.add('is-empty');
-          weeklyGoalBody.textContent = 'No focus theme set yet. Use this to keep your prompts pulling in one direction.';
+          weeklyGoalBody.innerHTML = 'Try focusing on one goal this week. Example: <button type="button" class="link-btn" data-weekly-suggestion="Improve my business idea">&ldquo;Improve my business idea&rdquo;</button>';
           weeklyGoalEditBtn.textContent = 'Set';
           weeklyGoalUseBtn.hidden = true;
           weeklyGoalClearBtn.hidden = true;
         }
       }
+      weeklyGoalBody.addEventListener('click', function (e) {
+        const trg = e.target.closest('[data-weekly-suggestion]');
+        if (!trg) return;
+        const suggestion = trg.getAttribute('data-weekly-suggestion') || '';
+        if (!suggestion) return;
+        const goalEl = document.getElementById('goal');
+        goalEl.value = suggestion;
+        goalEl.dispatchEvent(new Event('input', { bubbles: true }));
+        goalEl.focus();
+        try { goalEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (err) {}
+        showToast('Goal filled — tweak it before you generate.');
+      });
       weeklyGoalEditBtn.addEventListener('click', function () {
         const current = loadWeeklyGoal();
         const next = window.prompt("What's your focus theme this week?", current);
