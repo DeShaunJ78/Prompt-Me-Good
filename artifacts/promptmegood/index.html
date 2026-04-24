@@ -369,6 +369,15 @@
     @media (prefers-reduced-motion: reduce) {
       .panel.is-highlight { animation: none; }
     }
+    .open-in-block { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-divider); display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+    .open-in-label { font-size: var(--text-sm); font-weight: 700; color: var(--color-text); }
+    .open-in-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .open-in-btn { text-decoration: none; }
+    @media (max-width: 640px) {
+      .open-in-block { flex-direction: column; align-items: stretch; gap: 10px; }
+      .open-in-row { flex-direction: column; gap: 12px; }
+      .open-in-btn { width: 100%; min-height: 48px; justify-content: center; }
+    }
     .improve-block { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-divider); }
     .improve-title { margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--color-text); }
     .improve-helper { margin: 4px 0 var(--space-3); font-size: var(--text-sm); color: var(--color-text-muted); }
@@ -827,6 +836,14 @@
             <div class="actions-row">
               <button class="btn btn-primary" type="button" id="copy-btn">Copy Prompt</button>
               <button class="btn btn-secondary" type="button" id="print-btn" title="Print or save as PDF">Print / Save PDF</button>
+            </div>
+            <div class="open-in-block" aria-label="Open prompt in an AI tool">
+              <span class="open-in-label">Open In:</span>
+              <div class="open-in-row">
+                <a class="btn btn-secondary open-in-btn" href="https://chat.openai.com/" target="_blank" rel="noopener noreferrer">ChatGPT</a>
+                <a class="btn btn-secondary open-in-btn" href="https://claude.ai/" target="_blank" rel="noopener noreferrer">Claude</a>
+                <a class="btn btn-secondary open-in-btn" href="https://www.perplexity.ai/" target="_blank" rel="noopener noreferrer">Perplexity</a>
+              </div>
             </div>
             <div class="improve-block">
               <h3 class="improve-title">Improve Your Prompt</h3>
