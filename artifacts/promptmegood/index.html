@@ -688,9 +688,16 @@
     <section class="app-section" id="dashboard">
       <div class="container">
         <div class="panel">
-          <div class="panel-head">
-            <h2>Your snapshot</h2>
-            <p>A quick look at how you're using PromptMeGood.</p>
+          <div class="panel-head" style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-3); flex-wrap: wrap;">
+            <div>
+              <h2>Your snapshot</h2>
+              <p>A quick look at how you're using PromptMeGood.</p>
+            </div>
+            <div style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+              <button class="btn btn-secondary" type="button" id="export-everything" title="Download all your data as a JSON backup">Export everything</button>
+              <button class="btn btn-secondary" type="button" id="import-everything" title="Restore from a JSON backup">Import backup</button>
+              <input type="file" id="import-everything-file" accept="application/json,.json" style="display:none" />
+            </div>
           </div>
           <div id="weekly-summary" class="weekly-summary" aria-label="Weekly summary"></div>
           <div class="stats-grid" id="stats-grid"></div>
@@ -2072,6 +2079,63 @@ Context:
         document.getElementById('goal').focus();
       });
       setTimeout(showNudgeIfDue, 800);
+
+      document.getElementById('export-everything').addEventListener('click', function () {
+        const payload = {
+          app: 'PromptMeGood',
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          history: loadHistory(),
+          templates: loadUserTemplates(),
+          weeklyGoal: loadWeeklyGoal(),
+          activeDays: loadActiveDays(),
+          streak: loadStreak()
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const stamp = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = 'promptmegood-backup-' + stamp + '.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        showToast('Backup downloaded.');
+      });
+
+      const importEverythingFile = document.getElementById('import-everything-file');
+      document.getElementById('import-everything').addEventListener('click', function () { importEverythingFile.click(); });
+      importEverythingFile.addEventListener('change', function (e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+          try {
+            const data = JSON.parse(ev.target.result);
+            if (!data || data.app !== 'PromptMeGood') throw new Error('Not a PromptMeGood backup');
+            if (!window.confirm('Replace your current data with this backup? This cannot be undone.')) {
+              importEverythingFile.value = '';
+              return;
+            }
+            if (Array.isArray(data.history)) saveHistory(data.history);
+            if (Array.isArray(data.templates)) saveUserTemplates(data.templates);
+            if (typeof data.weeklyGoal === 'string') saveWeeklyGoal(data.weeklyGoal);
+            if (Array.isArray(data.activeDays)) {
+              try { localStorage.setItem(ACTIVE_DAYS_KEY, JSON.stringify(data.activeDays.slice(-365))); } catch (e) {}
+            }
+            if (data.streak && typeof data.streak === 'object') saveStreak(data.streak);
+            renderHistory();
+            renderTemplates();
+            renderWeeklyGoal();
+            showToast('Backup restored.');
+          } catch (err) {
+            showToast('Import failed: ' + (err.message || 'invalid file'));
+          }
+          importEverythingFile.value = '';
+        };
+        reader.readAsText(file);
+      });
 
       const printBtn = document.getElementById('print-btn');
       const printTitleEl = document.getElementById('print-title');
