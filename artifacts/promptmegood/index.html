@@ -1009,13 +1009,14 @@
     .post-uc-guidance-text { flex: 1; min-width: 0; }
     .post-uc-guidance-close { flex: 0 0 auto; background: transparent; border: 0; color: var(--color-text-muted); cursor: pointer; font-size: var(--text-md); line-height: 1; padding: 2px 6px; border-radius: 4px; }
     .post-uc-guidance-close:hover { background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-text); }
-    .tip-block { display: flex; align-items: flex-start; gap: var(--space-2); margin: var(--space-3) 0 0; padding: var(--space-3) var(--space-4); background: color-mix(in srgb, var(--color-primary) 6%, transparent); border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent); border-radius: var(--radius-md); color: var(--color-text); font-size: var(--text-sm); line-height: 1.5; }
-    .tip-block-icon { flex: 0 0 auto; line-height: 1; margin-top: 1px; opacity: 0.85; font-size: var(--text-md); }
-    .tip-block-text { flex: 1; min-width: 0; }
-    .tip-block-dismiss { flex: 0 0 auto; background: transparent; border: 0; color: var(--color-text-muted); cursor: pointer; font-size: var(--text-xs); padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+    .tip-block { display: flex; align-items: center; justify-content: flex-start; flex-wrap: wrap; gap: 12px; margin: var(--space-3) 0 0; padding: var(--space-3) var(--space-4); background: color-mix(in srgb, var(--color-primary) 6%, transparent); border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent); border-radius: var(--radius-md); color: var(--color-text); font-size: var(--text-sm); line-height: 1.5; }
+    .tip-block-icon { flex: 0 0 auto; line-height: 1; opacity: 0.85; font-size: var(--text-md); }
+    .tip-block-text { flex: 0 1 auto; min-width: 0; }
+    .tip-block-dismiss { flex: 0 0 auto; background: transparent; border: 0; color: var(--color-text-muted); cursor: pointer; font-size: 12px; opacity: 0.75; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+    .tip-block-dismiss:focus-visible, .tip-block-dismiss:hover { opacity: 1; }
     .tip-block-dismiss:hover, .tip-block-dismiss:focus-visible { background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-text); outline: none; }
     .hero-helper-tip { margin-top: var(--space-3); }
-    .use-cases-helper-tip { max-width: 720px; margin: var(--space-3) auto 0; }
+    .use-cases-helper-tip { margin: 0 0 var(--space-4); }
     .generate-helper-tip { margin-top: var(--space-3); }
     body.guidance-hidden [data-tip] { display: none !important; }
     .guidance-show-link { display: none; background: transparent; border: 0; padding: 2px 6px; color: var(--color-primary); font: inherit; font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; border-radius: 4px; }
@@ -1526,7 +1527,7 @@
           <p class="tip-block hero-helper-tip" data-tip="hero">
             <span class="tip-block-icon" aria-hidden="true">💡</span>
             <span class="tip-block-text">Not sure where to start? Choose a use case below or tap "Need ideas?" to generate new ones.</span>
-            <button type="button" class="tip-block-dismiss" data-action="dismiss-tips" aria-label="Hide tips">Hide tips</button>
+            <button type="button" class="tip-block-dismiss" data-action="dismiss-tips" aria-label="Hide all tips">Hide Tip</button>
           </p>
         </div>
         <aside class="hero-card" aria-labelledby="hero-card-title">
@@ -1552,12 +1553,12 @@
             </button>
           </div>
           <p>Pick a starting point below or tap 🎲 to generate new ideas.</p>
-          <p class="tip-block use-cases-helper-tip" data-tip="use-cases">
-            <span class="tip-block-icon" aria-hidden="true">🎯</span>
-            <span class="tip-block-text">Pick a use case to auto-fill the builder. You can edit everything before generating.</span>
-            <button type="button" class="tip-block-dismiss" data-action="dismiss-tips" aria-label="Hide tips">Hide tips</button>
-          </p>
         </div>
+        <p class="tip-block use-cases-helper-tip" data-tip="use-cases">
+          <span class="tip-block-icon" aria-hidden="true">🎯</span>
+          <span class="tip-block-text">Pick a starting point. We'll fill in the builder — you can edit anything before you generate.</span>
+          <button type="button" class="tip-block-dismiss" data-action="dismiss-tips" aria-label="Hide all tips">Hide Tip</button>
+        </p>
         <div class="popular-uses-grid">
           <button type="button" class="popular-use-card" data-popular-goal="Help me find realistic ways to make money using AI based on my current skills, time, and budget.">
             <span class="popular-use-card-title">Make Money With AI</span>
@@ -1778,7 +1779,7 @@
               <p class="tip-block generate-helper-tip" data-tip="generate">
                 <span class="tip-block-icon" aria-hidden="true">🚀</span>
                 <span class="tip-block-text">Ready? Generate your prompt, then review and copy it.</span>
-                <button type="button" class="tip-block-dismiss" data-action="dismiss-tips" aria-label="Hide tips">Hide tips</button>
+                <button type="button" class="tip-block-dismiss" data-action="dismiss-tips" aria-label="Hide all tips">Hide Tip</button>
               </p>
               <p class="demo-helper">Not sure where to start? <button type="button" class="link-btn demo-helper-link" id="demo-helper-link">See it in action.</button> <button type="button" class="guidance-show-link" id="guidance-show-link" data-action="show-tips">Show tips</button></p>
             </form>
