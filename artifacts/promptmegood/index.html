@@ -886,6 +886,10 @@
     .weekly-goal-pin-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
     .link-btn { background: transparent; border: 0; color: var(--color-primary); font-weight: 500; font-size: var(--text-sm); cursor: pointer; padding: 4px 6px; border-radius: 4px; }
     .link-btn:hover { background: color-mix(in srgb, var(--color-primary) 15%, transparent); }
+    .builder-transition { font-size: var(--text-sm); color: var(--color-text); line-height: 1.5; margin: 0; }
+    .demo-helper { margin: 10px 0 0; font-size: var(--text-sm); color: var(--color-text-muted); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .demo-helper-link { font-weight: 700; color: var(--color-primary); padding: 2px 6px; text-decoration: underline; text-underline-offset: 3px; }
+    .demo-helper-link:hover { background: color-mix(in srgb, var(--color-primary) 15%, transparent); }
     .weekly-goal-pin-body { font-size: var(--text-md); color: var(--color-text); line-height: 1.4; }
     .weekly-goal-pin.is-empty .weekly-goal-pin-body { color: var(--color-text-muted); font-style: italic; }
     .weekly-summary { margin-bottom: var(--space-4); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 18%, transparent), color-mix(in srgb, var(--color-primary) 6%, transparent)); border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent); display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; justify-content: space-between; }
@@ -1011,8 +1015,9 @@
       display: flex; flex-direction: column; gap: var(--space-3);
       transition: top 0.18s ease-out, left 0.18s ease-out;
     }
-    .ob-step { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-primary); }
-    .ob-text { font-size: var(--text-sm); line-height: 1.45; margin: 0; text-align: center; font-weight: 600; }
+    .ob-step { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-primary); text-align: center; }
+    .ob-title { font-size: var(--text-base); line-height: 1.25; margin: 0; text-align: center; font-weight: 800; color: var(--color-text); letter-spacing: -0.005em; }
+    .ob-text { font-size: var(--text-sm); line-height: 1.5; margin: 0; text-align: center; font-weight: 500; color: var(--color-text); }
     .ob-actions { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); }
     .ob-actions .btn { min-height: 36px; padding: 0 var(--space-3); font-size: var(--text-xs); }
     .ob-skip { background: transparent; border: 0; color: var(--color-text-muted); cursor: pointer; font-size: var(--text-xs); padding: 8px 4px; text-decoration: underline; }
@@ -1343,6 +1348,10 @@
           <h1>Turn Your Idea Into A Powerful AI Prompt That Actually Gets Results</h1>
           <p>Most people get weak answers from AI because they ask weak questions. This fixes that instantly.</p>
           <p class="trust-line">Built for people who want real results from AI — not fluff.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#builder" id="hero-build-cta">Build A Prompt</a>
+            <a class="btn btn-secondary" href="#use-cases" id="hero-usecases-cta">See Use Cases</a>
+          </div>
         </div>
         <aside class="hero-card" aria-label="Product benefits">
           <div class="mini-label">What This AI Prompt Engine Does</div>
@@ -1357,12 +1366,6 @@
 
     <section class="popular-uses" id="use-cases" aria-labelledby="popular-uses-title">
       <div class="container">
-        <div class="first-time-helper" role="note" aria-label="First-time visitor helper">
-          <div class="first-time-helper-text">
-            <span class="first-time-helper-title">First time here?</span>
-          </div>
-          <button type="button" class="first-time-helper-link" id="quick-walkthrough-btn">Take a quick walkthrough &rarr;</button>
-        </div>
         <div class="popular-uses-head">
           <h2 id="popular-uses-title">Popular Ways To Use PromptMeGood</h2>
           <p>Pick one to instantly fill your goal — then tweak it before you generate.</p>
@@ -1407,7 +1410,7 @@
         <section class="panel" aria-labelledby="builder-title">
           <div class="panel-head">
             <h2 id="builder-title">Build Your Prompt</h2>
-            <p>Use the form below to turn a rough idea into a stronger prompt.</p>
+            <p class="builder-transition">Fill in your goal below — the more specific, the better. Hit Generate and get a prompt you can use instantly.</p>
           </div>
           <div class="form-wrap">
             <div id="weekly-goal-pin" class="weekly-goal-pin" aria-label="Goal of the week">
@@ -1514,7 +1517,7 @@
               <div class="toggle-row is-subtle">
                 <div>
                   <strong>Money Mode</strong>
-                  <span>Focuses answers on practical, results-driven outcomes.</span>
+                  <span>Focuses answers on practical, results-driven outcomes. Turn off for neutral, general-purpose prompts.</span>
                 </div>
                 <label class="switch" aria-label="Turn Money Mode on or off">
                   <input id="moneyMode" name="moneyMode" type="checkbox" checked />
@@ -1555,11 +1558,12 @@
                 </label>
               </div>
 
-              <div class="actions-row">
+              <div class="actions-row" id="tour-step-generate">
                 <button class="btn btn-primary" type="submit">Generate Prompt</button>
                 <button class="btn btn-secondary" type="button" id="fill-demo">Use Demo Values</button>
                 <button class="btn btn-secondary" type="button" id="random-prompt" title="Surprise me with a random prompt">🎲 Random Prompt</button>
               </div>
+              <p class="demo-helper">Not sure where to start? <button type="button" class="link-btn demo-helper-link" id="demo-helper-link">See it in action.</button></p>
             </form>
             <div class="examples-block" aria-label="Example prompts">
               <div class="examples-title">Try one of these:</div>
@@ -1597,18 +1601,20 @@
               <span class="result-edit-indicator" id="result-edit-indicator" hidden>Edited manually</span>
             </div>
             <div class="improve-block" id="improve-block">
-              <span class="improve-eyebrow">Refine Your Prompt Instantly</span>
-              <p class="improve-helper">Tap an option to instantly upgrade your result.</p>
-              <div class="actions-row">
-                <button class="btn btn-secondary" type="button" data-remix="detailed">More Detailed</button>
-                <button class="btn btn-secondary" type="button" data-remix="aggressive">More Aggressive</button>
-                <button class="btn btn-secondary" type="button" data-remix="beginner">Beginner Friendly</button>
+              <div id="tour-step-improve">
+                <span class="improve-eyebrow">Refine Your Prompt Instantly</span>
+                <p class="improve-helper">Tap an option to instantly upgrade your result.</p>
+                <div class="actions-row">
+                  <button class="btn btn-secondary" type="button" data-remix="detailed">More Detailed</button>
+                  <button class="btn btn-secondary" type="button" data-remix="aggressive">More Aggressive</button>
+                  <button class="btn btn-secondary" type="button" data-remix="beginner">Beginner Friendly</button>
+                </div>
+                <div class="undo-row">
+                  <button class="btn btn-secondary undo-btn" type="button" id="undo-btn" disabled aria-disabled="true">↶ Undo Last Change</button>
+                  <span class="undo-helper">Not feeling the change? Undo and try another.</span>
+                </div>
               </div>
-              <div class="undo-row">
-                <button class="btn btn-secondary undo-btn" type="button" id="undo-btn" disabled aria-disabled="true">↶ Undo Last Change</button>
-                <span class="undo-helper">Not feeling the change? Undo and try another.</span>
-              </div>
-              <div class="fine-tune">
+              <div class="fine-tune" id="tour-step-finalize">
                 <label for="fine-tune-input" class="fine-tune-label">Fine-Tune Your Prompt</label>
                 <div class="fine-tune-row">
                   <textarea id="fine-tune-input" rows="3" placeholder="Tell me what to change. Example: make it shorter, more persuasive, add examples, or simplify the steps."></textarea>
@@ -1723,25 +1729,6 @@
             <button class="btn btn-secondary" type="button" id="compare-cancel">Cancel</button>
           </div>
           <div id="history-list" class="history-list" aria-live="polite"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="app-section" id="use-cases">
-      <div class="container">
-        <div class="panel">
-          <div class="panel-head">
-            <h2>What can this do?</h2>
-            <p>Start narrow. Help people get better answers for problems they actually care about.</p>
-          </div>
-          <div class="form-wrap">
-            <div class="use-case-grid">
-              <div class="use-case"><strong>Make money online</strong><p>Generate prompts for side hustles, service offers, pricing, and first-customer plans.</p></div>
-              <div class="use-case"><strong>Dropshipping</strong><p>Create prompts for product research, store audits, bundles, ads, and conversion fixes.</p></div>
-              <div class="use-case"><strong>Content creation</strong><p>Build prompts for TikTok scripts, hooks, captions, newsletters, and short-form ideas.</p></div>
-              <div class="use-case"><strong>Faith questions</strong><p>Create Scripture-centered prompts that demand clarity, context, conviction, and action.</p></div>
-            </div>
-          </div>
         </div>
       </div>
     </section>
@@ -1878,8 +1865,8 @@
             <span class="manual-toggle-label">
               <span class="manual-toggle-icon" aria-hidden="true">📖</span>
               <span>
-                <span class="manual-toggle-title">How To Use PromptMeGood</span>
-                <span class="manual-toggle-sub">Open this guide if you want a full walkthrough.</span>
+                <span class="manual-toggle-title">How It Works</span>
+                <span class="manual-toggle-sub">Open this guide for the full walkthrough.</span>
               </span>
             </span>
             <span class="manual-chevron" aria-hidden="true">
@@ -2370,11 +2357,12 @@
     <div class="print-footer">Generated with PromptMeGood</div>
   </div>
 
-  <div class="ob-overlay" id="ob-overlay" role="dialog" aria-modal="false" aria-labelledby="ob-text" aria-hidden="true">
+  <div class="ob-overlay" id="ob-overlay" role="dialog" aria-modal="false" aria-labelledby="ob-title" aria-hidden="true">
     <div class="ob-backdrop" id="ob-backdrop"></div>
     <div class="ob-highlight" id="ob-highlight"></div>
     <div class="ob-tooltip" id="ob-tooltip">
-      <span class="ob-step" id="ob-step">Step 1 of 3</span>
+      <span class="ob-step" id="ob-step">Step 1 of 5</span>
+      <h3 class="ob-title" id="ob-title"></h3>
       <p class="ob-text" id="ob-text"></p>
       <div class="ob-actions">
         <button type="button" class="ob-skip" id="ob-skip">Skip</button>
@@ -4078,6 +4066,14 @@ Context:
         const today = todayKey();
         if (state.dismissedAt && (Date.now() - state.dismissedAt) < NUDGE_COOLDOWN_MS) return;
         if (state.dismissed === today || state.lastShown === today) return;
+        const tourActive = (typeof obIsOpen === 'function' && obIsOpen()) ||
+          (typeof obShouldRun === 'function' && obShouldRun());
+        const tourBannerEl = document.getElementById('tour-banner');
+        const tourBannerVisible = tourBannerEl && !tourBannerEl.hidden;
+        if (tourActive || tourBannerVisible) {
+          window.setTimeout(showNudgeIfDue, 4000);
+          return;
+        }
         const banner = document.getElementById('nudge-banner');
         const msgEl = document.getElementById('nudge-message');
         const nudge = pickNudgeMessage();
@@ -4114,15 +4110,41 @@ Context:
 
       const ONBOARDING_KEY = 'promptmegood:onboarding:v1';
       const OB_STEPS = [
-        { selector: '#goal', text: 'Start Here \u2014 Tell AI What You Want.' },
-        { selector: '#prompt-form button[type="submit"]', text: 'Turn Your Idea Into A Strong Prompt.' },
-        { selector: '#copy-btn', fallbackSelector: '.open-in-block', text: 'Copy Your Prompt Or Open Your Favorite AI Tool To Use It.' }
+        {
+          selector: '#goal',
+          title: 'Start With Your Goal',
+          text: 'Tell PromptMeGood exactly what you want. Be specific — better input creates better results.'
+        },
+        {
+          selector: '#tour-step-generate',
+          fallbackSelector: '#prompt-form button[type="submit"]',
+          title: 'Generate Your Prompt',
+          text: 'Click Generate or use Demo to instantly create a strong, structured prompt.'
+        },
+        {
+          selector: '#resultBox',
+          title: 'See Your Result',
+          text: 'This is your working prompt. You can copy, edit, or improve it instantly.'
+        },
+        {
+          selector: '#tour-step-improve',
+          fallbackSelector: '#improve-block',
+          title: 'Refine Without Starting Over',
+          text: 'Use these buttons to upgrade your prompt. Not happy? Undo and try again.'
+        },
+        {
+          selector: '#tour-step-finalize',
+          fallbackSelector: '#copy-btn',
+          title: 'Make It Yours & Use It Anywhere',
+          text: 'Edit, fine-tune, then copy or open it in your favorite AI tool.'
+        }
       ];
       const obOverlay = document.getElementById('ob-overlay');
       const obBackdrop = document.getElementById('ob-backdrop');
       const obHighlight = document.getElementById('ob-highlight');
       const obTooltip = document.getElementById('ob-tooltip');
       const obStepEl = document.getElementById('ob-step');
+      const obTitleEl = document.getElementById('ob-title');
       const obTextEl = document.getElementById('ob-text');
       const obSkipBtn = document.getElementById('ob-skip');
       const obNextBtn = document.getElementById('ob-next');
@@ -4175,6 +4197,7 @@ Context:
         obTooltip.style.top = tipTop + 'px';
         obTooltip.style.left = tipLeft + 'px';
         obStepEl.textContent = 'Step ' + (obIndex + 1) + ' of ' + OB_STEPS.length;
+        obTitleEl.textContent = step.title || '';
         obTextEl.textContent = step.text;
         obNextBtn.textContent = obIndex === OB_STEPS.length - 1 ? 'Done' : 'Next';
       }
@@ -4201,6 +4224,9 @@ Context:
       }
       function obStart() {
         obIndex = 0;
+        if (obStepEl) obStepEl.textContent = 'Step 1 of ' + OB_STEPS.length;
+        const banner = document.getElementById('nudge-banner');
+        if (banner) banner.hidden = true;
         obOverlay.classList.add('is-open');
         obOverlay.setAttribute('aria-hidden', 'false');
         obBindListeners();
@@ -4214,6 +4240,7 @@ Context:
         obHighlight.style.left = '-9999px';
         obHighlight.style.width = '0px';
         obHighlight.style.height = '0px';
+        obIndex = 0;
         obMarkDone();
       }
       function obNextStep() {
@@ -4248,13 +4275,8 @@ Context:
       if (replayTourBtn) {
         replayTourBtn.addEventListener('click', function () {
           hideTourBanner();
-          obStart();
-        });
-      }
-      const quickWalkthroughBtn = document.getElementById('quick-walkthrough-btn');
-      if (quickWalkthroughBtn) {
-        quickWalkthroughBtn.addEventListener('click', function () {
-          hideTourBanner();
+          obIndex = 0;
+          if (obIsOpen()) obFinish();
           obStart();
         });
       }
@@ -4678,6 +4700,12 @@ Context:
         showToast('Random prompt generated.');
       });
 
+      const demoHelperLink = document.getElementById('demo-helper-link');
+      if (demoHelperLink) {
+        demoHelperLink.addEventListener('click', function () {
+          fillDemoBtn.click();
+        });
+      }
       fillDemoBtn.addEventListener('click', function () {
         document.getElementById('goal').value = 'Help me make my first $100 online using AI prompts';
         document.getElementById('category').value = 'money';
@@ -4850,7 +4878,7 @@ Context:
 
       function renderGlobalResults(results) {
         if (!results.length) {
-          globalSearchResults.innerHTML = '<div class="global-empty">No matches found.</div>';
+          globalSearchResults.innerHTML = '<div class="global-empty">Your saved prompts will appear here as you generate them.</div>';
           globalSearchResults.classList.add('is-open');
           return;
         }

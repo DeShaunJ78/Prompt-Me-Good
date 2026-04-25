@@ -1,0 +1,138 @@
+Final polish pass: fix tour bugs, improve onboarding flow, clean UX friction, and align conversion flow. Do not break existing features.
+
+========================
+PART 1 — FIX CRITICAL BUGS
+========================
+
+1. Replay Tour Bug (HIGH)
+- Reset tour step index to Step 1 before launching replay
+- Ensure tour always starts at Step 1
+
+2. Nudge Banner Conflict (LOW)
+- Suppress or delay Daily Nudge banner when onboarding tour is active
+- Prevent it from blocking “Show Me”
+- Option: delay nudge by 2–3 seconds OR hide if tour active
+
+========================
+PART 2 — REVAMP ONBOARDING TOUR (5 STEPS MAX)
+========================
+
+Goal:
+Teach the full workflow in ~30–45 seconds.
+
+STEP 1:
+Title: “Start With Your Goal”
+Text: “Tell PromptMeGood exactly what you want. Be specific — better input creates better results.”
+Highlight: Goal field
+
+STEP 2:
+Title: “Generate Your Prompt”
+Text: “Click Generate or use Demo to instantly create a strong, structured prompt.”
+Highlight: Generate + Use Demo
+
+STEP 3:
+Title: “See Your Result”
+Text: “This is your working prompt. You can copy, edit, or improve it instantly.”
+Highlight: Output box
+
+STEP 4:
+Title: “Refine Without Starting Over”
+Text: “Use these buttons to upgrade your prompt. Not happy? Undo and try again.”
+Highlight: Improve buttons + Undo
+
+STEP 5:
+Title: “Make It Yours & Use It Anywhere”
+Text: “Edit, fine-tune, then copy or open it in your favorite AI tool.”
+Highlight: Fine-Tune + Copy + AI buttons
+
+Styling:
+- Bold, centered, Title Case
+- Smooth scroll between steps
+- Dim background + highlight focus
+
+========================
+PART 3 — HERO CTA FIX
+========================
+
+Re-add secondary CTA:
+
+Button:
+“See Use Cases”
+
+Behavior:
+- Scroll to use case section
+- Keep “Build A Prompt” as primary
+
+========================
+PART 4 — SEARCH EMPTY STATE
+========================
+
+If no results:
+
+Replace “No matches found” with:
+“Your saved prompts will appear here as you generate them.”
+
+========================
+PART 5 — MONEY MODE CLARITY
+========================
+
+Add helper text under toggle:
+
+“Turn off for neutral, general-purpose prompts.”
+
+========================
+PART 6 — REDUCE CLUTTER (CUT)
+========================
+
+1. Remove redundant bottom info cards:
+- Make money online
+- Dropshipping
+- Content creation
+- Faith questions
+
+2. Collapse manual into single accordion:
+Title: “How It Works”
+Default: collapsed
+
+3. Remove duplicate onboarding strip if tour already exists
+(avoid two onboarding entry points)
+
+========================
+PART 7 — IMPROVE DEMO FLOW
+========================
+
+Make “Use Demo Values” more prominent:
+
+Add small helper near button:
+“Not sure where to start? See it in action.”
+
+Ensure:
+- It fills fields
+- Generates prompt immediately
+- Scrolls to output
+- Shows toast
+
+========================
+PART 8 — ADD TRANSITION COPY
+========================
+
+Add above builder:
+
+“Fill in your goal below — the more specific, the better. Hit Generate and get a prompt you can use instantly.”
+
+========================
+PART 9 — FINAL CHECK
+========================
+
+Confirm:
+- Replay Tour starts at Step 1
+- Nudge doesn’t interfere
+- Tour completes all 5 steps
+- Hero has 2 CTAs
+- Search empty state is helpful
+- Money Mode clarity added
+- Clutter sections removed
+- Demo flow obvious
+- Builder has transition guidance
+- Mobile layout clean
+- No JS errors
