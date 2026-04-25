@@ -481,6 +481,13 @@
     .site-footer-link:hover { background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-primary); }
     .site-footer-divider { color: var(--color-text-muted); opacity: 0.6; }
     .site-footer-version { margin-top: var(--space-3); color: var(--color-text-muted); opacity: 0.6; font-size: var(--text-xs); letter-spacing: 0.04em; }
+    .site-footer-legal { margin-top: var(--space-2); display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; font-size: var(--text-sm); }
+    .legal-section { padding-top: var(--space-8); }
+    .legal-section .panel { padding: var(--space-6); }
+    .legal-body p { margin: 0 0 var(--space-3); color: var(--color-text-muted); line-height: 1.6; font-size: var(--text-sm); }
+    .legal-body p:last-child { margin-bottom: 0; }
+    #privacy, #terms { scroll-margin-top: 96px; }
+    @media (max-width: 720px) { #privacy, #terms { scroll-margin-top: 150px; } }
     @media (max-width: 600px) {
       .site-footer-social { flex-direction: column; gap: 6px; }
       .site-footer-social-label { font-size: var(--text-xs); }
@@ -2017,9 +2024,42 @@
       </div>
     </section>
 
+    <section class="app-section legal-section" id="privacy" aria-labelledby="privacy-title">
+      <div class="container">
+        <div class="panel">
+          <div class="panel-head">
+            <h2 id="privacy-title">Privacy Policy</h2>
+            <p>Last updated: April 2026.</p>
+          </div>
+          <div class="legal-body">
+            <p>PromptMeGood is a single-page tool that runs entirely in your browser. Your prompts, history, templates, and preferences are stored locally on your device using your browser's localStorage. We do not maintain user accounts, and we do not transmit your prompts to our servers.</p>
+            <p>We use Microsoft Clarity to understand anonymous, aggregated usage patterns (such as which buttons are clicked) so we can improve the experience. Clarity does not capture the text of your prompts.</p>
+            <p>You can export, import, or clear your saved data at any time from the Prompt History section. Clearing your browser storage will remove everything PromptMeGood has saved on your device.</p>
+            <p>Questions? Email <a class="site-footer-link" href="mailto:support@promptmegood.com">support@promptmegood.com</a>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="app-section legal-section" id="terms" aria-labelledby="terms-title">
+      <div class="container">
+        <div class="panel">
+          <div class="panel-head">
+            <h2 id="terms-title">Terms of Service</h2>
+            <p>Last updated: April 2026.</p>
+          </div>
+          <div class="legal-body">
+            <p>PromptMeGood is provided as-is, without warranty of any kind. By using this site you agree to use it for lawful purposes and at your own risk. The prompts and outputs generated are suggestions only — you are responsible for how you use them and for any decisions you make based on AI tool responses.</p>
+            <p>We may update or change features at any time. Continued use of the site after changes means you accept the updated terms.</p>
+            <p>Questions? Email <a class="site-footer-link" href="mailto:support@promptmegood.com">support@promptmegood.com</a>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <footer class="site-footer" id="site-footer">
       <div class="container site-footer-inner">
-        <div class="site-footer-brand">&copy; PromptMeGood</div>
+        <div class="site-footer-brand">&copy; 2026 PromptMeGood</div>
         <p class="site-footer-tagline">Built for people who want real results from AI &mdash; not fluff.</p>
         <p class="site-footer-contact"><a class="site-footer-link" href="mailto:support@promptmegood.com">support@promptmegood.com</a></p>
         <div class="site-footer-social" aria-label="Follow PromptMeGood on social media">
@@ -2033,6 +2073,11 @@
             <span class="site-footer-divider" aria-hidden="true">|</span>
             <a class="site-footer-link" href="https://x.com/promptmegood" target="_blank" rel="noopener noreferrer">X</a>
           </span>
+        </div>
+        <div class="site-footer-legal" aria-label="Legal">
+          <a class="site-footer-link" href="#privacy">Privacy Policy</a>
+          <span class="site-footer-divider" aria-hidden="true">|</span>
+          <a class="site-footer-link" href="#terms">Terms of Service</a>
         </div>
         <div class="site-footer-version" aria-label="Version">PromptMeGood v1</div>
       </div>
@@ -2238,6 +2283,12 @@
         return value.charAt(0).toUpperCase() + value.slice(1);
       }
 
+      function articleFor(value) {
+        if (!value) return 'a';
+        const first = String(value).trim().charAt(0).toLowerCase();
+        return ('aeiou').indexOf(first) !== -1 ? 'an' : 'a';
+      }
+
       function generatePrompt(data, remixMode = '') {
         const roleMap = {
           beginner: 'patient teacher and practical strategist',
@@ -2368,9 +2419,9 @@ Here's what I need from you:
 - Clarify the real objective behind my request.
 - Point out any missing assumptions, risks, or important details.
 - Give me a practical answer I can use immediately.
-- Use a ${titleCase(data.tone)} tone.
-- Keep the response appropriate for a ${titleCase(data.skillLevel)} user.
-- Format the answer as a ${titleCase(data.outputFormat)}.
+- Use ${articleFor(data.tone)} ${titleCase(data.tone)} tone.
+- Keep the response appropriate for ${articleFor(data.skillLevel)} ${titleCase(data.skillLevel)} user.
+- Format the answer as ${articleFor(data.outputFormat)} ${titleCase(data.outputFormat)}.
 - Avoid vague advice, filler, or generic motivation.
 - Include examples, templates, checklists, or scripts when useful.
 - End with the top 3 actions I should take next.${personalityLine}${moneyMode}${humanLine}${clarityLine}${photoLine}${languageLine}${remixLine}
@@ -3747,14 +3798,14 @@ Context:
 
       const NUDGE_KEY = 'promptmegood:nudge:v1';
       const NUDGE_IDEAS = [
-        'Take 5 minutes to draft a prompt that moves your week forward.',
-        'Try a "remix more aggressive" on your favorite saved prompt.',
-        'Pick a tag you haven\'t used in a while and create something with it.',
-        'Run the random prompt button and see what sparks.',
-        'Refine yesterday\'s prompt with a sharper goal sentence.',
-        'Save your best recent prompt as a reusable template.',
-        'Try Money Mode on a brand-new business question.',
-        'Use beginner-friendly remix on a prompt you find too dense.'
+        { text: 'Take 5 minutes to draft a prompt that moves your week forward.' },
+        { text: 'Try a "remix more aggressive" on your favorite saved prompt.' },
+        { text: 'Pick a tag you haven\'t used in a while and create something with it.' },
+        { text: 'Run the random prompt button and see what sparks.' },
+        { text: 'Refine yesterday\'s prompt with a sharper goal sentence.' },
+        { text: 'Save your best recent prompt as a reusable template.' },
+        { text: 'Try Human Voice Mode to make your prompt sound more natural.', action: 'humanVoice' },
+        { text: 'Use beginner-friendly remix on a prompt you find too dense.' }
       ];
       function loadNudgeState() {
         try { return JSON.parse(localStorage.getItem(NUDGE_KEY)) || { lastShown: '', dismissed: '' }; }
@@ -3770,7 +3821,7 @@ Context:
             'Brainstorm 5 angles for "' + focus + '" and prompt the strongest one.',
             'Draft a prompt that asks AI to critique your plan for "' + focus + '".'
           ];
-          return focusIdeas[Math.floor(Math.random() * focusIdeas.length)];
+          return { text: focusIdeas[Math.floor(Math.random() * focusIdeas.length)] };
         }
         return NUDGE_IDEAS[Math.floor(Math.random() * NUDGE_IDEAS.length)];
       }
@@ -3782,7 +3833,9 @@ Context:
         if (state.dismissed === today || state.lastShown === today) return;
         const banner = document.getElementById('nudge-banner');
         const msgEl = document.getElementById('nudge-message');
-        msgEl.textContent = pickNudgeMessage();
+        const nudge = pickNudgeMessage();
+        msgEl.textContent = nudge.text;
+        banner.dataset.action = nudge.action || '';
         banner.hidden = false;
         state.lastShown = today;
         saveNudgeState(state);
@@ -3794,7 +3847,17 @@ Context:
         document.getElementById('nudge-banner').hidden = true;
       });
       document.getElementById('nudge-go').addEventListener('click', function () {
-        document.getElementById('nudge-banner').hidden = true;
+        const banner = document.getElementById('nudge-banner');
+        const action = banner.dataset.action;
+        banner.hidden = true;
+        if (action === 'humanVoice') {
+          const humanEl = document.getElementById('humanTone');
+          if (humanEl && !humanEl.checked) {
+            humanEl.checked = true;
+            humanEl.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+          showToast('Human Voice Mode turned on.');
+        }
         const focus = loadWeeklyGoal();
         if (focus) document.getElementById('goal').value = focus;
         document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -3806,7 +3869,7 @@ Context:
       const OB_STEPS = [
         { selector: '#goal', text: 'Start here\u2014tell AI what you want.' },
         { selector: '#prompt-form button[type="submit"]', text: 'Turn your idea into a strong prompt.' },
-        { selector: '.open-in-block', text: 'Copy and use it in ChatGPT, Claude, Perplexity, or Google.' }
+        { selector: '#copy-btn', fallbackSelector: '.open-in-block', text: 'Copy your prompt or open your favorite AI tool to use it.' }
       ];
       const obOverlay = document.getElementById('ob-overlay');
       const obBackdrop = document.getElementById('ob-backdrop');
@@ -3829,16 +3892,18 @@ Context:
       function obIsOpen() {
         return obOverlay.classList.contains('is-open');
       }
-      function obPositionStep() {
+      function obPositionStep(scrollAttempts) {
         if (!obIsOpen()) return;
         const step = OB_STEPS[obIndex];
         if (!step) return;
-        const target = document.querySelector(step.selector);
+        let target = document.querySelector(step.selector);
+        if (!target && step.fallbackSelector) target = document.querySelector(step.fallbackSelector);
         if (!target) { obFinish(); return; }
         const rect = target.getBoundingClientRect();
-        if (rect.top < 80 || rect.bottom > window.innerHeight - 80) {
+        const attempts = scrollAttempts || 0;
+        if ((rect.top < 80 || rect.bottom > window.innerHeight - 80) && attempts < 2) {
           target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          window.setTimeout(obPositionStep, 350);
+          window.setTimeout(function () { obPositionStep(attempts + 1); }, 400);
           return;
         }
         const pad = 6;
