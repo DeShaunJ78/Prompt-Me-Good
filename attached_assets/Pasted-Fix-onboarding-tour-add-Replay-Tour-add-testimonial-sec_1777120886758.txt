@@ -1,0 +1,130 @@
+Fix onboarding tour, add Replay Tour, add testimonial section, and add simple email capture. Do not break layout or existing functionality.
+
+========================
+PART 1 — FIX ONBOARDING TOUR
+========================
+
+Current issue:
+Tour says 3 steps but only shows 2. Step 2 closes the tour.
+
+Fix:
+
+1. Step 1:
+Label: “Step 1 of 3”
+Text: “Start here — tell AI what you want.”
+Target: Your Goal input field
+
+2. Step 2:
+Label: “Step 2 of 3”
+Text: “Turn your idea into a strong prompt.”
+Target: Generate Prompt button
+
+3. Step 3:
+Label: “Step 3 of 3”
+Text: “Copy your prompt or open your favorite AI tool to use it.”
+Target: Copy Prompt / Use Your Prompt In section
+
+Behavior:
+- Clicking Next on Step 2 must show Step 3
+- Step 3 has a Done button that ends the tour
+- Skip closes the tour anytime
+- Save completion in localStorage so it does not auto-show again
+
+========================
+PART 2 — ADD REPLAY TOUR
+========================
+
+Add a small link/button:
+
+Text:
+“Replay Tour”
+
+Placement:
+Near “How It Works” section OR footer
+
+Behavior:
+Clicking it restarts the full 3-step tour.
+
+========================
+PART 3 — ADD TESTIMONIAL SECTION
+========================
+
+Add a section:
+
+Title:
+“Early Feedback”
+
+Placement:
+Directly below the hero section OR directly above “Popular Ways To Use PromptMeGood”
+
+Testimonial card:
+
+“This is truly next level — you’re on to something here.”
+
+Attribution:
+— Calvin
+
+Styling:
+- Clean, minimal card
+- Light background or subtle border
+- Quote slightly emphasized
+- Attribution smaller and muted
+
+Do NOT:
+- Add sliders
+- Add animations
+- Add fake testimonials
+
+========================
+PART 4 — ADD SIMPLE EMAIL CAPTURE
+========================
+
+Goal:
+Capture interested users without interrupting the app experience.
+
+Placement:
+Add the email capture section after the “Early Feedback” section OR after the user generates/copies a prompt if easier.
+
+Section title:
+“Want Better Prompts In Your Inbox?”
+
+Subtext:
+“Get prompt tips, product updates, and new PromptMeGood features when they drop.”
+
+Form fields:
+- Email input
+- Submit button labeled:
+“Get Updates”
+
+Behavior:
+- Validate that email field is not empty and contains a valid email format
+- On submit, save email locally for now using localStorage
+- Show success message:
+“You’re on the list. I’ll send updates when new features drop.”
+- Do not add backend, database, or email service integration yet
+- Do not spam users with popups
+- Do not block use of the app
+
+Optional:
+- Add small note:
+“No spam. Just useful AI prompt updates.”
+
+Important:
+- Keep this section clean and subtle
+- Do not make it feel desperate
+- Make it mobile-friendly
+- Store captured emails in localStorage under a clear key like promptMeGoodEmails
+
+========================
+FINAL CHECK
+========================
+
+- Step 1, Step 2, Step 3 all appear correctly
+- Step 2 no longer closes the tour
+- Replay Tour works
+- Testimonial section displays cleanly
+- Email capture validates input
+- Email submission shows success message
+- Email is stored locally for now
+- Mobile layout is clean
+- No JavaScript errors
