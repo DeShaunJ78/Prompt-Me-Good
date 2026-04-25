@@ -1,0 +1,96 @@
+Revamp the onboarding tour to be more detailed while giving experienced users a fast path. Do not break existing tour behavior or layout.
+
+GOAL:
+Help new users understand the full PromptMeGood workflow while letting experienced users skip straight to the “Your Goal (Start Here)” section.
+
+PART 1 — ADD TOUR CHOICE SCREEN
+
+Before the tour begins, show a small choice screen:
+
+Title:
+“New To PromptMeGood?”
+
+Text:
+“Take the full tour, or jump straight to Start Here if you already know what you want to build.”
+
+Buttons:
+1. “Show Me The Full Tour”
+2. “Go To Start Here”
+
+Behavior:
+- “Show Me The Full Tour” starts the full onboarding tour at Step 1.
+- “Go To Start Here” closes the tour and smooth-scrolls to the “Your Goal (Start Here)” field.
+- Save preference in localStorage only if user chooses to skip future tour prompts.
+
+PART 2 — TOUR STRUCTURE: 6 DETAILED STEPS
+
+STEP 1 — Choose Your Starting Path
+Highlight:
+Hero buttons:
+- Build A Prompt
+- See Use Cases
+
+Text:
+“Start here. Use Build A Prompt when you already have a task in mind. Use See Use Cases when you want ideas or examples.”
+
+STEP 2 — Enter Your Goal
+Highlight:
+Your Goal field
+
+Text:
+“This is the most important field. Tell PromptMeGood exactly what you want help with. Specific goals create stronger prompts.”
+
+STEP 3 — Tune Your Prompt Settings
+Highlight:
+Tune Your Prompt Settings section
+
+Text:
+“Use these settings to shape the final prompt. Category, skill level, tone, format, language, personality, and boosts all help control the result.”
+
+STEP 4 — Generate Or Demo
+Highlight:
+Generate Prompt and Use Demo Values buttons
+
+Text:
+“Tap Generate Prompt when you are ready. If you are not sure what to enter, use Demo Values to instantly see how the app works.”
+
+STEP 5 — Refine, Undo, And Edit
+Highlight:
+Generated prompt box, refinement buttons, Fine-Tune field, and Undo Last Change
+
+Text:
+“Your first prompt is not final. Refine it, fine-tune one part, undo changes, or manually edit the text until it feels right.”
+
+STEP 6 — Use It Anywhere
+Highlight:
+Copy Prompt and Use Your Prompt In buttons
+
+Text:
+“Copy your finished prompt, then use it in ChatGPT, Claude, Perplexity, Google, or any AI/search tool.”
+
+PART 3 — STYLE
+
+For all tour steps:
+- Center-align instruction text
+- Make instruction text bold
+- Use Title Case
+- Keep wording clear and direct
+- Keep mobile readable
+
+PART 4 — BEHAVIOR
+
+- Replay Tour always starts at the choice screen or Step 1
+- Next moves through all 6 steps
+- Final button says “Done”
+- Skip exits the tour
+- Daily Nudge must not appear over the tour
+- “Go To Start Here” must scroll cleanly to the Your Goal field
+
+PART 5 — FINAL CHECK
+
+Confirm:
+- Full tour works from Step 1 through Step 6
+- Experienced users can jump straight to Start Here
+- Replay Tour works
+- Mobile layout is clean
+- No JavaScript errors

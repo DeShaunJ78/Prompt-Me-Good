@@ -918,15 +918,29 @@
     .nudge-actions { display: flex; gap: var(--space-2); }
     .tour-card-wrap { padding: 18px var(--space-4) 4px; }
     .tour-card {
+      position: relative;
       max-width: 720px; margin: 0 auto;
       background: linear-gradient(135deg, #E6F7F5, #F1FAF8);
       border: 1px solid rgba(15, 118, 110, 0.18);
       border-radius: 18px;
-      padding: 22px 22px 20px;
+      padding: 22px 44px 20px 22px;
       box-shadow: 0 10px 28px rgba(15, 118, 110, 0.10), 0 1px 2px rgba(15, 118, 110, 0.06);
       display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
       animation: tourCardIn 0.45s ease-out both;
     }
+    .tour-card-close {
+      position: absolute; top: 8px; right: 10px;
+      width: 28px; height: 28px;
+      background: transparent; border: 0;
+      color: #4a5d5e; cursor: pointer;
+      font-size: 22px; line-height: 1;
+      border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .tour-card-close:hover { background: rgba(15, 118, 110, 0.12); color: #0f3a3d; }
+    [data-theme="dark"] .tour-card-close { color: #b6cfd0; }
+    [data-theme="dark"] .tour-card-close:hover { background: rgba(91, 168, 176, 0.18); color: #e6f5f2; }
     @keyframes tourCardIn {
       0% { opacity: 0; transform: translateY(8px); }
       100% { opacity: 1; transform: translateY(0); }
@@ -1195,7 +1209,7 @@
     }
     .ob-step { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-primary); text-align: center; }
     .ob-title { font-size: var(--text-base); line-height: 1.25; margin: 0; text-align: center; font-weight: 800; color: var(--color-text); letter-spacing: -0.005em; }
-    .ob-text { font-size: var(--text-sm); line-height: 1.5; margin: 0; text-align: center; font-weight: 500; color: var(--color-text); }
+    .ob-text { font-size: var(--text-sm); line-height: 1.5; margin: 0; text-align: center; font-weight: 700; color: var(--color-text); }
     .ob-actions { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); }
     .ob-actions .btn { min-height: 36px; padding: 0 var(--space-3); font-size: var(--text-xs); }
     .ob-skip { background: transparent; border: 0; color: var(--color-text-muted); cursor: pointer; font-size: var(--text-xs); padding: 8px 4px; text-decoration: underline; }
@@ -1567,13 +1581,14 @@
     <div class="tour-card" role="region" aria-label="Welcome">
       <span class="tour-card-icon" aria-hidden="true">👋</span>
       <div class="tour-card-body">
-        <h2 class="tour-card-title">New here? Let me show you around.</h2>
-        <p class="tour-card-sub">Get a quick 30-second walkthrough of how PromptMeGood works.</p>
+        <h2 class="tour-card-title">New To PromptMeGood?</h2>
+        <p class="tour-card-sub">Take the full tour, or jump straight to Start Here if you already know what you want to build.</p>
       </div>
       <div class="tour-card-actions">
-        <button class="btn btn-primary" type="button" id="tour-show">Show Me</button>
-        <button class="btn btn-secondary" type="button" id="tour-skip">Skip</button>
+        <button class="btn btn-primary" type="button" id="tour-show">Show Me The Full Tour</button>
+        <button class="btn btn-secondary" type="button" id="tour-jump">Go To Start Here</button>
       </div>
+      <button class="tour-card-close" type="button" id="tour-skip" aria-label="Dismiss onboarding choice">×</button>
     </div>
   </div>
   <main id="main">
@@ -1708,7 +1723,7 @@
                 </p>
               </div>
 
-              <div class="settings-divider" role="presentation">
+              <div class="settings-divider" id="tour-step-settings" role="presentation">
                 <h3 class="settings-divider-title">Tune Your Prompt Settings</h3>
                 <p class="settings-divider-sub">These settings control tone, detail, and structure of your prompt.</p>
               </div>
@@ -2612,9 +2627,11 @@
     <div class="ob-backdrop" id="ob-backdrop"></div>
     <div class="ob-highlight" id="ob-highlight"></div>
     <div class="ob-tooltip" id="ob-tooltip">
-      <span class="ob-step" id="ob-step">Step 1 of 5</span>
-      <h3 class="ob-title" id="ob-title"></h3>
-      <p class="ob-text" id="ob-text"></p>
+      <div class="ob-content" aria-live="polite" aria-atomic="true">
+        <span class="ob-step" id="ob-step">Step 1 of 6</span>
+        <h3 class="ob-title" id="ob-title"></h3>
+        <p class="ob-text" id="ob-text"></p>
+      </div>
       <div class="ob-actions">
         <button type="button" class="ob-skip" id="ob-skip">Skip</button>
         <button type="button" class="btn btn-primary" id="ob-next">Next</button>
@@ -4696,32 +4713,39 @@ Context:
       const ONBOARDING_KEY = 'promptmegood:onboarding:v1';
       const OB_STEPS = [
         {
+          selector: '.hero-actions',
+          fallbackSelector: '#hero-build-cta',
+          title: 'Choose Your Starting Path',
+          text: 'Start Here. Use Build A Prompt When You Already Have A Task In Mind. Use See Use Cases When You Want Ideas Or Examples.'
+        },
+        {
           selector: '#goal',
-          title: 'Start With Your Goal',
-          text: 'Tell PromptMeGood exactly what you want. Be specific — better input creates better results.'
+          title: 'Enter Your Goal',
+          text: 'This Is The Most Important Field. Tell PromptMeGood Exactly What You Want Help With. Specific Goals Create Stronger Prompts.'
+        },
+        {
+          selector: '#tour-step-settings',
+          fallbackSelector: '.settings-divider',
+          title: 'Tune Your Prompt Settings',
+          text: 'Use These Settings To Shape The Final Prompt. Category, Skill Level, Tone, Format, Language, Personality, And Boosts All Help Control The Result.'
         },
         {
           selector: '#tour-step-generate',
           fallbackSelector: '#prompt-form button[type="submit"]',
-          title: 'Generate Your Prompt',
-          text: 'Click Generate or use Demo to instantly create a strong, structured prompt.'
-        },
-        {
-          selector: '#resultBox',
-          title: 'See Your Result',
-          text: 'This is your working prompt. You can copy, edit, or improve it instantly.'
+          title: 'Generate Or Demo',
+          text: 'Tap Generate Prompt When You Are Ready. If You Are Not Sure What To Enter, Use Demo Values To Instantly See How The App Works.'
         },
         {
           selector: '#tour-step-improve',
           fallbackSelector: '#improve-block',
-          title: 'Refine Without Starting Over',
-          text: 'Use these buttons to upgrade your prompt. Not happy? Undo and try again.'
+          title: 'Refine, Undo, And Edit',
+          text: 'Your First Prompt Is Not Final. Refine It, Fine-Tune One Part, Undo Changes, Or Manually Edit The Text Until It Feels Right.'
         },
         {
-          selector: '#tour-step-finalize',
-          fallbackSelector: '#copy-btn',
-          title: 'Make It Yours & Use It Anywhere',
-          text: 'Edit, fine-tune, then copy or open it in your favorite AI tool.'
+          selector: '#copy-btn',
+          fallbackSelector: '.open-in-block',
+          title: 'Use It Anywhere',
+          text: 'Copy Your Finished Prompt, Then Use It In ChatGPT, Claude, Perplexity, Google, Or Any AI/Search Tool.'
         }
       ];
       const obOverlay = document.getElementById('ob-overlay');
@@ -4815,7 +4839,10 @@ Context:
         obOverlay.classList.add('is-open');
         obOverlay.setAttribute('aria-hidden', 'false');
         obBindListeners();
-        window.setTimeout(obPositionStep, 50);
+        window.setTimeout(function () {
+          obPositionStep();
+          try { obNextBtn.focus({ preventScroll: true }); } catch (e) { obNextBtn.focus(); }
+        }, 50);
       }
       function obFinish() {
         obOverlay.classList.remove('is-open');
@@ -4853,6 +4880,20 @@ Context:
         hideTourBanner();
         obMarkDone();
       });
+      const tourJumpBtn = document.getElementById('tour-jump');
+      if (tourJumpBtn) {
+        tourJumpBtn.addEventListener('click', function () {
+          hideTourBanner();
+          obMarkDone();
+          const goalEl = document.getElementById('goal');
+          if (goalEl) {
+            goalEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            window.setTimeout(function () {
+              try { goalEl.focus({ preventScroll: true }); } catch (e) { goalEl.focus(); }
+            }, 450);
+          }
+        });
+      }
       if (obShouldRun() && tourBanner) {
         tourBanner.hidden = false;
       }
