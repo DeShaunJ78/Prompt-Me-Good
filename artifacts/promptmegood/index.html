@@ -504,6 +504,59 @@
       .actions-row .btn-clear { width: 100%; }
     }
     .tour-final-actions { display: grid; gap: var(--space-4); }
+    .guided-cta-row {
+      display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      margin: 0 0 var(--space-4);
+      background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
+      border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+      border-radius: var(--radius-lg);
+      flex-wrap: wrap;
+    }
+    .guided-cta-row .guided-cta-text strong { display: block; font-size: var(--text-sm); }
+    .guided-cta-row .guided-cta-text span { display: block; color: var(--color-text-muted); font-size: var(--text-xs); }
+    .guided-cta-row .btn { white-space: nowrap; }
+    @media (max-width: 600px) {
+      .guided-cta-row { flex-direction: column; align-items: stretch; }
+      .guided-cta-row .btn { width: 100%; }
+    }
+    .guided-dialog { position: fixed; inset: 0; margin: auto; padding: 0; border: 0; border-radius: var(--radius-lg); width: min(540px, calc(100vw - 32px)); max-height: 85vh; background: var(--color-surface); color: var(--color-text); box-shadow: 0 24px 60px rgba(0,0,0,0.28); overflow: hidden; }
+    .guided-dialog::backdrop { background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
+    .guided-form { display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-5) var(--space-6) var(--space-5); max-height: 85vh; overflow-y: auto; }
+    .guided-head h3 { margin: 0 0 4px; font-size: var(--text-lg); color: var(--color-text); }
+    .guided-head p { margin: 0; font-size: var(--text-sm); color: var(--color-text-muted); }
+    .guided-step { display: flex; flex-direction: column; gap: 6px; }
+    .guided-step label { font-weight: 600; font-size: var(--text-sm); color: var(--color-text); }
+    .guided-step textarea { width: 100%; min-height: 70px; resize: vertical; padding: 10px 12px; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); font-family: inherit; font-size: var(--text-sm); box-sizing: border-box; }
+    .guided-step textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 25%, transparent); }
+    .guided-progress { font-size: var(--text-xs); color: var(--color-text-muted); }
+    .guided-actions { display: flex; gap: var(--space-2); justify-content: flex-end; flex-wrap: wrap; }
+    .guided-actions .btn { min-height: 38px; padding: 8px 16px; }
+    @media (max-width: 600px) {
+      .guided-dialog { width: calc(100vw - 16px); max-height: 92vh; }
+      .guided-form { padding: var(--space-4); }
+      .guided-actions { justify-content: stretch; }
+      .guided-actions .btn { flex: 1 1 auto; }
+    }
+    .quality-row { display: flex; flex-direction: column; gap: var(--space-2); margin: 0 0 var(--space-3); }
+    .quality-row .btn { align-self: flex-start; }
+    .quality-feedback {
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));
+      border: 1px solid color-mix(in srgb, var(--color-primary) 25%, transparent);
+      font-size: var(--text-sm);
+      color: var(--color-text);
+    }
+    .quality-feedback ul { margin: 6px 0 0 1.1rem; padding: 0; }
+    .quality-feedback li + li { margin-top: 4px; }
+    .quality-feedback-title { font-weight: 700; }
+    .max-length-row { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
+    .max-length-row select { flex: 1 1 auto; min-width: 0; }
+    .max-length-row input[type="number"] { width: 110px; padding: 8px 10px; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); font-family: inherit; font-size: var(--text-sm); }
+    @media (max-width: 600px) {
+      .max-length-row input[type="number"] { width: 100%; }
+    }
     .result-wrap { padding: var(--space-5); display: grid; gap: var(--space-4); }
     .result-box {
       min-height: 420px; white-space: pre-wrap;
@@ -1776,6 +1829,13 @@
               <div class="weekly-goal-pin-body" id="weekly-goal-body">Try focusing on one goal this week. Example: &ldquo;Improve my business idea&rdquo;</div>
             </div>
             <form id="prompt-form" class="form-grid">
+              <div class="guided-cta-row" id="guided-cta-row">
+                <div class="guided-cta-text">
+                  <strong>Guide Me <span style="color: var(--color-primary); font-weight: 600;">(Recommended)</span></strong>
+                  <span>Answer 4 short questions and we'll fill the builder for you.</span>
+                </div>
+                <button type="button" class="btn btn-primary" id="guided-mode-btn">Guide Me</button>
+              </div>
               <div class="field field-primary">
                 <div class="field-label-row">
                   <label for="goal">Your Goal (Start Here)</label>
@@ -1838,6 +1898,22 @@
               </div>
 
               <div class="field">
+                <label for="maxLength">Max response length</label>
+                <div class="max-length-row">
+                  <select id="maxLength" name="maxLength">
+                    <option value="">No limit</option>
+                    <option value="100">100 words</option>
+                    <option value="200">200 words</option>
+                    <option value="300">300 words</option>
+                    <option value="500">500 words</option>
+                    <option value="custom">Custom…</option>
+                  </select>
+                  <input type="number" id="maxLengthCustom" min="20" max="5000" placeholder="Words" hidden aria-label="Custom word limit" />
+                </div>
+                <p class="helper">Optionally cap how long the AI's response can be.</p>
+              </div>
+
+              <div class="field">
                 <label for="outputLanguage">Output Language</label>
                 <select id="outputLanguage" name="outputLanguage">
                   <option value="english">English</option>
@@ -1874,6 +1950,15 @@
                 </div>
                 <textarea id="details" name="details" placeholder="Example: I have $50, I’m using Shopify, and I need something I can execute this week."></textarea>
                 <p class="helper">Add budget, timeline, platform, audience, constraints, or anything the AI should respect.</p>
+              </div>
+
+              <div class="field">
+                <div class="field-label-row">
+                  <label for="guardrails">What should the AI avoid? <span class="helper">(optional)</span></label>
+                  <button type="button" class="btn-clear" id="clear-guardrails-btn" aria-label="Clear guardrails" data-clear-target="guardrails">Clear</button>
+                </div>
+                <textarea id="guardrails" name="guardrails" rows="2" placeholder="Ex: Don't sound robotic, avoid jargon, don't exceed 200 words…"></textarea>
+                <p class="helper">Tell the AI what NOT to do. These get added as guardrails in your prompt.</p>
               </div>
 
               <div class="toggle-row is-subtle">
@@ -2002,6 +2087,10 @@
             </div>
             <p class="result-helper" data-tip="result-copy">Looks good? Copy this prompt and paste it into ChatGPT, Claude, Perplexity, Gemini, or another AI tool.</p>
             <div id="tour-final-actions" class="tour-final-actions">
+            <div class="quality-row" id="quality-row">
+              <button class="btn btn-secondary" type="button" id="check-quality-btn">Check prompt quality</button>
+              <div class="quality-feedback" id="quality-feedback" hidden role="status" aria-live="polite"></div>
+            </div>
             <div class="actions-row">
               <button class="btn btn-primary" type="button" id="copy-btn">Copy Prompt</button>
               <button class="btn btn-secondary" type="button" id="print-btn" title="Print or save as PDF">Print / Save PDF</button>
@@ -2287,11 +2376,22 @@
               <h3>1. The 5-Step Flow</h3>
               <p>This mirrors the in-app tour — replay it anytime from the footer.</p>
               <ol class="manual-steps">
-                <li><strong>Goal.</strong> Type what you want help with in plain words. The more specific, the better.</li>
+                <li><strong>Goal.</strong> Type what you want help with in plain words — or click <strong>Guide Me</strong> at the top of the builder and answer 4 quick questions. The more specific, the better.</li>
                 <li><strong>Generate.</strong> Click <strong>Generate Prompt</strong>, or hit <strong>Use Demo Values</strong> to launch a full guided walkthrough — it fills a sample goal, generates a prompt, explains how to refine it, and shows how to use it in ChatGPT, Claude, or Perplexity. You can replay the walkthrough anytime using <strong>Replay Tour</strong> at the bottom of the page.</li>
                 <li><strong>Output.</strong> Your structured prompt appears in the output box on the right.</li>
-                <li><strong>Refine / Undo.</strong> Tap <strong>More Detailed</strong>, <strong>More Aggressive</strong>, or <strong>Beginner Friendly</strong> to upgrade in place. Use <strong>Undo Last Change</strong> to step back.</li>
-                <li><strong>Fine-Tune / Copy / Use.</strong> Tweak with Fine-Tune Your Prompt, click <strong>Copy Prompt</strong>, then open it in ChatGPT, Claude, or Perplexity.</li>
+                <li><strong>Refine / Undo.</strong> Tap <strong>More Detailed</strong>, <strong>More Aggressive</strong>, or <strong>Beginner Friendly</strong> to upgrade in place. Use <strong>Undo Last Change</strong> to step back. Set a <strong>Max Response Length</strong> or add <strong>Guardrails</strong> in the builder to control length and avoid bad habits.</li>
+                <li><strong>Check / Copy / Use.</strong> Tap <strong>Check Prompt Quality</strong> for quick suggestions, click <strong>Copy Prompt</strong>, then open it in ChatGPT, Claude, or Perplexity.</li>
+              </ol>
+            </article>
+
+            <article class="manual-section manual-callout" id="manual-guide-me">
+              <h3>Guide Me (Guided Setup)</h3>
+              <p>Not sure how to phrase your goal? Tap the green <strong>Guide Me</strong> button at the top of the builder. We'll ask 4 short questions — what you need help with, who it's for, the outcome that matters most, and any constraints — then fill the builder for you.</p>
+              <ol>
+                <li>Click <strong>Guide Me</strong> at the top of the builder.</li>
+                <li>Answer each question (use Back to revisit any answer).</li>
+                <li>Tap <strong>Done</strong> on the last step. The Goal, Extra Details, and Guardrails get filled in.</li>
+                <li>Review, adjust if needed, and click Generate Prompt.</li>
               </ol>
             </article>
 
@@ -2376,6 +2476,16 @@
                 <h4>Extra Details</h4>
                 <p>Optional. Add budget, timeline, platform, audience, or constraints. Every extra detail sharpens the answer.</p>
               </div>
+
+              <div class="manual-feature">
+                <h4>Max Response Length</h4>
+                <p>Tells the AI how long the answer should be. Pick a preset (100 / 200 / 300 / 500 words) or choose <strong>Custom</strong> to type any word count. Leave it on <em>No limit</em> for full-length answers.</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Guardrails (things to avoid)</h4>
+                <p>Tell the AI what <em>not</em> to do. Examples: <em>"don't sound robotic"</em>, <em>"avoid jargon"</em>, <em>"don't recommend paid ads"</em>. These get added to the prompt as explicit limits.</p>
+              </div>
             </article>
 
             <article class="manual-section" id="manual-boosts">
@@ -2444,6 +2554,11 @@
               <div class="manual-feature">
                 <h4>Use Your Prompt In</h4>
                 <p>The ChatGPT, Claude, and Perplexity buttons each copy the current prompt to your clipboard and open the AI tool in a new tab. Just paste and run. Test across all three to see which gives the best answer.</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Check Prompt Quality</h4>
+                <p>Tap <strong>Check Prompt Quality</strong> below the output to get up to 3 quick suggestions — flags vague goals, missing details or guardrails, and missing length limits. It runs locally and never leaves your device.</p>
               </div>
 
               <div class="manual-feature">
@@ -2587,6 +2702,37 @@
         <div class="site-footer-version" aria-label="Version">PromptMeGood v1</div>
       </div>
     </footer>
+
+    <dialog id="guided-mode-dialog" class="guided-dialog" aria-labelledby="guided-mode-title">
+      <form method="dialog" class="guided-form" id="guided-mode-form">
+        <header class="guided-head">
+          <h3 id="guided-mode-title">Guide Me</h3>
+          <p>Answer a few quick questions. We'll fill the builder for you.</p>
+        </header>
+        <div class="guided-step" data-guided-step="0">
+          <label for="guided-q-goal">What do you want help with?</label>
+          <textarea id="guided-q-goal" rows="3" placeholder="Example: I want to make $1,000 per month from a side hustle." required></textarea>
+        </div>
+        <div class="guided-step" data-guided-step="1" hidden>
+          <label for="guided-q-audience">Who is this for?</label>
+          <textarea id="guided-q-audience" rows="2" placeholder="Example: me, a complete beginner with no audience yet."></textarea>
+        </div>
+        <div class="guided-step" data-guided-step="2" hidden>
+          <label for="guided-q-outcome">What outcome matters most?</label>
+          <textarea id="guided-q-outcome" rows="2" placeholder="Example: a simple plan I can start this week with under $100."></textarea>
+        </div>
+        <div class="guided-step" data-guided-step="3" hidden>
+          <label for="guided-q-constraints">Any constraints?</label>
+          <textarea id="guided-q-constraints" rows="2" placeholder="Example: no paid ads, keep responses under 200 words, avoid jargon."></textarea>
+        </div>
+        <div class="guided-progress" id="guided-progress">Step 1 of 4</div>
+        <footer class="guided-actions">
+          <button type="button" class="btn btn-secondary" id="guided-back" disabled>Back</button>
+          <button type="button" class="btn btn-secondary" id="guided-cancel">Cancel</button>
+          <button type="button" class="btn btn-primary" id="guided-next">Next</button>
+        </footer>
+      </form>
+    </dialog>
 
     <dialog id="privacy-dialog" class="legal-modal" aria-labelledby="privacy-dialog-title">
       <div class="legal-modal-inner">
@@ -3237,6 +3383,23 @@ Extra context to respect:
 ${data.details}`
           : '';
 
+        const guardrailsBlock = data.guardrails
+          ? `
+
+Things to avoid (guardrails):
+${data.guardrails}`
+          : '';
+
+        const guardrailsLine = data.guardrails
+          ? `
+- Respect these guardrails — do NOT do any of these: ${data.guardrails}`
+          : '';
+
+        const maxLengthLine = data.maxLength
+          ? `
+- Keep the response under ${data.maxLength} words.`
+          : '';
+
         const moneyMode = data.moneyMode
           ? `
 - Money Mode: prioritize practical, actionable, and results-driven answers. Focus on outcomes and execution.`
@@ -3307,16 +3470,30 @@ Here's what I need from you:
 - Format the answer as ${articleFor(data.outputFormat)} ${titleCase(data.outputFormat)}.
 - Avoid vague advice, filler, or generic motivation.
 - Include examples, templates, checklists, or scripts when useful.
-- End with the top 3 actions I should take next.${personalityLine}${moneyMode}${humanLine}${clarityLine}${photoLine}${languageLine}${remixLine}
+- End with the top 3 actions I should take next.${maxLengthLine}${guardrailsLine}${personalityLine}${moneyMode}${humanLine}${clarityLine}${photoLine}${languageLine}${remixLine}
 
 Context:
 - Category: ${categoryLabels[categoryKey]}
 - Experience level: ${titleCase(data.skillLevel)}
 - Tone: ${titleCase(data.tone)}
-- Output format: ${titleCase(data.outputFormat)}${personalityContext}${extraDetails}`;
+- Output format: ${titleCase(data.outputFormat)}${personalityContext}${extraDetails}${guardrailsBlock}`;
       }
 
       function getFormData() {
+        const maxSel = document.getElementById('maxLength');
+        const maxCustomEl = document.getElementById('maxLengthCustom');
+        let maxLength = 0;
+        if (maxSel) {
+          const v = maxSel.value;
+          if (v === 'custom') {
+            const n = parseInt(maxCustomEl && maxCustomEl.value, 10);
+            if (!isNaN(n) && n > 0) maxLength = n;
+          } else if (v) {
+            const n = parseInt(v, 10);
+            if (!isNaN(n) && n > 0) maxLength = n;
+          }
+        }
+        const guardrailsEl = document.getElementById('guardrails');
         return {
           goal: document.getElementById('goal').value.trim(),
           category: document.getElementById('category').value,
@@ -3324,6 +3501,8 @@ Context:
           tone: document.getElementById('tone').value,
           outputFormat: document.getElementById('outputFormat').value,
           details: document.getElementById('details').value.trim(),
+          guardrails: guardrailsEl ? guardrailsEl.value.trim() : '',
+          maxLength: maxLength,
           moneyMode: document.getElementById('moneyMode').checked,
           humanTone: document.getElementById('humanTone').checked,
           clarityBoost: document.getElementById('clarityBoost').checked,
@@ -4235,6 +4414,156 @@ Context:
       wireFieldClearBtn('clear-goal-btn', 'goal');
       wireFieldClearBtn('clear-details-btn', 'details');
       wireFieldClearBtn('clear-fine-tune-btn', 'fine-tune-input');
+      wireFieldClearBtn('clear-guardrails-btn', 'guardrails');
+
+      // Max response length: show custom input only when "custom" selected
+      (function setupMaxLengthCustom() {
+        const sel = document.getElementById('maxLength');
+        const custom = document.getElementById('maxLengthCustom');
+        if (!sel || !custom) return;
+        function sync() {
+          if (sel.value === 'custom') {
+            custom.hidden = false;
+            try { custom.focus(); } catch (e) {}
+          } else {
+            custom.hidden = true;
+            custom.value = '';
+          }
+        }
+        sel.addEventListener('change', sync);
+        sync();
+      })();
+
+      // Guide Me modal: 4-question flow that fills goal/details/guardrails
+      (function setupGuidedMode() {
+        const dialog = document.getElementById('guided-mode-dialog');
+        const openBtn = document.getElementById('guided-mode-btn');
+        if (!dialog || !openBtn) return;
+        const steps = Array.prototype.slice.call(dialog.querySelectorAll('[data-guided-step]'));
+        const totalSteps = steps.length;
+        const progressEl = document.getElementById('guided-progress');
+        const backBtn = document.getElementById('guided-back');
+        const cancelBtn = document.getElementById('guided-cancel');
+        const nextBtn = document.getElementById('guided-next');
+        const qGoal = document.getElementById('guided-q-goal');
+        const qAud = document.getElementById('guided-q-audience');
+        const qOut = document.getElementById('guided-q-outcome');
+        const qCon = document.getElementById('guided-q-constraints');
+        let idx = 0;
+        function renderStep() {
+          steps.forEach(function (s) {
+            const stepIdx = parseInt(s.getAttribute('data-guided-step'), 10);
+            s.hidden = stepIdx !== idx;
+          });
+          if (progressEl) progressEl.textContent = 'Step ' + (idx + 1) + ' of ' + totalSteps;
+          backBtn.disabled = idx === 0;
+          nextBtn.textContent = idx === totalSteps - 1 ? 'Done' : 'Next';
+          const visible = steps[idx];
+          if (visible) {
+            const ta = visible.querySelector('textarea');
+            if (ta) { try { ta.focus(); } catch (e) {} }
+          }
+        }
+        function open() {
+          idx = 0;
+          renderStep();
+          if (typeof dialog.showModal === 'function') {
+            try { dialog.showModal(); } catch (e) { dialog.setAttribute('open', ''); }
+          } else {
+            dialog.setAttribute('open', '');
+          }
+        }
+        function close() {
+          if (typeof dialog.close === 'function') {
+            try { dialog.close(); } catch (e) { dialog.removeAttribute('open'); }
+          } else {
+            dialog.removeAttribute('open');
+          }
+        }
+        function applyAnswers() {
+          const goal = (qGoal.value || '').trim();
+          const aud = (qAud.value || '').trim();
+          const outcome = (qOut.value || '').trim();
+          const cons = (qCon.value || '').trim();
+          if (goal) document.getElementById('goal').value = goal;
+          const detailsParts = [];
+          if (aud) detailsParts.push('For: ' + aud + '.');
+          if (outcome) detailsParts.push('Most important outcome: ' + outcome + '.');
+          const detailsEl = document.getElementById('details');
+          if (detailsEl && detailsParts.length) {
+            detailsEl.value = detailsParts.join(' ');
+          }
+          const guardEl = document.getElementById('guardrails');
+          if (guardEl && cons) {
+            guardEl.value = cons;
+          }
+        }
+        openBtn.addEventListener('click', open);
+        backBtn.addEventListener('click', function () {
+          if (idx > 0) { idx -= 1; renderStep(); }
+        });
+        cancelBtn.addEventListener('click', function () { close(); });
+        nextBtn.addEventListener('click', function () {
+          if (idx === 0 && !(qGoal.value || '').trim()) {
+            try { qGoal.focus(); } catch (e) {}
+            return;
+          }
+          if (idx < totalSteps - 1) {
+            idx += 1;
+            renderStep();
+            return;
+          }
+          applyAnswers();
+          close();
+          if (typeof showToast === 'function') showToast('Builder filled. Review and click Generate Prompt.');
+          const goalEl = document.getElementById('goal');
+          if (goalEl && typeof goalEl.scrollIntoView === 'function') {
+            goalEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            try { goalEl.focus({ preventScroll: true }); } catch (e) { goalEl.focus(); }
+          }
+        });
+        // Reset textareas after dialog closes so reopening starts clean? No, preserve answers in case user reopens.
+      })();
+
+      // Check Prompt Quality: heuristic feedback on the current setup
+      (function setupQualityChecker() {
+        const btn = document.getElementById('check-quality-btn');
+        const out = document.getElementById('quality-feedback');
+        if (!btn || !out) return;
+        function check() {
+          const data = getFormData();
+          const promptText = (resultBox && resultBox.textContent ? resultBox.textContent.trim() : '');
+          const placeholder = 'Your generated prompt will appear here. Once it looks good, copy it into your favorite AI tool.';
+          const hasGenerated = promptText && promptText !== placeholder && promptText.indexOf('Generating demo prompt') === -1;
+          const issues = [];
+          if (!data.goal || data.goal.length < 30) {
+            issues.push('Your goal is short — add more specifics so the AI knows exactly what you want.');
+          }
+          if (!data.details && !data.guardrails) {
+            issues.push('No extra details or guardrails — try adding budget, audience, or things to avoid.');
+          } else if (!data.guardrails) {
+            issues.push('No guardrails set — tell the AI what to avoid (e.g. jargon, length, tone).');
+          }
+          if (!data.maxLength) {
+            issues.push('No length limit — set a max response length if you want a tighter answer.');
+          }
+          if (data.goal && /\b(thing|things|stuff|something|somehow|whatever)\b/i.test(data.goal) && data.goal.length < 100) {
+            issues.push('Your goal uses vague words — try replacing them with concrete nouns.');
+          }
+          if (!hasGenerated) {
+            issues.unshift('No prompt generated yet — fill the builder and click Generate Prompt first.');
+          }
+          const trimmed = issues.slice(0, 3);
+          out.hidden = false;
+          if (trimmed.length === 0) {
+            out.innerHTML = '<span class="quality-feedback-title">Looks solid.</span> Your prompt covers the basics. Generate, refine, and copy it into your favorite AI tool.';
+          } else {
+            const items = trimmed.map(function (s) { return '<li>' + s.replace(/</g, '&lt;') + '</li>'; }).join('');
+            out.innerHTML = '<span class="quality-feedback-title">Quick suggestions:</span><ul>' + items + '</ul>';
+          }
+        }
+        btn.addEventListener('click', check);
+      })();
 
       // Clear Prompt button: clears generated prompt + manual edit state + undo stack
       const clearPromptBtn = document.getElementById('clear-prompt-btn');
@@ -4878,18 +5207,18 @@ Context:
           selector: '.hero-actions',
           fallbackSelector: '#hero-build-cta',
           title: 'Choose your starting path',
-          text: 'Start here. Use Build A Prompt when you already have a task in mind. Use See Use Cases when you want ideas or examples.'
+          text: 'Start here. Use Build A Prompt when you already have a task in mind, See Use Cases for ideas, or Guide Me to answer a few questions and let us fill the builder.'
         },
         {
           selector: '#goal',
           title: 'Enter your goal',
-          text: 'This is the most important field. Tell PromptMeGood exactly what you want help with. Specific goals create stronger prompts.'
+          text: "Type your goal in plain words, or use 'Guide Me' at the top of the builder to answer a few questions instead. Specific goals create stronger prompts."
         },
         {
           selector: '#tour-step-settings',
           fallbackSelector: '.settings-divider',
           title: 'Tune your prompt settings',
-          text: 'Use these settings to shape the final prompt. Category, skill level, tone, format, language, personality, and boosts all help control the result.'
+          text: 'These shape the final prompt. Pick category, tone, format, max response length, and add guardrails for what the AI should avoid.'
         },
         {
           selector: '#tour-step-generate',
@@ -4900,14 +5229,14 @@ Context:
         {
           selector: '#tour-step-improve',
           fallbackSelector: '#improve-block',
-          title: 'Refine, undo, and edit',
-          text: 'Your first prompt is not final. Refine it, fine-tune one part, undo changes, or manually edit the text until it feels right.'
+          title: 'Refine, undo, and check quality',
+          text: 'Your first prompt is not final. Refine it, fine-tune one part, undo changes, or tap Check Prompt Quality below for quick suggestions.'
         },
         {
           selector: '#tour-final-actions',
           fallbackSelector: '#copy-btn',
           title: 'Use your prompt anywhere',
-          text: 'Copy your finished prompt, or use the ChatGPT, Claude, or Perplexity buttons to copy it automatically and open your preferred AI tool.'
+          text: 'Copy uses your clipboard. The ChatGPT, Claude, and Perplexity buttons copy your prompt and open the AI tool in a new tab.'
         }
       ];
       const DEMO_STEPS = [
@@ -4915,13 +5244,13 @@ Context:
           selector: '#prompt-form',
           fallbackSelector: '#builder-panel',
           title: 'Step 1: Fill the builder',
-          text: 'We added a sample goal and settings so you can see how everything works.'
+          text: "We added a sample goal and settings. You can also use 'Guide Me' at the top of the builder to answer a few questions instead."
         },
         {
           selector: '#tour-step-generate',
           fallbackSelector: '#prompt-form button[type="submit"]',
           title: 'Step 2: Generating your prompt…',
-          text: 'This turns your idea into a structured, ready-to-use prompt.',
+          text: 'This turns your idea into a structured prompt.',
           onEnter: function () {
             runDemoGenerationStep();
           }
@@ -4930,25 +5259,25 @@ Context:
           selector: '#resultBox',
           fallbackSelector: '#result-panel',
           title: 'Step 3: Show the output',
-          text: "This is your prompt. It's ready to use, but you can adjust it if needed."
+          text: 'This is your prompt. You can use it or adjust it.'
         },
         {
-          selector: '#tour-step-improve',
-          fallbackSelector: '#improve-block',
+          selector: '#improve-block',
+          fallbackSelector: '#tour-step-improve',
           title: 'Step 4: Refine and adjust',
-          text: "If it's not perfect, refine it or tell PromptMeGood what to change. Small adjustments can significantly improve results."
+          text: 'Use these controls to refine results, limit length, or guide tone. Refine buttons, Fine-Tune, plus the Guardrail field and Max Response Length up in the builder all shape the answer.'
         },
         {
           selector: '#tour-final-actions',
           fallbackSelector: '#copy-btn',
-          title: 'Step 5: Copy and use in AI',
-          text: 'Copy your prompt or open it in ChatGPT, Claude, or Perplexity to get your result. This is where your prompt becomes a real answer.'
+          title: 'Step 5: Quality and use in AI',
+          text: 'Tap Check Prompt Quality for quick suggestions, then copy your prompt or open it in ChatGPT, Claude, or Perplexity.'
         },
         {
           selector: '#replay-tour-btn',
           fallbackSelector: '.site-footer-replay-btn',
           title: "You've seen the full flow",
-          text: "Now try your own goal. If you want to see this again, tap 'Replay Tour' at the bottom of the page."
+          text: "Now try your own goal. If you need help again, tap 'Replay Tour' at the bottom of the page."
         }
       ];
       const obOverlay = document.getElementById('ob-overlay');
@@ -5611,6 +5940,14 @@ Context:
         document.getElementById('tone').value = 'aggressive';
         document.getElementById('outputFormat').value = 'step-by-step';
         document.getElementById('details').value = 'I need a low-cost plan, something I can sell fast, and I do not want complicated tech setup.';
+        const guardrailsEl = document.getElementById('guardrails');
+        if (guardrailsEl) guardrailsEl.value = "Don't sound robotic, avoid vague advice, and skip jargon a beginner won't understand.";
+        const maxLengthSel = document.getElementById('maxLength');
+        const maxLengthCustom = document.getElementById('maxLengthCustom');
+        if (maxLengthSel) {
+          maxLengthSel.value = '300';
+          if (maxLengthCustom) { maxLengthCustom.hidden = true; maxLengthCustom.value = ''; }
+        }
         document.getElementById('moneyMode').checked = true;
         document.getElementById('personality').value = 'bold';
         const builderSection = document.getElementById('builder');

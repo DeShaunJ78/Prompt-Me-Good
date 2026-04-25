@@ -1,0 +1,208 @@
+Implement intelligent system upgrades and update demo + tour. Only patch the manual where features are missing or outdated. Do not rewrite the manual or break existing functionality.
+
+========================
+PART 1 — SMART AUTO-RECOMMENDATIONS
+========================
+
+When user types in “Your Goal”:
+- Analyze keywords
+- Suggest:
+  - Category
+  - Tone
+  - Output Format
+  - Max Response Length
+  - Recommended AI platform
+
+Examples:
+- “make money” → Money, Aggressive, Step-by-step, 200–300 words
+- “write email” → Content, Professional
+- “research” → Recommend Perplexity
+
+Rules:
+- Show “Suggested” label
+- Do NOT override user selections after manual change
+- Trigger only on initial input or major edits
+
+========================
+PART 2 — AI TOOL RECOMMENDER
+========================
+
+Highlight one AI button as:
+“Recommended”
+
+Based on:
+- Category
+- Goal intent
+
+Style:
+- Subtle glow or border
+- Small badge
+
+Do NOT:
+- Remove other options
+- Auto-open tools
+
+========================
+PART 3 — PROMPT STRENGTH SCORE
+========================
+
+After generation:
+Display:
+
+“Prompt Strength: [X]%”
+
+Add 2–3 short insights:
+- Strong structure
+- Clear constraints
+- Could be more specific
+- Missing constraints
+
+Keep fast and simple.
+
+========================
+PART 4 — AUTO OPTIMIZE MODE
+========================
+
+Add toggle:
+
+“Auto Optimize (Recommended)”
+
+When ON:
+- Apply best suggested settings automatically
+
+When OFF:
+- Manual control
+
+Rules:
+- Do not override after user edits
+- Keep subtle
+
+========================
+PART 5 — DEMO WALKTHROUGH UPDATE
+========================
+
+STEP 1:
+“We added a sample goal and settings. You can also use ‘Guide Me’ for a guided setup.”
+
+STEP 2:
+“Generating your prompt… This turns your idea into a structured prompt.”
+
+STEP 3:
+“This is your prompt. You can use it or refine it.”
+
+STEP 4:
+Highlight:
+- Refine buttons
+- Fine-Tune
+- Guardrails
+- Max Response Length
+
+“Use these controls to improve results and guide the AI.”
+
+STEP 5:
+Highlight:
+- Check Prompt Quality
+- Prompt Strength Score
+- Copy Prompt
+- AI buttons
+
+“Check your prompt, then copy it or open it in ChatGPT, Claude, or Perplexity.”
+
+STEP 6:
+“You’ve seen the full flow. Now try your own goal.”
+“If you need help again, tap ‘Replay Tour’ at the bottom.”
+
+========================
+PART 6 — TOUR UPDATE
+========================
+
+Use sentence casing (no Title Case everywhere).
+
+STEP 1:
+Explain:
+- Build A Prompt
+- Use Cases
+- Guided Mode
+
+STEP 2:
+“You can type your goal or use ‘Guide Me’.”
+
+STEP 3:
+Highlight:
+- Category
+- Tone
+- Format
+- Max Response Length
+- Guardrails
+
+“These shape your prompt.”
+
+STEP 4:
+Generate step unchanged
+
+STEP 5:
+Highlight:
+- Refine
+- Fine-Tune
+- Undo
+- Check Prompt Quality
+- Prompt Strength Score
+
+STEP 6:
+Highlight:
+- Copy Prompt
+- AI buttons
+
+Explain:
+“Your prompt is copied to the clipboard. Open an AI tool to use it.”
+
+========================
+PART 7 — TARGETED MANUAL PATCH
+========================
+
+Only ADD if missing. Do NOT duplicate existing content.
+
+Add or update:
+
+1. Auto Optimize:
+“Automatically applies the best settings for your goal.”
+
+2. Smart Suggestions:
+“PromptMeGood suggests the best setup based on your input.”
+
+3. AI Recommendation:
+“One AI tool is highlighted as recommended for your task.”
+
+4. Prompt Strength:
+“Shows how strong your prompt is and where it can improve.”
+
+5. Guardrails:
+“Tell the AI what not to do.”
+
+6. Max Response Length:
+“Limit how long the AI response should be.”
+
+7. Check Prompt Quality:
+“Get quick feedback to improve your prompt.”
+
+8. Replay Tour:
+“Replay anytime from the bottom of the page.”
+
+CLEANUP:
+- Remove outdated wording only if conflicting
+- Do not expand manual unnecessarily
+
+========================
+PART 8 — FINAL CHECK
+========================
+
+Confirm:
+- Suggestions appear correctly
+- AI recommendation highlights properly
+- Prompt strength score displays
+- Auto optimize behaves correctly
+- Demo reflects new features
+- Tour reflects new system
+- Manual only updated where needed
+- Mobile layout clean
+- No JavaScript errors
