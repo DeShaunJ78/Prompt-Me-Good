@@ -1,0 +1,95 @@
+Enhance the hero subtext visibility AND add guided AI tool comparison text under each output button. Do not change layout structure or core functionality.
+
+========================
+PART 1 — HERO SUBTEXT UPGRADE
+========================
+
+ISSUE:
+The subtext (“Most people get weak answers…”) is too subtle and blends into the background.
+
+GOAL:
+Make it clearly visible and feel like an important insight without overpowering the headline.
+
+IMPLEMENT:
+
+Wrap the subtext in a styled container:
+
+.hero-subtext-box {
+  background: rgba(15, 118, 110, 0.08);
+  border-left: 4px solid #0f766e;
+  padding: 14px 16px;
+  border-radius: 10px;
+  margin-top: 16px;
+  margin-bottom: 12px;
+}
+
+Update text styling:
+
+.hero-subtext {
+  color: #1f2937;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+Add emphasis:
+
+Bold only this phrase:
+“weak answers from AI”
+
+DO NOT:
+- Change wording
+- Make it brighter than headline
+- Use harsh colors
+
+========================
+PART 2 — AI TOOL COMPARISON TEXT
+========================
+
+GOAL:
+Help users quickly understand which AI tool to use.
+
+Add the following short descriptions under each button:
+
+ChatGPT:
+“Best For Structured Answers, Step-By-Step Guidance, And Strategy”
+
+Claude:
+“Best For Writing, Long-Form Content, And Natural Tone”
+
+Perplexity:
+“Best For Research, Real-Time Info, And Fact-Based Answers”
+
+========================
+STYLING
+========================
+
+- Place text directly under each button
+- Smaller font than button text
+- Opacity: 0.75–0.85
+- Center aligned
+- Max width constrained
+- Spacing: 6–10px below button
+
+OPTIONAL:
+- Add subtle icons if easy
+- Keep spacing consistent across all
+
+========================
+MOBILE
+========================
+
+- Ensure clean wrapping
+- No crowding
+- Maintain spacing
+
+========================
+FINAL CHECK
+========================
+
+- Subtext stands out and is readable
+- AI tool differences are instantly clear
+- Layout remains clean and balanced
+- Mobile experience is smooth
+- No layout shifts
+- No JavaScript errors

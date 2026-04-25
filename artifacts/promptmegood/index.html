@@ -225,6 +225,26 @@
       gap: 2px; line-height: 1.2; text-align: center;
       min-height: 64px; padding: 10px var(--space-5); border-radius: 18px;
     }
+    .hero-subtext-box {
+      background: rgba(15, 118, 110, 0.08);
+      border-left: 4px solid #0f766e;
+      padding: 14px 16px;
+      border-radius: 10px;
+      margin-top: 16px;
+      margin-bottom: 12px;
+      max-width: 620px;
+    }
+    .hero .hero-subtext {
+      margin: 0; max-width: none;
+      color: #1f2937;
+      font-size: 1.05rem;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+    .hero .hero-subtext strong { font-weight: 700; color: #0c4f48; }
+    [data-theme="dark"] .hero-subtext-box { background: rgba(91, 168, 176, 0.14); border-left-color: #5ba8b0; }
+    [data-theme="dark"] .hero .hero-subtext { color: var(--color-text); }
+    [data-theme="dark"] .hero .hero-subtext strong { color: #5ba8b0; }
     .btn-stacked .cta-title { font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.01em; }
     .btn-stacked .cta-sub { font-size: 12px; font-weight: 500; opacity: 0.85; }
     .btn-secondary.btn-stacked .cta-sub { opacity: 1; color: color-mix(in srgb, var(--color-text) 75%, transparent); }
@@ -737,9 +757,17 @@
     @media (prefers-reduced-motion: reduce) {
       .panel.is-highlight { animation: none; }
     }
-    .open-in-block { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-divider); display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
-    .open-in-label { font-size: var(--text-sm); font-weight: 700; color: var(--color-text); }
-    .open-in-row { display: flex; flex-wrap: wrap; gap: 12px; }
+    .open-in-block { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-divider); display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; }
+    .open-in-label { font-size: var(--text-sm); font-weight: 700; color: var(--color-text); padding-top: 12px; }
+    .open-in-row { display: flex; flex-wrap: wrap; gap: 14px; flex: 1 1 auto; }
+    .open-in-card { display: flex; flex-direction: column; align-items: stretch; gap: 8px; flex: 1 1 0; min-width: 150px; max-width: 240px; }
+    .open-in-desc {
+      margin: 0; padding: 0 4px;
+      font-size: 12px; line-height: 1.45;
+      color: #4b5563;
+      text-align: center;
+    }
+    [data-theme="dark"] .open-in-desc { color: #d1d5db; }
     .open-in-btn {
       display: inline-flex; align-items: center; justify-content: center; text-align: center;
       min-height: 44px; padding: 13px 18px;
@@ -747,7 +775,7 @@
       border: 1px solid var(--color-border);
       background: #ffffff;
       font-size: var(--text-sm); font-weight: 600; line-height: 1;
-      text-decoration: none;
+      text-decoration: none; width: 100%;
       transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     }
     .open-in-btn:hover { transform: scale(1.02); }
@@ -759,9 +787,11 @@
     .open-in-btn[data-tool="claude"]:hover     { background: #ffe6c7; }
     .open-in-btn[data-tool="perplexity"]:hover { background: #dde7ff; }
     @media (max-width: 640px) {
-      .open-in-block { flex-direction: column; align-items: stretch; gap: 10px; }
-      .open-in-row { flex-direction: column; gap: 12px; }
-      .open-in-btn { width: 100%; min-height: 48px; padding: 14px 18px; }
+      .open-in-block { flex-direction: column; align-items: stretch; gap: 12px; }
+      .open-in-label { padding-top: 0; }
+      .open-in-row { flex-direction: column; gap: 14px; }
+      .open-in-card { max-width: none; min-width: 0; }
+      .open-in-btn { min-height: 48px; padding: 14px 18px; }
     }
     .improve-block { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-divider); }
     .improve-title { margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--color-text); }
@@ -1552,7 +1582,9 @@
         <div>
           <div class="eyebrow">AI Prompt Engine</div>
           <h1 class="hero-heading">Turn Your Idea<br>Into A <span class="highlight">Powerful AI Prompt</span><br>That Actually Gets Results</h1>
-          <p>Most people get weak answers from AI because they ask weak questions. This fixes that instantly.</p>
+          <div class="hero-subtext-box">
+            <p class="hero-subtext">Most people get <strong>weak answers from AI</strong> because they ask weak questions. This fixes that instantly.</p>
+          </div>
           <p class="trust-line">Built for people who want real results from AI — not fluff.</p>
           <div class="hero-actions">
             <a class="btn btn-primary btn-stacked" href="#builder" id="hero-build-cta">
@@ -1894,9 +1926,18 @@
             <div class="open-in-block" aria-label="Use your prompt in an AI tool">
               <span class="open-in-label">Use Your Prompt In:</span>
               <div class="open-in-row">
-                <a class="btn open-in-btn" data-tool="chatgpt" href="https://chat.openai.com/" target="_blank" rel="noopener noreferrer">ChatGPT</a>
-                <a class="btn open-in-btn" data-tool="claude" href="https://claude.ai/" target="_blank" rel="noopener noreferrer">Claude</a>
-                <a class="btn open-in-btn" data-tool="perplexity" href="https://www.perplexity.ai/" target="_blank" rel="noopener noreferrer">Perplexity</a>
+                <div class="open-in-card">
+                  <a class="btn open-in-btn" data-tool="chatgpt" aria-describedby="open-in-desc-chatgpt" href="https://chat.openai.com/" target="_blank" rel="noopener noreferrer">ChatGPT</a>
+                  <p class="open-in-desc" id="open-in-desc-chatgpt">Best For Structured Answers, Step-By-Step Guidance, And Strategy</p>
+                </div>
+                <div class="open-in-card">
+                  <a class="btn open-in-btn" data-tool="claude" aria-describedby="open-in-desc-claude" href="https://claude.ai/" target="_blank" rel="noopener noreferrer">Claude</a>
+                  <p class="open-in-desc" id="open-in-desc-claude">Best For Writing, Long-Form Content, And Natural Tone</p>
+                </div>
+                <div class="open-in-card">
+                  <a class="btn open-in-btn" data-tool="perplexity" aria-describedby="open-in-desc-perplexity" href="https://www.perplexity.ai/" target="_blank" rel="noopener noreferrer">Perplexity</a>
+                  <p class="open-in-desc" id="open-in-desc-perplexity">Best For Research, Real-Time Info, And Fact-Based Answers</p>
+                </div>
               </div>
             </div>
             <p style="margin: var(--space-3) 0 0; font-size: var(--text-xs); color: var(--color-text-muted);">
