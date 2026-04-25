@@ -220,6 +220,19 @@
     .btn-secondary {
       background: var(--color-surface); border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
     }
+    .btn-stacked {
+      display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 2px; line-height: 1.2; text-align: center;
+      min-height: 64px; padding: 10px var(--space-5); border-radius: 18px;
+    }
+    .btn-stacked .cta-title { font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.01em; }
+    .btn-stacked .cta-sub { font-size: 12px; font-weight: 500; opacity: 0.85; }
+    .btn-secondary.btn-stacked .cta-sub { opacity: 1; color: color-mix(in srgb, var(--color-text) 75%, transparent); }
+    @media (max-width: 600px) {
+      .hero-actions { flex-direction: column; align-items: stretch; }
+      .hero-actions .btn-stacked { width: 100%; padding: 12px var(--space-4); }
+      .btn-stacked .cta-sub { font-size: 11.5px; }
+    }
     .hero-card {
       position: relative;
       background: linear-gradient(180deg,
@@ -1542,8 +1555,14 @@
           <p>Most people get weak answers from AI because they ask weak questions. This fixes that instantly.</p>
           <p class="trust-line">Built for people who want real results from AI — not fluff.</p>
           <div class="hero-actions">
-            <a class="btn btn-primary" href="#builder" id="hero-build-cta">Build A Prompt</a>
-            <a class="btn btn-secondary" href="#use-cases" id="hero-usecases-cta">See Use Cases</a>
+            <a class="btn btn-primary btn-stacked" href="#builder" id="hero-build-cta">
+              <span class="cta-title">Build A Prompt</span>
+              <span class="cta-sub">Start Here With A Specific Task</span>
+            </a>
+            <a class="btn btn-secondary btn-stacked" href="#use-cases" id="hero-usecases-cta">
+              <span class="cta-title">See Use Cases</span>
+              <span class="cta-sub">Start Here For Ideas</span>
+            </a>
           </div>
           <p class="tip-block hero-helper-tip" data-tip="hero">
             <span class="tip-block-icon" aria-hidden="true">💡</span>
