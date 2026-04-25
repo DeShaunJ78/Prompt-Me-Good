@@ -651,7 +651,18 @@
     }
     .improve-block { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-divider); }
     .improve-title { margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--color-text); }
+    .improve-eyebrow { display: block; font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-primary); margin: 0 0 4px; }
     .improve-helper { margin: 4px 0 var(--space-3); font-size: var(--text-sm); color: var(--color-text-muted); }
+    .fine-tune { margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px dashed var(--color-divider); }
+    .fine-tune-label { display: block; font-size: var(--text-sm); font-weight: 700; color: var(--color-text); margin: 0 0 6px; }
+    .fine-tune-row { display: flex; gap: var(--space-2); align-items: stretch; flex-wrap: wrap; }
+    .fine-tune-row input { flex: 1 1 240px; min-height: 44px; border-radius: var(--radius-md); padding: 0 var(--space-3); border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent); background: var(--color-surface-2); font: inherit; color: inherit; }
+    .fine-tune-row input::placeholder { color: var(--color-text-faint); }
+    .fine-tune-row .btn { white-space: nowrap; }
+    .improve-status { display: inline-block; margin-top: var(--space-2); font-size: var(--text-xs); color: var(--color-text-muted); }
+    .improve-block.is-updating { opacity: 0.85; }
+    .improve-block.is-updating button { pointer-events: none; }
+    @media (max-width: 600px) { .fine-tune-row { flex-direction: column; } .fine-tune-row .btn { width: 100%; } }
     .guide-list { display: grid; gap: var(--space-3); margin-top: var(--space-3); }
     .guide-step { display: grid; grid-template-columns: 32px 1fr; gap: 12px; padding: 14px 16px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); }
     .guide-step-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 999px; background: color-mix(in srgb, var(--color-primary) 15%, transparent); color: var(--color-primary); font-weight: 700; font-size: 14px; }
@@ -1542,6 +1553,23 @@
               <div class="pinned-note-source" id="pinned-note-source"></div>
             </div>
             <div class="result-box" id="resultBox">Your generated prompt will appear here.</div>
+            <div class="improve-block" id="improve-block">
+              <span class="improve-eyebrow">Refine Your Prompt Instantly</span>
+              <p class="improve-helper">Tap an option to instantly upgrade your result.</p>
+              <div class="actions-row">
+                <button class="btn btn-secondary" type="button" data-remix="detailed">More Detailed</button>
+                <button class="btn btn-secondary" type="button" data-remix="aggressive">More Aggressive</button>
+                <button class="btn btn-secondary" type="button" data-remix="beginner">Beginner Friendly</button>
+              </div>
+              <div class="fine-tune">
+                <label for="fine-tune-input" class="fine-tune-label">Fine-Tune Your Prompt</label>
+                <div class="fine-tune-row">
+                  <input id="fine-tune-input" type="text" placeholder="Tell me what you want to change… (e.g., make it shorter, more persuasive, add examples)" />
+                  <button class="btn btn-primary" type="button" id="fine-tune-btn">Update Prompt</button>
+                </div>
+              </div>
+              <span class="improve-status" id="improve-status" aria-live="polite" hidden>Updating…</span>
+            </div>
             <p class="result-helper">Copy this and paste it into ChatGPT, Claude, Perplexity, Google, or any AI/search tool.</p>
             <div class="actions-row">
               <button class="btn btn-primary" type="button" id="copy-btn">Copy Prompt</button>
@@ -1557,15 +1585,6 @@
                 <a class="btn open-in-btn" data-tool="chatgpt" href="https://chat.openai.com/" target="_blank" rel="noopener noreferrer">ChatGPT</a>
                 <a class="btn open-in-btn" data-tool="claude" href="https://claude.ai/" target="_blank" rel="noopener noreferrer">Claude</a>
                 <a class="btn open-in-btn" data-tool="perplexity" href="https://www.perplexity.ai/" target="_blank" rel="noopener noreferrer">Perplexity</a>
-              </div>
-            </div>
-            <div class="improve-block">
-              <h3 class="improve-title">Improve Your Prompt</h3>
-              <p class="improve-helper">Tap an option to instantly upgrade your result.</p>
-              <div class="actions-row">
-                <button class="btn btn-secondary" type="button" data-remix="detailed">More Detailed</button>
-                <button class="btn btn-secondary" type="button" data-remix="aggressive">More Aggressive</button>
-                <button class="btn btn-secondary" type="button" data-remix="beginner">Beginner Friendly</button>
               </div>
             </div>
             <p style="margin: var(--space-3) 0 0; font-size: var(--text-xs); color: var(--color-text-muted);">
@@ -2394,7 +2413,7 @@
         return ('aeiou').indexOf(first) !== -1 ? 'an' : 'a';
       }
 
-      function generatePrompt(data, remixMode = '') {
+      function generatePrompt(data, remixMode = '', customRemixText = '') {
         const roleMap = {
           beginner: 'patient teacher and practical strategist',
           intermediate: 'experienced coach, operator, and systems thinker',
@@ -2501,10 +2520,14 @@ ${data.details}`
 - Write the final response in ${languageLabels[languageKey]}.`
           : '';
 
-        const remixLine = remixMode && remixInstructions[remixMode]
-          ? `
-- Special request: ${remixInstructions[remixMode]}`
-          : '';
+        let remixLine = '';
+        if (remixMode === 'custom' && customRemixText) {
+          remixLine = `
+- Special request: ${customRemixText}`;
+        } else if (remixMode && remixInstructions[remixMode]) {
+          remixLine = `
+- Special request: ${remixInstructions[remixMode]}`;
+        }
 
         const personalityKey = data.personality && personalityMap.hasOwnProperty(data.personality) ? data.personality : 'none';
         const personalityLine = personalityMap[personalityKey]
@@ -4321,6 +4344,19 @@ Context:
         }
       });
 
+      const improveBlockEl = document.getElementById('improve-block');
+      const improveStatusEl = document.getElementById('improve-status');
+      function withImproveLoading(fn) {
+        if (improveBlockEl) improveBlockEl.classList.add('is-updating');
+        if (improveStatusEl) { improveStatusEl.hidden = false; improveStatusEl.textContent = 'Updating…'; }
+        setTimeout(function () {
+          try { fn(); } finally {
+            if (improveBlockEl) improveBlockEl.classList.remove('is-updating');
+            if (improveStatusEl) improveStatusEl.hidden = true;
+          }
+        }, 120);
+      }
+
       document.querySelectorAll('[data-remix]').forEach(function (button) {
         button.addEventListener('click', function () {
           const data = getFormData();
@@ -4329,11 +4365,43 @@ Context:
             document.getElementById('goal').focus();
             return;
           }
-          const prompt = generatePrompt(data, button.dataset.remix);
-          resultBox.textContent = prompt;
-          addToHistory(data, prompt);
+          withImproveLoading(function () {
+            const prompt = generatePrompt(data, button.dataset.remix);
+            resultBox.textContent = prompt;
+            addToHistory(data, prompt);
+            showToast('Prompt updated');
+          });
         });
       });
+
+      const fineTuneBtn = document.getElementById('fine-tune-btn');
+      const fineTuneInput = document.getElementById('fine-tune-input');
+      function runFineTune() {
+        const instruction = (fineTuneInput.value || '').trim();
+        if (!instruction) {
+          fineTuneInput.focus();
+          showToast('Type what you want to change first.');
+          return;
+        }
+        const data = getFormData();
+        if (!data.goal) {
+          resultBox.textContent = 'Please enter a goal first, then refine.';
+          document.getElementById('goal').focus();
+          return;
+        }
+        withImproveLoading(function () {
+          const prompt = generatePrompt(data, 'custom', instruction);
+          resultBox.textContent = prompt;
+          addToHistory(data, prompt);
+          showToast('Prompt updated');
+        });
+      }
+      if (fineTuneBtn) fineTuneBtn.addEventListener('click', runFineTune);
+      if (fineTuneInput) {
+        fineTuneInput.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') { e.preventDefault(); runFineTune(); }
+        });
+      }
 
       const RANDOM_GOALS = [
         'Help me come up with 10 startup ideas a solo founder can launch this weekend',

@@ -1,0 +1,91 @@
+Upgrade the “Improve Your Prompt” experience to be part of the generated output workflow. Do not break existing generation logic.
+
+========================
+PART 1 — MOVE IMPROVE CONTROLS
+========================
+
+1. Move the entire “Improve Your Prompt” section:
+- Place it directly BELOW the generated prompt text area
+- Keep it inside the same container/card as the output
+
+2. Remove it from its current standalone position
+
+========================
+PART 2 — MAKE BUTTONS UPDATE PROMPT LIVE
+========================
+
+Buttons:
+- More Detailed
+- More Aggressive
+- Beginner Friendly
+
+Behavior:
+- Clicking any button should:
+  - Regenerate the prompt using the same original inputs
+  - Apply the selected modifier
+  - Replace the current prompt in the output area
+- Do NOT scroll the user back to the builder
+- Keep user focused on the output area
+
+Optional:
+- Show a subtle loading state while regenerating
+
+========================
+PART 3 — ADD “FINE-TUNE YOUR PROMPT” INPUT
+========================
+
+Add a small input field BELOW the improve buttons:
+
+Label:
+“Fine-Tune Your Prompt”
+
+Placeholder:
+“Tell me what you want to change… (e.g., make it shorter, more persuasive, add examples)”
+
+Add button:
+“Update Prompt”
+
+Behavior:
+- When user enters text + clicks Update:
+  - Take the current generated prompt
+  - Apply the user’s instruction as a modifier
+  - Regenerate a refined version
+  - Replace the existing output
+
+Important:
+- This should NOT reset the entire form
+- It should refine the CURRENT prompt
+
+========================
+PART 4 — UX IMPROVEMENTS
+========================
+
+1. Add a small label above buttons:
+“Refine Your Prompt Instantly”
+
+2. Add feedback after update:
+- Small toast:
+“Prompt updated”
+
+3. Maintain scroll position:
+- Keep user in the output area
+
+========================
+DO NOT
+========================
+
+- Do not move user back to the builder
+- Do not clear original inputs
+- Do not break Copy Prompt functionality
+- Do not remove existing features
+
+========================
+FINAL CHECK
+========================
+
+- Improve buttons are under output
+- Clicking them updates prompt in place
+- Fine-tune input works and updates prompt
+- No jumpy scrolling
+- Mobile layout clean
+- No JavaScript errors
