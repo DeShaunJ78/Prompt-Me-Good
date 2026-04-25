@@ -916,9 +916,12 @@
     .uc-modal-card { position: relative; width: 100%; max-width: 880px; max-height: calc(100vh - var(--space-8)); background: var(--color-surface); color: var(--color-text); border-radius: var(--radius-lg); box-shadow: 0 24px 60px rgba(0,0,0,0.35); display: flex; flex-direction: column; overflow: hidden; transform: translateY(8px) scale(0.98); transition: transform 200ms ease; }
     .uc-modal.is-open .uc-modal-card { transform: translateY(0) scale(1); }
     .uc-modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); padding: var(--space-5) var(--space-5) var(--space-3); border-bottom: 1px solid var(--color-border); }
-    .uc-modal-head-text { min-width: 0; }
-    .uc-modal-title { font-size: var(--text-lg); font-weight: 700; color: var(--color-text); margin: 0 0 4px; line-height: 1.2; }
+    .uc-modal-head-text { min-width: 0; flex: 1 1 auto; }
+    .uc-modal-title-row { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 4px; }
+    .uc-modal-title { font-size: var(--text-lg); font-weight: 700; color: var(--color-text); margin: 0; line-height: 1.2; }
+    .uc-modal-dice { padding: 6px 12px; min-height: 32px; font-size: var(--text-xs); }
     .uc-modal-sub { font-size: var(--text-sm); color: var(--color-text-muted); margin: 0; }
+    .uc-modal-hint { display: inline; color: var(--color-text-muted); }
     .uc-modal-close { flex: 0 0 auto; background: transparent; border: 1px solid var(--color-border); color: var(--color-text); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center; transition: background var(--transition-interactive), border-color var(--transition-interactive); }
     .uc-modal-close:hover, .uc-modal-close:focus-visible { background: color-mix(in srgb, var(--color-primary) 12%, transparent); border-color: var(--color-primary); outline: none; }
     .uc-modal-body { padding: var(--space-4) var(--space-5) var(--space-5); overflow-y: auto; -webkit-overflow-scrolling: touch; }
@@ -2325,8 +2328,14 @@
     <div class="uc-modal-card" role="document">
       <div class="uc-modal-head">
         <div class="uc-modal-head-text">
-          <h2 class="uc-modal-title" id="usecases-modal-title">Choose a starting point</h2>
-          <p class="uc-modal-sub">Select one and we'll build the prompt for you.</p>
+          <div class="uc-modal-title-row">
+            <h2 class="uc-modal-title" id="usecases-modal-title">Choose a starting point</h2>
+            <button type="button" class="usecases-dice-btn uc-modal-dice" id="usecases-modal-dice-btn" aria-label="Generate new use case ideas" title="Generate new idea starters">
+              <span class="usecases-dice-icon" aria-hidden="true">🎲</span>
+              <span>New Ideas</span>
+            </button>
+          </div>
+          <p class="uc-modal-sub">Select one and we'll build the prompt for you. <span class="uc-modal-hint">Tap 🎲 for fresh starting points.</span></p>
         </div>
         <button type="button" class="uc-modal-close" id="usecases-modal-close" aria-label="Close">×</button>
       </div>
@@ -2535,6 +2544,8 @@
         const grid = document.getElementById('usecases-modal-grid');
         const inlineGrid = document.querySelector('#use-cases .popular-uses-grid');
         const diceBtn = document.getElementById('usecases-dice-btn');
+        const modalDiceBtn = document.getElementById('usecases-modal-dice-btn');
+        const diceButtons = [diceBtn, modalDiceBtn].filter(Boolean);
         if (!modal || !openBtn || !grid || !inlineGrid) return;
 
         // Curated idea pool — 5 categories, action-oriented and specific
@@ -2642,8 +2653,13 @@
           const cards = inlineGrid.querySelectorAll('.popular-use-card');
           cards.forEach(function (src) {
             const clone = src.cloneNode(true);
-            clone.addEventListener('click', function () {
-              applyPopularUseCard(src);
+            clone.addEventListener('click', function (e) {
+              if (e && e.preventDefault) e.preventDefault();
+              try {
+                applyPopularUseCard(src);
+              } catch (err) {
+                console.error('applyPopularUseCard failed', err);
+              }
               closeModal();
             });
             grid.appendChild(clone);
@@ -2656,10 +2672,11 @@
           .sort().join('|');
         let isRolling = false;
 
-        function rerollIdeas() {
+        function rerollIdeas(e) {
+          if (e && e.preventDefault) e.preventDefault();
           if (isRolling) return;
           isRolling = true;
-          if (diceBtn) diceBtn.classList.add('is-rolling');
+          diceButtons.forEach(function (b) { b.classList.add('is-rolling'); });
           inlineGrid.classList.add('is-fading');
           if (modal.classList.contains('is-open')) grid.classList.add('is-fading');
           window.setTimeout(function () {
@@ -2680,7 +2697,7 @@
             inlineGrid.classList.remove('is-fading');
             grid.classList.remove('is-fading');
             window.setTimeout(function () {
-              if (diceBtn) diceBtn.classList.remove('is-rolling');
+              diceButtons.forEach(function (b) { b.classList.remove('is-rolling'); });
               isRolling = false;
             }, 200);
           }, 220);
@@ -2721,7 +2738,7 @@
         document.addEventListener('keydown', function (e) {
           if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
         });
-        if (diceBtn) diceBtn.addEventListener('click', rerollIdeas);
+        diceButtons.forEach(function (b) { b.addEventListener('click', rerollIdeas); });
       })();
 
       // Inline guidance dismiss + auto-hide on generate

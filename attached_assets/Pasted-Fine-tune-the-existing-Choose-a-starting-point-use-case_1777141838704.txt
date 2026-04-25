@@ -1,0 +1,95 @@
+Fine tune the existing “Choose a starting point” use case modal.
+
+Important:
+- Do not remove, redesign, or substantially restyle the existing use case cards.
+- Preserve the existing “Use This →” behavior exactly.
+- Only add the missing randomizer/dice functionality and minimal polish.
+
+Current issue:
+The use case modal shows 6 cards, but there is no dice/randomizer button to generate a fresh set of cards. The cards are static.
+
+Required fix:
+
+1. Add a dice button inside the modal header area.
+
+Placement:
+- Inside the modal, near the top
+- Close to the “Choose a starting point” title
+- Visually obvious but not overpowering
+- Keep mobile layout clean and avoid crowding the title
+
+Button text:
+“🎲 New Ideas”
+
+Also add this small helper line near the modal header:
+“Tap 🎲 for fresh starting points.”
+
+2. Button behavior:
+When the user clicks “🎲 New Ideas”:
+- Replace the current 6 use case cards with a new unique set of 6 ideas
+- Do not close the modal
+- Do not scroll the page
+- Keep the user inside the modal
+- All 6 visible cards should change from the previous visible set
+- Avoid duplicates inside the same set
+- Avoid repeating the exact same previous set
+
+3. Idea generation rules:
+Use a local pool of specific, useful, action-oriented use case ideas. Do not call an API for this.
+
+The pool should include a healthy mix of categories:
+- Business
+- Money
+- Content
+- Career
+- Personal
+- Productivity
+- Learning
+- Faith when appropriate
+
+Each generated card must include:
+- Title
+- Short description
+- Existing “Use This →” button
+
+Suggested implementation:
+- Create or extend a `useCaseIdeas` array with more than 6 entries, ideally 30-50.
+- Each idea should match the existing card data shape used by the modal.
+- Track the currently displayed 6-card set in React state.
+- On dice click, shuffle/filter the idea pool and select 6 cards.
+- Ensure no duplicate titles in the selected set.
+- Ensure the new selected set is not identical to the previous selected set.
+- If the first shuffle overlaps too heavily with the current set, retry a few times or filter out the current titles before selecting.
+
+4. Preserve existing card click behavior:
+Clicking “Use This →” must still:
+- Fill the builder fields exactly as it does now
+- Close the modal
+- Scroll to the builder
+- Preserve all existing use-case behavior
+
+Do not break or rewrite the current handler. Reuse the existing function that applies a selected use case.
+
+5. Optional polish:
+Add a subtle fade transition when new cards appear:
+- Keep it simple
+- No heavy animation library required
+- Avoid layout shift
+- Respect existing styling
+
+6. QA checklist:
+After implementation, verify:
+- Dice button appears inside the modal near the title
+- Helper line appears: “Tap 🎲 for fresh starting points.”
+- Clicking “🎲 New Ideas” changes the visible cards
+- Exactly 6 cards remain visible
+- No duplicate cards appear in the same set
+- The modal stays open after clicking dice
+- The page does not scroll when clicking dice
+- “Use This →” still fills the builder fields
+- “Use This →” still closes the modal
+- “Use This →” still scrolls to the builder
+- Mobile modal layout remains clean
+- Browser console has no JavaScript errors
+
+Keep the patch focused and minimal.
