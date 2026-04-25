@@ -257,7 +257,8 @@
       border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
       background: var(--color-surface-2);
     }
-    .field textarea { min-height: 112px; padding: var(--space-4); resize: vertical; }
+    .field textarea { min-height: 112px; padding: var(--space-4); resize: vertical; line-height: 1.5; }
+    .field textarea#goal { min-height: 96px; padding: var(--space-3) var(--space-4); line-height: 1.5; resize: none; overflow: hidden; }
     .field input::placeholder, .field textarea::placeholder { color: var(--color-text-faint); }
     select,
     .field select,
@@ -1376,7 +1377,7 @@
             <form id="prompt-form" class="form-grid">
               <div class="field field-primary">
                 <label for="goal">Your Goal (Start Here)</label>
-                <input id="goal" name="goal" type="text" placeholder="I need to make money online fast" required />
+                <textarea id="goal" name="goal" rows="3" placeholder="I need to make money online fast using skills I already have…" required></textarea>
                 <p class="helper">
                   Describe what you want the AI to help you do.<br />
                   Example: &ldquo;I need to make money online fast&rdquo; or &ldquo;Help me find a winning product&rdquo;
@@ -3899,6 +3900,22 @@ Context:
           goalInputEl.placeholder = 'From your weekly goal: ' + v;
         }
       });
+      function autoGrowGoal() {
+        goalInputEl.style.height = 'auto';
+        goalInputEl.style.height = goalInputEl.scrollHeight + 'px';
+      }
+      goalInputEl.addEventListener('input', autoGrowGoal);
+      goalInputEl.addEventListener('change', autoGrowGoal);
+      window.addEventListener('load', autoGrowGoal);
+      window.addEventListener('resize', autoGrowGoal);
+      const _goalValueDesc = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value');
+      if (_goalValueDesc && _goalValueDesc.set) {
+        Object.defineProperty(goalInputEl, 'value', {
+          get: function () { return _goalValueDesc.get.call(this); },
+          set: function (v) { _goalValueDesc.set.call(this, v); autoGrowGoal(); },
+          configurable: true,
+        });
+      }
 
       const NUDGE_KEY = 'promptmegood:nudge:v1';
       const NUDGE_IDEAS = [
