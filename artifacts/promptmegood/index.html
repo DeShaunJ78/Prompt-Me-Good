@@ -4687,11 +4687,29 @@ Context:
         document.getElementById('details').value = 'I need a low-cost plan, something I can sell fast, and I do not want complicated tech setup.';
         document.getElementById('moneyMode').checked = true;
         document.getElementById('personality').value = 'bold';
-        const demoData = getFormData();
-        const demoPrompt = generatePrompt(demoData);
-        setPromptText(demoPrompt);
-        addToHistory(demoData, demoPrompt);
-        if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
+
+        setPromptText('Generating demo prompt…');
+        const resultPanel = document.getElementById('result-panel');
+        if (resultPanel && typeof resultPanel.scrollIntoView === 'function') {
+          resultPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        const runDemoGeneration = function () {
+          const demoData = getFormData();
+          const demoPrompt = generatePrompt(demoData);
+          setPromptText(demoPrompt);
+          addToHistory(demoData, demoPrompt);
+          if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
+          showToast('Demo prompt generated');
+        };
+
+        if (typeof window.requestAnimationFrame === 'function') {
+          window.requestAnimationFrame(function () {
+            window.requestAnimationFrame(runDemoGeneration);
+          });
+        } else {
+          setTimeout(runDemoGeneration, 50);
+        }
       });
       const compareOverlay = document.getElementById('compare-overlay');
       const compareTitle = document.getElementById('compare-title');
