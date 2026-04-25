@@ -655,11 +655,13 @@
     .improve-helper { margin: 4px 0 var(--space-3); font-size: var(--text-sm); color: var(--color-text-muted); }
     .fine-tune { margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px dashed var(--color-divider); }
     .fine-tune-label { display: block; font-size: var(--text-sm); font-weight: 700; color: var(--color-text); margin: 0 0 6px; }
-    .fine-tune-row { display: flex; gap: var(--space-2); align-items: stretch; flex-wrap: wrap; }
-    .fine-tune-row input { flex: 1 1 240px; min-height: 44px; border-radius: var(--radius-md); padding: 0 var(--space-3); border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent); background: var(--color-surface-2); font: inherit; color: inherit; }
-    .fine-tune-row input::placeholder { color: var(--color-text-faint); }
-    .fine-tune-row .btn { white-space: nowrap; }
+    .fine-tune-row { display: flex; gap: var(--space-2); align-items: flex-start; flex-wrap: wrap; }
+    .fine-tune-row textarea { flex: 1 1 240px; min-height: 88px; width: 100%; border-radius: var(--radius-md); padding: var(--space-3); border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent); background: var(--color-surface-2); font: inherit; color: inherit; line-height: 1.5; resize: vertical; overflow: auto; white-space: pre-wrap; word-break: break-word; }
+    .fine-tune-row textarea::placeholder { color: var(--color-text-faint); white-space: pre-wrap; }
+    .fine-tune-row .btn { white-space: nowrap; align-self: stretch; }
+    .fine-tune-tip { margin: 6px 0 0; font-size: var(--text-xs); color: var(--color-text-muted); }
     .improve-status { display: inline-block; margin-top: var(--space-2); font-size: var(--text-xs); color: var(--color-text-muted); }
+    .improve-status[hidden] { display: none; }
     .improve-block.is-updating { opacity: 0.85; }
     .improve-block.is-updating button { pointer-events: none; }
     @media (max-width: 600px) { .fine-tune-row { flex-direction: column; } .fine-tune-row .btn { width: 100%; } }
@@ -1564,9 +1566,10 @@
               <div class="fine-tune">
                 <label for="fine-tune-input" class="fine-tune-label">Fine-Tune Your Prompt</label>
                 <div class="fine-tune-row">
-                  <input id="fine-tune-input" type="text" placeholder="Tell me what you want to change… (e.g., make it shorter, more persuasive, add examples)" />
+                  <textarea id="fine-tune-input" rows="3" placeholder="Tell me what to change. Example: make it shorter, more persuasive, add examples, or simplify the steps."></textarea>
                   <button class="btn btn-primary" type="button" id="fine-tune-btn">Update Prompt</button>
                 </div>
+                <p class="fine-tune-tip">Tip: You don&rsquo;t need to start over — just tell me what to improve.</p>
               </div>
               <span class="improve-status" id="improve-status" aria-live="polite" hidden>Updating…</span>
             </div>
