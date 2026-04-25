@@ -1419,7 +1419,7 @@
           </div>
           <p class="tip-block hero-helper-tip" data-tip="hero">
             <span class="tip-block-icon" aria-hidden="true">💡</span>
-            <span class="tip-block-text">Not sure where to start? Choose a use case or build your own prompt step-by-step.</span>
+            <span class="tip-block-text">Not sure where to start? Choose a use case below or tap "Need ideas?" to generate new ones.</span>
             <button type="button" class="tip-block-dismiss" data-action="dismiss-tips" aria-label="Hide tips">Hide tips</button>
           </p>
         </div>
@@ -1439,12 +1439,12 @@
         <div class="popular-uses-head">
           <div class="popular-uses-head-row">
             <h2 id="popular-uses-title">Popular Ways To Use PromptMeGood</h2>
-            <button type="button" class="usecases-dice-btn" id="usecases-dice-btn" aria-label="Generate new use case ideas" title="Shuffle in 6 fresh ideas">
+            <button type="button" class="usecases-dice-btn" id="usecases-dice-btn" aria-label="Generate new use case ideas" title="Generate new idea starters">
               <span class="usecases-dice-icon" aria-hidden="true">🎲</span>
               <span>Need ideas?</span>
             </button>
           </div>
-          <p>Pick one to instantly fill your goal — then tweak it before you generate.</p>
+          <p>Pick a starting point below or tap 🎲 to generate new ideas.</p>
           <p class="tip-block use-cases-helper-tip" data-tip="use-cases">
             <span class="tip-block-icon" aria-hidden="true">🎯</span>
             <span class="tip-block-text">Pick a use case to auto-fill the builder. You can edit everything before generating.</span>
@@ -1991,6 +1991,7 @@
             <nav class="manual-toc" aria-label="Manual sections">
               <a href="#manual-flow">1. The 5-step flow</a>
               <a href="#manual-usecases" class="is-highlight">⚡ Use cases</a>
+              <a href="#manual-need-ideas">🎲 Get ideas instantly</a>
               <a href="#manual-fields">2. Form fields</a>
               <a href="#manual-boosts">3. Optional boosts</a>
               <a href="#manual-refine">4. Refining the output</a>
@@ -2022,6 +2023,12 @@
                 <li>Adjust the goal if you want.</li>
                 <li>Click Generate Prompt.</li>
               </ol>
+            </article>
+
+            <article class="manual-section manual-callout" id="manual-need-ideas">
+              <h3>Get Ideas Instantly</h3>
+              <p>If you're not sure what to ask, tap the 🎲 <strong>Need ideas?</strong> button in the Use Cases section. It generates a fresh set of 6 high-quality starting points. Pick one to auto-fill your goal and get moving.</p>
+              <p><strong>Tip:</strong> If none of the ideas fit, tap the dice again for a new set.</p>
             </article>
 
             <article class="manual-section" id="manual-fields">
@@ -2189,6 +2196,7 @@
                 <li><strong>Test across platforms.</strong> ChatGPT, Claude, and Perplexity each respond differently.</li>
                 <li><strong>Save winners.</strong> Favorite, tag, or note prompts you'll want to reuse.</li>
                 <li><strong>Combine boosts.</strong> Money + Human Voice + Clarity often produces the strongest results.</li>
+                <li><strong>Use the "Need ideas?" feature when you're stuck.</strong> It's the fastest way to discover useful prompts.</li>
               </ul>
             </div>
 
@@ -2201,6 +2209,7 @@
                 <li><strong>Starting over instead of refining.</strong> Use the buttons, Fine-Tune, or Undo first.</li>
                 <li><strong>Skipping Money Mode when it fits.</strong> If the goal is execution and income, leaving it off softens the answer.</li>
                 <li><strong>Forgetting to save winners.</strong> Tag and favorite prompts you'll want again.</li>
+                <li><strong>Getting stuck thinking of the perfect idea</strong> instead of using the idea generator to get started.</li>
               </ul>
             </article>
           </div>
@@ -2654,10 +2663,20 @@
           inlineGrid.classList.add('is-fading');
           if (modal.classList.contains('is-open')) grid.classList.add('is-fading');
           window.setTimeout(function () {
-            const result = pickIdeas(lastSetSig);
-            lastSetSig = result.sig;
-            renderInline(result.picked);
-            rebuildModalGrid();
+            try {
+              const result = pickIdeas(lastSetSig);
+              if (!result || !result.picked || result.picked.length === 0) {
+                throw new Error('Empty idea set');
+              }
+              lastSetSig = result.sig;
+              renderInline(result.picked);
+              rebuildModalGrid();
+            } catch (err) {
+              console.error('rerollIdeas failed', err);
+              if (typeof showToast === 'function') {
+                showToast("Couldn't generate ideas. Try again.");
+              }
+            }
             inlineGrid.classList.remove('is-fading');
             grid.classList.remove('is-fading');
             window.setTimeout(function () {
