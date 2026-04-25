@@ -1,0 +1,122 @@
+Upgrade the “Improve Your Prompt” workflow AND update all help/manual content to match. Do not break existing generation, copy, history, or layout functionality.
+
+========================
+PART 1 — MOVE IMPROVE CONTROLS INTO OUTPUT AREA
+========================
+
+Current issue:
+The “Improve Your Prompt” buttons feel disconnected from the generated prompt.
+
+Fix:
+1. Move the entire “Improve Your Prompt” section into the same output card/container as “Your Ready-To-Use Prompt.”
+2. Place it directly below the generated prompt text area and copy/use buttons.
+3. Remove the old standalone “Improve Your Prompt” section from its current location.
+4. Keep mobile layout clean and readable.
+
+========================
+PART 2 — LIVE PROMPT REFINEMENT BUTTONS
+========================
+
+Buttons:
+- More Detailed
+- More Aggressive
+- Beginner Friendly
+
+Behavior:
+1. Clicking any button should update the current generated prompt in place.
+2. Do not scroll the user back to the builder.
+3. Do not clear the form.
+4. Do not reset the user’s original inputs.
+5. Keep the user focused in the output area.
+6. Show a small toast:
+“Prompt updated”
+
+========================
+PART 3 — ADD FINE-TUNE YOUR PROMPT FIELD
+========================
+
+Add a new field under the refinement buttons.
+
+Label:
+“Fine-Tune Your Prompt”
+
+Helper text:
+“Tell PromptMeGood what you want changed in the current prompt.”
+
+Placeholder:
+“Example: make it shorter, add examples, sound more persuasive, simplify the steps…”
+
+Button:
+“Update Prompt”
+
+Behavior:
+1. When the user types an instruction and clicks “Update Prompt,” refine the CURRENT generated prompt using that instruction.
+2. Replace the existing generated prompt with the updated version.
+3. Do not reset the form.
+4. Do not scroll away.
+5. Show toast:
+“Prompt updated”
+
+If the field is empty:
+- Show a small message:
+“Tell me what you want to change first.”
+
+========================
+PART 4 — UPDATE MANUAL / HOW TO USE CONTENT
+========================
+
+Update all user-facing help/manual sections so they match the new workflow.
+
+1. Add or update a section titled:
+“Refining Your Prompt”
+
+Content:
+“After PromptMeGood creates your prompt, you can improve it without starting over. Use the refinement buttons or the Fine-Tune Your Prompt field to adjust the current prompt in place.”
+
+2. Explain the three buttons:
+
+- More Detailed:
+“Adds more depth, examples, structure, and useful detail.”
+
+- More Aggressive:
+“Makes the prompt stronger, more direct, and more action-focused.”
+
+- Beginner Friendly:
+“Simplifies the prompt so the AI explains things more clearly for beginners.”
+
+3. Add a section titled:
+“Fine-Tune Your Prompt”
+
+Content:
+“Use this field when you like the prompt overall but want to change one part of it. For example, you can ask PromptMeGood to make it shorter, more persuasive, more detailed, less formal, or focused on a specific audience.”
+
+4. Update any old manual wording that says users must regenerate from scratch.
+Replace with:
+“You can refine the current prompt directly from the output area.”
+
+5. Update Pro Tips:
+Add:
+“If the first prompt is close but not perfect, use Fine-Tune Your Prompt instead of starting over.”
+
+6. Update Common Mistakes:
+Add:
+“Do not restart from scratch every time. Use the refinement tools to improve what you already generated.”
+
+========================
+PART 5 — FINAL CHECK
+========================
+
+Confirm:
+- Improve controls appear inside the generated prompt/output area
+- Old standalone Improve Your Prompt section is removed
+- More Detailed updates prompt in place
+- More Aggressive updates prompt in place
+- Beginner Friendly updates prompt in place
+- Fine-Tune Your Prompt works
+- Empty fine-tune input shows a helpful message
+- Manual matches the updated workflow
+- No duplicate outdated manual sections remain
+- Copy Prompt still works
+- Use Your Prompt In buttons still work
+- History still works
+- No JavaScript errors
