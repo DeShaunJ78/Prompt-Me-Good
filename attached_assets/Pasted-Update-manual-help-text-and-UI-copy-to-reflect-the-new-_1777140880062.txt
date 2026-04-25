@@ -1,0 +1,93 @@
+Update manual/help text and UI copy to reflect the new dynamic “Need ideas?” dice feature in the Use Cases section. Do not change layout or functionality.
+
+========================
+PART 1 — MANUAL UPDATE
+========================
+
+Within the “How It Works” accordion:
+
+1. Add a new section:
+
+Title:
+“Get Ideas Instantly”
+
+Content:
+“If you’re not sure what to ask, tap the 🎲 ‘Need ideas?’ button in the Use Cases section. It generates a fresh set of 6 high-quality starting points. Pick one to auto-fill your goal and get moving.”
+
+2. Add a short tip under this section:
+
+“Tip: If none of the ideas fit, tap the dice again for a new set.”
+
+3. Ensure wording matches the UI exactly:
+- “Need ideas?” (button label)
+- “Use Cases” / “Popular Ways To Use PromptMeGood”
+
+========================
+PART 2 — UPDATE EXISTING LANGUAGE
+========================
+
+Find any copy that says:
+- “Choose a use case below”
+- “Pick one of these to start”
+
+Update to:
+
+“Choose a use case below or tap ‘Need ideas?’ to generate new ones.”
+
+========================
+PART 3 — INLINE HELPER TEXT (UI)
+========================
+
+Above the Use Cases section, add a small helper line:
+
+“Pick a starting point below or tap 🎲 to generate new ideas.”
+
+Style:
+- Small, muted
+- Not overpowering the section title
+
+========================
+PART 4 — TOOLTIP (OPTIONAL BUT PREFERRED)
+========================
+
+Add a tooltip on the dice button:
+
+Text:
+“Generate new idea starters”
+
+========================
+PART 5 — EMPTY / EDGE CASE
+========================
+
+If generation ever fails or returns empty (edge case):
+
+Show fallback text:
+“Couldn’t generate ideas. Try again.”
+
+========================
+PART 6 — PRO TIPS UPDATE
+========================
+
+Add:
+
+“Use the ‘Need ideas?’ feature when you’re stuck. It’s the fastest way to discover useful prompts.”
+
+========================
+PART 7 — COMMON MISTAKES UPDATE
+========================
+
+Add:
+
+“Getting stuck thinking of the perfect idea instead of using the idea generator to get started.”
+
+========================
+FINAL CHECK
+========================
+
+- Manual includes “Get Ideas Instantly”
+- All references to use cases mention the dice option
+- Helper text appears above Use Cases
+- Tooltip appears on dice button
+- No duplicate or outdated instructions remain
+- Mobile layout is clean
+- No JavaScript errors

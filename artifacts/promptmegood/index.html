@@ -230,7 +230,7 @@
     html { scroll-behavior: smooth; }
     @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
     #history, #builder { scroll-margin-top: 96px; }
-    @media (max-width: 720px) { #history, #builder { scroll-margin-top: 150px; } }
+    @media (max-width: 860px) { #history, #builder { scroll-margin-top: 150px; } }
     .app-shell {
       display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6);
       align-items: start;
@@ -742,7 +742,7 @@
     .global-empty { padding: 12px; color: var(--color-text-muted); font-size: 13px; }
     @keyframes pulseFlash { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 60%, transparent); } 100% { box-shadow: 0 0 0 14px transparent; } }
     .is-flash-target { animation: pulseFlash 1.4s ease-out 2; outline: 2px solid var(--color-primary); outline-offset: 3px; }
-    @media (max-width: 720px) {
+    @media (max-width: 860px) {
       .topbar-inner { flex-wrap: wrap; gap: var(--space-2); padding: var(--space-3) 0; }
       .brand { flex: 1 1 auto; }
       .nav-toggle { display: inline-flex; flex: 0 0 auto; }
@@ -1256,7 +1256,7 @@
     @media (max-width: 920px) {
       .hero-grid, .app-shell { grid-template-columns: 1fr; }
       .hero h1 {
-        max-width: 18ch;
+        max-width: 26ch;
         margin-left: auto;
         margin-right: auto;
         margin-top: var(--space-3);
@@ -1268,6 +1268,9 @@
       .hero p,
       .hero .trust-line { text-align: center; }
       .hero .hero-actions { justify-content: center; }
+    }
+    @media (max-width: 600px) {
+      .hero h1 { max-width: 18ch; }
     }
 
     @media (max-width: 640px) {
