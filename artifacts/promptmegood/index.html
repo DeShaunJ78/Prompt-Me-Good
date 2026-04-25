@@ -887,6 +887,20 @@
     .link-btn { background: transparent; border: 0; color: var(--color-primary); font-weight: 500; font-size: var(--text-sm); cursor: pointer; padding: 4px 6px; border-radius: 4px; }
     .link-btn:hover { background: color-mix(in srgb, var(--color-primary) 15%, transparent); }
     .builder-transition { font-size: var(--text-sm); color: var(--color-text); line-height: 1.5; margin: 0; }
+    .builder-intro-section { padding-bottom: 0; }
+    .builder-intro { background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 10%, transparent), color-mix(in srgb, var(--color-primary) 3%, transparent)); border: 1px solid color-mix(in srgb, var(--color-primary) 25%, transparent); border-radius: var(--radius-lg); padding: var(--space-5) var(--space-5); }
+    .builder-intro-title { font-size: var(--text-lg); font-weight: 700; color: var(--color-text); margin: 0 0 var(--space-3); display: flex; align-items: center; gap: var(--space-2); }
+    .builder-intro-title-icon { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--color-primary); color: #fff; font-size: var(--text-sm); }
+    .builder-intro-steps { list-style: none; counter-reset: builder-step; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
+    .builder-intro-steps li { counter-increment: builder-step; position: relative; padding: var(--space-3) var(--space-3) var(--space-3) 44px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: var(--text-sm); color: var(--color-text); line-height: 1.45; }
+    .builder-intro-steps li::before { content: counter(builder-step); position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 26px; height: 26px; border-radius: 50%; background: var(--color-primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: var(--text-sm); }
+    @media (max-width: 720px) { .builder-intro-steps { grid-template-columns: 1fr; } }
+    @keyframes builderGlowPulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 55%, transparent); } 60% { box-shadow: 0 0 0 14px color-mix(in srgb, var(--color-primary) 0%, transparent); } 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 0%, transparent); } }
+    .builder-glow { animation: builderGlowPulse 1.4s ease-out 2; outline: 2px solid color-mix(in srgb, var(--color-primary) 55%, transparent); outline-offset: 4px; transition: outline-color 600ms ease; }
+    .builder-glow.is-fading { outline-color: transparent; }
+    .settings-divider { grid-column: 1 / -1; margin-top: var(--space-3); padding-top: var(--space-4); border-top: 1px dashed var(--color-border); }
+    .settings-divider-title { font-size: var(--text-md); font-weight: 700; color: var(--color-text); margin: 0; }
+    .settings-divider-sub { font-size: var(--text-sm); color: var(--color-text-muted); margin: 4px 0 0; line-height: 1.5; }
     .demo-helper { margin: 10px 0 0; font-size: var(--text-sm); color: var(--color-text-muted); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
     .demo-helper-link { font-weight: 700; color: var(--color-primary); padding: 2px 6px; text-decoration: underline; text-underline-offset: 3px; }
     .demo-helper-link:hover { background: color-mix(in srgb, var(--color-primary) 15%, transparent); }
@@ -1405,9 +1419,22 @@
       </div>
     </section>
 
+    <section class="app-section builder-intro-section" id="builder-intro" aria-labelledby="builder-intro-title">
+      <div class="container">
+        <div class="builder-intro">
+          <h2 class="builder-intro-title" id="builder-intro-title"><span class="builder-intro-title-icon" aria-hidden="true">✨</span>Build Your Prompt Step-by-Step</h2>
+          <ol class="builder-intro-steps">
+            <li>Write your goal — be specific</li>
+            <li>Adjust settings to shape the output</li>
+            <li>Click Generate to create your prompt</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
     <section class="app-section" id="builder">
       <div class="container app-shell">
-        <section class="panel" aria-labelledby="builder-title">
+        <section class="panel" id="builder-panel" aria-labelledby="builder-title">
           <div class="panel-head">
             <h2 id="builder-title">Build Your Prompt</h2>
             <p class="builder-transition">Fill in your goal below — the more specific, the better. Hit Generate and get a prompt you can use instantly.</p>
@@ -1432,6 +1459,11 @@
                   Describe what you want the AI to help you do.<br />
                   Example: &ldquo;I need to make money online fast&rdquo; or &ldquo;Help me find a winning product&rdquo;
                 </p>
+              </div>
+
+              <div class="settings-divider" role="presentation">
+                <h3 class="settings-divider-title">Tune Your Prompt Settings</h3>
+                <p class="settings-divider-sub">These settings control tone, detail, and structure of your prompt.</p>
               </div>
 
               <div class="field">
@@ -4615,6 +4647,25 @@ Context:
         document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
         showToast('Random prompt generated.');
       });
+
+      const heroBuildCta = document.getElementById('hero-build-cta');
+      if (heroBuildCta) {
+        heroBuildCta.addEventListener('click', function (e) {
+          e.preventDefault();
+          const builderSection = document.getElementById('builder');
+          const builderPanel = document.getElementById('builder-panel');
+          if (builderSection) {
+            builderSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+          if (builderPanel) {
+            builderPanel.classList.remove('builder-glow', 'is-fading');
+            void builderPanel.offsetWidth;
+            builderPanel.classList.add('builder-glow');
+            window.setTimeout(function () { builderPanel.classList.add('is-fading'); }, 2400);
+            window.setTimeout(function () { builderPanel.classList.remove('builder-glow', 'is-fading'); }, 3200);
+          }
+        });
+      }
 
       const demoHelperLink = document.getElementById('demo-helper-link');
       if (demoHelperLink) {

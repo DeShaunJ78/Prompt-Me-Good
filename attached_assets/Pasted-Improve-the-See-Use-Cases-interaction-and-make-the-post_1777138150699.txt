@@ -1,0 +1,80 @@
+Improve the “See Use Cases” interaction and make the post-selection next step clear. Do not break existing use case functionality, autofill behavior, prompt generation, or copy behavior.
+
+Tasks:
+
+1. Replace the current “See Use Cases” scroll behavior.
+
+When the “See Use Cases” button is clicked:
+- Open a centered modal on desktop.
+- Use a full-screen overlay/modal on mobile.
+- Do not open a new browser tab.
+- Do not scroll immediately when the button is clicked.
+
+2. Modal content:
+
+Inside the modal, show all 6 existing use case cards clearly.
+
+Heading:
+“Choose a starting point”
+
+Subtext:
+“Select one and we’ll build the prompt for you.”
+
+Card requirements:
+- Use the same content and visual style as the current use case cards.
+- Keep the same layout as much as possible.
+- Make all 6 cards easy to scan.
+- Preserve the existing use case data and autofill logic.
+
+3. Card selection behavior:
+
+When a use case card is clicked:
+- Auto-fill the builder exactly as it currently does.
+- Close the modal.
+- Smoothly scroll to the builder section.
+- Show a clear inline guidance message near the builder, preferably above or near the Generate button.
+
+Guidance message:
+“Great start — review the details, click Generate, then copy your finished prompt into your favorite AI tool.”
+
+Guidance requirements:
+- Show this message after a use case card is selected.
+- Keep it inline, not a modal or popup.
+- Style it as a subtle success/help message that matches the existing design.
+- Do not block the user.
+- Make sure it works on mobile.
+
+4. Close behavior:
+
+Add these close options:
+- X button in the modal.
+- Tap/click outside the modal to close.
+
+5. Mobile behavior:
+
+On mobile:
+- Modal should behave like a full-screen overlay.
+- Cards should be easy to tap.
+- Close button should be easy to reach.
+- Content should scroll inside the modal if needed.
+
+6. Do not:
+- Break existing prompt generation.
+- Break existing use case autofill behavior.
+- Break the Copy flow.
+- Open a new browser tab.
+- Remove any of the 6 use cases.
+- Introduce JavaScript or console errors.
+
+Final QA checklist:
+- “See Use Cases” opens the modal cleanly.
+- All 6 use case cards are visible and selectable.
+- Clicking a card fills the builder correctly.
+- Modal closes after selection.
+- Page scrolls smoothly to the builder.
+- Inline guidance message appears after selection.
+- User understands to review, click Generate, then copy into an AI tool.
+- X button closes the modal.
+- Clicking outside closes the modal.
+- Mobile layout works as a full-screen overlay.
+- No JS errors.
