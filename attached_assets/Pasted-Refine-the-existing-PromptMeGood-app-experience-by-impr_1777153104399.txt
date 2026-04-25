@@ -1,0 +1,357 @@
+Refine the existing PromptMeGood app experience by improving the guided tour, adding easier text clearing, consolidating Prompt History, and updating the manual/help content.
+
+Important:
+- Keep this as a focused refinement pass.
+- Do not redesign the app.
+- Do not break existing generation, refinement, copy, prompt history, manual edit, undo, or use-case behavior.
+- Reuse existing handlers/state patterns wherever possible.
+- Preserve mobile usability.
+
+========================
+PART 1 — FIX TOUR TEXT STYLE
+========================
+
+Current issue:
+The guided tour body text uses Title Case / every first letter capitalized, which feels unnatural.
+
+Fix:
+- Update all guided tour body/instruction text to normal sentence casing.
+- Keep tour step titles/headings clean, short, and bold if they already are.
+- Do not capitalize every major word in body text.
+
+Example:
+
+Instead of:
+“Tell PromptMeGood Exactly What You Want Help With.”
+
+Use:
+“Tell PromptMeGood exactly what you want help with.”
+
+Apply this across all tour steps.
+
+Do not change the meaning of the steps unless needed for the final step update below.
+
+========================
+PART 2 — UPDATE FINAL TOUR STEP
+========================
+
+Update the final guided tour step so users clearly understand what to do after generating/copying a prompt.
+
+Final tour step title:
+“Use your prompt anywhere”
+
+Final tour step text:
+“Copy your finished prompt, then open ChatGPT, Claude, or Perplexity to paste it and get your result.”
+
+Final button text:
+“Done”
+
+Highlight/focus area:
+- Copy Prompt button
+- ChatGPT button
+- Claude button
+- Perplexity button
+
+Implementation note:
+If the tour system can only highlight one target, highlight the shared button group/container that contains Copy Prompt, ChatGPT, Claude, and Perplexity.
+
+Behavior:
+- The final step should explain that the user copies the prompt first, then opens an AI tool.
+- If the app already copies automatically before opening ChatGPT, Claude, or Perplexity, make that clear in the wording.
+- Do not break the existing copy/open behavior.
+
+Acceptable alternate text if auto-copy already exists:
+“Copy your finished prompt, or use ChatGPT, Claude, or Perplexity to copy it automatically and open your preferred AI tool.”
+
+========================
+PART 3 — ADD CLEAR TEXT BUTTONS
+========================
+
+Current issue:
+Users have to hold backspace to clear long text fields, which is tedious.
+
+Add small clear buttons to the following areas.
+
+1. Your Goal field
+
+Button text:
+“Clear”
+
+Behavior:
+- Clears only the goal field.
+- Does not reset the whole form.
+- Does not clear extra details, generated prompt, fine-tune text, or history.
+
+2. Extra Details field
+
+Button text:
+“Clear”
+
+Behavior:
+- Clears only the extra details field.
+- Does not reset the whole form.
+
+3. Generated Prompt output box
+
+Button text:
+“Clear Prompt”
+
+Behavior:
+- Clears only the current generated prompt/output.
+- Resets manual edit state.
+- Clears the undo stack for the current prompt.
+- Does not erase saved prompt history.
+- Does not clear the goal field, extra details field, or fine-tune field unless existing app logic requires it. Prefer not to clear unrelated fields.
+
+4. Fine-Tune Your Prompt field
+
+Button text:
+“Clear”
+
+Behavior:
+- Clears only the fine-tune instruction field.
+- Does not clear the generated prompt.
+
+Styling:
+- Use small secondary/ghost-style buttons.
+- Keep them subtle.
+- Do not let them visually compete with “Generate Prompt” or “Copy Prompt.”
+- Keep tap targets comfortable on mobile.
+- Place each button near the related field label or inside the field header area if that is cleaner.
+
+Implementation notes:
+- Only show a clear button when the related field has content, if that fits the existing UI style.
+- If always visible, keep disabled or subtle when the field is empty.
+- Add accessible labels if needed, such as `aria-label="Clear goal"`.
+
+Do not:
+- Accidentally clear saved history.
+- Reset unrelated fields.
+- Break controlled input state.
+- Break manual edit or undo behavior.
+
+========================
+PART 4 — PROMPT HISTORY CONSOLIDATION
+========================
+
+Current issue:
+Prompt History becomes very large when users generate many prompts because too much information and too many actions are visible at once.
+
+Improve Prompt History so it is compact by default while preserving all existing features.
+
+1. Compact default history rows
+
+Prompt History should show a compact list by default.
+
+Each saved prompt row/card should show:
+- Name/title if available, otherwise the first line of the prompt.
+- Date/time.
+- Small preview snippet.
+- Favorite indicator if applicable.
+- Tags if they already exist and can fit cleanly.
+
+Keep each row visually compact.
+
+2. Hide actions by default
+
+Move the existing prompt actions into an expanded row or “More Actions” area.
+
+Actions that must remain available:
+- Restore
+- Copy
+- Favorite
+- Save As Template
+- Duplicate
+- Add Name
+- Edit Tags
+- Add Note
+- Archive
+- Delete
+- Remix
+
+These actions should not all be fully visible by default.
+
+Use one of these patterns:
+- “More Actions” button that reveals the actions for that prompt.
+- Expand/collapse row that reveals the actions and details.
+- Existing accordion/disclosure component if the app already uses one.
+
+Do not remove any actions.
+
+3. Add “Clear All History” button
+
+Add a button near the Prompt History controls.
+
+Button text:
+“Clear All History”
+
+Behavior:
+- Requires confirmation before deleting.
+- Clears all saved prompt history from localStorage or from the existing history persistence mechanism.
+- Updates any counts/stats if the app displays them.
+- Shows toast:
+“Prompt history cleared”
+
+Confirmation dialog text:
+“Clear all saved prompts? This cannot be undone.”
+
+Confirmation buttons:
+- “Cancel”
+- “Clear All”
+
+Important:
+- Do not clear generated prompt output unless existing app behavior intentionally ties it to history. Prefer clearing history only.
+- Do not clear templates unless templates are literally stored as part of the same prompt history array. If templates are separate, leave them alone.
+- Do not clear favorites separately unless favorites are part of the saved prompt history data.
+
+4. Add optional “Collapse All”
+
+If multiple prompt rows can be expanded at once, add a “Collapse All” control near the history controls.
+
+Behavior:
+- Collapses all expanded history rows.
+- Does not delete or modify history.
+
+If the implementation only allows one row expanded at a time, “Collapse All” is optional and can be skipped.
+
+========================
+PART 5 — UPDATE MANUAL / HELP CONTENT
+========================
+
+Update the manual/help accordion so it matches the new behavior.
+
+Add or update these sections.
+
+1. Section title:
+“Using your prompt”
+
+Content:
+“After your prompt is ready, copy it and use the ChatGPT, Claude, or Perplexity buttons to open your preferred AI tool. Paste the prompt there to get your final result.”
+
+If the AI tool buttons already auto-copy the prompt before opening the AI tool, use this instead:
+“After your prompt is ready, copy it or use the ChatGPT, Claude, or Perplexity buttons to copy it automatically and open your preferred AI tool. Paste the prompt there to get your final result.”
+
+2. Section title:
+“Clearing text”
+
+Content:
+“Use the Clear buttons to quickly empty long fields without holding backspace.”
+
+Mention:
+- Clear goal.
+- Clear extra details.
+- Clear fine-tune instructions.
+- Clear generated prompt.
+
+Also clarify:
+“Clear Prompt only clears the current generated prompt. It does not erase saved prompt history.”
+
+3. Section title:
+“Managing prompt history”
+
+Content:
+“Prompt History stores your recent prompts on this device. Use compact rows to keep the section clean, expand a prompt for more actions, or use Clear All History if you want to start fresh.”
+
+Also mention:
+- Restore.
+- Copy.
+- Favorite.
+- Remix.
+- Delete.
+- Other actions are available inside the expanded row or More Actions area.
+
+4. Section title:
+“Undo and manual edits”
+
+Make sure this section still explains:
+- Undo restores the previous prompt version.
+- Manual edits are used when copying, saving, printing, or opening prompts in AI tools.
+- Clearing the generated prompt resets the current manual edit state and undo stack, but does not erase saved history.
+
+Remove or update outdated wording:
+- Any wording that says users must manually delete long text.
+- Any wording that implies Prompt History always shows every action expanded.
+- Any wording that implies the guided tour body text uses Title Case.
+
+========================
+PART 6 — MOBILE CLEANUP
+========================
+
+Make sure all new controls work cleanly on mobile.
+
+Check:
+- Clear buttons do not crowd labels.
+- Prompt History compact rows do not overflow horizontally.
+- More Actions / expanded rows remain tappable.
+- Clear All History confirmation fits mobile.
+- Tour final step does not overflow on mobile.
+- Dice/randomizer and use-case modal behavior remain unaffected.
+
+========================
+PART 7 — FINAL QA CHECKLIST
+========================
+
+After implementation, verify:
+
+Guided tour:
+- Tour body text uses normal sentence casing.
+- Tour headings/titles remain clean.
+- Final tour step title is “Use your prompt anywhere.”
+- Final tour step explains copying and using ChatGPT, Claude, or Perplexity.
+- Final tour button says “Done.”
+- Final tour target highlights Copy Prompt and AI tool buttons, or their shared container.
+
+Clear buttons:
+- Goal Clear button clears only the goal field.
+- Extra Details Clear button clears only extra details.
+- Fine-Tune Clear button clears only the fine-tune field.
+- Clear Prompt clears the current generated prompt.
+- Clear Prompt resets manual edit state.
+- Clear Prompt clears the undo stack.
+- Clear Prompt does not erase saved history.
+- Clear buttons are subtle and mobile-friendly.
+
+Prompt History:
+- Prompt History is compact by default.
+- Each row shows title/name or first line, date/time, and preview snippet.
+- Existing actions are still accessible.
+- Actions are hidden behind expanded row or More Actions by default.
+- Restore still works.
+- Copy still works.
+- Favorite still works.
+- Save As Template still works.
+- Duplicate still works.
+- Add Name still works.
+- Edit Tags still works.
+- Add Note still works.
+- Archive still works.
+- Delete still works.
+- Remix still works.
+- Clear All History requires confirmation.
+- Confirmation text says: “Clear all saved prompts? This cannot be undone.”
+- Clear All History clears saved prompt history.
+- Toast appears: “Prompt history cleared.”
+- Counts/stats update if applicable.
+
+Manual/help:
+- Manual/help content reflects the new copy/open flow.
+- Manual/help content explains Clear buttons.
+- Manual/help content explains compact Prompt History.
+- Manual/help content explains undo and manual edits accurately.
+- Outdated wording is removed or updated.
+
+Regression:
+- Generate Prompt still works.
+- Refine Prompt still works.
+- Copy Prompt still works.
+- ChatGPT button still works.
+- Claude button still works.
+- Perplexity button still works.
+- Prompt history saving still works.
+- Use-case cards still work.
+- Dice/randomizer button still works if present.
+- Mobile layout remains clean.
+- Desktop layout remains clean.
+- No JavaScript errors in the console.
+
+Keep the patch focused, minimal, and consistent with the existing app style.

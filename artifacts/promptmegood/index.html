@@ -469,6 +469,41 @@
     .actions-row {
       display: flex; flex-wrap: wrap; gap: var(--space-3); padding-top: var(--space-2);
     }
+    .field-label-row {
+      display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-2); margin-bottom: 4px;
+    }
+    .field-label-row > label { margin-bottom: 0; }
+    .btn-clear {
+      background: transparent;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-muted);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      min-height: 28px;
+      line-height: 1.2;
+      transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+    }
+    .btn-clear:hover {
+      color: var(--color-primary);
+      border-color: color-mix(in srgb, var(--color-primary) 50%, transparent);
+      background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+    }
+    .btn-clear:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+    .btn-clear:disabled {
+      opacity: 0.4; cursor: not-allowed;
+    }
+    .actions-row .btn-clear { min-height: 36px; padding: 6px 14px; }
+    @media (max-width: 600px) {
+      .field-label-row { flex-wrap: wrap; row-gap: 4px; }
+      .actions-row .btn-clear { width: 100%; }
+    }
+    .tour-final-actions { display: grid; gap: var(--space-4); }
     .result-wrap { padding: var(--space-5); display: grid; gap: var(--space-4); }
     .result-box {
       min-height: 420px; white-space: pre-wrap;
@@ -693,6 +728,33 @@
       border-radius: var(--radius-lg); padding: var(--space-4);
       display: grid; gap: var(--space-3);
     }
+    .history-item.is-collapsed { gap: var(--space-2); padding: var(--space-3) var(--space-4); }
+    .history-item.is-collapsed .history-item-tags,
+    .history-item.is-collapsed .history-item-note,
+    .history-item.is-collapsed .history-item-remix,
+    .history-item.is-collapsed .history-item-actions { display: none; }
+    .history-item-toggle-row {
+      display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: 2px;
+    }
+    .history-item-toggle {
+      background: transparent;
+      border: 1px solid var(--color-border);
+      color: var(--color-text-muted);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      min-height: 32px;
+      line-height: 1.2;
+      transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+    }
+    .history-item-toggle:hover {
+      color: var(--color-primary);
+      border-color: color-mix(in srgb, var(--color-primary) 50%, transparent);
+      background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+    }
+    .history-item-toggle:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
     .history-item-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
     .history-item-goal { font-weight: 700; font-size: var(--text-sm); }
     .history-item-meta { color: var(--color-text-muted); font-size: var(--text-xs); }
@@ -1715,7 +1777,10 @@
             </div>
             <form id="prompt-form" class="form-grid">
               <div class="field field-primary">
-                <label for="goal">Your Goal (Start Here)</label>
+                <div class="field-label-row">
+                  <label for="goal">Your Goal (Start Here)</label>
+                  <button type="button" class="btn-clear" id="clear-goal-btn" aria-label="Clear goal" data-clear-target="goal">Clear</button>
+                </div>
                 <textarea id="goal" name="goal" rows="3" placeholder="I need to make money online fast using skills I already have…" aria-required="true"></textarea>
                 <p class="helper">
                   Describe what you want the AI to help you do.<br />
@@ -1803,7 +1868,10 @@
               </div>
 
               <div class="field">
-                <label for="details">Extra details <span class="helper">(optional)</span></label>
+                <div class="field-label-row">
+                  <label for="details">Extra details <span class="helper">(optional)</span></label>
+                  <button type="button" class="btn-clear" id="clear-details-btn" aria-label="Clear extra details" data-clear-target="details">Clear</button>
+                </div>
                 <textarea id="details" name="details" placeholder="Example: I have $50, I’m using Shopify, and I need something I can execute this week."></textarea>
                 <p class="helper">Add budget, timeline, platform, audience, constraints, or anything the AI should respect.</p>
               </div>
@@ -1920,7 +1988,10 @@
                 </div>
               </div>
               <div class="fine-tune" id="tour-step-finalize">
-                <label for="fine-tune-input" class="fine-tune-label">Fine-Tune Your Prompt</label>
+                <div class="field-label-row">
+                  <label for="fine-tune-input" class="fine-tune-label">Fine-Tune Your Prompt</label>
+                  <button type="button" class="btn-clear" id="clear-fine-tune-btn" aria-label="Clear fine-tune instructions" data-clear-target="fine-tune-input">Clear</button>
+                </div>
                 <div class="fine-tune-row">
                   <textarea id="fine-tune-input" rows="3" placeholder="Tell me what to change. Example: make it shorter, more persuasive, add examples, or simplify the steps."></textarea>
                   <button class="btn btn-primary" type="button" id="fine-tune-btn">Update Prompt</button>
@@ -1930,9 +2001,11 @@
               <span class="improve-status" id="improve-status" aria-live="polite" hidden>Updating…</span>
             </div>
             <p class="result-helper" data-tip="result-copy">Looks good? Copy this prompt and paste it into ChatGPT, Claude, Perplexity, Gemini, or another AI tool.</p>
+            <div id="tour-final-actions" class="tour-final-actions">
             <div class="actions-row">
               <button class="btn btn-primary" type="button" id="copy-btn">Copy Prompt</button>
               <button class="btn btn-secondary" type="button" id="print-btn" title="Print or save as PDF">Print / Save PDF</button>
+              <button class="btn btn-secondary btn-clear" type="button" id="clear-prompt-btn" aria-label="Clear generated prompt">Clear Prompt</button>
             </div>
             <div class="save-tip" id="save-tip" role="status" aria-live="polite">
               <span class="save-tip-text">Tip: Export your prompts to keep them safe.</span>
@@ -1954,6 +2027,7 @@
                   <p class="open-in-desc" id="open-in-desc-perplexity">Best For Research, Real-Time Info, And Fact-Based Answers</p>
                 </div>
               </div>
+            </div>
             </div>
             <p style="margin: var(--space-3) 0 0; font-size: var(--text-xs); color: var(--color-text-muted);">
               Shortcuts: press <kbd>G</kbd> to generate, <kbd>C</kbd> to copy, <kbd>/</kbd> to search history.
@@ -2023,7 +2097,8 @@
                 <button class="btn btn-secondary" type="button" id="export-history">Export</button>
                 <button class="btn btn-secondary" type="button" id="import-history">Import</button>
                 <button class="btn btn-secondary" type="button" id="open-backup">🔑 Backup / Restore</button>
-                <button class="btn btn-secondary" type="button" id="clear-history">Clear All</button>
+                <button class="btn btn-secondary" type="button" id="collapse-all-history">Collapse All</button>
+                <button class="btn btn-secondary" type="button" id="clear-history">Clear All History</button>
                 <input type="file" id="import-history-file" accept="application/json,.json" style="display:none" />
               </div>
             </div>
@@ -2198,11 +2273,12 @@
               <a href="#manual-need-ideas">🎲 Get ideas instantly</a>
               <a href="#manual-fields">2. Form fields</a>
               <a href="#manual-boosts">3. Optional boosts</a>
-              <a href="#manual-refine">4. Refining the output</a>
+              <a href="#manual-refine">4. Undo &amp; manual edits</a>
               <a href="#manual-use">5. Using your prompt</a>
-              <a href="#manual-history">6. History &amp; export</a>
-              <a href="#manual-tips">7. Pro tips</a>
-              <a href="#manual-mistakes">8. Common mistakes</a>
+              <a href="#manual-clearing">6. Clearing text</a>
+              <a href="#manual-history">7. Managing prompt history</a>
+              <a href="#manual-tips">8. Pro tips</a>
+              <a href="#manual-mistakes">9. Common mistakes</a>
             </nav>
           </div>
 
@@ -2328,7 +2404,7 @@
             </article>
 
             <article class="manual-section" id="manual-refine">
-              <h3>4. Refining The Output</h3>
+              <h3>4. Undo and manual edits</h3>
 
               <div class="manual-feature">
                 <h4>Refinement Buttons</h4>
@@ -2347,26 +2423,27 @@
 
               <div class="manual-feature">
                 <h4>Manual Editing</h4>
-                <p>Click anywhere inside the output box and type. An "Edited manually" label confirms your edits are active. Edits flow into Copy, history, and Use Your Prompt In.</p>
+                <p>Click anywhere inside the output box and type. An "Edited manually" label confirms your edits are active. Manual edits flow through to Copy, saved history, Print / Save PDF, and the ChatGPT, Claude, and Perplexity buttons.</p>
               </div>
 
               <div class="manual-feature">
                 <h4>Undo Last Change</h4>
-                <p>Steps you back through every refinement and manual edit. Generating a new prompt or restoring one from history clears the undo stack.</p>
+                <p>Undo restores the previous version of the prompt — every refinement, fine-tune, and manual edit can be stepped back. Generating a new prompt, restoring one from history, or using <strong>Clear Prompt</strong> resets the current manual edit state and clears the undo stack. Saved prompt history is not affected.</p>
               </div>
             </article>
 
             <article class="manual-section" id="manual-use">
-              <h3>5. Using Your Prompt</h3>
+              <h3>5. Using your prompt</h3>
+              <p>After your prompt is ready, copy it or use the <strong>ChatGPT</strong>, <strong>Claude</strong>, or <strong>Perplexity</strong> buttons to copy it automatically and open your preferred AI tool. Paste the prompt there to get your final result.</p>
 
               <div class="manual-feature">
                 <h4>Copy Prompt</h4>
-                <p>One tap copies the latest version (including any edits) to your clipboard.</p>
+                <p>One tap copies the latest version (including any manual edits) to your clipboard.</p>
               </div>
 
               <div class="manual-feature">
                 <h4>Use Your Prompt In</h4>
-                <p>Opens ChatGPT, Claude, or Perplexity in a new tab so you can paste and run. Test across all three to see which gives the best answer.</p>
+                <p>The ChatGPT, Claude, and Perplexity buttons each copy the current prompt to your clipboard and open the AI tool in a new tab. Just paste and run. Test across all three to see which gives the best answer.</p>
               </div>
 
               <div class="manual-feature">
@@ -2375,12 +2452,35 @@
               </div>
             </article>
 
+            <article class="manual-section" id="manual-clearing">
+              <h3>6. Clearing text</h3>
+              <p>Use the <strong>Clear</strong> buttons to quickly empty long fields without holding backspace.</p>
+              <ul>
+                <li><strong>Clear goal</strong> — empties the Your Goal field only.</li>
+                <li><strong>Clear extra details</strong> — empties the Extra Details field only.</li>
+                <li><strong>Clear fine-tune instructions</strong> — empties the Fine-Tune Your Prompt field only.</li>
+                <li><strong>Clear Prompt</strong> — clears the current generated prompt and resets the manual edit state and undo stack.</li>
+              </ul>
+              <p><strong>Clear Prompt only clears the current generated prompt.</strong> It does not erase your saved prompt history, your form settings, or your other fields.</p>
+            </article>
+
             <article class="manual-section" id="manual-history">
-              <h3>6. History &amp; Export</h3>
+              <h3>7. Managing prompt history</h3>
+              <p>Prompt History stores your recent prompts on this device. Use the compact rows to keep the section clean, expand a prompt for more actions, or use <strong>Clear All History</strong> if you want to start fresh.</p>
 
               <div class="manual-feature">
-                <h4>Prompt History</h4>
-                <p>Saves your last 25 prompts on this device. Search, sort, tag, favorite, add notes, restore, or compare two side-by-side.</p>
+                <h4>Compact rows and More actions</h4>
+                <p>Each saved prompt shows its name, time, and a short preview by default. Tap <strong>More actions</strong> on a row to reveal the full action set — Restore, Copy, Favorite, Save As Template, Duplicate, Add Name, Edit Tags, Add Note, Archive, Delete, and the Remix shortcuts. Tap again to collapse.</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Collapse All</h4>
+                <p>Hides every expanded row at once so you can scan the list quickly. It does not delete anything.</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Clear All History</h4>
+                <p>Deletes every saved prompt on this device. You'll be asked to confirm first because it cannot be undone. Templates, favorites stored as separate data, and your current generated prompt are not affected.</p>
               </div>
 
               <div class="manual-feature">
@@ -2390,11 +2490,12 @@
             </article>
 
             <div class="guide-tips" id="manual-tips">
-              <h3>7. Pro Tips</h3>
+              <h3>8. Pro Tips</h3>
               <ul>
                 <li><strong>Be specific.</strong> "Help me write a tweet about coffee aimed at remote workers" beats "help me write a tweet."</li>
                 <li><strong>Use Extra Details.</strong> Budget, deadline, audience, platform — every detail sharpens the answer.</li>
                 <li><strong>Refine instead of restarting.</strong> The refinement buttons + Fine-Tune Your Prompt are usually faster than typing a new goal.</li>
+                <li><strong>Use Clear when starting fresh.</strong> The Clear buttons empty long fields without holding backspace, so you can iterate faster.</li>
                 <li><strong>Try different Personality Modes.</strong> One of the quickest ways to change a result.</li>
                 <li><strong>Edit before you save.</strong> Click inside the output box, polish the wording, then copy.</li>
                 <li><strong>Test across platforms.</strong> ChatGPT, Claude, and Perplexity each respond differently.</li>
@@ -2405,7 +2506,7 @@
             </div>
 
             <article class="manual-section" id="manual-mistakes">
-              <h3>8. Common Mistakes</h3>
+              <h3>9. Common Mistakes</h3>
               <ul class="manual-mistakes">
                 <li><strong>Being too vague.</strong> Add what, who, where, and by when.</li>
                 <li><strong>Ignoring output format.</strong> List vs step-by-step changes how usable the answer is.</li>
@@ -3315,6 +3416,7 @@ Context:
       let historySort = 'newest';
       let showArchived = false;
       let compareSelectMode = false;
+      const expandedHistoryIds = new Set();
       let compareSelections = [];
       let notesOnly = false;
 
@@ -3664,7 +3766,10 @@ Context:
           const dragAttr = item.favorite ? ' draggable="true"' : '';
           const handleHtml = item.favorite ? '<span class="drag-handle" aria-hidden="true" title="Drag to reorder">⋮⋮</span>' : '';
           const isPicked = compareSelectMode && compareSelections.indexOf(item.id) !== -1;
-          return '<div class="history-item' + (item.favorite ? ' is-favorite' : '') + (item.archived ? ' is-archived' : '') + (isPicked ? ' is-compare-selected' : '') + '" data-id="' + escapeHtml(item.id) + '"' + dragAttr + '>' +
+          const isExpanded = expandedHistoryIds.has(item.id);
+          const collapsedClass = isExpanded ? '' : ' is-collapsed';
+          const toggleLabel = isExpanded ? 'Hide actions' : 'More actions';
+          return '<div class="history-item' + (item.favorite ? ' is-favorite' : '') + (item.archived ? ' is-archived' : '') + (isPicked ? ' is-compare-selected' : '') + collapsedClass + '" data-id="' + escapeHtml(item.id) + '"' + dragAttr + '>' +
             '<div class="history-item-head">' +
               '<span class="history-item-goal">' + handleHtml + escapeHtml(item.nickname || item.data.goal || 'Untitled prompt') + (item.nickname ? ' <span style="color: var(--color-text-muted); font-weight: 400;">&middot; ' + escapeHtml(item.data.goal || '') + '</span>' : '') + '</span>' +
               '<span class="history-item-meta">' + escapeHtml(formatTime(item.savedAt)) + (item.data.moneyMode ? ' &middot; Money Mode' : '') + favMeta + (item.useCount ? ' &middot; Used ' + item.useCount + '×' : '') + '</span>' +
@@ -3672,6 +3777,9 @@ Context:
             tagHtml +
             (item.note ? '<div class="history-item-note">' + escapeHtml(item.note) + '</div>' : '') +
             '<div class="history-item-preview">' + escapeHtml(item.prompt) + '</div>' +
+            '<div class="history-item-toggle-row">' +
+              '<button type="button" class="history-item-toggle" data-history-action="toggle-expand" aria-expanded="' + (isExpanded ? 'true' : 'false') + '">' + toggleLabel + '</button>' +
+            '</div>' +
             '<div class="history-item-remix">' +
               '<span class="history-item-remix-label">Remix:</span>' +
               '<button class="btn btn-secondary" type="button" data-history-action="remix" data-remix-mode="detailed">More Detailed</button>' +
@@ -3755,6 +3863,15 @@ Context:
         const wrap = btn.closest('.history-item');
         if (!wrap) return;
         const id = wrap.dataset.id;
+        if (action === 'toggle-expand') {
+          if (expandedHistoryIds.has(id)) {
+            expandedHistoryIds.delete(id);
+          } else {
+            expandedHistoryIds.add(id);
+          }
+          renderHistory();
+          return;
+        }
         const items = loadHistory();
         const item = items.find(function (i) { return i.id === id; });
         if (!item) return;
@@ -4088,11 +4205,56 @@ Context:
 
       clearHistoryBtn.addEventListener('click', function () {
         if (loadHistory().length === 0) return;
-        if (!window.confirm('Clear all saved prompts on this device?')) return;
+        if (!window.confirm('Clear all saved prompts? This cannot be undone.')) return;
         saveHistory([]);
+        expandedHistoryIds.clear();
         renderHistory();
-        showToast('History cleared.');
+        showToast('Prompt history cleared');
       });
+
+      const collapseAllHistoryBtn = document.getElementById('collapse-all-history');
+      if (collapseAllHistoryBtn) {
+        collapseAllHistoryBtn.addEventListener('click', function () {
+          if (expandedHistoryIds.size === 0) return;
+          expandedHistoryIds.clear();
+          renderHistory();
+        });
+      }
+
+      // Field clear buttons: goal, extra details, fine-tune
+      function wireFieldClearBtn(btnId, fieldId) {
+        const btn = document.getElementById(btnId);
+        const field = document.getElementById(fieldId);
+        if (!btn || !field) return;
+        btn.addEventListener('click', function () {
+          field.value = '';
+          field.focus();
+          try { field.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
+        });
+      }
+      wireFieldClearBtn('clear-goal-btn', 'goal');
+      wireFieldClearBtn('clear-details-btn', 'details');
+      wireFieldClearBtn('clear-fine-tune-btn', 'fine-tune-input');
+
+      // Clear Prompt button: clears generated prompt + manual edit state + undo stack
+      const clearPromptBtn = document.getElementById('clear-prompt-btn');
+      if (clearPromptBtn) {
+        clearPromptBtn.addEventListener('click', function () {
+          const placeholder = 'Your generated prompt will appear here. Once it looks good, copy it into your favorite AI tool.';
+          if (typeof setPromptText === 'function') {
+            setPromptText(placeholder);
+          } else {
+            resultBox.textContent = placeholder;
+          }
+          if (typeof clearPromptUndo === 'function') {
+            clearPromptUndo();
+          } else if (window.__pmgClearUndo) {
+            window.__pmgClearUndo();
+          }
+          if (typeof hideEditedIndicator === 'function') hideEditedIndicator();
+          showToast('Prompt cleared.');
+        });
+      }
 
       const BACKUP_KEY_KEY = 'promptmegood:backup-key:v1';
       function getOrCreateBackupKey() {
@@ -4715,37 +4877,37 @@ Context:
         {
           selector: '.hero-actions',
           fallbackSelector: '#hero-build-cta',
-          title: 'Choose Your Starting Path',
-          text: 'Start Here. Use Build A Prompt When You Already Have A Task In Mind. Use See Use Cases When You Want Ideas Or Examples.'
+          title: 'Choose your starting path',
+          text: 'Start here. Use Build A Prompt when you already have a task in mind. Use See Use Cases when you want ideas or examples.'
         },
         {
           selector: '#goal',
-          title: 'Enter Your Goal',
-          text: 'This Is The Most Important Field. Tell PromptMeGood Exactly What You Want Help With. Specific Goals Create Stronger Prompts.'
+          title: 'Enter your goal',
+          text: 'This is the most important field. Tell PromptMeGood exactly what you want help with. Specific goals create stronger prompts.'
         },
         {
           selector: '#tour-step-settings',
           fallbackSelector: '.settings-divider',
-          title: 'Tune Your Prompt Settings',
-          text: 'Use These Settings To Shape The Final Prompt. Category, Skill Level, Tone, Format, Language, Personality, And Boosts All Help Control The Result.'
+          title: 'Tune your prompt settings',
+          text: 'Use these settings to shape the final prompt. Category, skill level, tone, format, language, personality, and boosts all help control the result.'
         },
         {
           selector: '#tour-step-generate',
           fallbackSelector: '#prompt-form button[type="submit"]',
-          title: 'Generate Or Demo',
-          text: 'Tap Generate Prompt When You Are Ready. If You Are Not Sure What To Enter, Use Demo Values To Instantly See How The App Works.'
+          title: 'Generate or demo',
+          text: 'Tap Generate Prompt when you are ready. If you are not sure what to enter, use Demo Values to instantly see how the app works.'
         },
         {
           selector: '#tour-step-improve',
           fallbackSelector: '#improve-block',
-          title: 'Refine, Undo, And Edit',
-          text: 'Your First Prompt Is Not Final. Refine It, Fine-Tune One Part, Undo Changes, Or Manually Edit The Text Until It Feels Right.'
+          title: 'Refine, undo, and edit',
+          text: 'Your first prompt is not final. Refine it, fine-tune one part, undo changes, or manually edit the text until it feels right.'
         },
         {
-          selector: '#copy-btn',
-          fallbackSelector: '.open-in-block',
-          title: 'Use It Anywhere',
-          text: 'Copy Your Finished Prompt, Then Use It In ChatGPT, Claude, Perplexity, Google, Or Any AI/Search Tool.'
+          selector: '#tour-final-actions',
+          fallbackSelector: '#copy-btn',
+          title: 'Use your prompt anywhere',
+          text: 'Copy your finished prompt, or use the ChatGPT, Claude, or Perplexity buttons to copy it automatically and open your preferred AI tool.'
         }
       ];
       const obOverlay = document.getElementById('ob-overlay');
