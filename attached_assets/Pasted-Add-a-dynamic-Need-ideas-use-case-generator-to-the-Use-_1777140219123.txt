@@ -1,0 +1,170 @@
+Add a dynamic “Need ideas?” use case generator to the Use Cases section. Do not break the existing layout, card styling, modal behavior, autofill behavior, prompt generation, or copy flow.
+
+Goal:
+Give users a quick way to refresh the use case cards with new, high-quality prompt ideas when they are unsure where to start.
+
+========================
+PART 1: ADD “NEED IDEAS?” DICE BUTTON
+========================
+
+1. In the “Popular Ways To Use PromptMeGood” section, add a small dice icon/button in the top-right area of the section header.
+
+Button label:
+“Need ideas?”
+
+Button requirements:
+- Include a small dice icon or dice-style visual.
+- Keep it subtle and compact.
+- Make it easy to tap on mobile.
+- Do not add too many controls.
+- Do not disrupt the existing section layout.
+
+2. When the button is clicked:
+- Replace the current 6 use case cards with 6 new use case ideas.
+- Keep the same card layout, size, spacing, and styling.
+- Use a smooth fade-out/fade-in transition if practical.
+- Do not slow down page load.
+
+========================
+PART 2: GENERATE HIGH-QUALITY IDEAS
+========================
+
+Each click should produce a fresh set of 6 use case cards.
+
+Use a lightweight local idea pool or template system. Do not call an external API unless the app already has one for this purpose.
+
+Each generated idea should be:
+- Specific
+- Action-oriented
+- Practical
+- Interesting
+- Real-world useful
+- Written in plain language
+
+Avoid generic ideas like:
+- “Write something”
+- “Help with task”
+- “Create content”
+- “Improve productivity”
+- “Use AI better”
+
+Each set of 6 should include a mix of categories:
+- Money
+- Business
+- Content
+- Personal
+- Learning or productivity
+
+Examples of good use case ideas:
+- “Make your first $100 using AI this week”
+- “Create a viral social media post idea”
+- “Fix a business problem that’s losing money”
+- “Write a cold outreach message that converts”
+- “Build a simple product idea fast”
+- “Solve a real-life problem you’re stuck on”
+- “Turn your skill into a paid service offer”
+- “Plan a 7-day content strategy for your niche”
+- “Write a better resume bullet for your experience”
+- “Create a study plan for a hard topic”
+
+========================
+PART 3: CARD DATA AND AUTOFILL BEHAVIOR
+========================
+
+Each generated card should have enough data to work with the existing builder autofill flow.
+
+Recommended card structure:
+- Title: short, catchy use case name
+- Description: one short sentence explaining the outcome
+- Goal/prompt seed: the text that should autofill into the builder goal field
+- Optional category/type if the existing cards use one
+
+When a generated card is clicked:
+- Auto-fill the builder goal using the generated card’s goal/prompt seed.
+- Preserve the same behavior as existing cards.
+- If current cards close a modal and scroll to the builder, generated cards should do the same.
+- If current cards show a next-step guidance message, generated cards should do the same.
+- Do not break existing autofill behavior.
+
+========================
+PART 4: RANDOMIZATION RULES
+========================
+
+1. Each click should show 6 ideas.
+
+2. Do not show duplicates in the same set.
+
+3. Avoid repeating the exact previous set if possible.
+
+4. Randomize from a curated pool of strong idea templates.
+
+5. Slightly vary wording where helpful, but keep ideas clear and useful.
+
+6. Keep performance fast:
+- Predefine the idea pool locally.
+- Shuffle and select 6 items on click.
+- Avoid heavy computation.
+- Avoid network calls.
+
+========================
+PART 5: UX POLISH
+========================
+
+1. Add a subtle transition:
+- Cards fade out.
+- New cards replace the old ones.
+- Cards fade back in.
+
+2. Keep layout identical:
+- Same card count: 6 cards
+- Same card size
+- Same spacing
+- Same grid behavior
+- Same hover/tap behavior
+- Same visual styling
+
+3. Mobile:
+- “Need ideas?” button should be easy to tap.
+- Cards should remain readable.
+- Layout should not overflow.
+- If use cases appear inside a modal on mobile, generated cards should still be selectable and scroll cleanly.
+
+4. Accessibility:
+- Button should have an accessible label, such as “Generate new use case ideas.”
+- Keyboard users should be able to tab to the button and cards.
+- Do not rely only on the dice icon to explain the action.
+
+========================
+DO NOT
+========================
+
+- Do not slow down page load.
+- Do not call external APIs unless already part of the app.
+- Do not break existing card click behavior.
+- Do not break use case autofill.
+- Do not break the Use Cases modal if one exists.
+- Do not change existing card styling.
+- Do not change the builder layout.
+- Do not remove the original 6 use cases unless they are replaced only after the user clicks “Need ideas?”
+- Do not add too many controls.
+- Do not introduce JavaScript or console errors.
+
+========================
+FINAL QA CHECKLIST
+========================
+
+- “Need ideas?” button appears in the top-right of the “Popular Ways To Use PromptMeGood” section.
+- Button is easy to tap on mobile.
+- Clicking the button replaces the cards with 6 new ideas.
+- New ideas are specific, action-oriented, and useful.
+- Each set includes a mix of money, business, content, personal, and learning/productivity ideas.
+- No duplicate cards appear in the same set.
+- The exact previous set is avoided when possible.
+- Generated cards keep the same layout and styling.
+- Generated cards remain clickable.
+- Clicking a generated card autofills the builder correctly.
+- Existing original use case behavior still works.
+- Any existing modal behavior still works.
+- Smooth transition feels clean.
+- Mobile layout works cleanly.
+- No JavaScript or console errors.

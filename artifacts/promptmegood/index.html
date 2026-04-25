@@ -447,6 +447,15 @@
     .popular-uses-head { text-align: center; max-width: 640px; margin: 0 auto var(--space-5); }
     .popular-uses-head h2 { font-size: var(--text-base); line-height: 1.2; margin: 0 0 var(--space-1); color: var(--color-text); font-weight: 700; }
     .popular-uses-head p { color: var(--color-text-muted); font-size: var(--text-xs); margin: 0; }
+    .popular-uses-head-row { display: flex; align-items: center; justify-content: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-1); }
+    .usecases-dice-btn { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; min-height: 36px; border-radius: var(--radius-full); border: 1px solid var(--color-primary); background: color-mix(in srgb, var(--color-primary) 8%, transparent); color: var(--color-primary); font-weight: 600; font-size: var(--text-sm); line-height: 1; cursor: pointer; transition: background var(--transition-interactive), transform var(--transition-interactive), border-color var(--transition-interactive); }
+    .usecases-dice-btn:hover, .usecases-dice-btn:focus-visible { background: color-mix(in srgb, var(--color-primary) 18%, transparent); outline: none; }
+    .usecases-dice-btn:active { transform: scale(0.96); }
+    .usecases-dice-btn.is-rolling .usecases-dice-icon { animation: diceRoll 360ms ease; }
+    .usecases-dice-icon { font-size: var(--text-md); display: inline-block; line-height: 1; }
+    @keyframes diceRoll { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.15); } 100% { transform: rotate(360deg) scale(1); } }
+    .popular-uses-grid, .uc-modal-grid { transition: opacity 200ms ease; }
+    .popular-uses-grid.is-fading, .uc-modal-grid.is-fading { opacity: 0.15; pointer-events: none; }
     .popular-uses-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); }
     .popular-use-card { display: flex; flex-direction: column; gap: 6px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-3); box-shadow: var(--shadow-sm); cursor: pointer; text-align: left; font: inherit; color: inherit; transition: border-color var(--transition-interactive), box-shadow var(--transition-interactive), transform var(--transition-interactive), background var(--transition-interactive); }
     .first-time-helper { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-2) var(--space-4); max-width: 720px; margin: 0 auto var(--space-4); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: color-mix(in srgb, var(--color-primary) 6%, transparent); border: 1px dashed color-mix(in srgb, var(--color-primary) 30%, transparent); text-align: center; }
@@ -1425,7 +1434,13 @@
     <section class="popular-uses" id="use-cases" aria-labelledby="popular-uses-title">
       <div class="container">
         <div class="popular-uses-head">
-          <h2 id="popular-uses-title">Popular Ways To Use PromptMeGood</h2>
+          <div class="popular-uses-head-row">
+            <h2 id="popular-uses-title">Popular Ways To Use PromptMeGood</h2>
+            <button type="button" class="usecases-dice-btn" id="usecases-dice-btn" aria-label="Generate new use case ideas" title="Shuffle in 6 fresh ideas">
+              <span class="usecases-dice-icon" aria-hidden="true">🎲</span>
+              <span>Need ideas?</span>
+            </button>
+          </div>
           <p>Pick one to instantly fill your goal — then tweak it before you generate.</p>
           <p class="tip-block use-cases-helper-tip" data-tip="use-cases">
             <span class="tip-block-icon" aria-hidden="true">🎯</span>
@@ -2500,30 +2515,163 @@
         card.addEventListener('click', function () { applyPopularUseCard(card); });
       });
 
-      // Use Cases modal
-      (function setupUseCasesModal() {
+      // Use Cases modal + "Need ideas?" dice generator
+      (function setupUseCasesModalAndDice() {
         const modal = document.getElementById('usecases-modal');
         const openBtn = document.getElementById('hero-usecases-cta');
         const closeBtn = document.getElementById('usecases-modal-close');
         const grid = document.getElementById('usecases-modal-grid');
-        if (!modal || !openBtn || !grid) return;
+        const inlineGrid = document.querySelector('#use-cases .popular-uses-grid');
+        const diceBtn = document.getElementById('usecases-dice-btn');
+        if (!modal || !openBtn || !grid || !inlineGrid) return;
 
-        const sourceCards = document.querySelectorAll('#use-cases .popular-use-card');
-        sourceCards.forEach(function (src) {
-          const clone = src.cloneNode(true);
-          clone.addEventListener('click', function () {
-            applyPopularUseCard(src);
-            closeModal();
+        // Curated idea pool — 5 categories, action-oriented and specific
+        const POOL = [
+          // Money
+          { cat: 'money', title: 'Make Your First $100 With AI', desc: 'Find a quick, realistic way to earn your first $100 this week.', goal: 'Help me find a realistic, beginner-friendly way to earn my first $100 this week using AI tools and the skills I already have.', moneyMode: true },
+          { cat: 'money', title: 'Turn Your Skill Into A Paid Service', desc: 'Package what you already do into a clear paid offer.', goal: 'Help me turn my existing skills and experience into a paid service offer I can sell to real customers this month.', moneyMode: true },
+          { cat: 'money', title: 'Find A Winning Dropshipping Product', desc: 'Identify trending products with real demand and low competition.', goal: 'Help me find a winning dropshipping product with proven demand, healthy margins, and low competition I can launch fast.', moneyMode: true },
+          { cat: 'money', title: 'Spot A Side Hustle That Fits Your Schedule', desc: 'Match a realistic side hustle to your time, money, and skills.', goal: 'Help me find a side hustle that fits my real schedule, current skills, and starting budget so I can start earning soon.', moneyMode: true },
+          { cat: 'money', title: 'Price Your Freelance Service For Profit', desc: 'Set rates that beat hourly thinking and reflect real value.', goal: 'Help me set freelance pricing that reflects the real value I deliver, beats hourly thinking, and makes me actually profitable.', moneyMode: true },
+          { cat: 'money', title: 'Pitch A High-Paying Client Over Email', desc: 'Land a meeting with a decision-maker without sounding pushy.', goal: 'Help me write a cold outreach email to a high-paying client that earns a reply and a meeting without sounding pushy.', moneyMode: true },
+          { cat: 'money', title: 'Negotiate A Higher Salary At Work', desc: 'Get the raise without burning bridges.', goal: 'Help me prepare for a salary negotiation at my current job so I can ask for a meaningful raise without burning bridges.', moneyMode: true },
+          { cat: 'money', title: 'Plan A No-Code Product To Sell This Month', desc: 'Ship a real digital product without writing code.', goal: 'Help me plan a small no-code digital product I can build and sell this month using tools I can learn quickly.', moneyMode: true },
+
+          // Business
+          { cat: 'business', title: 'Fix A Business Problem Losing You Money', desc: 'Diagnose the leak and lay out a clear fix plan.', goal: 'Help me diagnose a specific business problem that is costing me money and lay out a clear, prioritized plan to fix it.', moneyMode: true },
+          { cat: 'business', title: 'Validate A Business Idea In One Weekend', desc: 'Test demand fast before you build anything.', goal: 'Help me design a one-weekend validation plan for a business idea so I can test real demand before I build anything.', moneyMode: true },
+          { cat: 'business', title: 'Write A One-Page Business Plan', desc: 'Boil your idea down to what actually matters.', goal: 'Help me write a one-page business plan that covers the customer, problem, offer, pricing, channels, and next 90 days.', moneyMode: true },
+          { cat: 'business', title: 'Build A Customer-Acquisition System', desc: 'Pick channels, write the message, set the cadence.', goal: 'Help me build a simple customer-acquisition system from scratch — pick the right channels, message, and weekly cadence.', moneyMode: true },
+          { cat: 'business', title: 'Find A Competitor Weakness To Exploit', desc: 'Spot the gap and turn it into your edge.', goal: 'Help me analyze a competitor in my niche, find a real weakness, and turn it into a clear positioning advantage.', moneyMode: true },
+          { cat: 'business', title: 'Design A Pricing Page That Converts', desc: 'Make the choice obvious for your best customer.', goal: 'Help me design a pricing page that makes the choice obvious for my ideal customer and increases conversion.', moneyMode: true },
+          { cat: 'business', title: 'Plan Your First Hire Without Burning Out', desc: 'Choose the right role and structure the offer.', goal: 'Help me plan my first hire — pick the highest-leverage role, write a clear job description, and structure the offer.', moneyMode: true },
+
+          // Content
+          { cat: 'content', title: 'Create A Viral TikTok Hook', desc: 'Stop the scroll in the first 1.5 seconds.', goal: 'Help me write attention-grabbing TikTok or Reels hooks that stop the scroll in the first 1.5 seconds for my niche.', moneyMode: true },
+          { cat: 'content', title: 'Outline A YouTube Video That Holds Attention', desc: 'Hook, build tension, deliver, retain.', goal: 'Help me outline a YouTube video for my topic with a strong hook, rising tension, and a payoff that keeps people watching.', moneyMode: true },
+          { cat: 'content', title: 'Plan A 7-Day Content Strategy', desc: 'A simple plan you can actually execute.', goal: 'Help me plan a 7-day content strategy for my niche with daily post ideas, hooks, and formats I can actually execute.', moneyMode: true },
+          { cat: 'content', title: 'Write A LinkedIn Post That Goes Viral', desc: 'Personal, specific, and worth saving.', goal: 'Help me write a LinkedIn post about my recent work or insight that is personal, specific, and worth bookmarking.', moneyMode: true },
+          { cat: 'content', title: 'Draft An Email Newsletter People Forward', desc: 'Useful, short, with a single takeaway.', goal: 'Help me draft a short, useful email newsletter for my audience built around a single clear takeaway people will share.', moneyMode: true },
+          { cat: 'content', title: 'Repurpose One Video Into A Week Of Content', desc: 'Multiply reach without filming again.', goal: 'Help me take one long video I already made and repurpose it into a full week of short-form posts for multiple platforms.', moneyMode: true },
+          { cat: 'content', title: 'Write A Twitter Thread That Gets Bookmarked', desc: 'Teach one concrete thing well.', goal: 'Help me write a Twitter or X thread that teaches one concrete thing in my niche so well that people bookmark and share it.', moneyMode: true },
+
+          // Personal
+          { cat: 'personal', title: 'Solve A Real-Life Problem You Are Stuck On', desc: 'Get a calm, practical next-step plan.', goal: 'Help me think through a real-life problem I am stuck on and create a calm, practical next-step plan I can act on this week.', moneyMode: false },
+          { cat: 'personal', title: 'Plan A Tough Conversation You Are Avoiding', desc: 'Say what matters without making it worse.', goal: 'Help me prepare for a tough personal conversation so I can say what matters honestly without damaging the relationship.', moneyMode: false },
+          { cat: 'personal', title: 'Design A 30-Day Habit You Will Actually Keep', desc: 'Tiny, daily, and tied to identity.', goal: 'Help me design a tiny daily habit I can stick to for 30 days and tie it to the kind of person I want to become.', moneyMode: false },
+          { cat: 'personal', title: 'Plan A Budget That Finally Sticks', desc: 'Cut what hurts least, prioritize what matters most.', goal: 'Help me build a realistic monthly budget that prioritizes what truly matters to me and trims what I will not actually miss.', moneyMode: false },
+          { cat: 'personal', title: 'Write A Birthday Message In Your Own Voice', desc: 'Specific, warm, and not generic.', goal: 'Help me write a meaningful birthday message for someone close to me that is specific, warm, and sounds like the way I actually talk.', moneyMode: false },
+          { cat: 'personal', title: 'Plan A 3-Day Weekend That Resets Your Energy', desc: 'Cheap, simple, and actually restful.', goal: 'Help me plan a cheap, simple 3-day weekend that genuinely resets my energy and matches what I find restful.', moneyMode: false },
+
+          // Learning / productivity
+          { cat: 'learning', title: 'Create A Study Plan For A Hard Topic', desc: 'Break it down so it sticks the first time.', goal: 'Help me build a study plan for a hard topic — break it into chunks, schedule active recall, and make it stick the first time.', moneyMode: false },
+          { cat: 'learning', title: 'Learn A New Skill In 30 Days', desc: 'Daily reps, real output, no fluff.', goal: 'Help me design a 30-day plan to learn a new skill from scratch with daily reps, real projects, and no fluff.', moneyMode: false },
+          { cat: 'learning', title: 'Master A Tricky Software Tool Fast', desc: 'From zero to confident in a week.', goal: 'Help me go from zero to confident with a tricky software tool in a week using a clear daily plan and small projects.', moneyMode: false },
+          { cat: 'learning', title: 'Design A Focused Workday', desc: 'When to deep-work, when to do admin.', goal: 'Help me design a focused workday that respects my energy — when to deep-work, when to handle admin, and when to rest.', moneyMode: false },
+          { cat: 'learning', title: 'Build A Personal Knowledge System', desc: 'Capture once, find later, reuse forever.', goal: 'Help me build a simple personal knowledge system so I can capture ideas once, find them later, and reuse them in my work.', moneyMode: false },
+          { cat: 'learning', title: 'Prepare For A Hard Exam Without Burnout', desc: 'Review, retest, rest — repeat.', goal: 'Help me prepare for a hard upcoming exam with a study plan that uses active recall and protected rest so I do not burn out.', moneyMode: false },
+          { cat: 'learning', title: 'Write A Better Resume Bullet', desc: 'Show impact in one strong line.', goal: 'Help me rewrite a resume bullet about a real accomplishment so it shows clear impact and metrics in one strong line.', moneyMode: true }
+        ];
+
+        function pickIdeas(prevSig) {
+          const cats = ['money', 'business', 'content', 'personal', 'learning'];
+          for (let attempt = 0; attempt < 6; attempt++) {
+            const picked = [];
+            const usedTitles = new Set();
+            // First pass: one from each category for a balanced mix
+            cats.forEach(function (cat) {
+              const candidates = POOL.filter(function (p) { return p.cat === cat && !usedTitles.has(p.title); });
+              if (candidates.length) {
+                const pick = candidates[Math.floor(Math.random() * candidates.length)];
+                picked.push(pick);
+                usedTitles.add(pick.title);
+              }
+            });
+            // Fill remainder from the full pool
+            while (picked.length < 6) {
+              const candidates = POOL.filter(function (p) { return !usedTitles.has(p.title); });
+              if (!candidates.length) break;
+              const pick = candidates[Math.floor(Math.random() * candidates.length)];
+              picked.push(pick);
+              usedTitles.add(pick.title);
+            }
+            // Shuffle final order so the category-balance pass isn't always first-five
+            for (let i = picked.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              const tmp = picked[i]; picked[i] = picked[j]; picked[j] = tmp;
+            }
+            const sig = picked.map(function (p) { return p.title; }).sort().join('|');
+            if (sig !== prevSig || attempt === 5) return { picked: picked, sig: sig };
+          }
+        }
+
+        function applyIdeaToCard(card, idea) {
+          const titleEl = card.querySelector('.popular-use-card-title');
+          const descEl = card.querySelector('.popular-use-card-desc');
+          if (titleEl) titleEl.textContent = idea.title;
+          if (descEl) descEl.textContent = idea.desc;
+          card.setAttribute('data-popular-goal', idea.goal);
+          if (idea.moneyMode === false) {
+            card.setAttribute('data-money-mode', 'off');
+          } else {
+            card.removeAttribute('data-money-mode');
+          }
+        }
+
+        function renderInline(ideas) {
+          const cards = inlineGrid.querySelectorAll('.popular-use-card');
+          ideas.forEach(function (idea, i) {
+            if (cards[i]) applyIdeaToCard(cards[i], idea);
           });
-          grid.appendChild(clone);
-        });
+        }
+
+        function rebuildModalGrid() {
+          grid.innerHTML = '';
+          const cards = inlineGrid.querySelectorAll('.popular-use-card');
+          cards.forEach(function (src) {
+            const clone = src.cloneNode(true);
+            clone.addEventListener('click', function () {
+              applyPopularUseCard(src);
+              closeModal();
+            });
+            grid.appendChild(clone);
+          });
+        }
+
+        // Capture initial inline state as the first signature so the first reroll is fresh
+        let lastSetSig = Array.from(inlineGrid.querySelectorAll('.popular-use-card-title'))
+          .map(function (el) { return el.textContent.trim(); })
+          .sort().join('|');
+        let isRolling = false;
+
+        function rerollIdeas() {
+          if (isRolling) return;
+          isRolling = true;
+          if (diceBtn) diceBtn.classList.add('is-rolling');
+          inlineGrid.classList.add('is-fading');
+          if (modal.classList.contains('is-open')) grid.classList.add('is-fading');
+          window.setTimeout(function () {
+            const result = pickIdeas(lastSetSig);
+            lastSetSig = result.sig;
+            renderInline(result.picked);
+            rebuildModalGrid();
+            inlineGrid.classList.remove('is-fading');
+            grid.classList.remove('is-fading');
+            window.setTimeout(function () {
+              if (diceBtn) diceBtn.classList.remove('is-rolling');
+              isRolling = false;
+            }, 200);
+          }, 220);
+        }
+
+        // Initial sync of modal grid from inline cards
+        rebuildModalGrid();
 
         let lastFocus = null;
         function openModal(e) {
           if (e) e.preventDefault();
           lastFocus = document.activeElement;
           modal.hidden = false;
-          // Force layout so transition runs
           void modal.offsetWidth;
           modal.classList.add('is-open');
           modal.setAttribute('aria-hidden', 'false');
@@ -2551,6 +2699,7 @@
         document.addEventListener('keydown', function (e) {
           if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
         });
+        if (diceBtn) diceBtn.addEventListener('click', rerollIdeas);
       })();
 
       // Inline guidance dismiss + auto-hide on generate
