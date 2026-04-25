@@ -947,7 +947,7 @@
       transition: top 0.18s ease-out, left 0.18s ease-out;
     }
     .ob-step { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-primary); }
-    .ob-text { font-size: var(--text-sm); line-height: 1.45; margin: 0; }
+    .ob-text { font-size: var(--text-sm); line-height: 1.45; margin: 0; text-align: center; font-weight: 600; }
     .ob-actions { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); }
     .ob-actions .btn { min-height: 36px; padding: 0 var(--space-3); font-size: var(--text-xs); }
     .ob-skip { background: transparent; border: 0; color: var(--color-text-muted); cursor: pointer; font-size: var(--text-xs); padding: 8px 4px; text-decoration: underline; }
@@ -1123,7 +1123,19 @@
 
     @media (max-width: 920px) {
       .hero-grid, .app-shell { grid-template-columns: 1fr; }
-      .hero h1 { max-width: 13ch; }
+      .hero h1 {
+        max-width: 18ch;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: var(--space-3);
+        margin-bottom: var(--space-4);
+        text-align: center;
+        text-wrap: balance;
+      }
+      .hero .eyebrow,
+      .hero p,
+      .hero .trust-line { text-align: center; }
+      .hero .hero-actions { justify-content: center; }
     }
 
     @media (max-width: 640px) {
@@ -3937,9 +3949,9 @@ Context:
 
       const ONBOARDING_KEY = 'promptmegood:onboarding:v1';
       const OB_STEPS = [
-        { selector: '#goal', text: 'Start here\u2014tell AI what you want.' },
-        { selector: '#prompt-form button[type="submit"]', text: 'Turn your idea into a strong prompt.' },
-        { selector: '#copy-btn', fallbackSelector: '.open-in-block', text: 'Copy your prompt or open your favorite AI tool to use it.' }
+        { selector: '#goal', text: 'Start Here \u2014 Tell AI What You Want.' },
+        { selector: '#prompt-form button[type="submit"]', text: 'Turn Your Idea Into A Strong Prompt.' },
+        { selector: '#copy-btn', fallbackSelector: '.open-in-block', text: 'Copy Your Prompt Or Open Your Favorite AI Tool To Use It.' }
       ];
       const obOverlay = document.getElementById('ob-overlay');
       const obBackdrop = document.getElementById('ob-backdrop');
