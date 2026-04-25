@@ -177,7 +177,7 @@
       padding: clamp(var(--space-12), 10vw, var(--space-20)) 0 var(--space-10);
     }
     .hero-grid {
-      display: grid; grid-template-columns: 1.1fr 0.9fr; gap: var(--space-8); align-items: center;
+      display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(340px, 0.7fr); gap: var(--space-8); align-items: center;
     }
     .eyebrow {
       display: inline-flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-4);
@@ -185,8 +185,22 @@
       color: var(--color-primary);
     }
     .hero h1 {
-      font-family: var(--font-display); font-size: var(--text-2xl); line-height: 0.98; letter-spacing: -0.04em;
-      max-width: 11ch;
+      font-family: var(--font-display);
+    }
+    .hero-heading {
+      font-size: clamp(2.2rem, 4vw, 3.2rem);
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+      max-width: 650px;
+    }
+    .hero-heading br {
+      display: block;
+      margin-bottom: 6px;
+    }
+    .highlight {
+      color: #0f766e;
+      font-weight: 700;
+      transition: all 0.3s ease;
     }
     .hero p {
       margin-top: var(--space-6); color: var(--color-text-muted); max-width: 58ch;
@@ -1453,7 +1467,7 @@
       <div class="container hero-grid">
         <div>
           <div class="eyebrow">AI Prompt Engine</div>
-          <h1>Turn Your Idea Into A Powerful AI Prompt That Actually Gets Results</h1>
+          <h1 class="hero-heading">Turn Your Idea<br>Into A <span class="highlight">Powerful AI Prompt</span><br>That Actually Gets Results</h1>
           <p>Most people get weak answers from AI because they ask weak questions. This fixes that instantly.</p>
           <p class="trust-line">Built for people who want real results from AI — not fluff.</p>
           <div class="hero-actions">
