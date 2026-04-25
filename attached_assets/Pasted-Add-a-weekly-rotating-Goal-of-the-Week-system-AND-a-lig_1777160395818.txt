@@ -1,0 +1,124 @@
+Add a weekly rotating “Goal of the Week” system AND a lightweight engagement loop to encourage users to return. Do not break existing UI or builder behavior.
+
+========================
+PART 1 — WEEKLY GOAL ROTATION
+========================
+
+GOAL:
+Automatically update “Goal of the Week” every 7 days.
+
+IMPLEMENT:
+
+1. Create goal list:
+
+const weeklyGoals = [
+  "Make your first $100 online using AI",
+  "Create a viral TikTok idea in your niche",
+  "Write a cold email that actually gets replies",
+  "Fix a business problem that’s costing you money",
+  "Build a simple product you can sell this week",
+  "Improve your resume for a better job opportunity",
+  "Plan a side hustle you can start this month",
+  "Write a high-converting product description",
+  "Solve a real-life problem you’ve been avoiding",
+  "Learn a new skill faster using AI"
+];
+
+2. Generate week index:
+
+const weekIndex = Math.floor(Date.now() / (1000 * 60 * 60 * 24 * 7));
+const goalIndex = weekIndex % weeklyGoals.length;
+
+3. Display:
+
+weeklyGoals[goalIndex]
+
+4. Make clickable:
+- Clicking auto-fills “Your Goal” field
+
+========================
+PART 2 — VISUAL LABEL
+========================
+
+Update label:
+
+“This Week’s Focus”
+
+Subtext:
+“Try this before the week ends.”
+
+Keep styling subtle but noticeable.
+
+========================
+PART 3 — ENGAGEMENT LOOP (RETURN BEHAVIOR)
+========================
+
+GOAL:
+Encourage users to come back weekly without being intrusive.
+
+1. Add subtle indicator:
+
+If user has NOT interacted with this week’s goal:
+
+Show small badge:
+“New”
+
+Once clicked:
+- Remove badge
+
+------------------------
+
+2. Add micro-reminder (optional toast):
+
+Show once per session:
+
+“New weekly goal available.”
+
+Do NOT spam.
+Do NOT repeat after dismissal.
+
+------------------------
+
+3. Track interaction:
+
+Use localStorage:
+
+- Save lastGoalIndexViewed
+- Compare to current goalIndex
+
+If different:
+→ Show “New” badge
+
+========================
+PART 4 — OPTIONAL (LIGHT STREAK FEEL)
+========================
+
+If user clicks weekly goal:
+
+Show toast:
+“Nice — you’re using this week’s focus.”
+
+Keep it subtle. No gamification overload.
+
+========================
+PART 5 — RULES
+========================
+
+- Do NOT add popups
+- Do NOT interrupt main flow
+- Do NOT clutter UI
+- Keep everything subtle and clean
+
+========================
+PART 6 — FINAL CHECK
+========================
+
+- Goal updates weekly
+- Same goal persists all week
+- Clicking goal fills builder
+- “New” badge appears only when appropriate
+- Badge disappears after interaction
+- Toast shows only once per session
+- No UI clutter
+- Mobile layout clean
+- No JavaScript errors
