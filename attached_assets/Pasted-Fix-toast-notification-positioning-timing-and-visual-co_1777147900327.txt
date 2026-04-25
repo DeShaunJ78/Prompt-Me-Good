@@ -1,0 +1,63 @@
+Fix toast notification positioning, timing, and visual consistency across the app. Do not change core functionality.
+
+CURRENT ISSUES:
+1. “Removed from history” toast appears too low on mobile and is easy to miss.
+2. “Your starting idea was added...” toast is slightly too high and disappears too quickly.
+3. Some toasts still use black styling, which clashes with PromptMeGood’s theme.
+
+REQUIRED FIXES:
+
+1. Create one consistent toast style for all app notifications:
+- Background: #E6F7F5 or similar soft teal
+- Border: 1px solid #0f766e
+- Text color: dark teal or dark readable gray
+- Border radius: 14–16px
+- Soft shadow
+- Optional icon depending on message type
+
+2. Mobile toast position:
+- Position toasts near the upper-middle of the visible screen
+- Do NOT place them near the bottom
+- Do NOT overlap the browser bottom bar
+- Do NOT cover the main input field
+- Use safe-area spacing for iPhone
+
+Suggested mobile position:
+top: 110px to 140px;
+left: 50%;
+transform: translateX(-50%);
+max-width: calc(100% - 32px);
+
+3. For the “Your starting idea was added...” toast:
+- Position slightly lower than the very top header/search area
+- Ideal: just below the search area or above the builder card
+- Keep it highly visible
+- Display for 5–6 seconds
+- Add “Got it” button if already supported
+- If user taps Got it, dismiss immediately
+
+4. For history/action toasts like:
+“Removed from history.”
+“Prompt copied.”
+“Prompt updated.”
+“Last change undone.”
+- Use the same brand toast style
+- Position higher on mobile so users can actually see it
+- Display for 4–5 seconds
+
+5. Remove old black toast styling:
+- No black background toasts anywhere
+- No bottom-positioned mobile toasts anywhere
+
+6. Animation:
+- Smooth fade/slide in
+- Smooth fade out
+- No layout shift
+
+FINAL CHECK:
+- Selecting a use case shows the starting idea toast lower and long enough to read
+- Removing history shows the toast higher and visible
+- All toasts match PromptMeGood branding
+- No toast appears at the bottom on mobile
+- Toasts do not block important buttons/inputs
+- No JavaScript errors

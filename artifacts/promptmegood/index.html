@@ -1318,19 +1318,34 @@
       .manual-callout h3 { font-size: var(--text-sm); }
     }
     .toast {
-      position: fixed; right: var(--space-4); bottom: var(--space-4); z-index: 30;
-      background: var(--color-text); color: var(--color-text-inverse);
-      padding: var(--space-3) var(--space-4); border-radius: var(--radius-full);
-      box-shadow: var(--shadow-lg); opacity: 0; transform: translateY(8px); pointer-events: none;
-      transition: opacity var(--transition-interactive), transform var(--transition-interactive);
+      position: fixed;
+      top: calc(88px + env(safe-area-inset-top, 0px));
+      left: 50%;
+      transform: translateX(-50%) translateY(-12px);
+      z-index: 9999;
+      max-width: min(520px, calc(100% - 32px));
+      padding: 12px 18px;
+      background: #E6F7F5;
+      border: 1px solid #0f766e;
+      color: #0c4f48;
+      border-radius: 14px;
+      box-shadow: 0 10px 28px rgba(15, 118, 110, 0.20);
+      font-size: var(--text-sm); line-height: 1.4; font-weight: 500;
+      opacity: 0; pointer-events: none;
+      transition: opacity 240ms ease, transform 240ms ease;
+      text-align: center;
     }
-    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    body.has-uc-confirm-toast .toast { top: calc(160px + env(safe-area-inset-top, 0px)); }
+    [data-theme="dark"] .toast { background: #0c4f48; border-color: #5ba8b0; color: #E6F7F5; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4); }
 
     .uc-confirm-toast {
-      position: fixed; top: var(--space-4); left: 50%;
+      position: fixed;
+      top: calc(88px + env(safe-area-inset-top, 0px));
+      left: 50%;
       transform: translateX(-50%) translateY(-12px);
       z-index: 10000;
-      width: min(560px, calc(100% - var(--space-4) * 2));
+      width: min(560px, calc(100% - 32px));
       display: flex; align-items: center; gap: var(--space-3);
       padding: 12px 16px;
       background: #E6F7F5;
@@ -1344,6 +1359,7 @@
     }
     .uc-confirm-toast[hidden] { display: none; }
     .uc-confirm-toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+    [data-theme="dark"] .uc-confirm-toast { background: #0c4f48; border-color: #5ba8b0; color: #E6F7F5; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4); }
     .uc-confirm-toast-icon { flex: 0 0 auto; font-size: var(--text-md); line-height: 1; }
     .uc-confirm-toast-text { flex: 1 1 auto; min-width: 0; }
     .uc-confirm-toast-btn {
@@ -1355,8 +1371,13 @@
     }
     .uc-confirm-toast-btn:hover, .uc-confirm-toast-btn:focus-visible { background: #0c5e57; outline: none; }
     .uc-confirm-toast-btn:active { transform: scale(0.96); }
+    [data-theme="dark"] .uc-confirm-toast-btn { background: #5ba8b0; color: #0c2f2c; }
+    [data-theme="dark"] .uc-confirm-toast-btn:hover, [data-theme="dark"] .uc-confirm-toast-btn:focus-visible { background: #7fc0c6; }
     @media (max-width: 600px) {
-      .uc-confirm-toast { top: 12px; padding: 10px 12px; gap: 10px; font-size: 13px; border-radius: 12px; }
+      .toast, .uc-confirm-toast {
+        top: calc(110px + env(safe-area-inset-top, 0px));
+        padding: 10px 14px; gap: 10px; font-size: 13px; border-radius: 12px;
+      }
       .uc-confirm-toast-btn { padding: 5px 11px; font-size: 12px; }
     }
 
@@ -3138,7 +3159,7 @@ Context:
         toast.textContent = message;
         toast.classList.add('show');
         clearTimeout(showToast.timeoutId);
-        showToast.timeoutId = setTimeout(() => toast.classList.remove('show'), 1800);
+        showToast.timeoutId = setTimeout(() => toast.classList.remove('show'), 4500);
       }
 
       (function setupUseCaseConfirmToast() {
@@ -3152,6 +3173,7 @@ Context:
           window.clearTimeout(showTimeoutId);
           showTimeoutId = null;
           el.classList.remove('is-visible');
+          document.body.classList.remove('has-uc-confirm-toast');
           window.clearTimeout(hideTimeoutId);
           hideTimeoutId = window.setTimeout(function () {
             if (!el.classList.contains('is-visible')) el.hidden = true;
@@ -3165,8 +3187,9 @@ Context:
           // Force reflow so the transition runs from hidden -> visible state
           void el.offsetWidth;
           el.classList.add('is-visible');
+          document.body.classList.add('has-uc-confirm-toast');
           window.clearTimeout(showTimeoutId);
-          showTimeoutId = window.setTimeout(hide, 4000);
+          showTimeoutId = window.setTimeout(hide, 5500);
         };
 
         if (dismissBtn) dismissBtn.addEventListener('click', hide);
