@@ -1435,10 +1435,14 @@
                 <label for="category">Category</label>
                 <select id="category" name="category">
                   <option value="business">Business</option>
-                  <option value="content">Content</option>
                   <option value="money">Money</option>
+                  <option value="content">Content</option>
+                  <option value="career">Career</option>
                   <option value="personal">Personal</option>
+                  <option value="productivity">Productivity</option>
+                  <option value="learning">Learning</option>
                   <option value="faith">Faith</option>
+                  <option value="other">Other</option>
                 </select>
               </div>
 
@@ -1952,9 +1956,18 @@
 
               <div class="manual-feature">
                 <h4>Category Selector</h4>
-                <p><strong>What it does:</strong> Tells the AI which subject-matter expert "hat" to wear — Business, Content, Money, Personal, or Faith.</p>
-                <p><strong>Why it matters:</strong> The same goal gets different advice from a marketer vs. a financial coach. Picking a category sharpens the lens.</p>
-                <p><strong>When to use:</strong> Match it to where your goal actually lives — if you're not sure, pick the closest one.</p>
+                <p>Category helps PromptMeGood shape the prompt around the kind of problem you are solving. Choose the closest fit. If nothing fits perfectly, choose Other.</p>
+                <ul>
+                  <li><strong>Business:</strong> strategy, sales, operations, and execution</li>
+                  <li><strong>Money:</strong> income ideas, profit, risk, and fast action</li>
+                  <li><strong>Content:</strong> hooks, posts, scripts, storytelling, and engagement</li>
+                  <li><strong>Career:</strong> resumes, interviews, job search, and professional growth</li>
+                  <li><strong>Personal:</strong> decisions, relationships, boundaries, and life problems</li>
+                  <li><strong>Productivity:</strong> focus, habits, systems, and time management</li>
+                  <li><strong>Learning:</strong> study help, explanations, practice, and skill-building</li>
+                  <li><strong>Faith:</strong> Scripture-focused guidance, conviction, and discernment</li>
+                  <li><strong>Other:</strong> anything that does not fit neatly elsewhere</li>
+                </ul>
               </div>
 
               <div class="manual-feature">
@@ -2471,12 +2484,27 @@
       });
       const toast = document.getElementById('toast');
 
-      const categoryContext = {
-        business: 'business strategy, execution, and practical decision-making',
-        content: 'content strategy, writing, publishing, and audience engagement',
-        money: 'money decisions, financial planning ideas, and income strategy',
-        personal: 'personal growth, habits, life planning, and self-management',
-        faith: 'faith-centered reflection, biblical encouragement, and values-aligned action'
+      const categoryDirectives = {
+        business: 'Focus on strategy, positioning, operations, sales, customer trust, and practical execution.',
+        money: 'Focus on realistic income opportunities, speed, risk, profitability, and practical next steps.',
+        content: 'Focus on hooks, audience attention, clarity, storytelling, platform fit, and engagement.',
+        career: 'Focus on resumes, interviews, professional positioning, salary growth, job search strategy, and confidence.',
+        personal: 'Focus on clear thinking, practical decisions, emotional clarity, boundaries, and next steps.',
+        productivity: 'Focus on priorities, time management, systems, habits, discipline, and execution.',
+        learning: 'Focus on simple explanations, examples, practice steps, memory aids, and skill-building.',
+        faith: 'Focus on spiritual clarity, Scripture-grounded wisdom, conviction, discernment, and practical application.',
+        other: 'Focus on understanding the request clearly, identifying the real objective, and giving useful next steps.'
+      };
+      const categoryLabels = {
+        business: 'Business',
+        money: 'Money',
+        content: 'Content',
+        career: 'Career',
+        personal: 'Personal',
+        productivity: 'Productivity',
+        learning: 'Learning',
+        faith: 'Faith',
+        other: 'Other'
       };
 
       function titleCase(value) {
@@ -2494,14 +2522,6 @@
           beginner: 'patient teacher and practical strategist',
           intermediate: 'experienced coach, operator, and systems thinker',
           advanced: 'top 1% expert operator, senior strategist, and execution advisor'
-        };
-
-        const categoryContext = {
-          business: 'business strategy, sales, operations, positioning, and practical decision-making',
-          content: 'content strategy, writing, publishing, audience psychology, and platform growth',
-          money: 'income strategy, side hustles, offers, monetization, and practical financial decision-making',
-          personal: 'personal growth, habits, life planning, problem-solving, and self-management',
-          faith: 'Scripture-centered discernment, biblical wisdom, repentance, obedience, and values-aligned action'
         };
 
         const complexityMap = {
@@ -2615,6 +2635,10 @@ ${data.details}`
 - Personality: ${personalityLabel[personalityKey]}`
           : '';
 
+        const categoryKey = data.category && categoryDirectives.hasOwnProperty(data.category) ? data.category : 'other';
+        const categoryDirectiveLine = `
+- Category focus (${categoryLabels[categoryKey]}): ${categoryDirectives[categoryKey]}`;
+
         return `Act as a ${roleMap[data.skillLevel]} and help me with this goal:
 
 "${data.goal}"
@@ -2622,7 +2646,7 @@ ${data.details}`
 Here's what I need from you:
 - Clarify the real objective behind my request.
 - Point out any missing assumptions, risks, or important details.
-- Give me a practical answer I can use immediately.
+- Give me a practical answer I can use immediately.${categoryDirectiveLine}
 - Use ${articleFor(data.tone)} ${titleCase(data.tone)} tone.
 - Keep the response appropriate for ${articleFor(data.skillLevel)} ${titleCase(data.skillLevel)} user.
 - Format the answer as ${articleFor(data.outputFormat)} ${titleCase(data.outputFormat)}.
@@ -2631,7 +2655,7 @@ Here's what I need from you:
 - End with the top 3 actions I should take next.${personalityLine}${moneyMode}${humanLine}${clarityLine}${photoLine}${languageLine}${remixLine}
 
 Context:
-- Category: ${titleCase(data.category)}
+- Category: ${categoryLabels[categoryKey]}
 - Experience level: ${titleCase(data.skillLevel)}
 - Tone: ${titleCase(data.tone)}
 - Output format: ${titleCase(data.outputFormat)}${personalityContext}${extraDetails}`;
@@ -4632,7 +4656,7 @@ Context:
       function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
       document.getElementById('random-prompt').addEventListener('click', function () {
-        const categories = ['business', 'content', 'money', 'personal', 'faith'];
+        const categories = ['business', 'money', 'content', 'career', 'personal', 'productivity', 'learning', 'faith', 'other'];
         const skills = ['beginner', 'intermediate', 'advanced'];
         const tones = ['professional', 'aggressive', 'casual', 'expert'];
         const formats = ['step-by-step', 'list', 'detailed breakdown'];

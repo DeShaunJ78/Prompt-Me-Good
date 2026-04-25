@@ -1,0 +1,91 @@
+Upgrade the category system so categories are broader AND each category changes how the generated prompt is built. Do not break existing styling, layout, history, copy, refinement, or manual editing features.
+
+========================
+PART 1 — UPDATE CATEGORY DROPDOWN
+========================
+
+Replace the current category options with exactly:
+
+- Business
+- Money
+- Content
+- Career
+- Personal
+- Productivity
+- Learning
+- Faith
+- Other
+
+Keep:
+- Same dropdown styling
+- Same mobile behavior
+- Same form layout
+
+========================
+PART 2 — ADD CATEGORY-SPECIFIC PROMPT LOGIC
+========================
+
+When a category is selected, inject a short category-specific instruction into the generated prompt.
+
+Business:
+“Focus on strategy, positioning, operations, sales, customer trust, and practical execution.”
+
+Money:
+“Focus on realistic income opportunities, speed, risk, profitability, and practical next steps.”
+
+Content:
+“Focus on hooks, audience attention, clarity, storytelling, platform fit, and engagement.”
+
+Career:
+“Focus on resumes, interviews, professional positioning, salary growth, job search strategy, and confidence.”
+
+Personal:
+“Focus on clear thinking, practical decisions, emotional clarity, boundaries, and next steps.”
+
+Productivity:
+“Focus on priorities, time management, systems, habits, discipline, and execution.”
+
+Learning:
+“Focus on simple explanations, examples, practice steps, memory aids, and skill-building.”
+
+Faith:
+“Focus on spiritual clarity, Scripture-grounded wisdom, conviction, discernment, and practical application.”
+
+Other:
+“Focus on understanding the request clearly, identifying the real objective, and giving useful next steps.”
+
+========================
+PART 3 — UPDATE MANUAL / HELP CONTENT
+========================
+
+Update the manual section that explains Category.
+
+Replace old category explanation with:
+
+“Category helps PromptMeGood shape the prompt around the kind of problem you are solving. Choose the closest fit. If nothing fits perfectly, choose Other.”
+
+Add brief category explanations:
+
+- Business: strategy, sales, operations, and execution
+- Money: income ideas, profit, risk, and fast action
+- Content: hooks, posts, scripts, storytelling, and engagement
+- Career: resumes, interviews, job search, and professional growth
+- Personal: decisions, relationships, boundaries, and life problems
+- Productivity: focus, habits, systems, and time management
+- Learning: study help, explanations, practice, and skill-building
+- Faith: Scripture-focused guidance, conviction, and discernment
+- Other: anything that does not fit neatly elsewhere
+
+========================
+PART 4 — FINAL CHECK
+========================
+
+Confirm:
+- Category dropdown shows the new 9 options
+- Category selection affects generated prompt text
+- Use-case cards still autofill categories correctly
+- History still saves category correctly
+- Manual reflects new categories
+- No duplicate old category references remain
+- Mobile dropdown looks clean
+- No JavaScript errors
