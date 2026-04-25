@@ -1,0 +1,296 @@
+Upgrade the existing “Use Demo Values” feature into a full guided demo walkthrough with short explanations at each step and a clear reminder about how to replay the walkthrough later.
+
+Important:
+- Do not break normal “Generate Prompt” behavior.
+- Do not auto-run the demo unless the user clicks “Use Demo Values.”
+- Do not remove the existing guided tour or Replay Tour behavior.
+- Reuse the existing tour/walkthrough/highlight system if available.
+- Keep all copy in normal sentence casing, not Title Case everywhere.
+- Keep the patch focused and consistent with the current app style.
+
+========================
+GOAL
+========================
+
+When a user clicks “Use Demo Values,” PromptMeGood should guide them through the full product flow:
+
+1. Fill the builder.
+2. Generate a prompt.
+3. Show the output.
+4. Explain refinement.
+5. Explain copying/opening in AI tools.
+6. End with a reminder that they can replay the tour later.
+
+Each step should include a brief explanation so users understand what is happening and why.
+
+========================
+DEMO WALKTHROUGH FLOW
+========================
+
+STEP 1 — Fill the builder
+
+Action:
+- Auto-fill the builder fields with existing demo/sample values.
+- Include a sample goal and relevant settings.
+- Keep existing “Use Demo Values” sample values if they already exist and work well.
+
+Message title:
+“Step 1: Fill the builder”
+
+Message text:
+“We added a sample goal and settings so you can see how everything works.”
+
+Highlight:
+- Goal field.
+- Settings section.
+- If only one target can be highlighted, highlight the builder form container.
+
+Behavior:
+- Smoothly scroll to the builder area.
+- Do not generate yet until the user advances or the demo flow reaches Step 2.
+
+------------------------
+
+STEP 2 — Generate the prompt
+
+Action:
+- Automatically trigger prompt generation as part of the demo flow.
+
+Loading message:
+“Step 2: Generating your prompt…”
+
+Explanation text:
+“This turns your idea into a structured, ready-to-use prompt.”
+
+Highlight:
+- Generate Prompt button, if possible.
+- Otherwise highlight the builder action area.
+
+Behavior:
+- Use the same generation pathway as the normal Generate Prompt button.
+- Do not duplicate generation logic if an existing handler exists.
+- Preserve normal Generate Prompt behavior outside the demo.
+- Show the normal loading state while generation is happening.
+- After generation completes, continue to Step 3.
+- If generation fails, show the existing error handling and allow the user to skip or retry.
+
+------------------------
+
+STEP 3 — Show the output
+
+Action:
+- Scroll to the generated prompt output.
+- Highlight the generated prompt box.
+
+Message title:
+“Step 3: Show the output”
+
+Message text:
+“This is your prompt. It’s ready to use, but you can adjust it if needed.”
+
+Behavior:
+- Leave the generated prompt visible.
+- Do not clear or overwrite it after this step.
+
+------------------------
+
+STEP 4 — Refine and adjust
+
+Action:
+- Highlight the refine controls and Fine-Tune Your Prompt field.
+
+Message title:
+“Step 4: Refine and adjust”
+
+Message text:
+“If it’s not perfect, refine it or tell PromptMeGood what to change.”
+
+Explanation text:
+“Small adjustments can significantly improve results.”
+
+Highlight:
+- Refine buttons.
+- Fine-Tune Your Prompt field.
+- If only one target can be highlighted, highlight the refinement section/container.
+
+Behavior:
+- Do not automatically refine unless the existing demo already intentionally demonstrates refinement.
+- Prefer explanation only so the generated demo prompt remains stable.
+
+------------------------
+
+STEP 5 — Copy and use in AI
+
+Action:
+- Highlight the prompt action buttons.
+
+Message title:
+“Step 5: Copy and use in AI”
+
+Message text:
+“Copy your prompt or open it in ChatGPT, Claude, or Perplexity to get your result.”
+
+Explanation text:
+“This is where your prompt becomes a real answer.”
+
+Highlight:
+- Copy Prompt button.
+- ChatGPT button.
+- Claude button.
+- Perplexity button.
+- If only one target can be highlighted, highlight the shared action button container.
+
+Behavior:
+- Do not automatically open ChatGPT, Claude, or Perplexity during the demo.
+- Do not automatically copy unless the existing app behavior already does that when those buttons are clicked.
+- Explain the action without taking the user away from the app.
+
+------------------------
+
+STEP 6 — Finish and replay reminder
+
+Message title:
+“You’ve seen the full flow”
+
+Message text:
+“Now try your own goal.”
+
+Additional line:
+“If you want to see this again, tap ‘Replay Tour’ at the bottom of the page.”
+
+Final button:
+“Done”
+
+Behavior:
+- End the demo cleanly.
+- Keep the generated demo prompt visible after the demo ends.
+- Do not reset the form unless existing demo behavior already does so. Prefer leaving the demo values and generated prompt visible.
+- Keep the user in the app and do not navigate away.
+
+========================
+CONTROLS
+========================
+
+Each demo step should include:
+- “Next”
+- “Skip Demo”
+
+Final step should include:
+- “Done”
+
+Behavior:
+- “Next” advances to the next demo step.
+- “Skip Demo” exits the demo immediately.
+- If skipped after generation, leave any generated prompt visible.
+- If skipped before generation, leave whatever demo values have already been filled.
+- Do not break or replace the existing Replay Tour control.
+
+========================
+SCROLLING AND HIGHLIGHTS
+========================
+
+For each step:
+- Smoothly scroll to the relevant section.
+- Highlight the active area clearly but subtly.
+- Avoid harsh overlays or large layout shifts.
+- Keep the highlighted area visible on mobile.
+- Do not scroll unexpectedly outside the demo flow.
+
+Use existing highlight/tour styles if available.
+
+========================
+STYLE REQUIREMENTS
+========================
+
+Copy style:
+- Use normal sentence casing.
+- Do not use Title Case for body text.
+- Keep messages short and clear.
+- Step titles can be bold if the tour UI supports it.
+- Explanations should be 1–2 lines max.
+
+Mobile:
+- Keep walkthrough cards/tooltips readable.
+- Avoid covering the field or button being explained.
+- Avoid horizontal overflow.
+- Keep “Next” and “Skip Demo” easy to tap.
+
+========================
+MANUAL / HELP UPDATE
+========================
+
+Update the manual/help content for “Use Demo Values.”
+
+Replace or revise the section with this copy:
+
+“Use Demo Values gives you a full guided example. It fills in a sample goal, generates a prompt, explains how to refine it, and shows how to use it in ChatGPT, Claude, or Perplexity. You can replay the walkthrough anytime using the ‘Replay Tour’ option.”
+
+Make sure this help text matches the actual behavior after implementation.
+
+========================
+REGRESSION REQUIREMENTS
+========================
+
+Do not break:
+- Normal Generate Prompt.
+- Refine Prompt.
+- Fine-Tune behavior.
+- Copy Prompt.
+- ChatGPT button.
+- Claude button.
+- Perplexity button.
+- Prompt History.
+- Use-case cards.
+- Dice/randomizer.
+- Replay Tour.
+- Clear buttons.
+- Manual edits.
+- Undo behavior.
+
+========================
+FINAL QA CHECKLIST
+========================
+
+After implementation, test the following:
+
+Demo start:
+- Demo does not auto-run on page load.
+- Demo starts only when clicking “Use Demo Values.”
+- Builder fields are auto-filled in Step 1.
+
+Demo flow:
+- Step 1 explains the sample goal/settings.
+- Step 2 triggers generation using the normal generation handler.
+- Step 2 shows “Step 2: Generating your prompt…” while generating.
+- Step 2 includes the explanation: “This turns your idea into a structured, ready-to-use prompt.”
+- Step 3 scrolls to the output.
+- Step 3 highlights the prompt box.
+- Step 3 says: “This is your prompt. It’s ready to use, but you can adjust it if needed.”
+- Step 4 highlights refine controls and Fine-Tune field.
+- Step 4 explains refinement clearly.
+- Step 5 highlights Copy Prompt, ChatGPT, Claude, and Perplexity buttons or their shared container.
+- Step 5 explains copying/opening in AI tools.
+- Step 6 includes: “If you want to see this again, tap ‘Replay Tour’ at the bottom of the page.”
+- Final button says “Done.”
+
+Controls:
+- “Next” advances correctly.
+- “Skip Demo” exits the demo.
+- “Done” exits the demo.
+- Prompt remains visible after the demo ends.
+- Prompt remains visible if the demo is skipped after generation.
+
+Manual/help:
+- “Use Demo Values” section reflects the guided demo walkthrough.
+- Replay Tour reminder is included.
+
+Regression:
+- Normal Generate Prompt still works when not in demo mode.
+- No duplicate generation occurs.
+- Copy Prompt still works.
+- AI tool buttons still work.
+- Mobile layout is clean.
+- Desktop layout is clean.
+- Browser console has no JavaScript errors.
+
+Keep the implementation minimal, robust, and consistent with the existing app architecture.

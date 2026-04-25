@@ -1,0 +1,83 @@
+Update the manual/help content to reflect recent feature additions and UX changes. Do not redesign the manual or expand it unnecessarily.
+
+========================
+GOAL
+========================
+
+Keep the manual accurate, short, and aligned with the current product behavior.
+
+========================
+UPDATE / ADD SECTIONS
+========================
+
+1. UPDATE — “Use Demo Values”
+
+Replace with:
+
+“Use Demo Values gives you a full guided walkthrough. It fills in a sample goal, generates a prompt, shows where the output appears, explains how to refine it, and shows how to use it in ChatGPT, Claude, or Perplexity. You can replay this walkthrough anytime using ‘Replay Tour’ at the bottom of the page.”
+
+------------------------
+
+2. ADD — “Replay Tour”
+
+“Need a refresher? Tap ‘Replay Tour’ at the bottom of the page to walk through the app again at any time.”
+
+------------------------
+
+3. ADD — “Clearing Text Quickly”
+
+“Use the Clear buttons to instantly remove text from fields like Your Goal, Extra Details, Fine-Tune, or the generated prompt. This is much faster than deleting text manually.”
+
+------------------------
+
+4. UPDATE — “Using Your Prompt”
+
+Replace or improve with:
+
+“After your prompt is ready, copy it or use the ChatGPT, Claude, or Perplexity buttons to open your preferred AI tool. Paste the prompt there to generate your result.”
+
+------------------------
+
+5. UPDATE — “Prompt History”
+
+Update to:
+
+“Prompt History saves your recent prompts on this device. Each item is shown in a compact view to keep things clean. Expand a prompt to see more actions, or use ‘Clear All History’ if you want to reset everything.”
+
+------------------------
+
+6. OPTIONAL ADD — “Getting Started”
+
+Add short helper:
+
+“If you’re not sure where to begin, use the ‘Need ideas?’ dice button in the Use Cases section or run the demo walkthrough.”
+
+========================
+REMOVE / CLEAN UP
+========================
+
+- Remove any instructions that say users must manually delete text
+- Remove references to expanded history layouts if they no longer apply
+- Remove any outdated tour wording (Title Case instructions, etc.)
+
+========================
+STYLE
+========================
+
+- Keep sections short
+- Use plain, clear language
+- Avoid long paragraphs
+- Maintain consistent formatting
+
+========================
+FINAL CHECK
+========================
+
+- Manual reflects current features
+- Demo walkthrough is clearly explained
+- Replay Tour is mentioned
+- Clear buttons are explained
+- Prompt History matches current behavior
+- No outdated instructions remain
+- Mobile readability is clean
+- No JavaScript errors

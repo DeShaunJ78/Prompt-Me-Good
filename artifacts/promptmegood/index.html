@@ -2288,7 +2288,7 @@
               <p>This mirrors the in-app tour — replay it anytime from the footer.</p>
               <ol class="manual-steps">
                 <li><strong>Goal.</strong> Type what you want help with in plain words. The more specific, the better.</li>
-                <li><strong>Generate.</strong> Click <strong>Generate Prompt</strong>, or hit <strong>Use Demo Values</strong> to see the app in action.</li>
+                <li><strong>Generate.</strong> Click <strong>Generate Prompt</strong>, or hit <strong>Use Demo Values</strong> to launch a full guided walkthrough — it fills a sample goal, generates a prompt, explains how to refine it, and shows how to use it in ChatGPT, Claude, or Perplexity. You can replay the walkthrough anytime using <strong>Replay Tour</strong> at the bottom of the page.</li>
                 <li><strong>Output.</strong> Your structured prompt appears in the output box on the right.</li>
                 <li><strong>Refine / Undo.</strong> Tap <strong>More Detailed</strong>, <strong>More Aggressive</strong>, or <strong>Beginner Friendly</strong> to upgrade in place. Use <strong>Undo Last Change</strong> to step back.</li>
                 <li><strong>Fine-Tune / Copy / Use.</strong> Tweak with Fine-Tune Your Prompt, click <strong>Copy Prompt</strong>, then open it in ChatGPT, Claude, or Perplexity.</li>
@@ -4895,7 +4895,7 @@ Context:
           selector: '#tour-step-generate',
           fallbackSelector: '#prompt-form button[type="submit"]',
           title: 'Generate or demo',
-          text: 'Tap Generate Prompt when you are ready. If you are not sure what to enter, use Demo Values to instantly see how the app works.'
+          text: 'Tap Generate Prompt when you are ready. If you are not sure what to enter, hit Use Demo Values for a full guided walkthrough of the app.'
         },
         {
           selector: '#tour-step-improve',
@@ -4910,6 +4910,47 @@ Context:
           text: 'Copy your finished prompt, or use the ChatGPT, Claude, or Perplexity buttons to copy it automatically and open your preferred AI tool.'
         }
       ];
+      const DEMO_STEPS = [
+        {
+          selector: '#prompt-form',
+          fallbackSelector: '#builder-panel',
+          title: 'Step 1: Fill the builder',
+          text: 'We added a sample goal and settings so you can see how everything works.'
+        },
+        {
+          selector: '#tour-step-generate',
+          fallbackSelector: '#prompt-form button[type="submit"]',
+          title: 'Step 2: Generating your prompt…',
+          text: 'This turns your idea into a structured, ready-to-use prompt.',
+          onEnter: function () {
+            runDemoGenerationStep();
+          }
+        },
+        {
+          selector: '#resultBox',
+          fallbackSelector: '#result-panel',
+          title: 'Step 3: Show the output',
+          text: "This is your prompt. It's ready to use, but you can adjust it if needed."
+        },
+        {
+          selector: '#tour-step-improve',
+          fallbackSelector: '#improve-block',
+          title: 'Step 4: Refine and adjust',
+          text: "If it's not perfect, refine it or tell PromptMeGood what to change. Small adjustments can significantly improve results."
+        },
+        {
+          selector: '#tour-final-actions',
+          fallbackSelector: '#copy-btn',
+          title: 'Step 5: Copy and use in AI',
+          text: 'Copy your prompt or open it in ChatGPT, Claude, or Perplexity to get your result. This is where your prompt becomes a real answer.'
+        },
+        {
+          selector: '#replay-tour-btn',
+          fallbackSelector: '.site-footer-replay-btn',
+          title: "You've seen the full flow",
+          text: "Now try your own goal. If you want to see this again, tap 'Replay Tour' at the bottom of the page."
+        }
+      ];
       const obOverlay = document.getElementById('ob-overlay');
       const obBackdrop = document.getElementById('ob-backdrop');
       const obHighlight = document.getElementById('ob-highlight');
@@ -4922,6 +4963,9 @@ Context:
       let obIndex = 0;
       let obListenersBound = false;
       let obScrollRaf = 0;
+      let currentSteps = OB_STEPS;
+      let currentIsDemo = false;
+      let demoGenerationToken = 0;
 
       function obShouldRun() {
         try { return !localStorage.getItem(ONBOARDING_KEY); } catch (e) { return false; }
@@ -4934,7 +4978,7 @@ Context:
       }
       function obPositionStep(scrollAttempts) {
         if (!obIsOpen()) return;
-        const step = OB_STEPS[obIndex];
+        const step = currentSteps[obIndex];
         if (!step) return;
         let target = document.querySelector(step.selector);
         if (!target && step.fallbackSelector) target = document.querySelector(step.fallbackSelector);
@@ -4967,10 +5011,40 @@ Context:
         tipLeft = Math.max(margin, Math.min(tipLeft, window.innerWidth - tipW - margin));
         obTooltip.style.top = tipTop + 'px';
         obTooltip.style.left = tipLeft + 'px';
-        obStepEl.textContent = 'Step ' + (obIndex + 1) + ' of ' + OB_STEPS.length;
+        obStepEl.textContent = 'Step ' + (obIndex + 1) + ' of ' + currentSteps.length;
         obTitleEl.textContent = step.title || '';
         obTextEl.textContent = step.text;
-        obNextBtn.textContent = obIndex === OB_STEPS.length - 1 ? 'Done' : 'Next';
+        obNextBtn.textContent = obIndex === currentSteps.length - 1 ? 'Done' : 'Next';
+      }
+      function obInvokeStepEnter() {
+        const step = currentSteps[obIndex];
+        if (step && typeof step.onEnter === 'function') {
+          try { step.onEnter(); } catch (e) {}
+        }
+      }
+      function runDemoGenerationStep() {
+        const myToken = ++demoGenerationToken;
+        obNextBtn.style.visibility = 'hidden';
+        setPromptText('Generating demo prompt…');
+        window.setTimeout(function () {
+          if (myToken !== demoGenerationToken || !obIsOpen()) return;
+          try {
+            const demoData = getFormData();
+            const demoPrompt = generatePrompt(demoData);
+            setPromptText(demoPrompt);
+            addToHistory(demoData, demoPrompt);
+            if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
+          } catch (e) {
+            setPromptText('Could not generate the demo prompt. Skip the demo or try Replay Tour later.');
+            obNextBtn.style.visibility = '';
+            return;
+          }
+          window.setTimeout(function () {
+            if (myToken !== demoGenerationToken || !obIsOpen()) return;
+            obNextBtn.style.visibility = '';
+            if (currentSteps === DEMO_STEPS && obIndex === 1) obNextStep();
+          }, 700);
+        }, 900);
       }
       function obSchedulePosition() {
         if (!obIsOpen()) return;
@@ -4993,9 +5067,14 @@ Context:
         obListenersBound = false;
         if (obScrollRaf) { window.cancelAnimationFrame(obScrollRaf); obScrollRaf = 0; }
       }
-      function obStart() {
+      function obStart(opts) {
+        opts = opts || {};
+        currentSteps = opts.steps || OB_STEPS;
+        currentIsDemo = !!opts.isDemo;
         obIndex = 0;
-        if (obStepEl) obStepEl.textContent = 'Step 1 of ' + OB_STEPS.length;
+        obSkipBtn.textContent = currentIsDemo ? 'Skip Demo' : 'Skip';
+        obNextBtn.style.visibility = '';
+        if (obStepEl) obStepEl.textContent = 'Step 1 of ' + currentSteps.length;
         const banner = document.getElementById('nudge-banner');
         if (banner) banner.hidden = true;
         obOverlay.classList.add('is-open');
@@ -5004,9 +5083,12 @@ Context:
         window.setTimeout(function () {
           obPositionStep();
           try { obNextBtn.focus({ preventScroll: true }); } catch (e) { obNextBtn.focus(); }
+          obInvokeStepEnter();
         }, 50);
       }
       function obFinish() {
+        const wasDemo = currentIsDemo;
+        demoGenerationToken += 1;
         obOverlay.classList.remove('is-open');
         obOverlay.setAttribute('aria-hidden', 'true');
         obUnbindListeners();
@@ -5015,12 +5097,17 @@ Context:
         obHighlight.style.width = '0px';
         obHighlight.style.height = '0px';
         obIndex = 0;
-        obMarkDone();
+        obNextBtn.style.visibility = '';
+        obSkipBtn.textContent = 'Skip';
+        currentSteps = OB_STEPS;
+        currentIsDemo = false;
+        if (!wasDemo) obMarkDone();
       }
       function obNextStep() {
-        if (obIndex >= OB_STEPS.length - 1) { obFinish(); return; }
+        if (obIndex >= currentSteps.length - 1) { obFinish(); return; }
         obIndex += 1;
         obPositionStep();
+        obInvokeStepEnter();
       }
       obNextBtn.addEventListener('click', obNextStep);
       obSkipBtn.addEventListener('click', obFinish);
@@ -5526,29 +5613,12 @@ Context:
         document.getElementById('details').value = 'I need a low-cost plan, something I can sell fast, and I do not want complicated tech setup.';
         document.getElementById('moneyMode').checked = true;
         document.getElementById('personality').value = 'bold';
-
-        setPromptText('Generating demo prompt…');
-        const resultPanel = document.getElementById('result-panel');
-        if (resultPanel && typeof resultPanel.scrollIntoView === 'function') {
-          resultPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const builderSection = document.getElementById('builder');
+        if (builderSection && typeof builderSection.scrollIntoView === 'function') {
+          builderSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-
-        const runDemoGeneration = function () {
-          const demoData = getFormData();
-          const demoPrompt = generatePrompt(demoData);
-          setPromptText(demoPrompt);
-          addToHistory(demoData, demoPrompt);
-          if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
-          showToast('Demo prompt generated');
-        };
-
-        if (typeof window.requestAnimationFrame === 'function') {
-          window.requestAnimationFrame(function () {
-            window.requestAnimationFrame(runDemoGeneration);
-          });
-        } else {
-          setTimeout(runDemoGeneration, 50);
-        }
+        if (obIsOpen()) obFinish();
+        obStart({ steps: DEMO_STEPS, isDemo: true });
       });
       const compareOverlay = document.getElementById('compare-overlay');
       const compareTitle = document.getElementById('compare-title');
