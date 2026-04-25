@@ -925,13 +925,19 @@
     .uc-modal-close { flex: 0 0 auto; background: transparent; border: 1px solid var(--color-border); color: var(--color-text); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center; transition: background var(--transition-interactive), border-color var(--transition-interactive); }
     .uc-modal-close:hover, .uc-modal-close:focus-visible { background: color-mix(in srgb, var(--color-primary) 12%, transparent); border-color: var(--color-primary); outline: none; }
     .uc-modal-body { padding: var(--space-4) var(--space-5) var(--space-5); overflow-y: auto; -webkit-overflow-scrolling: touch; }
-    .uc-modal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); overflow: visible; mask-image: none; -webkit-mask-image: none; scroll-snap-type: none; }
+    .uc-modal-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); overflow: visible; mask-image: none; -webkit-mask-image: none; scroll-snap-type: none; }
     .uc-modal-grid .popular-use-card { max-width: none; min-width: 0; width: 100%; flex: none; scroll-snap-align: none; }
-    @media (max-width: 920px) { .uc-modal-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 920px) { .uc-modal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 600px) {
       .uc-modal { padding: 0; align-items: stretch; justify-content: stretch; }
       .uc-modal-card { max-width: none; max-height: none; height: 100vh; height: 100dvh; border-radius: 0; }
-      .uc-modal-grid { grid-template-columns: 1fr; }
+      .uc-modal-body { padding: var(--space-3) var(--space-3) var(--space-4); }
+      .uc-modal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      .uc-modal-grid .popular-use-card { padding: 10px; gap: 4px; min-width: 0; }
+      .uc-modal-grid .popular-use-card-title { font-size: var(--text-xs); line-height: 1.25; overflow-wrap: break-word; }
+      .uc-modal-grid .popular-use-card-desc { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 11px; line-height: 1.35; }
+      .uc-modal-grid .popular-use-card-cta { padding: 5px 10px; font-size: 11px; min-height: 30px; }
+      .uc-modal-grid .popular-use-card:active { transform: scale(0.98); }
     }
     body.uc-modal-open { overflow: hidden; }
     .post-uc-guidance { display: none; align-items: flex-start; gap: var(--space-2); margin: 0 0 var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: color-mix(in srgb, var(--color-primary) 10%, transparent); border: 1px solid color-mix(in srgb, var(--color-primary) 28%, transparent); color: var(--color-text); font-size: var(--text-sm); line-height: 1.5; }
