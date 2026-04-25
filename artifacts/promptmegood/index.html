@@ -538,6 +538,82 @@
       .guided-actions { justify-content: stretch; }
       .guided-actions .btn { flex: 1 1 auto; }
     }
+    /* Auto Optimize toggle row (above Guide Me CTA) */
+    .auto-optimize-row {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: 10px var(--space-4);
+      border-radius: var(--radius-md);
+      background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface));
+      border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent);
+      margin: 0 0 var(--space-3);
+      flex-wrap: wrap;
+    }
+    .auto-optimize-row .auto-opt-text { flex: 1 1 200px; min-width: 0; }
+    .auto-optimize-row .auto-opt-text strong { display: block; font-size: var(--text-sm); color: var(--color-text); }
+    .auto-optimize-row .auto-opt-text span { display: block; font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px; }
+    .auto-optimize-row .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex: 0 0 auto; }
+    .auto-optimize-row .switch input { opacity: 0; width: 0; height: 0; }
+    .auto-optimize-row .slider { position: absolute; cursor: pointer; inset: 0; background: color-mix(in srgb, var(--color-text) 25%, transparent); border-radius: 24px; transition: background 0.2s ease; }
+    .auto-optimize-row .slider::before { content: ""; position: absolute; height: 18px; width: 18px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    .auto-optimize-row .switch input:checked + .slider { background: var(--color-primary); }
+    .auto-optimize-row .switch input:checked + .slider::before { transform: translateX(20px); }
+    .auto-optimize-row .switch input:focus-visible + .slider { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+    /* Suggested badge inline with field labels */
+    .suggested-badge {
+      display: none;
+      align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 999px;
+      font-size: 11px; font-weight: 600; line-height: 1.4;
+      background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+      color: var(--color-primary);
+      border: 1px solid color-mix(in srgb, var(--color-primary) 35%, transparent);
+    }
+    .suggested-badge.is-on { display: inline-flex; }
+    .suggested-badge::before { content: "✦"; font-size: 10px; }
+
+    /* Recommended AI tool highlight */
+    .open-in-card { position: relative; }
+    .recommended-badge {
+      display: none;
+      position: absolute; top: -10px; right: 8px; z-index: 1;
+      padding: 2px 8px; border-radius: 999px;
+      font-size: 10px; font-weight: 700; line-height: 1.4;
+      background: #01696f; color: #fff;
+      letter-spacing: 0.04em; text-transform: uppercase;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    [data-theme="dark"] .recommended-badge {
+      background: #014a4f; color: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.45);
+    }
+    .recommended-badge.is-on { display: inline-block; }
+    .open-in-btn.is-recommended {
+      box-shadow: 0 0 0 2px var(--color-primary), 0 0 12px color-mix(in srgb, var(--color-primary) 35%, transparent);
+      transform: translateY(-1px);
+    }
+
+    /* Prompt Strength Score */
+    .strength-score {
+      display: none;
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      margin: 0 0 var(--space-3);
+    }
+    .strength-score.is-on { display: block; }
+    .strength-score-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin-bottom: 6px; flex-wrap: wrap; }
+    .strength-score-title { font-weight: 700; font-size: var(--text-sm); color: var(--color-text); }
+    .strength-score-pct { font-weight: 700; font-size: var(--text-sm); color: var(--color-primary); }
+    .strength-score-bar { width: 100%; height: 8px; background: color-mix(in srgb, var(--color-text) 10%, transparent); border-radius: 999px; overflow: hidden; }
+    .strength-score-fill { height: 100%; width: 0%; background: var(--color-primary); border-radius: 999px; transition: width 0.4s ease; }
+    .strength-score-fill.weak { background: #d97706; }
+    .strength-score-fill.ok { background: #ca8a04; }
+    .strength-score-fill.strong { background: var(--color-primary); }
+    .strength-score ul { margin: 8px 0 0 1.1rem; padding: 0; font-size: var(--text-xs); color: var(--color-text-muted); }
+    .strength-score li + li { margin-top: 2px; }
+
     .quality-row { display: flex; flex-direction: column; gap: var(--space-2); margin: 0 0 var(--space-3); }
     .quality-row .btn { align-self: flex-start; }
     .quality-feedback {
@@ -1829,6 +1905,16 @@
               <div class="weekly-goal-pin-body" id="weekly-goal-body">Try focusing on one goal this week. Example: &ldquo;Improve my business idea&rdquo;</div>
             </div>
             <form id="prompt-form" class="form-grid">
+              <div class="auto-optimize-row" id="auto-optimize-row">
+                <div class="auto-opt-text">
+                  <strong>Auto Optimize <span style="color: var(--color-primary); font-weight: 600;">(Recommended)</span></strong>
+                  <span>Suggests the best category, tone, format, and length based on your goal.</span>
+                </div>
+                <label class="switch" aria-label="Toggle Auto Optimize">
+                  <input type="checkbox" id="auto-optimize-toggle" checked />
+                  <span class="slider"></span>
+                </label>
+              </div>
               <div class="guided-cta-row" id="guided-cta-row">
                 <div class="guided-cta-text">
                   <strong>Guide Me <span style="color: var(--color-primary); font-weight: 600;">(Recommended)</span></strong>
@@ -1854,7 +1940,7 @@
               </div>
 
               <div class="field">
-                <label for="category">Category</label>
+                <label for="category">Category <span class="suggested-badge" id="suggested-category" hidden>Suggested</span></label>
                 <select id="category" name="category">
                   <option value="business">Business</option>
                   <option value="money">Money</option>
@@ -1879,7 +1965,7 @@
               </div>
 
               <div class="field">
-                <label for="tone">Tone</label>
+                <label for="tone">Tone <span class="suggested-badge" id="suggested-tone" hidden>Suggested</span></label>
                 <select id="tone" name="tone">
                   <option value="professional">Professional</option>
                   <option value="aggressive">Aggressive</option>
@@ -1889,7 +1975,7 @@
               </div>
 
               <div class="field">
-                <label for="outputFormat">Output format</label>
+                <label for="outputFormat">Output format <span class="suggested-badge" id="suggested-outputFormat" hidden>Suggested</span></label>
                 <select id="outputFormat" name="outputFormat">
                   <option value="step-by-step">Step-by-step</option>
                   <option value="list">List</option>
@@ -1898,7 +1984,7 @@
               </div>
 
               <div class="field">
-                <label for="maxLength">Max response length</label>
+                <label for="maxLength">Max response length <span class="suggested-badge" id="suggested-maxLength" hidden>Suggested</span></label>
                 <div class="max-length-row">
                   <select id="maxLength" name="maxLength">
                     <option value="">No limit</option>
@@ -2087,6 +2173,14 @@
             </div>
             <p class="result-helper" data-tip="result-copy">Looks good? Copy this prompt and paste it into ChatGPT, Claude, Perplexity, Gemini, or another AI tool.</p>
             <div id="tour-final-actions" class="tour-final-actions">
+            <div class="strength-score" id="strength-score" role="status" aria-live="polite">
+              <div class="strength-score-head">
+                <span class="strength-score-title">Prompt Strength</span>
+                <span class="strength-score-pct" id="strength-score-pct">0%</span>
+              </div>
+              <div class="strength-score-bar"><div class="strength-score-fill" id="strength-score-fill"></div></div>
+              <ul id="strength-score-insights"></ul>
+            </div>
             <div class="quality-row" id="quality-row">
               <button class="btn btn-secondary" type="button" id="check-quality-btn">Check prompt quality</button>
               <div class="quality-feedback" id="quality-feedback" hidden role="status" aria-live="polite"></div>
@@ -2104,14 +2198,17 @@
               <span class="open-in-label">Use Your Prompt In:</span>
               <div class="open-in-row">
                 <div class="open-in-card">
+                  <span class="recommended-badge" id="rec-badge-chatgpt" hidden>Recommended</span>
                   <a class="btn open-in-btn" data-tool="chatgpt" aria-describedby="open-in-desc-chatgpt" href="https://chat.openai.com/" target="_blank" rel="noopener noreferrer">ChatGPT</a>
                   <p class="open-in-desc" id="open-in-desc-chatgpt">Best For Structured Answers, Step-By-Step Guidance, And Strategy</p>
                 </div>
                 <div class="open-in-card">
+                  <span class="recommended-badge" id="rec-badge-claude" hidden>Recommended</span>
                   <a class="btn open-in-btn" data-tool="claude" aria-describedby="open-in-desc-claude" href="https://claude.ai/" target="_blank" rel="noopener noreferrer">Claude</a>
                   <p class="open-in-desc" id="open-in-desc-claude">Best For Writing, Long-Form Content, And Natural Tone</p>
                 </div>
                 <div class="open-in-card">
+                  <span class="recommended-badge" id="rec-badge-perplexity" hidden>Recommended</span>
                   <a class="btn open-in-btn" data-tool="perplexity" aria-describedby="open-in-desc-perplexity" href="https://www.perplexity.ai/" target="_blank" rel="noopener noreferrer">Perplexity</a>
                   <p class="open-in-desc" id="open-in-desc-perplexity">Best For Research, Real-Time Info, And Fact-Based Answers</p>
                 </div>
@@ -2360,6 +2457,7 @@
               <a href="#manual-flow">1. The 5-step flow</a>
               <a href="#manual-usecases" class="is-highlight">⚡ Use cases</a>
               <a href="#manual-need-ideas">🎲 Get ideas instantly</a>
+              <a href="#manual-smart-systems">✨ Smart systems</a>
               <a href="#manual-fields">2. Form fields</a>
               <a href="#manual-boosts">3. Optional boosts</a>
               <a href="#manual-refine">4. Undo &amp; manual edits</a>
@@ -2380,7 +2478,7 @@
                 <li><strong>Generate.</strong> Click <strong>Generate Prompt</strong>, or hit <strong>Use Demo Values</strong> to launch a full guided walkthrough — it fills a sample goal, generates a prompt, explains how to refine it, and shows how to use it in ChatGPT, Claude, or Perplexity. You can replay the walkthrough anytime using <strong>Replay Tour</strong> at the bottom of the page.</li>
                 <li><strong>Output.</strong> Your structured prompt appears in the output box on the right.</li>
                 <li><strong>Refine / Undo.</strong> Tap <strong>More Detailed</strong>, <strong>More Aggressive</strong>, or <strong>Beginner Friendly</strong> to upgrade in place. Use <strong>Undo Last Change</strong> to step back. Set a <strong>Max Response Length</strong> or add <strong>Guardrails</strong> in the builder to control length and avoid bad habits.</li>
-                <li><strong>Check / Copy / Use.</strong> Tap <strong>Check Prompt Quality</strong> for quick suggestions, click <strong>Copy Prompt</strong>, then open it in ChatGPT, Claude, or Perplexity.</li>
+                <li><strong>Check / Copy / Use.</strong> Read your <strong>Prompt Strength</strong> score and tap <strong>Check Prompt Quality</strong> for quick suggestions, click <strong>Copy Prompt</strong>, then open it in ChatGPT, Claude, or Perplexity — we highlight the best fit for your goal.</li>
               </ol>
             </article>
 
@@ -2409,6 +2507,17 @@
               <h3>Get Ideas Instantly</h3>
               <p>If you're not sure what to ask, tap the 🎲 <strong>Need ideas?</strong> button in the Use Cases section. It generates a fresh set of 6 high-quality starting points. Pick one to auto-fill your goal and get moving.</p>
               <p><strong>Tip:</strong> If none of the ideas fit, tap the dice again for a new set.</p>
+            </article>
+
+            <article class="manual-section manual-callout" id="manual-smart-systems">
+              <h3>Smart Systems</h3>
+              <p>PromptMeGood reads your goal as you type and quietly tunes the rest of the builder for you.</p>
+              <ul>
+                <li><strong>Smart Suggestions.</strong> As you type your goal, we suggest the best Category, Tone, Output Format, and Max Response Length. A small <em>Suggested</em> badge appears next to each field we have a recommendation for.</li>
+                <li><strong>Auto Optimize.</strong> The toggle at the top of the builder is on by default. When on, suggestions are applied automatically to fields you have not edited yourself. Turn it off if you want full manual control — badges still show, but values won't change.</li>
+                <li><strong>AI Tool Recommendation.</strong> Based on your goal we highlight the best fit out of ChatGPT, Claude, or Perplexity with a <em>Recommended</em> label and a soft glow.</li>
+                <li><strong>Prompt Strength.</strong> After you generate a prompt, you'll see a 0–100% score with 2–3 quick insights so you know what to improve next.</li>
+              </ul>
             </article>
 
             <article class="manual-section" id="manual-fields">
@@ -4016,6 +4125,24 @@ Context:
         document.getElementById('tone').value = item.data.tone || 'aggressive';
         document.getElementById('outputFormat').value = item.data.outputFormat || 'step-by-step';
         document.getElementById('details').value = item.data.details || '';
+        const guardrailsEl = document.getElementById('guardrails');
+        if (guardrailsEl) guardrailsEl.value = item.data.guardrails || '';
+        const maxLengthSel = document.getElementById('maxLength');
+        const maxLengthCustom = document.getElementById('maxLengthCustom');
+        if (maxLengthSel) {
+          const restoredMax = item.data.maxLength != null ? String(item.data.maxLength) : '';
+          const presets = ['', '100', '200', '300', '500'];
+          if (presets.indexOf(restoredMax) !== -1) {
+            maxLengthSel.value = restoredMax;
+            if (maxLengthCustom) { maxLengthCustom.hidden = true; maxLengthCustom.value = ''; }
+          } else if (restoredMax) {
+            maxLengthSel.value = 'custom';
+            if (maxLengthCustom) { maxLengthCustom.hidden = false; maxLengthCustom.value = restoredMax; }
+          } else {
+            maxLengthSel.value = '';
+            if (maxLengthCustom) { maxLengthCustom.hidden = true; maxLengthCustom.value = ''; }
+          }
+        }
         document.getElementById('moneyMode').checked = !!item.data.moneyMode;
         document.getElementById('humanTone').checked = !!item.data.humanTone;
         document.getElementById('clarityBoost').checked = !!(item.data.clarityBoost || item.data.avoidAi);
@@ -4024,6 +4151,15 @@ Context:
         document.getElementById('personality').value = item.data.personality || 'none';
         setPromptText(item.prompt);
         if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
+        // Restored fields count as user-touched so smart suggestions don't override them.
+        // Then recompute so badges and AI-tool recommendation reflect the restored goal.
+        if (window.__pmgSmartSystems) {
+          if (typeof window.__pmgSmartSystems.markAllTouched === 'function') window.__pmgSmartSystems.markAllTouched();
+          if (typeof window.__pmgSmartSystems.recompute === 'function') window.__pmgSmartSystems.recompute(false);
+        }
+        if (window.__pmgStrengthScore && typeof window.__pmgStrengthScore.render === 'function') {
+          window.__pmgStrengthScore.render(item.data, item.prompt);
+        }
         document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
         showToast('Restored from history.');
       }
@@ -4416,6 +4552,263 @@ Context:
       wireFieldClearBtn('clear-fine-tune-btn', 'fine-tune-input');
       wireFieldClearBtn('clear-guardrails-btn', 'guardrails');
 
+      // ===== Smart Suggestions + Auto Optimize + AI Tool Recommender + Strength Score =====
+      (function setupSmartSystems() {
+        const AUTO_OPT_KEY = 'promptmegood:autoOptimize:v1';
+        const goalEl = document.getElementById('goal');
+        const autoOptToggle = document.getElementById('auto-optimize-toggle');
+        if (!goalEl || !autoOptToggle) return;
+
+        // Load auto-optimize preference (default ON)
+        try {
+          const stored = localStorage.getItem(AUTO_OPT_KEY);
+          if (stored === '0') autoOptToggle.checked = false;
+          else autoOptToggle.checked = true;
+        } catch (e) {}
+
+        // Track which fields the user has manually changed since last reset
+        const userTouched = new Set();
+        const TRACKED_FIELDS = ['category', 'tone', 'outputFormat', 'maxLength'];
+        TRACKED_FIELDS.forEach(function (id) {
+          const el = document.getElementById(id);
+          if (!el) return;
+          // Any change event (real click, keyboard, or assistive tech) marks the field as touched.
+          // Our own programmatic `.value = ...` assignments do NOT fire `change` on <select>,
+          // so the suggestion engine itself never accidentally marks fields as touched.
+          el.addEventListener('change', function () {
+            userTouched.add(id);
+          });
+        });
+
+        // Reset touched-state when user clears the goal entirely
+        let lastGoalLength = (goalEl.value || '').trim().length;
+
+        // Keyword → suggestion mapping
+        function analyzeGoal(text) {
+          const t = (text || '').toLowerCase();
+          if (!t || t.length < 8) return null;
+
+          const out = {};
+
+          // Category detection
+          if (/\b(make money|earn|income|side hustle|side-hustle|profit|monetize|revenue|sell|sales|customer|cash|first \$|\$\d|dollar|salary)\b/.test(t)) out.category = 'money';
+          else if (/\b(write|email|copy|copywriting|content|blog|article|hook|caption|script|tweet|post|landing page|product description|story|newsletter)\b/.test(t)) out.category = 'content';
+          else if (/\b(research|find out|fact|study|data|paper|source|cite|news|current|latest|recent|literature)\b/.test(t)) out.category = 'learning';
+          else if (/\b(business|startup|strategy|operations|marketing plan|launch|brand|saas|b2b|company|founder)\b/.test(t)) out.category = 'business';
+          else if (/\b(resume|interview|career|job|cv|cover letter|hiring|promotion|networking|salary negotiation|recruit)\b/.test(t)) out.category = 'career';
+          else if (/\b(focus|habit|productivity|routine|schedule|time management|prioritize|procrastinat|workflow|system)\b/.test(t)) out.category = 'productivity';
+          else if (/\b(learn|study|teach|explain|understand|tutorial|course|practice|skill|master|how does|how do)\b/.test(t)) out.category = 'learning';
+          else if (/\b(faith|prayer|scripture|bible|spiritual|god|jesus|christian|devotion|verse)\b/.test(t)) out.category = 'faith';
+          else if (/\b(relationship|personal|life|decision|advice|stress|anxious|family|friend|emotional|mental health)\b/.test(t)) out.category = 'personal';
+
+          // Tone detection
+          if (/\b(fast|aggressive|urgent|hustle|attack|push|crush|dominate|win|conquer|sell|profit)\b/.test(t)) out.tone = 'aggressive';
+          else if (/\b(email|client|customer|stakeholder|professional|formal|business|presentation|investor|board)\b/.test(t)) out.tone = 'professional';
+          else if (/\b(friend|casual|chat|chill|fun|relaxed|conversational|easy)\b/.test(t)) out.tone = 'casual';
+          else if (/\b(deep|expert|advanced|technical|in-depth|comprehensive|nuanced|architect|engineer)\b/.test(t)) out.tone = 'expert';
+
+          // Output format detection
+          if (/\b(plan|step|how to|how do i|guide|process|workflow|tutorial|walk me through|first|next|then)\b/.test(t)) out.outputFormat = 'step-by-step';
+          else if (/\b(list|ideas|examples|options|tips|brainstorm|generate \d|come up with)\b/.test(t)) out.outputFormat = 'list';
+          else if (/\b(explain|breakdown|analyze|deep dive|essay|long form|comprehensive|detailed)\b/.test(t)) out.outputFormat = 'detailed breakdown';
+
+          // Max length suggestion
+          if (/\b(short|brief|quick|tldr|tl;dr|summary|one line|one-liner|tweet|caption|headline|elevator pitch)\b/.test(t)) out.maxLength = '100';
+          else if (/\b(email|product description|hook|landing page|outline|bullet)\b/.test(t)) out.maxLength = '200';
+          else if (/\b(plan|guide|step|strategy|how to|breakdown|roadmap)\b/.test(t)) out.maxLength = '300';
+          else if (/\b(essay|article|blog|comprehensive|long form|long-form|in-depth|detailed)\b/.test(t)) out.maxLength = '500';
+
+          // AI tool recommendation
+          if (/\b(research|fact|cite|source|current|latest|news|real-time|stat|statistic|study)\b/.test(t)) out.aiTool = 'perplexity';
+          else if (/\b(write|essay|blog|article|long form|long-form|story|book|novel|content|copy|edit my|proofread|natural|tone)\b/.test(t)) out.aiTool = 'claude';
+          else out.aiTool = 'chatgpt';
+
+          return out;
+        }
+
+        // Suggestion state (what we've suggested) and applied state (whether AO actually applied)
+        let currentSuggestions = null;
+
+        function showSuggestedBadge(field, on) {
+          const badge = document.getElementById('suggested-' + field);
+          if (!badge) return;
+          if (on) { badge.hidden = false; badge.classList.add('is-on'); }
+          else { badge.hidden = true; badge.classList.remove('is-on'); }
+        }
+
+        function applySuggestionsToFields(suggestions, force) {
+          if (!suggestions) return;
+          ['category', 'tone', 'outputFormat', 'maxLength'].forEach(function (field) {
+            const value = suggestions[field];
+            const el = document.getElementById(field);
+            if (!el || value === undefined) {
+              showSuggestedBadge(field, false);
+              return;
+            }
+            const isTouched = userTouched.has(field);
+            const shouldApply = force || (autoOptToggle.checked && !isTouched);
+            if (shouldApply) {
+              if (el.value !== value) {
+                el.value = value;
+                // For maxLength, hide custom input
+                if (field === 'maxLength') {
+                  const custom = document.getElementById('maxLengthCustom');
+                  if (custom) { custom.hidden = true; custom.value = ''; }
+                }
+              }
+              showSuggestedBadge(field, true);
+            } else if (!isTouched) {
+              // Show badge as hint even when off (since we have a recommendation)
+              showSuggestedBadge(field, true);
+            } else {
+              showSuggestedBadge(field, false);
+            }
+          });
+        }
+
+        function updateAIToolRecommendation(suggestions) {
+          const tools = ['chatgpt', 'claude', 'perplexity'];
+          const pick = (suggestions && suggestions.aiTool) || null;
+          tools.forEach(function (tool) {
+            const btn = document.querySelector('.open-in-btn[data-tool="' + tool + '"]');
+            const badge = document.getElementById('rec-badge-' + tool);
+            if (!btn || !badge) return;
+            if (pick && tool === pick) {
+              btn.classList.add('is-recommended');
+              badge.hidden = false;
+              badge.classList.add('is-on');
+            } else {
+              btn.classList.remove('is-recommended');
+              badge.hidden = true;
+              badge.classList.remove('is-on');
+            }
+          });
+        }
+
+        function recomputeSuggestions(force) {
+          const goalText = (goalEl.value || '').trim();
+          // Reset touched set when goal is cleared
+          if (goalText.length === 0 && lastGoalLength > 0) {
+            userTouched.clear();
+          }
+          lastGoalLength = goalText.length;
+
+          if (goalText.length < 8) {
+            currentSuggestions = null;
+            ['category', 'tone', 'outputFormat', 'maxLength'].forEach(function (f) { showSuggestedBadge(f, false); });
+            updateAIToolRecommendation(null);
+            return;
+          }
+          currentSuggestions = analyzeGoal(goalText);
+          applySuggestionsToFields(currentSuggestions, !!force);
+          updateAIToolRecommendation(currentSuggestions);
+        }
+
+        // Debounced goal input listener
+        let goalDebounce = null;
+        goalEl.addEventListener('input', function () {
+          if (goalDebounce) clearTimeout(goalDebounce);
+          goalDebounce = setTimeout(function () { recomputeSuggestions(false); }, 350);
+        });
+
+        // Auto Optimize toggle: persist + recompute. Never clobbers manually-edited fields.
+        autoOptToggle.addEventListener('change', function () {
+          try { localStorage.setItem(AUTO_OPT_KEY, autoOptToggle.checked ? '1' : '0'); } catch (e) {}
+          // Recompute and apply only to fields the user has not touched (force=false)
+          recomputeSuggestions(false);
+        });
+
+        // Expose for demo / template loaders to mark fields as touched (so suggestions don't override demo data)
+        window.__pmgSmartSystems = {
+          markAllTouched: function () { TRACKED_FIELDS.forEach(function (f) { userTouched.add(f); }); },
+          clearTouched: function () { userTouched.clear(); },
+          recompute: function (force) { recomputeSuggestions(!!force); }
+        };
+
+        // Compute on initial load if goal already populated (e.g. from history)
+        if ((goalEl.value || '').trim().length >= 8) {
+          recomputeSuggestions(false);
+        }
+      })();
+
+      // ===== Prompt Strength Score =====
+      (function setupStrengthScore() {
+        function compute(data, promptText) {
+          const insights = [];
+          let score = 0;
+          const goal = (data.goal || '').trim();
+          if (goal.length >= 60) { score += 25; }
+          else if (goal.length >= 30) { score += 15; insights.push('Goal could be more specific.'); }
+          else { score += 5; insights.push('Goal is too short — add more specifics.'); }
+
+          if (data.details && data.details.trim().length > 10) score += 20;
+          else insights.push('No extra context — add audience, budget, or constraints.');
+
+          if (data.guardrails && data.guardrails.trim().length > 0) score += 15;
+          else insights.push('No guardrails — tell the AI what to avoid.');
+
+          if (data.maxLength && data.maxLength > 0) score += 10;
+
+          if (data.personality && data.personality !== 'none') score += 10;
+          if (data.moneyMode || data.humanTone || data.clarityBoost || data.photoMode) score += 10;
+          if (data.tone) score += 5;
+          if (data.outputFormat) score += 5;
+
+          if (score > 100) score = 100;
+          if (score < 0) score = 0;
+
+          // Positive insights when strong
+          const strongInsights = [];
+          if (goal.length >= 60) strongInsights.push('Strong, specific goal.');
+          if (data.guardrails && data.maxLength) strongInsights.push('Clear constraints set.');
+          if (data.details && data.details.trim().length > 10) strongInsights.push('Good context provided.');
+
+          // Pick 2-3 insights: prefer suggestions if score < 90, else show strengths
+          let chosen;
+          if (score >= 90) {
+            chosen = strongInsights.slice(0, 3);
+            if (chosen.length === 0) chosen = ['Strong structure across the board.'];
+          } else {
+            chosen = insights.slice(0, 3);
+            if (chosen.length < 3 && strongInsights.length > 0) {
+              chosen = chosen.concat(strongInsights).slice(0, 3);
+            }
+            if (chosen.length === 0) chosen = ['Looks solid — try refining for an even tighter prompt.'];
+          }
+          return { score: score, insights: chosen };
+        }
+
+        function render(data, promptText) {
+          const wrap = document.getElementById('strength-score');
+          const pctEl = document.getElementById('strength-score-pct');
+          const fillEl = document.getElementById('strength-score-fill');
+          const listEl = document.getElementById('strength-score-insights');
+          if (!wrap || !pctEl || !fillEl || !listEl) return;
+          const result = compute(data, promptText);
+          pctEl.textContent = result.score + '%';
+          fillEl.style.width = result.score + '%';
+          fillEl.classList.remove('weak', 'ok', 'strong');
+          if (result.score < 50) fillEl.classList.add('weak');
+          else if (result.score < 80) fillEl.classList.add('ok');
+          else fillEl.classList.add('strong');
+          listEl.innerHTML = result.insights.map(function (s) {
+            return '<li>' + s.replace(/</g, '&lt;') + '</li>';
+          }).join('');
+          wrap.classList.add('is-on');
+          wrap.style.display = 'block';
+        }
+
+        function hide() {
+          const wrap = document.getElementById('strength-score');
+          if (wrap) {
+            wrap.classList.remove('is-on');
+            wrap.style.display = 'none';
+          }
+        }
+
+        window.__pmgStrengthScore = { render: render, hide: hide };
+      })();
+
       // Max response length: show custom input only when "custom" selected
       (function setupMaxLengthCustom() {
         const sel = document.getElementById('maxLength');
@@ -4516,6 +4909,10 @@ Context:
           applyAnswers();
           close();
           if (typeof showToast === 'function') showToast('Builder filled. Review and click Generate Prompt.');
+          // Refresh smart-system suggestions and AI tool recommendation for the new goal text.
+          if (window.__pmgSmartSystems && typeof window.__pmgSmartSystems.recompute === 'function') {
+            window.__pmgSmartSystems.recompute(false);
+          }
           const goalEl = document.getElementById('goal');
           if (goalEl && typeof goalEl.scrollIntoView === 'function') {
             goalEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -4581,6 +4978,9 @@ Context:
             window.__pmgClearUndo();
           }
           if (typeof hideEditedIndicator === 'function') hideEditedIndicator();
+          if (window.__pmgStrengthScore && typeof window.__pmgStrengthScore.hide === 'function') {
+            window.__pmgStrengthScore.hide();
+          }
           showToast('Prompt cleared.');
         });
       }
@@ -4873,6 +5273,13 @@ Context:
         setPromptText(prompt);
         addToHistory(data, prompt);
         if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
+        if (window.__pmgSmartSystems) {
+          if (typeof window.__pmgSmartSystems.markAllTouched === 'function') window.__pmgSmartSystems.markAllTouched();
+          if (typeof window.__pmgSmartSystems.recompute === 'function') window.__pmgSmartSystems.recompute(false);
+        }
+        if (window.__pmgStrengthScore && typeof window.__pmgStrengthScore.render === 'function') {
+          window.__pmgStrengthScore.render(data, prompt);
+        }
         document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
         showToast('Loaded template: ' + t.title);
       }
@@ -5031,6 +5438,9 @@ Context:
         setPromptText(prompt);
         addToHistory(data, prompt);
         if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
+        if (window.__pmgStrengthScore && typeof window.__pmgStrengthScore.render === 'function') {
+          window.__pmgStrengthScore.render(data, prompt);
+        }
         scrollToResult();
         showSavePromptTip();
         if (window.__pmgGuidance && typeof window.__pmgGuidance.markGenerated === 'function') {
@@ -5092,6 +5502,9 @@ Context:
         if (!v) return;
         document.getElementById('goal').value = v;
         document.getElementById('goal').focus();
+        if (window.__pmgSmartSystems && typeof window.__pmgSmartSystems.recompute === 'function') {
+          window.__pmgSmartSystems.recompute(false);
+        }
         showToast('Filled goal from your weekly focus.');
       });
       weeklyGoalClearBtn.addEventListener('click', function () {
@@ -5207,36 +5620,42 @@ Context:
           selector: '.hero-actions',
           fallbackSelector: '#hero-build-cta',
           title: 'Choose your starting path',
-          text: 'Start here. Use Build A Prompt when you already have a task in mind, See Use Cases for ideas, or Guide Me to answer a few questions and let us fill the builder.'
+          text: 'Start here. Use Build a prompt when you already have a task in mind, See use cases for ideas, or Guide me to answer a few questions and let us fill the builder.'
         },
         {
           selector: '#goal',
           title: 'Enter your goal',
-          text: "Type your goal in plain words, or use 'Guide Me' at the top of the builder to answer a few questions instead. Specific goals create stronger prompts."
+          text: "Type your goal in plain words, or use Guide me at the top of the builder to answer a few questions instead. As you type, we suggest the best category, tone, format, and length for you."
+        },
+        {
+          selector: '#auto-optimize-row',
+          fallbackSelector: '#auto-optimize-toggle',
+          title: 'Auto optimize is on',
+          text: 'When this is on, smart suggestions are applied automatically to fields you have not edited yourself. Turn it off if you want full manual control.'
         },
         {
           selector: '#tour-step-settings',
           fallbackSelector: '.settings-divider',
           title: 'Tune your prompt settings',
-          text: 'These shape the final prompt. Pick category, tone, format, max response length, and add guardrails for what the AI should avoid.'
+          text: 'These shape the final prompt. Pick category, tone, format, max response length, and add guardrails for what the AI should avoid. Suggested badges show our recommendations.'
         },
         {
           selector: '#tour-step-generate',
           fallbackSelector: '#prompt-form button[type="submit"]',
           title: 'Generate or demo',
-          text: 'Tap Generate Prompt when you are ready. If you are not sure what to enter, hit Use Demo Values for a full guided walkthrough of the app.'
+          text: 'Tap Generate prompt when you are ready. If you are not sure what to enter, hit Use demo values for a full guided walkthrough of the app.'
         },
         {
           selector: '#tour-step-improve',
           fallbackSelector: '#improve-block',
-          title: 'Refine, undo, and check quality',
-          text: 'Your first prompt is not final. Refine it, fine-tune one part, undo changes, or tap Check Prompt Quality below for quick suggestions.'
+          title: 'Refine, undo, and check strength',
+          text: 'Your first prompt is not final. Refine it, fine-tune one part, undo changes, see your prompt strength score, or tap Check prompt quality for quick suggestions.'
         },
         {
           selector: '#tour-final-actions',
           fallbackSelector: '#copy-btn',
           title: 'Use your prompt anywhere',
-          text: 'Copy uses your clipboard. The ChatGPT, Claude, and Perplexity buttons copy your prompt and open the AI tool in a new tab.'
+          text: 'Copy uses your clipboard. The ChatGPT, Claude, and Perplexity buttons copy your prompt and open the AI tool in a new tab. We highlight the best fit for your goal.'
         }
       ];
       const DEMO_STEPS = [
@@ -5244,7 +5663,7 @@ Context:
           selector: '#prompt-form',
           fallbackSelector: '#builder-panel',
           title: 'Step 1: Fill the builder',
-          text: "We added a sample goal and settings. You can also use 'Guide Me' at the top of the builder to answer a few questions instead."
+          text: "We added a sample goal and settings. As you type your own goal, smart suggestions appear automatically. You can also use Guide me to answer a few questions instead."
         },
         {
           selector: '#tour-step-generate',
@@ -5258,26 +5677,32 @@ Context:
         {
           selector: '#resultBox',
           fallbackSelector: '#result-panel',
-          title: 'Step 3: Show the output',
+          title: 'Step 3: See the output',
           text: 'This is your prompt. You can use it or adjust it.'
         },
         {
           selector: '#improve-block',
           fallbackSelector: '#tour-step-improve',
           title: 'Step 4: Refine and adjust',
-          text: 'Use these controls to refine results, limit length, or guide tone. Refine buttons, Fine-Tune, plus the Guardrail field and Max Response Length up in the builder all shape the answer.'
+          text: 'Use these controls to refine results, limit length, or guide tone. Refine buttons, Fine-tune, plus the Guardrail field and Max response length up in the builder all shape the answer.'
         },
         {
-          selector: '#tour-final-actions',
+          selector: '#strength-score',
+          fallbackSelector: '#quality-row',
+          title: 'Step 5: Check your prompt strength',
+          text: 'Your prompt scores 0 to 100% based on goal clarity, context, guardrails, and length. Tap Check prompt quality below for extra tips.'
+        },
+        {
+          selector: '.open-in-block',
           fallbackSelector: '#copy-btn',
-          title: 'Step 5: Quality and use in AI',
-          text: 'Tap Check Prompt Quality for quick suggestions, then copy your prompt or open it in ChatGPT, Claude, or Perplexity.'
+          title: 'Step 6: Use in your favorite AI',
+          text: 'Copy your prompt, or open it in ChatGPT, Claude, or Perplexity. We recommend the best AI tool for your specific goal.'
         },
         {
           selector: '#replay-tour-btn',
           fallbackSelector: '.site-footer-replay-btn',
           title: "You've seen the full flow",
-          text: "Now try your own goal. If you need help again, tap 'Replay Tour' at the bottom of the page."
+          text: "Now try your own goal. If you need help again, tap Replay tour at the bottom of the page."
         }
       ];
       const obOverlay = document.getElementById('ob-overlay');
@@ -5363,6 +5788,9 @@ Context:
             setPromptText(demoPrompt);
             addToHistory(demoData, demoPrompt);
             if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
+            if (window.__pmgStrengthScore && typeof window.__pmgStrengthScore.render === 'function') {
+              window.__pmgStrengthScore.render(demoData, demoPrompt);
+            }
           } catch (e) {
             setPromptText('Could not generate the demo prompt. Skip the demo or try Replay Tour later.');
             obNextBtn.style.visibility = '';
@@ -5820,6 +6248,9 @@ Context:
             const prompt = generatePrompt(data, button.dataset.remix);
             setPromptText(prompt);
             addToHistory(data, prompt);
+            if (window.__pmgStrengthScore && typeof window.__pmgStrengthScore.render === 'function') {
+              window.__pmgStrengthScore.render(data, prompt);
+            }
             showToast('Prompt updated');
           });
         });
@@ -5853,6 +6284,9 @@ Context:
           }
           setPromptText(prompt);
           addToHistory(data, prompt);
+          if (window.__pmgStrengthScore && typeof window.__pmgStrengthScore.render === 'function') {
+            window.__pmgStrengthScore.render(data, prompt);
+          }
           fineTuneInput.value = '';
           showToast('Prompt updated');
         });
@@ -5950,6 +6384,12 @@ Context:
         }
         document.getElementById('moneyMode').checked = true;
         document.getElementById('personality').value = 'bold';
+        // Mark all suggestion-tracked fields as touched so smart suggestions don't override demo data
+        if (window.__pmgSmartSystems && typeof window.__pmgSmartSystems.markAllTouched === 'function') {
+          window.__pmgSmartSystems.markAllTouched();
+          // Still recompute so the AI tool recommender (Claude/Perplexity/ChatGPT highlight) updates for the demo goal
+          if (typeof window.__pmgSmartSystems.recompute === 'function') window.__pmgSmartSystems.recompute(false);
+        }
         const builderSection = document.getElementById('builder');
         if (builderSection && typeof builderSection.scrollIntoView === 'function') {
           builderSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -6002,6 +6442,9 @@ Context:
       compareUseOriginal.addEventListener('click', function () {
         if (!compareCtx) return;
         setPromptText(compareCtx.original);
+        if (window.__pmgStrengthScore && typeof window.__pmgStrengthScore.render === 'function') {
+          window.__pmgStrengthScore.render(compareCtx.data, compareCtx.original);
+        }
         closeCompare();
         document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
         showToast('Using original.');
@@ -6010,6 +6453,9 @@ Context:
         if (!compareCtx) return;
         setPromptText(compareCtx.remix);
         addToHistory(compareCtx.data, compareCtx.remix);
+        if (window.__pmgStrengthScore && typeof window.__pmgStrengthScore.render === 'function') {
+          window.__pmgStrengthScore.render(compareCtx.data, compareCtx.remix);
+        }
         closeCompare();
         document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
         showToast('Using remix and saved to history.');

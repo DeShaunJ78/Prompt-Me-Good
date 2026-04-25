@@ -1,0 +1,218 @@
+Implement new prompt quality features and update the demo, onboarding tour, and manual to match. Do not break existing builder, generation, refinement, history, or layout.
+
+========================
+PART 1 — ADD NEW FEATURES
+========================
+
+1. Guided Setup Mode
+
+Add toggle above builder:
+“Guide Me (Recommended)”
+
+When ON:
+Ask:
+- What do you want help with?
+- Who is this for?
+- What outcome matters most?
+- Any constraints?
+
+Convert answers into:
+- Goal
+- Extra Details
+- Constraints
+
+Return user to builder after completion.
+
+------------------------
+
+2. Guardrail Field
+
+Add under Extra Details:
+
+Label:
+“What Should The AI Avoid?”
+
+Placeholder:
+“Ex: Don’t sound robotic, avoid jargon, don’t exceed 200 words…”
+
+Inject into prompt as constraints.
+
+------------------------
+
+3. Max Response Length
+
+Add control:
+
+Label:
+“Max Response Length”
+
+Options:
+- No Limit
+- 100 words
+- 200 words
+- 300 words
+- Custom
+
+Inject into prompt:
+“Keep the response under [X] words.”
+
+------------------------
+
+4. Prompt Quality Checker
+
+Add button near output:
+
+“Check Prompt Quality”
+
+Returns 2–3 short suggestions:
+- Too vague
+- Missing constraints
+- Could be more specific
+
+Keep feedback short.
+
+========================
+PART 2 — DEMO WALKTHROUGH UPDATE
+========================
+
+Goal:
+Full guided walkthrough with brief explanations.
+
+STEP 1 — Fill Builder
+“We added a sample goal and settings. You can also use ‘Guide Me’ to answer a few questions.”
+
+Highlight:
+Goal + Guided Mode
+
+------------------------
+
+STEP 2 — Generate
+“Generating your prompt…”
+“This turns your idea into a structured prompt.”
+
+------------------------
+
+STEP 3 — Output
+“This is your prompt. You can use it or adjust it.”
+
+------------------------
+
+STEP 4 — Refine + Controls
+Highlight:
+- Refine buttons
+- Fine-Tune field
+- Guardrail field
+- Max Response Length
+
+“Use these controls to refine results, limit length, or guide tone.”
+
+------------------------
+
+STEP 5 — Quality + Use
+Highlight:
+- Check Prompt Quality
+- Copy Prompt
+- ChatGPT / Claude / Perplexity
+
+“Check your prompt, then copy it or open it in an AI tool.”
+
+------------------------
+
+STEP 6 — Finish
+“You’ve seen the full flow. Now try your own goal.”
+“If you need help again, tap ‘Replay Tour’ at the bottom.”
+
+========================
+PART 3 — TOUR UPDATE
+========================
+
+Use sentence casing (no Title Case everywhere).
+
+STEP 1 — Starting Path
+Explain:
+- Build A Prompt
+- Use Cases
+- Guided Mode
+
+------------------------
+
+STEP 2 — Goal
+“You can type your goal or use ‘Guide Me’.”
+
+------------------------
+
+STEP 3 — Settings
+Highlight:
+- Category
+- Tone
+- Format
+- Max Response Length
+- Guardrail field
+
+“These shape the final prompt.”
+
+------------------------
+
+STEP 4 — Generate
+No change
+
+------------------------
+
+STEP 5 — Refine + Quality
+Highlight:
+- Refine buttons
+- Fine-Tune
+- Undo
+- Check Prompt Quality
+
+------------------------
+
+STEP 6 — Use Prompt
+Explain:
+- Copy uses clipboard
+- AI buttons open ChatGPT, Claude, Perplexity
+
+========================
+PART 4 — MANUAL UPDATE
+========================
+
+Add:
+
+Guided Setup Mode:
+“Answer a few questions instead of filling the builder manually.”
+
+Guardrails:
+“Tell the AI what NOT to do.”
+
+Max Response Length:
+“Limit output size.”
+
+Check Prompt Quality:
+“Get quick feedback on your prompt.”
+
+Replay Tour:
+“Replay anytime from the bottom of the page.”
+
+Update:
+
+Using Your Prompt:
+“Copy or open in ChatGPT, Claude, or Perplexity.”
+
+Cleanup:
+- Remove outdated instructions
+- Keep short, scannable
+
+========================
+PART 5 — FINAL CHECK
+========================
+
+Confirm:
+- Guided Mode works
+- Guardrail field injects properly
+- Word limit works
+- Quality checker works
+- Demo includes new features
+- Tour reflects new system
+- Manual matches features
+- Mobile layout clean
+- No JS errors
