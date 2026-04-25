@@ -901,6 +901,33 @@
     .settings-divider { grid-column: 1 / -1; margin-top: var(--space-3); padding-top: var(--space-4); border-top: 1px dashed var(--color-border); }
     .settings-divider-title { font-size: var(--text-md); font-weight: 700; color: var(--color-text); margin: 0; }
     .settings-divider-sub { font-size: var(--text-sm); color: var(--color-text-muted); margin: 4px 0 0; line-height: 1.5; }
+    .uc-modal { position: fixed; inset: 0; z-index: 9000; display: flex; align-items: center; justify-content: center; padding: var(--space-4); background: rgba(15, 23, 30, 0.55); backdrop-filter: blur(2px); opacity: 0; pointer-events: none; transition: opacity 180ms ease; }
+    .uc-modal[hidden] { display: none; }
+    .uc-modal.is-open { opacity: 1; pointer-events: auto; }
+    .uc-modal-card { position: relative; width: 100%; max-width: 880px; max-height: calc(100vh - var(--space-8)); background: var(--color-surface); color: var(--color-text); border-radius: var(--radius-lg); box-shadow: 0 24px 60px rgba(0,0,0,0.35); display: flex; flex-direction: column; overflow: hidden; transform: translateY(8px) scale(0.98); transition: transform 200ms ease; }
+    .uc-modal.is-open .uc-modal-card { transform: translateY(0) scale(1); }
+    .uc-modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); padding: var(--space-5) var(--space-5) var(--space-3); border-bottom: 1px solid var(--color-border); }
+    .uc-modal-head-text { min-width: 0; }
+    .uc-modal-title { font-size: var(--text-lg); font-weight: 700; color: var(--color-text); margin: 0 0 4px; line-height: 1.2; }
+    .uc-modal-sub { font-size: var(--text-sm); color: var(--color-text-muted); margin: 0; }
+    .uc-modal-close { flex: 0 0 auto; background: transparent; border: 1px solid var(--color-border); color: var(--color-text); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center; transition: background var(--transition-interactive), border-color var(--transition-interactive); }
+    .uc-modal-close:hover, .uc-modal-close:focus-visible { background: color-mix(in srgb, var(--color-primary) 12%, transparent); border-color: var(--color-primary); outline: none; }
+    .uc-modal-body { padding: var(--space-4) var(--space-5) var(--space-5); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .uc-modal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); overflow: visible; mask-image: none; -webkit-mask-image: none; scroll-snap-type: none; }
+    .uc-modal-grid .popular-use-card { max-width: none; min-width: 0; width: 100%; flex: none; scroll-snap-align: none; }
+    @media (max-width: 920px) { .uc-modal-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 600px) {
+      .uc-modal { padding: 0; align-items: stretch; justify-content: stretch; }
+      .uc-modal-card { max-width: none; max-height: none; height: 100vh; height: 100dvh; border-radius: 0; }
+      .uc-modal-grid { grid-template-columns: 1fr; }
+    }
+    body.uc-modal-open { overflow: hidden; }
+    .post-uc-guidance { display: none; align-items: flex-start; gap: var(--space-2); margin: 0 0 var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: color-mix(in srgb, var(--color-primary) 10%, transparent); border: 1px solid color-mix(in srgb, var(--color-primary) 28%, transparent); color: var(--color-text); font-size: var(--text-sm); line-height: 1.5; }
+    .post-uc-guidance.is-visible { display: flex; }
+    .post-uc-guidance-icon { flex: 0 0 auto; font-size: var(--text-md); line-height: 1; margin-top: 1px; }
+    .post-uc-guidance-text { flex: 1; min-width: 0; }
+    .post-uc-guidance-close { flex: 0 0 auto; background: transparent; border: 0; color: var(--color-text-muted); cursor: pointer; font-size: var(--text-md); line-height: 1; padding: 2px 6px; border-radius: 4px; }
+    .post-uc-guidance-close:hover { background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-text); }
     .demo-helper { margin: 10px 0 0; font-size: var(--text-sm); color: var(--color-text-muted); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
     .demo-helper-link { font-weight: 700; color: var(--color-primary); padding: 2px 6px; text-decoration: underline; text-underline-offset: 3px; }
     .demo-helper-link:hover { background: color-mix(in srgb, var(--color-primary) 15%, transparent); }
@@ -1590,6 +1617,12 @@
                 </label>
               </div>
 
+              <div class="post-uc-guidance" id="post-uc-guidance" role="status" aria-live="polite">
+                <span class="post-uc-guidance-icon" aria-hidden="true">✅</span>
+                <span class="post-uc-guidance-text">Great start — review the details, click Generate, then copy your finished prompt into your favorite AI tool.</span>
+                <button type="button" class="post-uc-guidance-close" id="post-uc-guidance-close" aria-label="Dismiss">×</button>
+              </div>
+
               <div class="actions-row" id="tour-step-generate">
                 <button class="btn btn-primary" type="submit">Generate Prompt</button>
                 <button class="btn btn-secondary" type="button" id="fill-demo">Use Demo Values</button>
@@ -2234,6 +2267,21 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite">Copied to clipboard.</div>
 
+  <div class="uc-modal" id="usecases-modal" role="dialog" aria-modal="true" aria-labelledby="usecases-modal-title" aria-hidden="true" hidden>
+    <div class="uc-modal-card" role="document">
+      <div class="uc-modal-head">
+        <div class="uc-modal-head-text">
+          <h2 class="uc-modal-title" id="usecases-modal-title">Choose a starting point</h2>
+          <p class="uc-modal-sub">Select one and we'll build the prompt for you.</p>
+        </div>
+        <button type="button" class="uc-modal-close" id="usecases-modal-close" aria-label="Close">×</button>
+      </div>
+      <div class="uc-modal-body">
+        <div class="uc-modal-grid" id="usecases-modal-grid"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="compare-overlay" id="compare-overlay" role="dialog" aria-modal="true" aria-labelledby="compare-title" aria-hidden="true">
     <div class="compare-modal">
       <div class="compare-head">
@@ -2395,29 +2443,99 @@
       if (moneyModeEl) {
         moneyModeEl.addEventListener('change', function () { moneyModeUserTouched = true; });
       }
+      function applyPopularUseCard(card, opts) {
+        const goalEl = document.getElementById('goal');
+        if (!goalEl) return;
+        const goalText = card.getAttribute('data-popular-goal') || '';
+        goalEl.value = goalText;
+        goalEl.dispatchEvent(new Event('input', { bubbles: true }));
+        if (moneyModeEl && !moneyModeUserTouched) {
+          const wantOff = card.getAttribute('data-money-mode') === 'off';
+          moneyModeEl.checked = !wantOff;
+        }
+        const builderSection = document.getElementById('builder');
+        if (builderSection) {
+          builderSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        window.setTimeout(function () {
+          try { goalEl.focus({ preventScroll: true }); } catch (e) { goalEl.focus(); }
+        }, 450);
+        if (typeof showToast === 'function') {
+          showToast('Goal filled — tweak it, then Generate.');
+        }
+        const guidance = document.getElementById('post-uc-guidance');
+        if (guidance && (!opts || opts.showGuidance !== false)) {
+          guidance.classList.add('is-visible');
+        }
+      }
+      window.__pmgApplyPopularUseCard = applyPopularUseCard;
       document.querySelectorAll('.popular-use-card').forEach(function (card) {
-        card.addEventListener('click', function () {
-          const goalEl = document.getElementById('goal');
-          if (!goalEl) return;
-          const goalText = card.getAttribute('data-popular-goal') || '';
-          goalEl.value = goalText;
-          goalEl.dispatchEvent(new Event('input', { bubbles: true }));
-          if (moneyModeEl && !moneyModeUserTouched) {
-            const wantOff = card.getAttribute('data-money-mode') === 'off';
-            moneyModeEl.checked = !wantOff;
-          }
-          const builderSection = document.getElementById('builder');
-          if (builderSection) {
-            builderSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-          window.setTimeout(function () {
-            try { goalEl.focus({ preventScroll: true }); } catch (e) { goalEl.focus(); }
-          }, 450);
-          if (typeof showToast === 'function') {
-            showToast('Goal filled — tweak it, then Generate.');
-          }
-        });
+        card.addEventListener('click', function () { applyPopularUseCard(card); });
       });
+
+      // Use Cases modal
+      (function setupUseCasesModal() {
+        const modal = document.getElementById('usecases-modal');
+        const openBtn = document.getElementById('hero-usecases-cta');
+        const closeBtn = document.getElementById('usecases-modal-close');
+        const grid = document.getElementById('usecases-modal-grid');
+        if (!modal || !openBtn || !grid) return;
+
+        const sourceCards = document.querySelectorAll('#use-cases .popular-use-card');
+        sourceCards.forEach(function (src) {
+          const clone = src.cloneNode(true);
+          clone.addEventListener('click', function () {
+            applyPopularUseCard(src);
+            closeModal();
+          });
+          grid.appendChild(clone);
+        });
+
+        let lastFocus = null;
+        function openModal(e) {
+          if (e) e.preventDefault();
+          lastFocus = document.activeElement;
+          modal.hidden = false;
+          // Force layout so transition runs
+          void modal.offsetWidth;
+          modal.classList.add('is-open');
+          modal.setAttribute('aria-hidden', 'false');
+          document.body.classList.add('uc-modal-open');
+          window.setTimeout(function () {
+            try { closeBtn && closeBtn.focus({ preventScroll: true }); } catch (err) { closeBtn && closeBtn.focus(); }
+          }, 50);
+        }
+        function closeModal() {
+          modal.classList.remove('is-open');
+          modal.setAttribute('aria-hidden', 'true');
+          document.body.classList.remove('uc-modal-open');
+          window.setTimeout(function () {
+            modal.hidden = true;
+            if (lastFocus && typeof lastFocus.focus === 'function') {
+              try { lastFocus.focus({ preventScroll: true }); } catch (err) { lastFocus.focus(); }
+            }
+          }, 200);
+        }
+        openBtn.addEventListener('click', openModal);
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', function (e) {
+          if (e.target === modal) closeModal();
+        });
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+        });
+      })();
+
+      // Inline guidance dismiss + auto-hide on generate
+      (function setupPostUseCaseGuidance() {
+        const guidance = document.getElementById('post-uc-guidance');
+        const closeBtn = document.getElementById('post-uc-guidance-close');
+        const form = document.getElementById('prompt-form');
+        if (!guidance) return;
+        function hide() { guidance.classList.remove('is-visible'); }
+        if (closeBtn) closeBtn.addEventListener('click', hide);
+        if (form) form.addEventListener('submit', function () { window.setTimeout(hide, 50); });
+      })();
       const toast = document.getElementById('toast');
 
       const categoryDirectives = {

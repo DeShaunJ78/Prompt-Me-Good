@@ -1,0 +1,175 @@
+Add gentle, adaptive guidance across the site so new users always know the next step, while experienced users are not annoyed. Do not break layout, existing functionality, generation flow, use case autofill, copy behavior, or mobile responsiveness.
+
+Goal:
+Every major unguided area should either explain the next step, reassure the user, or offer help. Guidance should be visible for new users but reduce automatically once the user demonstrates they understand the flow.
+
+Guidance style:
+- Gentle and concise.
+- Inline only.
+- No modals, popups, blocking tooltips, or new browser tabs.
+- Match the existing design system.
+- Use subtle helper text, small callout blocks, empty-state text, or microcopy near the relevant action.
+- Do not overwhelm the page with too many messages.
+- Prioritize clarity at decision points.
+- Keep the experience helpful, not cluttered.
+
+Adaptive guidance behavior:
+
+1. Default state for new or unknown users
+Show the inline guidance nudges normally:
+- Hero helper line
+- Builder step guidance
+- Use case helper text
+- Settings subtext
+- Generate guidance
+- Empty output instruction
+- Copy guidance
+- Helpful form validation
+
+2. Detect confident behavior
+Treat the user as more experienced if they complete one or more of these actions:
+- Generates a prompt successfully.
+- Copies a generated prompt.
+- Selects a use case and generates without hesitation.
+- Returns to the site after a previous successful generate/copy session.
+- Dismisses guidance manually.
+
+3. Remember guidance state locally
+Use localStorage to store simple, privacy-friendly state, such as:
+- hasGeneratedPrompt: true
+- hasCopiedPrompt: true
+- guidanceDismissed: true
+- successfulPromptCount: number
+
+Requirements:
+- Do not require login.
+- Do not send this data anywhere.
+- Do not store personal information.
+
+4. Reduce guidance after success
+After the user has generated or copied at least once:
+- Keep essential labels.
+- Hide or collapse repetitive helper text.
+- Keep empty-state instructions only when needed.
+- Keep validation messages when errors happen.
+- Keep the “Need help?” option available.
+
+5. Add manual guidance controls
+For instructional guidance blocks, add a small dismiss control:
+“Hide tips”
+
+When clicked:
+- Hide non-essential tips.
+- Save this preference in localStorage.
+- Do not hide critical validation or success messages.
+
+Add a subtle helper link or button somewhere appropriate:
+“Show tips”
+
+When clicked:
+- Restore guidance messages.
+- Update localStorage accordingly.
+
+6. Keep help contextual
+Even for experienced users:
+- Show help when there is an error.
+- Show help when the output is empty.
+- Show copy success after copying.
+- Show use case instructions inside the use case modal if the modal is open.
+- Do not show large repeated instructions after the user has already succeeded.
+
+7. Avoid annoyance
+Do not:
+- Use popups.
+- Use forced onboarding.
+- Block the user.
+- Show the same success tip repeatedly.
+- Hide important controls.
+- Make the page feel empty when tips are hidden.
+
+Suggested logic:
+- If guidanceDismissed is true, hide non-essential guidance.
+- If hasCopiedPrompt is true, treat user as experienced.
+- If successfulPromptCount >= 2, reduce guidance automatically.
+- If the user clicks “Show tips,” show guidance again regardless of experience state.
+
+Areas to review and improve:
+
+1. Hero / starting area
+Add a small helper line near the main CTA area if needed:
+“Not sure where to start? Choose a use case or build your own prompt step-by-step.”
+
+2. Build A Prompt section
+Make sure users understand the sequence:
+- Write the goal
+- Tune the settings
+- Click Generate
+- Copy the finished prompt into their AI tool
+
+Suggested helper copy:
+“Start with your goal, then tune the settings before generating your finished prompt.”
+
+3. Use Cases
+Make sure users understand what happens when they select a card.
+
+Suggested helper copy:
+“Pick a use case to auto-fill the builder. You can edit everything before generating.”
+
+4. Settings area
+Keep or add the settings guidance:
+
+Title:
+“Tune Your Prompt Settings”
+
+Subtext:
+“These settings control tone, detail, and structure of your prompt.”
+
+5. Generate area
+Add subtle next-step guidance near the Generate button:
+“Ready? Generate your prompt, then review and copy it.”
+
+6. Output / generated prompt area
+If the output area is empty, show an empty-state instruction:
+“Your generated prompt will appear here. Once it looks good, copy it into your favorite AI tool.”
+
+After a prompt is generated, make the copy step obvious:
+“Looks good? Copy this prompt and paste it into ChatGPT, Claude, Perplexity, Gemini, or another AI tool.”
+
+7. Copy action
+After copy succeeds, show a short success message:
+“Copied — now paste it into your AI tool.”
+
+8. Error or incomplete form states
+If the user tries to generate without enough information, show a helpful message:
+“Add a clear goal first, then we can build your prompt.”
+
+9. Help-oriented nudge
+Where appropriate, add one small reassurance line:
+“Need help? Start with a use case or describe what you want the AI to do.”
+
+Implementation requirements:
+- Keep all guidance inline.
+- Do not add intrusive popups.
+- Do not introduce a chatbot unless one already exists.
+- Do not change core page structure unnecessarily.
+- Do not duplicate the same instruction too many times.
+- Preserve responsiveness on mobile and desktop.
+- Preserve all existing functionality.
+
+Final QA checklist:
+- First-time user gets clear guidance.
+- A new user can tell what to do next at each major step.
+- Empty areas explain what will appear there.
+- Use cases clearly explain that they auto-fill the builder.
+- Builder clearly explains how to generate and copy.
+- Experienced user sees fewer repeated tips.
+- User can hide tips manually.
+- User can show tips again.
+- Guidance state persists after refresh.
+- Validation and success messages still appear when needed.
+- Copy success is confirmed.
+- User understands to copy the prompt into an AI tool.
+- No personal data is stored.
+- Page does not feel cluttered.
+- Layout remains intact on desktop and mobile.
+- No JavaScript or console errors.
