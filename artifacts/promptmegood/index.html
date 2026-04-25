@@ -660,6 +660,11 @@
     .fine-tune-row textarea::placeholder { color: var(--color-text-faint); white-space: pre-wrap; }
     .fine-tune-row .btn { white-space: nowrap; align-self: stretch; }
     .fine-tune-tip { margin: 6px 0 0; font-size: var(--text-xs); color: var(--color-text-muted); }
+    .undo-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin-top: var(--space-2); }
+    .undo-btn { padding: 6px 14px; font-size: var(--text-sm); }
+    .undo-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .undo-helper { font-size: var(--text-xs); color: var(--color-text-muted); }
+    @media (max-width: 600px) { .undo-row { flex-direction: column; align-items: flex-start; } .undo-btn { width: 100%; } }
     .improve-status { display: inline-block; margin-top: var(--space-2); font-size: var(--text-xs); color: var(--color-text-muted); }
     .improve-status[hidden] { display: none; }
     .improve-block.is-updating { opacity: 0.85; }
@@ -1563,13 +1568,17 @@
                 <button class="btn btn-secondary" type="button" data-remix="aggressive">More Aggressive</button>
                 <button class="btn btn-secondary" type="button" data-remix="beginner">Beginner Friendly</button>
               </div>
+              <div class="undo-row">
+                <button class="btn btn-secondary undo-btn" type="button" id="undo-btn" disabled aria-disabled="true">↶ Undo Last Change</button>
+                <span class="undo-helper">Not feeling the change? Undo and try another.</span>
+              </div>
               <div class="fine-tune">
                 <label for="fine-tune-input" class="fine-tune-label">Fine-Tune Your Prompt</label>
                 <div class="fine-tune-row">
                   <textarea id="fine-tune-input" rows="3" placeholder="Tell me what to change. Example: make it shorter, more persuasive, add examples, or simplify the steps."></textarea>
                   <button class="btn btn-primary" type="button" id="fine-tune-btn">Update Prompt</button>
                 </div>
-                <p class="fine-tune-tip">Tip: You don&rsquo;t need to start over — just tell me what to improve.</p>
+                <p class="fine-tune-tip">Tell me what to change &mdash; no need to start over.</p>
               </div>
               <span class="improve-status" id="improve-status" aria-live="polite" hidden>Updating…</span>
             </div>
@@ -2030,8 +2039,22 @@
 
               <div class="manual-feature">
                 <h4>Fine-Tune Your Prompt</h4>
-                <p>Use this field when you like the prompt overall but want to change one part of it. For example, you can ask PromptMeGood to make it shorter, more persuasive, more detailed, less formal, or focused on a specific audience.</p>
+                <p>If your prompt is close but not perfect, tell PromptMeGood exactly what to change instead of starting over.</p>
+                <p><strong>Examples:</strong></p>
+                <ul>
+                  <li>Make it shorter</li>
+                  <li>Add examples</li>
+                  <li>Make it more persuasive</li>
+                  <li>Focus on beginners</li>
+                </ul>
                 <p><strong>How it works:</strong> Type your instruction in the Fine-Tune Your Prompt field below the refinement buttons, then tap <strong>Update Prompt</strong>. The current prompt is refined with your instruction and replaced in place — your form inputs stay exactly as they were.</p>
+              </div>
+
+              <div class="manual-feature">
+                <h4>Undo Changes</h4>
+                <p>If you don&rsquo;t like a refinement, use <strong>Undo Last Change</strong> to go back step-by-step.</p>
+                <p><strong>Example:</strong> Original &rarr; Detailed &rarr; Aggressive &rarr; Undo &rarr; back to Detailed.</p>
+                <p>Undo works for every refinement (More Detailed, More Aggressive, Beginner Friendly, and Fine-Tune Your Prompt). Generating a new prompt or restoring one from history clears the undo history.</p>
               </div>
 
               <div class="manual-feature">
@@ -2080,6 +2103,7 @@
                 <li><strong>Try different Personality Modes</strong> to see how the same idea changes. This is one of the fastest ways to improve results.</li>
                 <li><strong>Don't skip the refinement buttons.</strong> The fastest way to a better answer is one tap of More Detailed or More Aggressive — they update the current prompt in place.</li>
                 <li><strong>If the first prompt is close but not perfect, use Fine-Tune Your Prompt instead of starting over.</strong> Type the change you want (shorter, more persuasive, add examples) and tap Update Prompt.</li>
+                <li><strong>Use refinement tools instead of starting over.</strong> Small adjustments often produce better results faster — and Undo Last Change lets you back out any refinement you don&rsquo;t love.</li>
                 <li><strong>Test across platforms.</strong> ChatGPT, Claude, and Perplexity all answer differently — try the same prompt in each.</li>
                 <li><strong>Save winners as templates.</strong> If a prompt nails it, save it so you can reuse it in one click.</li>
                 <li><strong>Use the example chips when stuck.</strong> They're great unblockers if your mind goes blank.</li>
@@ -2094,7 +2118,7 @@
                 <li><strong>Being too vague.</strong> "Help me make money" tells the AI almost nothing. Add the context — what, who, where, by when.</li>
                 <li><strong>Ignoring output format.</strong> If you want a checklist, pick a list. If you want a plan, pick step-by-step. Format changes how usable the answer is.</li>
                 <li><strong>Not using the refinement tools.</strong> The first prompt is rarely the best one. The refinement buttons and Fine-Tune Your Prompt field exist for a reason — use them.</li>
-                <li><strong>Restarting from scratch every time.</strong> Do not restart from scratch every time. Use the refinement tools to improve what you already generated.</li>
+                <li><strong>Starting over every time instead of refining the current prompt.</strong> Use the refinement buttons, Fine-Tune Your Prompt, or Undo Last Change to improve what you already generated.</li>
                 <li><strong>Overthinking the inputs.</strong> A messy honest sentence beats a polished vague one. You can always refine the current prompt directly from the output area.</li>
                 <li><strong>Skipping Money Mode when it fits.</strong> If your goal is execution and income, leaving Money Mode off softens the answer.</li>
                 <li><strong>Forgetting to save winners.</strong> Great prompts are gold. Add tags, favorite them, or save them as templates.</li>
@@ -3061,6 +3085,7 @@ Context:
         document.getElementById('outputLanguage').value = item.data.outputLanguage || 'english';
         document.getElementById('personality').value = item.data.personality || 'none';
         resultBox.textContent = item.prompt;
+        if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
         document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
         showToast('Restored from history.');
       }
@@ -3705,6 +3730,7 @@ Context:
         const prompt = generatePrompt(data);
         resultBox.textContent = prompt;
         addToHistory(data, prompt);
+        if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
         document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
         showToast('Loaded template: ' + t.title);
       }
@@ -3862,6 +3888,7 @@ Context:
         const prompt = generatePrompt(data);
         resultBox.textContent = prompt;
         addToHistory(data, prompt);
+        if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
         scrollToResult();
         showSavePromptTip();
       });
@@ -4358,6 +4385,44 @@ Context:
 
       const improveBlockEl = document.getElementById('improve-block');
       const improveStatusEl = document.getElementById('improve-status');
+      const undoBtnEl = document.getElementById('undo-btn');
+      const promptUndoStack = [];
+      function isPlaceholderPrompt(text) {
+        if (!text) return true;
+        const t = text.trim();
+        if (!t) return true;
+        return t === 'Your generated prompt will appear here.'
+          || t.indexOf('Please enter a goal') === 0;
+      }
+      function updateUndoBtn() {
+        if (!undoBtnEl) return;
+        const enabled = promptUndoStack.length > 0;
+        undoBtnEl.disabled = !enabled;
+        undoBtnEl.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+      }
+      function pushPromptUndo() {
+        const current = resultBox.textContent || '';
+        if (isPlaceholderPrompt(current)) return;
+        promptUndoStack.push(current);
+        if (promptUndoStack.length > 25) promptUndoStack.shift();
+        updateUndoBtn();
+      }
+      function clearPromptUndo() {
+        promptUndoStack.length = 0;
+        updateUndoBtn();
+      }
+      window.__pmgClearUndo = clearPromptUndo;
+      if (undoBtnEl) {
+        undoBtnEl.addEventListener('click', function () {
+          if (promptUndoStack.length === 0) return;
+          const prev = promptUndoStack.pop();
+          resultBox.textContent = prev;
+          updateUndoBtn();
+          showToast('Last change undone');
+        });
+      }
+      updateUndoBtn();
+
       function withImproveLoading(fn) {
         if (improveBlockEl) improveBlockEl.classList.add('is-updating');
         if (improveStatusEl) { improveStatusEl.hidden = false; improveStatusEl.textContent = 'Updating…'; }
@@ -4377,6 +4442,7 @@ Context:
             document.getElementById('goal').focus();
             return;
           }
+          pushPromptUndo();
           withImproveLoading(function () {
             const prompt = generatePrompt(data, button.dataset.remix);
             resultBox.textContent = prompt;
@@ -4401,10 +4467,12 @@ Context:
           document.getElementById('goal').focus();
           return;
         }
+        pushPromptUndo();
         withImproveLoading(function () {
           const prompt = generatePrompt(data, 'custom', instruction);
           resultBox.textContent = prompt;
           addToHistory(data, prompt);
+          fineTuneInput.value = '';
           showToast('Prompt updated');
         });
       }
@@ -4454,6 +4522,7 @@ Context:
         const prompt = generatePrompt(data);
         resultBox.textContent = prompt;
         addToHistory(data, prompt);
+        if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
         document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
         showToast('Random prompt generated.');
       });
@@ -4471,6 +4540,7 @@ Context:
         const demoPrompt = generatePrompt(demoData);
         resultBox.textContent = demoPrompt;
         addToHistory(demoData, demoPrompt);
+        if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
       });
       const compareOverlay = document.getElementById('compare-overlay');
       const compareTitle = document.getElementById('compare-title');

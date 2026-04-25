@@ -1,0 +1,161 @@
+Upgrade the prompt refinement system AND update all documentation to match. Do not break existing generation, copy, history, or layout.
+
+========================
+PART 1 — ADD UNDO FUNCTIONALITY
+========================
+
+1. Add button:
+Text: “Undo Last Change”
+
+Placement:
+- Inside the output area
+- Near refinement controls
+
+2. Behavior:
+- Before ANY refinement, store current prompt in an undo stack
+
+Applies to:
+- More Detailed
+- More Aggressive
+- Beginner Friendly
+- Fine-Tune (Update Prompt)
+
+3. On Undo:
+- Restore previous prompt
+- Remove it from stack
+- Show toast:
+“Last change undone”
+
+4. Multi-step undo:
+Example:
+Original → Detailed → Aggressive → Undo → Detailed → Undo → Original
+
+5. Reset rules:
+- New prompt generation clears undo stack
+- Restoring from history clears undo stack
+
+========================
+PART 2 — REFINEMENT BUTTON BEHAVIOR
+========================
+
+Buttons:
+- More Detailed
+- More Aggressive
+- Beginner Friendly
+
+Behavior:
+- Update prompt IN PLACE
+- Do NOT scroll user away
+- Do NOT reset form
+- Always push current prompt to undo stack first
+
+========================
+PART 3 — FINE-TUNE FIELD FIX
+========================
+
+Label:
+“Fine-Tune Your Prompt”
+
+Placeholder:
+“Tell me what to change. Example: make it shorter, more persuasive, add examples, or simplify the steps.”
+
+Behavior:
+- Input + “Update Prompt” refines CURRENT prompt
+- If empty:
+Show message:
+“Tell me what you want to change first.”
+
+- Show toast:
+“Prompt updated”
+
+UX:
+- Ensure text wraps properly
+- Minimum 3–4 visible lines
+- No cut-off placeholder text
+
+========================
+PART 4 — ADD HELPER TEXT (UI)
+========================
+
+Near refinement buttons:
+“Refine Your Prompt Instantly”
+
+Near fine-tune field:
+“Tell me what to change — no need to start over.”
+
+Near Undo:
+“Not feeling the change? Undo and try another.”
+
+========================
+PART 5 — UPDATE MANUAL / HOW TO USE
+========================
+
+Add sections:
+
+------------------------
+Refining Your Prompt
+------------------------
+“After PromptMeGood creates your prompt, you can improve it without starting over using the tools in the output area.”
+
+Explain:
+- More Detailed → adds depth and examples
+- More Aggressive → stronger, more direct tone
+- Beginner Friendly → simpler, clearer output
+
+------------------------
+Fine-Tune Your Prompt
+------------------------
+“If your prompt is close but not perfect, tell PromptMeGood exactly what to change instead of starting over.”
+
+Examples:
+- Make it shorter
+- Add examples
+- Make it more persuasive
+- Focus on beginners
+
+------------------------
+Undo Changes
+------------------------
+“If you don’t like a refinement, use Undo Last Change to go back step-by-step.”
+
+Example:
+Original → Detailed → Aggressive → Undo → back to Detailed
+
+========================
+PART 6 — UPDATE EXISTING CONTENT
+========================
+
+Replace any wording that suggests:
+- restarting from scratch
+
+With:
+“You can refine your current prompt directly.”
+
+========================
+PART 7 — UPDATE PRO TIPS
+========================
+
+Add:
+“Use refinement tools instead of starting over. Small adjustments often produce better results faster.”
+
+========================
+PART 8 — UPDATE COMMON MISTAKES
+========================
+
+Add:
+“Starting over every time instead of refining the current prompt.”
+
+========================
+FINAL CHECK
+========================
+
+- Undo works for all refinement actions
+- Multiple undo steps work correctly
+- Refinement updates prompt in place
+- Fine-tune field is clear and readable
+- Manual reflects new system
+- Helper text appears correctly
+- Copy Prompt still works
+- History still works
+- Mobile layout is clean
+- No JavaScript errors
