@@ -1262,6 +1262,40 @@
     }
     .toast.show { opacity: 1; transform: translateY(0); }
 
+    .uc-confirm-toast {
+      position: fixed; top: var(--space-4); left: 50%;
+      transform: translateX(-50%) translateY(-12px);
+      z-index: 10000;
+      width: min(560px, calc(100% - var(--space-4) * 2));
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: 12px 16px;
+      background: #E6F7F5;
+      border: 1px solid #0f766e;
+      color: #0c4f48;
+      border-radius: 14px;
+      box-shadow: 0 10px 28px rgba(15, 118, 110, 0.20);
+      opacity: 0; pointer-events: none;
+      transition: opacity 240ms ease, transform 240ms ease;
+      font-size: var(--text-sm); line-height: 1.4;
+    }
+    .uc-confirm-toast[hidden] { display: none; }
+    .uc-confirm-toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+    .uc-confirm-toast-icon { flex: 0 0 auto; font-size: var(--text-md); line-height: 1; }
+    .uc-confirm-toast-text { flex: 1 1 auto; min-width: 0; }
+    .uc-confirm-toast-btn {
+      flex: 0 0 auto;
+      background: #0f766e; color: #fff; border: 0;
+      padding: 6px 14px; border-radius: var(--radius-full);
+      font-size: var(--text-xs); font-weight: 600; cursor: pointer;
+      transition: background 150ms ease, transform 150ms ease;
+    }
+    .uc-confirm-toast-btn:hover, .uc-confirm-toast-btn:focus-visible { background: #0c5e57; outline: none; }
+    .uc-confirm-toast-btn:active { transform: scale(0.96); }
+    @media (max-width: 600px) {
+      .uc-confirm-toast { top: 12px; padding: 10px 12px; gap: 10px; font-size: 13px; border-radius: 12px; }
+      .uc-confirm-toast-btn { padding: 5px 11px; font-size: 12px; }
+    }
+
     @media (max-width: 920px) {
       .hero-grid, .app-shell { grid-template-columns: 1fr; }
       .hero h1 {
@@ -2330,6 +2364,12 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite">Copied to clipboard.</div>
 
+  <div class="uc-confirm-toast" id="uc-confirm-toast" role="status" aria-live="polite" hidden>
+    <span class="uc-confirm-toast-icon" aria-hidden="true">✨</span>
+    <span class="uc-confirm-toast-text">Your starting idea was added. Review the options below, then tap Generate Prompt.</span>
+    <button type="button" class="uc-confirm-toast-btn" id="uc-confirm-toast-dismiss" aria-label="Dismiss confirmation">Got it</button>
+  </div>
+
   <div class="uc-modal" id="usecases-modal" role="dialog" aria-modal="true" aria-labelledby="usecases-modal-title" aria-hidden="true" hidden>
     <div class="uc-modal-card" role="document">
       <div class="uc-modal-head">
@@ -2529,8 +2569,10 @@
         window.setTimeout(function () {
           try { goalEl.focus({ preventScroll: true }); } catch (e) { goalEl.focus(); }
         }, 450);
-        if (typeof showToast === 'function') {
-          showToast('Goal filled — tweak it, then Generate.');
+        if (typeof window.showUseCaseConfirmToast === 'function') {
+          window.showUseCaseConfirmToast();
+        } else if (typeof showToast === 'function') {
+          showToast('Your starting idea was added. Review the options below, then tap Generate Prompt.');
         }
         const guidance = document.getElementById('post-uc-guidance');
         if (guidance && (!opts || opts.showGuidance !== false)) {
@@ -3033,6 +3075,37 @@ Context:
         clearTimeout(showToast.timeoutId);
         showToast.timeoutId = setTimeout(() => toast.classList.remove('show'), 1800);
       }
+
+      (function setupUseCaseConfirmToast() {
+        const el = document.getElementById('uc-confirm-toast');
+        if (!el) return;
+        const dismissBtn = document.getElementById('uc-confirm-toast-dismiss');
+        let showTimeoutId = null;
+        let hideTimeoutId = null;
+
+        function hide() {
+          window.clearTimeout(showTimeoutId);
+          showTimeoutId = null;
+          el.classList.remove('is-visible');
+          window.clearTimeout(hideTimeoutId);
+          hideTimeoutId = window.setTimeout(function () {
+            if (!el.classList.contains('is-visible')) el.hidden = true;
+          }, 260);
+        }
+
+        window.showUseCaseConfirmToast = function () {
+          window.clearTimeout(hideTimeoutId);
+          hideTimeoutId = null;
+          el.hidden = false;
+          // Force reflow so the transition runs from hidden -> visible state
+          void el.offsetWidth;
+          el.classList.add('is-visible');
+          window.clearTimeout(showTimeoutId);
+          showTimeoutId = window.setTimeout(hide, 4000);
+        };
+
+        if (dismissBtn) dismissBtn.addEventListener('click', hide);
+      })();
 
       const SAVE_TIP_DISMISSED_KEY = 'promptmegood:saveTipDismissed:v1';
       const SAVE_TIP_COUNT_KEY = 'promptmegood:saveTipCount:v1';

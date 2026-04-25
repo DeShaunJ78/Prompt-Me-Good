@@ -1,0 +1,95 @@
+Improve the confirmation message (toast) shown after a user selects a Use Case card. Do not change card autofill behavior.
+
+========================
+CURRENT ISSUES
+========================
+
+- Message is vague (“Goal filled — tweak it, then Generate”)
+- Uses internal language (“goal”, “tweak”)
+- Appears too low on mobile (often missed)
+- Disappears too quickly
+- Black styling clashes with brand and feels like an error
+
+========================
+REQUIRED FIXES
+========================
+
+1. UPDATE COPY (CRITICAL)
+
+Replace:
+“Goal filled — tweak it, then Generate.”
+
+With:
+“Your starting idea was added. Review the options below, then tap Generate Prompt.”
+
+Goal:
+- Explain what happened
+- Tell user what to look at
+- Tell user exactly what to do next
+
+========================
+2. UPDATE VISUAL STYLE
+========================
+
+Replace black toast with brand-aligned styling:
+
+- Background: soft teal (#E6F7F5 or similar)
+- Border: 1px solid #0f766e
+- Text color: dark readable teal or dark gray
+- Border radius: 14–16px
+- Subtle shadow (soft elevation)
+
+This should feel like a helpful guide, not a system alert.
+
+========================
+3. FIX MOBILE POSITIONING
+========================
+
+- Move toast to:
+  → Top-middle of screen OR
+  → Directly above the builder section
+
+- DO NOT place near bottom (can be missed or blocked by mobile UI)
+- DO NOT overlap the goal input field
+
+========================
+4. IMPROVE TIMING
+========================
+
+- Display duration: 4 seconds
+- Smooth fade-out animation
+- No instant disappearance
+
+========================
+5. OPTIONAL (PREFERRED)
+========================
+
+Add a small button inside toast:
+
+Button text:
+“Got it”
+
+Behavior:
+- Dismisses toast immediately
+- If not clicked, toast auto-dismisses after 4 seconds
+
+========================
+6. UX BEHAVIOR (UNCHANGED)
+========================
+
+- Selecting a Use Case card must:
+  → Fill builder fields
+  → Keep modal behavior intact
+  → Not break scroll or transitions
+
+========================
+FINAL CHECK
+========================
+
+- Use Case selection fills builder correctly
+- New message is clear for first-time users
+- Toast appears in a visible location on mobile
+- Toast matches site branding
+- Toast stays long enough to read
+- No layout shifts
+- No JavaScript errors
