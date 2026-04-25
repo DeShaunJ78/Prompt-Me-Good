@@ -382,6 +382,29 @@
       padding: var(--space-5);
       font-size: var(--text-sm);
       line-height: 1.7;
+      outline: none;
+      cursor: text;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .result-box:focus {
+      border-color: color-mix(in srgb, var(--color-primary) 60%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 18%, transparent);
+    }
+    .result-edit-row {
+      display: flex; align-items: center; gap: var(--space-2);
+      margin-top: var(--space-2);
+      min-height: 1.25rem;
+    }
+    .result-edit-indicator {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      font-style: italic;
+    }
+    .result-edit-indicator::before {
+      content: "✎";
+      font-style: normal;
+      opacity: 0.75;
     }
     .pill-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
     .pill {
@@ -1559,7 +1582,10 @@
               <div id="pinned-note-text"></div>
               <div class="pinned-note-source" id="pinned-note-source"></div>
             </div>
-            <div class="result-box" id="resultBox">Your generated prompt will appear here.</div>
+            <div class="result-box" id="resultBox" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Generated prompt (editable)">Your generated prompt will appear here.</div>
+            <div class="result-edit-row">
+              <span class="result-edit-indicator" id="result-edit-indicator" hidden>Edited manually</span>
+            </div>
             <div class="improve-block" id="improve-block">
               <span class="improve-eyebrow">Refine Your Prompt Instantly</span>
               <p class="improve-helper">Tap an option to instantly upgrade your result.</p>
@@ -2051,10 +2077,17 @@
               </div>
 
               <div class="manual-feature">
+                <h4>Manual Editing</h4>
+                <p>After generating or refining a prompt, you can edit it directly in the output box. Copying, saving, and using the prompt will use your latest edited version.</p>
+                <p><strong>How it works:</strong> Click anywhere inside the output box and start typing. A small &ldquo;Edited manually&rdquo; label appears so you always know your edits are active. Generating a brand-new prompt clears the edit state.</p>
+                <p><strong>Tip:</strong> Manual edits are also saved to your most recent history entry, so you can come back to them later.</p>
+              </div>
+
+              <div class="manual-feature">
                 <h4>Undo Changes</h4>
-                <p>If you don&rsquo;t like a refinement, use <strong>Undo Last Change</strong> to go back step-by-step.</p>
+                <p>If you don&rsquo;t like a refinement or a manual edit, use <strong>Undo Last Change</strong> to go back step-by-step.</p>
                 <p><strong>Example:</strong> Original &rarr; Detailed &rarr; Aggressive &rarr; Undo &rarr; back to Detailed.</p>
-                <p>Undo works for every refinement (More Detailed, More Aggressive, Beginner Friendly, and Fine-Tune Your Prompt). Generating a new prompt or restoring one from history clears the undo history.</p>
+                <p>Undo works for every refinement (More Detailed, More Aggressive, Beginner Friendly, Fine-Tune Your Prompt) as well as your manual edits. Generating a new prompt or restoring one from history clears the undo history.</p>
               </div>
 
               <div class="manual-feature">
@@ -2104,6 +2137,7 @@
                 <li><strong>Don't skip the refinement buttons.</strong> The fastest way to a better answer is one tap of More Detailed or More Aggressive — they update the current prompt in place.</li>
                 <li><strong>If the first prompt is close but not perfect, use Fine-Tune Your Prompt instead of starting over.</strong> Type the change you want (shorter, more persuasive, add examples) and tap Update Prompt.</li>
                 <li><strong>Use refinement tools instead of starting over.</strong> Small adjustments often produce better results faster — and Undo Last Change lets you back out any refinement you don&rsquo;t love.</li>
+                <li><strong>Make final edits before saving so the prompt feels fully yours.</strong> Click inside the output box, fix any wording, and copy or save once it sounds right.</li>
                 <li><strong>Test across platforms.</strong> ChatGPT, Claude, and Perplexity all answer differently — try the same prompt in each.</li>
                 <li><strong>Save winners as templates.</strong> If a prompt nails it, save it so you can reuse it in one click.</li>
                 <li><strong>Use the example chips when stuck.</strong> They're great unblockers if your mind goes blank.</li>
@@ -3084,7 +3118,7 @@ Context:
         document.getElementById('photoMode').checked = !!item.data.photoMode;
         document.getElementById('outputLanguage').value = item.data.outputLanguage || 'english';
         document.getElementById('personality').value = item.data.personality || 'none';
-        resultBox.textContent = item.prompt;
+        setPromptText(item.prompt);
         if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
         document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
         showToast('Restored from history.');
@@ -3728,7 +3762,7 @@ Context:
         document.getElementById('personality').value = t.data.personality || 'none';
         const data = getFormData();
         const prompt = generatePrompt(data);
-        resultBox.textContent = prompt;
+        setPromptText(prompt);
         addToHistory(data, prompt);
         if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
         document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -3880,13 +3914,13 @@ Context:
         const data = getFormData();
 
         if (!data.goal) {
-          resultBox.textContent = 'Please enter a goal so PromptMeGood can generate a strong prompt.';
+          setPromptText('Please enter a goal so PromptMeGood can generate a strong prompt.');
           document.getElementById('goal').focus();
           return;
         }
 
         const prompt = generatePrompt(data);
-        resultBox.textContent = prompt;
+        setPromptText(prompt);
         addToHistory(data, prompt);
         if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
         scrollToResult();
@@ -4386,7 +4420,13 @@ Context:
       const improveBlockEl = document.getElementById('improve-block');
       const improveStatusEl = document.getElementById('improve-status');
       const undoBtnEl = document.getElementById('undo-btn');
+      const editedIndicatorEl = document.getElementById('result-edit-indicator');
       const promptUndoStack = [];
+      let promptEdited = false;
+      let preEditSnapshot = null;
+      let pushedThisEditSession = false;
+      let historySyncTimer = null;
+
       function isPlaceholderPrompt(text) {
         if (!text) return true;
         const t = text.trim();
@@ -4412,16 +4452,86 @@ Context:
         updateUndoBtn();
       }
       window.__pmgClearUndo = clearPromptUndo;
+      function showEditedIndicator() {
+        if (editedIndicatorEl) editedIndicatorEl.hidden = false;
+      }
+      function hideEditedIndicator() {
+        if (editedIndicatorEl) editedIndicatorEl.hidden = true;
+      }
+      function setPromptText(text) {
+        resultBox.textContent = text;
+        preEditSnapshot = text;
+        pushedThisEditSession = false;
+        promptEdited = false;
+        hideEditedIndicator();
+      }
+      function getCurrentPromptText() {
+        return (resultBox.textContent || '').replace(/\u00A0/g, ' ');
+      }
+      function syncEditedToLatestHistory() {
+        try {
+          const items = loadHistory();
+          if (!items.length) return;
+          const current = getCurrentPromptText();
+          if (isPlaceholderPrompt(current)) return;
+          const idx = items.findIndex(function (i) { return !i.favorite; });
+          const target = idx >= 0 ? items[idx] : items[0];
+          if (target.prompt === current) return;
+          target.prompt = current;
+          saveHistory(items);
+          renderHistory();
+        } catch (e) { /* noop */ }
+      }
+      function scheduleHistorySync() {
+        clearTimeout(historySyncTimer);
+        historySyncTimer = setTimeout(syncEditedToLatestHistory, 800);
+      }
+
       if (undoBtnEl) {
         undoBtnEl.addEventListener('click', function () {
           if (promptUndoStack.length === 0) return;
           const prev = promptUndoStack.pop();
-          resultBox.textContent = prev;
+          setPromptText(prev);
           updateUndoBtn();
           showToast('Last change undone');
+          scheduleHistorySync();
         });
       }
       updateUndoBtn();
+
+      resultBox.addEventListener('focus', function () {
+        preEditSnapshot = resultBox.textContent;
+        pushedThisEditSession = false;
+      });
+      resultBox.addEventListener('input', function () {
+        if (!pushedThisEditSession && preEditSnapshot !== null && !isPlaceholderPrompt(preEditSnapshot)) {
+          promptUndoStack.push(preEditSnapshot);
+          if (promptUndoStack.length > 25) promptUndoStack.shift();
+          updateUndoBtn();
+          pushedThisEditSession = true;
+        }
+        const current = resultBox.textContent || '';
+        if (!isPlaceholderPrompt(current)) {
+          promptEdited = true;
+          showEditedIndicator();
+          scheduleHistorySync();
+        } else {
+          promptEdited = false;
+          hideEditedIndicator();
+        }
+      });
+      resultBox.addEventListener('blur', function () {
+        if (promptEdited) {
+          clearTimeout(historySyncTimer);
+          syncEditedToLatestHistory();
+        }
+      });
+      resultBox.addEventListener('paste', function (e) {
+        e.preventDefault();
+        const cd = e.clipboardData || window.clipboardData;
+        const text = cd ? cd.getData('text/plain') : '';
+        document.execCommand('insertText', false, text);
+      });
 
       function withImproveLoading(fn) {
         if (improveBlockEl) improveBlockEl.classList.add('is-updating');
@@ -4438,14 +4548,14 @@ Context:
         button.addEventListener('click', function () {
           const data = getFormData();
           if (!data.goal) {
-            resultBox.textContent = 'Please enter a goal first, then choose an upgrade button.';
+            setPromptText('Please enter a goal first, then choose an upgrade button.');
             document.getElementById('goal').focus();
             return;
           }
           pushPromptUndo();
           withImproveLoading(function () {
             const prompt = generatePrompt(data, button.dataset.remix);
-            resultBox.textContent = prompt;
+            setPromptText(prompt);
             addToHistory(data, prompt);
             showToast('Prompt updated');
           });
@@ -4463,14 +4573,22 @@ Context:
         }
         const data = getFormData();
         if (!data.goal) {
-          resultBox.textContent = 'Please enter a goal first, then refine.';
+          setPromptText('Please enter a goal first, then refine.');
           document.getElementById('goal').focus();
           return;
         }
         pushPromptUndo();
+        const baseText = getCurrentPromptText();
+        const useCurrent = !isPlaceholderPrompt(baseText);
         withImproveLoading(function () {
-          const prompt = generatePrompt(data, 'custom', instruction);
-          resultBox.textContent = prompt;
+          let prompt;
+          if (useCurrent) {
+            const trimmed = baseText.replace(/\s+$/, '');
+            prompt = trimmed + '\n\n- Special request: ' + instruction;
+          } else {
+            prompt = generatePrompt(data, 'custom', instruction);
+          }
+          setPromptText(prompt);
           addToHistory(data, prompt);
           fineTuneInput.value = '';
           showToast('Prompt updated');
@@ -4520,7 +4638,7 @@ Context:
         document.getElementById('personality').value = pickRandom(personalities);
         const data = getFormData();
         const prompt = generatePrompt(data);
-        resultBox.textContent = prompt;
+        setPromptText(prompt);
         addToHistory(data, prompt);
         if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
         document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -4538,7 +4656,7 @@ Context:
         document.getElementById('personality').value = 'bold';
         const demoData = getFormData();
         const demoPrompt = generatePrompt(demoData);
-        resultBox.textContent = demoPrompt;
+        setPromptText(demoPrompt);
         addToHistory(demoData, demoPrompt);
         if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
       });
@@ -4586,14 +4704,14 @@ Context:
       compareCopyRemix.addEventListener('click', function () { if (compareCtx) copyText(compareCtx.remix); });
       compareUseOriginal.addEventListener('click', function () {
         if (!compareCtx) return;
-        resultBox.textContent = compareCtx.original;
+        setPromptText(compareCtx.original);
         closeCompare();
         document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
         showToast('Using original.');
       });
       compareUseRemix.addEventListener('click', function () {
         if (!compareCtx) return;
-        resultBox.textContent = compareCtx.remix;
+        setPromptText(compareCtx.remix);
         addToHistory(compareCtx.data, compareCtx.remix);
         closeCompare();
         document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });

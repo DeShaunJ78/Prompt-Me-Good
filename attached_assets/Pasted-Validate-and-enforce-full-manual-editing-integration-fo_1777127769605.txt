@@ -1,0 +1,114 @@
+Validate and enforce full manual editing integration for the generated prompt. Do not break existing features.
+
+========================
+PART 1 — ENSURE OUTPUT IS EDITABLE
+========================
+
+1. Confirm the generated prompt area is a textarea (not read-only).
+2. Users must be able to:
+- Click inside
+- Type freely
+- Select and edit any part of the text
+
+========================
+PART 2 — ENSURE ALL ACTIONS USE EDITED TEXT
+========================
+
+Make sure ALL of the following use the CURRENT text inside the output box (including manual edits):
+
+- Copy Prompt
+- Print / Save PDF
+- Use Your Prompt In (ChatGPT, Claude, Perplexity)
+- Save to history
+- Save as template
+- Duplicate
+
+Do NOT use original generated text if user has edited it.
+
+========================
+PART 3 — MANUAL EDIT STATE
+========================
+
+1. When the user edits the prompt manually:
+- Show a small label:
+“Edited manually”
+
+2. Style:
+- Small
+- Muted color
+- Near the output area
+
+3. When a new prompt is generated:
+- Remove “Edited manually” state
+
+========================
+PART 4 — UNDO INTEGRATION
+========================
+
+1. Before any refinement OR manual edit:
+- Save current prompt to undo stack
+
+2. Undo Last Change should:
+- Restore previous version
+- Work step-by-step
+
+3. Do NOT break undo for:
+- More Detailed
+- More Aggressive
+- Beginner Friendly
+- Fine-Tune
+
+========================
+PART 5 — FINE-TUNE INTEGRATION
+========================
+
+1. Fine-Tune must:
+- Use the CURRENT prompt (including manual edits)
+- Not revert to original prompt
+
+2. After update:
+- Replace prompt in place
+- Show toast:
+“Prompt updated”
+
+========================
+PART 6 — HISTORY INTEGRATION
+========================
+
+1. When saving:
+- Save the CURRENT edited prompt
+
+2. When restoring:
+- Load that exact version
+
+3. Do not overwrite user edits
+
+========================
+PART 7 — MANUAL / HELP VALIDATION
+========================
+
+Confirm manual includes:
+
+Section:
+“Manual Editing”
+
+Content:
+“After generating or refining a prompt, you can edit it directly in the output box. Copying, saving, and using the prompt will use your latest edited version.”
+
+Pro Tip:
+“Make final edits before saving so the prompt feels fully yours.”
+
+========================
+PART 8 — FINAL TEST
+========================
+
+Confirm:
+
+- Prompt is editable
+- Copy uses edited text
+- History saves edited text
+- Fine-tune uses edited text
+- Undo works step-by-step
+- Manual edit label appears
+- New generation clears edit state
+- No JavaScript errors
