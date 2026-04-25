@@ -928,6 +928,18 @@
     .post-uc-guidance-text { flex: 1; min-width: 0; }
     .post-uc-guidance-close { flex: 0 0 auto; background: transparent; border: 0; color: var(--color-text-muted); cursor: pointer; font-size: var(--text-md); line-height: 1; padding: 2px 6px; border-radius: 4px; }
     .post-uc-guidance-close:hover { background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-text); }
+    .tip-block { display: flex; align-items: flex-start; gap: var(--space-2); margin: var(--space-3) 0 0; padding: var(--space-3) var(--space-4); background: color-mix(in srgb, var(--color-primary) 6%, transparent); border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent); border-radius: var(--radius-md); color: var(--color-text); font-size: var(--text-sm); line-height: 1.5; }
+    .tip-block-icon { flex: 0 0 auto; line-height: 1; margin-top: 1px; opacity: 0.85; font-size: var(--text-md); }
+    .tip-block-text { flex: 1; min-width: 0; }
+    .tip-block-dismiss { flex: 0 0 auto; background: transparent; border: 0; color: var(--color-text-muted); cursor: pointer; font-size: var(--text-xs); padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+    .tip-block-dismiss:hover, .tip-block-dismiss:focus-visible { background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-text); outline: none; }
+    .hero-helper-tip { margin-top: var(--space-3); }
+    .use-cases-helper-tip { max-width: 720px; margin: var(--space-3) auto 0; }
+    .generate-helper-tip { margin-top: var(--space-3); }
+    body.guidance-hidden [data-tip] { display: none !important; }
+    .guidance-show-link { display: none; background: transparent; border: 0; padding: 2px 6px; color: var(--color-primary); font: inherit; font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; border-radius: 4px; }
+    .guidance-show-link:hover, .guidance-show-link:focus-visible { background: color-mix(in srgb, var(--color-primary) 12%, transparent); outline: none; }
+    body.guidance-hidden .guidance-show-link { display: inline-flex; align-items: center; }
     .demo-helper { margin: 10px 0 0; font-size: var(--text-sm); color: var(--color-text-muted); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
     .demo-helper-link { font-weight: 700; color: var(--color-primary); padding: 2px 6px; text-decoration: underline; text-underline-offset: 3px; }
     .demo-helper-link:hover { background: color-mix(in srgb, var(--color-primary) 15%, transparent); }
@@ -1393,6 +1405,11 @@
             <a class="btn btn-primary" href="#builder" id="hero-build-cta">Build A Prompt</a>
             <a class="btn btn-secondary" href="#use-cases" id="hero-usecases-cta">See Use Cases</a>
           </div>
+          <p class="tip-block hero-helper-tip" data-tip="hero">
+            <span class="tip-block-icon" aria-hidden="true">💡</span>
+            <span class="tip-block-text">Not sure where to start? Choose a use case or build your own prompt step-by-step.</span>
+            <button type="button" class="tip-block-dismiss" data-action="dismiss-tips" aria-label="Hide tips">Hide tips</button>
+          </p>
         </div>
         <aside class="hero-card" aria-label="Product benefits">
           <div class="mini-label">What This AI Prompt Engine Does</div>
@@ -1410,6 +1427,11 @@
         <div class="popular-uses-head">
           <h2 id="popular-uses-title">Popular Ways To Use PromptMeGood</h2>
           <p>Pick one to instantly fill your goal — then tweak it before you generate.</p>
+          <p class="tip-block use-cases-helper-tip" data-tip="use-cases">
+            <span class="tip-block-icon" aria-hidden="true">🎯</span>
+            <span class="tip-block-text">Pick a use case to auto-fill the builder. You can edit everything before generating.</span>
+            <button type="button" class="tip-block-dismiss" data-action="dismiss-tips" aria-label="Hide tips">Hide tips</button>
+          </p>
         </div>
         <div class="popular-uses-grid">
           <button type="button" class="popular-use-card" data-popular-goal="Help me find realistic ways to make money using AI based on my current skills, time, and budget.">
@@ -1446,7 +1468,7 @@
       </div>
     </section>
 
-    <section class="app-section builder-intro-section" id="builder-intro" aria-labelledby="builder-intro-title">
+    <section class="app-section builder-intro-section" id="builder-intro" aria-labelledby="builder-intro-title" data-tip="builder-intro">
       <div class="container">
         <div class="builder-intro">
           <h2 class="builder-intro-title" id="builder-intro-title"><span class="builder-intro-title-icon" aria-hidden="true">✨</span>Build Your Prompt Step-by-Step</h2>
@@ -1481,7 +1503,7 @@
             <form id="prompt-form" class="form-grid">
               <div class="field field-primary">
                 <label for="goal">Your Goal (Start Here)</label>
-                <textarea id="goal" name="goal" rows="3" placeholder="I need to make money online fast using skills I already have…" required></textarea>
+                <textarea id="goal" name="goal" rows="3" placeholder="I need to make money online fast using skills I already have…" aria-required="true"></textarea>
                 <p class="helper">
                   Describe what you want the AI to help you do.<br />
                   Example: &ldquo;I need to make money online fast&rdquo; or &ldquo;Help me find a winning product&rdquo;
@@ -1628,7 +1650,12 @@
                 <button class="btn btn-secondary" type="button" id="fill-demo">Use Demo Values</button>
                 <button class="btn btn-secondary" type="button" id="random-prompt" title="Surprise me with a random prompt">🎲 Random Prompt</button>
               </div>
-              <p class="demo-helper">Not sure where to start? <button type="button" class="link-btn demo-helper-link" id="demo-helper-link">See it in action.</button></p>
+              <p class="tip-block generate-helper-tip" data-tip="generate">
+                <span class="tip-block-icon" aria-hidden="true">🚀</span>
+                <span class="tip-block-text">Ready? Generate your prompt, then review and copy it.</span>
+                <button type="button" class="tip-block-dismiss" data-action="dismiss-tips" aria-label="Hide tips">Hide tips</button>
+              </p>
+              <p class="demo-helper">Not sure where to start? <button type="button" class="link-btn demo-helper-link" id="demo-helper-link">See it in action.</button> <button type="button" class="guidance-show-link" id="guidance-show-link" data-action="show-tips">Show tips</button></p>
             </form>
             <div class="examples-block" aria-label="Example prompts">
               <div class="examples-title">Try one of these:</div>
@@ -1661,7 +1688,7 @@
               <div id="pinned-note-text"></div>
               <div class="pinned-note-source" id="pinned-note-source"></div>
             </div>
-            <div class="result-box" id="resultBox" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Generated prompt (editable)">Your generated prompt will appear here.</div>
+            <div class="result-box" id="resultBox" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Generated prompt (editable)">Your generated prompt will appear here. Once it looks good, copy it into your favorite AI tool.</div>
             <div class="result-edit-row">
               <span class="result-edit-indicator" id="result-edit-indicator" hidden>Edited manually</span>
             </div>
@@ -1689,7 +1716,7 @@
               </div>
               <span class="improve-status" id="improve-status" aria-live="polite" hidden>Updating…</span>
             </div>
-            <p class="result-helper">Copy this and paste it into ChatGPT, Claude, Perplexity, Google, or any AI/search tool.</p>
+            <p class="result-helper" data-tip="result-copy">Looks good? Copy this prompt and paste it into ChatGPT, Claude, Perplexity, Gemini, or another AI tool.</p>
             <div class="actions-row">
               <button class="btn btn-primary" type="button" id="copy-btn">Copy Prompt</button>
               <button class="btn btn-secondary" type="button" id="print-btn" title="Print or save as PDF">Print / Save PDF</button>
@@ -2535,6 +2562,80 @@
         function hide() { guidance.classList.remove('is-visible'); }
         if (closeBtn) closeBtn.addEventListener('click', hide);
         if (form) form.addEventListener('submit', function () { window.setTimeout(hide, 50); });
+      })();
+
+      // Adaptive guidance state — gentle nudges that fade as users gain experience
+      (function setupAdaptiveGuidance() {
+        const KEYS = {
+          generated: 'pmg_hasGeneratedPrompt',
+          copied: 'pmg_hasCopiedPrompt',
+          dismissed: 'pmg_guidanceDismissed',
+          shown: 'pmg_guidanceShown',
+          count: 'pmg_successfulPromptCount'
+        };
+        function safeGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+        function safeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+        function safeDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
+
+        function isExperienced() {
+          if (safeGet(KEYS.copied) === 'true') return true;
+          const c = parseInt(safeGet(KEYS.count) || '0', 10);
+          if (c >= 2) return true;
+          return false;
+        }
+        function evalGuidance() {
+          const dismissed = safeGet(KEYS.dismissed) === 'true';
+          const shown = safeGet(KEYS.shown) === 'true';
+          const shouldHide = !shown && (dismissed || isExperienced());
+          document.body.classList.toggle('guidance-hidden', shouldHide);
+        }
+        function dismissTips() {
+          safeSet(KEYS.dismissed, 'true');
+          safeDel(KEYS.shown);
+          evalGuidance();
+        }
+        function showTips() {
+          safeSet(KEYS.shown, 'true');
+          safeDel(KEYS.dismissed);
+          evalGuidance();
+        }
+        function markGenerated() {
+          safeSet(KEYS.generated, 'true');
+          const c = parseInt(safeGet(KEYS.count) || '0', 10);
+          safeSet(KEYS.count, String(c + 1));
+          evalGuidance();
+        }
+        function markCopied() {
+          safeSet(KEYS.copied, 'true');
+          evalGuidance();
+        }
+
+        // Apply state immediately (before any user interaction) so first paint is correct
+        evalGuidance();
+
+        // Wire any element marked with data-action="dismiss-tips" or "show-tips"
+        document.addEventListener('click', function (e) {
+          const dismissBtn = e.target.closest('[data-action="dismiss-tips"]');
+          if (dismissBtn) {
+            e.preventDefault();
+            dismissTips();
+            return;
+          }
+          const showBtn = e.target.closest('[data-action="show-tips"]');
+          if (showBtn) {
+            e.preventDefault();
+            showTips();
+          }
+        });
+
+        // Expose hooks so submit/copy handlers can call us
+        window.__pmgGuidance = {
+          markGenerated: markGenerated,
+          markCopied: markCopied,
+          dismissTips: dismissTips,
+          showTips: showTips,
+          isExperienced: isExperienced
+        };
       })();
       const toast = document.getElementById('toast');
 
@@ -3998,7 +4099,7 @@ Context:
         const data = getFormData();
 
         if (!data.goal) {
-          setPromptText('Please enter a goal so PromptMeGood can generate a strong prompt.');
+          setPromptText('Add a clear goal first, then we can build your prompt.');
           document.getElementById('goal').focus();
           return;
         }
@@ -4009,6 +4110,9 @@ Context:
         if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
         scrollToResult();
         showSavePromptTip();
+        if (window.__pmgGuidance && typeof window.__pmgGuidance.markGenerated === 'function') {
+          window.__pmgGuidance.markGenerated();
+        }
       });
 
       const WEEKLY_GOAL_KEY = 'promptmegood:weeklyGoal:v1';
@@ -4493,7 +4597,7 @@ Context:
       const printContentEl = document.getElementById('print-content');
       printBtn.addEventListener('click', function () {
         const text = resultBox.textContent || '';
-        if (!text || text === 'Your generated prompt will appear here.') {
+        if (!text || text.indexOf('Your generated prompt will appear here') === 0) {
           showToast('Generate a prompt first.');
           return;
         }
@@ -4516,15 +4620,18 @@ Context:
 
       copyBtn.addEventListener('click', async function () {
         const text = resultBox.textContent.trim();
-        if (!text || text === 'Your generated prompt will appear here.') {
+        if (!text || text.indexOf('Your generated prompt will appear here') === 0) {
           showToast('Generate a prompt first.');
           return;
         }
 
         try {
           await navigator.clipboard.writeText(text);
-          showToast('Copied to clipboard.');
+          showToast('Copied — now paste it into your AI tool.');
           showSavePromptTip();
+          if (window.__pmgGuidance && typeof window.__pmgGuidance.markCopied === 'function') {
+            window.__pmgGuidance.markCopied();
+          }
         } catch (error) {
           const selection = window.getSelection();
           const range = document.createRange();
@@ -4549,8 +4656,9 @@ Context:
         if (!text) return true;
         const t = text.trim();
         if (!t) return true;
-        return t === 'Your generated prompt will appear here.'
-          || t.indexOf('Please enter a goal') === 0;
+        return t.indexOf('Your generated prompt will appear here') === 0
+          || t.indexOf('Please enter a goal') === 0
+          || t.indexOf('Add a clear goal first') === 0;
       }
       function updateUndoBtn() {
         if (!undoBtnEl) return;
