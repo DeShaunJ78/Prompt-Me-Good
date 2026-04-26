@@ -1,0 +1,74 @@
+node -e "
+const fs = require('fs');
+const f = 'artifacts/promptmegood/index.html';
+fs.copyFileSync(f, f + '.bak.' + Date.now());
+let h = fs.readFileSync(f, 'utf8');
+
+// Title case stragglers
+h = h.split('Show Me The Full Tour').join('Show me the full tour');
+h = h.split('Go To Start Here').join('Go to start here');
+h = h.split('Replay Tour').join('Replay tour');
+h = h.split('Expert Mode Active').join('Expert mode active');
+h = h.split('Show Archived').join('Show archived');
+h = h.split('Compare Two').join('Compare two');
+h = h.split('Collapse All').join('Collapse all');
+h = h.split('Clear All History').join('Clear all history');
+h = h.split('Backup / Restore').join('Backup / restore');
+h = h.split('Notes only').join('Notes only');
+h = h.split('Export Everything').join('Export everything');
+h = h.split('Import Backup').join('Import backup');
+h = h.split('Export Yours').join('Export yours');
+h = h.split('Clear Prompt').join('Clear prompt');
+h = h.split('Copy Prompt').join('Copy prompt');
+h = h.split('Copy shareable link').join('Copy shareable link');
+h = h.split('Print / Save PDF').join('Print / save PDF');
+h = h.split('Check prompt quality').join('Check prompt quality');
+h = h.split('Pinned templates').join('Pinned templates');
+h = h.split('Prompt history').join('Prompt history');
+h = h.split('Pinned note').join('Pinned note');
+h = h.split('Use Demo Values').join('Use demo values');
+h = h.split('Random Prompt').join('Random prompt');
+h = h.split('Need ideas?').join('Need ideas?');
+h = h.split('Guide Me').join('Guide me');
+h = h.split('Auto Optimize').join('Auto optimize');
+h = h.split('Dark Mode').join('Dark mode');
+h = h.split('Open Builder').join('Open builder');
+h = h.split('Early Access').join('Early access');
+
+// CSS polish block
+const css = \`
+    /* ── PMG v3 Polish ── */
+    .hero { padding-top: clamp(3rem, 8vw, 6rem); padding-bottom: clamp(2rem, 5vw, 4rem); }
+    #generateBtn { transition: opacity 180ms ease, background 180ms ease; }
+    #generateBtn:disabled { opacity: 0.65; cursor: not-allowed; }
+    .feedback-card-grid {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      background: var(--color-surface);
+      transition: box-shadow var(--transition-interactive);
+    }
+    .feedback-card-grid:hover { box-shadow: var(--shadow-md); }
+    .strength-score:not([hidden]) { animation: pmgFadeIn 0.3s ease; }
+    @keyframes pmgFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    .result-panel:not(.has-result) .result-box { min-height: 80px !important; }
+    .weekly-new-badge { animation: none !important; }
+    @media (max-width: 768px) {
+      .hero-actions { flex-direction: column; }
+      .hero-actions .btn { width: 100%; text-align: center; }
+    }
+    /* ── End PMG v3 Polish ── */
+\`;
+
+const insertBefore = '</style>';
+const headEnd = h.indexOf('</head>');
+const lastStyle = h.lastIndexOf(insertBefore, headEnd);
+if (lastStyle !== -1) {
+  h = h.slice(0, lastStyle) + css + h.slice(lastStyle);
+  console.log('CSS injected.');
+} else {
+  console.log('WARNING: could not find style block — CSS skipped.');
+}
+
+fs.writeFileSync(f, h);
+console.log('Don

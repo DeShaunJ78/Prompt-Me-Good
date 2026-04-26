@@ -722,7 +722,7 @@
       .guided-actions { justify-content: stretch; }
       .guided-actions .btn { flex: 1 1 auto; }
     }
-    /* Auto Optimize toggle row (above Guide Me CTA) */
+    /* Auto optimize toggle row (above Guide me CTA) */
     .auto-optimize-row {
       display: flex; align-items: center; gap: var(--space-3);
       padding: 10px var(--space-4);
@@ -1002,7 +1002,7 @@
     .demo-microcopy { margin: 5px 0 0; font-size: var(--text-xs); color: var(--color-text-muted); font-style: italic; line-height: 1.35; text-align: center; }
     body.is-expert-mode .demo-microcopy { display: none; }
     /* Vertical stack so the microcopy + loading line sit directly under the */
-    /* "Use Demo Values" button only — never under Generate or Random Prompt. */
+    /* "Use demo values" button only — never under Generate or Random prompt. */
     .demo-stack { display: flex; flex-direction: column; align-items: stretch; gap: 0; flex: 0 0 auto; max-width: 220px; }
     .demo-stack > .btn { width: 100%; }
     @media (max-width: 640px) { .demo-stack { max-width: none; width: 100%; } }
@@ -2632,7 +2632,7 @@
     }
 
     
-    /* Guide Me: subtle, not screaming */
+    /* Guide me: subtle, not screaming */
     .guide-me-card, [class*='guide-me'] { 
       border-color: var(--color-border) !important;
       background: var(--color-surface) !important;
@@ -2644,6 +2644,28 @@
     .weekly-goal-pin { margin-bottom: var(--space-3); }
 
     /* ── End PMG Aesthetic Polish ── */
+
+    /* ── PMG v3 Polish ── */
+    .hero { padding-top: clamp(3rem, 8vw, 6rem); padding-bottom: clamp(2rem, 5vw, 4rem); }
+    #generateBtn { transition: opacity 180ms ease, background 180ms ease; }
+    #generateBtn:disabled { opacity: 0.65; cursor: not-allowed; }
+    .feedback-card-grid {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      background: var(--color-surface);
+      transition: box-shadow var(--transition-interactive);
+    }
+    .feedback-card-grid:hover { box-shadow: var(--shadow-md); }
+    .strength-score:not([hidden]) { animation: pmgFadeIn 0.3s ease; }
+    @keyframes pmgFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    .result-panel:not(.has-result) .result-box { min-height: 80px !important; }
+    .weekly-new-badge { animation: none !important; }
+    @media (max-width: 768px) {
+      .hero-actions { flex-direction: column; }
+      .hero-actions .btn { width: 100%; text-align: center; }
+    }
+    /* ── End PMG v3 Polish ── */
 </style>
 </head>
 <body>
@@ -2669,14 +2691,14 @@
         </svg>
       </button>
       <div class="top-actions" id="top-actions">
-        <a class="ghost-link" href="#builder">Open Builder</a>
+        <a class="ghost-link" href="#builder">Open builder</a>
         <a class="ghost-link" href="#history">History</a>
         <a class="ghost-link" href="./pricing.html">Pricing</a>
         <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
           </svg>
-          <span class="theme-toggle-label">Dark Mode</span>
+          <span class="theme-toggle-label">Dark mode</span>
         </button>
       </div>
     </div>
@@ -2704,8 +2726,8 @@
         <p class="tour-card-sub">Take the full tour, or jump straight to Start Here if you already know what you want to build.</p>
       </div>
       <div class="tour-card-actions">
-        <button class="btn btn-primary" type="button" id="tour-show">Show Me The Full Tour</button>
-        <button class="btn btn-secondary" type="button" id="tour-jump">Go To Start Here</button>
+        <button class="btn btn-primary" type="button" id="tour-show">Show me the full tour</button>
+        <button class="btn btn-secondary" type="button" id="tour-jump">Go to start here</button>
       </div>
       <button class="tour-card-close" type="button" id="tour-skip" aria-label="Dismiss onboarding choice">×</button>
     </div>
@@ -2838,7 +2860,7 @@
           <figure class="feedback-card-grid">
             <blockquote class="feedback-quote">
               <span class="feedback-quote-mark" aria-hidden="true">&ldquo;</span>
-              Guide Me walked me through everything in under two minutes. I didn&rsquo;t have to think about prompt structure at all.
+              Guide me walked me through everything in under two minutes. I didn&rsquo;t have to think about prompt structure at all.
             </blockquote>
             <figcaption class="feedback-attribution">&mdash; Marcus T. &middot; Small Business Owner</figcaption>
           </figure>
@@ -2862,7 +2884,7 @@
               <p class="builder-transition">Fill in your goal below — the more specific, the better. Hit Generate and get a prompt you can use instantly.</p>
             </div>
             <div class="builder-head-actions">
-              <span class="expert-mode-badge" id="expert-mode-badge" hidden>Expert Mode Active</span>
+              <span class="expert-mode-badge" id="expert-mode-badge" hidden>Expert mode active</span>
               <p class="builder-expert-hint" id="builder-expert-hint">Power user? Turn on Expert Mode for full control.</p>
               <label class="expert-mode-toggle" for="expert-mode-toggle" id="expert-mode-toggle-wrap" title="For advanced users who want full control.">
                 <span class="switch">
@@ -2876,22 +2898,22 @@
               </label>
               <button type="button" class="builder-replay-btn" id="replay-tour-btn-builder" aria-label="Replay the onboarding tour">
                 <span class="builder-replay-icon" aria-hidden="true">?</span>
-                <span>Replay Tour</span>
+                <span>Replay tour</span>
               </button>
             </div>
           </div>
           <div class="form-wrap">
             <p class="build-cta-guidance" id="build-cta-guidance" role="status" aria-live="polite" hidden>
               <span class="build-cta-guidance-icon" aria-hidden="true">✨</span>
-              <span class="build-cta-guidance-text">Start with <strong>Guide Me</strong> if you want PromptMeGood to set things up for you.</span>
+              <span class="build-cta-guidance-text">Start with <strong>Guide me</strong> if you want PromptMeGood to set things up for you.</span>
             </p>
             <div class="guided-cta-row" id="guided-cta-row">
               <div class="guided-cta-text">
                 <span class="guided-cta-recommended-badge">Recommended First Step</span>
-                <strong>Guide Me</strong>
+                <strong>Guide me</strong>
                 <span>Not sure how to start? Answer 4 short questions and we'll fill the builder for you.</span>
               </div>
-              <button type="button" class="btn btn-primary" id="guided-mode-btn">Guide Me</button>
+              <button type="button" class="btn btn-primary" id="guided-mode-btn">Guide me</button>
             </div>
             <div id="weekly-goal-pin" class="weekly-goal-pin" aria-label="This week's focus">
               <div class="weekly-goal-pin-head">
@@ -2909,10 +2931,10 @@
             <form id="prompt-form" class="form-grid">
               <div class="auto-optimize-row" id="auto-optimize-row">
                 <div class="auto-opt-text">
-                  <strong>Auto Optimize <span style="color: var(--color-primary); font-weight: 600;">(Recommended)</span></strong>
+                  <strong>Auto optimize <span style="color: var(--color-primary); font-weight: 600;">(Recommended)</span></strong>
                   <span>Suggests the best category, tone, format, and length based on your goal.</span>
                 </div>
-                <label class="switch" aria-label="Toggle Auto Optimize">
+                <label class="switch" aria-label="Toggle Auto optimize">
                   <input type="checkbox" id="auto-optimize-toggle" checked />
                   <span class="slider"></span>
                 </label>
@@ -2938,11 +2960,11 @@
               <div class="actions-row" id="tour-step-generate">
                 <button class="btn btn-primary" type="submit" id="generateBtn">Generate Prompt</button>
                 <div class="demo-stack">
-                  <button class="btn btn-secondary" type="button" id="fill-demo">Use Demo Values</button>
+                  <button class="btn btn-secondary" type="button" id="fill-demo">Use demo values</button>
                   <p class="demo-microcopy" id="demo-microcopy">See how it works &mdash; loads a sample prompt instantly.</p>
                   <p class="demo-loading" id="demo-loading" role="status" aria-live="polite" hidden>Generating demo prompt&hellip;</p>
                 </div>
-                <button class="btn btn-secondary" type="button" id="random-prompt" title="Surprise me with a random prompt">🎲 Random Prompt</button>
+                <button class="btn btn-secondary" type="button" id="random-prompt" title="Surprise me with a random prompt">🎲 Random prompt</button>
               </div>
               <p class="tip-block generate-helper-tip" data-tip="generate">
                 <span class="tip-block-icon" aria-hidden="true">🚀</span>
@@ -3230,10 +3252,10 @@
               <div class="quality-feedback" id="quality-feedback" hidden role="status" aria-live="polite"></div>
             </div>
             <div class="actions-row">
-              <button class="btn btn-primary" type="button" id="copy-btn">Copy Prompt</button>
+              <button class="btn btn-primary" type="button" id="copy-btn">Copy prompt</button>
               <button class="btn btn-secondary" type="button" id="share-btn" hidden>Copy shareable link</button>
-              <button class="btn btn-secondary" type="button" id="print-btn" title="Print or save as PDF">Print / Save PDF</button>
-              <button class="btn btn-secondary btn-clear" type="button" id="clear-prompt-btn" aria-label="Clear generated prompt">Clear Prompt</button>
+              <button class="btn btn-secondary" type="button" id="print-btn" title="Print or save as PDF">Print / save PDF</button>
+              <button class="btn btn-secondary btn-clear" type="button" id="clear-prompt-btn" aria-label="Clear generated prompt">Clear prompt</button>
             </div>
 
             <!-- RUN WITH AI — hidden until a prompt is generated -->
@@ -3244,7 +3266,7 @@
               <button class="btn btn-primary run-btn" type="button" id="runBtn" onclick="runWithAI()">
                 <span aria-hidden="true">▶</span> Run With AI
               </button>
-              <p class="run-section-meta">Uses 1 AI execution &middot; Free during Early Access</p>
+              <p class="run-section-meta">Uses 1 AI execution &middot; Free during Early access</p>
             </div>
 
             <!-- AI RESPONSE — hidden until run completes -->
@@ -3288,7 +3310,7 @@
               Shortcuts: press <kbd>G</kbd> to generate, <kbd>C</kbd> to copy, <kbd>/</kbd> to search history.
             </p>
           </div>
-          <p class="early-access-note">Early Access &mdash; All features are unlocked for now. Some advanced tools may become Pro features later.</p>
+          <p class="early-access-note">Early access &mdash; All features are unlocked for now. Some advanced tools may become Pro features later.</p>
         </section>
       </div>
     </section>
@@ -3303,8 +3325,8 @@
                 <p>This is what you entered to generate your prompt.</p>
               </div>
               <div class="panel-head-actions">
-                <button class="btn btn-secondary" type="button" id="export-everything" title="Download all your data as a JSON backup">Export Everything</button>
-                <button class="btn btn-secondary" type="button" id="import-everything" title="Restore from a JSON backup">Import Backup</button>
+                <button class="btn btn-secondary" type="button" id="export-everything" title="Download all your data as a JSON backup">Export everything</button>
+                <button class="btn btn-secondary" type="button" id="import-everything" title="Restore from a JSON backup">Import backup</button>
                 <input type="file" id="import-everything-file" accept="application/json,.json" style="display:none" />
               </div>
             </div>
@@ -3327,7 +3349,7 @@
                 <p>One-click starting points. Loads the form and generates a prompt instantly.</p>
               </div>
               <div class="panel-head-actions">
-                <button class="btn btn-secondary" type="button" id="export-templates">Export Yours</button>
+                <button class="btn btn-secondary" type="button" id="export-templates">Export yours</button>
                 <button class="btn btn-secondary" type="button" id="import-templates">Import</button>
                 <input type="file" id="import-templates-file" accept="application/json,.json" style="display:none" />
               </div>
@@ -3348,13 +3370,13 @@
                 <p>Your last 25 generated prompts are saved on this device. Restore one to copy or remix it again.</p>
               </div>
               <div class="panel-head-actions">
-                <button class="btn btn-secondary" type="button" id="toggle-archived" aria-pressed="false">Show Archived</button>
-                <button class="btn btn-secondary" type="button" id="compare-two" aria-pressed="false">Compare Two</button>
+                <button class="btn btn-secondary" type="button" id="toggle-archived" aria-pressed="false">Show archived</button>
+                <button class="btn btn-secondary" type="button" id="compare-two" aria-pressed="false">Compare two</button>
                 <button class="btn btn-secondary" type="button" id="export-history">Export</button>
                 <button class="btn btn-secondary" type="button" id="import-history">Import</button>
-                <button class="btn btn-secondary" type="button" id="open-backup">🔑 Backup / Restore</button>
-                <button class="btn btn-secondary" type="button" id="collapse-all-history">Collapse All</button>
-                <button class="btn btn-secondary" type="button" id="clear-history">Clear All History</button>
+                <button class="btn btn-secondary" type="button" id="open-backup">🔑 Backup / restore</button>
+                <button class="btn btn-secondary" type="button" id="collapse-all-history">Collapse all</button>
+                <button class="btn btn-secondary" type="button" id="clear-history">Clear all history</button>
                 <input type="file" id="import-history-file" accept="application/json,.json" style="display:none" />
               </div>
             </div>
@@ -3476,7 +3498,7 @@
           </div>
         </div>
         <div class="site-footer-replay">
-          <button type="button" class="site-footer-replay-btn" id="replay-tour-btn">Replay Tour</button>
+          <button type="button" class="site-footer-replay-btn" id="replay-tour-btn">Replay tour</button>
         </div>
         <div class="site-footer-version" aria-label="Version">PromptMeGood v1</div>
       </div>
@@ -3497,7 +3519,7 @@
     <dialog id="guided-mode-dialog" class="guided-dialog" aria-labelledby="guided-mode-title">
       <form method="dialog" class="guided-form" id="guided-mode-form">
         <header class="guided-head">
-          <h3 id="guided-mode-title">Guide Me</h3>
+          <h3 id="guided-mode-title">Guide me</h3>
           <p>Answer a few quick questions. We'll fill the builder for you.</p>
         </header>
         <div class="guided-step" data-guided-step="0">
@@ -3641,7 +3663,7 @@
   <div class="bk-overlay" id="bk-overlay" role="dialog" aria-modal="true" aria-labelledby="bk-title" aria-hidden="true">
     <div class="bk-modal">
       <div class="compare-head">
-        <h3 id="bk-title">Backup / Restore</h3>
+        <h3 id="bk-title">Backup / restore</h3>
         <button class="btn btn-secondary" type="button" id="bk-close" aria-label="Close backup view">Close</button>
       </div>
       <div class="bk-tabs" role="tablist" aria-label="Backup or restore">
@@ -3704,7 +3726,7 @@
         const icon = mode === 'dark'
           ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>'
           : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
-        const label = mode === 'dark' ? 'Light Mode' : 'Dark Mode';
+        const label = mode === 'dark' ? 'Light Mode' : 'Dark mode';
         toggle.innerHTML = icon + '<span class="theme-toggle-label">' + label + '</span>';
         toggle.setAttribute('aria-label', mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
       }
@@ -5288,7 +5310,7 @@ Context:
       wireFieldClearBtn('clear-fine-tune-btn', 'fine-tune-input');
       wireFieldClearBtn('clear-guardrails-btn', 'guardrails');
 
-      // ===== Smart Suggestions + Auto Optimize + AI Tool Recommender + Strength Score =====
+      // ===== Smart Suggestions + Auto optimize + AI Tool Recommender + Strength Score =====
       (function setupSmartSystems() {
         const AUTO_OPT_KEY = 'promptmegood:autoOptimize:v1';
         const goalEl = document.getElementById('goal');
@@ -5447,7 +5469,7 @@ Context:
           goalDebounce = setTimeout(function () { recomputeSuggestions(false); }, 350);
         });
 
-        // Auto Optimize toggle: persist + recompute. Never clobbers manually-edited fields.
+        // Auto optimize toggle: persist + recompute. Never clobbers manually-edited fields.
         autoOptToggle.addEventListener('change', function () {
           try { localStorage.setItem(AUTO_OPT_KEY, autoOptToggle.checked ? '1' : '0'); } catch (e) {}
           // Recompute and apply only to fields the user has not touched (force=false)
@@ -5522,7 +5544,7 @@ Context:
               prevAdvancedOpen = null;
             }
           }
-          // Auto Optimize is forced OFF when Expert Mode is on
+          // Auto optimize is forced OFF when Expert Mode is on
           if (enabled && autoOptToggle && autoOptToggle.checked) {
             autoOptToggle.checked = false;
             try {
@@ -5694,7 +5716,7 @@ Context:
         sync();
       })();
 
-      // Guide Me modal: 4-question flow that fills goal/details/guardrails
+      // Guide me modal: 4-question flow that fills goal/details/guardrails
       (function setupGuidedMode() {
         const dialog = document.getElementById('guided-mode-dialog');
         const openBtn = document.getElementById('guided-mode-btn');
@@ -5783,7 +5805,7 @@ Context:
               reasonEl.textContent = s.reason;
               textWrap.appendChild(reasonEl);
             }
-            // Auto-flip only when Auto Optimize is on AND not in Expert Mode AND not already on.
+            // Auto-flip only when Auto optimize is on AND not in Expert Mode AND not already on.
             if (isAutoOptOn && !isExpert && !checkbox.checked) {
               checkbox.checked = true;
               try { checkbox.dispatchEvent(new Event('change', { bubbles: true })); } catch (e) {}
@@ -5886,7 +5908,7 @@ Context:
         btn.addEventListener('click', check);
       })();
 
-      // Clear Prompt button: clears generated prompt + manual edit state + undo stack
+      // Clear prompt button: clears generated prompt + manual edit state + undo stack
       const clearPromptBtn = document.getElementById('clear-prompt-btn');
       if (clearPromptBtn) {
         clearPromptBtn.addEventListener('click', function () {
@@ -6971,7 +6993,7 @@ Context:
               window.__pmgStrengthScore.render(demoData, demoPrompt);
             }
           } catch (e) {
-            setPromptText('Could not generate the demo prompt. Skip the demo or try Replay Tour later.');
+            setPromptText('Could not generate the demo prompt. Skip the demo or try Replay tour later.');
             obNextBtn.style.visibility = '';
             return;
           }
@@ -7657,7 +7679,7 @@ Context:
             window.setTimeout(function () { builderPanel.classList.add('is-fading'); }, 2400);
             window.setTimeout(function () { builderPanel.classList.remove('builder-glow', 'is-fading'); }, 3200);
           }
-          // Reveal inline guidance immediately and pulse the Guide Me row.
+          // Reveal inline guidance immediately and pulse the Guide me row.
           if (guidance) {
             guidance.classList.remove('is-fading');
             guidance.removeAttribute('hidden');
@@ -7670,7 +7692,7 @@ Context:
                 guidance.classList.remove('is-fading');
               }, 240);
             }, 5000);
-            // Clicking Guide Me dismisses guidance early.
+            // Clicking Guide me dismisses guidance early.
             const guideBtn = document.getElementById('guided-mode-btn');
             if (guideBtn && !guideBtn._guidanceWired) {
               guideBtn._guidanceWired = true;
@@ -7704,7 +7726,7 @@ Context:
       }
       fillDemoBtn.addEventListener('click', function () {
         // Step 1: Immediate feedback — disable button, swap label, queue inline status.
-        const originalBtnLabel = 'Use Demo Values';
+        const originalBtnLabel = 'Use demo values';
         const demoLoadingEl = document.getElementById('demo-loading');
         const demoNextStepEl = document.getElementById('demo-next-step');
         const goalEl = document.getElementById('goal');
@@ -8404,7 +8426,7 @@ Context:
           titleEl.textContent = 'Need help getting started?';
           bodyEl.hidden = true;
           bodyEl.textContent = '';
-          actionsEl.appendChild(makeBtn('Guide Me', 'primary', function () {
+          actionsEl.appendChild(makeBtn('Guide me', 'primary', function () {
             dismissAssist(true);
             clickById('guided-mode-btn');
           }));
@@ -8415,8 +8437,8 @@ Context:
         } else {
           titleEl.textContent = 'Still stuck?';
           bodyEl.hidden = false;
-          bodyEl.textContent = "Use Guide Me for step-by-step setup, try a demo, explore Use Cases, or replay the tour.";
-          actionsEl.appendChild(makeBtn('Guide Me', 'primary', function () {
+          bodyEl.textContent = "Use Guide me for step-by-step setup, try a demo, explore Use Cases, or replay the tour.";
+          actionsEl.appendChild(makeBtn('Guide me', 'primary', function () {
             dismissAssist(true);
             clickById('guided-mode-btn');
           }));
