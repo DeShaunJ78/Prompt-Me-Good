@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pricing — PromptMeGood</title>
   <meta name="description" content="PromptMeGood pricing — Free forever for the core builder. PRO is coming soon. Join early access for launch updates." />
-  <link rel="icon" type="image/png" href="/favicon.png" />
-  <link rel="apple-touch-icon" href="/favicon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=3" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48.png?v=3" />
+  <link rel="icon" type="image/png" href="/assets/pmg-logo.png?v=3" />
+  <link rel="apple-touch-icon" href="/assets/pmg-logo.png?v=3" />
   <link rel="preconnect" href="https://api.fontshare.com" />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet" />
   <script>
@@ -78,7 +80,7 @@
     .topbar-inner { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) 0; gap: var(--space-4); }
     .brand { display: inline-flex; align-items: center; gap: var(--space-2); font-weight: 800; color: var(--color-text); font-size: var(--text-lg); }
     .brand:hover { text-decoration: none; }
-    .logo { color: var(--color-primary); }
+    .logo { width: 32px; height: 32px; border-radius: 10px; display: block; object-fit: cover; }
     .top-actions { display: inline-flex; gap: var(--space-3); align-items: center; }
     .ghost-link { color: var(--color-text-muted); font-weight: 600; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); }
     .ghost-link:hover { background: color-mix(in srgb, var(--color-primary) 8%, transparent); color: var(--color-text); text-decoration: none; }
@@ -161,11 +163,7 @@
   <header class="topbar">
     <div class="container topbar-inner">
       <a class="brand" href="./index.html" aria-label="PromptMeGood home">
-        <svg class="logo" width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="PromptMeGood logo">
-          <rect x="6" y="6" width="36" height="36" rx="12" stroke="currentColor" stroke-width="3"></rect>
-          <path d="M16 31V17H25.5C29.0899 17 32 19.9101 32 23.5C32 27.0899 29.0899 30 25.5 30H21" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
-          <path d="M21 25H29" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
-        </svg>
+        <img class="logo" src="/assets/pmg-logo.png?v=3" alt="PromptMeGood logo" width="32" height="32" decoding="async" />
         <span>PromptMeGood</span>
       </a>
       <div class="top-actions">

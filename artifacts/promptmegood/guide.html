@@ -6,7 +6,10 @@
   <title>Full Guide — PromptMeGood</title>
   <meta name="description" content="The complete walkthrough for PromptMeGood — every step, field, boost, refinement tool, and pro tip in one place." />
   <link rel="canonical" href="https://prompt-me-good.replit.app/guide.html" />
-  <link rel="icon" href="data:," />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=3" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48.png?v=3" />
+  <link rel="icon" type="image/png" href="/assets/pmg-logo.png?v=3" />
+  <link rel="apple-touch-icon" href="/assets/pmg-logo.png?v=3" />
   <script>
     /* Mirror of the index.html theme-accent bootstrap so users keep their accent across pages. */
     (function () {
@@ -131,10 +134,8 @@
     }
     .brand { display: inline-flex; align-items: center; gap: var(--space-3); font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.02em; }
     .logo {
-      width: 38px; height: 38px; border-radius: 12px; padding: 8px;
-      background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
-      color: var(--color-primary);
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 14%, transparent);
+      width: 38px; height: 38px; border-radius: 12px;
+      display: block; object-fit: cover;
     }
     .top-actions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; justify-content: flex-end; }
     .ghost-link, .theme-toggle {
@@ -320,11 +321,7 @@
   <header class="topbar">
     <div class="container topbar-inner">
       <a class="brand" href="./" aria-label="PromptMeGood home">
-        <svg class="logo" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="PromptMeGood logo">
-          <rect x="6" y="6" width="36" height="36" rx="12" stroke="currentColor" stroke-width="3"></rect>
-          <path d="M16 31V17H25.5C29.0899 17 32 19.9101 32 23.5C32 27.0899 29.0899 30 25.5 30H21" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
-          <path d="M21 25H29" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>
-        </svg>
+        <img class="logo" src="/assets/pmg-logo.png?v=3" alt="PromptMeGood logo" width="38" height="38" decoding="async" />
         <span>PromptMeGood</span>
       </a>
       <div class="top-actions">
