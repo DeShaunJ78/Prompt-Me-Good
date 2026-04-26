@@ -796,6 +796,19 @@
     .feedback-quote { margin: 0 0 var(--space-3); font-size: var(--text-lg); line-height: 1.55; color: var(--color-text); font-style: italic; position: relative; }
     .feedback-quote-mark { font-size: 2rem; line-height: 0; color: var(--color-primary); margin-right: 4px; vertical-align: -8px; font-style: normal; }
     .feedback-attribution { margin: 0; font-size: var(--text-sm); color: var(--color-text-muted); letter-spacing: 0.02em; }
+    .feedback-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); align-items: stretch; }
+    .feedback-card-grid { margin: 0; padding: var(--space-5); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); box-shadow: 0 4px 14px rgba(15, 118, 110, 0.06); display: flex; flex-direction: column; gap: var(--space-3); text-align: left; }
+    .feedback-card-grid .feedback-quote { font-size: var(--text-md); }
+    @media (max-width: 880px) { .feedback-grid { grid-template-columns: 1fr; } }
+    .qa-tooltip-wrap { position: relative; display: inline-flex; align-items: center; }
+    .qa-tooltip-trigger { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; padding: 0; margin-left: 6px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--color-primary) 30%, var(--color-border)); background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)); color: var(--color-primary); font-size: 13px; font-weight: 700; line-height: 1; cursor: help; transition: background var(--transition-interactive), border-color var(--transition-interactive); }
+    .qa-tooltip-trigger:hover, .qa-tooltip-trigger:focus-visible { background: color-mix(in srgb, var(--color-primary) 18%, var(--color-surface)); border-color: var(--color-primary); outline: none; }
+    .qa-tooltip-bubble { position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%); min-width: 220px; max-width: 280px; padding: 8px 12px; background: var(--color-text); color: var(--color-surface); font-size: var(--text-xs); line-height: 1.45; border-radius: var(--radius-md); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 120ms ease, visibility 120ms ease; z-index: 30; text-align: left; font-weight: 500; }
+    .qa-tooltip-bubble::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-top-color: var(--color-text); }
+    .qa-tooltip-wrap:hover .qa-tooltip-bubble, .qa-tooltip-trigger:focus-visible + .qa-tooltip-bubble, .qa-tooltip-wrap.is-open .qa-tooltip-bubble { opacity: 1; visibility: visible; }
+    .quality-row-btn-wrap { display: inline-flex; align-items: center; gap: 0; }
+    .demo-microcopy { margin: 6px 0 0; font-size: var(--text-xs); color: var(--color-text-muted); font-style: italic; }
+    body.is-expert-mode .demo-microcopy { display: none; }
     .email-capture-section { padding-top: var(--space-4); padding-bottom: var(--space-6); }
     .email-capture-card { max-width: 720px; margin: 0 auto; padding: var(--space-6); background: #F1FAF8; border: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent); border-radius: var(--radius-lg); text-align: center; }
     .email-capture-text h2 { margin: 0 0 var(--space-2); font-size: var(--text-xl); color: var(--color-text); }
@@ -1842,6 +1855,9 @@
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     body.has-uc-confirm-toast .toast { top: calc(210px + env(safe-area-inset-top, 0px)); }
+    /* Spec #1: when the daily nudge banner is visible, slide the toast down so it doesn't stack on top of it. */
+    body.has-nudge-banner .toast { top: calc(160px + env(safe-area-inset-top, 0px)); }
+    body.has-nudge-banner.has-uc-confirm-toast .toast { top: calc(260px + env(safe-area-inset-top, 0px)); }
     [data-theme="dark"] .toast { background: #0c4f48; border-color: #5ba8b0; color: #E6F7F5; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4); }
 
     .uc-confirm-toast {
@@ -2007,6 +2023,7 @@
       <div class="top-actions" id="top-actions">
         <a class="ghost-link" href="#builder">Open Builder</a>
         <a class="ghost-link" href="#history">History</a>
+        <a class="ghost-link" href="./pricing.html">Pricing</a>
         <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -2054,7 +2071,7 @@
           <div class="hero-subtext-box">
             <p class="hero-subtext">Most people get <strong>weak answers from AI</strong> because they ask weak questions. This fixes that instantly.</p>
           </div>
-          <p class="trust-line">Built for people who want real results from AI — not fluff.</p>
+          <p class="trust-line">A structured prompt builder that tells AI exactly what to do — and how to say it.</p>
           <div class="hero-actions">
             <a class="btn btn-primary btn-stacked" href="#builder" id="hero-build-cta">
               <span class="cta-title">Build A Prompt</span>
@@ -2145,6 +2162,38 @@
             <li>Adjust settings to shape the output</li>
             <li>Click Generate to create your prompt</li>
           </ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="app-section feedback-section" id="early-feedback" aria-labelledby="feedback-title">
+      <div class="container">
+        <div class="feedback-head">
+          <span class="eyebrow feedback-eyebrow">Early Feedback</span>
+          <h2 id="feedback-title">What People Are Saying</h2>
+        </div>
+        <div class="feedback-grid">
+          <figure class="feedback-card-grid">
+            <blockquote class="feedback-quote">
+              <span class="feedback-quote-mark" aria-hidden="true">&ldquo;</span>
+              It cut my prompt-rewriting time in half. I get usable copy on the first try now.
+            </blockquote>
+            <figcaption class="feedback-attribution">&mdash; Beta User &middot; Copywriter</figcaption>
+          </figure>
+          <figure class="feedback-card-grid">
+            <blockquote class="feedback-quote">
+              <span class="feedback-quote-mark" aria-hidden="true">&ldquo;</span>
+              Guide Me walked me through everything in under two minutes. I didn&rsquo;t have to think about prompt structure at all.
+            </blockquote>
+            <figcaption class="feedback-attribution">&mdash; Beta User &middot; Small Business Owner</figcaption>
+          </figure>
+          <figure class="feedback-card-grid">
+            <blockquote class="feedback-quote">
+              <span class="feedback-quote-mark" aria-hidden="true">&ldquo;</span>
+              Money Mode gave me angles I never would have asked for. The hooks just landed better.
+            </blockquote>
+            <figcaption class="feedback-attribution">&mdash; Beta User &middot; Content Creator</figcaption>
+          </figure>
         </div>
       </div>
     </section>
@@ -2410,6 +2459,7 @@
                 <button class="btn btn-secondary" type="button" id="fill-demo">Use Demo Values</button>
                 <button class="btn btn-secondary" type="button" id="random-prompt" title="Surprise me with a random prompt">🎲 Random Prompt</button>
               </div>
+              <p class="demo-microcopy" id="demo-microcopy">Use Demo Values instantly loads a working example.</p>
               <p class="tip-block generate-helper-tip" data-tip="generate">
                 <span class="tip-block-icon" aria-hidden="true">🚀</span>
                 <span class="tip-block-text">Ready? Generate your prompt, then review and copy it.</span>
@@ -2490,11 +2540,18 @@
               <ul id="strength-score-insights"></ul>
             </div>
             <div class="quality-row" id="quality-row">
-              <button class="btn btn-secondary" type="button" id="check-quality-btn">Check prompt quality</button>
+              <div class="quality-row-btn-wrap">
+                <button class="btn btn-secondary" type="button" id="check-quality-btn">Check prompt quality</button>
+                <span class="qa-tooltip-wrap">
+                  <button type="button" class="qa-tooltip-trigger" id="check-quality-tip" aria-label="What does Check prompt quality do?" aria-describedby="check-quality-tip-text" aria-expanded="false">ⓘ</button>
+                  <span class="qa-tooltip-bubble" id="check-quality-tip-text" role="tooltip">Analyzes your prompt for clarity, specificity, structure, and missing details.</span>
+                </span>
+              </div>
               <div class="quality-feedback" id="quality-feedback" hidden role="status" aria-live="polite"></div>
             </div>
             <div class="actions-row">
               <button class="btn btn-primary" type="button" id="copy-btn">Copy Prompt</button>
+              <button class="btn btn-secondary" type="button" id="share-btn" hidden>Copy shareable link</button>
               <button class="btn btn-secondary" type="button" id="print-btn" title="Print or save as PDF">Print / Save PDF</button>
               <button class="btn btn-secondary btn-clear" type="button" id="clear-prompt-btn" aria-label="Clear generated prompt">Clear Prompt</button>
             </div>
@@ -2657,22 +2714,6 @@
       </div>
     </section>
 
-    <section class="app-section feedback-section" id="early-feedback" aria-labelledby="feedback-title">
-      <div class="container">
-        <div class="feedback-head">
-          <span class="eyebrow feedback-eyebrow">Early Feedback</span>
-          <h2 id="feedback-title">What People Are Saying</h2>
-        </div>
-        <figure class="feedback-card">
-          <blockquote class="feedback-quote">
-            <span class="feedback-quote-mark" aria-hidden="true">&ldquo;</span>
-            This is truly next level &mdash; you&rsquo;re on to something here.
-          </blockquote>
-          <figcaption class="feedback-attribution">&mdash; Calvin</figcaption>
-        </figure>
-      </div>
-    </section>
-
     <section class="app-section email-capture-section" id="email-capture" aria-labelledby="email-capture-title">
       <div class="container">
         <div class="email-capture-card">
@@ -2711,6 +2752,8 @@
         </div>
         <div class="site-footer-legal" aria-label="Legal">
           <a class="site-footer-link" href="./guide.html" target="_blank" rel="noopener">Help</a>
+          <span class="site-footer-divider" aria-hidden="true">|</span>
+          <a class="site-footer-link" href="./pricing.html">Pricing</a>
           <span class="site-footer-divider" aria-hidden="true">|</span>
           <a class="site-footer-link" href="#privacy" data-legal-open="privacy-dialog">Privacy Policy</a>
           <span class="site-footer-divider" aria-hidden="true">|</span>
@@ -3550,6 +3593,8 @@ Context:
         clearTimeout(showToast.timeoutId);
         showToast.timeoutId = setTimeout(() => toast.classList.remove('show'), 4500);
       }
+      // Expose so IIFEs declared after the main app IIFE (e.g. share, tooltip) can call it.
+      window.showToast = showToast;
 
       (function setupUseCaseConfirmToast() {
         const el = document.getElementById('uc-confirm-toast');
@@ -5033,6 +5078,8 @@ Context:
           if (window.__pmgStrengthScore && typeof window.__pmgStrengthScore.hide === 'function') {
             window.__pmgStrengthScore.hide();
           }
+          const shareBtnClear = document.getElementById('share-btn');
+          if (shareBtnClear) shareBtnClear.hidden = true;
           showToast('Prompt cleared.');
         });
       }
@@ -5460,6 +5507,41 @@ Context:
         }
       });
 
+      // === First-visit gating (Spec #1: Single Entry Point) ===
+      const PMG_VISITED_KEY = 'pmg_visited';
+      const PMG_FIRST_VISIT_SESSION_KEY = 'pmg_first_visit_session';
+      const PMG_PROMPT_COUNT_KEY = 'pmg_prompt_count';
+      (function initPmgVisitState() {
+        try {
+          if (!localStorage.getItem(PMG_VISITED_KEY)) {
+            // Mark this whole session as a "first visit" for in-session suppression.
+            sessionStorage.setItem(PMG_FIRST_VISIT_SESSION_KEY, '1');
+          }
+        } catch (e) {}
+      })();
+      function pmgMarkVisited() {
+        try { localStorage.setItem(PMG_VISITED_KEY, '1'); } catch (e) {}
+      }
+      window.__pmgMarkVisited = pmgMarkVisited;
+      function pmgIsFirstVisit() {
+        try { return sessionStorage.getItem(PMG_FIRST_VISIT_SESSION_KEY) === '1'; } catch (e) { return false; }
+      }
+      function pmgGetPromptCount() {
+        try { return parseInt(localStorage.getItem(PMG_PROMPT_COUNT_KEY) || '0', 10) || 0; } catch (e) { return 0; }
+      }
+      function pmgIncPromptCount() {
+        try { localStorage.setItem(PMG_PROMPT_COUNT_KEY, String(pmgGetPromptCount() + 1)); } catch (e) {}
+      }
+      function pmgIsSystemBannerVisible() {
+        const tour = document.getElementById('tour-banner');
+        const nudge = document.getElementById('nudge-banner');
+        return (tour && !tour.hidden) || (nudge && !nudge.hidden);
+      }
+      window.__pmgFirstVisit = pmgIsFirstVisit;
+      window.__pmgGetPromptCount = pmgGetPromptCount;
+      window.__pmgIncPromptCount = pmgIncPromptCount;
+      window.__pmgIsBannerVisible = pmgIsSystemBannerVisible;
+
       const resultPanel = document.getElementById('result-panel');
       function scrollToResult() {
         if (!resultPanel) return;
@@ -5489,6 +5571,9 @@ Context:
         const prompt = generatePrompt(data);
         setPromptText(prompt);
         addToHistory(data, prompt);
+        if (typeof pmgIncPromptCount === 'function') pmgIncPromptCount();
+        const shareBtnEl = document.getElementById('share-btn');
+        if (shareBtnEl) shareBtnEl.hidden = false;
         if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
         if (window.__pmgStrengthScore && typeof window.__pmgStrengthScore.render === 'function') {
           window.__pmgStrengthScore.render(data, prompt);
@@ -5570,12 +5655,17 @@ Context:
       if (weeklyGoalCta) weeklyGoalCta.addEventListener('click', applyWeeklyGoal);
       renderWeeklyGoal();
       // Once-per-session reminder: only when there's actually a new goal to show.
+      // Suppressed on first visit and until the user has generated at least one prompt
+      // (Spec #1: Single Entry Point — return visitor + pmg_prompt_count >= 1).
       try {
         if (isWeeklyGoalNew() && !sessionStorage.getItem(WEEKLY_TOAST_SESSION_KEY)) {
           sessionStorage.setItem(WEEKLY_TOAST_SESSION_KEY, '1');
           setTimeout(function () {
+            if (pmgIsFirstVisit()) return;
+            if (pmgGetPromptCount() < 1) return;
+            if (pmgIsSystemBannerVisible()) return;
             if (typeof showToast === 'function') showToast('New weekly goal available.');
-          }, 1800);
+          }, 3000);
         }
       } catch (e) {}
       const goalInputEl = document.getElementById('goal');
@@ -5632,6 +5722,9 @@ Context:
         const today = todayKey();
         if (state.dismissedAt && (Date.now() - state.dismissedAt) < NUDGE_COOLDOWN_MS) return;
         if (state.dismissed === today || state.lastShown === today) return;
+        // Spec #1: never show on first visit, and never until the user has generated at least one prompt.
+        if (pmgIsFirstVisit()) return;
+        if (pmgGetPromptCount() < 1) return;
         const tourActive = (typeof obIsOpen === 'function' && obIsOpen()) ||
           (typeof obShouldRun === 'function' && obShouldRun());
         const tourBannerEl = document.getElementById('tour-banner');
@@ -5646,6 +5739,7 @@ Context:
         msgEl.textContent = nudge.text;
         banner.dataset.action = nudge.action || '';
         banner.hidden = false;
+        document.body.classList.add('has-nudge-banner');
         state.lastShown = today;
         saveNudgeState(state);
       }
@@ -5654,11 +5748,13 @@ Context:
         state.dismissedAt = Date.now();
         saveNudgeState(state);
         document.getElementById('nudge-banner').hidden = true;
+        document.body.classList.remove('has-nudge-banner');
       });
       document.getElementById('nudge-go').addEventListener('click', function () {
         const banner = document.getElementById('nudge-banner');
         const action = banner.dataset.action;
         banner.hidden = true;
+        document.body.classList.remove('has-nudge-banner');
         if (action === 'humanVoice') {
           const humanEl = document.getElementById('humanTone');
           if (humanEl && !humanEl.checked) {
@@ -5674,7 +5770,8 @@ Context:
           document.getElementById('goal').focus();
         }
       });
-      setTimeout(showNudgeIfDue, 800);
+      // Spec #1: minimum 3 second delay before nudge can appear on a return visit.
+      setTimeout(showNudgeIfDue, 3000);
 
       const ONBOARDING_KEY = 'promptmegood:onboarding:v1';
       const OB_STEPS = [
@@ -5932,6 +6029,7 @@ Context:
         if (obStepEl) obStepEl.textContent = 'Step 1 of ' + currentSteps.length;
         const banner = document.getElementById('nudge-banner');
         if (banner) banner.hidden = true;
+        document.body.classList.remove('has-nudge-banner');
         // If Expert Mode is on, temporarily reveal guided UI so tour targets are visible.
         // We do not toggle the user's persisted preference — only the visual class.
         if (document.body.classList.contains('is-expert-mode')) {
@@ -5953,6 +6051,8 @@ Context:
         const completed = !!(opts && opts.completed);
         const wasDemo = currentIsDemo;
         demoGenerationToken += 1;
+        // Spec #1: any onboarding dismissal (skip, complete, escape, backdrop) marks the user as visited.
+        if (typeof pmgMarkVisited === 'function') pmgMarkVisited();
         obOverlay.classList.remove('is-open');
         obOverlay.setAttribute('aria-hidden', 'true');
         obUnbindListeners();
@@ -5999,17 +6099,20 @@ Context:
       document.getElementById('tour-show').addEventListener('click', function () {
         hideTourBanner();
         markOnboardingSessionSeen();
+        if (typeof pmgMarkVisited === 'function') pmgMarkVisited();
         obStart();
       });
       document.getElementById('tour-skip').addEventListener('click', function () {
         hideTourBanner();
         obDismissForSession();
+        if (typeof pmgMarkVisited === 'function') pmgMarkVisited();
       });
       const tourJumpBtn = document.getElementById('tour-jump');
       if (tourJumpBtn) {
         tourJumpBtn.addEventListener('click', function () {
           hideTourBanner();
           obDismissForSession();
+          if (typeof pmgMarkVisited === 'function') pmgMarkVisited();
           const goalEl = document.getElementById('goal');
           if (goalEl) {
             goalEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -6517,12 +6620,21 @@ Context:
           // Still recompute so the AI tool recommender (Claude/Perplexity/ChatGPT highlight) updates for the demo goal
           if (typeof window.__pmgSmartSystems.recompute === 'function') window.__pmgSmartSystems.recompute(false);
         }
-        const builderSection = document.getElementById('builder');
-        if (builderSection && typeof builderSection.scrollIntoView === 'function') {
-          builderSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        // Spec #6 + Standalone Demo Values fix: auto-generate immediately, scroll to output, fire toast.
         if (obIsOpen()) obFinish();
-        obStart({ steps: DEMO_STEPS, isDemo: true });
+        // Show transient loading state in the result box so the user has feedback.
+        if (typeof setPromptText === 'function') setPromptText('Generating demo prompt…');
+        const promptForm = document.getElementById('prompt-form');
+        window.setTimeout(function () {
+          if (promptForm) {
+            if (typeof promptForm.requestSubmit === 'function') {
+              promptForm.requestSubmit();
+            } else {
+              promptForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+            }
+          }
+          if (typeof showToast === 'function') showToast('Demo prompt generated.');
+        }, 250);
       });
       const compareOverlay = document.getElementById('compare-overlay');
       const compareTitle = document.getElementById('compare-title');
@@ -6809,6 +6921,135 @@ Context:
       }
       window.addEventListener('hashchange', handleHash);
       handleHash();
+    })();
+
+    // ===== Spec #4: Check Prompt Quality tooltip — tap-to-toggle on touch devices =====
+    (function () {
+      const wrap = document.querySelector('.qa-tooltip-wrap');
+      if (!wrap) return;
+      const trigger = wrap.querySelector('.qa-tooltip-trigger');
+      if (!trigger) return;
+      function close() {
+        wrap.classList.remove('is-open');
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+      function open() {
+        wrap.classList.add('is-open');
+        trigger.setAttribute('aria-expanded', 'true');
+      }
+      trigger.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (wrap.classList.contains('is-open')) close(); else open();
+      });
+      document.addEventListener('click', function (e) {
+        if (!wrap.classList.contains('is-open')) return;
+        if (wrap.contains(e.target)) return;
+        close();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && wrap.classList.contains('is-open')) close();
+      });
+    })();
+
+    // ===== Spec #8: Prompt sharing — encode builder state in URL hash =====
+    (function () {
+      const SHARE_TEXT_KEYS = ['goal','category','skillLevel','tone','outputFormat','outputLanguage','personality','details','guardrails','maxLength','maxLengthCustom'];
+      const SHARE_BOOL_KEYS = ['moneyMode','humanTone','clarityBoost'];
+      function buildShareLink() {
+        const params = new URLSearchParams();
+        SHARE_TEXT_KEYS.forEach(function (k) {
+          const el = document.getElementById(k);
+          if (!el) return;
+          const v = (el.value || '').trim();
+          if (v) params.set(k, v);
+        });
+        SHARE_BOOL_KEYS.forEach(function (k) {
+          const el = document.getElementById(k);
+          if (el && el.checked) params.set(k, '1');
+        });
+        return location.origin + location.pathname + '#share=' + encodeURIComponent(params.toString());
+      }
+      const shareBtn = document.getElementById('share-btn');
+      if (shareBtn) {
+        shareBtn.addEventListener('click', function () {
+          const link = buildShareLink();
+          let copied = false;
+          // Synchronous fallback first — works in test/headless environments where the
+          // async Clipboard API may hang waiting on permissions.
+          try {
+            const ta = document.createElement('textarea');
+            ta.value = link;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.top = '0';
+            ta.style.left = '0';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            ta.setSelectionRange(0, link.length);
+            copied = document.execCommand('copy');
+            document.body.removeChild(ta);
+          } catch (e) {}
+          // Also fire the modern API as a non-blocking enhancement (preferred in real browsers).
+          if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            try {
+              const p = navigator.clipboard.writeText(link);
+              if (p && typeof p.then === 'function') p.then(function () {}, function () {});
+            } catch (e) {}
+          }
+          if (typeof showToast === 'function') {
+            showToast(copied ? 'Shareable link copied to clipboard.' : 'Could not copy link. Long-press to copy from the address bar.');
+          }
+        });
+      }
+      // Parse #share=... and prefill the builder. Runs on initial load AND on hashchange so
+      // pasting a share URL into an already-open tab also applies.
+      function applyShareHash() {
+        try {
+          const hash = window.location.hash || '';
+          const m = hash.match(/^#share=(.+)$/);
+          if (!m) return;
+          const params = new URLSearchParams(decodeURIComponent(m[1]));
+          let applied = false;
+          SHARE_TEXT_KEYS.forEach(function (k) {
+            if (!params.has(k)) return;
+            const el = document.getElementById(k);
+            if (!el) return;
+            el.value = params.get(k);
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            applied = true;
+          });
+          SHARE_BOOL_KEYS.forEach(function (k) {
+            const el = document.getElementById(k);
+            if (!el) return;
+            const want = params.get(k) === '1';
+            if (el.checked !== want) {
+              el.checked = want;
+              el.dispatchEvent(new Event('change', { bubbles: true }));
+              applied = true;
+            }
+          });
+          if (applied && window.__pmgSmartSystems && typeof window.__pmgSmartSystems.markAllTouched === 'function') {
+            window.__pmgSmartSystems.markAllTouched();
+          }
+          // Clear the hash so a refresh doesn't re-apply stale state, but preserve page query/path.
+          try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+          if (applied) {
+            window.setTimeout(function () {
+              const builder = document.getElementById('builder');
+              if (builder && typeof builder.scrollIntoView === 'function') {
+                builder.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+              if (typeof showToast === 'function') showToast('Loaded shared prompt — review and Generate.');
+            }, 150);
+          }
+        } catch (e) {}
+      }
+      applyShareHash();
+      window.addEventListener('hashchange', applyShareHash);
     })();
   </script>
 </body>

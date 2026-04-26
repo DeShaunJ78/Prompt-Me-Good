@@ -1,0 +1,203 @@
+# PromptMeGood — Product Improvement Spec
+*Handoff to Replit — April 25, 2026*
+
+---
+
+## PHASE 1 — Immediate (High Impact)
+
+### 1. Enforce a Single Entry Point on First Visit
+
+**Problem:** Users currently land to 3 simultaneous UI interruptions (nudge bar + onboarding modal + weekly goal toast). Conversion dies here.
+
+**Solution:**
+
+```
+On first visit (no localStorage flag):
+  → Show: Onboarding modal ONLY
+  → Hide: Daily nudge bar, Weekly goal toast
+
+On return visit (flag set):
+  → Hide: Onboarding modal
+  → Show: Daily nudge bar (delayed — minimum 3 seconds after page load)
+  → Weekly goal toast: only after user has generated at least 1 prompt
+```
+
+**localStorage flags needed:**
+- `pmg_visited` — set on first dismissal of onboarding modal
+- `pmg_prompt_count` — increment on every generate; gate goal toast at count ≥ 1
+
+**Rule:** Never render more than one system-level interruption at a time. If nudge bar is visible, suppress all toasts until it is dismissed.
+
+---
+
+### 2. Replace the Tagline
+
+**Remove:**
+"Built for people who want real results from AI — not fluff."
+
+**Replace with:**
+"A structured prompt builder that tells AI exactly what to do — and how to say it."
+
+Place it directly beneath the hero subtext box, in the same italic style as before. No other copy changes needed.
+
+---
+
+### 3. Testimonials — Real or Clearly Labeled Beta Feedback
+
+**Remove:** The current Calvin quote. It has no context and does negative trust work.
+
+**Add:** 3 structured testimonial cards in this format:
+
+```
+[Quote — specific outcome, not hype]
+— Role or use case context
+```
+
+**If real testimonials exist, use them.**
+**If not, use these clearly labeled placeholders** until real ones arrive:
+
+"Used it to build client outreach prompts. Cut my rewriting time in half."
+— Beta User · Freelance Copywriter
+
+"Guide Me wizard got me a usable prompt in under 2 minutes. Didn't expect that."
+— Beta User · Small Business Owner
+
+"Money Mode gave me angles I wouldn't have thought of on my own."
+— Beta User · Content Creator
+
+**Placement:** Between the use case cards and the builder — not below the fold.
+
+**Rule:** Do not fabricate names, photos, or specifics. "Beta User" is honest. Fake authenticity is not.
+
+---
+
+## PHASE 2 — Soon (Conversion Layer)
+
+### 4. "Check Prompt Quality" Tooltip
+
+**Add** an info icon (ⓘ) directly beside the button label.
+
+**Tooltip copy:**
+"Analyzes your prompt for clarity, specificity, structure, and missing details."
+
+**Requirements:**
+- Desktop: hover to reveal
+- Mobile: tap to reveal, tap anywhere to dismiss
+- No modal, no redirect — inline tooltip only
+
+---
+
+### 5. Pro Pricing Page
+
+**Route:** `/pricing` or an in-page `#pricing` section linked from the nav.
+
+**Structure:**
+
+FREE
+- Guided builder
+- 25-prompt local history
+- Basic prompt quality check
+- 4 pinned templates
+
+PRO — $9/month (Coming Soon)
+- Unlimited prompt history
+- Cloud save + sync across devices
+- Expert Mode
+- Advanced Options (all boost modes)
+- Money Mode
+- Saved custom templates
+- Priority output language support
+- Early access to new features
+
+**CTA on Pro tier:** "Join Early Access" → triggers email capture (existing form is fine).
+
+**Do not** build real billing yet. This page exists to signal that this is a real product with a real future — and to capture intent before launch.
+
+---
+
+### 6. Validate "Use Demo Values" Flow
+
+**Confirm these 4 things work in sequence:**
+1. Clicking "Use Demo Values" fills all fields correctly
+2. Prompt auto-generates immediately — no second click needed
+3. Page scrolls smoothly to output panel
+4. Toast fires: "Demo prompt generated"
+
+**If broken:** Fix before any traffic is driven to the site.
+
+**If working:** Add microcopy beneath the button:
+"Instantly loads a working example"
+
+---
+
+## PHASE 3 — Later (Scale + Virality)
+
+### 7. Usage Counter in Hero
+Only add when real backend data exists. Suggested placement: between the tagline and the CTA buttons.
+Example: "12,482+ prompts generated"
+
+Do not approximate, estimate, or fabricate this number.
+
+### 8. Prompt Sharing
+After a prompt is generated, add a "Copy shareable link" option to the output panel. Each link encodes the prompt parameters in the URL so recipients land directly on a pre-filled builder. This is the viral loop — every shared prompt is an acquisition.
+
+---
+
+## Global Rules — Do Not Break
+
+- No stacked interruptions — one system message visible at a time, always
+- Expert Mode stays — confirmation dialog, badge, and toggle back all intact
+- Guide Me stays — wizard untouched
+- Advanced Options stays collapsed — hidden by default, user-expanded
+- Output panel tools stay — Fine-Tune, Undo, Refine buttons all intact
+- No fake data — no fabricated counters, names, or testimonials
+- Mobile-first on all new additions — tooltips, pricing, testimonials must work on 375px
+
+---
+
+## Target User Flow After These Changes
+
+1. Land → clean headline + specific tagline
+2. See ONE choice: Take The Tour or Go To Builder
+3. Choose path → guided or expert
+4. Build prompt with clear instructions
+5. Generate → output appears immediately
+6. Refine with Fine-Tune / Improve tools
+7. Copy or launch directly into ChatGPT / Claude / Perplexity
+8. Subtle Pro path visible — not pushy, just present
+
+---
+
+## Fix: "Use Demo Values" Behavior (Standalone Spec)
+
+**Current issue:** When users click "Use Demo Values," it is not visually obvious whether a prompt was generated. Users may think they still need to click "Generate Prompt."
+
+**Required behavior:**
+
+1. Clicking "Use Demo Values" must:
+   - Fill the builder fields
+   - Immediately generate the prompt
+   - Scroll smoothly to "Your Ready-To-Use Prompt"
+   - Show a toast: "Demo prompt generated"
+
+2. The output area should replace "Your generated prompt will appear here" with the generated demo prompt immediately.
+
+3. If generation takes a moment, show a short loading state: "Generating demo prompt…"
+
+4. Do not require the user to click "Generate Prompt" after using demo values.
+
+**QA Checklist:**
+- [ ] Click "Use Demo Values" — fields fill AND prompt appears without clicking Generate
+- [ ] Loading state shows briefly before output
+- [ ] Page scrolls to output automatically
+- [ ] Toast fires: "Demo prompt generated"
+- [ ] No JS errors in console
+- [ ] "Generate Prompt" button still works independently
+
+---
+
+## Success Metric
+
+These changes should move the product rating from 7.5 → 9+ by closing the three gaps that matter most: first impression friction, trust signals, and monetization visibility.
+
+The product quality is already there. This spec is about letting people see it.

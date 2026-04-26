@@ -30,7 +30,19 @@ See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and pa
 
 ### PromptMeGood (`artifacts/promptmegood`)
 
-Single-file static HTML AI prompt builder (`index.html`, ~6.6k lines, vanilla JS, vite preview). Live at https://prompt-me-good.replit.app.
+Single-file static HTML AI prompt builder (`index.html`, ~7k lines, vanilla JS, vite preview). Live at https://prompt-me-good.replit.app. Companion pages: `guide.html` (long-form manual) and `pricing.html` (Free + PRO Coming Soon, early-access capture). All three are wired into `vite.config.ts` `rollupOptions.input`.
+
+**Product Improvement Spec — April 25, 2026 (implemented):**
+- **#1 Single entry point** — first-visit gating via `localStorage[pmg_visited]` + `sessionStorage[pmg_first_visit_session]` + `localStorage[pmg_prompt_count]`. `pmg_visited` is set immediately on onboarding dismissal (#tour-show, #tour-skip, #tour-jump, and `obFinish` for skip/complete/Escape/backdrop) — NOT on unload. Daily nudge banner suppressed when `pmgIsFirstVisit()` OR `pmgGetPromptCount() < 1`. Weekly-goal toast suppressed by `pmgIsSystemBannerVisible()` (any of #tour-banner, #nudge-banner). Nudge appearance toggles `body.has-nudge-banner` so the floating `.toast` slides down (160px) instead of stacking on top.
+- **#2 Hero tagline** replaced with: *"A structured prompt builder that tells AI exactly what to do — and how to say it."* (italic, under hero subtext box). Footer tagline preserved.
+- **#3 Beta feedback** — Calvin testimonial removed. New `#early-feedback` section with `.feedback-grid` of 3 cards (Copywriter, Small Business Owner, Content Creator), labeled `"— Beta User · <Role>"`, placed between use-cases and `#builder`.
+- **#4 Tooltip** — small `.qa-tooltip-trigger` ⓘ icon next to `#check-quality-btn`. Hover (desktop) + tap-to-toggle (mobile) with click-outside + Escape close.
+- **#5 Pricing page** — standalone `pricing.html` with own theme toggle, two cards (Free $0/forever, PRO $9/month "Coming Soon"), early-access form (`#early-access-form`) storing lowercased emails to `localStorage[promptmegood:emailCapture:v1]` capped at 200 entries. Pricing nav link in topbar (`#top-actions`) and footer (`.site-footer-legal`).
+- **#6 + standalone Demo Values fix** — `#fill-demo` handler removes any active `obStart` tour, sets `"Generating demo prompt…"` placeholder, calls `form.requestSubmit()` after 250ms, fires `"Demo prompt generated."` toast. Microcopy `"Use Demo Values instantly loads a working example."` rendered beneath the actions row.
+- **#7 Usage counter** — INTENTIONALLY SKIPPED per spec rule "Only add when real backend data exists." No backend exists.
+- **#8 Prompt sharing** — `#share-btn` ("Copy shareable link", `hidden` until first prompt generation, re-hidden on Clear Prompt). Encodes `SHARE_TEXT_KEYS = [goal, category, skillLevel, tone, outputFormat, outputLanguage, personality, details, guardrails, maxLength, maxLengthCustom]` and `SHARE_BOOL_KEYS = [moneyMode, humanTone, clarityBoost]` into `#share=<urlencoded querystring>`. Clipboard write uses execCommand (sync) first then non-blocking `navigator.clipboard.writeText` so toast always fires. On initial load AND on `hashchange`, `applyShareHash()` parses the hash, prefills the builder, calls `markAllTouched`, replaces history to clear the hash, scrolls to `#builder`, fires `"Loaded shared prompt — review and Generate."` toast.
+
+**Critical scope note:** `showToast` was originally private to the main app IIFE; new IIFEs declared after it (tooltip, share) couldn't reach it. Now exposed via `window.showToast = showToast` in the main IIFE.
 
 Key features:
 - **Builder**: goal, category, skill level, tone, output format, output language, personality, extra details, **guardrails** (things AI should avoid), **max response length** (presets 100/200/300/500 + custom), boost toggles (Money / Human Voice / Clarity / Photo).
