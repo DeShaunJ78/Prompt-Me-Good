@@ -1,0 +1,127 @@
+Implement final UX polish improvements:
+1. Onboarding banner persistence
+2. Builder simplification via Advanced Options
+3. Manual quick-start restructuring
+
+Do not break existing layout, demo, tour, or functionality.
+
+========================
+PART 1 — ONBOARDING BANNER PERSISTENCE
+========================
+
+GOAL:
+Ensure users can access onboarding again without hunting for it.
+
+IMPLEMENT:
+
+1. Track dismiss count:
+- Use localStorage key: onboardingDismissCount
+
+2. Behavior:
+- Show onboarding banner again for first 2–3 sessions
+- Increment dismiss count each time user dismisses
+- After 2–3 dismissals, stop showing automatically
+
+3. Persistent access:
+- Add “Replay Tour” button in a visible location:
+  → Header navigation OR
+  → Builder header area (preferred)
+
+Optional:
+- Use small icon button (e.g., “?” or “Guide”)
+
+RULES:
+- Do NOT show banner every page load indefinitely
+- Do NOT interrupt user flow
+- Keep subtle and non-intrusive
+
+========================
+PART 2 — BUILDER SIMPLIFICATION
+========================
+
+GOAL:
+Reduce perceived complexity without removing features.
+
+IMPLEMENT:
+
+1. Create collapsible section:
+
+Label:
+“Advanced Options”
+
+2. Move these into Advanced Options:
+- Money Mode
+- Human Voice Mode
+- Clarity Boost Mode
+- Photo Prompt Mode
+
+3. Default state:
+- Collapsed
+
+4. Behavior:
+- Expand on click
+- Smooth animation
+- Maintain toggle states
+
+5. Keep visible (outside Advanced):
+- Goal
+- Category
+- Tone
+- Output Format
+- Max Response Length
+- Guardrails
+
+RULES:
+- Do NOT remove any functionality
+- Do NOT change logic
+- Maintain mobile usability
+
+========================
+PART 3 — MANUAL QUICK START OPTIMIZATION
+========================
+
+GOAL:
+Make manual feel simple and approachable at first glance.
+
+IMPLEMENT:
+
+1. Add new section at top:
+
+Title:
+“Quick Start (5 Steps)”
+
+Content:
+1. Enter your goal
+2. Adjust settings (optional)
+3. Generate your prompt
+4. Refine if needed
+5. Copy and use in any AI platform
+
+2. Move existing long-form content under:
+
+Title:
+“Advanced Help”
+
+3. Keep both sections collapsible
+
+4. Default state:
+- Quick Start visible
+- Advanced Help collapsed
+
+RULES:
+- Do NOT delete any existing help content
+- Only restructure and relabel
+
+========================
+FINAL CHECK
+========================
+
+Confirm:
+- Onboarding banner appears for first few sessions only
+- Replay Tour is easily accessible (not hidden in footer only)
+- Builder appears simpler at first glance
+- Advanced options are accessible but hidden by default
+- Manual starts with simple Quick Start
+- Advanced Help is available but collapsed
+- Mobile layout remains clean
+- No JavaScript errors

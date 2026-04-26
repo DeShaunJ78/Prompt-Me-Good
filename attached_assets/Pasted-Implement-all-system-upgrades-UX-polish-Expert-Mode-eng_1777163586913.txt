@@ -1,0 +1,272 @@
+Implement all system upgrades, UX polish, Expert Mode, engagement loop, and documentation alignment. Do not break existing builder, generation, refinement, history, demo, or mobile layout.
+
+========================
+PART 1 — SMART AUTO-RECOMMENDATIONS
+========================
+
+When user types in “Your Goal”:
+- Analyze keywords
+- Suggest:
+  - Category
+  - Tone
+  - Output Format
+  - Max Response Length
+  - Recommended AI platform
+
+Examples:
+- “make money” → Money, Aggressive, Step-by-step, 200–300 words
+- “write email” → Content, Professional
+- “research” → Recommend Perplexity
+
+Rules:
+- Show “Suggested” label
+- Do NOT override user selections after manual change
+- Trigger only on initial input or major edits
+
+========================
+PART 2 — AI TOOL RECOMMENDER
+========================
+
+Highlight one AI button as:
+“Recommended”
+
+Based on:
+- Category
+- Goal intent
+
+Style:
+- Subtle glow or border
+- Small badge
+
+Do NOT:
+- Remove other options
+- Auto-open tools
+
+========================
+PART 3 — PROMPT STRENGTH SCORE
+========================
+
+After generation:
+Display:
+
+“Prompt Strength: [X]%”
+
+Add 2–3 short insights:
+- Strong structure
+- Clear constraints
+- Could be more specific
+- Missing constraints
+
+========================
+PART 4 — AUTO OPTIMIZE MODE
+========================
+
+Add toggle:
+“Auto Optimize (Recommended)”
+
+When ON:
+- Apply best suggested settings automatically
+
+When OFF:
+- Manual control
+
+Do not override after user edits.
+
+========================
+PART 5 — WEEKLY GOAL + ENGAGEMENT LOOP
+========================
+
+Rotate weekly goal using date-based index.
+
+Display:
+“This Week’s Focus”
+
+Subtext:
+“Try this before the week ends.”
+
+Make clickable → fills goal field.
+
+Add:
+- “New” badge if not interacted
+- Toast once per session:
+“New weekly goal available.”
+
+Track with localStorage.
+
+========================
+PART 6 — DEMO WALKTHROUGH UPDATE
+========================
+
+Update steps to include:
+- Guided Mode mention
+- Guardrails + Max Length
+- Quality check + strength score
+- AI platform usage
+
+Final step:
+“Copy your prompt or open it in ChatGPT, Claude, Perplexity, or any AI platform you choose.”
+
+Include replay reminder.
+
+========================
+PART 7 — TOUR UPDATE
+========================
+
+Use sentence casing.
+
+Include:
+- Guided Mode
+- Settings including guardrails + word limit
+- Refinement + quality check + strength score
+- Final step explains clipboard + AI usage
+
+Do NOT overwhelm beginners.
+
+========================
+PART 8 — TARGETED MANUAL PATCH
+========================
+
+Only add if missing:
+
+- Auto Optimize
+- Smart Suggestions
+- AI Recommendation
+- Prompt Strength
+- Guardrails
+- Max Response Length
+- Check Prompt Quality
+- Replay Tour
+
+Update:
+“Use your prompt in ChatGPT, Claude, Perplexity, or any AI platform.”
+
+Do NOT rewrite manual.
+
+========================
+PART 9 — ONBOARDING PERSISTENCE
+========================
+
+Track dismiss count.
+
+Show onboarding banner first 2–3 sessions.
+
+Add visible:
+“Replay Tour” in header or builder.
+
+Do not spam.
+
+========================
+PART 10 — BUILDER SIMPLIFICATION
+========================
+
+Create collapsible:
+“Advanced Options”
+
+Move:
+- Money Mode
+- Human Voice
+- Clarity Boost
+- Photo Prompt
+
+Default collapsed.
+
+========================
+PART 11 — MANUAL QUICK START
+========================
+
+Add at top:
+
+“Quick Start (5 Steps)”
+
+Keep Advanced Help collapsed.
+
+========================
+PART 12 — EXPERT MODE
+========================
+
+Placement:
+Builder header (NOT hero section)
+
+Toggle:
+“Expert Mode”
+
+Helper:
+“For advanced users who want full control.”
+
+------------------------
+AWARENESS
+------------------------
+
+Add under hero buttons:
+
+“Power user? Switch to Expert Mode inside the builder.”
+
+Clickable → scroll + highlight toggle.
+
+------------------------
+FIRST ACTIVATION WARNING
+------------------------
+
+Show for first 3 activations:
+
+“Expert Mode removes most guidance and shows advanced controls. This may feel overwhelming if you’re new.”
+
+Buttons:
+- Enable Expert Mode
+- Stay In Guided Mode
+
+Track via localStorage.
+
+------------------------
+BEHAVIOR
+------------------------
+
+When OFF:
+- Guided experience
+- Collapsed advanced
+- Guidance visible
+
+When ON:
+- Auto Optimize OFF
+- Hide instructional copy
+- Expand all controls
+- Show all toggles/dropdowns
+- Show keyboard shortcuts prominently
+- Show badge: “Expert Mode Active”
+
+Persistence:
+- Save mode in localStorage
+
+Do NOT affect saved prompts/history.
+
+------------------------
+MANUAL PATCH (ONLY IF MISSING)
+------------------------
+
+Add:
+
+“Expert Mode allows full control by removing guidance, expanding all options, and turning off automation. Recommended for advanced users.”
+
+------------------------
+TOUR/DEMO PATCH (LIGHT)
+------------------------
+
+Add one line:
+“Advanced users can enable Expert Mode for full control.”
+
+Do NOT create new steps.
+
+========================
+PART 13 — FINAL CHECK
+========================
+
+Confirm:
+- All systems work together
+- No UI clutter
+- Guided + Expert modes both functional
+- Demo + tour aligned
+- Manual accurate (not bloated)
+- Weekly loop works
+- Suggestions + recommendations correct
+- Mobile clean
+- No JavaScript errors
