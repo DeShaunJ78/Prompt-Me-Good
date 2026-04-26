@@ -369,7 +369,7 @@
             if (!okFlag) throw new Error('Submission rejected');
             saveLocalBackup(value);
             if (input) input.value = '';
-            setStatus("You're on the early-access list. We'll email you when PRO opens up.", 'success');
+            setStatus("You\u2019re in. We\u2019ll notify you when PRO opens.", 'success');
           })
           .catch(function () {
             setStatus('Something went wrong. Please try again.', 'error');
