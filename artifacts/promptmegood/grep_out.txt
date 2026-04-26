@@ -1,0 +1,59 @@
+652:    /* ===== Smart Assist (Stage 1 micro-nudge + Stage 2 full helper) ===== */
+1399:    .nudge-banner { background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 22%, transparent), color-mix(in srgb, var(--color-primary) 8%, transparent)); border-bottom: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent); }
+1400:    .nudge-inner { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); flex-wrap: wrap; }
+1401:    .nudge-icon { font-size: 22px; }
+1402:    .nudge-text { flex: 1 1 240px; font-size: var(--text-sm); color: var(--color-text); line-height: 1.4; }
+1403:    .nudge-text strong { color: var(--color-primary); margin-right: 6px; }
+1404:    .nudge-actions { display: flex; gap: var(--space-2); }
+2193:    /* Spec #1: when the daily nudge banner is visible, slide the toast down so it doesn't stack on top of it. */
+2194:    body.has-nudge-banner .toast { top: calc(160px + env(safe-area-inset-top, 0px)); }
+2195:    body.has-nudge-banner.has-uc-confirm-toast .toast { top: calc(260px + env(safe-area-inset-top, 0px)); }
+2586:  <div id="nudge-banner" class="nudge-banner" hidden>
+2587:    <div class="container nudge-inner">
+2588:      <span class="nudge-icon" aria-hidden="true">💡</span>
+2589:      <div class="nudge-text">
+2590:        <strong>Daily prompt nudge:</strong>
+2591:        <span id="nudge-message"></span>
+2593:      <div class="nudge-actions">
+2594:        <button class="btn btn-primary" type="button" id="nudge-go">Try it</button>
+2595:        <button class="btn btn-secondary" type="button" id="nudge-dismiss" aria-label="Dismiss">Dismiss</button>
+2624:          <p id="usageCounter" class="usage-counter" style="display:none;" aria-live="polite">
+2840:                <button class="btn btn-primary" type="submit" id="generateBtn">Generate Prompt</button>
+2855:              <details id="settingsPanel" class="settings-panel">
+3091:                  <button class="btn btn-secondary" type="button" data-remix="aggressive">More Aggressive</button>
+3299:                <li><strong>Refine if needed.</strong> Tap More Detailed, More Aggressive, or Beginner Friendly.</li>
+3957:      // Adaptive guidance state — gentle nudges that fade as users gain experience
+4065:      function generatePrompt(data, remixMode = '', customRemixText = '') {
+4711:              '<button class="btn btn-secondary" type="button" data-history-action="remix" data-remix-mode="aggressive">More Aggressive</button>' +
+5415:          const settingsPanel = document.getElementById('settingsPanel');
+5420:              if (settingsPanel) settingsPanel.open = true;
+6265:        const nudge = document.getElementById('nudge-banner');
+6266:        return (tour && !tour.hidden) || (nudge && !nudge.hidden);
+6322:          const generateBtnEl = document.getElementById('generateBtn');
+6323:          if (generateBtnEl) {
+6324:            const origLabel = generateBtnEl.dataset.origLabel || generateBtnEl.textContent;
+6325:            generateBtnEl.dataset.origLabel = origLabel;
+6326:            generateBtnEl.textContent = 'Generated ✓';
+6328:              if (generateBtnEl) generateBtnEl.textContent = origLabel;
+6562:      const NUDGE_KEY = 'promptmegood:nudge:v1';
+6588:          return { text: focusIdeas[Math.floor(Math.random() * focusIdeas.length)], action: 'weeklyFocus' };
+6593:      function showNudgeIfDue() {
+6609:        const banner = document.getElementById('nudge-banner');
+6610:        const msgEl = document.getElementById('nudge-message');
+6611:        const nudge = pickNudgeMessage();
+6612:        msgEl.textContent = nudge.text;
+6613:        banner.dataset.action = nudge.action || '';
+6615:        document.body.classList.add('has-nudge-banner');
+6619:      document.getElementById('nudge-dismiss').addEventListener('click', function () {
+6623:        document.getElementById('nudge-banner').hidden = true;
+6624:        document.body.classList.remove('has-nudge-banner');
+6626:      document.getElementById('nudge-go').addEventListener('click', function () {
+6627:        const banner = document.getElementById('nudge-banner');
+6630:        document.body.classList.remove('has-nudge-banner');
+6639:        if (action === 'weeklyFocus' && typeof applyWeeklyGoal === 'function') {
+6646:      // Spec #1: minimum 3 second delay before nudge can appear on a return visit.
+6920:        const banner = document.getElementById('nudge-banner');
+6922:        document.body.classList.remove('has-nudge-banner');
+8150:    // ===== Smart Assist (Stage 1 micro-nudge → Stage 2 full helper) =====
+8712:      async function loadUsageCounter() {
+8723:          const wrapEl = document.getElementById('usageCounter');
