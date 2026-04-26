@@ -1,0 +1,156 @@
+node -e "
+const fs = require('fs');
+const f = 'artifacts/promptmegood/index.html';
+const bak = f + '.bak.' + Date.now();
+fs.copyFileSync(f, bak);
+let h = fs.readFileSync(f, 'utf8');
+let fixes = [];
+
+// 1. Remove duplicate italic tagline below new subheadline
+const dupTagline = '<p class=\"hero-sub-italic\"';
+// Find and hide any secondary italic hero paragraph
+h = h.replace(/<p[^>]*class=\"[^\"]*hero-tagline[^\"]*\"[^>]*>A structured prompt builder[^<]*<\/p>/gi, '');
+h = h.replace(/<p[^>]*><em>A structured prompt builder that tells AI exactly what to do[^<]*<\/em><\/p>/gi, '');
+h = h.replace(/A structured prompt builder that tells AI exactly what to do &mdash; and how to say it\./g, '');
+fixes.push('1. Duplicate hero tagline removed');
+
+// 2. Hero CTAs: make primary dominant, demote secondary
+// Make 'See Use Cases' secondary visually by adding a modifier class
+h = h.replace(
+  /(<a[^>]*href=\"#use-cases\"[^>]*class=\"btn btn-primary[^\"]*\")/g,
+  '\$1 btn-ghost'
+);
+// Also fix the text — lowercase the sub-labels
+h = h.replace('Start Here With A Specific Task', 'start here');
+h = h.replace('Start Here For Ideas', 'or explore use cases');
+fixes.push('2. Hero CTAs hierarchy fixed');
+
+// 3. Output box: set a min-height that is much smaller when empty
+// The result-box has no content yet but renders huge — constrain it
+const resultBoxStyle = '.result-box { min-height: 80px !important; }';
+h = h.replace(
+  '/* ── End PMG Aesthetic Polish ── */',
+  '/* result box: compact when empty */\n    .result-box:empty, .result-box[data-empty] { min-height: 80px !important; max-height: 120px; }\n    .result-panel:not(.has-result) .result-box { min-height: 80px !important; }\n    /* ── End PMG Aesthetic Polish ── */'
+);
+fixes.push('3. Empty output box height constrained');
+
+// 4. History action buttons: make them compact inline row instead of full-width pills
+// Target the history controls section and make buttons smaller
+const historyBtnCSS = \`
+    /* History controls: compact row instead of full-width pills */
+    .history-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .history-controls .btn { 
+      flex: 0 0 auto; 
+      width: auto !important; 
+      padding: 6px 14px !important; 
+      font-size: 0.82rem !important;
+      border-radius: var(--radius-full) !important;
+    }
+    .history-controls-row { display: flex; flex-wrap: wrap; gap: 8px; }
+\`;
+h = h.replace(
+  '/* ── End PMG Aesthetic Polish ── */',
+  historyBtnCSS + '\n    /* ── End PMG Aesthetic Polish ── */'
+);
+fixes.push('4. History buttons compacted');
+
+// 5. Search bar: push below the fold — move it lower in visual priority
+// Add CSS to make search less dominant on mobile
+const searchCSS = \`
+    /* Search: de-emphasize on mobile, show as secondary utility */
+    @media (max-width: 768px) {
+      .site-search { 
+        order: 99;
+        margin-top: var(--space-4);
+        opacity: 0.85;
+      }
+      .site-search-label {
+        font-size: 11px;
+        color: var(--color-text-faint);
+      }
+    }
+\`;
+h = h.replace(
+  '/* ── End PMG Aesthetic Polish ── */',
+  searchCSS + '\n    /* ── End PMG Aesthetic Polish ── */'
+);
+fixes.push('5. Search bar de-emphasized on mobile');
+
+// 6. Guide Me box: remove 'RECOMMENDED FIRST STEP' banner — too salesy, too loud
+h = h.replace(
+  /<span[^>]*class=\"[^\"]*guide-me-eyebrow[^\"]*\"[^>]*>RECOMMENDED FIRST STEP<\/span>/gi,
+  ''
+);
+h = h.replace(
+  /<div[^>]*class=\"[^\"]*guide-me-banner[^\"]*\"[^>]*>\s*RECOMMENDED FIRST STEP\s*<\/div>/gi,
+  ''
+);
+// Also tone down the guide me box border
+const guideMeCSS = \`
+    /* Guide Me: subtle, not screaming */
+    .guide-me-card, [class*='guide-me'] { 
+      border-color: var(--color-border) !important;
+      background: var(--color-surface) !important;
+    }
+\`;
+h = h.replace(
+  '/* ── End PMG Aesthetic Polish ── */',
+  guideMeCSS + '\n    /* ── End PMG Aesthetic Polish ── */'
+);
+fixes.push('6. Guide Me box toned down');
+
+// 7. Title Case in hero CTAs and section headers → sentence case
+h = h.replace(/Build A Prompt/g, 'Build a prompt');
+h = h.replace(/See Use Cases/g, 'See use cases');
+h = h.replace(/Make Money With AI/g, 'Make money with AI');
+h = h.replace(/Start A Business/g, 'Start a business');
+h = h.replace(/Create Viral Content/g, 'Create viral content');
+h = h.replace(/Write Better Emails/g, 'Write better emails');
+h = h.replace(/Build A Product Page/g, 'Build a product page');
+h = h.replace(/Solve A Personal Problem/g, 'Solve a personal problem');
+h = h.replace(/What People Are Saying/g, 'What people are saying');
+h = h.replace(/Build Your Prompt/g, 'Build your prompt');
+h = h.replace(/Why Most AI Prompts Fail/g, 'Why most AI prompts fail');
+h = h.replace(/Start With a Prompt or Explore Use Cases/g, 'Start with a prompt or explore use cases');
+h = h.replace(/Use Your Prompt In:/g, 'Use your prompt in:');
+h = h.replace(/Your Ready-To-Use Prompt/g, 'Your ready-to-use prompt');
+h = h.replace(/Refine Your Prompt Instantly/g, 'Refine your prompt instantly');
+h = h.replace(/Fine-Tune Your Prompt/g, 'Fine-tune your prompt');
+h = h.replace(/Your Input Summary/g, 'Your input summary');
+h = h.replace(/Pinned Templates/g, 'Pinned templates');
+h = h.replace(/Prompt History/g, 'Prompt history');
+h = h.replace(/Build Better Prompts for ChatGPT, Claude, and Any AI Tool/g, 'Build better prompts for ChatGPT, Claude, and any AI tool');
+h = h.replace(/Best For Structured Answers, Step-By-Step Guidance, And Strategy/g, 'Best for structured answers, step-by-step guidance, and strategy');
+h = h.replace(/Best For Writing, Long-Form Content, And Natural Tone/g, 'Best for writing, long-form content, and natural tone');
+h = h.replace(/Best For Research, Real-Time Info, And Fact-Based Answers/g, 'Best for research, real-time info, and fact-based answers');
+fixes.push('7. Title Case → sentence case throughout');
+
+// 8. 'Use This →' buttons: lowercase
+h = h.replace(/Use This &rarr;/g, 'Use this &rarr;');
+h = h.replace(/Use This →/g, 'Use this →');
+fixes.push('8. Use case button text lowercased');
+
+// 9. Remove 'MONEY · AGGRESSIVE' tag from templates — 'aggressive' still leaking through
+h = h.replace(/MONEY &middot; AGGRESSIVE/gi, 'MONEY &middot; BOLD');
+h = h.replace(/MONEY · AGGRESSIVE/gi, 'MONEY · BOLD');
+fixes.push('9. AGGRESSIVE tag renamed to BOLD in templates');
+
+// 10. Tighten Weekly Focus box — remove NEW badge animation (too flashy)
+const weeklyCSS = \`
+    /* Weekly focus: quieter, less animated */
+    .weekly-new-badge { animation: none !important; }
+    .weekly-goal-pin { margin-bottom: var(--space-3); }
+\`;
+h = h.replace(
+  '/* ── End PMG Aesthetic Polish ── */',
+  weeklyCSS + '\n    /* ── End PMG Aesthetic Polish ── */'
+);
+fixes.push('10. Weekly focus badge animation removed');
+
+fs.writeFileSync(f, h);
+console.log('\n── Patch 2 complete ─────────────────────────────────');
+fixes.forEach((x, i) => console.log(' ' + x));
+console.log('─────────────────────────────────────────────────────');
+console.log('Backup: ' + bak);
+console.log('Redeploy to see changes.');
+"

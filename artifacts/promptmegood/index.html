@@ -299,8 +299,8 @@
     .btn-secondary {
       background: var(--color-surface); border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
     }
-    /* Scoped: emphasize the hero "See Use Cases" CTA with a teal border so it's clearly clickable on white,
-       while still reading as secondary next to the filled "Build A Prompt" primary. */
+    /* Scoped: emphasize the hero "See use cases" CTA with a teal border so it's clearly clickable on white,
+       while still reading as secondary next to the filled "Build a prompt" primary. */
     #hero-usecases-cta {
       border: 2px solid var(--color-primary);
       transition: background var(--transition-interactive), border-color var(--transition-interactive), transform var(--transition-interactive);
@@ -613,7 +613,7 @@
       line-height: 1.4;
     }
     [data-theme="dark"] .guided-cta-recommended-badge { background: #5ba8b0; color: #0c2f2c; }
-    /* Build A Prompt highlight pulse: 1.5s soft teal box-shadow + ring */
+    /* Build a prompt highlight pulse: 1.5s soft teal box-shadow + ring */
     @keyframes guidedCtaPulse {
       0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 55%, transparent); border-color: var(--color-primary); }
       60%  { box-shadow: 0 0 0 14px color-mix(in srgb, var(--color-primary) 0%, transparent); border-color: var(--color-primary); }
@@ -623,7 +623,7 @@
       animation: guidedCtaPulse 1500ms ease-out 1;
       border-color: var(--color-primary);
     }
-    /* Inline branded guidance message under builder header (Build A Prompt CTA) */
+    /* Inline branded guidance message under builder header (Build a prompt CTA) */
     .build-cta-guidance {
       display: flex; align-items: center; gap: 10px;
       margin: 0 0 var(--space-3); padding: 10px 14px;
@@ -2602,6 +2602,47 @@
       .hero-actions { flex-direction: column; }
       .hero-actions .btn { width: 100%; text-align: center; }
     }
+    /* result box: compact when empty */
+    .result-box:empty, .result-box[data-empty] { min-height: 80px !important; max-height: 120px; }
+    .result-panel:not(.has-result) .result-box { min-height: 80px !important; }
+    
+    /* History controls: compact row instead of full-width pills */
+    .history-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .history-controls .btn { 
+      flex: 0 0 auto; 
+      width: auto !important; 
+      padding: 6px 14px !important; 
+      font-size: 0.82rem !important;
+      border-radius: var(--radius-full) !important;
+    }
+    .history-controls-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    
+    /* Search: de-emphasize on mobile, show as secondary utility */
+    @media (max-width: 768px) {
+      .site-search { 
+        order: 99;
+        margin-top: var(--space-4);
+        opacity: 0.85;
+      }
+      .site-search-label {
+        font-size: 11px;
+        color: var(--color-text-faint);
+      }
+    }
+
+    
+    /* Guide Me: subtle, not screaming */
+    .guide-me-card, [class*='guide-me'] { 
+      border-color: var(--color-border) !important;
+      background: var(--color-surface) !important;
+    }
+
+    
+    /* Weekly focus: quieter, less animated */
+    .weekly-new-badge { animation: none !important; }
+    .weekly-goal-pin { margin-bottom: var(--space-3); }
+
     /* ── End PMG Aesthetic Polish ── */
 </style>
 </head>
@@ -2684,18 +2725,18 @@
           </p>
           <div class="hero-actions">
             <a class="btn btn-primary btn-stacked" href="#builder" id="hero-build-cta">
-              <span class="cta-title">Build A Prompt</span>
-              <span class="cta-sub">Start Here With A Specific Task</span>
+              <span class="cta-title">Build a prompt</span>
+              <span class="cta-sub">start here</span>
             </a>
             <a class="btn btn-secondary btn-stacked" href="#use-cases" id="hero-usecases-cta">
-              <span class="cta-title">See Use Cases</span>
-              <span class="cta-sub">Start Here For Ideas</span>
+              <span class="cta-title">See use cases</span>
+              <span class="cta-sub">or explore use cases</span>
             </a>
           </div>
         </div>
         <aside class="hero-card" aria-labelledby="hero-card-title">
           <span class="hero-card-badge"><span class="hero-card-badge-dot" aria-hidden="true"></span>Why It Matters</span>
-          <h2 class="hero-card-title" id="hero-card-title">Build Better Prompts for ChatGPT, Claude, and Any AI Tool</h2>
+          <h2 class="hero-card-title" id="hero-card-title">Build better prompts for ChatGPT, Claude, and any AI tool</h2>
           <ul class="hero-list">
             <li><span>1</span><span>Turns vague problems into <strong>sharper instructions</strong> AI can actually use.</span></li>
             <li><span>2</span><span>Adds <strong>role, context, constraints, tone, output format, and next actions</strong>.</span></li>
@@ -2709,7 +2750,7 @@
       <div class="container">
         <div class="popular-uses-head">
           <div class="popular-uses-head-row">
-            <h2 id="popular-uses-title">Start With a Prompt or Explore Use Cases</h2>
+            <h2 id="popular-uses-title">Start with a prompt or explore use cases</h2>
             <button type="button" class="usecases-dice-btn" id="usecases-dice-btn" aria-label="Generate new use case ideas" title="Generate new idea starters">
               <span class="usecases-dice-icon" aria-hidden="true">🎲</span>
               <span>Need ideas?</span>
@@ -2724,34 +2765,34 @@
         </p>
         <div class="popular-uses-grid">
           <button type="button" class="popular-use-card" data-popular-goal="Help me find realistic ways to make money using AI based on my current skills, time, and budget.">
-            <span class="popular-use-card-title">Make Money With AI</span>
+            <span class="popular-use-card-title">Make money with AI</span>
             <p class="popular-use-card-desc">Find realistic, practical ways to earn using AI based on what you already have.</p>
-            <span class="popular-use-card-cta">Use This →</span>
+            <span class="popular-use-card-cta">Use this →</span>
           </button>
           <button type="button" class="popular-use-card" data-popular-goal="Help me turn a business idea into a simple step-by-step launch plan.">
-            <span class="popular-use-card-title">Start A Business</span>
+            <span class="popular-use-card-title">Start a business</span>
             <p class="popular-use-card-desc">Turn a fuzzy idea into a clear, step-by-step plan you can actually launch.</p>
-            <span class="popular-use-card-cta">Use This →</span>
+            <span class="popular-use-card-cta">Use this →</span>
           </button>
           <button type="button" class="popular-use-card" data-popular-goal="Help me create attention-grabbing content ideas and hooks for TikTok, Instagram, or YouTube.">
-            <span class="popular-use-card-title">Create Viral Content</span>
+            <span class="popular-use-card-title">Create viral content</span>
             <p class="popular-use-card-desc">Generate scroll-stopping hooks and ideas for TikTok, Instagram, or YouTube.</p>
-            <span class="popular-use-card-cta">Use This →</span>
+            <span class="popular-use-card-cta">Use this →</span>
           </button>
           <button type="button" class="popular-use-card" data-popular-goal="Help me write a clear, persuasive email that gets the response I want.">
-            <span class="popular-use-card-title">Write Better Emails</span>
+            <span class="popular-use-card-title">Write better emails</span>
             <p class="popular-use-card-desc">Write clear, persuasive emails that actually get the reply you need.</p>
-            <span class="popular-use-card-cta">Use This →</span>
+            <span class="popular-use-card-cta">Use this →</span>
           </button>
           <button type="button" class="popular-use-card" data-popular-goal="Help me write a high-converting product page with strong benefits, trust-building copy, and clear calls to action.">
-            <span class="popular-use-card-title">Build A Product Page</span>
+            <span class="popular-use-card-title">Build a product page</span>
             <p class="popular-use-card-desc">Craft high-converting product pages with strong benefits and trust-building copy.</p>
-            <span class="popular-use-card-cta">Use This →</span>
+            <span class="popular-use-card-cta">Use this →</span>
           </button>
           <button type="button" class="popular-use-card" data-popular-goal="Help me think through a personal problem clearly and create a practical next-step plan." data-money-mode="off">
-            <span class="popular-use-card-title">Solve A Personal Problem</span>
+            <span class="popular-use-card-title">Solve a personal problem</span>
             <p class="popular-use-card-desc">Think through a tough personal situation and get a calm, practical next-step plan.</p>
-            <span class="popular-use-card-cta">Use This →</span>
+            <span class="popular-use-card-cta">Use this →</span>
           </button>
         </div>
       </div>
@@ -2761,7 +2802,7 @@
       <div class="container">
         <div class="why-prompts-fail">
           <span class="eyebrow">Why It Matters</span>
-          <h2 id="why-prompts-fail-title">Why Most AI Prompts Fail</h2>
+          <h2 id="why-prompts-fail-title">Why most AI prompts fail</h2>
           <p class="why-prompts-fail-lede">Vague questions get vague answers. Most people skip the structure that actually makes ChatGPT, Claude, and Perplexity useful — role, context, constraints, tone, and format. PromptMeGood adds that structure for you, so the AI knows exactly what to do.</p>
         </div>
       </div>
@@ -2784,7 +2825,7 @@
       <div class="container">
         <div class="feedback-head">
           <span class="eyebrow feedback-eyebrow">Early Feedback</span>
-          <h2 id="feedback-title">What People Are Saying</h2>
+          <h2 id="feedback-title">What people are saying</h2>
         </div>
         <div class="feedback-grid">
           <figure class="feedback-card-grid">
@@ -2817,7 +2858,7 @@
         <section class="panel" id="builder-panel" aria-labelledby="builder-title">
           <div class="panel-head panel-head-row">
             <div>
-              <h2 id="builder-title">Build Your Prompt</h2>
+              <h2 id="builder-title">Build your prompt</h2>
               <p class="builder-transition">Fill in your goal below — the more specific, the better. Hit Generate and get a prompt you can use instantly.</p>
             </div>
             <div class="builder-head-actions">
@@ -3114,7 +3155,7 @@
 
         <section class="panel" id="result-panel" aria-labelledby="result-title">
           <div class="panel-head">
-            <h2 id="result-title">Your Ready-To-Use Prompt</h2>
+            <h2 id="result-title">Your ready-to-use prompt</h2>
             <p>Copy this and paste it into ChatGPT, Claude, Perplexity, Google, or any AI/search tool.</p>
             <p class="demo-next-step" id="demo-next-step" role="status" aria-live="polite" hidden>This is a sample prompt. Copy it, refine it, or go back and enter your own goal.</p>
           </div>
@@ -3138,7 +3179,7 @@
             </div>
             <div class="improve-block" id="improve-block">
               <div id="tour-step-improve">
-                <span class="improve-eyebrow">Refine Your Prompt Instantly</span>
+                <span class="improve-eyebrow">Refine your prompt instantly</span>
                 <p class="improve-helper">Tap an option to instantly upgrade your result.</p>
                 <div class="actions-row">
                   <button class="btn btn-ai" type="button" id="improve-with-ai-btn" aria-describedby="improve-with-ai-hint">
@@ -3157,7 +3198,7 @@
               </div>
               <div class="fine-tune" id="tour-step-finalize">
                 <div class="field-label-row">
-                  <label for="fine-tune-input" class="fine-tune-label">Fine-Tune Your Prompt</label>
+                  <label for="fine-tune-input" class="fine-tune-label">Fine-tune your prompt</label>
                   <button type="button" class="btn-clear" id="clear-fine-tune-btn" aria-label="Clear fine-tune instructions" data-clear-target="fine-tune-input">Clear</button>
                 </div>
                 <div class="fine-tune-row">
@@ -3223,22 +3264,22 @@
               <button class="save-tip-close" type="button" id="save-tip-close" aria-label="Dismiss tip">&times;</button>
             </div>
             <div class="open-in-block" aria-label="Use your prompt in an AI tool">
-              <span class="open-in-label">Use Your Prompt In:</span>
+              <span class="open-in-label">Use your prompt in:</span>
               <div class="open-in-row">
                 <div class="open-in-card">
                   <span class="recommended-badge" id="rec-badge-chatgpt" hidden>Recommended</span>
                   <a class="btn open-in-btn" data-tool="chatgpt" aria-describedby="open-in-desc-chatgpt" href="https://chat.openai.com/" target="_blank" rel="noopener noreferrer">ChatGPT</a>
-                  <p class="open-in-desc" id="open-in-desc-chatgpt">Best For Structured Answers, Step-By-Step Guidance, And Strategy</p>
+                  <p class="open-in-desc" id="open-in-desc-chatgpt">Best for structured answers, step-by-step guidance, and strategy</p>
                 </div>
                 <div class="open-in-card">
                   <span class="recommended-badge" id="rec-badge-claude" hidden>Recommended</span>
                   <a class="btn open-in-btn" data-tool="claude" aria-describedby="open-in-desc-claude" href="https://claude.ai/" target="_blank" rel="noopener noreferrer">Claude</a>
-                  <p class="open-in-desc" id="open-in-desc-claude">Best For Writing, Long-Form Content, And Natural Tone</p>
+                  <p class="open-in-desc" id="open-in-desc-claude">Best for writing, long-form content, and natural tone</p>
                 </div>
                 <div class="open-in-card">
                   <span class="recommended-badge" id="rec-badge-perplexity" hidden>Recommended</span>
                   <a class="btn open-in-btn" data-tool="perplexity" aria-describedby="open-in-desc-perplexity" href="https://www.perplexity.ai/" target="_blank" rel="noopener noreferrer">Perplexity</a>
-                  <p class="open-in-desc" id="open-in-desc-perplexity">Best For Research, Real-Time Info, And Fact-Based Answers</p>
+                  <p class="open-in-desc" id="open-in-desc-perplexity">Best for research, real-time info, and fact-based answers</p>
                 </div>
               </div>
             </div>
@@ -3258,7 +3299,7 @@
           <div class="panel-head">
             <div class="panel-head-row">
               <div>
-                <h2>Your Input Summary</h2>
+                <h2>Your input summary</h2>
                 <p>This is what you entered to generate your prompt.</p>
               </div>
               <div class="panel-head-actions">
@@ -3500,7 +3541,7 @@
         <div class="legal-modal-body legal-body">
           <p>PromptMeGood is a single-page tool that runs entirely in your browser. Your prompts, history, templates, and preferences are stored locally on your device using your browser's localStorage. We do not maintain user accounts, and we do not transmit your prompts to our servers.</p>
           <p>We use Microsoft Clarity to understand anonymous, aggregated usage patterns (such as which buttons are clicked) so we can improve the experience. Clarity does not capture the text of your prompts.</p>
-          <p>You can export, import, or clear your saved data at any time from the Prompt History section. Clearing your browser storage will remove everything PromptMeGood has saved on your device.</p>
+          <p>You can export, import, or clear your saved data at any time from the Prompt history section. Clearing your browser storage will remove everything PromptMeGood has saved on your device.</p>
           <p>Questions? Email <a class="site-footer-link" href="mailto:support@promptmegood.com">support@promptmegood.com</a>.</p>
         </div>
       </div>
@@ -3534,7 +3575,7 @@
 
   <div class="post-tour-banner" id="post-tour-banner" role="status" aria-live="polite" hidden>
     <span class="post-tour-banner-icon" aria-hidden="true">🎉</span>
-    <span class="post-tour-banner-text">You&rsquo;re ready. Start with Build A Prompt or explore Use Cases &mdash; then have fun prompting with PromptMeGood.</span>
+    <span class="post-tour-banner-text">You&rsquo;re ready. Start with Build a prompt or explore Use Cases &mdash; then have fun prompting with PromptMeGood.</span>
     <button type="button" class="post-tour-banner-btn" id="post-tour-banner-dismiss" aria-label="Dismiss message">Got it</button>
   </div>
 
