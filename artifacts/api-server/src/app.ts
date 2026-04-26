@@ -6,6 +6,11 @@ import { logger } from "./lib/logger";
 
 const app: Express = express();
 
+// Replit terminates TLS at a single front proxy and forwards to us on loopback.
+// Trust exactly one hop so req.ip reflects the real client IP from the proxy's
+// X-Forwarded-For entry, while ignoring any user-supplied forwarded headers.
+app.set("trust proxy", 1);
+
 app.use(
   pinoHttp({
     logger,

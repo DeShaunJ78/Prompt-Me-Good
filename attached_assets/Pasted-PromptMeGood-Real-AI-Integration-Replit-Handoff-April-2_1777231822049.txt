@@ -1,0 +1,303 @@
+PromptMeGood — Real AI Integration
+Replit Handoff — April 26, 2026
+Start here — Steps 1–4 (API key, backend setup, Secrets, endpoint) are already complete.
+
+TASK OVERVIEW
+Connect the existing frontend to the live /api/generate backend endpoint. Add streaming output, a real usage counter in the hero, and cost control guardrails. Do not change any UI, layout, or existing features.
+
+STEP 5 — Connect Frontend to Backend
+Replace the current template-based prompt generation logic with a real fetch call to /api/generate.
+
+Find the existing generatePrompt() function (or equivalent) in the frontend JavaScript. Replace the internal generation logic with this:
+
+js
+async function generatePrompt() {
+  // Collect all builder inputs
+  const payload = {
+    goal: document.getElementById('goal').value.trim(),
+    category: document.getElementById('category').value,
+    experience: document.getElementById('experience').value,
+    tone: document.getElementById('tone').value,
+    format: document.getElementById('format').value,
+    language: document.getElementById('language').value,
+    personality: document.getElementById('personality').value,
+    extraDetails: document.getElementById('extraDetails').value,
+    avoid: document.getElementById('avoid').value,
+    moneyMode: document.getElementById('moneyMode').checked,
+    humanVoice: document.getElementById('humanVoice').checked,
+    clarityBoost: document.getElementById('clarityBoost').checked,
+    expertMode: document.body.classList.contains('expert-mode-active')
+  };
+
+  // Validate goal field
+  if (!payload.goal) {
+    showToast('Please enter a goal before generating.');
+    return;
+  }
+
+  // Set loading state
+  setGenerateButtonLoading(true);
+  setOutputPlaceholder('Generating your prompt…');
+
+  try {
+    const response = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+
+    if (data.prompt) {
+      // Display generated prompt in output panel
+      setOutputContent(data.prompt);
+      scrollToOutput();
+      showToast('Prompt generated.');
+      saveToHistory(data.prompt, payload);
+    } else {
+      setOutputPlaceholder('Something went wrong. Please try again.');
+      showToast('Generation failed — please try again.');
+      console.error('API error:', data.error);
+    }
+
+  } catch (err) {
+    setOutputPlaceholder('Connection error. Please check your internet and try again.');
+    showToast('Could not reach the server.');
+    console.error('Fetch error:', err);
+  } finally {
+    setGenerateButtonLoading(false);
+  }
+}
+Match existing function and element ID names in the codebase. The logic above is the pattern — adapt IDs and helper function names to whatever already exists. Do not rename or restructure existing functions.
+
+STEP 6 — Add Streaming Output
+Update the frontend to receive a streamed response from the backend and display it word by word as it arrives. This makes the output feel live and fast.
+
+Backend change (add alongside existing endpoint):
+Add a /api/generate-stream endpoint that streams the OpenAI response using Server-Sent Events:
+
+js
+app.post('/api/generate-stream', async (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  try {
+    const stream = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      stream: true,
+      messages: buildMessages(req.body) // reuse existing message builder
+    });
+
+    for await (const chunk of stream) {
+      const text = chunk.choices[0]?.delta?.content || '';
+      if (text) {
+        res.write(`data: ${JSON.stringify({ text })}\n\n`);
+      }
+    }
+
+    res.write('data: [DONE]\n\n');
+    res.end();
+
+  } catch (err) {
+    res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
+    res.end();
+  }
+});
+Frontend change:
+Replace the fetch call in generatePrompt() with this streaming version:
+
+js
+async function generatePromptStream() {
+  const payload = collectBuilderInputs(); // reuse existing input collector
+
+  if (!payload.goal) {
+    showToast('Please enter a goal before generating.');
+    return;
+  }
+
+  setGenerateButtonLoading(true);
+  setOutputContent(''); // clear output
+  setOutputPlaceholder('');
+
+  let fullText = '';
+
+  try {
+    const response = await fetch('/api/generate-stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    scrollToOutput(); // scroll immediately so user sees text appear
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const lines = decoder.decode(value).split('\n');
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const raw = line.slice(6);
+          if (raw === '[DONE]') {
+            showToast('Prompt generated.');
+            saveToHistory(fullText, payload);
+            break;
+          }
+          try {
+            const parsed = JSON.parse(raw);
+            if (parsed.text) {
+              fullText += parsed.text;
+              appendOutputContent(parsed.text); // append word by word
+            }
+          } catch (_) {}
+        }
+      }
+    }
+
+  } catch (err) {
+    setOutputPlaceholder('Connection error. Please try again.');
+    showToast('Could not reach the server.');
+    console.error('Stream error:', err);
+  } finally {
+    setGenerateButtonLoading(false);
+  }
+}
+Use streaming as the default generatePrompt() behavior. Keep the non-streaming version as a fallback if streaming fails.
+
+STEP 7 — Usage Counter
+Backend:
+Add a counter using Replit's built-in Database (@replit/database) or a simple JSON file. Increment on every successful generation.
+
+js
+const Database = require('@replit/database');
+const db = new Database();
+
+// Inside /api/generate, after successful OpenAI response:
+const current = (await db.get('promptCount')) || 0;
+await db.set('promptCount', current + 1);
+
+// Add a public stats endpoint:
+app.get('/api/stats', async (req, res) => {
+  const count = (await db.get('promptCount')) || 0;
+  res.json({ promptCount: count });
+});
+Frontend:
+On page load, fetch the count and inject it into the hero. Add this element to the hero section between the tagline and the CTA buttons:
+
+xml
+<p id="usageCounter" class="usage-counter" style="display:none;">
+  <span id="usageCount">0</span>+ prompts generated
+</p>
+js
+// On page load
+async function loadUsageCounter() {
+  try {
+    const res = await fetch('/api/stats');
+    const data = await res.json();
+    if (data.promptCount && data.promptCount > 100) {
+      document.getElementById('usageCount').textContent =
+        data.promptCount.toLocaleString();
+      document.getElementById('usageCounter').style.display = 'block';
+    }
+    // Only show when count is real and meaningful (over 100)
+    // Do NOT show fake or zero counts
+  } catch (_) {
+    // Fail silently — counter is not critical
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadUsageCounter);
+Only display the counter when the real count exceeds 100. Never show a zero or fabricated number.
+
+STEP 8 — Cost Controls
+Implement all four guardrails before going live with real traffic.
+
+1. Rate limiting (already in backend — verify it exists):
+js
+const rateLimit = require('express-rate-limit');
+
+const generateLimiter = rateLimit({
+  windowMs: 60 * 1000,    // 1 minute
+  max: 10,                 // 10 requests per IP per minute
+  message: { error: 'Too many requests. Please wait a moment and try again.' }
+});
+
+app.use('/api/generate', generateLimiter);
+app.use('/api/generate-stream', generateLimiter);
+2. Max output token limit:
+In the OpenAI API call, add:
+
+js
+max_tokens: 600
+This caps output length and keeps cost predictable.
+
+3. Input length limit:
+In the frontend, before sending the payload, enforce:
+
+js
+if (payload.goal.length > 500) {
+  showToast('Your goal is too long. Please keep it under 500 characters.');
+  return;
+}
+4. Monthly spend cap:
+Do this manually in your OpenAI account:
+
+Go to platform.openai.com → Settings → Billing → Usage limits
+
+Set a monthly budget cap of $20 to start
+
+Set an email alert at $10 so you know when you're halfway
+
+This is a hard ceiling. Raise it only as traffic and revenue grow.
+
+GLOBAL RULES — DO NOT CHANGE
+Do not change any UI elements, layout, copy, or styling
+
+Do not rename existing functions or element IDs
+
+Do not remove existing features (history, templates, Expert Mode, Guide Me, etc.)
+
+Do not expose the OpenAI API key anywhere in frontend code
+
+Do not show the usage counter until real count exceeds 100
+
+All new backend code must have error handling — never crash silently
+
+FINAL QA CHECKLIST
+Enter a goal and click Generate — real AI prompt appears (not a template)
+
+Output streams word by word in real time
+
+Page scrolls to output panel automatically
+
+Toast fires on completion
+
+Prompt is saved to history after generation
+
+Use Demo Values still works and auto-generates
+
+Random Prompt still works
+
+Usage counter appears in hero (only when count > 100)
+
+/api/stats returns correct count
+
+Rate limiter blocks after 10 requests in 1 minute — returns friendly error
+
+Goal field over 500 characters shows validation message
+
+API key is NOT visible in browser source, network tab, or console
+
+Monthly spend cap is set in OpenAI dashboard
+
+No console errors on generate, stream, or page load
+
+Mobile layout unchanged
+
+Desktop layout unchanged
+
+Expert Mode, Guide Me, Advanced Options all still work

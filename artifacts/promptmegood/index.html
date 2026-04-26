@@ -1143,6 +1143,8 @@
     .history-item-note { margin-top: var(--space-2); padding: 8px 12px; border-left: 3px solid var(--color-primary); background: color-mix(in srgb, var(--color-primary) 8%, transparent); border-radius: 0 var(--radius-md) var(--radius-md) 0; font-size: var(--text-sm); color: var(--color-text); white-space: pre-wrap; }
     .history-item-note::before { content: "📝 Note: "; font-weight: 600; color: var(--color-primary); }
     .trust-line { font-size: var(--text-sm); color: var(--color-text-muted); font-style: italic; margin-top: var(--space-2); }
+    .usage-counter { font-size: var(--text-sm); color: var(--color-text-muted); margin-top: var(--space-2); margin-bottom: 0; }
+    .usage-counter #usageCount { color: var(--color-primary); font-weight: 600; }
     .examples-block { margin-top: var(--space-3); }
     .examples-title { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); font-weight: 600; margin-bottom: 8px; }
     .examples-row { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -2565,6 +2567,9 @@
             <p class="hero-subtext">Most people get <strong>weak answers from AI</strong> because they ask weak questions. This fixes that instantly.</p>
           </div>
           <p class="trust-line">A structured prompt builder that tells AI exactly what to do — and how to say it.</p>
+          <p id="usageCounter" class="usage-counter" style="display:none;" aria-live="polite">
+            <span id="usageCount">0</span>+ prompts generated
+          </p>
           <div class="hero-actions">
             <a class="btn btn-primary btn-stacked" href="#builder" id="hero-build-cta">
               <span class="cta-title">Build A Prompt</span>
@@ -6203,6 +6208,15 @@ Context:
           return;
         }
 
+        // Cost-control: cap goal length client-side (server also enforces).
+        if ((data.goal || '').length > 500) {
+          if (typeof showToast === 'function') {
+            showToast('Your goal is too long. Please keep it under 500 characters.');
+          }
+          document.getElementById('goal').focus();
+          return;
+        }
+
         // Always build the local prompt first — it's our guaranteed result and our AI-failure fallback.
         const localPrompt = generatePrompt(data);
 
@@ -6226,7 +6240,10 @@ Context:
         // If AI client is unavailable or already at the monthly limit, just use the local builder.
         const ai = window.__pmgAI;
         const remaining = ai && typeof ai.remaining === 'function' ? ai.remaining('generate') : 0;
-        if (!ai || typeof ai.generateRaw !== 'function' || remaining <= 0) {
+        const hasStream = ai && typeof ai.generateStream === 'function';
+        const hasStructured = ai && typeof ai.generateStructured === 'function';
+        const hasRaw = ai && typeof ai.generateRaw === 'function';
+        if (!ai || (!hasStream && !hasStructured && !hasRaw) || remaining <= 0) {
           if (ai && remaining <= 0 && typeof window.showToast === 'function') {
             window.showToast("You've reached the free monthly AI limit. PRO will unlock more soon.");
           }
@@ -6234,19 +6251,110 @@ Context:
           return;
         }
 
-        // AI-first path: show loading, call /api/generate, fall back to local on error.
-        setPromptText('Generating your prompt…');
+        // Build structured payload for backend (per spec).
+        const aiPayload = {
+          goal: data.goal,
+          category: data.category,
+          experience: data.skillLevel,
+          tone: data.tone,
+          format: data.outputFormat,
+          language: data.outputLanguage,
+          personality: data.personality,
+          extraDetails: data.extraDetails,
+          avoid: data.guardrails,
+          moneyMode: !!data.moneyMode,
+          humanVoice: !!data.humanTone,
+          clarityBoost: !!data.clarityBoost,
+          expertMode: document.body.classList.contains('is-expert-mode')
+        };
+
+        // AI-first STREAMING path. Shows live word-by-word output.
+        // Fallback chain: stream → non-stream structured → local builder.
+        setPromptText('');
         scrollToResult();
-        ai.generateRaw(localPrompt).then(function (aiText) {
-          finalize(aiText && typeof aiText === 'string' && aiText.trim() ? aiText : localPrompt);
-        }).catch(function (err) {
-          if (err && err.code === 'LIMIT' && typeof window.showToast === 'function') {
-            window.showToast("You've reached the free monthly AI limit. PRO will unlock more soon.");
-          } else if (typeof window.showToast === 'function') {
+
+        let streamedText = '';
+        function onChunk(_chunk, full) {
+          streamedText = full;
+          setPromptText(full);
+        }
+
+        // Step-by-step fallback: stream → structured → raw → local.
+        // `attempted` prevents infinite recursion if the same call keeps failing.
+        const attempted = { stream: false, structured: false, raw: false };
+
+        function tryStructuredFallback() {
+          if (attempted.structured || !hasStructured) {
+            tryRawFallback();
+            return;
+          }
+          attempted.structured = true;
+          setPromptText('Generating your prompt…');
+          ai.generateStructured(aiPayload).then(function (text) {
+            finalize(text && typeof text === 'string' && text.trim() ? text : localPrompt);
+          }).catch(handleApiError);
+        }
+
+        function tryRawFallback() {
+          if (attempted.raw || !hasRaw) {
+            useLocalFallback();
+            return;
+          }
+          attempted.raw = true;
+          setPromptText('Generating your prompt…');
+          // generateRaw expects a pre-built prompt string, so feed it the
+          // locally-built prompt — the legacy /api/generate {prompt} path.
+          ai.generateRaw(localPrompt).then(function (text) {
+            finalize(text && typeof text === 'string' && text.trim() ? text : localPrompt);
+          }).catch(handleApiError);
+        }
+
+        function useLocalFallback() {
+          if (typeof window.showToast === 'function') {
             window.showToast('AI generation had an issue, so we used the local builder instead.');
           }
           finalize(localPrompt);
-        });
+        }
+
+        function handleApiError(err) {
+          if (err && err.code === 'LIMIT' && typeof window.showToast === 'function') {
+            window.showToast("You've reached the free monthly AI limit. PRO will unlock more soon.");
+            finalize(streamedText && streamedText.trim() ? streamedText : localPrompt);
+            return;
+          }
+          // If we already streamed partial content from /generate-stream, keep it.
+          if (!attempted.structured && !attempted.raw && streamedText && streamedText.trim()) {
+            finalize(streamedText);
+            return;
+          }
+          // Walk the chain: structured → raw → local.
+          if (!attempted.structured && hasStructured) {
+            tryStructuredFallback();
+            return;
+          }
+          if (!attempted.raw && hasRaw) {
+            tryRawFallback();
+            return;
+          }
+          useLocalFallback();
+        }
+
+        if (hasStream) {
+          ai.generateStream(aiPayload, onChunk).then(function (full) {
+            finalize(full && typeof full === 'string' && full.trim() ? full : localPrompt);
+          }).catch(handleApiError);
+        } else if (hasStructured) {
+          setPromptText('Generating your prompt…');
+          ai.generateStructured(aiPayload).then(function (text) {
+            finalize(text && typeof text === 'string' && text.trim() ? text : localPrompt);
+          }).catch(handleApiError);
+        } else {
+          // Final legacy fallback: pre-built prompt string via /api/generate.
+          setPromptText('Generating your prompt…');
+          ai.generateRaw(localPrompt).then(function (aiText) {
+            finalize(aiText && typeof aiText === 'string' && aiText.trim() ? aiText : localPrompt);
+          }).catch(handleApiError);
+        }
       });
 
       // ===== Weekly rotating "This week's focus" =====
@@ -8265,24 +8373,86 @@ Context:
         }
       }
 
-      // Calls /api/generate which returns the spec shape {success, output}.
-      // Kept separate from callAI() so the rest of the client (which uses {ok, result}) is untouched.
-      async function callGenerate(prompt) {
+      // Calls /api/generate which returns {success, output, prompt} (also accepts {prompt} legacy shape).
+      async function callGenerate(body) {
         const ctrl = new AbortController();
         const timeoutId = window.setTimeout(function () { ctrl.abort(); }, 60000);
         try {
           const resp = await fetch(API_BASE + '/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: prompt }),
+            body: JSON.stringify(body || {}),
             signal: ctrl.signal,
           });
           const data = await resp.json().catch(function () { return null; });
-          if (!resp.ok || !data || data.success !== true) {
+          if (!resp.ok || !data || (data.success !== true && data.ok !== true)) {
             const err = (data && data.error) ? data.error : ERR_MSG;
             throw new Error(err);
           }
-          return data.output;
+          return data.output || data.prompt || data.result || '';
+        } finally {
+          window.clearTimeout(timeoutId);
+        }
+      }
+
+      // Streams /api/generate-stream as Server-Sent Events. onChunk(chunk, fullText)
+      // is called for each delta. Returns the full assembled text on completion.
+      async function callGenerateStream(payload, onChunk) {
+        const ctrl = new AbortController();
+        const timeoutId = window.setTimeout(function () { ctrl.abort(); }, 90000);
+        try {
+          const resp = await fetch(API_BASE + '/generate-stream', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload || {}),
+            signal: ctrl.signal,
+          });
+          if (!resp.ok || !resp.body || typeof resp.body.getReader !== 'function') {
+            // 4xx/5xx with JSON body, or no streaming support — fall through to non-stream caller.
+            let errMsg = ERR_MSG;
+            try {
+              const data = await resp.json();
+              if (data && data.error) errMsg = data.error;
+            } catch (_) {}
+            throw new Error(errMsg);
+          }
+          const reader = resp.body.getReader();
+          const decoder = new TextDecoder();
+          let buf = '';
+          let full = '';
+          let streamErr = null;
+          let done = false;
+          while (!done) {
+            const r = await reader.read();
+            if (r.done) break;
+            buf += decoder.decode(r.value, { stream: true });
+            // Split on SSE event delimiter (double newline). Keep partial event in buf.
+            const events = buf.split('\n\n');
+            buf = events.pop() || '';
+            for (const evt of events) {
+              const lines = evt.split('\n');
+              for (const line of lines) {
+                if (!line.startsWith('data:')) continue;
+                const raw = line.slice(5).trim();
+                if (raw === '[DONE]') { done = true; continue; }
+                if (!raw) continue;
+                try {
+                  const parsed = JSON.parse(raw);
+                  if (parsed.error) { streamErr = new Error(parsed.error); }
+                  else if (typeof parsed.text === 'string' && parsed.text) {
+                    full += parsed.text;
+                    if (typeof onChunk === 'function') {
+                      try { onChunk(parsed.text, full); } catch (_) {}
+                    }
+                  }
+                } catch (_) { /* ignore non-JSON event */ }
+              }
+            }
+            if (done) break;
+          }
+          if (streamErr) throw streamErr;
+          if (!full || !full.trim()) throw new Error('AI returned an empty response.');
+          return full;
         } finally {
           window.clearTimeout(timeoutId);
         }
@@ -8294,7 +8464,19 @@ Context:
         remaining: remaining,
         async generateRaw(prompt) {
           if (!checkLimit('generate')) { const e = new Error(LIMIT_MSG); e.code = 'LIMIT'; throw e; }
-          const result = await callGenerate(prompt);
+          const result = await callGenerate({ prompt: prompt });
+          bumpUsage('generate');
+          return result;
+        },
+        async generateStructured(payload) {
+          if (!checkLimit('generate')) { const e = new Error(LIMIT_MSG); e.code = 'LIMIT'; throw e; }
+          const result = await callGenerate(payload);
+          bumpUsage('generate');
+          return result;
+        },
+        async generateStream(payload, onChunk) {
+          if (!checkLimit('generate')) { const e = new Error(LIMIT_MSG); e.code = 'LIMIT'; throw e; }
+          const result = await callGenerateStream(payload, onChunk);
           bumpUsage('generate');
           return result;
         },
@@ -8421,6 +8603,31 @@ Context:
           if (labelEl) labelEl.textContent = originalLabel || 'Improve with AI';
         }
       });
+    })();
+
+    /* ===== Hero usage counter (only displays when real count > 100) ===== */
+    (function () {
+      async function loadUsageCounter() {
+        try {
+          const res = await fetch('/api/stats', { cache: 'no-store' });
+          if (!res.ok) return;
+          const data = await res.json();
+          const n = Number(data && data.promptCount);
+          if (!Number.isFinite(n) || n <= 100) return;
+          const countEl = document.getElementById('usageCount');
+          const wrapEl = document.getElementById('usageCounter');
+          if (!countEl || !wrapEl) return;
+          countEl.textContent = n.toLocaleString();
+          wrapEl.style.display = '';
+        } catch (_) {
+          // Counter is non-critical — fail silently.
+        }
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadUsageCounter);
+      } else {
+        loadUsageCounter();
+      }
     })();
   </script>
 </body>
