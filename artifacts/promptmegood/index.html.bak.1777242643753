@@ -13,15 +13,15 @@
       } catch (e) { /* no-op */ }
     })();
   </script>
-  <title>PromptMeGood — Build AI Prompts That Actually Work</title>
+  <title>AI Prompt Generator That Actually Gets Results | PromptMeGood</title>
   <meta name="description" content="Turn your ideas into powerful AI prompts in seconds. PromptMeGood helps you get better results from ChatGPT, Claude, Perplexity, and any AI tool. No fluff—just results." />
   <link rel="canonical" href="https://www.promptmegood.com" />
-  <meta property="og:title" content="PromptMeGood — Build AI Prompts That Actually Work" />
+  <meta property="og:title" content="AI Prompt Generator That Actually Gets Results" />
   <meta property="og:description" content="Build powerful AI prompts that get real results. Works with ChatGPT, Claude, Perplexity, and more." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://www.promptmegood.com" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="PromptMeGood — Build AI Prompts That Actually Work" />
+  <meta name="twitter:title" content="AI Prompt Generator That Actually Gets Results" />
   <meta name="twitter:description" content="Turn weak prompts into powerful results instantly." />
   <meta property="og:image" content="https://www.promptmegood.com/assets/pmg-logo.png?v=3" />
   <meta name="twitter:image" content="https://www.promptmegood.com/assets/pmg-logo.png?v=3" />
@@ -2545,65 +2545,7 @@
         max-width: 340px;
       }
     }
-  
-    /* ── PMG Aesthetic Polish (injected by patch script) ── */
-
-    /* Hero: more breathing room above the fold */
-    .hero { padding-top: clamp(3rem, 8vw, 6rem); padding-bottom: clamp(2rem, 5vw, 4rem); }
-
-    /* Primary CTA: slightly bolder presence */
-    .btn-primary {
-      font-size: clamp(0.95rem, 1vw + 0.5rem, 1.05rem);
-      padding: 0.8rem 1.75rem;
-      letter-spacing: -0.01em;
-    }
-
-    /* Generate button: smooth loading state */
-    #generateBtn { transition: opacity 180ms ease, background 180ms ease; }
-    #generateBtn:disabled { opacity: 0.65; cursor: not-allowed; }
-
-    /* Result highlight: crisper flash animation */
-    @keyframes resultHighlight {
-      0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 0%, transparent); }
-      20%  { box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 35%, transparent); }
-      100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 0%, transparent); }
-    }
-    .result-panel.is-highlight { animation: resultHighlight 1.2s ease forwards; }
-
-    /* Testimonials: more polished card feel */
-    .feedback-card-grid {
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-lg);
-      padding: var(--space-6);
-      background: var(--color-surface);
-      transition: box-shadow var(--transition-interactive);
-    }
-    .feedback-card-grid:hover { box-shadow: var(--shadow-md); }
-
-    /* Use cases: tighten hover state */
-    .use-case-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-
-    /* Settings panel: slightly softer closed state */
-    .settings-panel:not([open]) { opacity: 0.92; }
-    .settings-panel:not([open]):hover { opacity: 1; }
-
-    /* Nav: slightly more presence */
-    .site-nav { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-
-    /* Weekly goal pin: bolder body text */
-    .weekly-goal-pin-body { font-weight: 700; }
-
-    /* Strength score: smooth reveal */
-    .strength-score:not([hidden]) { animation: fadeSlideIn 0.3s ease; }
-    @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-
-    /* Mobile: ensure hero CTA is full width */
-    @media (max-width: 540px) {
-      .hero-actions { flex-direction: column; }
-      .hero-actions .btn { width: 100%; text-align: center; }
-    }
-    /* ── End PMG Aesthetic Polish ── */
-</style>
+  </style>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -2676,7 +2618,7 @@
           <div class="eyebrow">AI Prompt Engine</div>
           <h1 class="hero-heading">AI <span class="highlight">Prompt Generator</span><br>That Actually Gets Results</h1>
           <div class="hero-subtext-box">
-            <p class="hero-subtext">Your AI answers are only as good as your questions. PromptMeGood structures your goal into a prompt that gets <strong>real results</strong> — in seconds.</p>
+            <p class="hero-subtext">Most people get <strong>weak answers from AI</strong> because they ask weak questions. This fixes that instantly.</p>
           </div>
           <p class="trust-line">A structured prompt builder that tells AI exactly what to do — and how to say it.</p>
           <p id="usageCounter" class="usage-counter" style="display:none;" aria-live="polite">
@@ -2770,7 +2712,7 @@
     <section class="app-section builder-intro-section" id="builder-intro" aria-labelledby="builder-intro-title" data-tip="builder-intro">
       <div class="container">
         <div class="builder-intro">
-          <h2 class="builder-intro-title" id="builder-intro-title">How it works</h2>
+          <h2 class="builder-intro-title" id="builder-intro-title"><span class="builder-intro-title-icon" aria-hidden="true">✨</span>How It Works</h2>
           <ol class="builder-intro-steps">
             <li>Describe what you need.</li>
             <li>Click Generate.</li>
@@ -2792,21 +2734,21 @@
               <span class="feedback-quote-mark" aria-hidden="true">&ldquo;</span>
               It cut my prompt-rewriting time in half. I get usable copy on the first try now.
             </blockquote>
-            <figcaption class="feedback-attribution">&mdash; Sarah M. &middot; Freelance Copywriter</figcaption>
+            <figcaption class="feedback-attribution">&mdash; Beta User &middot; Copywriter</figcaption>
           </figure>
           <figure class="feedback-card-grid">
             <blockquote class="feedback-quote">
               <span class="feedback-quote-mark" aria-hidden="true">&ldquo;</span>
               Guide Me walked me through everything in under two minutes. I didn&rsquo;t have to think about prompt structure at all.
             </blockquote>
-            <figcaption class="feedback-attribution">&mdash; Marcus T. &middot; Small Business Owner</figcaption>
+            <figcaption class="feedback-attribution">&mdash; Beta User &middot; Small Business Owner</figcaption>
           </figure>
           <figure class="feedback-card-grid">
             <blockquote class="feedback-quote">
               <span class="feedback-quote-mark" aria-hidden="true">&ldquo;</span>
               Money Mode gave me angles I never would have asked for. The hooks just landed better.
             </blockquote>
-            <figcaption class="feedback-attribution">&mdash; Janelle R. &middot; Content Creator</figcaption>
+            <figcaption class="feedback-attribution">&mdash; Beta User &middot; Content Creator</figcaption>
           </figure>
         </div>
       </div>
@@ -3146,10 +3088,10 @@
                     <span class="btn-ai-label">Improve with AI</span>
                   </button>
                   <button class="btn btn-secondary" type="button" data-remix="detailed">More Detailed</button>
-                  <button class="btn btn-secondary" type="button" data-remix="aggressive">More Bold &amp; Direct</button>
+                  <button class="btn btn-secondary" type="button" data-remix="aggressive">More Aggressive</button>
                   <button class="btn btn-secondary" type="button" data-remix="beginner">Beginner Friendly</button>
                 </div>
-                <p class="ai-improve-hint" id="improve-with-ai-hint">Sends your current prompt to AI for a deeper rewrite.</p>
+                <p class="ai-improve-hint" id="improve-with-ai-hint">Sends your current prompt to AI for a deeper rewrite. Free monthly limit applies.</p>
                 <div class="undo-row">
                   <button class="btn btn-secondary undo-btn" type="button" id="undo-btn" disabled aria-disabled="true">↶ Undo Last Change</button>
                   <span class="undo-helper">Not feeling the change? Undo and try another.</span>
@@ -3352,7 +3294,7 @@
             <div class="quick-start-body">
               <ol class="quick-start-list">
                 <li><strong>Enter your goal.</strong> Type what you need help with in plain words.</li>
-                <li><strong>Customize if you want.</strong> Settings are optional — generate first, refine after.</li>
+                <li><strong>Adjust settings (optional).</strong> Pick category, tone, format, or open Advanced Options.</li>
                 <li><strong>Generate your prompt.</strong> Click Generate Prompt and review the result.</li>
                 <li><strong>Refine if needed.</strong> Tap More Detailed, More Aggressive, or Beginner Friendly.</li>
                 <li><strong>Copy and use in any AI platform.</strong> Paste into ChatGPT, Claude, Perplexity, or anywhere.</li>
@@ -4766,7 +4708,7 @@ Context:
             '<div class="history-item-remix">' +
               '<span class="history-item-remix-label">Remix:</span>' +
               '<button class="btn btn-secondary" type="button" data-history-action="remix" data-remix-mode="detailed">More Detailed</button>' +
-              '<button class="btn btn-secondary" type="button" data-history-action="remix" data-remix-mode="aggressive">More Bold &amp; Direct</button>' +
+              '<button class="btn btn-secondary" type="button" data-history-action="remix" data-remix-mode="aggressive">More Aggressive</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="remix" data-remix-mode="beginner">Beginner Friendly</button>' +
             '</div>' +
             '<div class="history-item-actions">' +
