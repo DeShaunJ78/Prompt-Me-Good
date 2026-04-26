@@ -1,0 +1,98 @@
+Enhance the top guidance banner (“Your starting idea was added… Got it”) to improve visibility, readability, and usefulness. Do not break layout or mobile responsiveness.
+
+========================
+GOAL
+========================
+
+Make the guidance banner:
+- More noticeable
+- Easier to read
+- Visible long enough to be useful
+- Positioned where users actually see it
+
+========================
+PART 1 — SIZE & SPACING
+========================
+
+Increase banner size:
+
+- Add more vertical padding (top and bottom)
+- Slightly increase font size (especially main message)
+- Increase line height for readability
+
+Make it feel like a guidance card, not a toast.
+
+========================
+PART 2 — POSITIONING
+========================
+
+Move banner slightly lower:
+
+- Add margin-top so it sits below the header/search area
+- Ensure it is not too close to the top edge of the screen
+
+On mobile:
+- Keep it clearly within the visible viewport
+- Avoid overlapping the notch/status area
+
+========================
+PART 3 — DURATION
+========================
+
+Increase visibility time:
+
+- Current: too fast (approx. 2–3 seconds)
+- New: 6–8 seconds minimum
+
+Behavior:
+- Do NOT auto-dismiss instantly
+- Allow user time to read and react
+
+========================
+PART 4 — USER CONTROL
+========================
+
+Keep “Got it” button:
+
+- Make it clearly tappable
+- Slightly increase button size for mobile usability
+
+Behavior:
+- Clicking “Got it” immediately dismisses banner
+
+========================
+PART 5 — OPTIONAL STICKINESS (LIGHT)
+========================
+
+For better usability:
+
+- Keep banner visible until:
+  → User taps “Got it”
+  OR
+  → Timer completes
+
+Do NOT make it permanently sticky or blocking.
+
+========================
+PART 6 — VISUAL EMPHASIS
+========================
+
+Improve clarity:
+
+- Slightly increase contrast of background
+- Ensure text is easy to read
+- Keep within existing design system (teal/brand colors)
+
+Do NOT introduce new colors that clash with theme.
+
+========================
+FINAL CHECK
+========================
+
+- Banner is larger and easier to read
+- Positioned slightly lower (not hugging the top)
+- Visible for 6–8 seconds
+- “Got it” works instantly
+- Mobile layout is clean
+- Does not block important UI elements
+- No JavaScript errors
