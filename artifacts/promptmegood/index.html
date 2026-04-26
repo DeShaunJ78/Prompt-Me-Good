@@ -830,6 +830,21 @@
       .email-capture-form { flex-direction: column; align-items: stretch; }
       .email-capture-form input[type="email"] { max-width: none; }
     }
+    .early-access-note {
+      margin: var(--space-3) 0 0;
+      padding: 0;
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      line-height: 1.5;
+      text-align: center;
+      opacity: 0.85;
+    }
+    .site-footer-early-access {
+      margin: 0;
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      opacity: 0.85;
+    }
     .site-footer-replay { margin-top: var(--space-2); }
     .site-footer-replay-btn { background: transparent; border: 1px dashed color-mix(in srgb, var(--color-primary) 40%, transparent); color: var(--color-primary); padding: 6px 14px; border-radius: var(--radius-sm); font-size: var(--text-sm); cursor: pointer; transition: background var(--transition-interactive), border-color var(--transition-interactive); }
     .site-footer-replay-btn:hover { background: color-mix(in srgb, var(--color-primary) 10%, transparent); border-color: var(--color-primary); }
@@ -2584,6 +2599,7 @@
               Shortcuts: press <kbd>G</kbd> to generate, <kbd>C</kbd> to copy, <kbd>/</kbd> to search history.
             </p>
           </div>
+          <p class="early-access-note">Early Access &mdash; All features are unlocked for now. Some advanced tools may become Pro features later.</p>
         </section>
       </div>
     </section>
@@ -2737,6 +2753,7 @@
       <div class="container site-footer-inner">
         <div class="site-footer-brand">&copy; 2026 PromptMeGood</div>
         <p class="site-footer-tagline">Built for people who want real results from AI &mdash; not fluff.</p>
+        <p class="site-footer-early-access">PromptMeGood is in early access. All features are currently free.</p>
         <p class="site-footer-contact"><a class="site-footer-link" href="mailto:support@promptmegood.com">support@promptmegood.com</a></p>
         <div class="site-footer-social" aria-label="Follow PromptMeGood on social media">
           <span class="site-footer-tagline site-footer-social-label" style="margin:0;">Follow PromptMeGood</span>
