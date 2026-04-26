@@ -33,10 +33,11 @@ PromptMeGood is a single-file static HTML AI prompt builder (`index.html`) built
 -   **Color Scheme:** CSS variables for theming, with a default teal palette.
 -   **Interaction Feedback:** Improved responsiveness for touch devices with visual feedback on clicks.
 -   **Responsive Design:** Adapts layout for mobile and desktop views.
--   **User Guidance:** Utilizes onboarding tours, modals, and toasts.
+-   **Form Layout:** Generate button sits immediately under the Goal field for one-click prompt creation. All tone/category/format/length/etc. settings are nested in a collapsible `<details id="settingsPanel">` panel that stays closed by default — Auto Optimize handles the picks for most users. Enabling Expert Mode auto-expands both the settings panel and the inner Advanced Options details.
+-   **User Guidance:** Utilizes onboarding tours, modals, and toasts. The welcome tour modal is suppressed for return visitors via the `pmg_visited` localStorage flag (set on first dismiss/complete) so it only ever appears on a user's true first session.
 -   **Theme Accent:** Footer-based picker with 5 swatches, persisted in `localStorage` and applied synchronously to avoid flash.
 -   **Canonical Domain:** `https://www.promptmegood.com` with apex domain redirect to www for consistency.
--   **SEO:** Comprehensive meta-tags, optimized `<title>`, `<meta name="description">`, Open Graph, and Twitter Card tags. Strategic heading hierarchy and font loading optimization.
+-   **SEO:** Comprehensive meta-tags, optimized `<title>`, `<meta name="description">`, Open Graph (incl. `og:image`), Twitter Card tags (incl. `twitter:image`), and a `SoftwareApplication` JSON-LD block for rich Google results. Strategic heading hierarchy and font loading optimization.
 
 ### Key Features and Technical Implementations
 

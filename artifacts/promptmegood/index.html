@@ -23,6 +23,24 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="AI Prompt Generator That Actually Gets Results" />
   <meta name="twitter:description" content="Turn weak prompts into powerful results instantly." />
+  <meta property="og:image" content="https://www.promptmegood.com/assets/pmg-logo.png?v=3" />
+  <meta name="twitter:image" content="https://www.promptmegood.com/assets/pmg-logo.png?v=3" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "PromptMeGood",
+    "description": "A structured AI prompt builder that helps you get better results from ChatGPT, Claude, and Perplexity.",
+    "url": "https://www.promptmegood.com",
+    "applicationCategory": "ProductivityApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=3" />
   <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48.png?v=3" />
   <link rel="icon" type="image/png" href="/assets/pmg-logo.png?v=3" />
@@ -779,6 +797,14 @@
     .strength-score-fill.strong { background: var(--color-primary); }
     .strength-score ul { margin: 8px 0 0 1.1rem; padding: 0; font-size: var(--text-xs); color: var(--color-text-muted); }
     .strength-score li + li { margin-top: 2px; }
+
+    .settings-panel { margin: var(--space-3) 0; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 0 var(--space-4); background: var(--color-surface); }
+    .settings-panel > summary { list-style: none; cursor: pointer; font-size: var(--text-sm); font-weight: 600; color: var(--color-text-muted); padding: var(--space-3) 0; user-select: none; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+    .settings-panel > summary::-webkit-details-marker { display: none; }
+    .settings-panel[open] > summary { color: var(--color-primary); border-bottom: 1px solid var(--color-border); margin-bottom: var(--space-3); }
+    .settings-panel-summary-chevron { display: inline-block; transition: transform 0.2s ease; }
+    .settings-panel[open] .settings-panel-summary-chevron { transform: rotate(180deg); }
+    .settings-panel .settings-grid { padding-bottom: var(--space-3); }
 
     .quality-row { display: flex; flex-direction: column; gap: var(--space-2); margin: 0 0 var(--space-3); }
     .quality-row .btn { align-self: flex-start; }
@@ -2804,6 +2830,34 @@
                 </p>
               </div>
 
+              <div class="post-uc-guidance" id="post-uc-guidance" role="status" aria-live="polite">
+                <span class="post-uc-guidance-icon" aria-hidden="true">✅</span>
+                <span class="post-uc-guidance-text">Great start — review the details, click Generate, then copy your finished prompt into your favorite AI tool.</span>
+                <button type="button" class="post-uc-guidance-close" id="post-uc-guidance-close" aria-label="Dismiss">×</button>
+              </div>
+
+              <div class="actions-row" id="tour-step-generate">
+                <button class="btn btn-primary" type="submit" id="generateBtn">Generate Prompt</button>
+                <div class="demo-stack">
+                  <button class="btn btn-secondary" type="button" id="fill-demo">Use Demo Values</button>
+                  <p class="demo-microcopy" id="demo-microcopy">See how it works &mdash; loads a sample prompt instantly.</p>
+                  <p class="demo-loading" id="demo-loading" role="status" aria-live="polite" hidden>Generating demo prompt&hellip;</p>
+                </div>
+                <button class="btn btn-secondary" type="button" id="random-prompt" title="Surprise me with a random prompt">🎲 Random Prompt</button>
+              </div>
+              <p class="tip-block generate-helper-tip" data-tip="generate">
+                <span class="tip-block-icon" aria-hidden="true">🚀</span>
+                <span class="tip-block-text">Ready? Generate your prompt, then review and copy it.</span>
+                <button type="button" class="tip-block-dismiss" data-action="dismiss-tips" aria-label="Hide all tips">Hide Tip</button>
+              </p>
+              <p class="demo-helper">Not sure where to start? <button type="button" class="link-btn demo-helper-link" id="demo-helper-link">See it in action.</button> <button type="button" class="guidance-show-link" id="guidance-show-link" data-action="show-tips">Show tips</button></p>
+
+              <details id="settingsPanel" class="settings-panel">
+                <summary class="settings-panel-summary">
+                  <span class="settings-panel-summary-text">Customize settings</span>
+                  <span class="settings-panel-summary-chevron" aria-hidden="true">▾</span>
+                </summary>
+                <div class="settings-grid">
               <div class="settings-divider" id="tour-step-settings" role="presentation">
                 <h3 class="settings-divider-title">Tune Your Prompt Settings</h3>
                 <p class="settings-divider-sub">These settings control tone, detail, and structure of your prompt.</p>
@@ -2974,6 +3028,8 @@
                   </div>
                 </div>
               </details>
+                </div>
+              </details>
 
               <div class="keyboard-hints" id="keyboard-hints" hidden aria-label="Keyboard shortcuts">
                 <span class="keyboard-hints-title">Keyboard Shortcuts</span>
@@ -2985,28 +3041,6 @@
                 </ul>
                 <p style="margin: 6px 0 0; font-size: 11px; color: var(--color-text-muted);">Single-key shortcuts work when you are not typing in a field.</p>
               </div>
-
-              <div class="post-uc-guidance" id="post-uc-guidance" role="status" aria-live="polite">
-                <span class="post-uc-guidance-icon" aria-hidden="true">✅</span>
-                <span class="post-uc-guidance-text">Great start — review the details, click Generate, then copy your finished prompt into your favorite AI tool.</span>
-                <button type="button" class="post-uc-guidance-close" id="post-uc-guidance-close" aria-label="Dismiss">×</button>
-              </div>
-
-              <div class="actions-row" id="tour-step-generate">
-                <button class="btn btn-primary" type="submit">Generate Prompt</button>
-                <div class="demo-stack">
-                  <button class="btn btn-secondary" type="button" id="fill-demo">Use Demo Values</button>
-                  <p class="demo-microcopy" id="demo-microcopy">See how it works &mdash; loads a sample prompt instantly.</p>
-                  <p class="demo-loading" id="demo-loading" role="status" aria-live="polite" hidden>Generating demo prompt&hellip;</p>
-                </div>
-                <button class="btn btn-secondary" type="button" id="random-prompt" title="Surprise me with a random prompt">🎲 Random Prompt</button>
-              </div>
-              <p class="tip-block generate-helper-tip" data-tip="generate">
-                <span class="tip-block-icon" aria-hidden="true">🚀</span>
-                <span class="tip-block-text">Ready? Generate your prompt, then review and copy it.</span>
-                <button type="button" class="tip-block-dismiss" data-action="dismiss-tips" aria-label="Hide all tips">Hide Tip</button>
-              </p>
-              <p class="demo-helper">Not sure where to start? <button type="button" class="link-btn demo-helper-link" id="demo-helper-link">See it in action.</button> <button type="button" class="guidance-show-link" id="guidance-show-link" data-action="show-tips">Show tips</button></p>
             </form>
             <div class="examples-block" aria-label="Example prompts">
               <div class="examples-title">Try one of these:</div>
@@ -5378,10 +5412,12 @@ Context:
           toggle.checked = !!enabled;
           if (badge) badge.hidden = !enabled;
           if (keyboardHints) keyboardHints.hidden = !enabled;
+          const settingsPanel = document.getElementById('settingsPanel');
           if (advanced) {
             if (enabled) {
               if (prevAdvancedOpen === null) prevAdvancedOpen = !!advanced.open;
               advanced.open = true;
+              if (settingsPanel) settingsPanel.open = true;
             } else if (prevAdvancedOpen !== null) {
               advanced.open = prevAdvancedOpen;
               prevAdvancedOpen = null;
@@ -6283,6 +6319,15 @@ Context:
             window.__pmgStrengthScore.render(data, promptText);
           }
           scrollToResult();
+          const generateBtnEl = document.getElementById('generateBtn');
+          if (generateBtnEl) {
+            const origLabel = generateBtnEl.dataset.origLabel || generateBtnEl.textContent;
+            generateBtnEl.dataset.origLabel = origLabel;
+            generateBtnEl.textContent = 'Generated ✓';
+            window.setTimeout(function () {
+              if (generateBtnEl) generateBtnEl.textContent = origLabel;
+            }, 1500);
+          }
           showSavePromptTip();
           if (window.__pmgGuidance && typeof window.__pmgGuidance.markGenerated === 'function') {
             window.__pmgGuidance.markGenerated();
@@ -6733,6 +6778,7 @@ Context:
       }
       function obShouldRun() {
         try {
+          if (typeof pmgIsFirstVisit === 'function' && !pmgIsFirstVisit()) return false;
           if (localStorage.getItem(ONBOARDING_KEY)) return false;
           if (getOnboardingDismissCount() >= ONBOARDING_MAX_DISMISSALS) return false;
           if (hasSeenOnboardingThisSession()) return false;
