@@ -3,8 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PromptMeGood</title>
-  <meta name="description" content="PromptMeGood turns vague ideas into strong AI prompts for ChatGPT, Claude, and other AI tools." />
+  <title>AI Prompt Generator That Actually Gets Results | PromptMeGood</title>
+  <meta name="description" content="Turn your ideas into powerful AI prompts in seconds. PromptMeGood helps you get better results from ChatGPT, Claude, Perplexity, and any AI tool. No fluff—just results." />
+  <link rel="canonical" href="https://promptmegood.com" />
+  <meta property="og:title" content="AI Prompt Generator That Actually Gets Results" />
+  <meta property="og:description" content="Build powerful AI prompts that get real results. Works with ChatGPT, Claude, Perplexity, and more." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://promptmegood.com" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="AI Prompt Generator That Actually Gets Results" />
+  <meta name="twitter:description" content="Turn weak prompts into powerful results instantly." />
   <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="apple-touch-icon" href="/favicon.png" />
   <script type="text/javascript">
@@ -14,7 +22,7 @@
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "wgs6567cte");
   </script>
-  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet" />
   <script>
     /* Theme accent bootstrap — runs synchronously in <head> before styles paint to avoid a flash
@@ -1197,7 +1205,7 @@
       body * { visibility: hidden !important; }
       #print-area, #print-area * { visibility: visible !important; }
       #print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 24px; color: #000; background: #fff; font-family: 'Helvetica', 'Arial', sans-serif; }
-      #print-area h1 { font-size: 18px; margin: 0 0 8px; }
+      #print-area .print-title { font-size: 18px; margin: 0 0 8px; font-weight: 700; }
       #print-area .print-meta { font-size: 12px; color: #555; margin-bottom: 16px; border-bottom: 1px solid #ccc; padding-bottom: 8px; }
       #print-area pre { white-space: pre-wrap; word-wrap: break-word; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.5; margin: 0; }
       #print-area .print-footer { margin-top: 24px; font-size: 10px; color: #888; border-top: 1px solid #ccc; padding-top: 8px; }
@@ -1306,6 +1314,11 @@
     .link-btn:hover { background: color-mix(in srgb, var(--color-primary) 15%, transparent); }
     .builder-transition { font-size: var(--text-sm); color: var(--color-text); line-height: 1.5; margin: 0; }
     .builder-intro-section { padding-bottom: 0; }
+    .why-prompts-fail-section { padding-top: var(--space-8); padding-bottom: var(--space-8); }
+    .why-prompts-fail { max-width: 760px; margin: 0 auto; text-align: center; padding: var(--space-7) var(--space-5); border-radius: var(--radius-lg); background: color-mix(in srgb, var(--color-primary) 4%, var(--color-surface)); border: 1px solid color-mix(in srgb, var(--color-primary) 14%, var(--color-border)); }
+    .why-prompts-fail h2 { margin: var(--space-2) 0 var(--space-3); font-size: clamp(1.5rem, 1.2rem + 1.6vw, 2rem); line-height: 1.15; color: var(--color-text); }
+    .why-prompts-fail-lede { margin: 0; color: var(--color-text-muted); font-size: var(--text-base); line-height: 1.6; }
+    @media (max-width: 600px) { .why-prompts-fail { padding: var(--space-6) var(--space-4); } }
     .builder-intro { background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 10%, transparent), color-mix(in srgb, var(--color-primary) 3%, transparent)); border: 1px solid color-mix(in srgb, var(--color-primary) 25%, transparent); border-radius: var(--radius-lg); padding: var(--space-5) var(--space-5); }
     .builder-intro-title { font-size: var(--text-lg); font-weight: 700; color: var(--color-text); margin: 0 0 var(--space-3); display: flex; align-items: center; gap: var(--space-2); }
     .builder-intro-title-icon { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--color-primary); color: #fff; font-size: var(--text-sm); }
@@ -2249,7 +2262,7 @@
       <div class="container hero-grid">
         <div>
           <div class="eyebrow">AI Prompt Engine</div>
-          <h1 class="hero-heading">Turn Your Idea<br>Into A <span class="highlight">Powerful AI Prompt</span><br>That Actually Gets Results</h1>
+          <h1 class="hero-heading">AI <span class="highlight">Prompt Generator</span><br>That Actually Gets Results</h1>
           <div class="hero-subtext-box">
             <p class="hero-subtext">Most people get <strong>weak answers from AI</strong> because they ask weak questions. This fixes that instantly.</p>
           </div>
@@ -2273,7 +2286,7 @@
         </div>
         <aside class="hero-card" aria-labelledby="hero-card-title">
           <span class="hero-card-badge"><span class="hero-card-badge-dot" aria-hidden="true"></span>Why It Matters</span>
-          <h2 class="hero-card-title" id="hero-card-title">What This AI Prompt Engine Does</h2>
+          <h2 class="hero-card-title" id="hero-card-title">Build Better Prompts for ChatGPT, Claude, and Any AI Tool</h2>
           <ul class="hero-list">
             <li><span>1</span><span>Turns vague problems into <strong>sharper instructions</strong> AI can actually use.</span></li>
             <li><span>2</span><span>Adds <strong>role, context, constraints, tone, output format, and next actions</strong>.</span></li>
@@ -2287,7 +2300,7 @@
       <div class="container">
         <div class="popular-uses-head">
           <div class="popular-uses-head-row">
-            <h2 id="popular-uses-title">Popular Ways To Use PromptMeGood</h2>
+            <h2 id="popular-uses-title">Start With a Prompt or Explore Use Cases</h2>
             <button type="button" class="usecases-dice-btn" id="usecases-dice-btn" aria-label="Generate new use case ideas" title="Generate new idea starters">
               <span class="usecases-dice-icon" aria-hidden="true">🎲</span>
               <span>Need ideas?</span>
@@ -2335,10 +2348,20 @@
       </div>
     </section>
 
+    <section class="app-section why-prompts-fail-section" id="why-prompts-fail" aria-labelledby="why-prompts-fail-title">
+      <div class="container">
+        <div class="why-prompts-fail">
+          <span class="eyebrow">Why It Matters</span>
+          <h2 id="why-prompts-fail-title">Why Most AI Prompts Fail</h2>
+          <p class="why-prompts-fail-lede">Vague questions get vague answers. Most people skip the structure that actually makes ChatGPT, Claude, and Perplexity useful — role, context, constraints, tone, and format. PromptMeGood adds that structure for you, so the AI knows exactly what to do.</p>
+        </div>
+      </div>
+    </section>
+
     <section class="app-section builder-intro-section" id="builder-intro" aria-labelledby="builder-intro-title" data-tip="builder-intro">
       <div class="container">
         <div class="builder-intro">
-          <h2 class="builder-intro-title" id="builder-intro-title"><span class="builder-intro-title-icon" aria-hidden="true">✨</span>Build Your Prompt Step-by-Step</h2>
+          <h2 class="builder-intro-title" id="builder-intro-title"><span class="builder-intro-title-icon" aria-hidden="true">✨</span>How It Works</h2>
           <ol class="builder-intro-steps">
             <li>Write your goal — be specific</li>
             <li>Adjust settings to shape the output</li>
@@ -3137,7 +3160,7 @@
   </div>
 
   <div id="print-area" aria-hidden="true">
-    <h1 id="print-title"></h1>
+    <div id="print-title" class="print-title" role="heading" aria-level="2"></div>
     <div class="print-meta" id="print-meta"></div>
     <pre id="print-content"></pre>
     <div class="print-footer">Generated with PromptMeGood</div>
