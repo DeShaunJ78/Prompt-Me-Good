@@ -12,3 +12,9 @@ id = "We-BOC393Lxts8cUwjy5V"
 uri = "file://pmg_source.tar.gz"
 type = "unspecified"
 title = "PromptMeGood source bundle (index.html + 4 standalone pages + ai.ts)"
+
+[[outputs]]
+id = "doONBtUrbdDYFVHIk4PIf"
+uri = "file://pmg_assets.tar.gz"
+type = "unspecified"
+title = "PromptMeGood assets (favicons + logo)"
