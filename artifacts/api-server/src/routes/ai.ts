@@ -1,199 +1,21 @@
-import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
+import { Router, type IRouter, type Request, type Response } from "express";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { openai } from "../lib/openai-client";
 import { logger } from "../lib/logger";
+import { clampString, sanitizeGoal } from "../middlewares/sanitize";
+import { generateLimiter, runLimiter, rateLimit } from "../middlewares/rateLimit";
+import { chargeCost, generateCostCheck, runCostCheck } from "../middlewares/costGuard";
 
 const router: IRouter = Router();
 
 const TEXT_MODEL = "gpt-5.4";
 const IMAGE_MODEL = "gpt-image-1";
 
-const MAX_INPUT_CHARS = 6000;
-
-function clampString(value: unknown, max = MAX_INPUT_CHARS): string {
-  if (typeof value !== "string") return "";
-  return value.trim().slice(0, max);
-}
-
-function getClientKey(req: Request): string {
-  // Use Express's req.ip, which honors the app-level `trust proxy` setting
-  // (1 hop = the Replit front proxy). User-supplied X-Forwarded-For from beyond
-  // the trusted hop is ignored, so attackers cannot spoof their way past the
-  // per-endpoint caps by injecting headers.
-  return req.ip ?? req.socket.remoteAddress ?? "unknown";
-}
-
-// Per-endpoint sliding-window rate limiter factory. Each endpoint gets its own
-// independent Map so a flood of /generate requests cannot starve /run.
-function makeRateLimiter(opts: { windowMs: number; max: number; label: string }) {
-  const hits = new Map<string, number[]>();
-  return function rateLimitMiddleware(req: Request, res: Response, next: NextFunction): void {
-    const key = getClientKey(req);
-    const now = Date.now();
-    const cutoff = now - opts.windowMs;
-    const arr = (hits.get(key) ?? []).filter((t) => t > cutoff);
-    if (arr.length >= opts.max) {
-      res.status(429).json({
-        success: false,
-        ok: false,
-        error: opts.label === "run"
-          ? "Too many AI executions. Please wait before trying again."
-          : opts.label === "generate"
-          ? "Too many prompt generations. Please wait before trying again."
-          : "Too many requests. Please wait a moment and try again.",
-      });
-      return;
-    }
-    arr.push(now);
-    hits.set(key, arr);
-    if (hits.size > 5000) {
-      for (const [k, v] of hits) {
-        if (v.length === 0 || v[v.length - 1]! < cutoff) hits.delete(k);
-      }
-    }
-    next();
-  };
-}
-
-const HOUR_MS = 60 * 60 * 1000;
-// Generate (build the optimized prompt) — capped at 20/hour/IP per spec.
-const generateLimiter = makeRateLimiter({ windowMs: HOUR_MS, max: 20, label: "generate" });
-// Run (execute the prompt against gpt-4o) — capped at 5/hour/IP per spec.
-const runLimiter = makeRateLimiter({ windowMs: HOUR_MS, max: 5, label: "run" });
-// Legacy/utility endpoints — keep the existing 10/min limiter for back-compat.
-const rateLimit = makeRateLimiter({ windowMs: 60 * 1000, max: 10, label: "general" });
-
-// --- Prompt-injection sanitizer for the structured /generate goal field ---
-// Blocks the obvious "ignore previous instructions" family of jailbreaks before
-// they ever reach the model. Server-side only; the frontend already enforces the
-// 500-char goal cap.
-const INJECTION_BLOCKLIST = [
-  "ignore previous instructions",
-  "ignore all previous instructions",
-  "disregard your instructions",
-  "disregard all instructions",
-  "you are now",
-  "forget everything",
-  "forget all previous",
-];
-
-function sanitizeGoal(goal: string): { ok: true } | { ok: false; status: number; error: string } {
-  const lower = goal.toLowerCase();
-  if (INJECTION_BLOCKLIST.some((phrase) => lower.includes(phrase))) {
-    return { ok: false, status: 400, error: "Invalid input detected." };
-  }
-  return { ok: true };
-}
-
-// --- Daily cost guard ($3/day hard ceiling) ---
-// In-memory tally keyed by UTC date (YYYY-MM-DD) so concurrent requests cannot
-// race past the cap. Debounced disk flush (1s) keeps the running total durable
-// across deploys without blocking on every increment.
-const DATA_DIR = path.resolve(process.cwd(), "data");
-const COST_FILE = path.join(DATA_DIR, "pmg_cost.json");
-const DAILY_COST_LIMIT_USD = 3.0;
-const COST_PER_GENERATE = 0.004; // ~400 in + 300 out tokens, gpt-4o-mini
-const COST_PER_RUN = 0.01; // ~500 in + 800 out tokens, gpt-4o
-const COST_FLUSH_MS = 1000;
-
-function todayKey(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function readCostFromDisk(): { date: string; spent: number } {
-  try {
-    const raw = fs.readFileSync(COST_FILE, "utf8");
-    const parsed = JSON.parse(raw);
-    const date = typeof parsed?.date === "string" ? parsed.date : todayKey();
-    const spent = Number(parsed?.spent);
-    return {
-      date,
-      spent: Number.isFinite(spent) && spent >= 0 ? spent : 0,
-    };
-  } catch {
-    return { date: todayKey(), spent: 0 };
-  }
-}
-
-let costState = readCostFromDisk();
-let costFlushTimer: NodeJS.Timeout | null = null;
-let lastFlushedSpent = costState.spent;
-let lastFlushedDate = costState.date;
-
-function flushCostToDisk(): void {
-  costFlushTimer = null;
-  if (costState.date === lastFlushedDate && costState.spent === lastFlushedSpent) return;
-  try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-    fs.writeFileSync(COST_FILE, JSON.stringify(costState));
-    lastFlushedSpent = costState.spent;
-    lastFlushedDate = costState.date;
-  } catch (err) {
-    logger.warn(
-      { err: err instanceof Error ? err.message : "unknown" },
-      "cost write failed",
-    );
-  }
-}
-
-function rollDayIfNeeded(): void {
-  const today = todayKey();
-  if (costState.date !== today) {
-    costState = { date: today, spent: 0 };
-    lastFlushedSpent = 0;
-    lastFlushedDate = today;
-    if (!costFlushTimer) {
-      costFlushTimer = setTimeout(flushCostToDisk, COST_FLUSH_MS);
-      if (typeof costFlushTimer.unref === "function") costFlushTimer.unref();
-    }
-  }
-}
-
-// Cost guard split into two pieces to avoid budget-drain abuse:
-//   1. `makeCostCheck` runs as middleware — purely READ-ONLY, just gates
-//      requests when the budget would be exceeded. It does NOT charge.
-//   2. `chargeCost` is called EXPLICITLY by each handler AFTER the request
-//      has passed body validation AND is about to actually hit OpenAI.
-// This means malformed / oversized / empty payloads cannot drain the daily $3
-// budget — only requests we genuinely act on are charged.
-function costForEndpoint(endpoint: "generate" | "run"): number {
-  return endpoint === "run" ? COST_PER_RUN : COST_PER_GENERATE;
-}
-
-function makeCostCheck(endpoint: "generate" | "run") {
-  return function costCheckMiddleware(_req: Request, res: Response, next: NextFunction): void {
-    rollDayIfNeeded();
-    const cost = costForEndpoint(endpoint);
-    if (costState.spent + cost > DAILY_COST_LIMIT_USD) {
-      res.status(429).json({
-        success: false,
-        ok: false,
-        error: "Daily usage limit reached. Service resets at midnight UTC. Try again tomorrow.",
-      });
-      return;
-    }
-    next();
-  };
-}
-
-function chargeCost(endpoint: "generate" | "run"): void {
-  rollDayIfNeeded();
-  costState.spent += costForEndpoint(endpoint);
-  if (!costFlushTimer) {
-    costFlushTimer = setTimeout(flushCostToDisk, COST_FLUSH_MS);
-    if (typeof costFlushTimer.unref === "function") costFlushTimer.unref();
-  }
-}
-
-const generateCostCheck = makeCostCheck("generate");
-const runCostCheck = makeCostCheck("run");
-
 // Stats counter: tracks both promptCount (generations) and runCount (executions).
 // In-memory authoritative state with debounced disk flush — eliminates the
 // read-modify-write race that would otherwise lose increments under concurrency.
+const DATA_DIR = path.resolve(process.cwd(), "data");
 const STATS_FILE = path.join(DATA_DIR, "pmg_stats.json");
 const STATS_FLUSH_MS = 1000;
 

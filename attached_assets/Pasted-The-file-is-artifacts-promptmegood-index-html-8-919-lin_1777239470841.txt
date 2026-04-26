@@ -1,0 +1,33 @@
+The file is artifacts/promptmegood/index.html (8,919 lines). Make all of the following changes. Create a checkpoint before starting. Do not ask for confirmation — just execute all of them in order.
+
+1. TOUR MODAL — Find where the welcome/tour modal is shown on page load. Wrap it in a localStorage check: only show if localStorage.getItem('pmg_toured') is null. Add localStorage.setItem('pmg_toured', '1') to every dismiss/close/complete handler on that modal.
+
+2. GENERATE BUTTON — Find the Generate Prompt button and Use Demo Values button. Move both to immediately after the goal textarea, before any settings fields. Wrap all settings fields (category, experience level, tone, output format, max response length, language, personality mode, extra details, avoid) plus the advanced options section in a <details id="settingsPanel"> element with <summary>Customize settings ▾</summary>. The details element should start closed (no 'open' attribute).
+
+3. USAGE COUNTER — Find the loadUsageCounter function. Add a try/catch around it. Make sure the usageCounter element is never made visible unless the total count is over 100. Add if (!res.ok) return; after the fetch call.
+
+4. WEEKLY FOCUS — Find the weekly focus loading code. Replace it entirely with a static array of 12 focus strings, rotated by Math.floor(Date.now() / (1000*60*60*24*7)) % 12. No fetch. No loading state. Fires synchronously on DOMContentLoaded.
+
+5. NUDGE TOAST — Find where the daily nudge toast is shown on page load. Gate it: only show if localStorage has existing prompt history AND it hasn't been shown today. Store today's date in localStorage key 'pmg_nudge_date'. New users with no history never see it on load.
+
+6. GENERATION SUCCESS STATE — Find the generatePrompt function. After the prompt is successfully written to the output element, add: (a) scrollIntoView smooth center on the output element, (b) a 900ms teal box-shadow flash on the output element, (c) change the generate button text to 'Generated ✓' for 1500ms then restore it.
+
+7. PROMPT STRENGTH — Find the prompt strength display element. Add style="display:none" to it. Show it in the generatePrompt success path. Hide it again in any clear/reset function.
+
+8. KEYBOARD SHORTCUTS — Find the keyboard shortcuts panel. Add style="display:none" to it. Show it when Expert Mode is enabled. Hide it when Expert Mode is disabled.
+
+9. TONE DROPDOWN — Find the Tone setting. Change the option labeled 'Aggressive' to 'Bold & Direct'.
+
+10. HOW IT WORKS — Find the "How It Works" section. Change the 3 steps to: 1. Describe what you need. 2. Click Generate. 3. Copy and use anywhere. Remove any mention of adjusting settings as a required step.
+
+11. META TAGS — In the <head>, add: a meta description tag ("Build better prompts for ChatGPT, Claude, and Perplexity in seconds. Free."), og:title, og:description, og:url (https://www.promptmegood.com), og:type (website), twitter:card (summary_large_image), twitter:title, twitter:description. Also add a JSON-LD script block with SoftwareApplication schema.
+
+12. PRIVACY + TERMS LINKS — In the footer, change the Privacy Policy link from #privacy to /privacy.html and Terms of Service from #terms to /terms.html. Then create two new files: artifacts/promptmegood/privacy.html and artifacts/promptmegood/terms.html. Copy the content from the respective modals in index.html into each as a proper standalone page with the same header/footer as guide.html.
+
+13. DEAD REACT SCAFFOLD — Delete the directory artifacts/promptmegood/src/ entirely.
+
+14. GITIGNORE — Add test-results/ and playwright-report/ to .gitignore if not already there.
+
+15. MIDDLEWARE EXTRACTION — In artifacts/api-server/src/routes/ai.ts, extract the cost guard logic, rate limiter, and input sanitizer into separate files: artifacts/api-server/src/middlewares/costGuard.ts, rateLimit.ts, and sanitize.ts. Import them back into ai.ts. Behavior must be identical — this is purely structural.
+
+After all 15 changes, restart the dev server and confirm the site loads without errors.

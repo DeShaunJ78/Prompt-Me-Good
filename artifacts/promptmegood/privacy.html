@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>
+    (function () {
+      try {
+        if (location.hostname === 'promptmegood.com') {
+          location.replace('https://www.promptmegood.com' + location.pathname + location.search + location.hash);
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <title>Privacy Policy — PromptMeGood</title>
+  <meta name="description" content="How PromptMeGood handles your data. Local-first, no accounts, no prompt transmission." />
+  <link rel="canonical" href="https://www.promptmegood.com/privacy.html" />
+  <meta name="robots" content="index,follow" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=3" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48.png?v=3" />
+  <link rel="icon" type="image/png" href="/assets/pmg-logo.png?v=3" />
+  <link rel="apple-touch-icon" href="/assets/pmg-logo.png?v=3" />
+  <script>
+    (function () {
+      try {
+        var v = localStorage.getItem('promptmegood:themeAccent:v1');
+        if (v && /^(green|blue|purple|gold|slate)$/.test(v) && v !== 'green') {
+          document.documentElement.setAttribute('data-accent', v);
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    :root, [data-theme="light"] {
+      --color-bg: #f7f6f2;
+      --color-surface: #fbfbf9;
+      --color-border: #d8d4cd;
+      --color-text: #24211c;
+      --color-text-muted: #67655f;
+      --color-primary: #01696f;
+      --color-primary-hover: #0c4e54;
+      --radius-md: 0.875rem;
+      --radius-lg: 1.25rem;
+      --shadow-md: 0 10px 30px rgba(18, 19, 18, 0.08);
+      --font-body: 'Satoshi', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    [data-theme="dark"] {
+      --color-bg: #151412;
+      --color-surface: #1c1b18;
+      --color-border: #34312d;
+      --color-text: #ece9e2;
+      --color-text-muted: #b9b4ab;
+      --color-primary: #5ba8b0;
+      --color-primary-hover: #73b8bf;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme]) {
+        --color-bg: #151412;
+        --color-surface: #1c1b18;
+        --color-border: #34312d;
+        --color-text: #ece9e2;
+        --color-text-muted: #b9b4ab;
+        --color-primary: #5ba8b0;
+      }
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body {
+      min-height: 100dvh;
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-body);
+      font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      line-height: 1.65;
+      display: flex;
+      flex-direction: column;
+    }
+    .container { max-width: 740px; margin: 0 auto; padding: 0 1.25rem; width: 100%; }
+    .site-header { padding: 1.25rem 0; border-bottom: 1px solid var(--color-border); background: var(--color-surface); }
+    .site-header-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .site-header-brand { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; color: var(--color-text); font-weight: 700; font-size: 1.05rem; }
+    .site-header-brand img { width: 28px; height: 28px; border-radius: 6px; }
+    .site-header-back { color: var(--color-primary); text-decoration: none; font-weight: 600; font-size: 0.95rem; }
+    .site-header-back:hover { text-decoration: underline; }
+    main { flex: 1; padding: 3rem 0; }
+    .legal-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 2.25rem 2rem; box-shadow: var(--shadow-md); }
+    .legal-card h1 { font-size: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem); margin-bottom: 0.5rem; }
+    .legal-meta { color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+    .legal-card p { margin-bottom: 1.1rem; color: var(--color-text); }
+    .legal-card a { color: var(--color-primary); }
+    .legal-card a:hover { color: var(--color-primary-hover); }
+    .back-bottom { margin-top: 2rem; text-align: center; }
+    .back-bottom a { color: var(--color-primary); text-decoration: none; font-weight: 600; }
+    .back-bottom a:hover { text-decoration: underline; }
+    .site-footer { padding: 1.5rem 0; border-top: 1px solid var(--color-border); background: var(--color-surface); margin-top: auto; }
+    .site-footer-inner { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center; }
+    .site-footer-brand { font-weight: 600; }
+    .site-footer-tagline { color: var(--color-text-muted); font-size: 0.9rem; }
+    .site-footer-back { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; align-items: center; }
+    .site-footer-link { color: var(--color-primary); text-decoration: none; font-size: 0.9rem; }
+    .site-footer-link:hover { text-decoration: underline; }
+    .site-footer-divider { color: var(--color-text-muted); }
+    @media (max-width: 480px) { .legal-card { padding: 1.5rem 1.25rem; } main { padding: 1.5rem 0; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container site-header-inner">
+      <a class="site-header-brand" href="/">
+        <img src="/assets/pmg-logo.png?v=3" alt="" />
+        <span>PromptMeGood</span>
+      </a>
+      <a class="site-header-back" href="/">← Back to App</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <article class="legal-card">
+        <h1>Privacy Policy</h1>
+        <p class="legal-meta">Last updated: April 2026.</p>
+        <p>PromptMeGood is a single-page tool that runs entirely in your browser. Your prompts, history, templates, and preferences are stored locally on your device using your browser's localStorage. We do not maintain user accounts, and we do not transmit your prompts to our servers.</p>
+        <p>We use Microsoft Clarity to understand anonymous, aggregated usage patterns (such as which buttons are clicked) so we can improve the experience. Clarity does not capture the text of your prompts.</p>
+        <p>You can export, import, or clear your saved data at any time from the Prompt History section. Clearing your browser storage will remove everything PromptMeGood has saved on your device.</p>
+        <p>Questions? Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.</p>
+        <div class="back-bottom"><a href="/">← Back to the App</a></div>
+      </article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container site-footer-inner">
+      <div class="site-footer-brand">&copy; 2026 PromptMeGood</div>
+      <p class="site-footer-tagline">Built for people who want real results from AI — not fluff.</p>
+      <div class="site-footer-back" aria-label="Navigation">
+        <a class="site-footer-link" href="/">Home</a>
+        <span class="site-footer-divider" aria-hidden="true">|</span>
+        <a class="site-footer-link" href="/guide.html">Guide</a>
+        <span class="site-footer-divider" aria-hidden="true">|</span>
+        <a class="site-footer-link" href="/pricing.html">Pricing</a>
+        <span class="site-footer-divider" aria-hidden="true">|</span>
+        <a class="site-footer-link" href="/terms.html">Terms of Service</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
