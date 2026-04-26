@@ -6,3 +6,9 @@ id = "wW4j9q7eO6c6lsff0hhJS"
 uri = "file://promptmegood_bundle.tar.gz"
 type = "unspecified"
 title = "PromptMeGood — source bundle (index.html, legal pages, server middleware, grep results)"
+
+[[outputs]]
+id = "We-BOC393Lxts8cUwjy5V"
+uri = "file://pmg_source.tar.gz"
+type = "unspecified"
+title = "PromptMeGood source bundle (index.html + 4 standalone pages + ai.ts)"
