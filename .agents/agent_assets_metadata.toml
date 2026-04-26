@@ -18,3 +18,9 @@ id = "doONBtUrbdDYFVHIk4PIf"
 uri = "file://pmg_assets.tar.gz"
 type = "unspecified"
 title = "PromptMeGood assets (favicons + logo)"
+
+[[outputs]]
+id = "iCVZ4NsW32sWP2QuQRK8z"
+uri = "file://pmg_full.tar.gz"
+type = "unspecified"
+title = "PromptMeGood — index.html, guide.html, pricing.html, ai.ts"
