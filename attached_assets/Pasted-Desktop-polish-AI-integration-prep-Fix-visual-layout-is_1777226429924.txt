@@ -1,0 +1,145 @@
+Desktop polish + AI integration prep. Fix visual layout issues first, then prepare the app to connect to real AI safely. Do not break mobile layout.
+
+========================
+PART 1 — DESKTOP HEADER CLEANUP
+========================
+
+Current issues:
+- Header feels too thick on desktop
+- Open Builder / History / Pricing buttons have uneven spacing
+- Too much bottom padding inside nav buttons
+- Header colors blend too much and lack definition
+
+Fix:
+1. Reduce desktop header height/padding.
+2. Align logo, search, nav buttons, and theme toggle vertically.
+3. Make nav buttons symmetrical:
+   - consistent height
+   - equal top/bottom padding
+   - equal gap between buttons
+   - no extra bottom spacing
+4. Improve header contrast:
+   - add subtle border-bottom or shadow
+   - make header background slightly distinct from page background
+   - keep theme colors consistent
+5. Ensure desktop header looks clean and premium.
+6. Do not change mobile header unless necessary.
+
+========================
+PART 2 — “WHY IT MATTERS” CARD FIX
+========================
+
+Current issue:
+Text hugs the card edges on desktop.
+
+Fix:
+1. Add more internal padding to the “Why It Matters” card.
+2. Increase spacing between badge, heading, and list items.
+3. Ensure text never touches card edges.
+4. Keep card width balanced with hero text.
+5. Make desktop layout visually symmetrical.
+6. Preserve mobile spacing.
+
+========================
+PART 3 — HERO DESKTOP BALANCE
+========================
+
+Goal:
+Make the desktop hero feel intentional and premium.
+
+Fix:
+1. Align left hero content and right info card cleanly.
+2. Ensure CTA buttons are evenly sized and aligned.
+3. Make spacing between headline, proof box, subtext, and buttons consistent.
+4. Avoid sections looking cramped or floating randomly.
+
+========================
+PART 4 — SMART ASSIST DESKTOP POSITION
+========================
+
+Current issue:
+The “Still stuck?” helper can feel randomly placed.
+
+Fix:
+1. On desktop, position helper lower-right but not too close to browser edge.
+2. Make sure it does not overlap use case cards or primary CTAs.
+3. Keep helper subtle and clean.
+4. Maintain existing mobile behavior.
+
+========================
+PART 5 — PREPARE REAL AI INTEGRATION
+========================
+
+Goal:
+Prepare PromptMeGood to use real AI safely for:
+- smarter prompt generation
+- prompt improvement/refinement
+- image prompt creation
+- future image generation
+
+Do NOT expose API keys in frontend.
+
+Implementation:
+1. Create backend route:
+POST /api/generate-prompt
+
+2. Create backend route:
+POST /api/refine-prompt
+
+3. Create backend route:
+POST /api/image-prompt
+
+4. Keep API keys server-side only using environment variables.
+
+5. Add environment variable placeholders:
+OPENAI_API_KEY=
+
+6. Frontend should call backend routes, never OpenAI directly.
+
+7. Add loading states:
+- “Generating your prompt…”
+- “Refining your prompt…”
+- “Creating image prompt…”
+
+8. Add error states:
+“Something went wrong. Please try again.”
+
+9. Add usage guardrails:
+- Free users: limit text generations
+- Free users: limit image prompt/image generations
+- Store usage locally for now if no backend database exists
+
+10. Keep current local prompt builder as fallback if API fails.
+
+========================
+PART 6 — AI COST SAFETY
+========================
+
+Add basic guardrails now:
+
+Free monthly limits:
+- Text generations: 100/month
+- Image generations: 10/month for now
+- Refines: 50/month
+
+When limit reached, show:
+“You’ve reached the free monthly limit. PRO access will unlock more soon.”
+
+Do not charge users yet.
+Do not block existing early access messaging.
+
+========================
+PART 7 — FINAL CHECK
+========================
+
+Confirm:
+- Desktop header is thinner and cleaner
+- Nav buttons are evenly spaced
+- Why It Matters card has proper padding
+- Hero layout feels balanced
+- Smart helper does not overlap content
+- Backend AI routes exist
+- No API keys exposed in frontend
+- Existing local generation still works as fallback
+- Mobile layout remains clean
+- No JavaScript errors

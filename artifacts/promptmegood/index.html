@@ -2409,6 +2409,86 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
     }
+
+    /* ===== AI Improve button — distinguishable as the AI-powered option ===== */
+    .btn-ai {
+      min-height: 48px;
+      padding: 0 18px;
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      display: inline-flex; align-items: center; gap: 8px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 70%, #4f46e5) 100%);
+      border: 1px solid color-mix(in srgb, var(--color-primary) 60%, #4f46e5);
+      box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--color-primary) 60%, transparent);
+      transition: transform var(--transition-interactive), box-shadow var(--transition-interactive), opacity var(--transition-interactive);
+    }
+    .btn-ai:hover { transform: translateY(-1px); box-shadow: 0 10px 22px -8px color-mix(in srgb, var(--color-primary) 70%, transparent); }
+    .btn-ai:active { transform: scale(0.98); }
+    .btn-ai:disabled, .btn-ai[aria-busy="true"] { opacity: 0.7; cursor: progress; }
+    .btn-ai-spark { font-size: 14px; line-height: 1; }
+    .ai-improve-hint {
+      margin: 6px 0 0;
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      line-height: 1.4;
+    }
+    [data-theme="dark"] .btn-ai { color: #fff; }
+
+    /* ===== Desktop polish (≥769px) — header, hero card, hero spacing, smart-assist ===== */
+    @media (min-width: 769px) {
+      /* Header: thinner, cleaner, more defined */
+      .topbar {
+        background: color-mix(in srgb, var(--color-bg) 92%, transparent);
+        border-bottom: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02), 0 4px 14px -10px rgba(0, 0, 0, 0.08);
+      }
+      [data-theme="dark"] .topbar {
+        background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+        border-bottom-color: color-mix(in srgb, var(--color-text) 18%, transparent);
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25), 0 4px 14px -10px rgba(0, 0, 0, 0.5);
+      }
+      .topbar-inner { padding: 10px 0; gap: var(--space-5); }
+      .top-actions { gap: 10px; }
+      /* Symmetrical pill buttons — equal padding, equal height, even spacing */
+      .top-actions .ghost-link,
+      .top-actions .theme-toggle {
+        min-height: 38px;
+        height: 38px;
+        padding: 0 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .top-actions .theme-toggle { padding: 0 12px; }
+      /* Why It Matters card: more breathing room */
+      .hero-card {
+        padding: clamp(var(--space-6), 2.4vw, var(--space-8));
+      }
+      .hero-card-badge { margin-bottom: var(--space-4); }
+      .hero-card-title { margin: 0 0 var(--space-6); }
+      .hero-list { gap: var(--space-5); }
+      /* Hero balance: align CTAs evenly, consistent rhythm */
+      .hero-actions { gap: 14px; margin-top: var(--space-7); align-items: stretch; }
+      .hero-actions .btn {
+        min-height: 52px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 22px;
+      }
+      .hero p { margin-top: var(--space-5); }
+      /* Smart Assist: lower-right with breathing room, capped width to avoid overlap */
+      .smart-assist {
+        right: 28px;
+        bottom: 28px;
+        max-width: 340px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -2936,10 +3016,15 @@
                 <span class="improve-eyebrow">Refine Your Prompt Instantly</span>
                 <p class="improve-helper">Tap an option to instantly upgrade your result.</p>
                 <div class="actions-row">
+                  <button class="btn btn-ai" type="button" id="improve-with-ai-btn" aria-describedby="improve-with-ai-hint">
+                    <span class="btn-ai-spark" aria-hidden="true">✨</span>
+                    <span class="btn-ai-label">Improve with AI</span>
+                  </button>
                   <button class="btn btn-secondary" type="button" data-remix="detailed">More Detailed</button>
                   <button class="btn btn-secondary" type="button" data-remix="aggressive">More Aggressive</button>
                   <button class="btn btn-secondary" type="button" data-remix="beginner">Beginner Friendly</button>
                 </div>
+                <p class="ai-improve-hint" id="improve-with-ai-hint">Sends your current prompt to AI for a deeper rewrite. Free monthly limit applies.</p>
                 <div class="undo-row">
                   <button class="btn btn-secondary undo-btn" type="button" id="undo-btn" disabled aria-disabled="true">↶ Undo Last Change</button>
                   <span class="undo-helper">Not feeling the change? Undo and try another.</span>
@@ -8086,6 +8171,182 @@ Context:
 
       // Boot once DOM ready (we're already after DOMContentLoaded since we're at end of body)
       init();
+    })();
+
+    /* ===== AI Client (window.__pmgAI) + "Improve with AI" button ===== */
+    (function () {
+      const API_BASE = '/api';
+      const LIMITS = { generate: 100, refine: 50, image: 10 };
+
+      function monthKey() {
+        const d = new Date();
+        return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0');
+      }
+      function usageKey() { return 'pmg_ai_usage:' + monthKey(); }
+      function readUsage() {
+        try {
+          const raw = localStorage.getItem(usageKey());
+          if (!raw) return { generate: 0, refine: 0, image: 0 };
+          const parsed = JSON.parse(raw);
+          return {
+            generate: Number(parsed.generate) || 0,
+            refine: Number(parsed.refine) || 0,
+            image: Number(parsed.image) || 0,
+          };
+        } catch (e) { return { generate: 0, refine: 0, image: 0 }; }
+      }
+      function writeUsage(u) {
+        try { localStorage.setItem(usageKey(), JSON.stringify(u)); } catch (e) { /* no-op */ }
+      }
+      function bumpUsage(kind) {
+        const u = readUsage();
+        u[kind] = (u[kind] || 0) + 1;
+        writeUsage(u);
+      }
+      function checkLimit(kind) {
+        const u = readUsage();
+        return (u[kind] || 0) < LIMITS[kind];
+      }
+      function remaining(kind) {
+        const u = readUsage();
+        return Math.max(0, LIMITS[kind] - (u[kind] || 0));
+      }
+
+      const LIMIT_MSG = "You've reached the free monthly limit. PRO access will unlock more soon.";
+      const ERR_MSG = "Something went wrong. Please try again.";
+
+      async function callAI(path, body) {
+        const ctrl = new AbortController();
+        const timeoutId = window.setTimeout(function () { ctrl.abort(); }, 60000);
+        try {
+          const resp = await fetch(API_BASE + path, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body || {}),
+            signal: ctrl.signal,
+          });
+          const data = await resp.json().catch(function () { return null; });
+          if (!resp.ok || !data || data.ok !== true) {
+            const err = (data && data.error) ? data.error : ERR_MSG;
+            throw new Error(err);
+          }
+          return data.result;
+        } finally {
+          window.clearTimeout(timeoutId);
+        }
+      }
+
+      window.__pmgAI = {
+        limits: function () { return Object.assign({}, LIMITS); },
+        usage: readUsage,
+        remaining: remaining,
+        async generate(goal, context) {
+          if (!checkLimit('generate')) { const e = new Error(LIMIT_MSG); e.code = 'LIMIT'; throw e; }
+          const result = await callAI('/generate-prompt', { goal: goal, context: context });
+          bumpUsage('generate');
+          return result;
+        },
+        async refine(prompt, instruction) {
+          if (!checkLimit('refine')) { const e = new Error(LIMIT_MSG); e.code = 'LIMIT'; throw e; }
+          const result = await callAI('/refine-prompt', { prompt: prompt, instruction: instruction });
+          bumpUsage('refine');
+          return result;
+        },
+        async imagePrompt(subject, style) {
+          if (!checkLimit('image')) { const e = new Error(LIMIT_MSG); e.code = 'LIMIT'; throw e; }
+          const result = await callAI('/image-prompt', { subject: subject, style: style });
+          bumpUsage('image');
+          return result;
+        },
+      };
+
+      // Wire the "Improve with AI" button.
+      const btn = document.getElementById('improve-with-ai-btn');
+      const resultBox = document.getElementById('resultBox');
+      const statusEl = document.getElementById('improve-status');
+      if (!btn || !resultBox) return;
+
+      function isPlaceholder(text) {
+        if (!text) return true;
+        const t = text.trim();
+        if (!t) return true;
+        return t.indexOf('Your generated prompt will appear here') === 0
+          || t.indexOf('Please enter a goal') === 0
+          || t.indexOf('Add a clear goal first') === 0;
+      }
+
+      function setStatus(msg, isError) {
+        if (!statusEl) return;
+        statusEl.textContent = msg || '';
+        statusEl.hidden = !msg;
+        statusEl.style.color = isError ? '#b91c1c' : '';
+      }
+
+      function showToastMsg(msg) {
+        if (typeof window.showToast === 'function') {
+          try { window.showToast(msg); return; } catch (e) { /* fall through */ }
+        }
+        // Fallback: minimal alert-free toast via status line.
+        setStatus(msg, true);
+        window.setTimeout(function () { setStatus(''); }, 4000);
+      }
+
+      function fallbackLocalRefine() {
+        // Trigger the existing local "More Detailed" remix as a fallback.
+        const detailed = document.querySelector('[data-remix="detailed"]');
+        if (detailed) {
+          showToastMsg('AI was unavailable — using local refinement instead.');
+          detailed.click();
+        } else {
+          showToastMsg(ERR_MSG);
+        }
+      }
+
+      btn.addEventListener('click', async function () {
+        if (btn.dataset.busy === '1') return;
+        const current = (resultBox.textContent || '').trim();
+        if (isPlaceholder(current)) {
+          showToastMsg('Generate a prompt first, then improve it with AI.');
+          return;
+        }
+        if (!checkLimit('refine')) {
+          showToastMsg(LIMIT_MSG);
+          return;
+        }
+        btn.dataset.busy = '1';
+        btn.disabled = true;
+        btn.setAttribute('aria-busy', 'true');
+        const labelEl = btn.querySelector('.btn-ai-label');
+        const originalLabel = labelEl ? labelEl.textContent : '';
+        if (labelEl) labelEl.textContent = 'Refining your prompt…';
+        setStatus('Refining your prompt with AI…', false);
+
+        try {
+          const improved = await window.__pmgAI.refine(current);
+          if (!improved || typeof improved !== 'string') {
+            throw new Error(ERR_MSG);
+          }
+          // Use focus → mutate → input dispatch so the existing undo/edit pipeline records this change.
+          resultBox.dispatchEvent(new Event('focus'));
+          resultBox.textContent = improved;
+          resultBox.dispatchEvent(new Event('input', { bubbles: true }));
+          resultBox.dispatchEvent(new Event('blur'));
+          setStatus('Done — prompt improved with AI.', false);
+          window.setTimeout(function () { setStatus(''); }, 3500);
+        } catch (err) {
+          if (err && err.code === 'LIMIT') {
+            showToastMsg(LIMIT_MSG);
+          } else {
+            // Fall back to local refinement so the user is never stuck.
+            fallbackLocalRefine();
+          }
+        } finally {
+          btn.dataset.busy = '0';
+          btn.disabled = false;
+          btn.removeAttribute('aria-busy');
+          if (labelEl) labelEl.textContent = originalLabel || 'Improve with AI';
+        }
+      });
     })();
   </script>
 </body>
