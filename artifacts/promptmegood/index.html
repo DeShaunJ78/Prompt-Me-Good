@@ -2045,6 +2045,51 @@
     .uc-confirm-toast-btn:active { transform: scale(0.96); }
     [data-theme="dark"] .uc-confirm-toast-btn { background: #5ba8b0; color: #0c2f2c; }
     [data-theme="dark"] .uc-confirm-toast-btn:hover, [data-theme="dark"] .uc-confirm-toast-btn:focus-visible { background: #7fc0c6; }
+
+    .post-tour-banner {
+      position: fixed;
+      top: calc(96px + env(safe-area-inset-top, 0px));
+      left: 50%;
+      transform: translateX(-50%) translateY(-12px);
+      z-index: 10001;
+      width: min(640px, calc(100% - 32px));
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: 18px 22px;
+      background: #DAF1EE;
+      border: 2px solid #0f766e;
+      color: #0c3f3a;
+      border-radius: 16px;
+      box-shadow: 0 16px 36px rgba(15, 118, 110, 0.28);
+      opacity: 0; pointer-events: none;
+      transition: opacity 240ms ease, transform 240ms ease;
+      font-size: var(--text-md); line-height: 1.55;
+    }
+    .post-tour-banner[hidden] { display: none; }
+    .post-tour-banner.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+    .post-tour-banner-icon { flex: 0 0 auto; font-size: var(--text-lg); line-height: 1; }
+    .post-tour-banner-text { flex: 1 1 auto; min-width: 0; font-weight: 500; }
+    .post-tour-banner-btn {
+      flex: 0 0 auto;
+      background: #0f766e; color: #fff; border: 0;
+      padding: 10px 20px; border-radius: var(--radius-full);
+      font-size: var(--text-sm); font-weight: 600; cursor: pointer;
+      min-height: 40px;
+      transition: background 150ms ease, transform 150ms ease;
+    }
+    .post-tour-banner-btn:hover, .post-tour-banner-btn:focus-visible { background: #0c5e57; outline: none; }
+    .post-tour-banner-btn:active { transform: scale(0.96); }
+    [data-theme="dark"] .post-tour-banner { background: #0c4f48; border-color: #7fc0c6; color: #E6F7F5; box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5); }
+    [data-theme="dark"] .post-tour-banner-btn { background: #5ba8b0; color: #0c2f2c; }
+    [data-theme="dark"] .post-tour-banner-btn:hover, [data-theme="dark"] .post-tour-banner-btn:focus-visible { background: #7fc0c6; }
+    @media (max-width: 600px) {
+      .post-tour-banner {
+        top: calc(110px + env(safe-area-inset-top, 0px));
+        padding: 14px 16px; gap: 10px; font-size: 14px; line-height: 1.5; border-radius: 14px;
+        flex-wrap: wrap;
+      }
+      .post-tour-banner-text { flex-basis: 100%; }
+      .post-tour-banner-btn { padding: 9px 16px; font-size: 13px; min-height: 38px; margin-left: auto; }
+    }
     @media (max-width: 600px) {
       .toast {
         top: calc(110px + env(safe-area-inset-top, 0px));
@@ -3118,6 +3163,12 @@
     <span class="uc-confirm-toast-icon" aria-hidden="true">✨</span>
     <span class="uc-confirm-toast-text">Your starting idea was added. Review the options below, then tap Generate Prompt.</span>
     <button type="button" class="uc-confirm-toast-btn" id="uc-confirm-toast-dismiss" aria-label="Dismiss confirmation">Got it</button>
+  </div>
+
+  <div class="post-tour-banner" id="post-tour-banner" role="status" aria-live="polite" hidden>
+    <span class="post-tour-banner-icon" aria-hidden="true">🎉</span>
+    <span class="post-tour-banner-text">You&rsquo;re ready. Start with Build A Prompt or explore Use Cases &mdash; then have fun prompting with PromptMeGood.</span>
+    <button type="button" class="post-tour-banner-btn" id="post-tour-banner-dismiss" aria-label="Dismiss message">Got it</button>
   </div>
 
   <div class="uc-modal" id="usecases-modal" role="dialog" aria-modal="true" aria-labelledby="usecases-modal-title" aria-hidden="true" hidden>
@@ -6448,10 +6499,82 @@ Context:
         if (!wasDemo) {
           if (completed) {
             obMarkDone();
+            // Friendly post-tour reminder: scroll to top, then surface a branded
+            // "you're ready" banner. Only fires on full completion of the real
+            // onboarding tour (not the demo, not Skip, not Esc, not backdrop).
+            try { showPostTourBanner(); } catch (e) {}
           } else {
             obDismissForSession();
           }
         }
+      }
+      function showPostTourBanner() {
+        const banner = document.getElementById('post-tour-banner');
+        if (!banner) return;
+        // Smooth-scroll to the very top of the page.
+        try {
+          window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+        } catch (e) {
+          window.scrollTo(0, 0);
+        }
+        // Show the banner only after the scroll has settled. We prefer the
+        // native scrollend event (Chromium 114+, Firefox 109+); otherwise we
+        // poll scrollY to detect when motion stops, with a hard fallback.
+        let shown = false;
+        const reveal = function () {
+          if (shown) return;
+          shown = true;
+          banner.hidden = false;
+          // Force reflow so the transition runs from the hidden state.
+          // eslint-disable-next-line no-unused-expressions
+          banner.offsetWidth;
+          banner.classList.add('is-visible');
+          const dismiss = function () { hidePostTourBanner(); };
+          const btn = document.getElementById('post-tour-banner-dismiss');
+          if (btn) btn.addEventListener('click', dismiss, { once: true });
+          // Auto-dismiss after 7s (within the 6-8s spec range).
+          window.clearTimeout(showPostTourBanner.autoTimer);
+          showPostTourBanner.autoTimer = window.setTimeout(dismiss, 7000);
+        };
+        if ('onscrollend' in window) {
+          const onEnd = function () {
+            window.removeEventListener('scrollend', onEnd);
+            window.clearTimeout(fallback);
+            reveal();
+          };
+          window.addEventListener('scrollend', onEnd);
+          // Hard fallback in case scrollend never fires (e.g. user already at top).
+          const fallback = window.setTimeout(function () {
+            window.removeEventListener('scrollend', onEnd);
+            reveal();
+          }, 900);
+        } else {
+          // Poll: consider scroll done when scrollY stops changing for ~120ms,
+          // or when we reach the top, or after a 1000ms ceiling.
+          let lastY = window.scrollY;
+          let stableMs = 0;
+          const start = Date.now();
+          const tick = function () {
+            const y = window.scrollY;
+            if (y <= 2 || Date.now() - start > 1000) { reveal(); return; }
+            if (y === lastY) {
+              stableMs += 60;
+              if (stableMs >= 120) { reveal(); return; }
+            } else {
+              stableMs = 0;
+              lastY = y;
+            }
+            window.setTimeout(tick, 60);
+          };
+          window.setTimeout(tick, 80);
+        }
+      }
+      function hidePostTourBanner() {
+        const banner = document.getElementById('post-tour-banner');
+        if (!banner) return;
+        window.clearTimeout(showPostTourBanner.autoTimer);
+        banner.classList.remove('is-visible');
+        window.setTimeout(function () { banner.hidden = true; }, 260);
       }
       function obNextStep() {
         if (obIndex >= currentSteps.length - 1) { obFinish({ completed: true }); return; }
