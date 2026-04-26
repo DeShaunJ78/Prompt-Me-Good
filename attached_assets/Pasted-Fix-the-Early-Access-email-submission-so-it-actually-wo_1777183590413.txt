@@ -1,0 +1,71 @@
+Fix the Early Access email submission so it actually works. Do not change UI unless necessary.
+
+Current issue:
+Submitting an email shows: “Something went wrong. Please try again.”
+Emails are not being captured successfully.
+
+Goal:
+When a user submits their email, it must be captured somewhere I can access, and the user must only see success after the capture actually works.
+
+Step 1 — Inspect first
+Before changing anything, inspect and report:
+- What submit handler is being used?
+- What endpoint is being called?
+- Is there a fetch/API call?
+- What exact error occurs?
+- Is the failure a 404, 500, CORS issue, missing API key, missing endpoint, or something else?
+- Where is the app currently trying to send/store emails?
+
+Step 2 — Fix the capture
+Implement the simplest reliable working solution available in this project.
+
+Preferred:
+- Create or fix a backend endpoint:
+  POST /api/early-access
+
+The endpoint should:
+- Accept JSON: { email }
+- Validate email
+- Capture the email externally by either:
+  1. emailing it to support@promptmegood.com, OR
+  2. saving it to an accessible database/table
+
+Include:
+- email
+- timestamp
+- source: “PromptMeGood PRO early access form”
+
+Step 3 — Connect frontend
+On valid submit:
+- Send POST request to /api/early-access
+- Wait for response
+- Only show success if response is successful
+
+Success message:
+“You’re in. We’ll notify you when PRO opens.”
+
+Failure message:
+“Something went wrong. Please try again.”
+
+Step 4 — Keep backup
+Keep localStorage as a backup only.
+Do not rely on localStorage as the only capture method.
+
+Step 5 — Prevent false errors
+- Error message must not show by default
+- Error message only shows after a real failed request
+- Success message only shows after email is actually captured
+
+Step 6 — Verify end-to-end
+Test with a real email and confirm:
+- request returns success
+- email is captured externally
+- success message appears
+- no console errors
+- form works on mobile
+
+After the fix, report exactly:
+- where submitted emails go
+- how I can access them
+- what endpoint is being used
+- whether any environment variables/API keys are required
