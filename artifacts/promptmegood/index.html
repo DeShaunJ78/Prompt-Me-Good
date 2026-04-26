@@ -3112,7 +3112,7 @@
             </div>
             <p class="result-helper" data-tip="result-copy">Looks good? Copy this prompt and paste it into ChatGPT, Claude, Perplexity, Gemini, or another AI tool.</p>
             <div id="tour-final-actions" class="tour-final-actions">
-            <div class="strength-score" id="strength-score" role="status" aria-live="polite">
+            <div class="strength-score" id="strength-score" role="status" aria-live="polite" hidden>
               <div class="strength-score-head">
                 <span class="strength-score-title">Prompt Strength</span>
                 <span class="strength-score-pct" id="strength-score-pct">0%</span>
@@ -6755,7 +6755,7 @@ Context:
 
       const ONBOARDING_DISMISS_KEY = 'promptmegood:onboardingDismissCount:v1';
       const ONBOARDING_SESSION_KEY = 'promptmegood:onboardingSeenSession';
-      const ONBOARDING_MAX_DISMISSALS = 3;
+      const ONBOARDING_MAX_DISMISSALS = 1;
       function getOnboardingDismissCount() {
         try {
           const raw = localStorage.getItem(ONBOARDING_DISMISS_KEY);
