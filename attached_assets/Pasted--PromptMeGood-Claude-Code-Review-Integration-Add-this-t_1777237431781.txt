@@ -1,0 +1,573 @@
+# PromptMeGood — Claude Code Review Integration
+### Add this to your Replit project
+
+This adds a `/api/review` endpoint + a dev-only UI that sends your **entire code stack** to Claude, which analyzes it for bugs, UX issues, and inconsistencies, then returns a polished set of fixes you can apply directly.
+
+---
+
+## STEP 1 — Create `/routes/review.js`
+
+```js
+const express = require('express');
+const router = express.Router();
+const fs = require('fs');
+const path = require('path');
+
+// Files to collect and send to Claude for review
+const FILES_TO_REVIEW = [
+  { label: 'index.js',                   path: 'index.js' },
+  { label: 'routes/generate.js',         path: 'routes/generate.js' },
+  { label: 'routes/run.js',              path: 'routes/run.js' },
+  { label: 'routes/stats.js',            path: 'routes/stats.js' },
+  { label: 'middleware/costGuard.js',     path: 'middleware/costGuard.js' },
+  { label: 'middleware/rateLimit.js',     path: 'middleware/rateLimit.js' },
+  { label: 'middleware/sanitize.js',      path: 'middleware/sanitize.js' },
+  { label: 'utils/counter.js',           path: 'utils/counter.js' },
+  { label: 'public/index.html',          path: 'public/index.html' },
+  { label: 'public/app.js',             path: 'public/app.js' },
+];
+
+// Only allow this endpoint in development
+router.post('/', async (req, res) => {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(403).json({ error: 'Review endpoint disabled in production.' });
+  }
+
+  // Collect all files into a single payload
+  const codeStack = FILES_TO_REVIEW.map(({ label, path: filePath }) => {
+    const fullPath = path.join(process.cwd(), filePath);
+    let content = '[File not found]';
+    try {
+      if (fs.existsSync(fullPath)) {
+        content = fs.readFileSync(fullPath, 'utf8');
+      }
+    } catch (e) {
+      content = `[Error reading file: ${e.message}]`;
+    }
+    return `\n\n=== ${label} ===\n${content}`;
+  }).join('');
+
+  // Build the review prompt
+  const reviewPrompt = `You are a senior full-stack engineer and UX reviewer doing a thorough code review of a Node.js/Express web app called PromptMeGood — a prompt builder that generates optimized AI prompts and runs them via OpenAI.
+
+Here is the complete code stack:
+${codeStack}
+
+Review it across these four areas and return ONLY a structured JSON response matching the schema below — no prose, no markdown, just valid JSON:
+
+1. BUGS — Logic errors, broken flows, missing error handling, race conditions, anything that would cause the app to fail or behave incorrectly.
+2. UX ISSUES — Confusing flows, missing feedback states, unclear labels, mobile problems, anything that would frustrate a real user.
+3. SECURITY — Exposed secrets, missing input validation, injection risks, rate limiting gaps.
+4. POLISH — Inconsistent naming, dead code, missing comments on complex logic, anything that makes the codebase harder to maintain.
+
+For each issue, provide:
+- The file and line/function where it occurs
+- A clear description of the problem
+- The exact fixed code to paste in (a complete function or block, not a diff)
+
+JSON schema:
+{
+  "summary": "2-3 sentence overall assessment",
+  "score": { "bugs": 0-10, "ux": 0-10, "security": 0-10, "polish": 0-10 },
+  "issues": [
+    {
+      "area": "bugs|ux|security|polish",
+      "severity": "critical|high|medium|low",
+      "file": "filename",
+      "location": "function name or line description",
+      "problem": "clear description of what is wrong",
+      "fix": "the complete corrected code block to replace it with"
+    }
+  ]
+}`;
+
+  // Stream the response from Claude back to the client
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  try {
+    const fetch = (await import('node-fetch')).default;
+
+    const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-beta': 'messages-2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        stream: true,
+        messages: [{ role: 'user', content: reviewPrompt }]
+      })
+    });
+
+    let buffer = '';
+
+    for await (const chunk of claudeRes.body) {
+      const lines = chunk.toString().split('\n').filter(Boolean);
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6);
+        if (raw === '[DONE]') { res.write('data: [DONE]\n\n'); continue; }
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+            buffer += parsed.delta.text;
+            res.write(`data: ${JSON.stringify({ text: parsed.delta.text })}\n\n`);
+          }
+          if (parsed.type === 'message_stop') {
+            res.write('data: [DONE]\n\n');
+          }
+        } catch (_) {}
+      }
+    }
+
+    res.end();
+
+  } catch (err) {
+    console.error('Review error:', err.message);
+    res.write(`data: ${JSON.stringify({ error: 'Review failed: ' + err.message })}\n\n`);
+    res.end();
+  }
+});
+
+module.exports = router;
+```
+
+---
+
+## STEP 2 — Add to `index.js`
+
+Add this line with your other routes — but **only in development**:
+
+```js
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/api/review', require('./routes/review'));
+}
+```
+
+---
+
+## STEP 3 — Add `ANTHROPIC_API_KEY` to Replit Secrets
+
+In the Replit **Secrets** tab, add:
+
+- **Key**: `ANTHROPIC_API_KEY`
+- **Value**: your Anthropic API key from console.anthropic.com
+
+---
+
+## STEP 4 — Add the dev review UI
+
+Create `public/review.html` — a standalone dev tool page at `/review.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PromptMeGood — Code Review</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f9fafb;
+      color: #111827;
+      padding: 32px 24px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 6px; }
+    .subtitle { font-size: 0.9rem; color: #6b7280; margin-bottom: 28px; }
+    .run-btn {
+      background: #1a6b5e;
+      color: white;
+      border: none;
+      border-radius: 9999px;
+      padding: 12px 32px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .run-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    #scores {
+      display: none;
+      gap: 12px;
+      margin: 24px 0 8px;
+      flex-wrap: wrap;
+    }
+    .score-card {
+      flex: 1;
+      min-width: 120px;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 14px 16px;
+      text-align: center;
+    }
+    .score-label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: .06em; }
+    .score-value { font-size: 2rem; font-weight: 700; margin-top: 4px; }
+    .score-value.good    { color: #059669; }
+    .score-value.ok      { color: #d97706; }
+    .score-value.poor    { color: #dc2626; }
+
+    #summary-box {
+      display: none;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: #374151;
+    }
+
+    .issues-list { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+    .issue-card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 16px 20px;
+    }
+    .issue-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .badge.bugs     { background: #fee2e2; color: #991b1b; }
+    .badge.ux       { background: #dbeafe; color: #1e40af; }
+    .badge.security { background: #fef3c7; color: #92400e; }
+    .badge.polish   { background: #f3f4f6; color: #374151; }
+    .badge.critical { background: #dc2626; color: white; }
+    .badge.high     { background: #f97316; color: white; }
+    .badge.medium   { background: #fbbf24; color: #78350f; }
+    .badge.low      { background: #e5e7eb; color: #374151; }
+    .issue-location { font-size: 0.78rem; color: #6b7280; font-family: monospace; }
+    .issue-problem  { font-size: 0.88rem; line-height: 1.55; color: #374151; margin-bottom: 10px; }
+    .fix-toggle {
+      background: none;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      color: #374151;
+      transition: background 0.15s;
+    }
+    .fix-toggle:hover { background: #f3f4f6; }
+    .fix-code {
+      display: none;
+      margin-top: 10px;
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 0.82rem;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.6;
+    }
+    .copy-btn {
+      font-size: 0.78rem;
+      background: none;
+      border: 1px solid #475569;
+      color: #94a3b8;
+      border-radius: 6px;
+      padding: 4px 10px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .copy-btn:hover { background: #1e293b; }
+    #status { font-size: 0.85rem; color: #6b7280; margin-top: 12px; min-height: 20px; }
+    #raw-stream {
+      display: none;
+      margin-top: 20px;
+      background: #0f172a;
+      color: #94a3b8;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-family: monospace;
+      font-size: 0.8rem;
+      white-space: pre-wrap;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .section-title { font-size: 0.8rem; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: .06em; margin: 20px 0 8px; }
+    .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .filter-btn {
+      padding: 5px 14px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      border: 1px solid #d1d5db;
+      background: white;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-btn.active { background: #1a6b5e; color: white; border-color: #1a6b5e; }
+  </style>
+</head>
+<body>
+
+<h1>Code Review</h1>
+<p class="subtitle">Sends your full code stack to Claude for analysis. Dev only — not visible in production.</p>
+
+<button class="run-btn" id="runBtn" onclick="runReview()">Run Review</button>
+<div id="status"></div>
+
+<div id="scores" style="display:none; display:flex"></div>
+<div id="summary-box"></div>
+
+<div id="results"></div>
+
+<p class="section-title" id="stream-label" style="display:none">Raw stream</p>
+<div id="raw-stream"></div>
+
+<script>
+let allIssues = [];
+let activeFilter = 'all';
+
+async function runReview() {
+  const btn = document.getElementById('runBtn');
+  const status = document.getElementById('status');
+  const rawStream = document.getElementById('raw-stream');
+  const streamLabel = document.getElementById('stream-label');
+
+  btn.disabled = true;
+  btn.textContent = 'Reviewing…';
+  status.textContent = 'Collecting files and sending to Claude…';
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('scores').style.display = 'none';
+  document.getElementById('summary-box').style.display = 'none';
+  rawStream.textContent = '';
+  rawStream.style.display = 'block';
+  streamLabel.style.display = 'block';
+
+  let fullText = '';
+
+  try {
+    const res = await fetch('/api/review', { method: 'POST' });
+    if (!res.ok) {
+      const err = await res.json();
+      status.textContent = err.error || 'Review endpoint returned an error.';
+      btn.disabled = false;
+      btn.textContent = 'Run Review';
+      return;
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const lines = decoder.decode(value).split('\n');
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6);
+        if (raw === '[DONE]') {
+          status.textContent = 'Review complete.';
+          parseAndRender(fullText);
+          break;
+        }
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed.text) {
+            fullText += parsed.text;
+            rawStream.textContent = fullText.slice(-1200);
+            rawStream.scrollTop = rawStream.scrollHeight;
+            status.textContent = `Receiving… (${fullText.length} chars)`;
+          }
+          if (parsed.error) {
+            status.textContent = parsed.error;
+          }
+        } catch (_) {}
+      }
+    }
+
+  } catch (err) {
+    status.textContent = 'Connection error: ' + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Run Review Again';
+  }
+}
+
+function parseAndRender(text) {
+  // Strip any markdown code fences Claude might wrap around the JSON
+  const clean = text.replace(/```json|```/g, '').trim();
+  let data;
+  try {
+    data = JSON.parse(clean);
+  } catch (e) {
+    document.getElementById('results').innerHTML =
+      `<p style="color:#dc2626;margin-top:16px">Could not parse Claude's response as JSON. Raw output is shown in the stream below.</p>`;
+    return;
+  }
+
+  allIssues = data.issues || [];
+
+  // Scores
+  const scores = data.score || {};
+  const scoreEl = document.getElementById('scores');
+  scoreEl.style.display = 'flex';
+  scoreEl.innerHTML = Object.entries(scores).map(([key, val]) => `
+    <div class="score-card">
+      <div class="score-label">${key}</div>
+      <div class="score-value ${val >= 8 ? 'good' : val >= 5 ? 'ok' : 'poor'}">${val}/10</div>
+    </div>
+  `).join('');
+
+  // Summary
+  const summaryEl = document.getElementById('summary-box');
+  if (data.summary) {
+    summaryEl.textContent = data.summary;
+    summaryEl.style.display = 'block';
+  }
+
+  renderIssues('all');
+}
+
+function renderIssues(filter) {
+  activeFilter = filter;
+  const container = document.getElementById('results');
+  const issues = filter === 'all' ? allIssues : allIssues.filter(i => i.area === filter);
+  const counts = { all: allIssues.length };
+  for (const i of allIssues) counts[i.area] = (counts[i.area] || 0) + 1;
+
+  const filterBtns = ['all','bugs','ux','security','polish'].map(f => `
+    <button class="filter-btn ${activeFilter === f ? 'active' : ''}" onclick="renderIssues('${f}')">
+      ${f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)} ${counts[f] ? `(${counts[f]})` : ''}
+    </button>
+  `).join('');
+
+  const issueCards = issues.map((issue, idx) => `
+    <div class="issue-card">
+      <div class="issue-header">
+        <span class="badge ${issue.area}">${issue.area}</span>
+        <span class="badge ${issue.severity}">${issue.severity}</span>
+        <span class="issue-location">${issue.file} — ${issue.location}</span>
+      </div>
+      <p class="issue-problem">${issue.problem}</p>
+      <button class="fix-toggle" onclick="toggleFix(${idx})">Show fix</button>
+      <div class="fix-code" id="fix-${idx}">${escHtml(issue.fix || '')}</div>
+      <button class="copy-btn" style="display:none" id="copy-${idx}" onclick="copyFix(${idx})">Copy fix</button>
+    </div>
+  `).join('');
+
+  container.innerHTML = `
+    <p class="section-title">${issues.length} issue${issues.length !== 1 ? 's' : ''}</p>
+    <div class="filter-bar">${filterBtns}</div>
+    <div class="issues-list">${issueCards || '<p style="color:#6b7280;font-size:0.9rem">No issues in this category.</p>'}</div>
+  `;
+}
+
+function toggleFix(idx) {
+  const fixEl = document.getElementById('fix-' + idx);
+  const copyEl = document.getElementById('copy-' + idx);
+  const btn = fixEl.previousElementSibling;
+  const isHidden = fixEl.style.display === 'none' || !fixEl.style.display;
+  fixEl.style.display = isHidden ? 'block' : 'none';
+  copyEl.style.display = isHidden ? 'block' : 'none';
+  btn.textContent = isHidden ? 'Hide fix' : 'Show fix';
+}
+
+function copyFix(idx) {
+  const text = document.getElementById('fix-' + idx).textContent;
+  navigator.clipboard.writeText(text);
+  const btn = document.getElementById('copy-' + idx);
+  btn.textContent = 'Copied!';
+  setTimeout(() => btn.textContent = 'Copy fix', 1500);
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
+```
+
+---
+
+## STEP 5 — Add `node-fetch` if not already installed
+
+```bash
+npm install node-fetch
+```
+
+---
+
+## STEP 6 — Add `ANTHROPIC_API_KEY` to Replit Secrets
+
+| Key | Value |
+|-----|-------|
+| `ANTHROPIC_API_KEY` | your key from console.anthropic.com |
+| `NODE_ENV` | `development` (so the review endpoint stays open) |
+
+---
+
+## HOW IT WORKS
+
+1. Navigate to `yourapp.replit.dev/review.html`
+2. Click **Run Review**
+3. The server reads every file in `FILES_TO_REVIEW`, packages them into a single prompt, and streams it to Claude
+4. Claude returns structured JSON — scored across bugs, UX, security, and polish — with exact fix code for each issue
+5. The UI renders scores, a summary, and expandable issue cards with copy-able fixes
+6. Filter by category to focus on what matters most
+
+---
+
+## CUSTOMIZE WHICH FILES GET REVIEWED
+
+In `/routes/review.js`, edit `FILES_TO_REVIEW`:
+
+```js
+const FILES_TO_REVIEW = [
+  { label: 'index.js',        path: 'index.js' },
+  { label: 'public/app.js',  path: 'public/app.js' },
+  // Add or remove entries to match your actual file structure
+];
+```
+
+---
+
+## SECURITY NOTES
+
+- The `/api/review` endpoint is blocked in `NODE_ENV=production` — it never runs on live traffic
+- `review.html` is a static file; it makes no AI calls itself — all calls go through your server where the API key is safe
+- The endpoint reads only files you explicitly list — it cannot traverse the filesystem
+
+---
+
+## QA CHECKLIST
+
+- [ ] `GET /review.html` loads the dev UI
+- [ ] Clicking Run Review streams a response into the raw stream panel
+- [ ] Scores render as colored cards after completion
+- [ ] Summary text appears below scores
+- [ ] Issue cards render with area + severity badges
+- [ ] "Show fix" expands the code block
+- [ ] "Copy fix" copies to clipboard
+- [ ] Filter buttons filter by area
+- [ ] `NODE_ENV=production` returns 403 from `/api/review`
+- [ ] `ANTHROPIC_API_KEY` is in Replit Secrets, not in code
