@@ -62,6 +62,7 @@ export default defineConfig({
         main: path.resolve(import.meta.dirname, "index.html"),
         guide: path.resolve(import.meta.dirname, "guide.html"),
         pricing: path.resolve(import.meta.dirname, "pricing.html"),
+        review: path.resolve(import.meta.dirname, "review.html"),
       },
     },
   },
