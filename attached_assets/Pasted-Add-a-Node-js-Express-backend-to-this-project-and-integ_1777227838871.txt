@@ -1,0 +1,116 @@
+Add a Node.js/Express backend to this project and integrate it cleanly with the existing frontend. Do not break any current functionality.
+
+========================
+BACKEND SETUP
+========================
+
+1. Initialize a Node.js server using Express.
+2. Create a server file (server.js or index.js).
+3. Install required dependencies:
+   - express
+   - cors
+   - dotenv
+   - openai
+
+4. Enable JSON parsing and CORS.
+
+========================
+ENVIRONMENT VARIABLES
+========================
+
+1. Use Replit Secrets for environment variables.
+2. Add:
+   OPENAI_API_KEY=your_key_here
+
+3. Load environment variables securely using dotenv.
+4. NEVER expose the API key to the frontend.
+
+========================
+API ENDPOINT
+========================
+
+Create a POST endpoint:
+
+POST /api/generate
+
+Request body (JSON):
+{
+  "prompt": "user input text"
+}
+
+Behavior:
+1. Validate input (must exist, must be string).
+2. Call OpenAI API using the server-side key.
+3. Return generated response.
+
+========================
+OPENAI CALL
+========================
+
+Use a lightweight model suitable for cost efficiency.
+
+- Use a chat/completions style request
+- Keep responses concise and structured
+
+Return format:
+{
+  "success": true,
+  "output": "generated text"
+}
+
+On error:
+{
+  "success": false,
+  "error": "message"
+}
+
+========================
+FRONTEND INTEGRATION
+========================
+
+1. Update frontend to call:
+   /api/generate
+
+2. Use fetch:
+   method: POST
+   headers: Content-Type: application/json
+
+3. Send user prompt from builder.
+
+4. Handle states:
+   - Loading → “Generating your prompt…”
+   - Success → display result
+   - Error → show fallback message
+
+5. Keep existing local prompt builder as fallback if API fails.
+
+========================
+RATE + COST PROTECTION
+========================
+
+1. Add simple usage guard (localStorage for now):
+   - limit requests per user (ex: 100/month)
+
+2. If limit exceeded:
+   return message:
+   “You’ve reached the free limit. PRO unlocks more.”
+
+========================
+SECURITY RULES
+========================
+
+- No API key in frontend code
+- No API key in network requests
+- Only server communicates with OpenAI
+- Validate all inputs
+
+========================
+FINAL CHECK
+========================
+
+Ensure:
+- Server runs correctly in Replit
+- No console errors
+- Endpoint returns valid JSON
+- Frontend successfully connects
+- Existing UI remains intact
