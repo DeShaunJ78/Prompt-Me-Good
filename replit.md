@@ -1,10 +1,6 @@
 # Overview
 
-This project is a pnpm workspace monorepo using TypeScript, designed to build a sophisticated AI prompt builder named "PromptMeGood". The core purpose of PromptMeGood is to provide a structured interface for users to craft precise prompts for AI, ensuring clear communication of intent and desired output.
-
-PromptMeGood aims to simplify and enhance the AI interaction experience by offering features like smart suggestions, auto-optimization, and quality checks, thereby increasing the effectiveness of AI prompts. The project targets a wide user base, from casual users to power users, with features like guided modes for beginners and an "Expert Mode" for advanced control.
-
-The business vision includes a "Free" tier and a "PRO" tier (coming soon), indicating a potential for subscription-based revenue, and an early-access program to gather user interest and feedback. The project's ambition is to become a leading tool in the AI prompting space, fostering better AI interactions and productivity.
+This project, "PromptMeGood", is a pnpm workspace monorepo using TypeScript, designed to be a sophisticated AI prompt builder. Its core purpose is to provide a structured interface for users to craft precise prompts for AI, enhancing clarity and desired output. PromptMeGood aims to simplify and improve AI interaction through features like smart suggestions, auto-optimization, and quality checks, thereby increasing prompt effectiveness. It targets a broad user base with features like guided modes for beginners and an "Expert Mode" for advanced users. The project envisions a "Free" and future "PRO" tier, indicating a subscription-based revenue model, and aims to become a leading tool in the AI prompting space to foster better AI interactions and productivity.
 
 # User Preferences
 
@@ -14,7 +10,7 @@ I prefer concise and direct communication. When making changes, prioritize itera
 
 ## Monorepo Structure
 
-The project is structured as a pnpm workspace monorepo, with each package managing its own dependencies. Key packages include `@workspace/api-spec`, `@workspace/db`, and `@workspace/api-server`.
+The project is a pnpm workspace monorepo, with packages like `@workspace/api-spec`, `@workspace/db`, and `@workspace/api-server`.
 
 ## Tech Stack
 
@@ -23,54 +19,46 @@ The project is structured as a pnpm workspace monorepo, with each package managi
 -   **Package Manager:** pnpm
 -   **TypeScript:** v5.9
 -   **API Framework:** Express 5
--   **Database:** PostgreSQL with Drizzle ORM
--   **Validation:** Zod (v4) and `drizzle-zod`
+-   **Database ORM:** Drizzle ORM
+-   **Validation:** Zod and `drizzle-zod`
 -   **API Codegen:** Orval (from OpenAPI spec)
 -   **Build Tool:** esbuild (CJS bundle)
 
 ## PromptMeGood Artifact (`artifacts/promptmegood`)
 
-PromptMeGood is a single-file static HTML AI prompt builder (`index.html`) built with vanilla JavaScript and Vite for preview. It includes companion pages for a `guide.html` (long-form manual) and `pricing.html`.
+PromptMeGood is a single-file static HTML AI prompt builder (`index.html`) built with vanilla JavaScript and Vite. It includes companion pages for a `guide.html` and `pricing.html`.
 
 ### UI/UX and Design Decisions
 
--   **Color Scheme:** Utilizes CSS variables for theming, including a teal border (`#0f766e`) and background (`#DAF1EE`) for specific elements.
--   **Interaction Feedback:** Implements `_webkit-tap-highlight-color: transparent`, `touch-action: manipulation`, and `:active { transform: scale(0.98); }` for improved responsiveness on touch devices and visual feedback on clicks.
--   **Responsive Design:** Adjusts element positioning and padding (e.g., use-case confirmation banner) for mobile (≤600px) and desktop.
--   **Onboarding Tour:** Features a multi-step in-app onboarding tour (`OB_STEPS`) and a demo walkthrough (`DEMO_STEPS`).
--   **Modals and Toasts:** Extensive use of modals (`#guided-mode-dialog`, `#expert-warning-dialog`) and toasts (`showToast`, use-case confirmation banner) for user guidance and feedback.
+-   **Color Scheme:** CSS variables for theming, with a default teal palette.
+-   **Interaction Feedback:** Improved responsiveness for touch devices with visual feedback on clicks.
+-   **Responsive Design:** Adapts layout for mobile and desktop views.
+-   **User Guidance:** Utilizes onboarding tours, modals, and toasts.
+-   **Theme Accent:** Footer-based picker with 5 swatches, persisted in `localStorage` and applied synchronously to avoid flash.
+-   **Canonical Domain:** `https://www.promptmegood.com` with apex domain redirect to www for consistency.
+-   **SEO:** Comprehensive meta-tags, optimized `<title>`, `<meta name="description">`, Open Graph, and Twitter Card tags. Strategic heading hierarchy and font loading optimization.
 
 ### Key Features and Technical Implementations
 
--   **Prompt Builder:** Dynamic form with fields like goal, category, skill level, tone, output format, output language, personality, details, guardrails, and max response length.
--   **Boost Toggles:** Four boost options (Money, Human Voice, Clarity, Photo) are grouped under a collapsible "Advanced Options" section.
+-   **Prompt Builder:** Dynamic form with fields for goal, category, skill level, tone, output format, language, personality, details, guardrails, and max response length. Includes "Boost Toggles" in an "Advanced Options" section.
 -   **Smart Systems:**
-    -   **Smart Suggestions:** Keyword analysis of the goal field to recommend categories, tones, output formats, and max lengths.
-    -   **Auto Optimize:** Automatically applies suggestions to untouched fields, with user preference persistence via `localStorage`.
-    -   **AI Tool Recommender:** Suggests relevant AI tools (ChatGPT, Claude, Perplexity) based on prompt goal keywords.
-    -   **Prompt Strength Score:** Heuristic-based 0-100% score with insights, calculated based on various prompt parameters.
--   **Weekly Focus:** Rotating curated goal pin (`#weekly-goal-pin`) updated weekly, with persistence tracking in `localStorage` for "New" badge display.
--   **Guided Mode:** A 4-question modal to help users formulate goals, details, and guardrails.
--   **Refinement and Quality Check:** Features for refining prompts, undoing changes, and a "Quality Checker" that provides suggestions based on heuristics.
--   **Prompt Sharing:** Encodes prompt parameters into a URL hash for shareable links, with prefilling logic on `hashchange`.
--   **Expert Mode:** An opt-in mode that hides guidance, reveals advanced controls, and introduces keyboard hints. State and activation count are persisted in `localStorage`. Tour resilience ensures guided elements remain visible during onboarding.
--   **Manual/Guide:** Split into a quick-start on `index.html` and a comprehensive `guide.html` with a table of contents and reorganized content.
--   **Theme Accent:** Footer-based picker (`.site-footer-personalize`) with 5 swatches — PromptMeGood Green (default), Deep Blue, Royal Purple, Warm Gold, Slate. Swaps `--color-primary` (and `--color-primary-hover`/`--color-primary-highlight`, or `--color-primary-strong` on pricing.html) via `<html data-accent="X">`. Persisted in `localStorage` under `promptmegood:themeAccent:v1`. A synchronous bootstrap script in `<head>` on all 3 HTML pages applies the saved accent before paint to avoid flash; CSS overrides are placed at the end of each page's stylesheet so they win equal-specificity cascade ties over the base `:root` / `[data-theme="light"]` declarations.
--   **Canonical Domain:** `https://www.promptmegood.com` is the primary canonical host. The apex (`promptmegood.com`) is mirrored to www via a tiny synchronous redirect script placed at the very top of `<head>` on `index.html`, `guide.html`, and `pricing.html` — checks `location.hostname === 'promptmegood.com'` and `location.replace()`s to the www variant, preserving path/search/hash. This requires both apex and www to be linked as custom domains in the Replit Publishing UI (and DNS records pointed at Replit) so the redirect script actually executes. Canonical/og:url tags use `https://www.promptmegood.com`.
--   **SEO:** `index.html` has a full meta-tag set in `<head>` — SEO-optimized `<title>` and `<meta name="description">`, `<link rel="canonical" href="https://www.promptmegood.com">`, Open Graph tags (`og:title`, `og:description`, `og:type`, `og:url`), and Twitter Card tags (`twitter:card`, `twitter:title`, `twitter:description`). Heading hierarchy: single visible H1 in the hero (`AI Prompt Generator That Actually Gets Results`), and four keyword-rich H2s — `Build Better Prompts for ChatGPT, Claude, and Any AI Tool` (hero card), `Start With a Prompt or Explore Use Cases` (popular uses), `Why Most AI Prompts Fail` (dedicated section between use cases and builder intro, id `#why-prompts-fail`), `How It Works` (builder intro). Fontshare CSS uses `preconnect` + `preload` + `display=swap` for fast first paint; Clarity script is async.
--   **Globals:** `window.__pmgSmartSystems` (for `markAllTouched`, `clearTouched`, `recompute`) and `window.__pmgStrengthScore` (for `render`, `hide`) are exposed for smart system functionality.
--   **Builder Layout Order:** Inside the builder section, the children of `.form-wrap` are intentionally ordered: (1) `#guided-cta-row` (Guide Me card with `.guided-cta-recommended-badge` "Recommended First Step"), (2) `#weekly-goal-pin` (Weekly Focus), (3) the `<form>` (Auto Optimize toggle, Goal field, etc.). A small `#builder-expert-hint` ("Power user? Turn on Expert Mode for full control.") sits next to the Expert Mode toggle in the builder header.
--   **Build A Prompt CTA Enhancement:** The hero `#hero-build-cta` click handler intercepts (preventDefault on real left-click only — programmatic `.click()` allowed via `typeof e.button === 'number' && e.button > 0` early-return), smooth-scrolls to `#builder`, glows the builder panel, and immediately reveals `#build-cta-guidance` (5s auto-dismiss, or earlier if `#guided-mode-btn` is clicked) plus pulses `#guided-cta-row` with `.is-build-cta-highlight`. Guidance reveal happens immediately (no setTimeout wrapper) for reliability.
--   **Smart Assist:** Inactivity-driven helper at bottom-right (bottom-center on mobile). Stage 1 fires at 4s ("Need help getting started?" + Guide Me + Try Demo). Stage 2 fires at Stage 1 + 5s, OR direct 9s ("Still stuck?" + Guide Me + Try Demo + Use Cases + Tour + Dismiss). Activity events (scroll, click, keydown, focus, mousemove, touchstart) debounced 120ms reset timers. Suppression: `isTourActive()` (obIsOpen/tour-banner), `#fill-demo[data-busy="1"]`, `isAnyDialogOpen()` (native `<dialog>` + non-native overlays `#usecases-modal`, `#compare-overlay`, `#bk-overlay`, `#ob-overlay` checked via `hidden`/`aria-hidden`/`is-open`), prompt count >=1, sessionStorage `pmg_smart_assist_shown` / `pmg_smart_assist_dismissed`, user typing (focusin on input/textarea/contenteditable). Stage 2 promotion bypasses 'session' suppression when `currentStage === 1 && !root.hidden`. Markup uses `role="region"` (not `dialog`) since it is a non-modal helper.
--   **Desktop Visual Polish (≥769px):** Inside `@media (min-width: 769px)` near end of `<style>` (line ~2442): topbar gets thinner padding (`10px`), defined bottom border, and a soft shadow; nav buttons in `.top-actions` are uniform 38px-tall pill buttons with even 16px padding. Hero card padding bumped to `clamp(space-6, 2.4vw, space-8)` with increased badge/title/list spacing for breathing room. Hero CTA row uses `gap: 14px` and `min-height: 52px` so primary/secondary buttons align. Smart Assist anchored at `right:28px; bottom:28px; max-width:340px` to prevent overlap with use-cases or CTAs. All polish is desktop-only — mobile layout unchanged.
--   **AI Routes (Backend):** `artifacts/api-server/src/routes/ai.ts` exposes four routes. The primary spec-compliant endpoint is `POST /api/generate` — body `{prompt: string}` (required, string, non-empty, max 4000 chars), uses `gpt-4o-mini` with `max_completion_tokens: 1024`, returns `{success: true, output: string}` or `{success: false, error: string}` (HTTP 400 for validation, 502 for AI errors). Three additional endpoints from earlier iterations remain available: `POST /api/generate-prompt`, `POST /api/refine-prompt`, `POST /api/image-prompt` — all use `gpt-5.4` model and return the older `{ok, result}` shape. All routes call OpenAI via `artifacts/api-server/src/lib/openai-client.ts`, which instantiates the `openai` SDK using `AI_INTEGRATIONS_OPENAI_BASE_URL` + `AI_INTEGRATIONS_OPENAI_API_KEY` (set by Replit AI Integrations — never exposed to the frontend, never logged). System prompts instruct the model to output ONLY the prompt text — no headers, fences, or commentary. A router-level in-memory rate limiter caps each client IP at 40 requests/hour across all 4 routes (returns HTTP 429) — defensive cost guard since localStorage UX limits are bypassable. IP read from `x-forwarded-for` first, then `req.ip`. Map auto-prunes when it exceeds 5000 entries. Errors are logged via pino with only the error message string (no stack/secrets). Routes mounted in `routes/index.ts` via `aiRouter`.
--   **AI Frontend Client (`window.__pmgAI`):** Last IIFE in `index.html` (line ~8179) exposes `window.__pmgAI` with `generateRaw(prompt)` (calls `/api/generate`, `{success, output}` shape), `generate(goal, context)`, `refine(prompt, instruction)`, `imagePrompt(subject, style)`. Each enforces a per-month localStorage usage cap keyed `pmg_ai_usage:YYYY-MM` (UTC) — 100 generates, 50 refines, 10 image prompts. Limit-exceeded throws `{code: 'LIMIT'}` so callers can show the toast `"You've reached the free monthly AI limit. PRO will unlock more soon."`. `callAI()` (for `/generate-prompt` etc.) and `callGenerate()` (for `/api/generate`) both use fetch with a 60s `AbortController` timeout. **Generate Prompt button (form submit):** builds the local prompt first as guaranteed fallback, then if AI is available + under monthly limit, shows "Generating your prompt…" loading text in the result box, calls `__pmgAI.generateRaw(localPrompt)`. On success → AI output replaces result. On failure → toast `"AI generation had an issue, so we used the local builder instead."` and the local prompt is shown. On limit-exceeded → limit toast and local prompt is shown. **"Improve with AI" button (`#improve-with-ai-btn`)** still works as before: ✨ gradient pill at top of refine actions-row, calls `__pmgAI.refine`, dispatches focus/input/blur on resultBox so the existing undo/edit pipeline records the change, falls back to clicking `[data-remix="detailed"]` on AI failure.
--   **Use Demo Values UX:** The "Use Demo Values" button (`#fill-demo`) sits in a `.demo-stack` flex column inside `.actions-row` so its helper microcopy ("See how it works — loads a sample prompt instantly.") and transient loading line ("Generating demo prompt…") render directly under the button only — never under Generate or Random Prompt. Stack is `max-width: 220px` on desktop and full-width at `≤640px` (matching the actions-row column-stack breakpoint). Click handler: `dataset.busy` double-tap guard, "Loading Demo…" disabled label, 1000ms delayed loading-line reveal, 800ms goal-field teal glow (`.demo-glow` keyframe), `requestSubmit()` to trigger the form (which auto-scrolls), then 60ms post-submit: success toast ("Demo loaded — here's what a finished prompt looks like."), 800ms result-box glow, and inline guidance line `#demo-next-step` ("This is a sample prompt. Copy it, refine it, or go back and enter your own goal.") that auto-dismisses on any button click inside `#result-panel`. All side-effect paths are wrapped in `try/catch/finally` so `restoreBtn()` (clears slowTimer, hides loading line, re-enables button, restores label/aria-busy) always runs even if `requestSubmit()` throws.
+    -   **Smart Suggestions:** Keyword analysis to recommend prompt parameters.
+    -   **Auto Optimize:** Applies suggestions to untouched fields, persisting user preferences.
+    -   **AI Tool Recommender:** Suggests AI tools based on prompt goal keywords.
+    -   **Prompt Strength Score:** A heuristic-based score with insights.
+-   **Weekly Focus:** Rotating curated goal pin with persistence tracking.
+-   **Guided Mode:** A structured modal to assist with prompt formulation.
+-   **Refinement and Quality Check:** Features for prompt refinement, undo, and a "Quality Checker" providing heuristic-based suggestions.
+-   **Prompt Sharing:** Encodes prompt parameters into a URL hash for shareable links.
+-   **Expert Mode:** Opt-in mode hiding guidance and revealing advanced controls, with state persisted in `localStorage`.
+-   **AI Routes (Backend):** `POST /api/generate` is the primary endpoint, using `gpt-4o-mini` with strict input validation and rate limiting (40 requests/hour/IP). Other endpoints (`/api/generate-prompt`, `/api/refine-prompt`, `/api/image-prompt`) use `gpt-5.4`. All AI calls use OpenAI via a secure client that prevents API key exposure.
+-   **AI Frontend Client:** `window.__pmgAI` provides `generateRaw`, `generate`, `refine`, and `imagePrompt` functions. It enforces per-month `localStorage` usage caps (100 generates, 50 refines, 10 image prompts) and handles fallbacks to local builder logic or alternative actions upon AI failure or limit exceeding.
+-   **Use Demo Values UX:** Button (`#fill-demo`) to load sample prompts, with visual feedback, loading states, and inline guidance.
+-   **Smart Assist:** Inactivity-driven helper providing guidance, with debounced activity timers and suppression logic to prevent interference.
 
 # External Dependencies
 
--   **PostgreSQL:** Used as the primary database.
--   **Drizzle ORM:** ORM for interacting with PostgreSQL.
--   **OpenAPI Specification:** Used for defining API contracts and generating client-side code via Orval.
--   **Vite:** Build tool for the PromptMeGood frontend.
--   **Zod:** Schema declaration and validation library.
+-   **PostgreSQL:** Primary database.
+-   **OpenAPI Specification:** For API definition.
+-   **Vite:** Frontend build tool.
+-   **Zod:** Schema validation.

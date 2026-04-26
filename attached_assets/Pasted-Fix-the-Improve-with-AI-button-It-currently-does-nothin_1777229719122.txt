@@ -1,0 +1,72 @@
+Fix the “Improve with AI” button. It currently does nothing.
+
+GOAL:
+When the user clicks “Improve with AI,” it must visibly run, call the backend, and update the generated prompt.
+
+CURRENT ISSUE:
+Clicking “Improve with AI” produces no visible action.
+
+DEBUG FIRST:
+Inspect the button and report:
+1. What element/id/class is attached to “Improve with AI”?
+2. Is there a click event listener attached?
+3. What function should run?
+4. What endpoint is it calling?
+5. Is the fetch request firing?
+6. Does the browser console show errors?
+7. Does the backend endpoint return { success, output } or another shape like { ok, result }?
+
+REQUIRED FIX:
+1. Attach a reliable click handler to “Improve with AI.”
+2. On click:
+   - Read the current generated prompt/output text.
+   - If empty, show:
+     “Generate a prompt first, then improve it with AI.”
+   - If present, call the backend endpoint.
+
+Use endpoint:
+POST /api/generate
+
+Request body:
+{
+  "prompt": "Improve this prompt. Make it clearer, stronger, more specific, and easier for an AI tool to follow. Return only the improved prompt:\n\n[CURRENT_PROMPT]"
+}
+
+3. While running:
+   - Disable the button
+   - Change button text to:
+     “Improving…”
+   - Show loading text near the output:
+     “Improving your prompt with AI…”
+
+4. On success:
+   - Update the output panel with the improved prompt.
+   - Save previous prompt to undo history.
+   - Show toast:
+     “Prompt improved.”
+
+5. On failure:
+   - Do not erase the current prompt.
+   - Show:
+     “AI improvement failed. Your original prompt is still safe.”
+
+6. Restore button state after completion.
+
+RESPONSE SHAPE SAFETY:
+Accept both possible backend formats:
+- { success: true, output: "..." }
+- { ok: true, result: "..." }
+
+Normalize response like:
+const improvedText = data.output || data.result;
+
+If no output/result exists, treat as failure.
+
+FINAL CHECK:
+- Clicking “Improve with AI” triggers visible loading.
+- Network tab shows POST /api/generate.
+- Prompt updates on success.
+- Existing prompt is preserved on failure.
+- Undo still works.
+- No console errors.
+- Mobile layout remains clean.

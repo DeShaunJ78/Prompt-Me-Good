@@ -8349,14 +8349,32 @@ Context:
         window.setTimeout(function () { setStatus(''); }, 4000);
       }
 
-      function fallbackLocalRefine() {
-        // Trigger the existing local "More Detailed" remix as a fallback.
-        const detailed = document.querySelector('[data-remix="detailed"]');
-        if (detailed) {
-          showToastMsg('AI was unavailable — using local refinement instead.');
-          detailed.click();
-        } else {
-          showToastMsg(ERR_MSG);
+      // Improve-with-AI: per spec, calls POST /api/generate with a fixed improvement template,
+      // accepts both {success, output} and {ok, result} response shapes, and NEVER erases
+      // the existing prompt on failure.
+      async function callImprove(currentPrompt) {
+        const ctrl = new AbortController();
+        const timeoutId = window.setTimeout(function () { ctrl.abort(); }, 60000);
+        const body = {
+          prompt:
+            "Improve this prompt. Make it clearer, stronger, more specific, and easier for an AI tool to follow. Return only the improved prompt:\n\n" +
+            currentPrompt,
+        };
+        try {
+          const resp = await fetch(API_BASE + '/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+            signal: ctrl.signal,
+          });
+          const data = await resp.json().catch(function () { return null; });
+          if (!resp.ok || !data) throw new Error('AI request failed.');
+          // Accept both shapes: {success, output} or {ok, result}
+          const improvedText = (data.output || data.result || '').trim();
+          if (!improvedText) throw new Error('AI returned an empty response.');
+          return improvedText;
+        } finally {
+          window.clearTimeout(timeoutId);
         }
       }
 
@@ -8371,33 +8389,31 @@ Context:
           showToastMsg(LIMIT_MSG);
           return;
         }
+
+        // Lock UI: disable button + label change + loading status near output.
         btn.dataset.busy = '1';
         btn.disabled = true;
         btn.setAttribute('aria-busy', 'true');
         const labelEl = btn.querySelector('.btn-ai-label');
-        const originalLabel = labelEl ? labelEl.textContent : '';
-        if (labelEl) labelEl.textContent = 'Refining your prompt…';
-        setStatus('Refining your prompt with AI…', false);
+        const originalLabel = labelEl ? labelEl.textContent : 'Improve with AI';
+        if (labelEl) labelEl.textContent = 'Improving…';
+        setStatus('Improving your prompt with AI…', false);
 
         try {
-          const improved = await window.__pmgAI.refine(current);
-          if (!improved || typeof improved !== 'string') {
-            throw new Error(ERR_MSG);
-          }
-          // Use focus → mutate → input dispatch so the existing undo/edit pipeline records this change.
+          const improved = await callImprove(current);
+          // Use focus → mutate → input dispatch so the existing undo/edit pipeline
+          // (line ~7151) records `current` as the pre-edit snapshot for Undo.
           resultBox.dispatchEvent(new Event('focus'));
           resultBox.textContent = improved;
           resultBox.dispatchEvent(new Event('input', { bubbles: true }));
           resultBox.dispatchEvent(new Event('blur'));
-          setStatus('Done — prompt improved with AI.', false);
-          window.setTimeout(function () { setStatus(''); }, 3500);
+          bumpUsage('refine');
+          setStatus('', false);
+          showToastMsg('Prompt improved.');
         } catch (err) {
-          if (err && err.code === 'LIMIT') {
-            showToastMsg(LIMIT_MSG);
-          } else {
-            // Fall back to local refinement so the user is never stuck.
-            fallbackLocalRefine();
-          }
+          // Spec: do NOT erase the current prompt on failure.
+          setStatus('', true);
+          showToastMsg('AI improvement failed. Your original prompt is still safe.');
         } finally {
           btn.dataset.busy = '0';
           btn.disabled = false;
