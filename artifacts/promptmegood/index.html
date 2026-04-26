@@ -873,8 +873,37 @@
     .qa-tooltip-bubble::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-top-color: var(--color-text); }
     .qa-tooltip-wrap:hover .qa-tooltip-bubble, .qa-tooltip-trigger:focus-visible + .qa-tooltip-bubble, .qa-tooltip-wrap.is-open .qa-tooltip-bubble { opacity: 1; visibility: visible; }
     .quality-row-btn-wrap { display: inline-flex; align-items: center; gap: 0; }
-    .demo-microcopy { margin: 6px 0 0; font-size: var(--text-xs); color: var(--color-text-muted); font-style: italic; }
+    .demo-microcopy { margin: 5px 0 0; font-size: var(--text-xs); color: var(--color-text-muted); font-style: italic; line-height: 1.35; text-align: center; }
     body.is-expert-mode .demo-microcopy { display: none; }
+    /* Vertical stack so the microcopy + loading line sit directly under the */
+    /* "Use Demo Values" button only — never under Generate or Random Prompt. */
+    .demo-stack { display: flex; flex-direction: column; align-items: stretch; gap: 0; flex: 0 0 auto; max-width: 220px; }
+    .demo-stack > .btn { width: 100%; }
+    @media (max-width: 640px) { .demo-stack { max-width: none; width: 100%; } }
+    .demo-loading {
+      margin: 5px 0 0; font-size: var(--text-xs); color: var(--color-primary);
+      font-style: italic; line-height: 1.35; text-align: center;
+      opacity: 0; transition: opacity 180ms ease;
+    }
+    .demo-loading.is-visible { opacity: 1; }
+    .demo-loading[hidden] { display: none; }
+    body.is-expert-mode .demo-loading { display: none; }
+    /* Soft 800ms teal glow used only for demo-fill feedback. */
+    @keyframes demoGlowPulse {
+      0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 0%, transparent); }
+      35%  { box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-primary) 28%, transparent); }
+      100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 0%, transparent); }
+    }
+    .demo-glow { animation: demoGlowPulse 800ms ease-out; }
+    @media (prefers-reduced-motion: reduce) {
+      .demo-glow { animation: none; }
+    }
+    /* Inline next-step guidance shown after demo prompt generates. */
+    .demo-next-step {
+      margin: 6px 0 0; font-size: var(--text-sm); color: var(--color-text-muted);
+      font-style: italic; line-height: 1.5;
+    }
+    .demo-next-step[hidden] { display: none; }
     .email-capture-section { padding-top: var(--space-4); padding-bottom: var(--space-6); }
     .email-capture-card { max-width: 720px; margin: 0 auto; padding: var(--space-6); background: #F1FAF8; border: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent); border-radius: var(--radius-lg); text-align: center; }
     .email-capture-text h2 { margin: 0 0 var(--space-2); font-size: var(--text-xl); color: var(--color-text); }
@@ -2752,10 +2781,13 @@
 
               <div class="actions-row" id="tour-step-generate">
                 <button class="btn btn-primary" type="submit">Generate Prompt</button>
-                <button class="btn btn-secondary" type="button" id="fill-demo">Use Demo Values</button>
+                <div class="demo-stack">
+                  <button class="btn btn-secondary" type="button" id="fill-demo">Use Demo Values</button>
+                  <p class="demo-microcopy" id="demo-microcopy">See how it works &mdash; loads a sample prompt instantly.</p>
+                  <p class="demo-loading" id="demo-loading" role="status" aria-live="polite" hidden>Generating demo prompt&hellip;</p>
+                </div>
                 <button class="btn btn-secondary" type="button" id="random-prompt" title="Surprise me with a random prompt">🎲 Random Prompt</button>
               </div>
-              <p class="demo-microcopy" id="demo-microcopy">Use Demo Values instantly loads a working example.</p>
               <p class="tip-block generate-helper-tip" data-tip="generate">
                 <span class="tip-block-icon" aria-hidden="true">🚀</span>
                 <span class="tip-block-text">Ready? Generate your prompt, then review and copy it.</span>
@@ -2779,6 +2811,7 @@
           <div class="panel-head">
             <h2 id="result-title">Your Ready-To-Use Prompt</h2>
             <p>Copy this and paste it into ChatGPT, Claude, Perplexity, Google, or any AI/search tool.</p>
+            <p class="demo-next-step" id="demo-next-step" role="status" aria-live="polite" hidden>This is a sample prompt. Copy it, refine it, or go back and enter your own goal.</p>
           </div>
           <div class="result-wrap">
             <div class="pill-row" aria-hidden="true">
@@ -7099,43 +7132,132 @@ Context:
         });
       }
       fillDemoBtn.addEventListener('click', function () {
-        document.getElementById('goal').value = 'Help me make my first $100 online using AI prompts';
-        document.getElementById('category').value = 'money';
-        document.getElementById('skillLevel').value = 'beginner';
-        document.getElementById('tone').value = 'aggressive';
-        document.getElementById('outputFormat').value = 'step-by-step';
-        document.getElementById('details').value = 'I need a low-cost plan, something I can sell fast, and I do not want complicated tech setup.';
-        const guardrailsEl = document.getElementById('guardrails');
-        if (guardrailsEl) guardrailsEl.value = "Don't sound robotic, avoid vague advice, and skip jargon a beginner won't understand.";
-        const maxLengthSel = document.getElementById('maxLength');
-        const maxLengthCustom = document.getElementById('maxLengthCustom');
-        if (maxLengthSel) {
-          maxLengthSel.value = '300';
-          if (maxLengthCustom) { maxLengthCustom.hidden = true; maxLengthCustom.value = ''; }
-        }
-        document.getElementById('moneyMode').checked = true;
-        document.getElementById('personality').value = 'bold';
-        // Mark all suggestion-tracked fields as touched so smart suggestions don't override demo data
-        if (window.__pmgSmartSystems && typeof window.__pmgSmartSystems.markAllTouched === 'function') {
-          window.__pmgSmartSystems.markAllTouched();
-          // Still recompute so the AI tool recommender (Claude/Perplexity/ChatGPT highlight) updates for the demo goal
-          if (typeof window.__pmgSmartSystems.recompute === 'function') window.__pmgSmartSystems.recompute(false);
-        }
-        // Spec #6 + Standalone Demo Values fix: auto-generate immediately, scroll to output, fire toast.
-        if (obIsOpen()) obFinish();
-        // Show transient loading state in the result box so the user has feedback.
-        if (typeof setPromptText === 'function') setPromptText('Generating demo prompt…');
-        const promptForm = document.getElementById('prompt-form');
-        window.setTimeout(function () {
-          if (promptForm) {
-            if (typeof promptForm.requestSubmit === 'function') {
-              promptForm.requestSubmit();
-            } else {
-              promptForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-            }
+        // Step 1: Immediate feedback — disable button, swap label, queue inline status.
+        const originalBtnLabel = 'Use Demo Values';
+        const demoLoadingEl = document.getElementById('demo-loading');
+        const demoNextStepEl = document.getElementById('demo-next-step');
+        const goalEl = document.getElementById('goal');
+        const resultBoxEl = document.getElementById('resultBox');
+        if (fillDemoBtn.dataset.busy === '1') return; // hard guard against double-tap
+        fillDemoBtn.dataset.busy = '1';
+        fillDemoBtn.disabled = true;
+        fillDemoBtn.setAttribute('aria-busy', 'true');
+        fillDemoBtn.textContent = 'Loading Demo…';
+        // Inline "Generating demo prompt…" appears only if generation runs > 1s.
+        const slowTimer = window.setTimeout(function () {
+          if (!demoLoadingEl) return;
+          demoLoadingEl.hidden = false;
+          // Force reflow so the opacity transition runs.
+          // eslint-disable-next-line no-unused-expressions
+          demoLoadingEl.offsetWidth;
+          demoLoadingEl.classList.add('is-visible');
+        }, 1000);
+        // Defined up-front so any error path can call it for guaranteed cleanup.
+        const restoreBtn = function () {
+          window.clearTimeout(slowTimer);
+          if (demoLoadingEl) {
+            demoLoadingEl.classList.remove('is-visible');
+            demoLoadingEl.hidden = true;
           }
-          if (typeof showToast === 'function') showToast('Demo prompt generated.');
-        }, 250);
+          fillDemoBtn.dataset.busy = '0';
+          fillDemoBtn.disabled = false;
+          fillDemoBtn.removeAttribute('aria-busy');
+          fillDemoBtn.textContent = originalBtnLabel;
+        };
+
+        try {
+          // Step 2: Fill all builder fields.
+          if (goalEl) goalEl.value = 'Help me make my first $100 online using AI prompts';
+          const _set = function (id, val) { const el = document.getElementById(id); if (el) el.value = val; };
+          _set('category', 'money');
+          _set('skillLevel', 'beginner');
+          _set('tone', 'aggressive');
+          _set('outputFormat', 'step-by-step');
+          _set('details', 'I need a low-cost plan, something I can sell fast, and I do not want complicated tech setup.');
+          const guardrailsEl = document.getElementById('guardrails');
+          if (guardrailsEl) guardrailsEl.value = "Don't sound robotic, avoid vague advice, and skip jargon a beginner won't understand.";
+          const maxLengthSel = document.getElementById('maxLength');
+          const maxLengthCustom = document.getElementById('maxLengthCustom');
+          if (maxLengthSel) {
+            maxLengthSel.value = '300';
+            if (maxLengthCustom) { maxLengthCustom.hidden = true; maxLengthCustom.value = ''; }
+          }
+          const moneyEl = document.getElementById('moneyMode');
+          if (moneyEl) moneyEl.checked = true;
+          _set('personality', 'bold');
+          // Mark all suggestion-tracked fields as touched so smart suggestions don't override demo data
+          if (window.__pmgSmartSystems && typeof window.__pmgSmartSystems.markAllTouched === 'function') {
+            window.__pmgSmartSystems.markAllTouched();
+            // Still recompute so the AI tool recommender (Claude/Perplexity/ChatGPT highlight) updates for the demo goal
+            if (typeof window.__pmgSmartSystems.recompute === 'function') window.__pmgSmartSystems.recompute(false);
+          }
+
+          // Step 3: Visual feedback — soft 800ms teal glow on the goal field only.
+          if (goalEl) {
+            goalEl.classList.remove('demo-glow');
+            // eslint-disable-next-line no-unused-expressions
+            goalEl.offsetWidth;
+            goalEl.classList.add('demo-glow');
+            window.setTimeout(function () { goalEl.classList.remove('demo-glow'); }, 850);
+          }
+
+          // Step 4: Auto-generate, scroll, toast, glow output, show next-step guidance, restore button.
+          if (obIsOpen()) obFinish();
+          if (typeof setPromptText === 'function') setPromptText('Generating demo prompt…');
+          const promptForm = document.getElementById('prompt-form');
+          window.setTimeout(function () {
+            try {
+              if (promptForm) {
+                if (typeof promptForm.requestSubmit === 'function') {
+                  promptForm.requestSubmit();
+                } else {
+                  promptForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                }
+              }
+            } catch (err) {
+              try { console.error('Demo submit failed:', err); } catch (_) {}
+              restoreBtn();
+              return;
+            }
+            // Toast + output glow + next-step guidance fire after the form has rendered the prompt.
+            window.setTimeout(function () {
+              try {
+                if (typeof showToast === 'function') {
+                  showToast("Demo loaded — here's what a finished prompt looks like.");
+                }
+                if (resultBoxEl) {
+                  resultBoxEl.classList.remove('demo-glow');
+                  // eslint-disable-next-line no-unused-expressions
+                  resultBoxEl.offsetWidth;
+                  resultBoxEl.classList.add('demo-glow');
+                  window.setTimeout(function () { resultBoxEl.classList.remove('demo-glow'); }, 850);
+                }
+                if (demoNextStepEl) {
+                  demoNextStepEl.hidden = false;
+                  // Auto-dismiss when the user interacts with any button inside the result panel.
+                  const panel = document.getElementById('result-panel');
+                  if (panel && !demoNextStepEl.dataset.bound) {
+                    demoNextStepEl.dataset.bound = '1';
+                    panel.addEventListener('click', function (e) {
+                      if (demoNextStepEl.hidden) return;
+                      const t = e.target;
+                      if (t && t.closest && t.closest('button, .open-in-btn, [data-remix]')) {
+                        demoNextStepEl.hidden = true;
+                      }
+                    });
+                  }
+                }
+              } catch (err) {
+                try { console.error('Demo post-submit UX failed:', err); } catch (_) {}
+              } finally {
+                restoreBtn();
+              }
+            }, 60);
+          }, 250);
+        } catch (err) {
+          try { console.error('Demo fill failed:', err); } catch (_) {}
+          restoreBtn();
+        }
       });
       const compareOverlay = document.getElementById('compare-overlay');
       const compareTitle = document.getElementById('compare-title');

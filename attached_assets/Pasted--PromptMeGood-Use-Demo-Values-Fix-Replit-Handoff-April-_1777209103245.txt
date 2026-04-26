@@ -1,0 +1,140 @@
+# PromptMeGood — "Use Demo Values" Fix
+*Replit Handoff — April 26, 2026*
+
+---
+
+## The Problem
+
+Clicking "Use Demo Values" appears to do nothing. Users get no immediate feedback, no next-step guidance, and no confirmation that anything happened. New users assume the button is broken and leave.
+
+The helper text ("Use Demo Values instantly loads a working example.") already exists but is placed BELOW the Random Prompt button — too far from the button it describes to be useful. It needs to move directly under "Use Demo Values."
+
+---
+
+## Current Layout (Screenshot Confirmed)
+
+```
+[ Generate Prompt ]        ← primary teal button
+[ Use Demo Values ]        ← secondary button
+[ 🎲 Random Prompt ]       ← secondary button
+Use Demo Values instantly loads a working example.  ← helper text (WRONG POSITION)
+```
+
+---
+
+## Required Layout After Fix
+
+```
+[ Generate Prompt ]        ← primary teal button, unchanged
+[ Use Demo Values ]        ← secondary button
+  "See how it works — loads a sample prompt instantly."  ← helper text, directly under button
+[ 🎲 Random Prompt ]       ← secondary button, unchanged
+```
+
+Move the helper text to sit immediately below "Use Demo Values" only — not below Random Prompt.
+
+---
+
+## Required Behavior Changes
+
+### 1. Button Helper Text — Move and Update
+
+**Remove from current position** (below Random Prompt).
+
+**Place directly under "Use Demo Values" button**, small italic grey text:
+
+> *"See how it works — loads a sample prompt instantly."*
+
+This text must be visually connected to the button — 4–6px gap, same width as the button.
+
+---
+
+### 2. On Click — Immediate Feedback
+
+The moment the button is clicked, before anything else:
+
+**Change button text to:**
+> "Loading Demo…"
+
+**Disable the button** to prevent repeated taps.
+
+If generation takes more than 1 second, show a brief inline message below the button:
+> "Generating demo prompt…"
+
+---
+
+### 3. Auto-Fill + Auto-Generate
+
+Clicking "Use Demo Values" must:
+1. Fill all builder fields with demo values
+2. Immediately trigger prompt generation — do NOT require the user to click "Generate Prompt"
+3. Scroll smoothly to the output panel after generation completes
+4. Fire a toast notification: **"Demo loaded — here's what a finished prompt looks like."**
+
+If auto-generate is already working, confirm it and do not change it. Only add the toast and scroll if missing.
+
+---
+
+### 4. Next-Step Guidance After Generation
+
+After the demo prompt appears in the output panel, show a subtle guidance line directly below or above the output box:
+
+> *"This is a sample prompt. Copy it, refine it, or go back and enter your own goal."*
+
+Style: small, italic, muted grey. Not a banner. Not a toast. Inline text only.
+Dismiss automatically after the user interacts with any output panel button (Copy, Refine, ChatGPT, etc.).
+
+---
+
+### 5. Visual Feedback on Fields
+
+After demo values are filled, briefly highlight the goal input field:
+- Add a soft teal border glow for 800ms
+- Fade out smoothly
+- Do not animate every field — goal input only is enough
+
+After the prompt appears in the output panel:
+- Briefly highlight the output box with the same soft teal glow for 800ms
+- Fade out smoothly
+
+Keep animations subtle. Nothing should flash or distract.
+
+---
+
+### 6. Button Restore
+
+After generation completes and scroll is done:
+- Restore button text to: **"Use Demo Values"**
+- Re-enable the button
+
+---
+
+## Do NOT Change
+
+- "Generate Prompt" button behavior or appearance
+- "Random Prompt" button behavior or appearance
+- Any demo values or field content
+- Output panel layout or features
+- Mobile layout structure
+- Any other builder form elements
+
+---
+
+## Final QA Checklist
+
+- [ ] Helper text sits directly under "Use Demo Values" — not under Random Prompt
+- [ ] Helper text reads: "See how it works — loads a sample prompt instantly."
+- [ ] Button changes to "Loading Demo…" immediately on click
+- [ ] Button is disabled during loading — no double-tap issues
+- [ ] All demo fields fill correctly
+- [ ] Prompt auto-generates without requiring a second click
+- [ ] Page scrolls smoothly to output panel after generation
+- [ ] Toast fires: "Demo loaded — here's what a finished prompt looks like."
+- [ ] Next-step guidance appears near output: "This is a sample prompt. Copy it, refine it, or go back and enter your own goal."
+- [ ] Goal field briefly glows teal after fill
+- [ ] Output panel briefly glows teal after generation
+- [ ] Button text restores to "Use Demo Values" after completion
+- [ ] Button re-enables after completion
+- [ ] "Generate Prompt" still works independently — unchanged
+- [ ] Mobile layout is clean — no overflow or clipped text
+- [ ] No JavaScript errors in console

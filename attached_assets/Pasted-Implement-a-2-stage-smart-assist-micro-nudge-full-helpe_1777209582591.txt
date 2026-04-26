@@ -1,0 +1,148 @@
+Implement a 2-stage smart assist (micro nudge + full helper) AND ensure the system is clean, stable, and does not break any existing functionality.
+
+========================
+CORE GOAL
+========================
+
+Help users early without being intrusive, while maintaining a clean, bug-free experience.
+
+========================
+STAGE 1 — MICRO NUDGE
+========================
+
+Trigger:
+- 3–5 seconds of inactivity
+- User is in builder section
+- No prompt generated
+- User is not typing or interacting
+
+Display:
+
+Message:
+“Need a quick start?”
+
+Buttons:
+- “Try Demo”
+- “See Examples”
+
+Behavior:
+- Try Demo → triggers Use Demo Values + auto-generate prompt
+- See Examples → opens Use Cases
+
+Style:
+- Small, subtle, non-blocking
+- Bottom-center (mobile), bottom-right (desktop)
+- Smooth fade-in (150–200ms)
+
+========================
+STAGE 2 — FULL HELPER
+========================
+
+Trigger:
+- 8–10 seconds total inactivity
+OR
+- Stage 1 shown but ignored
+
+Display:
+
+Title:
+“Stuck?”
+
+Message:
+“Not sure what to do next? Start with your goal, try Use Demo Values, or explore Use Cases.”
+
+Buttons:
+- “Show Me”
+- “Use Demo”
+- “Dismiss”
+
+Behavior:
+- Show Me → replay guided tour
+- Use Demo → auto demo + generate prompt
+- Dismiss → hide helper for this session
+
+========================
+GLOBAL RULES
+========================
+
+- Show only once per session
+- Do NOT show if:
+  - user is typing
+  - tour is active
+  - demo is running
+  - prompt already generated
+  - any modal is open
+
+- Dismiss persists for session (use sessionStorage)
+
+========================
+INTEGRATION SAFETY (CRITICAL)
+========================
+
+1. Prevent duplicate timers:
+- Clear all existing inactivity timers before setting new ones
+- Use a single centralized timer manager
+
+2. Reset timers on activity:
+- scroll
+- click
+- typing
+- focus
+- any interaction
+
+3. Ensure only ONE helper is visible at a time:
+- Stage 2 cancels Stage 1
+- Dismiss cancels both
+
+4. Do NOT conflict with:
+- guided tour
+- demo flow
+- toast notifications
+- existing banners
+
+5. Do not trigger layout shifts:
+- Use fixed positioning
+- Avoid reflow-heavy DOM updates
+
+========================
+PERFORMANCE OPTIMIZATION
+========================
+
+- Debounce activity listeners (100–150ms)
+- Avoid excessive re-renders
+- Use passive event listeners where possible
+
+========================
+MOBILE UX REQUIREMENTS
+========================
+
+- Must not overlap:
+  - Generate button
+  - Demo button
+  - navigation elements
+
+- Must remain readable above keyboard
+- Tap targets must be accessible
+
+========================
+FINAL CLEAN PASS
+========================
+
+Verify:
+
+- No JavaScript errors in console
+- No duplicate event listeners
+- No memory leaks from timers
+- No flickering UI
+- No overlapping UI elements
+- No broken buttons
+
+========================
+FINAL EXPERIENCE CHECK
+========================
+
+- New user gets quick guidance within 3–5 seconds
+- Helper feels natural, not pushy
+- Demo and Use Cases trigger correctly
+- Tour still works perfectly
+- Everything feels smooth and intentional
