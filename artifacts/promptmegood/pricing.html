@@ -154,7 +154,7 @@
     <section class="pricing-hero">
       <div class="container">
         <span class="eyebrow">Pricing</span>
-        <h1>Simple, honest pricing.</h1>
+        <h1>Simple, Honest Pricing.</h1>
         <p>The core PromptMeGood builder is free forever. PRO is on the way — join early access and we&rsquo;ll let you know the moment it&rsquo;s live.</p>
       </div>
     </section>
@@ -270,12 +270,36 @@
       const status = document.getElementById('early-access-status');
       const STORAGE_KEY = 'promptmegood:emailCapture:v1';
       const STORAGE_CAP = 200;
+      // FormSubmit.co — emails submissions to support@promptmegood.com.
+      // The /ajax/ variant returns JSON instead of redirecting.
+      const SUBMIT_ENDPOINT = 'https://formsubmit.co/ajax/support@promptmegood.com';
       if (!form) return;
+      const submitBtn = form.querySelector('button[type="submit"], button:not([type])');
+      const originalBtnText = submitBtn ? submitBtn.textContent : '';
       function setStatus(msg, kind) {
         if (!status) return;
         status.textContent = msg || '';
         status.classList.remove('is-success', 'is-error');
         if (kind) status.classList.add('is-' + kind);
+      }
+      function setBusy(busy) {
+        if (!submitBtn) return;
+        submitBtn.disabled = busy;
+        submitBtn.setAttribute('aria-busy', busy ? 'true' : 'false');
+        submitBtn.textContent = busy ? 'Sending…' : originalBtnText;
+      }
+      function saveLocalBackup(value) {
+        try {
+          let list = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+          if (!Array.isArray(list)) list = [];
+          list = list
+            .filter(function (e) { return typeof e === 'string'; })
+            .map(function (e) { return e.toLowerCase(); });
+          list = Array.from(new Set(list));
+          if (!list.includes(value)) list.push(value);
+          if (list.length > STORAGE_CAP) list = list.slice(-STORAGE_CAP);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+        } catch (e) {}
       }
       form.addEventListener('submit', function (event) {
         event.preventDefault();
@@ -287,22 +311,43 @@
           setStatus('Please enter a valid email address.', 'error');
           return;
         }
-        try {
-          let list = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-          if (!Array.isArray(list)) list = [];
-          // Normalize legacy entries to lowercase so dedupe is case-insensitive.
-          list = list
-            .filter(function (e) { return typeof e === 'string'; })
-            .map(function (e) { return e.toLowerCase(); });
-          // Dedupe.
-          list = Array.from(new Set(list));
-          if (!list.includes(value)) list.push(value);
-          // Cap to prevent unbounded localStorage growth.
-          if (list.length > STORAGE_CAP) list = list.slice(-STORAGE_CAP);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-        } catch (e) {}
-        if (input) input.value = '';
-        setStatus("You're on the early-access list. We'll email you when PRO opens up.", 'success');
+        setStatus('', null);
+        setBusy(true);
+        const payload = {
+          email: value,
+          source: 'PromptMeGood early access form',
+          timestamp: new Date().toISOString(),
+          _subject: 'PromptMeGood — new early access signup',
+          _template: 'table',
+          // Honeypot to keep bots out (FormSubmit ignores submissions where _honey is filled).
+          _honey: ''
+        };
+        fetch(SUBMIT_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        })
+          .then(function (res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json().catch(function () { return {}; });
+          })
+          .then(function (data) {
+            // FormSubmit returns { success: "true" } on accepted submissions.
+            const okFlag = data && (data.success === true || data.success === 'true');
+            if (!okFlag) throw new Error('Submission rejected');
+            saveLocalBackup(value);
+            if (input) input.value = '';
+            setStatus("You're on the early-access list. We'll email you when PRO opens up.", 'success');
+          })
+          .catch(function () {
+            setStatus('Something went wrong. Please try again.', 'error');
+          })
+          .then(function () {
+            setBusy(false);
+          });
       });
     })();
   </script>
