@@ -530,6 +530,11 @@
     .guided-step textarea { width: 100%; min-height: 70px; resize: vertical; padding: 10px 12px; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); font-family: inherit; font-size: var(--text-sm); box-sizing: border-box; }
     .guided-step textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 25%, transparent); }
     .guided-progress { font-size: var(--text-xs); color: var(--color-text-muted); }
+    .guided-helper { margin: 4px 0 0; font-size: var(--text-xs); color: var(--color-text-muted); line-height: 1.4; }
+    .guided-step .guided-label-expert { display: none; }
+    body.is-expert-mode .guided-step .guided-label-default { display: none; }
+    body.is-expert-mode .guided-step .guided-label-expert { display: inline; }
+    body.is-expert-mode .guided-helper { display: none; }
     .guided-actions { display: flex; gap: var(--space-2); justify-content: flex-end; flex-wrap: wrap; }
     .guided-actions .btn { min-height: 38px; padding: 8px 16px; }
     @media (max-width: 600px) {
@@ -2814,8 +2819,12 @@
           <textarea id="guided-q-outcome" rows="2" placeholder="Example: a simple plan I can start this week with under $100."></textarea>
         </div>
         <div class="guided-step" data-guided-step="3" hidden>
-          <label for="guided-q-constraints">Any constraints?</label>
-          <textarea id="guided-q-constraints" rows="2" placeholder="Example: no paid ads, keep responses under 200 words, avoid jargon."></textarea>
+          <label for="guided-q-constraints">
+            <span class="guided-label-default">Anything The AI Must Follow?</span>
+            <span class="guided-label-expert">Constraints</span>
+          </label>
+          <textarea id="guided-q-constraints" rows="2" aria-describedby="guided-q-constraints-help" placeholder="Tell the AI any rules or limits (e.g., under 200 words, use bullet points, avoid jargon, make it beginner-friendly)"></textarea>
+          <p class="guided-helper" id="guided-q-constraints-help">This controls how the answer is written and what to avoid.</p>
         </div>
         <div class="guided-progress" id="guided-progress">Step 1 of 4</div>
         <footer class="guided-actions">
