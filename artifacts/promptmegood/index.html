@@ -577,9 +577,99 @@
     .guided-cta-row .guided-cta-text strong { display: block; font-size: var(--text-sm); }
     .guided-cta-row .guided-cta-text span { display: block; color: var(--color-text-muted); font-size: var(--text-xs); }
     .guided-cta-row .btn { white-space: nowrap; }
+    .guided-cta-recommended-badge {
+      display: inline-block; margin-bottom: 4px;
+      padding: 2px 8px; border-radius: 999px;
+      background: var(--color-primary); color: #fff;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+      line-height: 1.4;
+    }
+    [data-theme="dark"] .guided-cta-recommended-badge { background: #5ba8b0; color: #0c2f2c; }
+    /* Build A Prompt highlight pulse: 1.5s soft teal box-shadow + ring */
+    @keyframes guidedCtaPulse {
+      0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 55%, transparent); border-color: var(--color-primary); }
+      60%  { box-shadow: 0 0 0 14px color-mix(in srgb, var(--color-primary) 0%, transparent); border-color: var(--color-primary); }
+      100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 0%, transparent); }
+    }
+    .guided-cta-row.is-build-cta-highlight {
+      animation: guidedCtaPulse 1500ms ease-out 1;
+      border-color: var(--color-primary);
+    }
+    /* Inline branded guidance message under builder header (Build A Prompt CTA) */
+    .build-cta-guidance {
+      display: flex; align-items: center; gap: 10px;
+      margin: 0 0 var(--space-3); padding: 10px 14px;
+      background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+      border: 1px solid color-mix(in srgb, var(--color-primary) 35%, transparent);
+      border-radius: var(--radius-md);
+      color: var(--color-text); font-size: var(--text-sm); line-height: 1.45;
+      transition: opacity 220ms ease;
+    }
+    .build-cta-guidance[hidden] { display: none; }
+    .build-cta-guidance.is-fading { opacity: 0; }
+    .build-cta-guidance-icon { flex: 0 0 auto; line-height: 1; }
+    .build-cta-guidance-text { flex: 1 1 auto; min-width: 0; }
     @media (max-width: 600px) {
-      .guided-cta-row { flex-direction: column; align-items: stretch; }
-      .guided-cta-row .btn { width: 100%; }
+      .guided-cta-recommended-badge { font-size: 9px; }
+    }
+    /* Subtle one-line Expert Mode cue inside the builder header */
+    .builder-expert-hint {
+      flex-basis: 100%;
+      margin: 0 0 4px;
+      font-size: var(--text-xs); color: var(--color-text-muted); font-style: italic;
+      line-height: 1.35;
+    }
+    body.is-expert-mode .builder-expert-hint { display: none; }
+    @media (max-width: 720px) { .builder-expert-hint { font-size: 11px; } }
+    /* ===== Smart Assist (Stage 1 micro-nudge + Stage 2 full helper) ===== */
+    @keyframes smartAssistFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .smart-assist {
+      position: fixed; z-index: 1500;
+      right: 20px; bottom: 20px;
+      max-width: min(360px, calc(100vw - 32px));
+      background: var(--color-surface); color: var(--color-text);
+      border: 1px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+      padding: 14px 16px;
+      animation: smartAssistFadeIn 180ms ease-out;
+    }
+    .smart-assist[hidden] { display: none; }
+    .smart-assist-title { margin: 0 0 4px; font-size: var(--text-md); font-weight: 700; color: var(--color-text); }
+    .smart-assist-body { margin: 0 0 10px; font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.4; }
+    .smart-assist-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .smart-assist-btn {
+      flex: 0 1 auto;
+      padding: 8px 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
+      background: var(--color-surface); color: var(--color-primary);
+      font-size: var(--text-xs); font-weight: 600;
+      cursor: pointer; min-height: 36px; line-height: 1.2;
+      transition: background var(--transition-interactive), border-color var(--transition-interactive), transform var(--transition-interactive);
+    }
+    .smart-assist-btn:hover, .smart-assist-btn:focus-visible { background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface)); border-color: var(--color-primary); outline: none; }
+    .smart-assist-btn:active { transform: scale(0.97); }
+    .smart-assist-btn.is-primary { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+    .smart-assist-btn.is-primary:hover, .smart-assist-btn.is-primary:focus-visible { background: color-mix(in srgb, var(--color-primary) 85%, #000); }
+    .smart-assist-btn.is-ghost { background: transparent; border-color: transparent; color: var(--color-text-muted); }
+    .smart-assist-btn.is-ghost:hover, .smart-assist-btn.is-ghost:focus-visible { background: color-mix(in srgb, var(--color-text-muted) 10%, transparent); border-color: color-mix(in srgb, var(--color-text-muted) 20%, transparent); color: var(--color-text); }
+    .smart-assist-close {
+      position: absolute; top: 6px; right: 8px;
+      background: transparent; border: 0; color: var(--color-text-muted);
+      cursor: pointer; font-size: 18px; line-height: 1; padding: 4px 6px; border-radius: 4px;
+    }
+    .smart-assist-close:hover, .smart-assist-close:focus-visible { color: var(--color-text); background: color-mix(in srgb, var(--color-text-muted) 10%, transparent); outline: none; }
+    [data-theme="dark"] .smart-assist { background: #15302E; border-color: #5ba8b0; box-shadow: 0 18px 40px rgba(0,0,0,0.5); }
+    [data-theme="dark"] .smart-assist-btn { background: transparent; color: #5ba8b0; border-color: #5ba8b0; }
+    [data-theme="dark"] .smart-assist-btn.is-primary { background: #5ba8b0; color: #0c2f2c; border-color: #5ba8b0; }
+    @media (max-width: 600px) {
+      .smart-assist { right: 12px; left: 12px; bottom: 12px; max-width: none; }
+      .smart-assist-btn { flex: 1 1 calc(50% - 8px); justify-content: center; text-align: center; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .smart-assist { animation: none; }
+      .guided-cta-row.is-build-cta-highlight { animation: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 35%, transparent); }
     }
     .guided-dialog { position: fixed; inset: 0; margin: auto; padding: 0; border: 0; border-radius: var(--radius-lg); width: min(540px, calc(100vw - 32px)); max-height: 85vh; background: var(--color-surface); color: var(--color-text); box-shadow: 0 24px 60px rgba(0,0,0,0.28); overflow: hidden; }
     .guided-dialog::backdrop { background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
@@ -2395,12 +2485,6 @@
               <span class="cta-sub">Start Here For Ideas</span>
             </a>
           </div>
-          <p class="tip-block hero-helper-tip" data-tip="hero">
-            <span class="tip-block-icon" aria-hidden="true">💡</span>
-            <span class="tip-block-text">Not sure where to start? Choose a use case below or tap "Need ideas?" to generate new ones.</span>
-            <button type="button" class="tip-block-dismiss" data-action="dismiss-tips" aria-label="Hide all tips">Hide Tip</button>
-          </p>
-          <p class="hero-expert-link">Power user? <button type="button" id="hero-expert-link-btn">Switch to Expert Mode inside the builder.</button></p>
         </div>
         <aside class="hero-card" aria-labelledby="hero-card-title">
           <span class="hero-card-badge"><span class="hero-card-badge-dot" aria-hidden="true"></span>Why It Matters</span>
@@ -2427,8 +2511,8 @@
           <p>Pick a starting point below or tap 🎲 to generate new ideas.</p>
         </div>
         <p class="tip-block use-cases-helper-tip" data-tip="use-cases">
-          <span class="tip-block-icon" aria-hidden="true">🎯</span>
-          <span class="tip-block-text">Pick a starting point. We'll fill in the builder — you can edit anything before you generate.</span>
+          <span class="tip-block-icon" aria-hidden="true">💡</span>
+          <span class="tip-block-text">Not sure where to start? Choose a use case below or tap "Need ideas?" to generate new ones.</span>
           <button type="button" class="tip-block-dismiss" data-action="dismiss-tips" aria-label="Hide all tips">Hide Tip</button>
         </p>
         <div class="popular-uses-grid">
@@ -2531,6 +2615,7 @@
             </div>
             <div class="builder-head-actions">
               <span class="expert-mode-badge" id="expert-mode-badge" hidden>Expert Mode Active</span>
+              <p class="builder-expert-hint" id="builder-expert-hint">Power user? Turn on Expert Mode for full control.</p>
               <label class="expert-mode-toggle" for="expert-mode-toggle" id="expert-mode-toggle-wrap" title="For advanced users who want full control.">
                 <span class="switch">
                   <input type="checkbox" id="expert-mode-toggle" />
@@ -2548,6 +2633,18 @@
             </div>
           </div>
           <div class="form-wrap">
+            <p class="build-cta-guidance" id="build-cta-guidance" role="status" aria-live="polite" hidden>
+              <span class="build-cta-guidance-icon" aria-hidden="true">✨</span>
+              <span class="build-cta-guidance-text">Start with <strong>Guide Me</strong> if you want PromptMeGood to set things up for you.</span>
+            </p>
+            <div class="guided-cta-row" id="guided-cta-row">
+              <div class="guided-cta-text">
+                <span class="guided-cta-recommended-badge">Recommended First Step</span>
+                <strong>Guide Me</strong>
+                <span>Not sure how to start? Answer 4 short questions and we'll fill the builder for you.</span>
+              </div>
+              <button type="button" class="btn btn-primary" id="guided-mode-btn">Guide Me</button>
+            </div>
             <div id="weekly-goal-pin" class="weekly-goal-pin" aria-label="This week's focus">
               <div class="weekly-goal-pin-head">
                 <span class="weekly-goal-pin-label">
@@ -2571,13 +2668,6 @@
                   <input type="checkbox" id="auto-optimize-toggle" checked />
                   <span class="slider"></span>
                 </label>
-              </div>
-              <div class="guided-cta-row" id="guided-cta-row">
-                <div class="guided-cta-text">
-                  <strong>Guide Me <span style="color: var(--color-primary); font-weight: 600;">(Recommended)</span></strong>
-                  <span>Answer 4 short questions and we'll fill the builder for you.</span>
-                </div>
-                <button type="button" class="btn btn-primary" id="guided-mode-btn">Guide Me</button>
               </div>
               <div class="field field-primary">
                 <div class="field-label-row">
@@ -3202,6 +3292,13 @@
     <span class="post-tour-banner-icon" aria-hidden="true">🎉</span>
     <span class="post-tour-banner-text">You&rsquo;re ready. Start with Build A Prompt or explore Use Cases &mdash; then have fun prompting with PromptMeGood.</span>
     <button type="button" class="post-tour-banner-btn" id="post-tour-banner-dismiss" aria-label="Dismiss message">Got it</button>
+  </div>
+
+  <div class="smart-assist" id="smart-assist" role="region" aria-live="polite" aria-labelledby="smart-assist-title" hidden>
+    <button type="button" class="smart-assist-close" id="smart-assist-close" aria-label="Dismiss helper">&times;</button>
+    <h3 class="smart-assist-title" id="smart-assist-title">Need help getting started?</h3>
+    <p class="smart-assist-body" id="smart-assist-body" hidden></p>
+    <div class="smart-assist-actions" id="smart-assist-actions"></div>
   </div>
 
   <div class="uc-modal" id="usecases-modal" role="dialog" aria-modal="true" aria-labelledby="usecases-modal-title" aria-hidden="true" hidden>
@@ -7109,9 +7206,14 @@ Context:
       const heroBuildCta = document.getElementById('hero-build-cta');
       if (heroBuildCta) {
         heroBuildCta.addEventListener('click', function (e) {
+          // Only enhance plain left-click; let cmd/ctrl/shift+click open in new tab.
+          if (e && (e.metaKey || e.ctrlKey || e.shiftKey)) return;
+          if (e && typeof e.button === 'number' && e.button > 0) return;
           e.preventDefault();
           const builderSection = document.getElementById('builder');
           const builderPanel = document.getElementById('builder-panel');
+          const guidedRow = document.getElementById('guided-cta-row');
+          const guidance = document.getElementById('build-cta-guidance');
           if (builderSection) {
             builderSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
@@ -7121,6 +7223,42 @@ Context:
             builderPanel.classList.add('builder-glow');
             window.setTimeout(function () { builderPanel.classList.add('is-fading'); }, 2400);
             window.setTimeout(function () { builderPanel.classList.remove('builder-glow', 'is-fading'); }, 3200);
+          }
+          // Reveal inline guidance immediately and pulse the Guide Me row.
+          if (guidance) {
+            guidance.classList.remove('is-fading');
+            guidance.removeAttribute('hidden');
+            guidance.hidden = false;
+            if (heroBuildCta._guidanceTimer) window.clearTimeout(heroBuildCta._guidanceTimer);
+            heroBuildCta._guidanceTimer = window.setTimeout(function () {
+              guidance.classList.add('is-fading');
+              window.setTimeout(function () {
+                guidance.hidden = true;
+                guidance.classList.remove('is-fading');
+              }, 240);
+            }, 5000);
+            // Clicking Guide Me dismisses guidance early.
+            const guideBtn = document.getElementById('guided-mode-btn');
+            if (guideBtn && !guideBtn._guidanceWired) {
+              guideBtn._guidanceWired = true;
+              guideBtn.addEventListener('click', function () {
+                if (guidance.hidden) return;
+                if (heroBuildCta._guidanceTimer) window.clearTimeout(heroBuildCta._guidanceTimer);
+                guidance.classList.add('is-fading');
+                window.setTimeout(function () {
+                  guidance.hidden = true;
+                  guidance.classList.remove('is-fading');
+                }, 240);
+              });
+            }
+          }
+          if (guidedRow) {
+            guidedRow.classList.remove('is-build-cta-highlight');
+            void guidedRow.offsetWidth;
+            guidedRow.classList.add('is-build-cta-highlight');
+            window.setTimeout(function () {
+              guidedRow.classList.remove('is-build-cta-highlight');
+            }, 1600);
           }
         });
       }
@@ -7673,6 +7811,271 @@ Context:
       }
       applyShareHash();
       window.addEventListener('hashchange', applyShareHash);
+    })();
+
+    // ===== Smart Assist (Stage 1 micro-nudge → Stage 2 full helper) =====
+    (function setupSmartAssist() {
+      const ASSIST_SHOWN_KEY = 'pmg_smart_assist_shown';
+      const ASSIST_DISMISSED_KEY = 'pmg_smart_assist_dismissed';
+      const STAGE1_DELAY_MS = 4000;   // 3-5s window
+      const STAGE2_DELAY_MS = 9000;   // 8-10s window OR after Stage 1 ignored
+      const STAGE1_IGNORED_PROMOTE_MS = 5000; // promote Stage1 → Stage2 if ignored 5s
+      const ACTIVITY_DEBOUNCE_MS = 130;
+
+      const root = document.getElementById('smart-assist');
+      const titleEl = document.getElementById('smart-assist-title');
+      const bodyEl = document.getElementById('smart-assist-body');
+      const actionsEl = document.getElementById('smart-assist-actions');
+      const closeBtn = document.getElementById('smart-assist-close');
+      if (!root || !titleEl || !bodyEl || !actionsEl) return;
+
+      function ssGet(key) { try { return sessionStorage.getItem(key); } catch (e) { return null; } }
+      function ssSet(key, val) { try { sessionStorage.setItem(key, val); } catch (e) {} }
+      function alreadyShown() { return ssGet(ASSIST_SHOWN_KEY) === '1'; }
+      function alreadyDismissed() { return ssGet(ASSIST_DISMISSED_KEY) === '1'; }
+
+      let stage1Timer = null;
+      let stage2Timer = null;
+      let promoteTimer = null;
+      let currentStage = 0; // 0 = none, 1 = Stage 1, 2 = Stage 2
+      let started = false;
+      let activityDebounce = null;
+
+      function clearAllTimers() {
+        if (stage1Timer) { window.clearTimeout(stage1Timer); stage1Timer = null; }
+        if (stage2Timer) { window.clearTimeout(stage2Timer); stage2Timer = null; }
+        if (promoteTimer) { window.clearTimeout(promoteTimer); promoteTimer = null; }
+      }
+
+      function isAnyDialogOpen() {
+        const dialogs = document.querySelectorAll('dialog');
+        for (let i = 0; i < dialogs.length; i++) {
+          if (dialogs[i].open) return true;
+        }
+        // Non-native overlays with role="dialog" — div-based modals.
+        const overlayIds = ['usecases-modal', 'compare-overlay', 'bk-overlay', 'ob-overlay'];
+        for (let i = 0; i < overlayIds.length; i++) {
+          const el = document.getElementById(overlayIds[i]);
+          if (!el) continue;
+          if (el.hasAttribute('hidden')) continue;
+          if (el.getAttribute('aria-hidden') === 'true') continue;
+          if (el.classList.contains('is-open')) return true;
+          // Some overlays toggle aria-hidden without is-open; treat as open if visible.
+          if (el.getAttribute('aria-hidden') === 'false') return true;
+        }
+        return false;
+      }
+
+      function isTourActive() {
+        if (typeof obIsOpen === 'function' && obIsOpen()) return true;
+        const tourBanner = document.getElementById('tour-banner');
+        if (tourBanner && !tourBanner.hidden) return true;
+        return false;
+      }
+
+      function isDemoBusy() {
+        const demoBtn = document.getElementById('fill-demo');
+        return !!(demoBtn && demoBtn.dataset && demoBtn.dataset.busy === '1');
+      }
+
+      function isUserTyping() {
+        const ae = document.activeElement;
+        if (!ae) return false;
+        const tag = (ae.tagName || '').toLowerCase();
+        if (tag === 'textarea' || tag === 'input' || tag === 'select') return true;
+        if (ae.isContentEditable) return true;
+        return false;
+      }
+
+      function promptAlreadyGenerated() {
+        try {
+          if (typeof window.__pmgGetPromptCount === 'function' && window.__pmgGetPromptCount() >= 1) return true;
+        } catch (e) {}
+        // Fallback: result box has content beyond placeholder
+        const resultBox = document.getElementById('resultBox');
+        if (resultBox) {
+          const txt = (resultBox.textContent || '').trim();
+          if (txt && txt.length > 80 && !/will appear here/i.test(txt)) return true;
+        }
+        return false;
+      }
+
+      function suppressionReason() {
+        if (alreadyShown() || alreadyDismissed()) return 'session';
+        if (isTourActive()) return 'tour';
+        if (isDemoBusy()) return 'demo';
+        if (isAnyDialogOpen()) return 'dialog';
+        if (promptAlreadyGenerated()) return 'generated';
+        if (isUserTyping()) return 'typing';
+        return null;
+      }
+
+      function clearActions() {
+        while (actionsEl.firstChild) actionsEl.removeChild(actionsEl.firstChild);
+      }
+
+      function makeBtn(label, variant, onClick) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'smart-assist-btn' + (variant ? ' is-' + variant : '');
+        b.textContent = label;
+        b.addEventListener('click', function (ev) {
+          ev.preventDefault();
+          onClick();
+        });
+        return b;
+      }
+
+      function clickById(id) {
+        const el = document.getElementById(id);
+        if (el) {
+          if (typeof el.click === 'function') el.click();
+          else el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+        }
+      }
+
+      function openUseCases() {
+        // Try to open the Use Cases modal; fall back to scrolling to the section.
+        const trigger = document.getElementById('hero-usecases-cta');
+        const ucSection = document.getElementById('use-cases');
+        // The dice button in the section opens the modal; clicking section's dice opens it.
+        const diceBtn = document.getElementById('usecases-dice-btn');
+        if (diceBtn && typeof diceBtn.click === 'function') {
+          diceBtn.click();
+          return;
+        }
+        if (ucSection && typeof ucSection.scrollIntoView === 'function') {
+          ucSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else if (trigger && typeof trigger.click === 'function') {
+          trigger.click();
+        }
+      }
+
+      function dismissAssist(persist) {
+        clearAllTimers();
+        if (!root.hidden) {
+          root.hidden = true;
+        }
+        currentStage = 0;
+        if (persist) ssSet(ASSIST_DISMISSED_KEY, '1');
+      }
+
+      function renderStage(stage) {
+        // For initial show, respect all suppression. For Stage 1→2 promotion (panel already visible),
+        // skip the 'session' check since we already showed it this session.
+        const reason = suppressionReason();
+        if (reason && !(reason === 'session' && currentStage === 1 && !root.hidden)) return;
+        currentStage = stage;
+        clearActions();
+        if (stage === 1) {
+          titleEl.textContent = 'Need help getting started?';
+          bodyEl.hidden = true;
+          bodyEl.textContent = '';
+          actionsEl.appendChild(makeBtn('Guide Me', 'primary', function () {
+            dismissAssist(true);
+            clickById('guided-mode-btn');
+          }));
+          actionsEl.appendChild(makeBtn('Try Demo', '', function () {
+            dismissAssist(true);
+            clickById('fill-demo');
+          }));
+        } else {
+          titleEl.textContent = 'Still stuck?';
+          bodyEl.hidden = false;
+          bodyEl.textContent = "Use Guide Me for step-by-step setup, try a demo, explore Use Cases, or replay the tour.";
+          actionsEl.appendChild(makeBtn('Guide Me', 'primary', function () {
+            dismissAssist(true);
+            clickById('guided-mode-btn');
+          }));
+          actionsEl.appendChild(makeBtn('Try Demo', '', function () {
+            dismissAssist(true);
+            clickById('fill-demo');
+          }));
+          actionsEl.appendChild(makeBtn('Use Cases', '', function () {
+            dismissAssist(true);
+            openUseCases();
+          }));
+          actionsEl.appendChild(makeBtn('Tour', '', function () {
+            dismissAssist(true);
+            const replay = document.getElementById('replay-tour-btn-builder') || document.getElementById('replay-tour-btn');
+            if (replay && typeof replay.click === 'function') replay.click();
+          }));
+          actionsEl.appendChild(makeBtn('Dismiss', 'ghost', function () { dismissAssist(true); }));
+        }
+        root.hidden = false;
+        ssSet(ASSIST_SHOWN_KEY, '1');
+      }
+
+      function tryShowStage1() {
+        if (suppressionReason()) {
+          // Re-arm a short retry once if blocked by transient state
+          if (!alreadyShown() && !alreadyDismissed()) {
+            stage1Timer = window.setTimeout(tryShowStage1, 3000);
+          }
+          return;
+        }
+        renderStage(1);
+        // If user ignores Stage 1 for STAGE1_IGNORED_PROMOTE_MS, promote to Stage 2.
+        promoteTimer = window.setTimeout(function () {
+          if (currentStage === 1 && !root.hidden) {
+            renderStage(2);
+          }
+        }, STAGE1_IGNORED_PROMOTE_MS);
+      }
+
+      function tryShowStage2Direct() {
+        if (currentStage !== 0) return; // already showing
+        if (suppressionReason()) return;
+        renderStage(2);
+      }
+
+      function startInactivity() {
+        if (alreadyShown() || alreadyDismissed()) return;
+        clearAllTimers();
+        stage1Timer = window.setTimeout(tryShowStage1, STAGE1_DELAY_MS);
+        stage2Timer = window.setTimeout(tryShowStage2Direct, STAGE2_DELAY_MS);
+      }
+
+      function onActivity() {
+        // Reset only if the helper hasn't been shown yet this session.
+        if (alreadyShown() || alreadyDismissed()) return;
+        if (currentStage !== 0) return; // do not restart while visible
+        if (activityDebounce) window.clearTimeout(activityDebounce);
+        activityDebounce = window.setTimeout(function () {
+          startInactivity();
+        }, ACTIVITY_DEBOUNCE_MS);
+      }
+
+      function init() {
+        if (started) return;
+        started = true;
+        if (alreadyShown() || alreadyDismissed()) return;
+        // Activity listeners — passive where possible, single set
+        const opts = { passive: true };
+        window.addEventListener('scroll', onActivity, opts);
+        document.addEventListener('mousemove', onActivity, opts);
+        document.addEventListener('touchstart', onActivity, opts);
+        document.addEventListener('keydown', onActivity, opts);
+        document.addEventListener('focusin', onActivity, opts);
+        document.addEventListener('click', onActivity, opts);
+        // Begin the first inactivity countdown
+        startInactivity();
+      }
+
+      if (closeBtn) {
+        closeBtn.addEventListener('click', function () { dismissAssist(true); });
+      }
+      // Auto-suppress when a prompt is generated (via the form submit path elsewhere).
+      // Re-check on hashchange / focus too in case state shifted.
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible' && !alreadyShown() && !alreadyDismissed()) {
+          // Re-arm if needed
+          if (currentStage === 0) startInactivity();
+        }
+      });
+
+      // Boot once DOM ready (we're already after DOMContentLoaded since we're at end of body)
+      init();
     })();
   </script>
 </body>

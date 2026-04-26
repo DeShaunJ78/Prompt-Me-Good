@@ -1,0 +1,197 @@
+Implement the smart assist system, reorder builder guidance, and clean up hero/builder helper placement. Do not break existing functionality, layout, tour, demo, history, Expert Mode, or mobile behavior.
+
+========================
+PART 1 — SMART ASSIST SYSTEM
+========================
+
+CORE GOAL:
+Help users early without being intrusive.
+
+STAGE 1 — MICRO NUDGE
+
+Trigger:
+- 3–5 seconds of inactivity
+- User is in builder section
+- No prompt generated
+- User is not typing or interacting
+
+Display:
+
+Message:
+“Need help getting started?”
+
+Buttons:
+- “Guide Me”
+- “Try Demo”
+
+Behavior:
+- Guide Me → opens Guide Me flow
+- Try Demo → triggers Use Demo Values + auto-generates prompt
+
+Style:
+- Small, subtle, non-blocking
+- Bottom-center on mobile
+- Bottom-right on desktop
+- Smooth fade-in: 150–200ms
+
+STAGE 2 — FULL HELPER
+
+Trigger:
+- 8–10 seconds total inactivity
+OR
+- Stage 1 shown but ignored
+
+Display:
+
+Title:
+“Still stuck?”
+
+Message:
+“Use Guide Me for step-by-step setup, try a demo, explore Use Cases, or replay the tour.”
+
+Buttons:
+- “Guide Me”
+- “Try Demo”
+- “Use Cases”
+- “Tour”
+- “Dismiss”
+
+Behavior:
+- Guide Me → opens Guide Me flow
+- Try Demo → loads demo + auto-generates prompt
+- Use Cases → opens Use Cases modal
+- Tour → replays guided tour
+- Dismiss → hides helper for session
+
+GLOBAL RULES:
+- Show only once per session
+- Do NOT show if user is typing, tour is active, demo is running, prompt already generated, or any modal is open
+- Dismiss persists for session using sessionStorage
+
+INTEGRATION SAFETY:
+- Prevent duplicate timers
+- Clear old inactivity timers before starting new ones
+- Use one centralized timer manager
+- Reset timers on scroll, click, typing, focus, or interaction
+- Only one helper visible at a time
+- Stage 2 cancels Stage 1
+- Dismiss cancels both
+- Do not conflict with guided tour, demo flow, toast notifications, or banners
+- Use fixed positioning to avoid layout shifts
+- Debounce activity listeners 100–150ms
+- Use passive listeners where possible
+
+MOBILE REQUIREMENTS:
+- Do not overlap Generate Prompt, Use Demo Values, navigation, or keyboard
+- Tap targets must be accessible
+- No flickering
+- No console errors
+
+========================
+PART 2 — REORDER BUILDER SECTION
+========================
+
+Move “Guide Me” above “This Week’s Focus.”
+
+New order inside builder:
+1. Builder intro / Expert Mode + Replay Tour controls
+2. Guide Me card
+3. This Week’s Focus
+4. Auto Optimize
+5. Goal field / remaining builder fields
+
+Guide Me card updates:
+- Add badge:
+“Recommended First Step”
+
+- Update helper copy:
+“Not sure how to start? Answer 4 short questions and we’ll fill the builder for you.”
+
+Keep:
+- This Week’s Focus clickable
+- Auto Optimize behavior
+- Guide Me behavior
+- Expert Mode behavior
+- manual goal entry
+
+Do NOT:
+- Remove This Week’s Focus
+- Make Guide Me mandatory
+- Hide manual entry
+
+========================
+PART 3 — BUILD A PROMPT CTA GUIDANCE
+========================
+
+When user clicks “Build A Prompt”:
+- Smooth scroll to builder
+- Briefly highlight the Guide Me card
+- Show a small branded guidance message:
+
+“Start with Guide Me if you want PromptMeGood to set things up for you.”
+
+Rules:
+- Message should not be intrusive
+- Use brand colors
+- Do not block the builder
+- User can still type manually
+
+========================
+PART 4 — MOVE TIP BOX BELOW HERO
+========================
+
+Move the tip box that says something like:
+“Not sure where to start?”
+
+From below the hero CTA buttons to above the Use Case cards section.
+
+Do not delete it.
+Do not duplicate it.
+Just relocate it below the fold near the Use Cases section.
+
+Purpose:
+- Keep hero clean
+- Keep the tip close to the section it explains
+
+========================
+PART 5 — MOVE EXPERT MODE HERO CUE
+========================
+
+Remove this line from the hero area:
+
+“Power user? Switch to Expert Mode inside the builder.”
+
+Move that guidance into the builder panel itself.
+
+Placement:
+- Directly above or beside the Expert Mode toggle
+
+Suggested copy:
+“Power user? Turn on Expert Mode for full control.”
+
+Keep it subtle.
+
+Do NOT:
+- Keep duplicate hero copy
+- Make Expert Mode visually overpower Guide Me
+- Move the actual Expert Mode toggle out of the builder
+
+========================
+PART 6 — FINAL CLEAN CHECK
+========================
+
+Verify:
+- Smart assist appears only when appropriate
+- Guide Me is prioritized as the recommended path
+- Build A Prompt points users toward Guide Me
+- Tip box is no longer in hero
+- Expert Mode cue is no longer in hero
+- Expert Mode cue appears near the toggle
+- No duplicate helper text
+- Tour still works
+- Demo still works
+- Use Cases still works
+- Mobile layout is clean
+- No overlapping UI
+- No duplicate event listeners
+- No JavaScript errors
