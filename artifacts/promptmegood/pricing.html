@@ -126,6 +126,12 @@
       .pricing-hero { padding: var(--space-6) 0 var(--space-4); }
       .pricing-card { padding: var(--space-5); }
     }
+    /* Interaction feedback polish (matches index.html). Because we suppress the default mobile
+       tap-highlight, we provide replacement feedback on EVERY tappable so links don't feel dead. */
+    html { -webkit-tap-highlight-color: transparent; }
+    button, a, [role="button"], summary, label[for], input[type="checkbox"], input[type="radio"] { touch-action: manipulation; }
+    .btn:active { transform: scale(0.98); }
+    a:active, button:not(.btn):active { opacity: 0.7; transition: opacity 100ms ease; }
   </style>
 </head>
 <body>

@@ -1,67 +1,66 @@
-# Workspace
+# Overview
 
-## Overview
+This project is a pnpm workspace monorepo using TypeScript, designed to build a sophisticated AI prompt builder named "PromptMeGood". The core purpose of PromptMeGood is to provide a structured interface for users to craft precise prompts for AI, ensuring clear communication of intent and desired output.
 
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
+PromptMeGood aims to simplify and enhance the AI interaction experience by offering features like smart suggestions, auto-optimization, and quality checks, thereby increasing the effectiveness of AI prompts. The project targets a wide user base, from casual users to power users, with features like guided modes for beginners and an "Expert Mode" for advanced control.
 
-## Stack
+The business vision includes a "Free" tier and a "PRO" tier (coming soon), indicating a potential for subscription-based revenue, and an early-access program to gather user interest and feedback. The project's ambition is to become a leading tool in the AI prompting space, fostering better AI interactions and productivity.
 
-- **Monorepo tool**: pnpm workspaces
-- **Node.js version**: 24
-- **Package manager**: pnpm
-- **TypeScript version**: 5.9
-- **API framework**: Express 5
-- **Database**: PostgreSQL + Drizzle ORM
-- **Validation**: Zod (`zod/v4`), `drizzle-zod`
-- **API codegen**: Orval (from OpenAPI spec)
-- **Build**: esbuild (CJS bundle)
+# User Preferences
 
-## Key Commands
+I prefer concise and direct communication. When making changes, prioritize iterative development and explain the high-level impact before diving into details. Please ask for confirmation before making any major architectural changes or introducing new external dependencies.
 
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- `pnpm --filter @workspace/api-server run dev` — run API server locally
+# System Architecture
 
-See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
+## Monorepo Structure
 
-## Artifacts
+The project is structured as a pnpm workspace monorepo, with each package managing its own dependencies. Key packages include `@workspace/api-spec`, `@workspace/db`, and `@workspace/api-server`.
 
-### PromptMeGood (`artifacts/promptmegood`)
+## Tech Stack
 
-Single-file static HTML AI prompt builder (`index.html`, ~7k lines, vanilla JS, vite preview). Live at https://prompt-me-good.replit.app. Companion pages: `guide.html` (long-form manual) and `pricing.html` (Free + PRO Coming Soon, early-access capture). All three are wired into `vite.config.ts` `rollupOptions.input`.
+-   **Monorepo Tool:** pnpm workspaces
+-   **Node.js:** v24
+-   **Package Manager:** pnpm
+-   **TypeScript:** v5.9
+-   **API Framework:** Express 5
+-   **Database:** PostgreSQL with Drizzle ORM
+-   **Validation:** Zod (v4) and `drizzle-zod`
+-   **API Codegen:** Orval (from OpenAPI spec)
+-   **Build Tool:** esbuild (CJS bundle)
 
-**Product Improvement Spec — April 25, 2026 (implemented):**
-- **#1 Single entry point** — first-visit gating via `localStorage[pmg_visited]` + `sessionStorage[pmg_first_visit_session]` + `localStorage[pmg_prompt_count]`. `pmg_visited` is set immediately on onboarding dismissal (#tour-show, #tour-skip, #tour-jump, and `obFinish` for skip/complete/Escape/backdrop) — NOT on unload. Daily nudge banner suppressed when `pmgIsFirstVisit()` OR `pmgGetPromptCount() < 1`. Weekly-goal toast suppressed by `pmgIsSystemBannerVisible()` (any of #tour-banner, #nudge-banner). Nudge appearance toggles `body.has-nudge-banner` so the floating `.toast` slides down (160px) instead of stacking on top.
-- **#2 Hero tagline** replaced with: *"A structured prompt builder that tells AI exactly what to do — and how to say it."* (italic, under hero subtext box). Footer tagline preserved.
-- **#3 Beta feedback** — Calvin testimonial removed. New `#early-feedback` section with `.feedback-grid` of 3 cards (Copywriter, Small Business Owner, Content Creator), labeled `"— Beta User · <Role>"`, placed between use-cases and `#builder`.
-- **#4 Tooltip** — small `.qa-tooltip-trigger` ⓘ icon next to `#check-quality-btn`. Hover (desktop) + tap-to-toggle (mobile) with click-outside + Escape close.
-- **#5 Pricing page** — standalone `pricing.html` with own theme toggle, two cards (Free $0/forever, PRO $9/month "Coming Soon"), early-access form (`#early-access-form`) storing lowercased emails to `localStorage[promptmegood:emailCapture:v1]` capped at 200 entries. Pricing nav link in topbar (`#top-actions`) and footer (`.site-footer-legal`).
-- **#6 + standalone Demo Values fix** — `#fill-demo` handler removes any active `obStart` tour, sets `"Generating demo prompt…"` placeholder, calls `form.requestSubmit()` after 250ms, fires `"Demo prompt generated."` toast. Microcopy `"Use Demo Values instantly loads a working example."` rendered beneath the actions row.
-- **#7 Usage counter** — INTENTIONALLY SKIPPED per spec rule "Only add when real backend data exists." No backend exists.
-- **#8 Prompt sharing** — `#share-btn` ("Copy shareable link", `hidden` until first prompt generation, re-hidden on Clear Prompt). Encodes `SHARE_TEXT_KEYS = [goal, category, skillLevel, tone, outputFormat, outputLanguage, personality, details, guardrails, maxLength, maxLengthCustom]` and `SHARE_BOOL_KEYS = [moneyMode, humanTone, clarityBoost]` into `#share=<urlencoded querystring>`. Clipboard write uses execCommand (sync) first then non-blocking `navigator.clipboard.writeText` so toast always fires. On initial load AND on `hashchange`, `applyShareHash()` parses the hash, prefills the builder, calls `markAllTouched`, replaces history to clear the hash, scrolls to `#builder`, fires `"Loaded shared prompt — review and Generate."` toast.
+## PromptMeGood Artifact (`artifacts/promptmegood`)
 
-**Critical scope note:** `showToast` was originally private to the main app IIFE; new IIFEs declared after it (tooltip, share) couldn't reach it. Now exposed via `window.showToast = showToast` in the main IIFE.
+PromptMeGood is a single-file static HTML AI prompt builder (`index.html`) built with vanilla JavaScript and Vite for preview. It includes companion pages for a `guide.html` (long-form manual) and `pricing.html`.
 
-Key features:
-- **Builder**: goal, category, skill level, tone, output format, output language, personality, extra details, **guardrails** (things AI should avoid), **max response length** (presets 100/200/300/500 + custom), boost toggles (Money / Human Voice / Clarity / Photo).
-- **Smart Suggestions**: keyword analyzer reads `#goal` (debounced) and recommends category/tone/outputFormat/maxLength via `Suggested` badges (`.suggested-badge`).
-- **Auto Optimize**: toggle `#auto-optimize-toggle` (default ON, persisted in `localStorage` key `promptmegood:autoOptimize:v1`). When ON, applies suggestions to fields the user has not manually changed (tracked in `userTouched` Set). Demo + Guide Me mark all tracked fields as touched.
-- **AI Tool Recommender**: highlights one of ChatGPT/Claude/Perplexity (`.is-recommended` glow + `.recommended-badge`) based on goal keywords (research → Perplexity, writing → Claude, default → ChatGPT).
-- **Prompt Strength Score**: 0–100% bar + 2–3 insights (`#strength-score`) rendered after every generate, hidden on Clear Prompt. Heuristic uses goal length, details, guardrails, maxLength, personality, boosts, tone, format.
-- **This Week's Focus**: rotating curated goal pin (`#weekly-goal-pin`) at the top of the builder. 10-item `WEEKLY_GOALS` list rotates by `Math.floor(Date.now() / (7d in ms)) % 10`. Click `#weekly-goal-cta` → fills `#goal`, dispatches input event, runs smart-systems recompute, marks viewed. Shows `New` badge (`#weekly-goal-new-badge`) when `localStorage[promptmegood:weeklyGoalViewedIndex:v1]` differs from current index; once-per-session toast `New weekly goal available.` gated by `sessionStorage[promptmegood:weeklyGoalToastShown]`. Daily nudge banner uses the current focus to generate prompt ideas; `Try it` action calls `applyWeeklyGoal()`. Backup export/import uses `weeklyGoalViewedIndex` (number); legacy `weeklyGoal` text field is silently ignored for backward compat.
-- **Guide Me**: 4-question modal (`#guided-mode-dialog`, opened by `#guided-mode-btn`) that fills `#goal`, `#details`, `#guardrails` for users who don't know how to phrase a goal. Fields are REPLACED on each run (not appended).
-- **Refinement**: refine buttons (More Detailed / More Aggressive / Beginner Friendly), Fine-Tune Your Prompt, Undo Last Change, manual editing.
-- **Quality Checker**: `#check-quality-btn` runs heuristics over the form state (short goal, missing details/guardrails/max length, vague-word regex) and shows up to 3 suggestions in `#quality-feedback`.
-- **Use**: Copy + ChatGPT/Claude/Perplexity launch buttons, Print/PDF, prompt history.
-- **Tour**: in-app onboarding tour (`OB_STEPS`, 7 steps with Auto Optimize callout) and demo walkthrough (`DEMO_STEPS`, 7 steps including Strength Score) launched by "Use Demo Values" button. Tour titles use sentence case. **Replay Tour** buttons in both the builder panel header (`#replay-tour-btn-builder`) and footer (`#replay-tour-btn`) — both wired to a shared `startReplayTour()`.
-- **Onboarding banner persistence**: `#tour-banner` resurfaces across sessions until dismissed `ONBOARDING_MAX_DISMISSALS` (3) times. Tracked by `localStorage[promptmegood:onboardingDismissCount:v1]` (incremented on every dismissal: banner X, banner Go-To-Start-Here, overlay Skip/Escape/backdrop) plus `sessionStorage[promptmegood:onboardingSeenSession]` to suppress within a single session. Tour completion (last "Next") sets `localStorage[promptmegood:onboarding:v1]` permanently via `obFinish({completed: true})`; cap-reach also calls `obMarkDone()`. All non-completion exit paths call `obDismissForSession()`.
-- **Builder simplification**: 4 boost toggles (Money / Human Voice / Clarity / Photo) are wrapped in a `<details id="advanced-options">` collapsible (default closed). Goal, Category, Tone, Output Format, Max Response Length, Guardrails remain visible at the top level. Toggle states persist across collapse/expand because the inputs stay in the DOM.
-- **Use-case confirmation banner**: `.uc-confirm-toast` (`#uc-confirm-toast`, content "Your starting idea was added. Review the options below, then tap Generate Prompt." with a "Got it" button `#uc-confirm-toast-dismiss`) is a guidance card that appears after a user picks a use case or applies the weekly goal pin. Triggered by `window.showUseCaseConfirmToast()`. Sized as a card (not a thin toast): desktop top `120px + safe-area`, padding `18px 22px`, font-size `--text-md` line-height `1.55`, font-weight 500, 2px teal border `#0f766e`, background `#DAF1EE`, shadow `0 16px 36px rgba(15,118,110,0.28)`, width `min(620px, calc(100% - 32px))`. Mobile (≤600px) shifts top to `140px`, padding `14px 16px`, font-size `14px`. "Got it" button: padding `10px 20px`, `min-height 40px` desktop / `38px` mobile (above WCAG AA, below AAA 44×44). Auto-hides after `7500ms` (within 6–8s window) via `setTimeout(hide, 7500)` in `setupUseCaseConfirmToast()`. `body.has-uc-confirm-toast .toast` offset bumped to `210px` desktop / `230px` mobile so a regular toast doesn't overlap the larger guidance banner.
-- **Manual**: split into two surfaces. On the home page, `#manual` keeps the always-visible 5-step `<details id="quick-start-card" open>` Quick Start followed by a single CTA `<a class="manual-toggle" id="manual-full-guide-link" href="./guide.html" target="_blank" rel="noopener">View Full Guide</a>` (no inline long-form content). The legacy `<section id="how-to-use">` block of 12 stacked `.guide-step` cards (Type your idea / Pick Experience Level / Choose Tone / Output Format / Human Voice / Clarity / Money / Photo / Output Language / Generate / Copy / Saved Prompts) plus its `.guide-tips` Pro Tips list was deleted from `index.html`; the unique Pro Tips bullets ("Don't overthink the goal box…", "Try the example chips…") were preserved by appending them into `#manual-tips` in `guide.html`. The unused CSS rules `.guide-step`, `.guide-step-num`, `.guide-list`, `.guide-example` remain in `index.html` (harmless dead styles). The full long-form manual lives in a dedicated standalone page `artifacts/promptmegood/guide.html` (multi-page Vite build via `rollupOptions.input`) with its own minimal stylesheet (shared CSS variables), a header (logo + "← Back to App" + theme toggle), a `Jump To A Section` TOC heading, and content reorganized into four groups: **Beginner Guide** (`#manual-flow`, `#manual-guide-me`, `#manual-usecases`, `#manual-need-ideas`, `#manual-fields`), **Advanced Features** (`#manual-boosts`, `#manual-refine`, `#manual-use`, `#manual-clearing`, `#manual-history`), **Smart Systems & Expert Mode** (`#manual-smart-systems` callout, includes the Expert Mode bullet), and **Tips & Best Practices** (`#manual-tips`, `#manual-mistakes`). The footer of `index.html` exposes a `Help` link in `.site-footer-legal` that also opens `./guide.html` in a new tab. The legacy IIFE that wired `#manual-toggle`/`#manual-collapse` self-exits via early-return since those elements no longer exist.
-- **Expert Mode**: opt-in power-user mode. Toggle (`#expert-mode-toggle`, wrapper `#expert-mode-toggle-wrap`) lives in the builder header next to Replay Tour, with the helper "For advanced users who want full control." Hero awareness link (`#hero-expert-link-btn`) reads "Power user? Switch to Expert Mode inside the builder." → smooth-scrolls to `#builder` and pulses the toggle (`.is-pulse` 1.6s × 2 keyframe). Activating ON for the first 3 times opens `#expert-warning-dialog` ("Turn on Expert Mode? — Expert Mode removes most guidance and shows advanced controls. This may feel overwhelming if you're new.") with `#expert-warning-confirm` (Enable Expert Mode) and `#expert-warning-cancel` (Stay In Guided Mode); after the 3rd confirmed activation, subsequent toggles are immediate. While ON: `body.is-expert-mode` hides `.tip-block`, `.demo-helper`, `#auto-optimize-row`, `#guided-cta-row`, `#weekly-goal-pin`, `.examples-block`, `#post-uc-guidance`, `.field .helper`, `.builder-transition`, `#quick-start-card`, and the `.adv-sub` description; the Advanced Options details (`#advanced-options`) is force-opened (prior open state remembered for restore on disable); Auto Optimize (`#auto-optimize-toggle`) is forced unchecked with a `change` event dispatch; the keyboard hints panel (`#keyboard-hints`, lists `G` generate, `C` copy, `/` focus history search, `Esc` close overlays) is shown; the "EXPERT MODE ACTIVE" pill (`#expert-mode-badge`) appears in the builder header. Persistence: `localStorage[promptmegood:expertMode:v1]='1'` (cleared on OFF), activation counter `localStorage[promptmegood:expertModeActivations:v1]` (numeric). Tour resilience: `obStart()` strips `is-expert-mode` from `<body>` for the duration of any onboarding/demo tour and restores it in `obFinish()` (persisted preference is not modified) — this keeps OB/DEMO targets like `#auto-optimize-row` and `#weekly-goal-pin` visible. OB/DEMO final-step copy mentions Expert Mode in one line; no new tour steps were added.
+### UI/UX and Design Decisions
 
-Globals: `window.__pmgSmartSystems` (`markAllTouched`, `clearTouched`, `recompute`) and `window.__pmgStrengthScore` (`render`, `hide`).
+-   **Color Scheme:** Utilizes CSS variables for theming, including a teal border (`#0f766e`) and background (`#DAF1EE`) for specific elements.
+-   **Interaction Feedback:** Implements `_webkit-tap-highlight-color: transparent`, `touch-action: manipulation`, and `:active { transform: scale(0.98); }` for improved responsiveness on touch devices and visual feedback on clicks.
+-   **Responsive Design:** Adjusts element positioning and padding (e.g., use-case confirmation banner) for mobile (≤600px) and desktop.
+-   **Onboarding Tour:** Features a multi-step in-app onboarding tour (`OB_STEPS`) and a demo walkthrough (`DEMO_STEPS`).
+-   **Modals and Toasts:** Extensive use of modals (`#guided-mode-dialog`, `#expert-warning-dialog`) and toasts (`showToast`, use-case confirmation banner) for user guidance and feedback.
 
-Workflow: `pnpm --filter @workspace/promptmegood run dev`. Iteration cadence is "polish round → architect review → runTest → republish via suggest_deploy".
+### Key Features and Technical Implementations
+
+-   **Prompt Builder:** Dynamic form with fields like goal, category, skill level, tone, output format, output language, personality, details, guardrails, and max response length.
+-   **Boost Toggles:** Four boost options (Money, Human Voice, Clarity, Photo) are grouped under a collapsible "Advanced Options" section.
+-   **Smart Systems:**
+    -   **Smart Suggestions:** Keyword analysis of the goal field to recommend categories, tones, output formats, and max lengths.
+    -   **Auto Optimize:** Automatically applies suggestions to untouched fields, with user preference persistence via `localStorage`.
+    -   **AI Tool Recommender:** Suggests relevant AI tools (ChatGPT, Claude, Perplexity) based on prompt goal keywords.
+    -   **Prompt Strength Score:** Heuristic-based 0-100% score with insights, calculated based on various prompt parameters.
+-   **Weekly Focus:** Rotating curated goal pin (`#weekly-goal-pin`) updated weekly, with persistence tracking in `localStorage` for "New" badge display.
+-   **Guided Mode:** A 4-question modal to help users formulate goals, details, and guardrails.
+-   **Refinement and Quality Check:** Features for refining prompts, undoing changes, and a "Quality Checker" that provides suggestions based on heuristics.
+-   **Prompt Sharing:** Encodes prompt parameters into a URL hash for shareable links, with prefilling logic on `hashchange`.
+-   **Expert Mode:** An opt-in mode that hides guidance, reveals advanced controls, and introduces keyboard hints. State and activation count are persisted in `localStorage`. Tour resilience ensures guided elements remain visible during onboarding.
+-   **Manual/Guide:** Split into a quick-start on `index.html` and a comprehensive `guide.html` with a table of contents and reorganized content.
+-   **Globals:** `window.__pmgSmartSystems` (for `markAllTouched`, `clearTouched`, `recompute`) and `window.__pmgStrengthScore` (for `render`, `hide`) are exposed for smart system functionality.
+
+# External Dependencies
+
+-   **PostgreSQL:** Used as the primary database.
+-   **Drizzle ORM:** ORM for interacting with PostgreSQL.
+-   **OpenAPI Specification:** Used for defining API contracts and generating client-side code via Orval.
+-   **Vite:** Build tool for the PromptMeGood frontend.
+-   **Zod:** Schema declaration and validation library.

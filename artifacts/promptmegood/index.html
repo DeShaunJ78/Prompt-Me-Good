@@ -1110,11 +1110,15 @@
         color: #1f2937;
         transition: background 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
       }
-      .top-actions .ghost-link:hover, .top-actions .theme-toggle:hover,
-      .top-actions .ghost-link:active, .top-actions .theme-toggle:active {
+      .top-actions .ghost-link:hover, .top-actions .theme-toggle:hover {
         background: #E6F5F2;
         border-color: rgba(15, 118, 110, 0.6);
         transform: none;
+      }
+      .top-actions .ghost-link:active, .top-actions .theme-toggle:active {
+        background: #E6F5F2;
+        border-color: rgba(15, 118, 110, 0.6);
+        transform: scale(0.98);
       }
       [data-theme="dark"] .top-actions {
         background: #0f3a3d;
@@ -2017,6 +2021,99 @@
          mobile browser bar */
       .app-section:last-of-type { padding-bottom: calc(var(--space-12) + env(safe-area-inset-bottom, 0px)); }
       body { padding-bottom: env(safe-area-inset-bottom, 0px); }
+    }
+
+    /* ===== Interaction feedback polish =====
+       Goal: kill dead-click feel by giving every clickable surface immediate hover + press feedback,
+       eliminate the 300ms mobile tap delay, suppress the default gray tap-highlight box on touch
+       devices (we provide our own feedback), and ensure small icon-buttons hit the 44px touch
+       target on coarse pointers. Pure CSS — no markup or JS changes. */
+    html { -webkit-tap-highlight-color: transparent; }
+    button, a, [role="button"], summary, label[for], input[type="checkbox"], input[type="radio"] {
+      touch-action: manipulation;
+    }
+
+    /* Press feedback for every primary CTA / button surface */
+    .btn:active { transform: scale(0.98); }
+    .popular-use-card:active,
+    .usecases-dice-btn:active,
+    .example-chip:active,
+    .weekly-goal-pin-cta:active,
+    .history-tag-chip:active,
+    .history-item-toggle:active,
+    .builder-replay-btn:active,
+    .site-footer-replay-btn:active,
+    .first-time-helper-link:active,
+    .global-result:active,
+    .qa-tooltip-trigger:active,
+    .uc-modal-close:active,
+    .legal-modal-close:active,
+    .save-tip-close:active,
+    .post-uc-guidance-close:active,
+    .tip-block-dismiss:active,
+    .guidance-show-link:active,
+    .link-btn:active,
+    .ob-skip:active,
+    .nav-toggle:active,
+    .theme-toggle:active,
+    .ghost-link:active {
+      transform: scale(0.98);
+    }
+
+    /* Hover + active feedback for the "history" filter chip in its unpressed state
+       (its only existing rule was for [aria-pressed="true"], so the unpressed state was dead). */
+    .history-tag-chip:hover {
+      background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface-2));
+      border-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
+    }
+
+    /* The text "Switch to Expert Mode inside the builder." button had no .btn class and no hover
+       rule — it looked like an underlined link but felt dead on hover/tap. Give it real feedback. */
+    #hero-expert-link-btn {
+      background: transparent; border: 0; padding: 2px 4px; border-radius: 4px;
+      color: var(--color-primary); font: inherit; font-weight: 600;
+      text-decoration: underline; text-underline-offset: 3px;
+      cursor: pointer;
+      transition: background var(--transition-interactive), color var(--transition-interactive);
+    }
+    #hero-expert-link-btn:hover,
+    #hero-expert-link-btn:focus-visible {
+      background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+      outline: none;
+    }
+    #hero-expert-link-btn:active { transform: scale(0.98); }
+
+    /* Touch-target expansion on coarse pointers (touch screens). Critical: we expand the HIT
+       AREA without changing the visible size of the control — using an absolutely-positioned
+       ::before that inherits clicks (pseudo-elements forward pointer events to their parent).
+       This keeps "no layout shifts" while reaching the 44px WCAG AAA tap target. */
+    @media (pointer: coarse) {
+      .qa-tooltip-trigger,
+      .tip-block-dismiss,
+      .post-uc-guidance-close,
+      .legal-modal-close,
+      .save-tip-close,
+      .btn-clear,
+      .link-btn,
+      .history-tag-chip,
+      .example-chip { position: relative; }
+      .qa-tooltip-trigger::before,
+      .tip-block-dismiss::before,
+      .post-uc-guidance-close::before,
+      .legal-modal-close::before,
+      .save-tip-close::before,
+      .btn-clear::before,
+      .link-btn::before,
+      .history-tag-chip::before,
+      .example-chip::before {
+        content: "";
+        position: absolute;
+        /* Expand 11px in every direction → minimum 22px visible + 22px slop = 44x44 tap zone.
+           Smaller controls still meet 44 because their min-padding gives them ~22px to start. */
+        inset: -11px;
+        /* Below the control content but still receives tap; pointer-events on pseudo flow to parent. */
+        z-index: 0;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
