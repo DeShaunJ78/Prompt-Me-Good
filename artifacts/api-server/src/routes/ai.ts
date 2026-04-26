@@ -16,62 +16,210 @@ function clampString(value: unknown, max = MAX_INPUT_CHARS): string {
   return value.trim().slice(0, max);
 }
 
-const RATE_WINDOW_MS = 60 * 1000;
-const RATE_LIMIT_PER_WINDOW = 10;
-const ipHits = new Map<string, number[]>();
-
 function getClientKey(req: Request): string {
   // Use Express's req.ip, which honors the app-level `trust proxy` setting
   // (1 hop = the Replit front proxy). User-supplied X-Forwarded-For from beyond
   // the trusted hop is ignored, so attackers cannot spoof their way past the
-  // 10/min cap by injecting headers.
+  // per-endpoint caps by injecting headers.
   return req.ip ?? req.socket.remoteAddress ?? "unknown";
 }
 
-function rateLimit(req: Request, res: Response, next: NextFunction): void {
-  const key = getClientKey(req);
-  const now = Date.now();
-  const cutoff = now - RATE_WINDOW_MS;
-  const arr = (ipHits.get(key) ?? []).filter((t) => t > cutoff);
-  if (arr.length >= RATE_LIMIT_PER_WINDOW) {
-    res.status(429).json({
-      success: false,
-      ok: false,
-      error: "Too many requests. Please wait a moment and try again.",
-    });
-    return;
-  }
-  arr.push(now);
-  ipHits.set(key, arr);
-  if (ipHits.size > 5000) {
-    for (const [k, v] of ipHits) {
-      if (v.length === 0 || v[v.length - 1]! < cutoff) ipHits.delete(k);
+// Per-endpoint sliding-window rate limiter factory. Each endpoint gets its own
+// independent Map so a flood of /generate requests cannot starve /run.
+function makeRateLimiter(opts: { windowMs: number; max: number; label: string }) {
+  const hits = new Map<string, number[]>();
+  return function rateLimitMiddleware(req: Request, res: Response, next: NextFunction): void {
+    const key = getClientKey(req);
+    const now = Date.now();
+    const cutoff = now - opts.windowMs;
+    const arr = (hits.get(key) ?? []).filter((t) => t > cutoff);
+    if (arr.length >= opts.max) {
+      res.status(429).json({
+        success: false,
+        ok: false,
+        error: opts.label === "run"
+          ? "Too many AI executions. Please wait before trying again."
+          : opts.label === "generate"
+          ? "Too many prompt generations. Please wait before trying again."
+          : "Too many requests. Please wait a moment and try again.",
+      });
+      return;
     }
-  }
-  next();
+    arr.push(now);
+    hits.set(key, arr);
+    if (hits.size > 5000) {
+      for (const [k, v] of hits) {
+        if (v.length === 0 || v[v.length - 1]! < cutoff) hits.delete(k);
+      }
+    }
+    next();
+  };
 }
 
-const STATS_DIR = path.resolve(process.cwd(), "data");
-const STATS_FILE = path.join(STATS_DIR, "pmg_stats.json");
+const HOUR_MS = 60 * 60 * 1000;
+// Generate (build the optimized prompt) — capped at 20/hour/IP per spec.
+const generateLimiter = makeRateLimiter({ windowMs: HOUR_MS, max: 20, label: "generate" });
+// Run (execute the prompt against gpt-4o) — capped at 5/hour/IP per spec.
+const runLimiter = makeRateLimiter({ windowMs: HOUR_MS, max: 5, label: "run" });
+// Legacy/utility endpoints — keep the existing 10/min limiter for back-compat.
+const rateLimit = makeRateLimiter({ windowMs: 60 * 1000, max: 10, label: "general" });
+
+// --- Prompt-injection sanitizer for the structured /generate goal field ---
+// Blocks the obvious "ignore previous instructions" family of jailbreaks before
+// they ever reach the model. Server-side only; the frontend already enforces the
+// 500-char goal cap.
+const INJECTION_BLOCKLIST = [
+  "ignore previous instructions",
+  "ignore all previous instructions",
+  "disregard your instructions",
+  "disregard all instructions",
+  "you are now",
+  "forget everything",
+  "forget all previous",
+];
+
+function sanitizeGoal(goal: string): { ok: true } | { ok: false; status: number; error: string } {
+  const lower = goal.toLowerCase();
+  if (INJECTION_BLOCKLIST.some((phrase) => lower.includes(phrase))) {
+    return { ok: false, status: 400, error: "Invalid input detected." };
+  }
+  return { ok: true };
+}
+
+// --- Daily cost guard ($3/day hard ceiling) ---
+// In-memory tally keyed by UTC date (YYYY-MM-DD) so concurrent requests cannot
+// race past the cap. Debounced disk flush (1s) keeps the running total durable
+// across deploys without blocking on every increment.
+const DATA_DIR = path.resolve(process.cwd(), "data");
+const COST_FILE = path.join(DATA_DIR, "pmg_cost.json");
+const DAILY_COST_LIMIT_USD = 3.0;
+const COST_PER_GENERATE = 0.004; // ~400 in + 300 out tokens, gpt-4o-mini
+const COST_PER_RUN = 0.01; // ~500 in + 800 out tokens, gpt-4o
+const COST_FLUSH_MS = 1000;
+
+function todayKey(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function readCostFromDisk(): { date: string; spent: number } {
+  try {
+    const raw = fs.readFileSync(COST_FILE, "utf8");
+    const parsed = JSON.parse(raw);
+    const date = typeof parsed?.date === "string" ? parsed.date : todayKey();
+    const spent = Number(parsed?.spent);
+    return {
+      date,
+      spent: Number.isFinite(spent) && spent >= 0 ? spent : 0,
+    };
+  } catch {
+    return { date: todayKey(), spent: 0 };
+  }
+}
+
+let costState = readCostFromDisk();
+let costFlushTimer: NodeJS.Timeout | null = null;
+let lastFlushedSpent = costState.spent;
+let lastFlushedDate = costState.date;
+
+function flushCostToDisk(): void {
+  costFlushTimer = null;
+  if (costState.date === lastFlushedDate && costState.spent === lastFlushedSpent) return;
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    fs.writeFileSync(COST_FILE, JSON.stringify(costState));
+    lastFlushedSpent = costState.spent;
+    lastFlushedDate = costState.date;
+  } catch (err) {
+    logger.warn(
+      { err: err instanceof Error ? err.message : "unknown" },
+      "cost write failed",
+    );
+  }
+}
+
+function rollDayIfNeeded(): void {
+  const today = todayKey();
+  if (costState.date !== today) {
+    costState = { date: today, spent: 0 };
+    lastFlushedSpent = 0;
+    lastFlushedDate = today;
+    if (!costFlushTimer) {
+      costFlushTimer = setTimeout(flushCostToDisk, COST_FLUSH_MS);
+      if (typeof costFlushTimer.unref === "function") costFlushTimer.unref();
+    }
+  }
+}
+
+// Cost guard split into two pieces to avoid budget-drain abuse:
+//   1. `makeCostCheck` runs as middleware — purely READ-ONLY, just gates
+//      requests when the budget would be exceeded. It does NOT charge.
+//   2. `chargeCost` is called EXPLICITLY by each handler AFTER the request
+//      has passed body validation AND is about to actually hit OpenAI.
+// This means malformed / oversized / empty payloads cannot drain the daily $3
+// budget — only requests we genuinely act on are charged.
+function costForEndpoint(endpoint: "generate" | "run"): number {
+  return endpoint === "run" ? COST_PER_RUN : COST_PER_GENERATE;
+}
+
+function makeCostCheck(endpoint: "generate" | "run") {
+  return function costCheckMiddleware(_req: Request, res: Response, next: NextFunction): void {
+    rollDayIfNeeded();
+    const cost = costForEndpoint(endpoint);
+    if (costState.spent + cost > DAILY_COST_LIMIT_USD) {
+      res.status(429).json({
+        success: false,
+        ok: false,
+        error: "Daily usage limit reached. Service resets at midnight UTC. Try again tomorrow.",
+      });
+      return;
+    }
+    next();
+  };
+}
+
+function chargeCost(endpoint: "generate" | "run"): void {
+  rollDayIfNeeded();
+  costState.spent += costForEndpoint(endpoint);
+  if (!costFlushTimer) {
+    costFlushTimer = setTimeout(flushCostToDisk, COST_FLUSH_MS);
+    if (typeof costFlushTimer.unref === "function") costFlushTimer.unref();
+  }
+}
+
+const generateCostCheck = makeCostCheck("generate");
+const runCostCheck = makeCostCheck("run");
+
+// Stats counter: tracks both promptCount (generations) and runCount (executions).
+// In-memory authoritative state with debounced disk flush — eliminates the
+// read-modify-write race that would otherwise lose increments under concurrency.
+const STATS_FILE = path.join(DATA_DIR, "pmg_stats.json");
 const STATS_FLUSH_MS = 1000;
 
-function readPromptCountFromDisk(): number {
+type StatsState = { promptCount: number; runCount: number };
+
+function readStatsFromDisk(): StatsState {
   try {
     const raw = fs.readFileSync(STATS_FILE, "utf8");
     const parsed = JSON.parse(raw);
-    const n = Number(parsed?.promptCount);
-    return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0;
+    const promptCount = Number(parsed?.promptCount);
+    const runCount = Number(parsed?.runCount);
+    return {
+      promptCount: Number.isFinite(promptCount) && promptCount >= 0 ? Math.floor(promptCount) : 0,
+      runCount: Number.isFinite(runCount) && runCount >= 0 ? Math.floor(runCount) : 0,
+    };
   } catch {
-    return 0;
+    return { promptCount: 0, runCount: 0 };
   }
 }
 
-function writePromptCountToDisk(n: number): void {
+function writeStatsToDisk(state: StatsState): void {
   try {
-    if (!fs.existsSync(STATS_DIR)) {
-      fs.mkdirSync(STATS_DIR, { recursive: true });
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
     }
-    fs.writeFileSync(STATS_FILE, JSON.stringify({ promptCount: n }));
+    fs.writeFileSync(STATS_FILE, JSON.stringify(state));
   } catch (err) {
     logger.warn(
       { err: err instanceof Error ? err.message : "unknown" },
@@ -80,32 +228,40 @@ function writePromptCountToDisk(n: number): void {
   }
 }
 
-// In-memory authoritative counter — eliminates the read-modify-write race that
-// existed when each request re-read the file before incrementing. Disk writes
-// are debounced to at most one per second; on flush we persist the latest
-// in-memory value, so concurrent bumps never lose increments.
-let promptCountCache = readPromptCountFromDisk();
-let lastWrittenValue = promptCountCache;
-let flushTimer: NodeJS.Timeout | null = null;
+const statsCache: StatsState = readStatsFromDisk();
+let lastWrittenStats: StatsState = { ...statsCache };
+let statsFlushTimer: NodeJS.Timeout | null = null;
 
-function flushPromptCount(): void {
-  flushTimer = null;
-  if (promptCountCache !== lastWrittenValue) {
-    const value = promptCountCache;
-    writePromptCountToDisk(value);
-    lastWrittenValue = value;
+function flushStats(): void {
+  statsFlushTimer = null;
+  if (
+    statsCache.promptCount !== lastWrittenStats.promptCount ||
+    statsCache.runCount !== lastWrittenStats.runCount
+  ) {
+    const snapshot: StatsState = { ...statsCache };
+    writeStatsToDisk(snapshot);
+    lastWrittenStats = snapshot;
   }
 }
 
-function bumpPromptCount(): void {
-  promptCountCache += 1;
-  if (flushTimer) return;
-  flushTimer = setTimeout(flushPromptCount, STATS_FLUSH_MS);
-  if (typeof flushTimer.unref === "function") flushTimer.unref();
+function scheduleStatsFlush(): void {
+  if (statsFlushTimer) return;
+  statsFlushTimer = setTimeout(flushStats, STATS_FLUSH_MS);
+  if (typeof statsFlushTimer.unref === "function") statsFlushTimer.unref();
 }
 
-function readPromptCount(): number {
-  return promptCountCache;
+function bumpPromptCount(): void {
+  statsCache.promptCount += 1;
+  scheduleStatsFlush();
+}
+
+function bumpRunCount(): void {
+  statsCache.runCount += 1;
+  scheduleStatsFlush();
+}
+
+function readStats(): StatsState {
+  return { promptCount: statsCache.promptCount, runCount: statsCache.runCount };
 }
 
 const GENERATE_MAX_INPUT = 4000;
@@ -283,12 +439,30 @@ function buildMessages(
   };
 }
 
-router.post("/generate", rateLimit, async (req, res) => {
+// Pulls the user-provided text out of either the structured ({goal}) or
+// legacy ({prompt}) payload so the injection sanitizer can inspect it
+// without re-parsing the message shape.
+function getUserTextForSanitize(body: unknown): string {
+  if (!body || typeof body !== "object") return "";
+  const b = body as Record<string, unknown>;
+  if (typeof b["goal"] === "string") return b["goal"];
+  if (typeof b["prompt"] === "string") return b["prompt"];
+  return "";
+}
+
+router.post("/generate", generateLimiter, generateCostCheck, async (req, res) => {
+  const sanitized = sanitizeGoal(getUserTextForSanitize(req.body));
+  if (!sanitized.ok) {
+    res.status(sanitized.status).json({ success: false, ok: false, error: sanitized.error });
+    return;
+  }
   const built = buildMessages(req.body);
   if (!built.ok) {
     res.status(built.status).json({ success: false, ok: false, error: built.error });
     return;
   }
+  // Charge ONLY after validation — invalid bodies cannot drain the daily budget.
+  chargeCost("generate");
   try {
     const completion = await openai.chat.completions.create({
       model: GENERATE_MODEL,
@@ -316,12 +490,19 @@ router.post("/generate", rateLimit, async (req, res) => {
   }
 });
 
-router.post("/generate-stream", rateLimit, async (req, res) => {
+router.post("/generate-stream", generateLimiter, generateCostCheck, async (req, res) => {
+  const sanitized = sanitizeGoal(getUserTextForSanitize(req.body));
+  if (!sanitized.ok) {
+    res.status(sanitized.status).json({ success: false, ok: false, error: sanitized.error });
+    return;
+  }
   const built = buildMessages(req.body);
   if (!built.ok) {
     res.status(built.status).json({ success: false, ok: false, error: built.error });
     return;
   }
+  // Charge ONLY after validation — invalid bodies cannot drain the daily budget.
+  chargeCost("generate");
 
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache, no-transform");
@@ -363,9 +544,91 @@ router.post("/generate-stream", rateLimit, async (req, res) => {
   }
 });
 
+// /api/run — executes a user-provided prompt against gpt-4o and streams the
+// model's response as Server-Sent Events. Distinct from /generate (which
+// builds an optimized prompt template) — this is the "run with AI" feature
+// that lets users see what their prompt actually produces, in-app.
+const RUN_MODEL = "gpt-4o";
+const RUN_MAX_INPUT = 2000;
+const RUN_MAX_OUTPUT_TOKENS = 1000;
+const RUN_SYSTEM_PROMPT =
+  "You are a helpful, direct AI assistant. Execute the user's prompt exactly as instructed. Be specific, practical, and thorough.";
+
+router.post("/run", runLimiter, runCostCheck, async (req, res) => {
+  const promptRaw = req.body?.prompt;
+  if (typeof promptRaw !== "string") {
+    res.status(400).json({ success: false, ok: false, error: "A prompt is required." });
+    return;
+  }
+  const prompt = promptRaw.trim();
+  if (!prompt) {
+    res.status(400).json({ success: false, ok: false, error: "A prompt is required." });
+    return;
+  }
+  if (prompt.length > RUN_MAX_INPUT) {
+    res.status(400).json({
+      success: false,
+      ok: false,
+      error: "Prompt is too long. Please shorten it.",
+    });
+    return;
+  }
+  // Charge ONLY after validation — invalid bodies cannot drain the daily budget.
+  chargeCost("run");
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache, no-transform");
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no");
+  if (typeof (res as unknown as { flushHeaders?: () => void }).flushHeaders === "function") {
+    (res as unknown as { flushHeaders: () => void }).flushHeaders();
+  }
+
+  let total = 0;
+  try {
+    const stream = await openai.chat.completions.create({
+      model: RUN_MODEL,
+      max_completion_tokens: RUN_MAX_OUTPUT_TOKENS,
+      stream: true,
+      messages: [
+        { role: "system", content: RUN_SYSTEM_PROMPT },
+        { role: "user", content: prompt },
+      ],
+    });
+
+    for await (const chunk of stream) {
+      const text = chunk.choices?.[0]?.delta?.content ?? "";
+      if (text) {
+        total += text.length;
+        res.write(`data: ${JSON.stringify({ text })}\n\n`);
+      }
+    }
+    if (total > 0) bumpRunCount();
+    res.write("data: [DONE]\n\n");
+    res.end();
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "AI execution failed. Please try again.";
+    logger.error({ err: message }, "run failed");
+    try {
+      res.write(`data: ${JSON.stringify({ error: "AI execution failed. Please try again." })}\n\n`);
+      res.write("data: [DONE]\n\n");
+      res.end();
+    } catch {
+      // socket already closed
+    }
+  }
+});
+
 router.get("/stats", (_req, res) => {
-  const promptCount = readPromptCount();
-  res.json({ promptCount });
+  const stats = readStats();
+  res.json({ promptCount: stats.promptCount, runCount: stats.runCount });
+});
+
+// /api/health — duplicates the root /health endpoint at the /api/* path so the
+// frontend keep-alive ping can reach it through the artifact path-based router
+// (which only forwards /api/* to this api-server).
+router.get("/health", (_req, res) => {
+  res.json({ status: "ok" });
 });
 
 router.post("/generate-prompt", rateLimit, async (req, res) => {

@@ -34,6 +34,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Health check (intentionally outside /api so the keep-alive ping from the web
+// client stays cheap and unauthenticated). Used by the frontend's 4-minute
+// keep-alive to prevent Replit cold starts.
+app.get("/health", (_req, res) => {
+  res.json({ status: "ok" });
+});
+
 app.use("/api", router);
 
 export default app;

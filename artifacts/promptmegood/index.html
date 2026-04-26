@@ -1145,6 +1145,34 @@
     .trust-line { font-size: var(--text-sm); color: var(--color-text-muted); font-style: italic; margin-top: var(--space-2); }
     .usage-counter { font-size: var(--text-sm); color: var(--color-text-muted); margin-top: var(--space-2); margin-bottom: 0; }
     .usage-counter #usageCount { color: var(--color-primary); font-weight: 600; }
+    .run-section, .ai-response-section { margin-top: var(--space-4); }
+    .run-section-divider { height: 1px; background: var(--color-border); margin-bottom: var(--space-3); }
+    .run-section-title { font-size: var(--text-base); font-weight: 700; margin: 0 0 4px 0; color: var(--color-text); }
+    .run-section-helper { font-size: var(--text-sm); color: var(--color-text-muted); margin: 0 0 var(--space-2) 0; }
+    .run-section-meta { font-size: var(--text-xs); color: var(--color-text-muted); text-align: center; margin: 8px 0 0 0; }
+    .run-btn { width: 100%; padding: 14px 28px; font-size: var(--text-base); }
+    .ai-response-output {
+      background: color-mix(in srgb, var(--color-primary) 4%, var(--color-surface));
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      min-height: 120px;
+      font-size: var(--text-sm);
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--color-text);
+    }
+    .ai-response-output:empty::before {
+      content: 'Waiting for AI response…';
+      color: var(--color-text-muted);
+      font-style: italic;
+    }
+    .ai-response-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .ai-response-actions .btn { flex: 1; min-width: 140px; }
+    @media (max-width: 480px) {
+      .ai-response-actions .btn { flex: 1 1 100%; }
+    }
     .examples-block { margin-top: var(--space-3); }
     .examples-title { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); font-weight: 600; margin-bottom: 8px; }
     .examples-row { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -3074,6 +3102,30 @@
               <button class="btn btn-secondary" type="button" id="print-btn" title="Print or save as PDF">Print / Save PDF</button>
               <button class="btn btn-secondary btn-clear" type="button" id="clear-prompt-btn" aria-label="Clear generated prompt">Clear Prompt</button>
             </div>
+
+            <!-- RUN WITH AI — hidden until a prompt is generated -->
+            <div class="run-section" id="runSection" hidden>
+              <div class="run-section-divider"></div>
+              <h3 class="run-section-title">Run This Prompt With AI</h3>
+              <p class="run-section-helper">Your prompt is ready. Review it above, edit if needed, then run it here.</p>
+              <button class="btn btn-primary run-btn" type="button" id="runBtn" onclick="runWithAI()">
+                <span aria-hidden="true">▶</span> Run With AI
+              </button>
+              <p class="run-section-meta">Uses 1 AI execution &middot; Free during Early Access</p>
+            </div>
+
+            <!-- AI RESPONSE — hidden until run completes -->
+            <div class="ai-response-section" id="aiResponseSection" hidden>
+              <div class="run-section-divider"></div>
+              <h3 class="run-section-title">AI Response</h3>
+              <p class="run-section-helper">Generated from your prompt above.</p>
+              <div class="ai-response-output" id="aiResponseOutput" aria-live="polite" aria-atomic="false"></div>
+              <div class="ai-response-actions">
+                <button class="btn btn-secondary" type="button" id="copyResponseBtn" onclick="copyAIResponse()">Copy Response</button>
+                <button class="btn btn-secondary" type="button" id="runAgainBtn" onclick="runWithAI()">Run Again</button>
+              </div>
+            </div>
+
             <div class="save-tip" id="save-tip" role="status" aria-live="polite">
               <span class="save-tip-text">Tip: Export your prompts to keep them safe.</span>
               <button class="save-tip-close" type="button" id="save-tip-close" aria-label="Dismiss tip">&times;</button>
@@ -6235,6 +6287,10 @@ Context:
           if (window.__pmgGuidance && typeof window.__pmgGuidance.markGenerated === 'function') {
             window.__pmgGuidance.markGenerated();
           }
+          // Reveal the "Run With AI" panel so the user can execute the prompt in-app.
+          if (window.__pmgRun && typeof window.__pmgRun.show === 'function') {
+            window.__pmgRun.show();
+          }
         }
 
         // If AI client is unavailable or already at the monthly limit, just use the local builder.
@@ -8612,7 +8668,10 @@ Context:
           const res = await fetch('/api/stats', { cache: 'no-store' });
           if (!res.ok) return;
           const data = await res.json();
-          const n = Number(data && data.promptCount);
+          // Combined "things our users have made" count: optimized prompts + AI runs.
+          const promptN = Number(data && data.promptCount) || 0;
+          const runN = Number(data && data.runCount) || 0;
+          const n = promptN + runN;
           if (!Number.isFinite(n) || n <= 100) return;
           const countEl = document.getElementById('usageCount');
           const wrapEl = document.getElementById('usageCounter');
@@ -8628,6 +8687,186 @@ Context:
       } else {
         loadUsageCounter();
       }
+    })();
+
+    /* ===== Run With AI — streams /api/run (SSE) into #aiResponseOutput =====
+       Uses the SAME data: {text|error}\n\n + data: [DONE] format as /api/generate-stream
+       so the parser is a near-mirror of the existing AI prompt streamer. */
+    (function () {
+      let inFlight = false;
+      let lastResponseText = '';
+
+      function $(id) { return document.getElementById(id); }
+
+      function getCurrentPrompt() {
+        // #resultBox is a contenteditable <div>, NOT a textarea — read textContent.
+        // Fall back to innerText if textContent is somehow empty (rare, but safe).
+        const box = $('resultBox');
+        if (!box) return '';
+        const text = (box.textContent || box.innerText || '').trim();
+        return text;
+      }
+
+      function show() {
+        const sec = $('runSection');
+        if (sec) sec.hidden = false;
+      }
+
+      function setRunning(running) {
+        inFlight = running;
+        const btn = $('runBtn');
+        const again = $('runAgainBtn');
+        if (btn) {
+          btn.disabled = running;
+          btn.textContent = running ? 'Running…' : '▶ Run With AI';
+        }
+        if (again) again.disabled = running;
+      }
+
+      async function run() {
+        if (inFlight) return;
+        const prompt = getCurrentPrompt();
+        if (!prompt) {
+          alert('Generate a prompt above first, then run it here.');
+          return;
+        }
+        if (prompt.length > 2000) {
+          alert('Your prompt is too long to run (max 2000 characters). Try shortening it.');
+          return;
+        }
+
+        // Reveal output area + clear prior output.
+        const respSection = $('aiResponseSection');
+        const out = $('aiResponseOutput');
+        if (respSection) respSection.hidden = false;
+        if (out) out.textContent = '';
+        lastResponseText = '';
+        setRunning(true);
+
+        let res;
+        try {
+          res = await fetch('/api/run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
+            body: JSON.stringify({ prompt }),
+          });
+        } catch (err) {
+          if (out) out.textContent = 'Network error. Please try again.';
+          setRunning(false);
+          return;
+        }
+
+        if (!res.ok) {
+          let msg = 'Run failed. Please try again.';
+          try {
+            const ct = res.headers.get('content-type') || '';
+            if (ct.includes('application/json')) {
+              const j = await res.json();
+              if (j && (j.error || j.message)) msg = String(j.error || j.message);
+            } else {
+              msg = (await res.text()) || msg;
+            }
+          } catch (_) {}
+          if (res.status === 429) msg = 'Rate limit reached. Please wait a bit before running again.';
+          if (out) out.textContent = msg;
+          setRunning(false);
+          return;
+        }
+
+        if (!res.body) {
+          if (out) out.textContent = 'Streaming not supported in this browser.';
+          setRunning(false);
+          return;
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let terminated = false;
+        try {
+          // Standard SSE parse: split on \n\n, handle data: lines.
+          // Treat [DONE] as a HARD STOP — abort the reader and break out so we
+          // don't depend on socket-close to terminate the loop.
+          // eslint-disable-next-line no-constant-condition
+          while (!terminated) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            // Normalize CRLF to LF so the boundary split works regardless of source.
+            buffer = buffer.replace(/\r\n/g, '\n');
+            let idx;
+            while ((idx = buffer.indexOf('\n\n')) !== -1) {
+              const event = buffer.slice(0, idx);
+              buffer = buffer.slice(idx + 2);
+              const lines = event.split('\n').filter(Boolean);
+              for (const line of lines) {
+                if (!line.startsWith('data:')) continue;
+                const payload = line.slice(5).trim();
+                if (!payload) continue;
+                if (payload === '[DONE]') {
+                  terminated = true;
+                  try { reader.cancel(); } catch (_) {}
+                  break;
+                }
+                try {
+                  const obj = JSON.parse(payload);
+                  if (obj && typeof obj.text === 'string') {
+                    lastResponseText += obj.text;
+                    if (out) out.textContent = lastResponseText;
+                  } else if (obj && obj.error) {
+                    if (out) out.textContent = String(obj.error);
+                  }
+                } catch (_) {
+                  // Ignore malformed event lines — never break the stream on a single bad chunk.
+                }
+              }
+              if (terminated) break;
+            }
+          }
+        } catch (err) {
+          if (!lastResponseText && out) out.textContent = 'Stream interrupted. Please try again.';
+        } finally {
+          setRunning(false);
+        }
+      }
+
+      async function copyResponse() {
+        const out = $('aiResponseOutput');
+        const text = (out && out.textContent) || '';
+        if (!text.trim()) return;
+        const btn = $('copyResponseBtn');
+        try {
+          await navigator.clipboard.writeText(text);
+          if (btn) {
+            const orig = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(function () { btn.textContent = orig; }, 1500);
+          }
+        } catch (_) {
+          // Best-effort fallback: select-and-prompt is overkill; just log silently.
+        }
+      }
+
+      // Public hooks used by the inline onclick handlers and finalize().
+      window.runWithAI = run;
+      window.copyAIResponse = copyResponse;
+      window.__pmgRun = { show: show, run: run };
+    })();
+
+    /* ===== Keep-alive — pings /health every 4 minutes while the tab is visible
+       to prevent Replit dyno cold starts during an active session. ===== */
+    (function () {
+      const PING_MS = 4 * 60 * 1000;
+      function ping() {
+        if (typeof document !== 'undefined' && document.hidden) return;
+        try {
+          // Use /api/health (not bare /health) — only /api/* is routed to the
+          // api-server in the artifact path-based router; bare /health hits the
+          // web artifact and returns the SPA shell instead of JSON.
+          fetch('/api/health', { method: 'GET', cache: 'no-store', credentials: 'omit' }).catch(function () {});
+        } catch (_) {}
+      }
+      setInterval(ping, PING_MS);
     })();
   </script>
 </body>
