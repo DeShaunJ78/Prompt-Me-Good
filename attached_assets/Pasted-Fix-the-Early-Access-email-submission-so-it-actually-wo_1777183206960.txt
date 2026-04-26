@@ -1,0 +1,103 @@
+Fix the Early Access email submission so it actually works. Do not change UI unless necessary.
+
+========================
+GOAL
+========================
+
+When a user submits their email:
+- It must successfully send or store the email externally
+- The user must see a success message
+- No false errors
+
+========================
+PART 1 — DEBUG THE FAILURE
+========================
+
+Inspect the current submission flow:
+
+1. What happens on submit?
+2. What endpoint is being called?
+3. Is there a fetch() or API call?
+4. Is it failing? Why?
+   - network error?
+   - 404?
+   - 500?
+   - missing API key?
+
+Log the exact error in console.
+
+========================
+PART 2 — IMPLEMENT A WORKING BACKEND
+========================
+
+If no working backend exists, create one.
+
+Option A (preferred):
+- Use a simple server endpoint (e.g., /api/early-access)
+- Send email using a service like Resend
+
+Option B (fallback):
+- Store email in database (Supabase)
+
+========================
+PART 3 — CONNECT FRONTEND TO BACKEND
+========================
+
+On submit:
+
+- Send POST request with email
+- Wait for success response
+
+Example:
+
+fetch('/api/early-access', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email })
+})
+
+========================
+PART 4 — SUCCESS + ERROR HANDLING
+========================
+
+On success:
+- Clear input
+- Show:
+“You’re in. We’ll notify you when PRO opens.”
+
+On failure:
+- Show:
+“Something went wrong. Please try again.”
+
+BUT ONLY show failure if it actually fails.
+
+========================
+PART 5 — REMOVE FALSE FAILURE STATE
+========================
+
+Ensure:
+- Error message is NOT shown by default
+- Only appears if request fails
+
+========================
+PART 6 — VERIFY END-TO-END
+========================
+
+Test:
+
+1. Submit email
+2. Confirm:
+   - request succeeds
+   - email is received OR stored
+   - success message appears
+   - no console errors
+
+========================
+FINAL CHECK
+========================
+
+- Emails are actually captured externally
+- No false error messages
+- Form works on mobile
+- No broken promises to users
+- No JavaScript errors
