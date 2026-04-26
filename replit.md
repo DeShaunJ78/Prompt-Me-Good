@@ -55,6 +55,7 @@ PromptMeGood is a single-file static HTML AI prompt builder (`index.html`) built
 -   **Prompt Sharing:** Encodes prompt parameters into a URL hash for shareable links, with prefilling logic on `hashchange`.
 -   **Expert Mode:** An opt-in mode that hides guidance, reveals advanced controls, and introduces keyboard hints. State and activation count are persisted in `localStorage`. Tour resilience ensures guided elements remain visible during onboarding.
 -   **Manual/Guide:** Split into a quick-start on `index.html` and a comprehensive `guide.html` with a table of contents and reorganized content.
+-   **Theme Accent:** Footer-based picker (`.site-footer-personalize`) with 5 swatches — PromptMeGood Green (default), Deep Blue, Royal Purple, Warm Gold, Slate. Swaps `--color-primary` (and `--color-primary-hover`/`--color-primary-highlight`, or `--color-primary-strong` on pricing.html) via `<html data-accent="X">`. Persisted in `localStorage` under `promptmegood:themeAccent:v1`. A synchronous bootstrap script in `<head>` on all 3 HTML pages applies the saved accent before paint to avoid flash; CSS overrides are placed at the end of each page's stylesheet so they win equal-specificity cascade ties over the base `:root` / `[data-theme="light"]` declarations.
 -   **Globals:** `window.__pmgSmartSystems` (for `markAllTouched`, `clearTouched`, `recompute`) and `window.__pmgStrengthScore` (for `render`, `hide`) are exposed for smart system functionality.
 
 # External Dependencies

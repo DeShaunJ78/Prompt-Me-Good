@@ -9,6 +9,17 @@
   <link rel="apple-touch-icon" href="/favicon.png" />
   <link rel="preconnect" href="https://api.fontshare.com" />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet" />
+  <script>
+    /* Mirror of the index.html theme-accent bootstrap so users keep their accent across pages. */
+    (function () {
+      try {
+        var v = localStorage.getItem('promptmegood:themeAccent:v1');
+        if (v && /^(green|blue|purple|gold|slate)$/.test(v) && v !== 'green') {
+          document.documentElement.setAttribute('data-accent', v);
+        }
+      } catch (e) {}
+    })();
+  </script>
   <style>
     :root, [data-theme="light"] {
       --color-bg: #F7F9F8;
@@ -132,6 +143,18 @@
     button, a, [role="button"], summary, label[for], input[type="checkbox"], input[type="radio"] { touch-action: manipulation; }
     .btn:active { transform: scale(0.98); }
     a:active, button:not(.btn):active { opacity: 0.7; transition: opacity 100ms ease; }
+
+    /* Theme accent overrides — placed at end of stylesheet so they win over the base
+       :root / [data-theme="light"] declarations on equal-specificity ties.
+       pricing.html uses --color-primary-strong (its hover token) instead of --color-primary-hover. */
+    [data-accent="blue"] { --color-primary: #1e40af; --color-primary-strong: #1e3a8a; }
+    [data-theme="dark"][data-accent="blue"] { --color-primary: #93c5fd; --color-primary-strong: #bfdbfe; }
+    [data-accent="purple"] { --color-primary: #6d28d9; --color-primary-strong: #5b21b6; }
+    [data-theme="dark"][data-accent="purple"] { --color-primary: #c4b5fd; --color-primary-strong: #ddd6fe; }
+    [data-accent="gold"] { --color-primary: #b45309; --color-primary-strong: #92400e; }
+    [data-theme="dark"][data-accent="gold"] { --color-primary: #fcd34d; --color-primary-strong: #fde68a; }
+    [data-accent="slate"] { --color-primary: #475569; --color-primary-strong: #334155; }
+    [data-theme="dark"][data-accent="slate"] { --color-primary: #cbd5e1; --color-primary-strong: #e2e8f0; }
   </style>
 </head>
 <body>

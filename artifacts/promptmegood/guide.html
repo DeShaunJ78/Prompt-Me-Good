@@ -7,6 +7,17 @@
   <meta name="description" content="The complete walkthrough for PromptMeGood — every step, field, boost, refinement tool, and pro tip in one place." />
   <link rel="canonical" href="https://prompt-me-good.replit.app/guide.html" />
   <link rel="icon" href="data:," />
+  <script>
+    /* Mirror of the index.html theme-accent bootstrap so users keep their accent across pages. */
+    (function () {
+      try {
+        var v = localStorage.getItem('promptmegood:themeAccent:v1');
+        if (v && /^(green|blue|purple|gold|slate)$/.test(v) && v !== 'green') {
+          document.documentElement.setAttribute('data-accent', v);
+        }
+      } catch (e) {}
+    })();
+  </script>
   <style>
     :root, [data-theme="light"] {
       --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
@@ -290,6 +301,17 @@
     button, a, [role="button"], summary, label[for], input[type="checkbox"], input[type="radio"] { touch-action: manipulation; }
     .btn:active { transform: scale(0.98); }
     a:active, button:not(.btn):active { opacity: 0.7; transition: opacity 100ms ease; }
+
+    /* Theme accent overrides — placed at end of stylesheet so they win over the base
+       :root / [data-theme="light"] declarations on equal-specificity ties. Same naming as index.html. */
+    [data-accent="blue"] { --color-primary: #1e40af; --color-primary-hover: #1e3a8a; --color-primary-highlight: #dbeafe; }
+    [data-theme="dark"][data-accent="blue"] { --color-primary: #93c5fd; --color-primary-hover: #bfdbfe; --color-primary-highlight: #1e3a8a; }
+    [data-accent="purple"] { --color-primary: #6d28d9; --color-primary-hover: #5b21b6; --color-primary-highlight: #ede9fe; }
+    [data-theme="dark"][data-accent="purple"] { --color-primary: #c4b5fd; --color-primary-hover: #ddd6fe; --color-primary-highlight: #4c1d95; }
+    [data-accent="gold"] { --color-primary: #b45309; --color-primary-hover: #92400e; --color-primary-highlight: #fef3c7; }
+    [data-theme="dark"][data-accent="gold"] { --color-primary: #fcd34d; --color-primary-hover: #fde68a; --color-primary-highlight: #78350f; }
+    [data-accent="slate"] { --color-primary: #475569; --color-primary-hover: #334155; --color-primary-highlight: #e2e8f0; }
+    [data-theme="dark"][data-accent="slate"] { --color-primary: #cbd5e1; --color-primary-hover: #e2e8f0; --color-primary-highlight: #1e293b; }
   </style>
 </head>
 <body>
@@ -617,6 +639,17 @@
                   <li><strong>Prompt Strength.</strong> After you generate a prompt, you'll see a 0–100% score with 2–3 quick insights so you know what to improve next.</li>
                   <li><strong>This Week's Focus.</strong> A new starter goal appears at the top of the builder every 7 days. Tap it to drop it straight into your goal field.</li>
                   <li><strong>Expert Mode.</strong> Toggle in the builder header. Expert Mode allows full control with no guidance, expanded options, and visible keyboard shortcuts. Auto Optimize is turned off automatically. Toggle off any time to return to the guided experience.</li>
+                </ul>
+              </article>
+
+              <article class="manual-section" id="manual-theme-accent">
+                <h3>Theme Accent</h3>
+                <p>Personalize the look of PromptMeGood with your favorite accent color. Your choice is saved to this browser and applied instantly on every page.</p>
+                <ul>
+                  <li><strong>Where to find it.</strong> Scroll to the footer on the home page and look for <em>Theme Accent</em>. Tap any colored dot to switch.</li>
+                  <li><strong>Five options.</strong> PromptMeGood Green (default), Deep Blue, Royal Purple, Warm Gold, and Slate.</li>
+                  <li><strong>Works with Light or Dark.</strong> Each accent has tuned light- and dark-mode variants so contrast stays comfortable either way.</li>
+                  <li><strong>Reset to default.</strong> Tap the green dot any time to return to the original look.</li>
                 </ul>
               </article>
             </section>

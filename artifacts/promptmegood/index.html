@@ -16,6 +16,18 @@
   </script>
   <link rel="preconnect" href="https://api.fontshare.com" />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet" />
+  <script>
+    /* Theme accent bootstrap — runs synchronously in <head> before styles paint to avoid a flash
+       of the wrong accent color on initial load. Must match the writer in the Personalize footer. */
+    (function () {
+      try {
+        var v = localStorage.getItem('promptmegood:themeAccent:v1');
+        if (v && /^(green|blue|purple|gold|slate)$/.test(v) && v !== 'green') {
+          document.documentElement.setAttribute('data-accent', v);
+        }
+      } catch (e) {}
+    })();
+  </script>
   <style>
     /* Art direction: lightweight prompt-builder SaaS → clean, direct, conversion-first.
        Palette: neutral surfaces with restrained teal accent.
@@ -101,6 +113,37 @@
         --color-primary-hover: #73b8bf;
         --color-primary-highlight: #213438;
       }
+    }
+
+    /* ===== Theme Accent palettes =====
+       The accent palette swaps only --color-primary / hover / highlight. Everything else
+       (typography, spacing, surfaces, borders) stays identical so brand consistency is preserved.
+       Default (PromptMeGood Green) is whatever :root already declares — no override needed.
+       Each accent has light + dark variants. Dark variants are lighter so white-text-on-primary
+       inverts cleanly to dark-text-on-light-primary in dark mode (matches existing pattern). */
+    [data-accent="blue"] {
+      --color-primary: #1e40af; --color-primary-hover: #1e3a8a; --color-primary-highlight: #dbeafe;
+    }
+    [data-theme="dark"][data-accent="blue"] {
+      --color-primary: #93c5fd; --color-primary-hover: #bfdbfe; --color-primary-highlight: #1e3a8a;
+    }
+    [data-accent="purple"] {
+      --color-primary: #6d28d9; --color-primary-hover: #5b21b6; --color-primary-highlight: #ede9fe;
+    }
+    [data-theme="dark"][data-accent="purple"] {
+      --color-primary: #c4b5fd; --color-primary-hover: #ddd6fe; --color-primary-highlight: #4c1d95;
+    }
+    [data-accent="gold"] {
+      --color-primary: #b45309; --color-primary-hover: #92400e; --color-primary-highlight: #fef3c7;
+    }
+    [data-theme="dark"][data-accent="gold"] {
+      --color-primary: #fcd34d; --color-primary-hover: #fde68a; --color-primary-highlight: #78350f;
+    }
+    [data-accent="slate"] {
+      --color-primary: #475569; --color-primary-hover: #334155; --color-primary-highlight: #e2e8f0;
+    }
+    [data-theme="dark"][data-accent="slate"] {
+      --color-primary: #cbd5e1; --color-primary-hover: #e2e8f0; --color-primary-highlight: #1e293b;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -198,9 +241,9 @@
       margin-bottom: 6px;
     }
     .highlight {
-      color: #0f766e;
+      color: var(--color-primary);
       font-weight: 700;
-      transition: all 0.3s ease;
+      transition: color 0.3s ease;
     }
     .hero p {
       margin-top: var(--space-6); color: var(--color-text-muted); max-width: 58ch;
@@ -236,8 +279,8 @@
       min-height: 64px; padding: 10px var(--space-5); border-radius: 18px;
     }
     .hero-subtext-box {
-      background: rgba(15, 118, 110, 0.08);
-      border-left: 4px solid #0f766e;
+      background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+      border-left: 4px solid var(--color-primary);
       padding: 14px 16px;
       border-radius: 10px;
       margin-top: 16px;
@@ -251,10 +294,10 @@
       line-height: 1.6;
       font-weight: 500;
     }
-    .hero .hero-subtext strong { font-weight: 700; color: #0c4f48; }
-    [data-theme="dark"] .hero-subtext-box { background: rgba(91, 168, 176, 0.14); border-left-color: #5ba8b0; }
+    .hero .hero-subtext strong { font-weight: 700; color: var(--color-primary-hover); }
+    [data-theme="dark"] .hero-subtext-box { background: color-mix(in srgb, var(--color-primary) 14%, transparent); }
     [data-theme="dark"] .hero .hero-subtext { color: var(--color-text); }
-    [data-theme="dark"] .hero .hero-subtext strong { color: #5ba8b0; }
+    [data-theme="dark"] .hero .hero-subtext strong { color: var(--color-primary); }
     .btn-stacked .cta-title { font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.01em; }
     .btn-stacked .cta-sub { font-size: 12px; font-weight: 500; opacity: 0.85; }
     .btn-secondary.btn-stacked .cta-sub { opacity: 1; color: color-mix(in srgb, var(--color-text) 75%, transparent); }
@@ -863,6 +906,18 @@
     .site-footer-replay { margin-top: var(--space-2); }
     .site-footer-replay-btn { background: transparent; border: 1px dashed color-mix(in srgb, var(--color-primary) 40%, transparent); color: var(--color-primary); padding: 6px 14px; border-radius: var(--radius-sm); font-size: var(--text-sm); cursor: pointer; transition: background var(--transition-interactive), border-color var(--transition-interactive); }
     .site-footer-replay-btn:hover { background: color-mix(in srgb, var(--color-primary) 10%, transparent); border-color: var(--color-primary); }
+    .site-footer-personalize { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; margin-top: var(--space-3); }
+    .site-footer-personalize-label { font-size: var(--text-xs); color: var(--color-text-muted); letter-spacing: 0.04em; text-transform: uppercase; font-weight: 600; }
+    .accent-swatches { display: inline-flex; align-items: center; gap: 8px; }
+    .accent-swatch { width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: transform var(--transition-interactive); }
+    .accent-swatch-dot { display: block; width: 18px; height: 18px; border-radius: 50%; box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-text) 12%, transparent); transition: box-shadow var(--transition-interactive), transform var(--transition-interactive); }
+    .accent-swatch:hover .accent-swatch-dot { transform: scale(1.1); }
+    .accent-swatch[aria-pressed="true"] .accent-swatch-dot {
+      box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-text);
+      transform: scale(1.1);
+    }
+    .accent-swatch:focus-visible { outline: none; }
+    .accent-swatch:focus-visible .accent-swatch-dot { box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-primary); }
     .legal-body p { margin: 0 0 var(--space-3); color: var(--color-text-muted); line-height: 1.6; font-size: var(--text-sm); }
     .legal-body p:last-child { margin-bottom: 0; }
     .legal-modal { position: fixed; inset: 0; margin: auto; padding: 0; border: 0; border-radius: var(--radius-lg); width: min(640px, calc(100vw - 32px)); max-width: 640px; max-height: 85vh; background: var(--color-surface); color: var(--color-text); box-shadow: 0 24px 60px rgba(0,0,0,0.28); overflow: hidden; }
@@ -2888,6 +2943,16 @@
           <span class="site-footer-divider" aria-hidden="true">|</span>
           <a class="site-footer-link" href="#terms" data-legal-open="terms-dialog">Terms of Service</a>
         </div>
+        <div class="site-footer-personalize" role="region" aria-labelledby="accent-picker-label">
+          <span class="site-footer-personalize-label" id="accent-picker-label">Theme Accent</span>
+          <div class="accent-swatches" aria-label="Theme accent color">
+            <button type="button" class="accent-swatch" data-accent="green" aria-label="PromptMeGood Green (default)" title="PromptMeGood Green"><span class="accent-swatch-dot" style="background:#01696f"></span></button>
+            <button type="button" class="accent-swatch" data-accent="blue" aria-label="Deep Blue" title="Deep Blue"><span class="accent-swatch-dot" style="background:#1e40af"></span></button>
+            <button type="button" class="accent-swatch" data-accent="purple" aria-label="Royal Purple" title="Royal Purple"><span class="accent-swatch-dot" style="background:#6d28d9"></span></button>
+            <button type="button" class="accent-swatch" data-accent="gold" aria-label="Warm Gold" title="Warm Gold"><span class="accent-swatch-dot" style="background:#b45309"></span></button>
+            <button type="button" class="accent-swatch" data-accent="slate" aria-label="Slate" title="Slate"><span class="accent-swatch-dot" style="background:#475569"></span></button>
+          </div>
+        </div>
         <div class="site-footer-replay">
           <button type="button" class="site-footer-replay-btn" id="replay-tour-btn">Replay Tour</button>
         </div>
@@ -3115,6 +3180,41 @@
         root.setAttribute('data-theme', theme);
         renderThemeIcon(theme);
       });
+
+      /* Theme accent picker — clicks update <html data-accent>, persist to localStorage, and
+         visually mark the selected swatch via aria-pressed. The bootstrap in <head> already
+         applied the saved value before paint; this just keeps the swatch state in sync and
+         handles user changes. */
+      (function () {
+        var ACCENT_KEY = 'promptmegood:themeAccent:v1';
+        var VALID = ['green', 'blue', 'purple', 'gold', 'slate'];
+        var swatches = document.querySelectorAll('.accent-swatch[data-accent]');
+        if (!swatches.length) return;
+        function getCurrent() {
+          var saved = '';
+          try { saved = localStorage.getItem(ACCENT_KEY) || ''; } catch (e) {}
+          return VALID.indexOf(saved) === -1 ? 'green' : saved;
+        }
+        function applyAccent(name) {
+          if (VALID.indexOf(name) === -1) name = 'green';
+          if (name === 'green') {
+            root.removeAttribute('data-accent');
+          } else {
+            root.setAttribute('data-accent', name);
+          }
+          try { localStorage.setItem(ACCENT_KEY, name); } catch (e) {}
+          swatches.forEach(function (btn) {
+            var pressed = btn.getAttribute('data-accent') === name;
+            btn.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+          });
+        }
+        applyAccent(getCurrent());
+        swatches.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            applyAccent(btn.getAttribute('data-accent'));
+          });
+        });
+      })();
 
       const goalFieldEl = document.getElementById('goal');
       function focusGoalIfBuilderHash() {
