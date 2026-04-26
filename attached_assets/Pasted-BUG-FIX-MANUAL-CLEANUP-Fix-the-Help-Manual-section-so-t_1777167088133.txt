@@ -1,0 +1,69 @@
+BUG FIX + MANUAL CLEANUP: Fix the Help/Manual section so the 12-step guide is NOT visibly taking up homepage space.
+
+Current issues:
+1. “Jump to a section” must read exactly:
+“Jump To A Section”
+
+2. The 12-step “How To Use PromptMeGood” cards are still visible on the main page.
+They should NOT be visible by default.
+
+Required behavior:
+1. Main page should show ONLY:
+- “How To Use PromptMeGood (Quick Start)”
+- 5 short steps:
+  1. Enter Your Goal
+  2. Adjust Settings
+  3. Generate Your Prompt
+  4. Refine If Needed
+  5. Copy And Use In Any AI Platform
+
+2. The full 12-step guide must be hidden from the main page by default.
+
+3. Add a button/link:
+“View Full Guide”
+
+Behavior:
+- Opens a dedicated Full Guide page/section/modal.
+- The 12-step detailed guide should live there, not visibly on the homepage.
+- If using an accordion instead of a separate page, it must be fully collapsed by default and only reveal the 12 cards after clicking “View Full Guide.”
+
+4. Remove or hide the visible 12 cards from the homepage flow:
+- Type Your Idea In The Goal Box
+- Pick Your Experience Level
+- Choose A Tone
+- Pick An Output Format
+- Human Voice Mode
+- Clarity Boost Mode
+- Money Mode
+- Photo Prompt Mode
+- Choose An Output Language
+- Click Generate Prompt
+- Click Copy Prompt
+- Use Your Saved Prompts & History
+
+These must NOT appear as visible stacked cards unless the user explicitly opens the Full Guide.
+
+5. Update the manual/help content only where needed:
+- Reflect current features:
+  - Guide Me
+  - Expert Mode
+  - Auto Optimize
+  - Smart Suggestions
+  - Guardrails
+  - Max Response Length
+  - Prompt Strength
+  - Check Prompt Quality
+  - Refine/Fine-Tune/Undo
+  - Clear buttons
+  - Prompt History
+  - Replay Tour
+- Do not duplicate sections.
+- Do not make the homepage manual long again.
+
+6. Final check:
+- “Jump To A Section” capitalization is fixed.
+- Homepage manual is short.
+- 12-step guide is no longer visible by default.
+- “View Full Guide” opens the detailed guide.
+- Mobile layout is clean.
+- No JavaScript errors.
