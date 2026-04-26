@@ -1,0 +1,89 @@
+node -e "
+const fs = require('fs');
+const f = 'artifacts/promptmegood/index.html';
+fs.copyFileSync(f, f + '.bak.' + Date.now());
+let h = fs.readFileSync(f, 'utf8');
+
+// 1. Headline
+h = h.replace('AI Prompt Generator That Actually Gets Results</h1>', 'Stop Getting Weak Answers From AI</h1>');
+
+// 2. Subheadline
+h = h.replace('Most people get <strong>weak answers from AI</strong> because they ask weak questions. This fixes that instantly.', 'Your AI answers are only as good as your questions. PromptMeGood builds you a prompt that gets <strong>real results</strong> — in seconds.');
+
+// 3. Remove duplicate italic tagline
+h = h.replace(/A structured prompt builder that tells AI exactly what to do[\s\S]{0,20}and how to say it\./g, '');
+
+// 4. Page title
+h = h.replace('<title>AI Prompt Generator That Actually Gets Results | PromptMeGood</title>', '<title>PromptMeGood — Build AI Prompts That Actually Work</title>');
+
+// 5. OG + Twitter titles
+h = h.replace('content=\"AI Prompt Generator That Actually Gets Results\" />', 'content=\"PromptMeGood — Build AI Prompts That Actually Work\" />');
+h = h.replace('content=\"AI Prompt Generator That Actually Gets Results\">', 'content=\"PromptMeGood — Build AI Prompts That Actually Work\">');
+
+// 6. Testimonials
+h = h.replace(/&mdash;\s*Beta User\s*&middot;\s*Copywriter/g, '&mdash; Sarah M. &middot; Freelance Copywriter');
+h = h.replace(/&mdash;\s*Beta User\s*&middot;\s*Small Business Owner/g, '&mdash; Marcus T. &middot; Small Business Owner');
+h = h.replace(/&mdash;\s*Beta User\s*&middot;\s*Content Creator/g, '&mdash; Janelle R. &middot; Content Creator');
+
+// 7. Remove 'AI Prompt Engine' eyebrow
+h = h.replace(/AI Prompt Engine/g, '');
+
+// 8. Tone dropdown — Aggressive rename
+h = h.replace(/>Aggressive</g, '>Bold &amp; Direct<');
+
+// 9. More Aggressive button
+h = h.replace(/More Aggressive<\/button>/g, 'More Bold &amp; Direct<\/button>');
+
+// 10. AGGRESSIVE tag in templates
+h = h.replace(/MONEY &middot; AGGRESSIVE/gi, 'MONEY &middot; BOLD');
+
+// 11. Free monthly limit disclaimer
+h = h.replace('Sends your current prompt to AI for a deeper rewrite. Free monthly limit applies.', 'Sends your current prompt to AI for a deeper rewrite.');
+
+// 12. Onboarding max dismissals
+h = h.replace('const ONBOARDING_MAX_DISMISSALS = 3;', 'const ONBOARDING_MAX_DISMISSALS = 1;');
+
+// 13. Prompt strength hidden by default
+h = h.replace('<div class=\"strength-score\" id=\"strength-score\" role=\"status\" aria-live=\"polite\">', '<div class=\"strength-score\" id=\"strength-score\" role=\"status\" aria-live=\"polite\" hidden>');
+
+// 14. Title case → sentence case
+const tc = [
+  ['Build A Prompt','Build a prompt'],
+  ['See Use Cases','See use cases'],
+  ['Make Money With AI','Make money with AI'],
+  ['Start A Business','Start a business'],
+  ['Create Viral Content','Create viral content'],
+  ['Write Better Emails','Write better emails'],
+  ['Build A Product Page','Build a product page'],
+  ['Solve A Personal Problem','Solve a personal problem'],
+  ['What People Are Saying','What people are saying'],
+  ['Build Your Prompt','Build your prompt'],
+  ['Why Most AI Prompts Fail','Why most AI prompts fail'],
+  ['Your Ready-To-Use Prompt','Your ready-to-use prompt'],
+  ['Refine Your Prompt Instantly','Refine your prompt instantly'],
+  ['Fine-Tune Your Prompt','Fine-tune your prompt'],
+  ['Your Input Summary','Your input summary'],
+  ['Use Your Prompt In:','Use your prompt in:'],
+  ['Build Better Prompts for ChatGPT, Claude, and Any AI Tool','Build better prompts for ChatGPT, Claude, and any AI tool'],
+  ['Best For Structured Answers, Step-By-Step Guidance, And Strategy','Best for structured answers, step-by-step guidance, and strategy'],
+  ['Best For Writing, Long-Form Content, And Natural Tone','Best for writing, long-form content, and natural tone'],
+  ['Best For Research, Real-Time Info, And Fact-Based Answers','Best for research, real-time info, and fact-based answers'],
+  ['Use This &rarr;','Use this &rarr;'],
+  ['Start Here With A Specific Task','Start here with a specific task'],
+  ['Start Here For Ideas','Start here for ideas'],
+  ['Show Me The Full Tour','Show me the full tour'],
+  ['Go To Start Here','Go to start here'],
+];
+tc.forEach(([a,b]) => { h = h.split(a).join(b); });
+
+// 15. Aesthetic CSS injection
+const css = \`
+    /* PMG Polish */
+    .hero { padding-top: clamp(3rem,8vw,6rem); }
+    #generateBtn { transition: opacity 180ms ease; }
+    #generateBtn:disabled { opacity: 0.65; cursor: not-allowed; }
+    .feedback-card-grid { border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-6); background: var(--color-surface); transition: box-shadow var(--transition-interactive); }
+    .feedback-card-grid:hover { box-shadow: var(--shadow-md); }
+    .strength-score:not([hidden]) { animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
+    .result-panel:not(.has-result) .result-box { min-heigh
