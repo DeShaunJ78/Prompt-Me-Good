@@ -1,0 +1,179 @@
+Improve Advanced Options intelligence, update all relevant help content, and run a full site integrity check. Do not break existing generation, Guide Me, Auto Optimize, Expert Mode, history, demo, tour, or mobile layout.
+
+========================
+PART 1 — ADVANCED OPTIONS CLARITY
+========================
+
+Inside Advanced Options, add helper copy:
+
+“These options shape how strong, natural, clear, or visual your prompt becomes. PromptMeGood can suggest what to use, but you can always change it.”
+
+Add helper text:
+“You can turn any of these on or off before generating.”
+
+========================
+PART 2 — GUIDE ME RECOMMENDS ADVANCED OPTIONS
+========================
+
+When a user completes Guide Me, analyze answers and suggest relevant toggles:
+
+- Money/business/sales/income/profit/product/dropshipping → Money Mode
+- Writing/emails/social posts/content/captions/storytelling → Human Voice Mode
+- Planning/decisions/strategy/explanation/learning/problem solving → Clarity Boost Mode
+- Product images/photography/visuals/ads/mockups/image prompts → Photo Prompt Mode
+
+For suggested toggles:
+- Add small “Suggested” badge
+- Add one-line reason under the toggle
+- Keep subtle
+- Users must be able to override everything
+
+========================
+PART 3 — MONEY MODE DEFAULT CLARITY
+========================
+
+If Money Mode is ON by default, add directly under it:
+
+“Use this for business, income, execution, or practical results. Turn off for neutral/general prompts.”
+
+========================
+PART 4 — AUTO OPTIMIZE + EXPERT MODE RULES
+========================
+
+If Auto Optimize is ON:
+- It may suggest Advanced Options
+- It should visually mark suggestions
+- It must not block user changes
+
+If Expert Mode is ON:
+- Do not auto-change Advanced Options unless user requests it
+- Keep helper text minimal
+- Show all toggles normally
+
+========================
+PART 5 — MANUAL UPDATE
+========================
+
+Patch manual only where needed.
+
+Add/update section:
+
+“Advanced Options”
+
+Text:
+“Advanced Options let you control how your prompt behaves. Guide Me and Auto Optimize may suggest options based on your goal, but you can always turn them on or off.”
+
+Add short explanations:
+
+- Money Mode: practical, results-driven answers
+- Human Voice Mode: more natural writing
+- Clarity Boost Mode: clearer structure and steps
+- Photo Prompt Mode: better prompts for image tools
+
+Also confirm manual accurately reflects:
+- Guide Me
+- Auto Optimize
+- Expert Mode
+- Smart Suggestions
+- Max Response Length
+- Guardrails / rules or limits
+- Prompt Strength
+- Check Prompt Quality
+- Use Cases / dice ideas
+- Prompt History
+- Clear buttons
+- Early Access
+- Any AI platform wording
+
+Do not expand the manual unnecessarily.
+
+========================
+PART 6 — TOUR / DEMO UPDATE
+========================
+
+Only update if needed.
+
+If tour/demo mentions Advanced Options, add:
+
+“Guide Me may suggest Advanced Options based on your answers, but you stay in control.”
+
+Do not add unnecessary extra steps.
+
+========================
+PART 7 — FULL SITE INTEGRITY CHECK
+========================
+
+Inspect and fix:
+
+1. Broken links:
+- Footer links
+- Social links
+- Privacy Policy
+- Terms of Service
+- Help / Full Guide
+- ChatGPT / Claude / Perplexity buttons
+- Email mailto link
+
+2. Navigation:
+- Build A Prompt
+- See Use Cases
+- Open Builder
+- History
+- Replay Tour
+- View Full Guide
+- Expert Mode hero cue
+
+3. Forms:
+- Early access email form
+- Guide Me flow
+- Goal field
+- Fine-Tune field
+- Guardrails field
+- Clear buttons
+
+4. Buttons:
+- Generate Prompt
+- Use Demo Values
+- Random Prompt
+- Copy Prompt
+- Print / Save PDF
+- Refine buttons
+- Undo Last Change
+- Check Prompt Quality
+- Clear All History
+
+5. Mobile layout:
+- No horizontal overflow
+- No hidden buttons
+- No overlapping sticky elements
+- Toasts visible and readable
+- Dropdowns readable
+- Use case modal clean
+
+6. Copy cleanup:
+- Remove outdated wording
+- Remove duplicate instructions
+- Ensure sentence casing is consistent
+- Ensure “Jump To A Section” capitalization is correct
+- Ensure “Simple, Honest Pricing” capitalization is correct
+
+7. Console:
+- Fix JavaScript errors
+- Fix failed workflows if related to site functionality
+- Do not remove working features
+
+========================
+FINAL CHECK
+========================
+
+Confirm:
+- Advanced Options is clear and useful
+- Guide Me suggests relevant toggles
+- Users can override all suggestions
+- Manual matches current behavior
+- Tour/demo are not outdated
+- No broken links
+- No broken buttons
+- Mobile layout is clean
+- No JavaScript errors
+- No fake email capture promises

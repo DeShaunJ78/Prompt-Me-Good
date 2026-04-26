@@ -1725,6 +1725,41 @@
       .advanced-options-summary { padding: 12px 14px; }
       .adv-sub { display: none; }
     }
+    .adv-intro {
+      margin: 0 0 4px;
+      font-size: var(--text-sm);
+      color: var(--color-text);
+      line-height: 1.5;
+    }
+    .adv-helper {
+      margin: 0 0 6px;
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      line-height: 1.45;
+    }
+    body.is-expert-mode .adv-intro,
+    body.is-expert-mode .adv-helper { display: none; }
+    .toggle-suggested-badge {
+      display: inline-flex; align-items: center;
+      margin-left: 8px; padding: 1px 8px;
+      background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+      color: var(--color-primary);
+      border-radius: 999px; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.02em; vertical-align: middle;
+      white-space: nowrap;
+    }
+    .toggle-suggestion-reason {
+      display: block; margin-top: 4px;
+      color: var(--color-text-muted);
+      font-size: var(--text-xs);
+      font-style: italic;
+      line-height: 1.45;
+    }
+    .toggle-row.is-suggested {
+      background: color-mix(in srgb, var(--color-primary) 5%, transparent);
+      border-radius: 8px;
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 18%, transparent);
+    }
 
     .quick-start-card {
       margin: 0 var(--space-6) var(--space-4);
@@ -2596,10 +2631,12 @@
                   <span class="adv-chevron" aria-hidden="true">▾</span>
                 </summary>
                 <div class="advanced-options-body">
+                  <p class="adv-intro">These options shape how strong, natural, clear, or visual your prompt becomes. PromptMeGood can suggest what to use, but you can always change it.</p>
+                  <p class="adv-helper">You can turn any of these on or off before generating.</p>
                   <div class="toggle-row is-subtle">
                     <div>
                       <strong>Money Mode</strong>
-                      <span>Focuses answers on practical, results-driven outcomes. Turn off for neutral, general-purpose prompts.</span>
+                      <span>Use this for business, income, execution, or practical results. Turn off for neutral/general prompts.</span>
                     </div>
                     <label class="switch" aria-label="Turn Money Mode on or off">
                       <input id="moneyMode" name="moneyMode" type="checkbox" checked />
@@ -5226,6 +5263,60 @@ Context:
             dialog.removeAttribute('open');
           }
         }
+        function clearAdvancedSuggestions() {
+          const oldBadges = document.querySelectorAll('.toggle-suggested-badge, .toggle-suggestion-reason');
+          oldBadges.forEach(function (el) { el.remove(); });
+          const oldRows = document.querySelectorAll('.toggle-row.is-suggested');
+          oldRows.forEach(function (row) { row.classList.remove('is-suggested'); });
+        }
+        function suggestAdvancedOptions(combinedText) {
+          clearAdvancedSuggestions();
+          const t = (combinedText || '').toLowerCase();
+          const SUGGESTIONS = [
+            { id: 'moneyMode', kws: ['money','business','sales','income','profit','product','dropshipping','revenue','client','customer','side hustle','startup','launch'], reason: 'Your goal sounds money or business related — Money Mode adds practical, results-driven framing.' },
+            { id: 'humanTone', kws: ['writing','email','social','post ','posts','content','caption','storytelling','newsletter','blog','copy','script','tweet','linkedin'], reason: 'You are writing for people — Human Voice Mode keeps the tone natural.' },
+            { id: 'clarityBoost', kws: ['planning','plan ','decision','strategy','explain','explanation','learning','learn ','problem','step','process','how to','understand','teach','breakdown'], reason: 'This looks like a planning or learning task — Clarity Boost adds clearer structure and steps.' },
+            { id: 'photoMode', kws: ['image','photo','photography','visual','ad ','ads ','mockup','midjourney','dall','dalle','picture','poster','thumbnail','illustration','artwork'], reason: 'You mentioned visuals — Photo Prompt Mode formats output for image AI tools.' }
+          ];
+          const isExpert = document.body.classList.contains('is-expert-mode');
+          const aoCheckbox = document.getElementById('auto-optimize-toggle');
+          const isAutoOptOn = aoCheckbox ? aoCheckbox.checked : true;
+          let suggestedAny = false;
+          SUGGESTIONS.forEach(function (s) {
+            const matched = s.kws.some(function (kw) { return t.indexOf(kw) !== -1; });
+            if (!matched) return;
+            const checkbox = document.getElementById(s.id);
+            if (!checkbox) return;
+            const row = checkbox.closest('.toggle-row');
+            if (!row) return;
+            suggestedAny = true;
+            row.classList.add('is-suggested');
+            const titleEl = row.querySelector('strong');
+            if (titleEl) {
+              const badge = document.createElement('span');
+              badge.className = 'toggle-suggested-badge';
+              badge.setAttribute('aria-label', 'Suggested for your goal');
+              badge.textContent = 'Suggested';
+              titleEl.appendChild(badge);
+            }
+            const textWrap = row.querySelector('div');
+            if (textWrap) {
+              const reasonEl = document.createElement('span');
+              reasonEl.className = 'toggle-suggestion-reason';
+              reasonEl.textContent = s.reason;
+              textWrap.appendChild(reasonEl);
+            }
+            // Auto-flip only when Auto Optimize is on AND not in Expert Mode AND not already on.
+            if (isAutoOptOn && !isExpert && !checkbox.checked) {
+              checkbox.checked = true;
+              try { checkbox.dispatchEvent(new Event('change', { bubbles: true })); } catch (e) {}
+            }
+          });
+          if (suggestedAny) {
+            const adv = document.getElementById('advanced-options');
+            if (adv) adv.open = true;
+          }
+        }
         function applyAnswers() {
           const goal = (qGoal.value || '').trim();
           const aud = (qAud.value || '').trim();
@@ -5260,6 +5351,9 @@ Context:
             return;
           }
           applyAnswers();
+          suggestAdvancedOptions(
+            (qGoal.value || '') + ' ' + (qAud.value || '') + ' ' + (qOut.value || '') + ' ' + (qCon.value || '')
+          );
           close();
           if (typeof showToast === 'function') showToast('Builder filled. Review and click Generate Prompt.');
           // Refresh smart-system suggestions and AI tool recommendation for the new goal text.
