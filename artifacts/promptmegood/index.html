@@ -1499,14 +1499,24 @@
     .ob-highlight {
       position: absolute; pointer-events: none; border-radius: 12px;
       box-shadow: 0 0 0 3px var(--color-primary), 0 0 0 6px color-mix(in srgb, var(--color-primary) 40%, transparent), 0 0 0 9999px color-mix(in srgb, #000 0%, transparent);
-      transition: top 0.18s ease-out, left 0.18s ease-out, width 0.18s ease-out, height 0.18s ease-out;
+      transform: translateZ(0); will-change: transform, opacity;
+      opacity: 1;
+      transition: top 0.18s ease-out, left 0.18s ease-out, width 0.18s ease-out, height 0.18s ease-out, opacity 0.18s ease-out;
     }
     .ob-tooltip {
       position: absolute; pointer-events: auto; max-width: 320px; min-width: 240px;
       background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border);
       border-radius: var(--radius-lg); padding: var(--space-4); box-shadow: 0 12px 32px rgba(0,0,0,0.24);
       display: flex; flex-direction: column; gap: var(--space-3);
-      transition: top 0.18s ease-out, left 0.18s ease-out;
+      transform: translateZ(0); will-change: transform, opacity;
+      opacity: 1;
+      transition: top 0.18s ease-out, left 0.18s ease-out, opacity 0.18s ease-out;
+    }
+    .ob-overlay.is-transitioning .ob-highlight,
+    .ob-overlay.is-transitioning .ob-tooltip {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.12s ease-out;
     }
     .ob-step { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-primary); text-align: center; }
     .ob-title { font-size: var(--text-base); line-height: 1.25; margin: 0; text-align: center; font-weight: 800; color: var(--color-text); letter-spacing: -0.005em; }
@@ -1517,6 +1527,9 @@
     .ob-skip:hover { color: var(--color-text); }
     @media (max-width: 640px) {
       .ob-tooltip { max-width: calc(100vw - 24px); min-width: 0; left: 12px !important; right: 12px; }
+      /* Mobile: drop position transitions and use a clean opacity fade only — */
+      /* this kills the choppy look caused by simultaneous scroll + position animation. */
+      .ob-highlight, .ob-tooltip { transition: opacity 0.18s ease-out; }
     }
     @media (prefers-reduced-motion: reduce) {
       .ob-backdrop, .ob-highlight, .ob-tooltip { transition: none; }
@@ -6279,9 +6292,14 @@ Context:
         if (!target) { obFinish(); return; }
         const rect = target.getBoundingClientRect();
         const attempts = scrollAttempts || 0;
-        if ((rect.top < 80 || rect.bottom > window.innerHeight - 80) && attempts < 2) {
+        const isMobile = window.matchMedia('(max-width: 640px)').matches;
+        const needsScroll = rect.top < 80 || rect.bottom > window.innerHeight - 80;
+        if (needsScroll && attempts < 2) {
+          // Stage the render: hide highlight + tooltip during scroll so we never
+          // animate position and scroll at the same time (the source of mobile chop).
+          obOverlay.classList.add('is-transitioning');
           target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          window.setTimeout(function () { obPositionStep(attempts + 1); }, 400);
+          window.setTimeout(function () { obPositionStep(attempts + 1); }, isMobile ? 360 : 400);
           return;
         }
         const pad = 6;
@@ -6309,6 +6327,13 @@ Context:
         obTitleEl.textContent = step.title || '';
         obTextEl.textContent = step.text;
         obNextBtn.textContent = obIndex === currentSteps.length - 1 ? 'Done' : 'Next';
+        // Reveal highlight + tooltip after positioning settles. Mobile gets a
+        // slightly longer delay so the layout truly stops moving before fade-in.
+        if (obOverlay.classList.contains('is-transitioning')) {
+          window.setTimeout(function () {
+            obOverlay.classList.remove('is-transitioning');
+          }, isMobile ? 100 : 30);
+        }
       }
       function obInvokeStepEnter() {
         const step = currentSteps[obIndex];
@@ -6345,6 +6370,10 @@ Context:
       }
       function obSchedulePosition() {
         if (!obIsOpen()) return;
+        // Suppress reposition during step transitions so the listener can't
+        // fire mid-scroll and re-trigger a second scrollIntoView (the cause
+        // of the doubled, choppy scroll on mobile).
+        if (obOverlay.classList.contains('is-transitioning')) return;
         if (obScrollRaf) return;
         obScrollRaf = window.requestAnimationFrame(function () {
           obScrollRaf = 0;
@@ -6427,6 +6456,9 @@ Context:
       function obNextStep() {
         if (obIndex >= currentSteps.length - 1) { obFinish({ completed: true }); return; }
         obIndex += 1;
+        // Pre-stage: fade highlight + tooltip out immediately so the user
+        // never sees them sliding to the next target during the scroll.
+        obOverlay.classList.add('is-transitioning');
         obPositionStep();
         obInvokeStepEnter();
       }

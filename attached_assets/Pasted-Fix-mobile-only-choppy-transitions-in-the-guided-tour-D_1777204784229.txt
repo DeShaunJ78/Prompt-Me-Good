@@ -1,0 +1,111 @@
+Fix mobile-only choppy transitions in the guided tour. Do not change desktop behavior.
+
+Issue:
+On mobile devices, transitions between tour steps feel slow and choppy due to scroll + layout + highlight happening simultaneously.
+
+========================
+STEP 1 — CONTROL SCROLLING
+========================
+
+Replace any direct scrollIntoView() with:
+
+- Use:
+  element.scrollIntoView({
+    behavior: 'smooth',
+    block: 'center'
+  });
+
+- Add delay BEFORE rendering tooltip/highlight:
+  wait 250–350ms after scroll completes
+
+========================
+STEP 2 — PREVENT LAYOUT SHIFT
+========================
+
+Before scrolling:
+- Temporarily disable transitions on highlighted elements
+- Lock container height if needed
+
+Example:
+document.body.classList.add('tour-lock');
+
+After render:
+document.body.classList.remove('tour-lock');
+
+========================
+STEP 3 — STICKY HEADER OFFSET
+========================
+
+If header/search is sticky:
+
+- Calculate offset:
+  const offset = headerHeight + 16;
+
+- Adjust scroll manually:
+
+window.scrollTo({
+  top: element.offsetTop - offset,
+  behavior: 'smooth'
+});
+
+========================
+STEP 4 — STAGE THE RENDER
+========================
+
+DO NOT do everything at once.
+
+Instead:
+
+1. Scroll
+2. Wait
+3. Apply highlight
+4. Wait ~100ms
+5. Show tooltip
+
+========================
+STEP 5 — HARDWARE ACCELERATION
+========================
+
+Apply to animated elements:
+
+.tour-tooltip,
+.tour-highlight {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+}
+
+========================
+STEP 6 — REDUCE ANIMATION COMPLEXITY ON MOBILE
+========================
+
+On screens < 768px:
+
+- Remove heavy animations
+- Use simple fade instead of slide + scale
+
+Example:
+opacity: 0 → 1
+duration: 150–200ms
+
+========================
+STEP 7 — AVOID DOUBLE SCROLL TRIGGERS
+========================
+
+Ensure:
+- Only ONE scroll call per step
+- No re-trigger from resize, focus, or state updates
+
+========================
+STEP 8 — FINAL CHECK
+========================
+
+Verify on mobile:
+
+- No jumpy scrolling
+- Tooltip appears AFTER scroll completes
+- Highlight does not flicker
+- Element is centered and visible
+- No overlap with header
+- Smooth step-to-step transitions
+- Desktop unchanged
+- No console errors
