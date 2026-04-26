@@ -1,59 +1,61 @@
-652:    /* ===== Smart Assist (Stage 1 micro-nudge + Stage 2 full helper) ===== */
-1399:    .nudge-banner { background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 22%, transparent), color-mix(in srgb, var(--color-primary) 8%, transparent)); border-bottom: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent); }
-1400:    .nudge-inner { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4); flex-wrap: wrap; }
-1401:    .nudge-icon { font-size: 22px; }
-1402:    .nudge-text { flex: 1 1 240px; font-size: var(--text-sm); color: var(--color-text); line-height: 1.4; }
-1403:    .nudge-text strong { color: var(--color-primary); margin-right: 6px; }
-1404:    .nudge-actions { display: flex; gap: var(--space-2); }
-2193:    /* Spec #1: when the daily nudge banner is visible, slide the toast down so it doesn't stack on top of it. */
-2194:    body.has-nudge-banner .toast { top: calc(160px + env(safe-area-inset-top, 0px)); }
-2195:    body.has-nudge-banner.has-uc-confirm-toast .toast { top: calc(260px + env(safe-area-inset-top, 0px)); }
-2586:  <div id="nudge-banner" class="nudge-banner" hidden>
-2587:    <div class="container nudge-inner">
-2588:      <span class="nudge-icon" aria-hidden="true">💡</span>
-2589:      <div class="nudge-text">
-2590:        <strong>Daily prompt nudge:</strong>
-2591:        <span id="nudge-message"></span>
-2593:      <div class="nudge-actions">
-2594:        <button class="btn btn-primary" type="button" id="nudge-go">Try it</button>
-2595:        <button class="btn btn-secondary" type="button" id="nudge-dismiss" aria-label="Dismiss">Dismiss</button>
-2624:          <p id="usageCounter" class="usage-counter" style="display:none;" aria-live="polite">
-2840:                <button class="btn btn-primary" type="submit" id="generateBtn">Generate Prompt</button>
-2855:              <details id="settingsPanel" class="settings-panel">
-3091:                  <button class="btn btn-secondary" type="button" data-remix="aggressive">More Aggressive</button>
-3299:                <li><strong>Refine if needed.</strong> Tap More Detailed, More Aggressive, or Beginner Friendly.</li>
-3957:      // Adaptive guidance state — gentle nudges that fade as users gain experience
-4065:      function generatePrompt(data, remixMode = '', customRemixText = '') {
-4711:              '<button class="btn btn-secondary" type="button" data-history-action="remix" data-remix-mode="aggressive">More Aggressive</button>' +
-5415:          const settingsPanel = document.getElementById('settingsPanel');
-5420:              if (settingsPanel) settingsPanel.open = true;
-6265:        const nudge = document.getElementById('nudge-banner');
-6266:        return (tour && !tour.hidden) || (nudge && !nudge.hidden);
-6322:          const generateBtnEl = document.getElementById('generateBtn');
-6323:          if (generateBtnEl) {
-6324:            const origLabel = generateBtnEl.dataset.origLabel || generateBtnEl.textContent;
-6325:            generateBtnEl.dataset.origLabel = origLabel;
-6326:            generateBtnEl.textContent = 'Generated ✓';
-6328:              if (generateBtnEl) generateBtnEl.textContent = origLabel;
-6562:      const NUDGE_KEY = 'promptmegood:nudge:v1';
-6588:          return { text: focusIdeas[Math.floor(Math.random() * focusIdeas.length)], action: 'weeklyFocus' };
-6593:      function showNudgeIfDue() {
-6609:        const banner = document.getElementById('nudge-banner');
-6610:        const msgEl = document.getElementById('nudge-message');
-6611:        const nudge = pickNudgeMessage();
-6612:        msgEl.textContent = nudge.text;
-6613:        banner.dataset.action = nudge.action || '';
-6615:        document.body.classList.add('has-nudge-banner');
-6619:      document.getElementById('nudge-dismiss').addEventListener('click', function () {
-6623:        document.getElementById('nudge-banner').hidden = true;
-6624:        document.body.classList.remove('has-nudge-banner');
-6626:      document.getElementById('nudge-go').addEventListener('click', function () {
-6627:        const banner = document.getElementById('nudge-banner');
-6630:        document.body.classList.remove('has-nudge-banner');
-6639:        if (action === 'weeklyFocus' && typeof applyWeeklyGoal === 'function') {
-6646:      // Spec #1: minimum 3 second delay before nudge can appear on a return visit.
-6920:        const banner = document.getElementById('nudge-banner');
-6922:        document.body.classList.remove('has-nudge-banner');
-8150:    // ===== Smart Assist (Stage 1 micro-nudge → Stage 2 full helper) =====
-8712:      async function loadUsageCounter() {
-8723:          const wrapEl = document.getElementById('usageCounter');
+2611:      <button class="tour-card-close" type="button" id="tour-skip" aria-label="Dismiss onboarding choice">×</button>
+2778:              <button type="button" class="builder-replay-btn" id="replay-tour-btn-builder" aria-label="Replay the onboarding tour">
+3077:            <div class="result-box" id="resultBox" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Generated prompt (editable)">Your generated prompt will appear here. Once it looks good, copy it into your favorite AI tool.</div>
+3693:      const resultBox = document.getElementById('resultBox');
+5757:          const promptText = (resultBox && resultBox.textContent ? resultBox.textContent.trim() : '');
+5798:            resultBox.textContent = placeholder;
+6239:      const PMG_VISITED_KEY = 'pmg_visited';
+6254:      function pmgIsFirstVisit() {
+6268:      window.__pmgFirstVisit = pmgIsFirstVisit;
+6311:        function finalize(promptText) {
+6351:          finalize(localPrompt);
+6395:            finalize(text && typeof text === 'string' && text.trim() ? text : localPrompt);
+6409:            finalize(text && typeof text === 'string' && text.trim() ? text : localPrompt);
+6417:          finalize(localPrompt);
+6423:            finalize(streamedText && streamedText.trim() ? streamedText : localPrompt);
+6428:            finalize(streamedText);
+6445:            finalize(full && typeof full === 'string' && full.trim() ? full : localPrompt);
+6450:            finalize(text && typeof text === 'string' && text.trim() ? text : localPrompt);
+6456:            finalize(aiText && typeof aiText === 'string' && aiText.trim() ? aiText : localPrompt);
+6537:            if (pmgIsFirstVisit()) return;
+6599:        if (pmgIsFirstVisit()) return;
+6649:      const ONBOARDING_KEY = 'promptmegood:onboarding:v1';
+6710:          selector: '#resultBox',
+6722:          selector: '#strength-score',
+6756:      const ONBOARDING_DISMISS_KEY = 'promptmegood:onboardingDismissCount:v1';
+6757:      const ONBOARDING_SESSION_KEY = 'promptmegood:onboardingSeenSession';
+6781:          if (typeof pmgIsFirstVisit === 'function' && !pmgIsFirstVisit()) return false;
+6944:        // Spec #1: any onboarding dismissal (skip, complete, escape, backdrop) marks the user as visited.
+6968:            // onboarding tour (not the demo, not Skip, not Esc, not backdrop).
+7256:        const text = resultBox.textContent || '';
+7279:        const text = resultBox.textContent.trim();
+7295:          range.selectNodeContents(resultBox);
+7327:        const current = resultBox.textContent || '';
+7345:        resultBox.textContent = text;
+7352:        return (resultBox.textContent || '').replace(/\u00A0/g, ' ');
+7385:      resultBox.addEventListener('focus', function () {
+7386:        preEditSnapshot = resultBox.textContent;
+7389:      resultBox.addEventListener('input', function () {
+7395:        const current = resultBox.textContent || '';
+7409:      resultBox.addEventListener('blur', function () {
+7415:      resultBox.addEventListener('paste', function (e) {
+7612:        const resultBoxEl = document.getElementById('resultBox');
+7700:                if (resultBoxEl) {
+7701:                  resultBoxEl.classList.remove('demo-glow');
+7703:                  resultBoxEl.offsetWidth;
+7704:                  resultBoxEl.classList.add('demo-glow');
+7705:                  window.setTimeout(function () { resultBoxEl.classList.remove('demo-glow'); }, 850);
+8229:        const resultBox = document.getElementById('resultBox');
+8230:        if (resultBox) {
+8231:          const txt = (resultBox.textContent || '').trim();
+8607:      const resultBox = document.getElementById('resultBox');
+8609:      if (!btn || !resultBox) return;
+8667:        const current = (resultBox.textContent || '').trim();
+8690:          resultBox.dispatchEvent(new Event('focus'));
+8691:          resultBox.textContent = improved;
+8692:          resultBox.dispatchEvent(new Event('input', { bubbles: true }));
+8693:          resultBox.dispatchEvent(new Event('blur'));
+8714:          const res = await fetch('/api/stats', { cache: 'no-store' });
+8748:        // #resultBox is a contenteditable <div>, NOT a textarea — read textContent.
+8750:        const box = $('resultBox');
+8896:      // Public hooks used by the inline onclick handlers and finalize().
