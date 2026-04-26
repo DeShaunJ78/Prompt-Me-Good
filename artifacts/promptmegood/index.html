@@ -6203,21 +6203,50 @@ Context:
           return;
         }
 
-        const prompt = generatePrompt(data);
-        setPromptText(prompt);
-        addToHistory(data, prompt);
-        if (typeof pmgIncPromptCount === 'function') pmgIncPromptCount();
-        const shareBtnEl = document.getElementById('share-btn');
-        if (shareBtnEl) shareBtnEl.hidden = false;
-        if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
-        if (window.__pmgStrengthScore && typeof window.__pmgStrengthScore.render === 'function') {
-          window.__pmgStrengthScore.render(data, prompt);
+        // Always build the local prompt first — it's our guaranteed result and our AI-failure fallback.
+        const localPrompt = generatePrompt(data);
+
+        function finalize(promptText) {
+          setPromptText(promptText);
+          addToHistory(data, promptText);
+          if (typeof pmgIncPromptCount === 'function') pmgIncPromptCount();
+          const shareBtnEl = document.getElementById('share-btn');
+          if (shareBtnEl) shareBtnEl.hidden = false;
+          if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
+          if (window.__pmgStrengthScore && typeof window.__pmgStrengthScore.render === 'function') {
+            window.__pmgStrengthScore.render(data, promptText);
+          }
+          scrollToResult();
+          showSavePromptTip();
+          if (window.__pmgGuidance && typeof window.__pmgGuidance.markGenerated === 'function') {
+            window.__pmgGuidance.markGenerated();
+          }
         }
+
+        // If AI client is unavailable or already at the monthly limit, just use the local builder.
+        const ai = window.__pmgAI;
+        const remaining = ai && typeof ai.remaining === 'function' ? ai.remaining('generate') : 0;
+        if (!ai || typeof ai.generateRaw !== 'function' || remaining <= 0) {
+          if (ai && remaining <= 0 && typeof window.showToast === 'function') {
+            window.showToast("You've reached the free monthly AI limit. PRO will unlock more soon.");
+          }
+          finalize(localPrompt);
+          return;
+        }
+
+        // AI-first path: show loading, call /api/generate, fall back to local on error.
+        setPromptText('Generating your prompt…');
         scrollToResult();
-        showSavePromptTip();
-        if (window.__pmgGuidance && typeof window.__pmgGuidance.markGenerated === 'function') {
-          window.__pmgGuidance.markGenerated();
-        }
+        ai.generateRaw(localPrompt).then(function (aiText) {
+          finalize(aiText && typeof aiText === 'string' && aiText.trim() ? aiText : localPrompt);
+        }).catch(function (err) {
+          if (err && err.code === 'LIMIT' && typeof window.showToast === 'function') {
+            window.showToast("You've reached the free monthly AI limit. PRO will unlock more soon.");
+          } else if (typeof window.showToast === 'function') {
+            window.showToast('AI generation had an issue, so we used the local builder instead.');
+          }
+          finalize(localPrompt);
+        });
       });
 
       // ===== Weekly rotating "This week's focus" =====
@@ -8236,10 +8265,39 @@ Context:
         }
       }
 
+      // Calls /api/generate which returns the spec shape {success, output}.
+      // Kept separate from callAI() so the rest of the client (which uses {ok, result}) is untouched.
+      async function callGenerate(prompt) {
+        const ctrl = new AbortController();
+        const timeoutId = window.setTimeout(function () { ctrl.abort(); }, 60000);
+        try {
+          const resp = await fetch(API_BASE + '/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: prompt }),
+            signal: ctrl.signal,
+          });
+          const data = await resp.json().catch(function () { return null; });
+          if (!resp.ok || !data || data.success !== true) {
+            const err = (data && data.error) ? data.error : ERR_MSG;
+            throw new Error(err);
+          }
+          return data.output;
+        } finally {
+          window.clearTimeout(timeoutId);
+        }
+      }
+
       window.__pmgAI = {
         limits: function () { return Object.assign({}, LIMITS); },
         usage: readUsage,
         remaining: remaining,
+        async generateRaw(prompt) {
+          if (!checkLimit('generate')) { const e = new Error(LIMIT_MSG); e.code = 'LIMIT'; throw e; }
+          const result = await callGenerate(prompt);
+          bumpUsage('generate');
+          return result;
+        },
         async generate(goal, context) {
           if (!checkLimit('generate')) { const e = new Error(LIMIT_MSG); e.code = 'LIMIT'; throw e; }
           const result = await callAI('/generate-prompt', { goal: goal, context: context });

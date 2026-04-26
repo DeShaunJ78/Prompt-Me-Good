@@ -51,6 +51,53 @@ function rateLimit(req: Request, res: Response, next: NextFunction): void {
 
 router.use(rateLimit);
 
+const GENERATE_MAX_INPUT = 4000;
+const GENERATE_MAX_OUTPUT_TOKENS = 1024;
+const GENERATE_MODEL = "gpt-4o-mini";
+
+router.post("/generate", async (req, res) => {
+  const raw = req.body?.prompt;
+  if (typeof raw !== "string") {
+    res.status(400).json({ success: false, error: "Field 'prompt' must be a string." });
+    return;
+  }
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    res.status(400).json({ success: false, error: "Field 'prompt' is required." });
+    return;
+  }
+  if (trimmed.length > GENERATE_MAX_INPUT) {
+    res.status(400).json({
+      success: false,
+      error: `Prompt is too long. Max ${GENERATE_MAX_INPUT} characters.`,
+    });
+    return;
+  }
+  try {
+    const completion = await openai.chat.completions.create({
+      model: GENERATE_MODEL,
+      max_completion_tokens: GENERATE_MAX_OUTPUT_TOKENS,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are PromptMeGood — a concise, expert prompt engineer. Take the user's input and return a single high-quality, structured prompt they can paste into ChatGPT, Claude, Gemini, or another AI tool. The output prompt must be self-contained and specify role, context, constraints, tone, output format, and clear next actions. Keep it tight — no markdown fences, no headers like 'Prompt:', no commentary. Output ONLY the prompt text.",
+        },
+        { role: "user", content: trimmed },
+      ],
+    });
+    const text = completion.choices[0]?.message?.content?.trim() ?? "";
+    if (!text) {
+      res.status(502).json({ success: false, error: "AI returned an empty response." });
+      return;
+    }
+    res.json({ success: true, output: text });
+  } catch (err) {
+    logger.error({ err: err instanceof Error ? err.message : "unknown" }, "generate failed");
+    res.status(502).json({ success: false, error: "AI service is unavailable. Try again." });
+  }
+});
+
 router.post("/generate-prompt", async (req, res) => {
   const goal = clampString(req.body?.goal);
   const context = clampString(req.body?.context, 2000);

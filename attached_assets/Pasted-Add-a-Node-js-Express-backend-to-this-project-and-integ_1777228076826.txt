@@ -1,0 +1,109 @@
+Add a Node.js/Express backend to this project and integrate it cleanly with the existing frontend. Do not break any current functionality.
+
+Create one secure AI endpoint first. Do not add image generation yet.
+
+BACKEND SETUP
+1. Add Node.js/Express backend.
+2. Create server.js or index.js.
+3. Install:
+   - express
+   - cors
+   - dotenv
+   - openai
+4. Enable JSON parsing.
+5. Enable CORS only as needed for this app.
+
+ENVIRONMENT VARIABLES
+1. Use Replit Secrets.
+2. Required secret:
+   OPENAI_API_KEY
+3. Never expose the key to frontend code, HTML, JS bundles, logs, or network responses.
+
+API ENDPOINT
+Create:
+
+POST /api/generate
+
+Request body:
+{
+  "prompt": "user input text"
+}
+
+Validation:
+- prompt is required
+- prompt must be a string
+- reject empty prompts
+- cap prompt length to prevent runaway cost
+
+OPENAI CALL
+Use the OpenAI SDK server-side.
+
+Use a cost-efficient model:
+- gpt-4o-mini or current cheapest reliable OpenAI text model available
+
+Keep output controlled:
+- concise response
+- max output tokens capped
+- structured prompt output
+
+Return on success:
+{
+  "success": true,
+  "output": "generated text"
+}
+
+Return on failure:
+{
+  "success": false,
+  "error": "message"
+}
+
+FRONTEND INTEGRATION
+1. Update Generate Prompt flow to call:
+   /api/generate
+
+2. Use fetch POST with JSON.
+
+3. Show loading state:
+“Generating your prompt…”
+
+4. On success:
+- display AI-generated output in the existing output panel
+
+5. On failure:
+- use existing local prompt builder as fallback
+- show a soft warning:
+“AI generation had an issue, so we used the local builder instead.”
+
+COST PROTECTION
+Add localStorage-based monthly usage tracking for now.
+
+Free limits:
+- 100 AI text generations per month
+
+If exceeded, do not call API. Show:
+“You’ve reached the free monthly AI limit. PRO will unlock more soon.”
+
+Also add server-side safety:
+- cap max output tokens
+- reject overly long input
+- do not retry endlessly
+- log errors without exposing secrets
+
+SECURITY RULES
+- API key server-side only
+- no frontend exposure
+- validate all input
+- no raw stack traces returned to users
+- no API key printed in console/logs
+
+FINAL CHECK
+Confirm:
+- backend starts in Replit
+- frontend can call /api/generate
+- API key is only in Replit Secrets
+- output appears in the current output panel
+- fallback still works
+- usage limit blocks calls after 100/month
+- no console errors
+- mobile layout unchanged
