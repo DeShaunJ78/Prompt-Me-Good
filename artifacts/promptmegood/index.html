@@ -1687,6 +1687,141 @@
     [data-theme="dark"] .builder-replay-btn { color: #5ba8b0; border-color: #5ba8b0; }
     [data-theme="dark"] .builder-replay-btn:hover { background: rgba(91, 168, 176, 0.18); }
 
+    .expert-mode-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 12px;
+      min-height: 36px;
+      border-radius: 999px;
+      border: 1px solid var(--color-divider);
+      background: transparent;
+      cursor: pointer;
+      font-size: var(--text-xs);
+      transition: background 160ms ease, border-color 160ms ease, box-shadow 220ms ease;
+    }
+    .expert-mode-toggle:hover { background: color-mix(in srgb, var(--color-primary) 8%, transparent); }
+    .expert-mode-toggle .switch { position: relative; display: inline-block; width: 36px; height: 20px; flex: 0 0 auto; }
+    .expert-mode-toggle .switch input { opacity: 0; width: 0; height: 0; }
+    .expert-mode-toggle .switch .slider { position: absolute; cursor: pointer; inset: 0; background: color-mix(in srgb, var(--color-text) 25%, transparent); border-radius: 999px; transition: background 0.2s ease; }
+    .expert-mode-toggle .switch .slider::before { content: ""; position: absolute; height: 14px; width: 14px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: transform 0.2s ease; }
+    .expert-mode-toggle .switch input:checked + .slider { background: var(--color-primary); }
+    .expert-mode-toggle .switch input:checked + .slider::before { transform: translateX(16px); }
+    .expert-mode-toggle .switch input:focus-visible + .slider { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .expert-mode-toggle-text { display: flex; flex-direction: column; gap: 0; line-height: 1.2; }
+    .expert-mode-toggle-title { font-weight: 700; color: var(--color-text); font-size: var(--text-xs); }
+    .expert-mode-toggle-sub { font-size: 11px; color: var(--color-text-muted); }
+    .expert-mode-toggle.is-pulse { animation: expertPulse 1.6s ease 0s 2 both; box-shadow: 0 0 0 0 rgba(15, 118, 110, 0.45); }
+    @keyframes expertPulse {
+      0% { box-shadow: 0 0 0 0 rgba(15, 118, 110, 0.55); border-color: var(--color-primary); }
+      70% { box-shadow: 0 0 0 14px rgba(15, 118, 110, 0); border-color: var(--color-primary); }
+      100% { box-shadow: 0 0 0 0 rgba(15, 118, 110, 0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .expert-mode-toggle.is-pulse { animation: none; }
+    }
+    @media (max-width: 540px) {
+      .expert-mode-toggle-sub { display: none; }
+    }
+    [data-theme="dark"] .expert-mode-toggle { border-color: rgba(91, 168, 176, 0.35); }
+    [data-theme="dark"] .expert-mode-toggle:hover { background: rgba(91, 168, 176, 0.18); }
+
+    .expert-mode-badge[hidden] { display: none !important; }
+    .keyboard-hints[hidden] { display: none !important; }
+    .expert-mode-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+      border: 1px solid var(--color-primary);
+      color: var(--color-primary);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .expert-mode-badge::before { content: "•"; color: var(--color-primary); font-size: 16px; line-height: 0; }
+    [data-theme="dark"] .expert-mode-badge { color: #5ba8b0; border-color: #5ba8b0; background: rgba(91, 168, 176, 0.18); }
+    [data-theme="dark"] .expert-mode-badge::before { color: #5ba8b0; }
+
+    .hero-expert-link {
+      margin: 12px 0 0;
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+    .hero-expert-link button {
+      background: transparent;
+      border: 0;
+      padding: 0;
+      color: var(--color-primary);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+      font: inherit;
+    }
+    .hero-expert-link button:hover { color: color-mix(in srgb, var(--color-primary) 75%, var(--color-text)); }
+
+    .keyboard-hints {
+      margin: var(--space-3) 0 0;
+      padding: 12px 16px;
+      border: 1px dashed var(--color-primary);
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+      font-size: var(--text-xs);
+      color: var(--color-text);
+      line-height: 1.6;
+    }
+    .keyboard-hints-title { display: block; font-weight: 700; margin-bottom: 4px; color: var(--color-primary); letter-spacing: 0.04em; text-transform: uppercase; font-size: 11px; }
+    .keyboard-hints kbd {
+      display: inline-block;
+      padding: 1px 6px;
+      margin: 0 2px;
+      border-radius: 4px;
+      border: 1px solid var(--color-divider);
+      background: var(--color-surface);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+      font-size: 11px;
+      color: var(--color-text);
+      box-shadow: 0 1px 0 var(--color-divider);
+    }
+    .keyboard-hints ul { margin: 4px 0 0; padding-left: 1.1rem; }
+    .keyboard-hints li { margin-top: 4px; }
+    [data-theme="dark"] .keyboard-hints { border-color: rgba(91, 168, 176, 0.5); }
+
+    .expert-warning-dialog {
+      position: fixed; inset: 0; margin: auto; padding: 0; border: 0;
+      border-radius: var(--radius-lg);
+      width: min(480px, calc(100vw - 32px));
+      background: var(--color-surface); color: var(--color-text);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.28);
+    }
+    .expert-warning-dialog::backdrop { background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
+    .expert-warning-dialog-inner { padding: var(--space-5) var(--space-6) var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
+    .expert-warning-dialog-icon { font-size: 32px; line-height: 1; }
+    .expert-warning-dialog h2 { margin: 0; font-size: var(--text-lg); color: var(--color-text); }
+    .expert-warning-dialog p { margin: 0; font-size: var(--text-sm); line-height: 1.55; color: var(--color-text); }
+    .expert-warning-dialog-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-2); }
+    .expert-warning-dialog-actions .btn { flex: 1 1 auto; min-height: 44px; }
+
+    body.is-expert-mode .tip-block,
+    body.is-expert-mode .demo-helper,
+    body.is-expert-mode #auto-optimize-row,
+    body.is-expert-mode #guided-cta-row,
+    body.is-expert-mode #weekly-goal-pin,
+    body.is-expert-mode .examples-block,
+    body.is-expert-mode #post-uc-guidance,
+    body.is-expert-mode .field .helper,
+    body.is-expert-mode .builder-transition,
+    body.is-expert-mode #quick-start-card {
+      display: none !important;
+    }
+    body.is-expert-mode .advanced-options { background: transparent; border-color: var(--color-divider); }
+    body.is-expert-mode .adv-sub { display: none; }
+
     .toast {
       position: fixed;
       top: calc(88px + env(safe-area-inset-top, 0px));
@@ -1929,6 +2064,7 @@
             <span class="tip-block-text">Not sure where to start? Choose a use case below or tap "Need ideas?" to generate new ones.</span>
             <button type="button" class="tip-block-dismiss" data-action="dismiss-tips" aria-label="Hide all tips">Hide Tip</button>
           </p>
+          <p class="hero-expert-link">Power user? <button type="button" id="hero-expert-link-btn">Switch to Expert Mode inside the builder.</button></p>
         </div>
         <aside class="hero-card" aria-labelledby="hero-card-title">
           <span class="hero-card-badge"><span class="hero-card-badge-dot" aria-hidden="true"></span>Why It Matters</span>
@@ -2016,6 +2152,17 @@
               <p class="builder-transition">Fill in your goal below — the more specific, the better. Hit Generate and get a prompt you can use instantly.</p>
             </div>
             <div class="builder-head-actions">
+              <span class="expert-mode-badge" id="expert-mode-badge" hidden>Expert Mode Active</span>
+              <label class="expert-mode-toggle" for="expert-mode-toggle" id="expert-mode-toggle-wrap" title="For advanced users who want full control.">
+                <span class="switch">
+                  <input type="checkbox" id="expert-mode-toggle" />
+                  <span class="slider" aria-hidden="true"></span>
+                </span>
+                <span class="expert-mode-toggle-text">
+                  <span class="expert-mode-toggle-title">Expert Mode</span>
+                  <span class="expert-mode-toggle-sub">For advanced users who want full control.</span>
+                </span>
+              </label>
               <button type="button" class="builder-replay-btn" id="replay-tour-btn-builder" aria-label="Replay the onboarding tour">
                 <span class="builder-replay-icon" aria-hidden="true">?</span>
                 <span>Replay Tour</span>
@@ -2234,6 +2381,17 @@
                   </div>
                 </div>
               </details>
+
+              <div class="keyboard-hints" id="keyboard-hints" hidden aria-label="Keyboard shortcuts">
+                <span class="keyboard-hints-title">Keyboard Shortcuts</span>
+                <ul>
+                  <li><kbd>G</kbd> — Generate prompt</li>
+                  <li><kbd>C</kbd> — Copy generated prompt</li>
+                  <li><kbd>/</kbd> — Focus history search</li>
+                  <li><kbd>Esc</kbd> — Close open overlays / cancel tour</li>
+                </ul>
+                <p style="margin: 6px 0 0; font-size: 11px; color: var(--color-text-muted);">Single-key shortcuts work when you are not typing in a field.</p>
+              </div>
 
               <div class="post-uc-guidance" id="post-uc-guidance" role="status" aria-live="polite">
                 <span class="post-uc-guidance-icon" aria-hidden="true">✅</span>
@@ -2682,6 +2840,7 @@
                 <li><strong>AI Tool Recommendation.</strong> Based on your goal we highlight the best fit out of ChatGPT, Claude, or Perplexity with a <em>Recommended</em> label and a soft glow.</li>
                 <li><strong>Prompt Strength.</strong> After you generate a prompt, you'll see a 0–100% score with 2–3 quick insights so you know what to improve next.</li>
                 <li><strong>This Week's Focus.</strong> A new starter goal appears at the top of the builder every 7 days. Tap it to drop it straight into your goal field.</li>
+                <li><strong>Expert Mode.</strong> Toggle in the builder header. Expert Mode allows full control with no guidance, expanded options, and visible keyboard shortcuts. Auto Optimize is turned off automatically. Toggle off any time to return to the guided experience.</li>
               </ul>
             </article>
 
@@ -2976,6 +3135,18 @@
         <div class="site-footer-version" aria-label="Version">PromptMeGood v1</div>
       </div>
     </footer>
+
+    <dialog id="expert-warning-dialog" class="expert-warning-dialog" aria-labelledby="expert-warning-title">
+      <div class="expert-warning-dialog-inner">
+        <div class="expert-warning-dialog-icon" aria-hidden="true">⚠️</div>
+        <h2 id="expert-warning-title">Turn on Expert Mode?</h2>
+        <p>Expert Mode removes most guidance and shows advanced controls. This may feel overwhelming if you're new.</p>
+        <div class="expert-warning-dialog-actions">
+          <button type="button" class="btn btn-secondary" id="expert-warning-cancel">Stay In Guided Mode</button>
+          <button type="button" class="btn btn-primary" id="expert-warning-confirm">Enable Expert Mode</button>
+        </div>
+      </div>
+    </dialog>
 
     <dialog id="guided-mode-dialog" class="guided-dialog" aria-labelledby="guided-mode-title">
       <form method="dialog" class="guided-form" id="guided-mode-form">
@@ -4896,6 +5067,135 @@ Context:
         }
       })();
 
+      // ===== Expert Mode =====
+      (function setupExpertMode() {
+        const EXPERT_KEY = 'promptmegood:expertMode:v1';
+        const ACTIVATIONS_KEY = 'promptmegood:expertModeActivations:v1';
+        const FIRST_N_WARNINGS = 3;
+        const toggle = document.getElementById('expert-mode-toggle');
+        const toggleWrap = document.getElementById('expert-mode-toggle-wrap');
+        const badge = document.getElementById('expert-mode-badge');
+        const advanced = document.getElementById('advanced-options');
+        const keyboardHints = document.getElementById('keyboard-hints');
+        const heroLink = document.getElementById('hero-expert-link-btn');
+        const warningDialog = document.getElementById('expert-warning-dialog');
+        const warningCancel = document.getElementById('expert-warning-cancel');
+        const warningConfirm = document.getElementById('expert-warning-confirm');
+        const autoOptToggle = document.getElementById('auto-optimize-toggle');
+        if (!toggle || !badge) return;
+
+        let prevAdvancedOpen = null; // remember user's prior state to restore on disable
+
+        function getStoredEnabled() {
+          try { return localStorage.getItem(EXPERT_KEY) === '1'; } catch (e) { return false; }
+        }
+        function setStoredEnabled(on) {
+          try {
+            if (on) localStorage.setItem(EXPERT_KEY, '1');
+            else localStorage.removeItem(EXPERT_KEY);
+          } catch (e) {}
+        }
+        function getActivationCount() {
+          try { return parseInt(localStorage.getItem(ACTIVATIONS_KEY) || '0', 10) || 0; } catch (e) { return 0; }
+        }
+        function bumpActivationCount() {
+          try {
+            const n = getActivationCount() + 1;
+            localStorage.setItem(ACTIVATIONS_KEY, String(n));
+            return n;
+          } catch (e) { return 0; }
+        }
+
+        function applyExpertMode(enabled) {
+          document.body.classList.toggle('is-expert-mode', !!enabled);
+          toggle.checked = !!enabled;
+          if (badge) badge.hidden = !enabled;
+          if (keyboardHints) keyboardHints.hidden = !enabled;
+          if (advanced) {
+            if (enabled) {
+              if (prevAdvancedOpen === null) prevAdvancedOpen = !!advanced.open;
+              advanced.open = true;
+            } else if (prevAdvancedOpen !== null) {
+              advanced.open = prevAdvancedOpen;
+              prevAdvancedOpen = null;
+            }
+          }
+          // Auto Optimize is forced OFF when Expert Mode is on
+          if (enabled && autoOptToggle && autoOptToggle.checked) {
+            autoOptToggle.checked = false;
+            try {
+              autoOptToggle.dispatchEvent(new Event('change', { bubbles: true }));
+            } catch (e) {}
+          }
+        }
+
+        function commitEnable() {
+          bumpActivationCount();
+          setStoredEnabled(true);
+          applyExpertMode(true);
+        }
+        function commitDisable() {
+          setStoredEnabled(false);
+          applyExpertMode(false);
+        }
+
+        // Restore on load (no warning, no activation bump)
+        applyExpertMode(getStoredEnabled());
+
+        // Toggle change handler
+        toggle.addEventListener('change', function () {
+          const wantOn = toggle.checked;
+          if (!wantOn) { commitDisable(); return; }
+          const seen = getActivationCount();
+          if (seen < FIRST_N_WARNINGS && warningDialog && typeof warningDialog.showModal === 'function') {
+            // Revert visual until confirmed
+            toggle.checked = false;
+            try { warningDialog.showModal(); } catch (e) { commitEnable(); }
+          } else {
+            commitEnable();
+          }
+        });
+
+        if (warningCancel) {
+          warningCancel.addEventListener('click', function () {
+            try { warningDialog.close(); } catch (e) {}
+          });
+        }
+        if (warningConfirm) {
+          warningConfirm.addEventListener('click', function () {
+            try { warningDialog.close(); } catch (e) {}
+            commitEnable();
+          });
+        }
+        if (warningDialog) {
+          // Backdrop click closes (treated as cancel)
+          warningDialog.addEventListener('click', function (e) {
+            if (e.target === warningDialog) {
+              try { warningDialog.close(); } catch (err) {}
+            }
+          });
+        }
+
+        if (heroLink) {
+          heroLink.addEventListener('click', function () {
+            const builder = document.getElementById('builder');
+            if (builder && typeof builder.scrollIntoView === 'function') {
+              builder.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            // Pulse the toggle to draw attention
+            window.setTimeout(function () {
+              if (toggleWrap) {
+                toggleWrap.classList.remove('is-pulse');
+                // Force reflow so animation restarts
+                void toggleWrap.offsetWidth;
+                toggleWrap.classList.add('is-pulse');
+              }
+              try { toggle.focus({ preventScroll: true }); } catch (e) {}
+            }, 600);
+          });
+        }
+      })();
+
       // ===== Prompt Strength Score =====
       (function setupStrengthScore() {
         function compute(data, promptText) {
@@ -5830,7 +6130,7 @@ Context:
           selector: '#tour-final-actions',
           fallbackSelector: '#copy-btn',
           title: 'Use your prompt anywhere',
-          text: 'Copy uses your clipboard. The ChatGPT, Claude, and Perplexity buttons copy your prompt and open the AI tool in a new tab. We highlight the best fit for your goal.'
+          text: 'Copy uses your clipboard. The ChatGPT, Claude, and Perplexity buttons copy your prompt and open the AI tool in a new tab. We highlight the best fit for your goal. Advanced users can enable Expert Mode in the builder header for full control.'
         }
       ];
       const DEMO_STEPS = [
@@ -5877,7 +6177,7 @@ Context:
           selector: '#replay-tour-btn',
           fallbackSelector: '.site-footer-replay-btn',
           title: "You've seen the full flow",
-          text: "Now try your own goal. If you need help again, tap Replay tour at the bottom of the page."
+          text: "Now try your own goal. If you need help again, tap Replay tour at the bottom of the page. Advanced users can enable Expert Mode in the builder header for full control."
         }
       ];
       const obOverlay = document.getElementById('ob-overlay');
@@ -6034,6 +6334,7 @@ Context:
         obListenersBound = false;
         if (obScrollRaf) { window.cancelAnimationFrame(obScrollRaf); obScrollRaf = 0; }
       }
+      let obSuspendedExpertMode = false;
       function obStart(opts) {
         opts = opts || {};
         currentSteps = opts.steps || OB_STEPS;
@@ -6044,6 +6345,14 @@ Context:
         if (obStepEl) obStepEl.textContent = 'Step 1 of ' + currentSteps.length;
         const banner = document.getElementById('nudge-banner');
         if (banner) banner.hidden = true;
+        // If Expert Mode is on, temporarily reveal guided UI so tour targets are visible.
+        // We do not toggle the user's persisted preference — only the visual class.
+        if (document.body.classList.contains('is-expert-mode')) {
+          document.body.classList.remove('is-expert-mode');
+          obSuspendedExpertMode = true;
+        } else {
+          obSuspendedExpertMode = false;
+        }
         obOverlay.classList.add('is-open');
         obOverlay.setAttribute('aria-hidden', 'false');
         obBindListeners();
@@ -6069,6 +6378,11 @@ Context:
         obSkipBtn.textContent = 'Skip';
         currentSteps = OB_STEPS;
         currentIsDemo = false;
+        // Restore Expert Mode visual state if we suspended it for the tour.
+        if (obSuspendedExpertMode) {
+          document.body.classList.add('is-expert-mode');
+          obSuspendedExpertMode = false;
+        }
         if (!wasDemo) {
           if (completed) {
             obMarkDone();
