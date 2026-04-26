@@ -1,0 +1,85 @@
+Final clean-and-check pass for PromptMeGood. Do not redesign working sections and do not add new features unless required to fix broken or outdated behavior.
+
+Goal: make the live site clean, accurate, mobile-friendly, and aligned with the current product.
+
+Scope:
+1. Manual / Help update
+- Update only outdated or missing information.
+- Keep the main manual short.
+- Keep Full Guide separate/collapsed.
+- Do not re-expand the old 12-card guide on the homepage.
+- Ensure help/manual copy reflects: Build A Prompt, See Use Cases, Guide Me, Expert Mode, Auto Optimize, Advanced Options, Guardrails/rules/limits, Max Response Length, Prompt Strength, Check Prompt Quality, Refine/Fine-Tune/Undo, manual editing, Clear buttons, Prompt History, Weekly Goal, Early Access, and AI platform wording.
+- Replace any wording that limits users only to ChatGPT, Claude, or Perplexity with: “ChatGPT, Claude, Perplexity, or any AI platform you choose.”
+
+2. Guided tour check
+- Confirm mobile tour transitions are smooth.
+- Final “Done” must scroll back to top.
+- Friendly completion message should appear only after full tour completion.
+- Skip must not trigger the completion message.
+- Replay Tour must still work.
+
+3. Demo check
+- Use Demo Values fills fields.
+- Demo generates automatically.
+- Demo briefly explains each step.
+- Demo highlights output, refinement, quality check, and AI buttons.
+- Demo ends cleanly.
+
+4. Early access form
+- Email submits successfully.
+- Success message must say exactly: “You’re in. We’ll notify you when PRO opens.”
+- No false error messages.
+- Do not break FormSubmit integration.
+
+5. UI / copy cleanup
+- Fix capitalization consistency.
+- Confirm exact copy: “Jump To A Section”
+- Confirm exact copy: “Simple, Honest Pricing”
+- Remove duplicate or outdated wording.
+
+6. Mobile check
+- No horizontal overflow.
+- Buttons easy to tap.
+- Toasts/banners visible long enough.
+- Use case modal is clean.
+- Advanced Options and Expert Mode look clean.
+- Footer links stack properly.
+
+7. Link/button integrity
+Check and fix if needed:
+- Build A Prompt
+- See Use Cases
+- Use Case cards
+- Need Ideas dice
+- Generate Prompt
+- Use Demo Values
+- Copy Prompt
+- AI platform buttons
+- Refine buttons
+- Fine-Tune
+- Undo
+- Clear buttons
+- Prompt History controls
+- Replay Tour
+- View Full Guide
+- Privacy Policy
+- Terms of Service
+- Social links
+- support@promptmegood.com mailto
+
+8. Console/performance/SEO
+- Fix JavaScript errors.
+- Fix broken image paths.
+- Confirm favicon/logo loads.
+- Avoid layout shifts.
+- Do not redesign working sections.
+- Fix small SEO optimization details only if clearly missing or broken.
+
+After making changes:
+- Test desktop and mobile.
+- Check browser console.
+- Verify form behavior without breaking FormSubmit.
+- Provide a final report with:
+  1. What was fixed
+  2. What was already working
+  3. Any remaining issue that needs my decision
