@@ -1,0 +1,125 @@
+Improve UI clarity, reduce dead clicks, and enhance user understanding across key interaction points. Do not break layout, mobile responsiveness, or existing functionality.
+
+========================
+PART 1 — “SEE USE CASES” BUTTON IMPROVEMENT
+========================
+
+Goal:
+Make the secondary CTA clearly visible without competing with the primary CTA.
+
+Apply to “See Use Cases” button:
+
+- Add border:
+  border: 1.5px–2px solid var(--primary-teal);
+
+- Keep:
+  - white background
+  - dark readable text
+
+- Add hover/tap state:
+  - background: subtle teal tint (rgba(0,128,128,0.05))
+  - smooth transition: 150–200ms
+
+Do NOT:
+- fill with teal
+- add glow or shadow
+- overpower “Build A Prompt”
+
+========================
+PART 2 — FIX CONSTRAINTS FIELD CLARITY
+========================
+
+Replace label:
+“Any constraints?”
+
+With:
+“Anything The AI Must Follow?”
+
+Replace placeholder with:
+
+“Tell the AI any rules or limits (e.g., under 200 words, use bullet points, avoid jargon, make it beginner-friendly)”
+
+Remove:
+- the word “Example:”
+
+Optional helper text (if space allows):
+“This controls how the answer is written and what to avoid.”
+
+Expert Mode:
+- revert label to “Constraints”
+- remove helper text
+
+========================
+PART 3 — REDUCE DEAD CLICKS (CRITICAL)
+========================
+
+Apply to ALL interactive elements:
+- buttons
+- cards
+- toggles
+- clickable text
+
+Add interaction feedback:
+
+1. Hover (desktop) / Tap (mobile):
+   - slight scale (0.98–1.0)
+   - subtle background tint
+   - transition: 150ms
+
+2. Ensure:
+   - cursor: pointer (desktop)
+   - minimum touch size: 44px height
+
+3. If something looks clickable but isn’t:
+   - remove interactive styling
+   OR
+   - make it clickable
+
+4. Mobile tap feedback must be instant (no delay)
+
+========================
+PART 4 — CTA CLARITY REINFORCEMENT
+========================
+
+Ensure both hero buttons clearly communicate purpose:
+
+Build A Prompt:
+“Start Here With A Specific Task”
+
+See Use Cases:
+“Start Here For Ideas”
+
+These must be:
+- visible
+- readable
+- not visually buried
+
+========================
+PART 5 — FIRST-IMPRESSION CLARITY
+========================
+
+Goal:
+Users must instantly understand what to do.
+
+Ensure:
+- Clear distinction between:
+  - building a prompt
+  - exploring use cases
+
+Do NOT:
+- add new sections
+- add heavy instructional text
+
+Keep clarity lightweight and visual.
+
+========================
+FINAL CHECK
+========================
+
+- “See Use Cases” is clearly defined but secondary
+- Constraints field is understandable to new users
+- All interactive elements give immediate feedback
+- Dead click risk reduced
+- Mobile experience feels responsive
+- No layout shifts
+- No JavaScript errors

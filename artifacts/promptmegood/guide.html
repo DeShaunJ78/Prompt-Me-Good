@@ -346,6 +346,7 @@
           <span class="eyebrow">Full Guide</span>
           <h1>How To Use PromptMeGood</h1>
           <p>Everything you need to get great prompts — every step, every field, every boost, and every pro tip in one place. New here? Start with the Beginner Guide and work your way down.</p>
+          <p style="margin-top: 12px; font-style: italic; opacity: 0.8;">PromptMeGood is currently in early access. All features are unlocked while we improve the product.</p>
         </div>
       </div>
     </section>
@@ -385,9 +386,9 @@
                 <h3>1. The 5-Step Flow</h3>
                 <p>This mirrors the in-app tour — replay it anytime from the footer.</p>
                 <ol class="manual-steps">
-                  <li><strong>Goal.</strong> Type what you want help with in plain words — or click <strong>Guide Me</strong> at the top of the builder and answer 4 quick questions. The more specific, the better.</li>
-                  <li><strong>Generate.</strong> Click <strong>Generate Prompt</strong>, or hit <strong>Use Demo Values</strong> to launch a full guided walkthrough — it fills a sample goal, generates a prompt, explains how to refine it, and shows how to use it in ChatGPT, Claude, or Perplexity. You can replay the walkthrough anytime using <strong>Replay Tour</strong> at the bottom of the page.</li>
-                  <li><strong>Output.</strong> Your structured prompt appears in the output box on the right.</li>
+                  <li><strong>Goal.</strong> Type what you want help with in plain words — the more specific, the better.</li>
+                  <li><strong>Adjust settings or use Guide Me (optional).</strong> Tweak Category, Tone, Format, or other fields — or click <strong>Guide Me</strong> to be walked through the choices with 4 quick questions.</li>
+                  <li><strong>Generate.</strong> Click <strong>Generate Prompt</strong> — your structured prompt appears in the output box on the right. Or hit <strong>Use Demo Values</strong> to launch a guided walkthrough you can replay anytime from <strong>Replay Tour</strong> at the bottom of the page.</li>
                   <li><strong>Refine / Undo.</strong> Tap <strong>More Detailed</strong>, <strong>More Aggressive</strong>, or <strong>Beginner Friendly</strong> to upgrade in place. Use <strong>Undo Last Change</strong> to step back. Set a <strong>Max Response Length</strong> or add <strong>Guardrails</strong> in the builder to control length and avoid bad habits.</li>
                   <li><strong>Check / Copy / Use.</strong> Read your <strong>Prompt Strength</strong> score and tap <strong>Check Prompt Quality</strong> for quick suggestions, click <strong>Copy Prompt</strong>, then open it in ChatGPT, Claude, or Perplexity — we highlight the best fit for your goal.</li>
                 </ol>
@@ -395,7 +396,7 @@
 
               <article class="manual-section manual-callout" id="manual-guide-me">
                 <h3>Guide Me (Guided Setup)</h3>
-                <p>Not sure how to phrase your goal? Tap the green <strong>Guide Me</strong> button at the top of the builder. We'll ask 4 short questions — what you need help with, who it's for, the outcome that matters most, and any constraints — then fill the builder for you.</p>
+                <p>Not sure how to phrase your goal? Tap the green <strong>Guide Me</strong> button at the top of the builder. We'll ask 4 short questions — what you need help with, who it's for, the outcome that matters most, and any rules or limits for the AI — then fill the builder for you.</p>
                 <ol>
                   <li>Click <strong>Guide Me</strong> at the top of the builder.</li>
                   <li>Answer each question (use Back to revisit any answer).</li>
@@ -483,7 +484,7 @@
 
                 <div class="manual-feature">
                   <h4>Extra Details</h4>
-                  <p>Optional. Add budget, timeline, platform, audience, or constraints. Every extra detail sharpens the answer.</p>
+                  <p>Optional. Add budget, timeline, platform, audience, or rules or limits for the AI. Every extra detail sharpens the answer.</p>
                 </div>
 
                 <div class="manual-feature">
@@ -561,7 +562,7 @@
 
               <article class="manual-section" id="manual-use">
                 <h3>5. Using your prompt</h3>
-                <p>After your prompt is ready, copy it or use the <strong>ChatGPT</strong>, <strong>Claude</strong>, or <strong>Perplexity</strong> buttons to copy it automatically and open your preferred AI tool. Paste the prompt there to get your final result.</p>
+                <p>Use your prompt in <strong>ChatGPT</strong>, <strong>Claude</strong>, <strong>Perplexity</strong>, or any AI platform you choose. Tap one of the buttons to copy and open the tool in one step, or use <strong>Copy Prompt</strong> and paste it anywhere else.</p>
 
                 <div class="manual-feature">
                   <h4>Copy Prompt</h4>
@@ -634,12 +635,20 @@
                 <p>PromptMeGood reads your goal as you type and quietly tunes the rest of the builder for you.</p>
                 <ul>
                   <li><strong>Smart Suggestions.</strong> As you type your goal, we suggest the best Category, Tone, Output Format, and Max Response Length. A small <em>Suggested</em> badge appears next to each field we have a recommendation for.</li>
-                  <li><strong>Auto Optimize.</strong> The toggle at the top of the builder is on by default. When on, suggestions are applied automatically to fields you have not edited yourself. Turn it off if you want full manual control — badges still show, but values won't change.</li>
                   <li><strong>AI Tool Recommendation.</strong> Based on your goal we highlight the best fit out of ChatGPT, Claude, or Perplexity with a <em>Recommended</em> label and a soft glow.</li>
                   <li><strong>Prompt Strength.</strong> After you generate a prompt, you'll see a 0–100% score with 2–3 quick insights so you know what to improve next.</li>
                   <li><strong>This Week's Focus.</strong> A new starter goal appears at the top of the builder every 7 days. Tap it to drop it straight into your goal field.</li>
-                  <li><strong>Expert Mode.</strong> Toggle in the builder header. Expert Mode allows full control with no guidance, expanded options, and visible keyboard shortcuts. Auto Optimize is turned off automatically. Toggle off any time to return to the guided experience.</li>
                 </ul>
+              </article>
+
+              <article class="manual-section manual-callout" id="manual-auto-optimize">
+                <h3>Auto Optimize (Recommended)</h3>
+                <p>Auto Optimize suggests the best category, tone, format, and length based on your goal. You can keep the suggestions or adjust them manually.</p>
+              </article>
+
+              <article class="manual-section manual-callout" id="manual-expert-mode">
+                <h3>Expert Mode</h3>
+                <p>Expert Mode removes guidance and unlocks full control for advanced users. Recommended only if you're comfortable building prompts manually. Toggle it in the builder header — Auto Optimize switches off automatically.</p>
               </article>
 
               <article class="manual-section" id="manual-theme-accent">
