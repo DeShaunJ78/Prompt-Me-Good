@@ -3,6 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    /* Apex -> www redirect. Runs before any other resource so we don't waste a request on the wrong host. */
+    (function () {
+      try {
+        if (location.hostname === 'promptmegood.com') {
+          location.replace('https://www.promptmegood.com' + location.pathname + location.search + location.hash);
+        }
+      } catch (e) { /* no-op */ }
+    })();
+  </script>
+  <link rel="canonical" href="https://www.promptmegood.com/pricing.html" />
   <title>Pricing — PromptMeGood</title>
   <meta name="description" content="PromptMeGood pricing — Free forever for the core builder. PRO is coming soon. Join early access for launch updates." />
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=3" />

@@ -3,9 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>
+    /* Apex -> www redirect. Runs before any other resource so we don't waste a request on the wrong host. */
+    (function () {
+      try {
+        if (location.hostname === 'promptmegood.com') {
+          location.replace('https://www.promptmegood.com' + location.pathname + location.search + location.hash);
+        }
+      } catch (e) { /* no-op */ }
+    })();
+  </script>
   <title>Full Guide — PromptMeGood</title>
   <meta name="description" content="The complete walkthrough for PromptMeGood — every step, field, boost, refinement tool, and pro tip in one place." />
-  <link rel="canonical" href="https://prompt-me-good.replit.app/guide.html" />
+  <link rel="canonical" href="https://www.promptmegood.com/guide.html" />
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=3" />
   <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48.png?v=3" />
   <link rel="icon" type="image/png" href="/assets/pmg-logo.png?v=3" />

@@ -3,13 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    /* Apex -> www redirect. Runs before any other resource so we don't waste a request on the wrong host. */
+    (function () {
+      try {
+        if (location.hostname === 'promptmegood.com') {
+          location.replace('https://www.promptmegood.com' + location.pathname + location.search + location.hash);
+        }
+      } catch (e) { /* no-op */ }
+    })();
+  </script>
   <title>AI Prompt Generator That Actually Gets Results | PromptMeGood</title>
   <meta name="description" content="Turn your ideas into powerful AI prompts in seconds. PromptMeGood helps you get better results from ChatGPT, Claude, Perplexity, and any AI tool. No fluff—just results." />
-  <link rel="canonical" href="https://promptmegood.com" />
+  <link rel="canonical" href="https://www.promptmegood.com" />
   <meta property="og:title" content="AI Prompt Generator That Actually Gets Results" />
   <meta property="og:description" content="Build powerful AI prompts that get real results. Works with ChatGPT, Claude, Perplexity, and more." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://promptmegood.com" />
+  <meta property="og:url" content="https://www.promptmegood.com" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="AI Prompt Generator That Actually Gets Results" />
   <meta name="twitter:description" content="Turn weak prompts into powerful results instantly." />
