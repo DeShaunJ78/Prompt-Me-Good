@@ -2789,20 +2789,7 @@
       .upload-controls { gap: 8px; }
       .upload-analyze-btn { width: 100%; }
     }
-    /* ── End Upload ── */
-    /* PMG Polish */
-    .feedback-card-grid{transition:box-shadow 180ms ease,transform 180ms ease}
-    .feedback-card-grid:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
-    .popular-use-card{transition:box-shadow 180ms ease,transform 180ms ease}
-    .popular-use-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
-    #generateBtn{transition:opacity 180ms ease,background 180ms ease}
-    #generateBtn:disabled{opacity:.65;cursor:not-allowed}
-    .strength-score:not([hidden]){animation:pmgFade .3s ease}
-    @keyframes pmgFade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-    .run-section{background:color-mix(in srgb,var(--color-primary) 6%,var(--color-surface));border-radius:var(--radius-lg);padding:var(--space-5);margin-top:var(--space-4)}
-    .pro-badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:9999px;background:#1a6b5e;color:#fff;margin-left:6px;vertical-align:middle}
-    @media(max-width:640px){.hero-actions{flex-direction:column}.hero-actions .btn{width:100%;text-align:center}}
-    /* End PMG Polish */</style>
+    /* ── End Upload ── */</style>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
