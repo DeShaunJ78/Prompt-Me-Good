@@ -1,0 +1,230 @@
+Act as a senior full-stack app developer, product strategist, UX designer, and SaaS conversion expert.
+
+I am building PromptMeGood — an AI prompt builder for everyday people who want AI to finally understand what they mean.
+
+Your mission:
+Make PromptMeGood better, clearer, more useful, and more valuable than Originality.ai’s prompt builder WITHOUT adding clutter.
+
+Do not rebuild the app from scratch.
+Do not remove working AI/backend features.
+Do not expose API keys.
+Do not create complexity for beginners.
+
+========================
+CORE PRODUCT POSITIONING
+========================
+
+PromptMeGood is not just a prompt generator.
+
+It should feel like:
+“Tell us what you want. We’ll make AI understand you.”
+
+PRIMARY USER:
+Everyday people who use AI tools and get weak results because they don’t know how to ask properly.
+
+PRIMARY GOAL:
+A first-time user should be able to generate a useful prompt in under 10 seconds.
+
+========================
+NEW CORE FEATURE (CRITICAL)
+========================
+
+Users must be able to upload files and images and have AI analyze them intelligently.
+
+SUPPORTED INPUT:
+- Text input (existing)
+- Uploaded files (PDF, DOCX, TXT)
+- Images (JPG, PNG, screenshots)
+
+USER EXPERIENCE:
+
+1. User types a goal:
+   “Summarize this contract”
+   “Explain this report”
+   “What’s wrong with this screenshot?”
+
+2. User optionally uploads:
+   - a document OR
+   - an image OR
+   - both
+
+3. PromptMeGood:
+   - analyzes the file/image
+   - builds a powerful prompt automatically
+   - sends it to AI
+   - returns a clear, useful response
+
+UI REQUIREMENTS:
+
+- Add an upload area near the goal field:
+  “Upload a file or image (optional)”
+
+- Show:
+  - file name
+  - preview for images
+  - remove button
+
+- Do NOT clutter UI
+- Keep it simple and optional
+
+BACKEND REQUIREMENTS:
+
+- Add endpoint:
+  POST /api/analyze
+
+- Accept:
+  - text input
+  - file upload (multipart/form-data)
+
+- Process:
+  - extract text from documents
+  - send image + prompt to vision-capable model
+  - combine user goal + extracted content into structured prompt
+
+- Return:
+  {
+    success: true,
+    prompt: "...optimized prompt...",
+    response: "...AI answer..."
+  }
+
+SECURITY + COST:
+
+- File size limits (ex: 5MB–10MB)
+- Validate file types
+- Rate limit requests
+- Do NOT store files permanently unless needed
+- Keep API usage controlled
+
+========================
+PROMPT BUILDER IMPROVEMENTS
+========================
+
+- Auto-detect intent from user input
+- Ask follow-up questions only when necessary
+- Suggest improvements quietly
+- Avoid overwhelming users
+- Keep advanced controls behind “More Control”
+
+========================
+AI OUTPUT FLOW
+========================
+
+Keep these separate:
+1. Optimized Prompt
+2. AI Response
+
+User must understand both clearly.
+
+Add:
+- “Why this works” explanation (simple language)
+- One-click refine options
+
+========================
+PREMIUM FEATURES (WITHOUT CLUTTER)
+========================
+
+Add or improve:
+- Smart intent detection
+- Prompt quality score
+- “What’s missing?” suggestions
+- One-click improvements
+- Save favorites
+- Reuse previous inputs
+- Suggested AI platform
+- Beginner vs Expert mode
+
+========================
+MONETIZATION DESIGN
+========================
+
+Make Pro feel obvious, not forced.
+
+Potential Pro features:
+- Unlimited AI runs
+- Advanced analysis
+- File/image deep analysis
+- Saved prompts
+- Custom personas
+- History
+
+Use subtle Pro indicators, not aggressive paywalls.
+
+========================
+REDUCE CLUTTER
+========================
+
+Hide:
+- Excessive dropdowns
+- Technical language
+- Large manuals
+- Duplicate helpers
+
+Use progressive disclosure:
+Simple first → power later
+
+========================
+UX POLISH
+========================
+
+Fix:
+- desktop spacing
+- header clarity
+- buried buttons
+- mobile stacking
+- feedback states
+- transitions
+- button clarity
+
+========================
+BACKEND + AI SAFETY
+========================
+
+Ensure:
+- API key server-side only
+- rate limits enforced
+- cost caps enforced
+- graceful failure handling
+- no silent errors
+
+========================
+PROCESS
+========================
+
+Before making changes:
+
+1. Analyze current app
+2. Identify:
+   - what works
+   - what confuses users
+   - what should be hidden
+   - what should be improved
+   - what must not be touched
+
+Then implement safe improvements.
+
+========================
+RETURN FORMAT
+========================
+
+1. Product diagnosis
+2. UX fixes
+3. Prompt builder improvements
+4. File/image analysis implementation
+5. AI flow improvements
+6. Desktop/mobile polish
+7. Monetization improvements
+8. Files changed
+9. Anything needing my decision
+10. Final QA checklist
+
+========================
+FINAL STANDARD
+========================
+
+The app should feel:
+- simple for beginners
+- powerful for advanced users
+- valuable enough that users think:
+
+“I’d pay for this.”
