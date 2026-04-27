@@ -299,8 +299,8 @@
     .btn-secondary {
       background: var(--color-surface); border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
     }
-    /* Scoped: emphasize the hero "See use cases" CTA with a teal border so it's clearly clickable on white,
-       while still reading as secondary next to the filled "Build a prompt" primary. */
+    /* Scoped: emphasize the hero "See Use Cases" CTA with a teal border so it's clearly clickable on white,
+       while still reading as secondary next to the filled "Build A Prompt" primary. */
     #hero-usecases-cta {
       border: 2px solid var(--color-primary);
       transition: background var(--transition-interactive), border-color var(--transition-interactive), transform var(--transition-interactive);
@@ -613,7 +613,7 @@
       line-height: 1.4;
     }
     [data-theme="dark"] .guided-cta-recommended-badge { background: #5ba8b0; color: #0c2f2c; }
-    /* Build a prompt highlight pulse: 1.5s soft teal box-shadow + ring */
+    /* Build A Prompt highlight pulse: 1.5s soft teal box-shadow + ring */
     @keyframes guidedCtaPulse {
       0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 55%, transparent); border-color: var(--color-primary); }
       60%  { box-shadow: 0 0 0 14px color-mix(in srgb, var(--color-primary) 0%, transparent); border-color: var(--color-primary); }
@@ -623,7 +623,7 @@
       animation: guidedCtaPulse 1500ms ease-out 1;
       border-color: var(--color-primary);
     }
-    /* Inline branded guidance message under builder header (Build a prompt CTA) */
+    /* Inline branded guidance message under builder header (Build A Prompt CTA) */
     .build-cta-guidance {
       display: flex; align-items: center; gap: 10px;
       margin: 0 0 var(--space-3); padding: 10px 14px;
@@ -2769,11 +2769,11 @@
           </p>
           <div class="hero-actions">
             <a class="btn btn-primary btn-stacked" href="#builder" id="hero-build-cta">
-              <span class="cta-title">Build a prompt</span>
+              <span class="cta-title">Build A Prompt</span>
               <span class="cta-sub">start here</span>
             </a>
             <a class="btn btn-secondary btn-stacked" href="#use-cases" id="hero-usecases-cta">
-              <span class="cta-title">See use cases</span>
+              <span class="cta-title">See Use Cases</span>
               <span class="cta-sub">or explore use cases</span>
             </a>
           </div>
@@ -2809,32 +2809,32 @@
         </p>
         <div class="popular-uses-grid">
           <button type="button" class="popular-use-card" data-popular-goal="Help me find realistic ways to make money using AI based on my current skills, time, and budget.">
-            <span class="popular-use-card-title">Make money with AI</span>
+            <span class="popular-use-card-title">Make Money With AI</span>
             <p class="popular-use-card-desc">Find realistic, practical ways to earn using AI based on what you already have.</p>
             <span class="popular-use-card-cta">Use this →</span>
           </button>
           <button type="button" class="popular-use-card" data-popular-goal="Help me turn a business idea into a simple step-by-step launch plan.">
-            <span class="popular-use-card-title">Start a business</span>
+            <span class="popular-use-card-title">Start A Business</span>
             <p class="popular-use-card-desc">Turn a fuzzy idea into a clear, step-by-step plan you can actually launch.</p>
             <span class="popular-use-card-cta">Use this →</span>
           </button>
           <button type="button" class="popular-use-card" data-popular-goal="Help me create attention-grabbing content ideas and hooks for TikTok, Instagram, or YouTube.">
-            <span class="popular-use-card-title">Create viral content</span>
+            <span class="popular-use-card-title">Create Viral Content</span>
             <p class="popular-use-card-desc">Generate scroll-stopping hooks and ideas for TikTok, Instagram, or YouTube.</p>
             <span class="popular-use-card-cta">Use this →</span>
           </button>
           <button type="button" class="popular-use-card" data-popular-goal="Help me write a clear, persuasive email that gets the response I want.">
-            <span class="popular-use-card-title">Write better emails</span>
+            <span class="popular-use-card-title">Write Better Emails</span>
             <p class="popular-use-card-desc">Write clear, persuasive emails that actually get the reply you need.</p>
             <span class="popular-use-card-cta">Use this →</span>
           </button>
           <button type="button" class="popular-use-card" data-popular-goal="Help me write a high-converting product page with strong benefits, trust-building copy, and clear calls to action.">
-            <span class="popular-use-card-title">Build a product page</span>
+            <span class="popular-use-card-title">Build A Product Page</span>
             <p class="popular-use-card-desc">Craft high-converting product pages with strong benefits and trust-building copy.</p>
             <span class="popular-use-card-cta">Use this →</span>
           </button>
           <button type="button" class="popular-use-card" data-popular-goal="Help me think through a personal problem clearly and create a practical next-step plan." data-money-mode="off">
-            <span class="popular-use-card-title">Solve a personal problem</span>
+            <span class="popular-use-card-title">Solve A Personal Problem</span>
             <p class="popular-use-card-desc">Think through a tough personal situation and get a calm, practical next-step plan.</p>
             <span class="popular-use-card-cta">Use this →</span>
           </button>
@@ -3640,7 +3640,7 @@
 
   <div class="post-tour-banner" id="post-tour-banner" role="status" aria-live="polite" hidden>
     <span class="post-tour-banner-icon" aria-hidden="true">🎉</span>
-    <span class="post-tour-banner-text">You&rsquo;re ready. Start with Build a prompt or explore Use Cases &mdash; then have fun prompting with PromptMeGood.</span>
+    <span class="post-tour-banner-text">You&rsquo;re ready. Start with Build A Prompt or explore Use Cases &mdash; then have fun prompting with PromptMeGood.</span>
     <button type="button" class="post-tour-banner-btn" id="post-tour-banner-dismiss" aria-label="Dismiss message">Got it</button>
   </div>
 
@@ -6744,7 +6744,7 @@ Context:
           ? WEEKLY_GOALS[getCurrentGoalIndex()] : '';
         if (focus) {
           const focusIdeas = [
-            'Build a prompt that pushes "' + focus + '" forward today.',
+            'Build A Prompt that pushes "' + focus + '" forward today.',
             'What\'s the smallest next step on "' + focus + '"? Prompt it.',
             'Brainstorm 5 angles for "' + focus + '" and prompt the strongest one.',
             'Draft a prompt that asks AI to critique your plan for "' + focus + '".'
@@ -6816,7 +6816,7 @@ Context:
           selector: '.hero-actions',
           fallbackSelector: '#hero-build-cta',
           title: 'Choose your starting path',
-          text: 'Start here. Use Build a prompt when you already have a task in mind, See use cases for ideas, or Guide me to answer a few questions and let us fill the builder.'
+          text: 'Start Here. Use Build A Prompt when you already have a task in mind, See Use Cases for ideas, or Guide me to answer a few questions and let us fill the builder.'
         },
         {
           selector: '#goal',
