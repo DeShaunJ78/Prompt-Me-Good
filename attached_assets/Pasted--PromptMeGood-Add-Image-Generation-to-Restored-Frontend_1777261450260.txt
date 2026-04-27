@@ -1,0 +1,264 @@
+/**
+ * PromptMeGood — Add Image Generation to Restored Frontend
+ * Run from repo root: node pmg_add_image.js
+ * Backend already has /api/image — this adds the frontend UI only.
+ */
+
+const fs = require('fs');
+const FILE = 'artifacts/promptmegood/index.html';
+
+if (!fs.existsSync(FILE)) {
+  console.error('ERROR: Cannot find ' + FILE + '. Run from repo root.');
+  process.exit(1);
+}
+
+fs.copyFileSync(FILE, FILE + '.bak.' + Date.now());
+let h = fs.readFileSync(FILE, 'utf8');
+const fixes = [];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 1. ADD IMAGE RESULT SECTION — after the AI response section in the result panel
+// ─────────────────────────────────────────────────────────────────────────────
+if (!h.includes('imageResultSection')) {
+  const imageSection = `
+            <!-- IMAGE RESULT — shown when Photo Prompt Mode generates an image -->
+            <div class="image-result-section" id="imageResultSection" hidden>
+              <div class="run-section-divider"></div>
+              <h3 class="run-section-title">Your generated image</h3>
+              <p class="run-section-helper">Created by DALL·E 3 from your prompt — right here in the app.</p>
+              <div class="image-result-wrap" id="imageResultWrap">
+                <div class="image-placeholder">Your image will appear here</div>
+              </div>
+              <div class="image-result-actions">
+                <a id="imageDownloadBtn" href="" download="promptmegood-image.png" class="btn btn-primary" style="display:none;text-decoration:none;">⬇ Download image</a>
+                <button class="btn btn-secondary" type="button" id="imageAgainBtn" onclick="generateImage()">Generate another</button>
+              </div>
+              <p class="run-section-meta">Uses 1 image credit · Free during Early access · DALL·E 3</p>
+            </div>`;
+
+  // Insert after the AI response section closing div
+  h = h.replace(
+    '<div class="save-tip" id="save-tip"',
+    imageSection + '\n\n            <div class="save-tip" id="save-tip"'
+  );
+  fixes.push('1. ✅  Image result section added to result panel');
+} else {
+  fixes.push('1. ✅  Image result section already present');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2. ADD GENERATE IMAGE BUTTON — in the run section alongside Run With AI
+// ─────────────────────────────────────────────────────────────────────────────
+if (!h.includes('imageBtn')) {
+  h = h.replace(
+    '<button class="btn btn-primary run-btn" type="button" id="runBtn" onclick="runWithAI()">',
+    `<button class="btn btn-secondary run-btn" type="button" id="imageBtn" onclick="generateImage()" style="display:none;">
+                <span aria-hidden="true">🎨</span> Generate Image
+              </button>
+              <button class="btn btn-primary run-btn" type="button" id="runBtn" onclick="runWithAI()">`
+  );
+  fixes.push('2. ✅  Generate Image button added to run section');
+} else {
+  fixes.push('2. ✅  Image button already present');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 3. ADD CSS for image generation UI
+// ─────────────────────────────────────────────────────────────────────────────
+if (!h.includes('image-result-section')) {
+  const css = `
+    /* ── Image Generation UI ── */
+    .image-result-section { margin-top: var(--space-4); }
+
+    .image-result-wrap {
+      width: 100%;
+      background: var(--color-surface-2);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--space-3);
+    }
+
+    .image-placeholder {
+      font-size: var(--text-sm);
+      color: var(--color-text-faint);
+      padding: var(--space-8);
+    }
+
+    #imageResultWrap img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: var(--radius-lg);
+    }
+
+    .image-result-actions {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-2);
+    }
+
+    .image-generating-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-3);
+      padding: var(--space-8);
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+      text-align: center;
+    }
+
+    .image-spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--color-border);
+      border-top-color: var(--color-primary);
+      border-radius: 50%;
+      animation: imgSpin 0.8s linear infinite;
+    }
+
+    @keyframes imgSpin { to { transform: rotate(360deg); } }
+
+    /* Show image button + hide run button when photo mode active */
+    body.photo-mode-active #imageBtn { display: inline-flex !important; }
+    body.photo-mode-active #runBtn { display: none !important; }
+
+    @media (max-width: 640px) {
+      .image-result-actions { flex-direction: column; }
+      .image-result-actions .btn { width: 100%; text-align: center; }
+    }
+    /* ── End Image Generation UI ── */
+`;
+
+  const lastStyleIdx = h.lastIndexOf('</style>', h.indexOf('</head>'));
+  if (lastStyleIdx !== -1) {
+    h = h.slice(0, lastStyleIdx) + css + h.slice(lastStyleIdx);
+    fixes.push('3. ✅  Image generation CSS added');
+  }
+} else {
+  fixes.push('3. ✅  Image CSS already present');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 4. ADD FRONTEND JS — image generation + photo mode toggle
+// ─────────────────────────────────────────────────────────────────────────────
+if (!h.includes('generateImage')) {
+  const js = `
+  <script>
+  /* ===== Image Generation — /api/image (DALL-E 3) ===== */
+  (function () {
+    function $(id) { return document.getElementById(id); }
+
+    // Sync photo mode toggle with body class so CSS can switch buttons
+    const photoToggle = $('photoMode');
+    if (photoToggle) {
+      function syncPhotoMode() {
+        document.body.classList.toggle('photo-mode-active', photoToggle.checked);
+      }
+      photoToggle.addEventListener('change', syncPhotoMode);
+      syncPhotoMode();
+    }
+
+    async function generateImage() {
+      // Get the current prompt from the result box
+      const resultBox = $('resultBox');
+      const prompt = ((resultBox && (resultBox.textContent || resultBox.innerText)) || '').trim();
+
+      if (!prompt) {
+        alert('Generate a prompt first, then click Generate Image.');
+        return;
+      }
+
+      const section  = $('imageResultSection');
+      const wrap     = $('imageResultWrap');
+      const dlBtn    = $('imageDownloadBtn');
+      const againBtn = $('imageAgainBtn');
+      const imgBtn   = $('imageBtn');
+
+      // Show section with loading state
+      if (section) section.hidden = false;
+      if (wrap) wrap.innerHTML = '<div class="image-generating-state"><div class="image-spinner"></div><span>Creating your image with DALL·E 3…<br><small>This takes about 10 seconds</small></span></div>';
+      if (dlBtn) dlBtn.style.display = 'none';
+      if (imgBtn) { imgBtn.disabled = true; imgBtn.innerHTML = '⏳ Generating…'; }
+      if (againBtn) againBtn.disabled = true;
+
+      // Scroll to section
+      setTimeout(() => {
+        if (section) section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+
+      try {
+        const res = await fetch('/api/image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.url) {
+          const msg = data.error || 'Image generation failed. Please try again.';
+          if (wrap) wrap.innerHTML = '<div class="image-generating-state"><span>⚠️ ' + msg + '</span></div>';
+          return;
+        }
+
+        // Render the image
+        if (wrap) {
+          wrap.innerHTML = '';
+          const img = document.createElement('img');
+          img.src = data.url;
+          img.alt = 'AI generated image';
+          img.onload = () => {
+            section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          };
+          wrap.appendChild(img);
+        }
+
+        // Show download button
+        if (dlBtn) {
+          dlBtn.href = data.url;
+          dlBtn.style.display = 'inline-flex';
+        }
+
+      } catch (err) {
+        if (wrap) wrap.innerHTML = '<div class="image-generating-state"><span>⚠️ Network error. Please try again.</span></div>';
+      } finally {
+        if (imgBtn) { imgBtn.disabled = false; imgBtn.innerHTML = '🎨 Generate Image'; }
+        if (againBtn) againBtn.disabled = false;
+      }
+    }
+
+    window.generateImage = generateImage;
+  })();
+  </script>`;
+
+  h = h.replace('</body>', js + '\n</body>');
+  fixes.push('4. ✅  Image generation JS added');
+} else {
+  fixes.push('4. ✅  Image JS already present');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Write
+// ─────────────────────────────────────────────────────────────────────────────
+fs.writeFileSync(FILE, h);
+
+console.log('\n── Image Generation Added ──────────────────────────────────────');
+fixes.forEach(f => console.log(' ' + f));
+console.log('\n How it works:');
+console.log('   1. User toggles Photo Prompt Mode (Advanced Options)');
+console.log('   2. "Generate Image" button appears, "Run With AI" hides');
+console.log('   3. User clicks Generate Image');
+console.log('   4. DALL-E 3 creates the image in ~10 seconds');
+console.log('   5. Image appears in-app with a Download button');
+console.log('\n Backend already has /api/image — no backend changes needed.');
+console.log(' Cost: $0.04/image · $0.67/day max · 3 images/hour per user');
+console.log('\n Redeploy Replit after running this script.');
+console.log('────────────────────────────────────────────────────────────────\n');
