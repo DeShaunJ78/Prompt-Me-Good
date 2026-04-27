@@ -1,0 +1,56 @@
+Create a checkpoint before starting. Do not use heredoc syntax. 
+Write all fixes as separate .js files.
+
+Fix these specific issues in order:
+
+1. DESKTOP SPACING — Some containers have text touching the edges 
+on desktop only. Add a minimum of 24px horizontal padding to all 
+content containers on desktop (min-width: 1024px). Check the hero 
+section, use case cards, builder panel, and result panel specifically.
+
+2. MOBILE USE CASES SECTION — Reorder the elements in this order:
+   a. "Not Sure Where To Start? Choose A Use Case" heading (move to TOP)
+   b. "Need Ideas?" dice button directly below the heading
+   c. Horizontally scrollable use case cards directly below the button
+   Add a scroll hint label below the heading: 
+   "Scroll Left Or Right To See More →"
+   Make the cards scroll horizontally on mobile with overflow-x: auto
+   and snap scrolling. Hide the scrollbar visually but keep it functional.
+
+3. MOBILE STICKY BAR — The X button that dismisses the sticky 
+   bottom bar (the one with the generate button) should NOT hide 
+   the bar completely. Instead it should collapse it to a small 
+   floating tab that says "Generate ⚡" — tapping it expands the 
+   bar again. The generate button must always be accessible on mobile.
+
+4. GOAL TEXTAREA LABEL — Make the "Your Goal" label much more 
+   inviting and clear. Replace the current label and placeholder with:
+   Label: "What Do You Want AI To Help You With?"
+   Placeholder: "Example: Help me write a cold email that actually 
+   gets a reply from a stranger who needs my service."
+   Add a subtle helper line below the textarea: 
+   "The more specific you are, the better your result."
+
+5. HERO HEADLINE — Replace "Stop Getting Weak AI Answers" with 
+   "AI That Finally Does What You Ask"
+   Replace the subheadline with:
+   "Stop rewording the same prompt over and over. PromptMeGood 
+   builds the perfect AI prompt from your idea — in seconds."
+
+6. TOUR MODAL — Add a 3-second delay before showing on first visit.
+   Only show once using localStorage key "pmg_modal_shown".
+   After showing, set pmg_modal_shown = true.
+   Never show again on subsequent visits.
+
+7. DAILY NUDGE — Suppress completely for users who have never 
+   generated a prompt. Check localStorage for "pmg_has_generated" 
+   key. If it does not exist, do not show the nudge on page load.
+
+8. HERO CTAs — Make visual hierarchy clear:
+   Primary button (filled teal): "Fix My Prompt →"
+   Secondary (ghost/outlined): "See Examples First"
+   Primary should be noticeably larger and more prominent.
+
+Do not remove any features. Do not change any function names, 
+IDs, or localStorage keys. Test on both mobile and desktop 
+before deploying. Deploy when all 8 fixes are confirmed working.
