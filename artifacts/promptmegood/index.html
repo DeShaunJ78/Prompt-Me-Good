@@ -2941,7 +2941,7 @@
     <section class="hero" id="top">
       <div class="container hero-grid">
         <div>
-          <div class="eyebrow">Get AI To Understand What You Mean</div>
+          <div class="eyebrow">Get AI To Understand You</div>
           <h1 class="hero-heading">AI <span class="highlight">Prompt Generator</span><br>That Actually Gets Results</h1>
           <div class="hero-subtext-box">
             <p class="hero-subtext">Your AI answers are only as good as your questions. PromptMeGood structures your goal into a prompt that gets <strong>real results</strong> — in seconds.</p>
@@ -2967,7 +2967,7 @@
           </div>
         </div>
         <aside class="hero-card" aria-labelledby="hero-card-title">
-          <span class="hero-card-badge"><span class="hero-card-badge-dot" aria-hidden="true"></span>Why It Matters</span>
+          <span class="hero-card-badge" hidden style="display:none"><span class="hero-card-badge-dot" aria-hidden="true"></span>Why It Matters</span>
           <h2 class="hero-card-title" id="hero-card-title">Build better prompts for ChatGPT, Claude, and any AI tool</h2>
           <ul class="hero-list">
             <li><span>1</span><span>Turns vague problems into <strong>sharper instructions</strong> AI can actually use.</span></li>
@@ -2997,7 +2997,7 @@
         </p>
         <div class="popular-uses-grid">
           <button type="button" class="popular-use-card" data-popular-goal="Help me find realistic ways to make money using AI based on my current skills, time, and budget.">
-            <span class="popular-use-card-title">Make Money With AI</span>
+            <span class="popular-use-card-title">Make Money With AI <span class="popular-use-card-pill" style="display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;background:rgba(255,107,53,0.12);color:#cc4f15;font-size:10px;font-weight:600;letter-spacing:0.02em;vertical-align:middle;">🔥 Most Popular</span></span>
             <p class="popular-use-card-desc">Get realistic income ideas based on what you already have.</p>
             <span class="popular-use-card-cta">Use this →</span>
           </button>
@@ -3007,7 +3007,7 @@
             <span class="popular-use-card-cta">Use this →</span>
           </button>
           <button type="button" class="popular-use-card" data-popular-goal="Help me create attention-grabbing content ideas and hooks for TikTok, Instagram, or YouTube.">
-            <span class="popular-use-card-title">Create Viral Content</span>
+            <span class="popular-use-card-title">Create Viral Content <span class="popular-use-card-pill" style="display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;background:rgba(91,168,176,0.14);color:#2f7e87;font-size:10px;font-weight:600;letter-spacing:0.02em;vertical-align:middle;">⚡ Fast Results</span></span>
             <p class="popular-use-card-desc">Generate scroll-stopping hooks for TikTok, Instagram, or YouTube.</p>
             <span class="popular-use-card-cta">Use this →</span>
           </button>
@@ -3057,7 +3057,7 @@
       <div class="container">
         <div class="feedback-head">
           <span class="eyebrow feedback-eyebrow">Early Feedback</span>
-          <h2 id="feedback-title">What People Are Saying</h2>
+          <h2 id="feedback-title">Real People. First Tries. Real Results.</h2>
         </div>
         <div class="feedback-grid">
           <figure class="feedback-card-grid">
@@ -3170,7 +3170,7 @@
               </div>
               <button type="button" class="btn btn-primary" id="guided-mode-btn">Help Me Start</button>
             </div>
-            <div id="weekly-goal-pin" class="weekly-goal-pin" aria-label="This week's focus">
+            <div id="weekly-goal-pin" class="weekly-goal-pin pmg-post-gen" aria-label="This week's focus">
               <div class="weekly-goal-pin-head">
                 <span class="weekly-goal-pin-label">
                   📌 This week's focus
@@ -3199,7 +3199,7 @@
                   <label for="goal">Your Goal (Start Here)</label>
                   <button type="button" class="btn-clear" id="clear-goal-btn" aria-label="Clear goal" data-clear-target="goal">Clear</button>
                 </div>
-                <textarea id="goal" name="goal" rows="3" placeholder="I need to make money online fast using skills I already have…" aria-required="true"></textarea>
+                <textarea id="goal" name="goal" rows="3" placeholder="Describe what you want help with — be as specific as you can" aria-required="true"></textarea>
                 <p class="helper">
                   Describe what you want the AI to help you do.<br />
                   Example: &ldquo;I need to make money online fast&rdquo; or &ldquo;Help me find a winning product&rdquo;
@@ -3236,11 +3236,11 @@
                 <button class="btn btn-primary" type="submit" id="generateBtn">Generate Prompt</button>
                 <button type="button" id="image-generate-btn" onclick="runImageGeneration()">🎨 Generate Image</button>
                 <div class="demo-stack">
-                  <button class="btn btn-secondary" type="button" id="fill-demo">Use demo values</button>
+                  <button class="btn btn-secondary" type="button" id="fill-demo">Try Demo</button>
                   <p class="demo-microcopy" id="demo-microcopy">See How It Works &mdash; loads a sample prompt instantly.</p>
                   <p class="demo-loading" id="demo-loading" role="status" aria-live="polite" hidden>Generating demo prompt&hellip;</p>
                 </div>
-                <button class="btn btn-secondary" type="button" id="random-prompt" title="Surprise me with a random prompt">🎲 Random prompt</button>
+                <button class="btn btn-secondary pmg-post-gen" type="button" id="random-prompt" title="Surprise me with a random prompt">🎲 Random prompt</button>
               </div>
               <p class="tip-block generate-helper-tip" data-tip="generate">
                 <span class="tip-block-icon" aria-hidden="true">🚀</span>
@@ -3266,7 +3266,7 @@
                     </label>
                   </div>
               <div class="settings-divider" id="tour-step-settings" role="presentation">
-                <h3 class="settings-divider-title">Tune Your Prompt Settings</h3>
+                <h3 class="settings-divider-title">More Control (Optional)</h3>
                 <p class="settings-divider-sub">These settings control tone, detail, and structure of your prompt.</p>
               </div>
 
@@ -3371,7 +3371,7 @@
 
               <div class="field">
                 <div class="field-label-row">
-                  <label for="guardrails">What should the AI avoid? <span class="helper">(optional)</span></label>
+                  <label for="guardrails">What Should AI Avoid? <span class="helper">(Optional)</span></label>
                   <button type="button" class="btn-clear" id="clear-guardrails-btn" aria-label="Clear guardrails" data-clear-target="guardrails">Clear</button>
                 </div>
                 <textarea id="guardrails" name="guardrails" rows="2" placeholder="Ex: Don't sound robotic, avoid jargon, don't exceed 200 words…"></textarea>
@@ -3765,6 +3765,7 @@
 
     <footer class="site-footer" id="site-footer">
       <div class="container site-footer-inner">
+        <p class="site-footer-tagline" style="font-weight:600;color:var(--color-text);margin:0 0 8px 0;">Stop asking AI weak questions. PromptMeGood fixes that in seconds.</p>
         <div class="site-footer-brand">&copy; 2026 PromptMeGood</div>
         <p class="site-footer-tagline">Built for people who want real results from AI &mdash; not fluff.</p>
         <p class="site-footer-early-access">PromptMeGood is free during our founding member period. Full pricing launches soon.</p>
@@ -3786,6 +3787,8 @@
           <span class="site-footer-divider" aria-hidden="true">|</span>
           <a class="site-footer-link" href="./pricing.html">Pricing</a>
           <span class="site-footer-divider" aria-hidden="true">|</span>
+          <a class="site-footer-link" href="mailto:support@promptmegood.com">Contact</a>
+          <span class="site-footer-divider" aria-hidden="true">|</span>
           <a class="site-footer-link" href="/privacy.html">Privacy Policy</a>
           <span class="site-footer-divider" aria-hidden="true">|</span>
           <a class="site-footer-link" href="/terms.html">Terms of Service</a>
@@ -3803,7 +3806,7 @@
         <div class="site-footer-replay">
           <button type="button" class="site-footer-replay-btn" id="replay-tour-btn">Replay tour</button>
         </div>
-        <div class="site-footer-version" aria-label="Version">PromptMeGood v1</div>
+        <div class="site-footer-version" aria-label="Version" hidden style="display:none">PromptMeGood v1</div>
       </div>
     </footer>
 

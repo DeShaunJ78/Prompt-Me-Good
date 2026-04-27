@@ -1,0 +1,513 @@
+You are working on PromptMeGood — a single-page web app that helps everyday 
+people generate better AI prompts. Your job is to make focused, safe 
+improvements to the existing codebase.
+
+ABSOLUTE RULES — NEVER VIOLATE:
+- Do NOT delete any existing feature or functionality
+- Do NOT alter, rename, or break any backend API routes
+- Do NOT expose, log, or print any API keys or secrets
+- Do NOT merge the Optimized Prompt section with the AI Response section
+- Do NOT rebuild or redesign from scratch
+- Do NOT introduce new npm/pip dependencies without flagging them first
+- Do NOT rename any JavaScript variables, function names, IDs, or CSS class 
+  names — only change visible user-facing text strings and CSS display/layout 
+  properties
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 0 — INSPECT FIRST. MAKE NO CHANGES YET.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Read the codebase and report:
+1. Which file(s) control the homepage layout and hero section
+2. Which file(s) control the builder section (goal input, settings, generate)
+3. Which file(s) control AI prompt generation
+4. Which file(s) control Run With AI and AI Response
+5. Which file(s) control file/image upload and image generation
+6. Which file(s) control the Pricing page
+7. Which file(s) control Privacy Policy and Terms of Service text
+8. Which file(s) control the Guide/Help/Manual content
+9. Which file(s) control backend API routes
+10. Where secrets/API keys are stored (location only — do NOT print values)
+
+Create a backup branch or snapshot before touching anything.
+Then proceed through each step below in order.
+Report every file you modify at the end.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 1 — PRIVACY POLICY UPDATE (DO THIS FIRST — LEGAL PRIORITY)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Find the Privacy Policy text. Locate the sentence:
+"we do not transmit your prompts to our servers"
+
+Replace that sentence and surrounding paragraph with:
+
+"PromptMeGood stores your prompts, history, templates, and preferences 
+locally on your device using your browser's localStorage. When you use 
+AI-powered features such as Generate Prompt, Run With AI, file analysis, 
+or image generation, your submitted text or uploaded content may be sent 
+securely to our AI service providers to process your request. We do not 
+store your prompts on our servers beyond what is required to fulfill your 
+request."
+
+Preserve all other Privacy Policy content exactly.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 2 — PLAIN LANGUAGE COPY REPLACEMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Make these visible text replacements site-wide.
+Do NOT change variable names, IDs, class names, or function names.
+Only change the visible string the user reads.
+
+FIND → REPLACE:
+"AI Prompt Engine"              → "Get AI To Understand You"
+"Guide Me" (button label only)  → "Help Me Start"
+"Guardrails"                    → "Rules Or Limits"
+"What should the AI avoid?"     → "What Should AI Avoid? (Optional)"
+"Open Builder" (nav only)       → "Start Here"
+"History" (top nav link only)   → REMOVE from top nav only
+                                   (keep History in builder sidebar — 
+                                    do not remove sidebar instance)
+"Expert Mode Active"            → REMOVE this visible label entirely
+                                   (keep Expert Mode functionality)
+"Tune Your Prompt Settings"     → "More Control (Optional)"
+"Keyboard Shortcuts" section    → Move inside a collapsible help panel; 
+                                   do not show by default
+"PromptMeGood v1"               → REMOVE this label from the UI
+"0+ prompts generated"          → REMOVE this counter entirely
+                                   (do not replace with another number)
+"Why It Matters" (first 
+ instance only — it appears 
+ twice; remove the first one)   → REMOVE first instance only
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 3 — HERO SECTION IMPROVEMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In the hero/above-the-fold section, make these changes:
+
+3A. Add a tagline directly under the main headline:
+    "PromptMeGood helps you ask AI the right way — 
+     so you stop getting bad answers."
+    Style: smaller than headline, muted color, italic or light weight.
+
+3B. CTA Button Hierarchy — change visual styling only, keep scroll targets:
+    Primary button (filled, high contrast, larger):
+      Label: "Build My First Prompt →"
+      Scroll target: unchanged (goes to #builder)
+    Secondary button (outlined/ghost style, smaller):
+      Label: "See Examples First"
+      Scroll target: unchanged (goes to #use-cases)
+
+3C. Add one testimonial block directly below the two CTA buttons:
+    ⭐⭐⭐⭐⭐
+    "It cut my prompt-rewriting time in half. 
+     I get usable copy on the first try now."
+    — Beta User · Copywriter
+    Style: small card or inline quote. Match existing site design.
+    Do not add a new font or color system.
+
+3D. Welcome Modal — modify existing "New To PromptMeGood?" modal:
+    - Add a 3-second delay before it appears on first visit
+    - Change the two buttons to:
+        Primary: "Show Me How It Works" (triggers tour — same as before)
+        Secondary text link (not a full button): 
+          "I'll figure it out myself" (closes modal)
+    - Only show this modal once per device using localStorage flag
+    - If user has visited before: suppress modal entirely
+
+3E. Daily Prompt Nudge — modify trigger logic:
+    Current behavior: fires on every page load
+    New behavior:
+      - If localStorage has NO record of a generated prompt on this device:
+          Do NOT show the nudge on page load
+      - After user's FIRST successful prompt generation:
+          Show the nudge once as a subtle dismissible banner
+      - If localStorage shows user has generated prompts before:
+          Show nudge on page load as it currently works (returning users)
+    Use a localStorage key like "pmg_has_generated" set to "true" after 
+    first generation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 4 — NAVIGATION REORDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Reorder the top navigation to:
+  Start Here | How It Works | Examples | Pricing
+
+Mapping:
+- "Start Here"    → scrolls to #builder (replaces "Open Builder")
+- "How It Works"  → scrolls to existing how-it-works section
+- "Examples"      → scrolls to #use-cases section
+- "Pricing"       → links to pricing.html (unchanged)
+- Remove "History" from top nav only
+  History remains fully accessible in the builder sidebar
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 5 — SIMPLIFY DEFAULT BUILDER VIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is the highest-impact UX change. Use progressive disclosure.
+Use CSS display:none / a collapsible toggle. Do NOT delete any HTML.
+
+DEFAULT VIEW (visible on page load before any interaction):
+  ✅ Goal textarea with placeholder: 
+     "Describe what you want help with — be as specific as you can"
+  ✅ "Help Me Start" button (was Guide Me — same function)
+  ✅ "Generate Prompt" button — PRIMARY styling (see Step 6)
+  ✅ "Try Demo" button (was "Use Demo Values" — same function)
+  ✅ "See Use Cases" text link — scrolls to #use-cases
+  ✅ Auto Optimize toggle — keep visible (it reduces cognitive load)
+
+HIDE BY DEFAULT inside collapsible "More Control ▾" section:
+  - Category selector
+  - Experience Level selector  
+  - Tone selector
+  - Output Format selector
+  - Max Response Length selector
+  - Output Language selector
+  - Personality Mode selector
+  - Extra Details textarea
+  - "What Should AI Avoid?" textarea
+  - Advanced Options panel (Money Mode, Human Voice, Clarity Boost, 
+    Photo Prompt)
+  - Expert Mode toggle
+  - Keyboard Shortcuts
+
+The "More Control ▾" toggle button should:
+  - Sit directly below the Generate Prompt button
+  - Use a subtle secondary style (not competing with Generate)
+  - Expand/collapse smoothly
+  - Show a ▾ / ▴ indicator for open/closed state
+  - Remember its state per session (not required to persist across visits)
+
+Also hide by default (do not show until post-generation — see Step 7):
+  - "This Week's Focus" widget
+  - Random Prompt button 🎲
+  - Suggestion chips ("Make money online fast", etc.)
+  - "Replay Tour" button — move to a ❓ help icon in corner
+
+Expert Mode:
+  - Remove "Expert Mode Active" label from default view
+  - Add a small subtle text link BELOW the "More Control" section:
+    "Switch to Expert Mode →"
+  - When clicked: enables Expert Mode exactly as it works today
+  - Keep the existing Expert Mode warning modal unchanged
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 6 — BUTTON HIERARCHY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Apply a clear visual hierarchy to buttons throughout the app:
+
+PRIMARY (one per section — filled, high contrast, largest):
+  - "Generate Prompt" in the builder
+  - "Build My First Prompt →" in the hero
+  - "Copy Prompt" in the output section
+  - "▶ Run With AI" in the output section
+
+SECONDARY (outlined or medium-weight style):
+  - "Help Me Start"
+  - "Try Demo"
+  - "More Detailed" / "More Aggressive" / "Beginner Friendly" 
+    (refine buttons)
+  - "Run Again"
+
+TERTIARY (text links or ghost buttons, lowest visual weight):
+  - "See Examples First"
+  - "See Use Cases"
+  - "Switch to Expert Mode →"
+  - "More Control ▾"
+  - "Copy shareable link"
+  - "Print / Save PDF"
+  - "Check prompt quality"
+
+Do not change button functionality — only visual styling and weight.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 7 — POST-GENERATION REVEAL (PROGRESSIVE DISCLOSURE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The output section currently shows placeholder content and all tools 
+before the user generates anything. Fix this:
+
+BEFORE generation (empty state):
+  Replace placeholder prompt text with a clearly styled empty state:
+  - Light dashed border around output box
+  - Gray italic text: "Your optimized prompt will appear here."
+  - No fake tags (remove "Role assignment · Clear constraints · 
+    Useful output format" placeholder tags)
+  - No "Edited manually" label
+  - Hide all output action buttons (Copy, Refine, Fine-Tune, etc.)
+
+AFTER generation (auto-reveal):
+  When a prompt is successfully generated:
+  1. Auto-scroll the viewport to the output section
+  2. Reveal in this order:
+       a. Optimized Prompt text (in its own clearly labeled box)
+       b. PRIMARY action row: [Copy Prompt] [▶ Run With AI]
+       c. SECONDARY action row: [More Detailed] [More Aggressive] 
+                                 [Beginner Friendly]
+       d. Fine-Tune textarea + Update Prompt button
+       e. Prompt Strength bar + Check Prompt Quality (collapsed 
+          or small — not dominant)
+       f. Tertiary: Copy shareable link | Print / Save PDF | Clear Prompt
+
+  Keep the Optimized Prompt and AI Response in separate, 
+  clearly labeled sections. Do NOT merge them.
+
+  Prompt Strength bar:
+  - Hide before generation
+  - After generation: show with label: 
+    "Prompt Strength — how clear and specific this is"
+  - Do NOT show 0% before any prompt exists
+
+  AI Response section:
+  - Keep fully separate from Optimized Prompt
+  - Only show "▶ Run With AI" button — do not auto-run
+  - After AI runs: show Copy Response and Run Again buttons
+
+  Set localStorage key "pmg_has_generated" = "true" after first 
+  successful generation (used by nudge logic in Step 3E).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 8 — USE CASE CARD IMPROVEMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+For each of the 6 use case cards, add a one-line description below 
+the card title (if not already present or if generic):
+
+Make Money With AI     → "Get realistic income ideas based on what 
+                          you already have"
+Start A Business       → "Turn a fuzzy idea into a clear, 
+                          step-by-step launch plan"
+Create Viral Content   → "Generate scroll-stopping hooks for 
+                          TikTok, Instagram, or YouTube"
+Write Better Emails    → "Write emails that actually get 
+                          the reply you need"
+Build A Product Page   → "Craft high-converting copy with strong 
+                          benefits and trust signals"
+Solve A Personal 
+Problem                → "Get a calm, practical next-step plan 
+                          for any tough situation"
+
+Add one visual differentiator to 2 cards only:
+  - "Make Money With AI" → add a subtle "🔥 Most Popular" badge
+  - "Create Viral Content" → add a subtle "⚡ Fast Results" badge
+Style these as small pill labels — do not make them large or distracting.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 9 — LAYOUT, SPACING, AND AESTHETICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Global:
+  - Reduce header/nav height by approximately 20% on desktop
+  - Ensure consistent padding on all cards: minimum 16px all sides
+  - Add 8px gap between all button groups (no buttons touching)
+  - Ensure section headings have at least 32px top margin from 
+    preceding content
+
+Desktop:
+  - Builder and output sections should be left-aligned with consistent 
+    max-width container (match existing site max-width)
+  - No elements should appear to float or be misaligned center vs left
+  - Testimonial section should use a card or blockquote style, 
+    not raw text
+
+Mobile (max-width: 768px):
+  - Add a sticky bottom bar containing:
+      Left: short text input (placeholder: "What do you need help with?")
+      Right: "Generate ⚡" button
+      When tapped: scrolls to and focuses the main goal textarea
+      Include a dismiss X button
+      Only show on mobile viewports
+      Do not show on desktop
+  - All buttons: minimum height 44px, minimum touch target
+  - All cards: minimum 16px horizontal padding
+  - Reduce header padding on mobile so it doesn't dominate 
+    the viewport
+  - Generate Prompt button must be visible within 2 scrolls 
+    from top on mobile
+  - Verify all stacked elements don't overlap or clip
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 10 — MICROCOPY AND FEEDBACK IMPROVEMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add clear feedback after every user action:
+
+After clicking Generate Prompt:
+  Show a loading state on the button: "Generating..." with a spinner
+  
+After copying a prompt:
+  Button briefly changes to "✓ Copied!" then reverts (already may exist — 
+  verify it works)
+
+After clicking Run With AI:
+  Button shows "Running..." with spinner while processing
+
+After Fine-Tune update:
+  Show a small confirmation: "Prompt updated" near the fine-tune area
+
+"This Week's Focus" widget:
+  If it fails to load: show fallback text: 
+  "Try this: Write a prompt to help you earn extra income this week."
+  Never show a blank loading spinner without fallback
+
+"Tip: Export your prompts to keep them safe" toast:
+  Only trigger after user has generated 3 or more prompts 
+  (track count in localStorage as "pmg_prompt_count")
+  Do not show on first or second generation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 11 — BEFORE/AFTER SECTION (NEW CONTENT SECTION)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Insert a new section between "How It Works" and the builder section.
+Title: "See The Difference"
+
+Content — 3-row comparison:
+
+WITHOUT PromptMeGood          | WITH PromptMeGood
+"Write me a business plan"    | Structured prompt with role, context, 
+                              | constraints, tone, and format
+Vague, generic AI response    | Specific, actionable output you can 
+                              | actually use
+Rewriting the same prompt     | Getting it right on the first try
+5 times                       |
+
+Style as a two-column table or side-by-side card layout.
+Match existing site fonts, colors, and spacing — no new design system.
+Left column (without): muted/red tint
+Right column (with): positive/green tint — or use existing accent color
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 12 — FOOTER IMPROVEMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+12A. Replace footer copy:
+  FIND:    "PromptMeGood is in early access. All features are 
+            currently free."
+  REPLACE: "PromptMeGood is free during our founding member period. 
+            Full pricing launches soon."
+
+12B. Add one brand line above the copyright notice:
+  "Stop asking AI weak questions. PromptMeGood fixes that in seconds."
+
+12C. Add "Contact" to the footer link row:
+  Current: Help | Pricing | Privacy Policy | Terms of Service
+  New:     Help | Pricing | Contact | Privacy Policy | Terms of Service
+  "Contact" links to mailto:support@promptmegood.com for now
+
+12D. Testimonials section heading:
+  FIND:    "What People Are Saying"
+  REPLACE: "Real People. First Tries. Real Results."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 13 — WHAT NOT TO TOUCH (PRESERVE EXACTLY)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Leave these completely unchanged — do not modify, move, or alter:
+  ✅ Generate Prompt — core AI function
+  ✅ Run With AI — core AI function
+  ✅ Optimized Prompt output section — keep separate from AI Response
+  ✅ AI Response section — keep separate from Optimized Prompt
+  ✅ File/image upload functionality
+  ✅ Generate Image feature
+  ✅ Guide Me / Help Me Start wizard — keep all 4 steps
+  ✅ Auto Optimize feature
+  ✅ Expert Mode (functionality only — label cleaned up in Step 2)
+  ✅ Prompt History (sidebar) — all 25-prompt save/restore/export
+  ✅ Compare Two prompts feature
+  ✅ Backup / Restore feature
+  ✅ Import / Export
+  ✅ Pinned Templates
+  ✅ Money Mode, Human Voice, Clarity Boost, Photo Prompt toggles
+  ✅ Prompt Strength scoring logic
+  ✅ Check Prompt Quality function
+  ✅ Fine-Tune / Update Prompt function
+  ✅ Undo Last Change
+  ✅ Refine buttons (More Detailed, More Aggressive, Beginner Friendly)
+  ✅ Use Cases (all 6 cards — content only updated in Step 8)
+  ✅ Dark Mode toggle
+  ✅ Pricing page
+  ✅ All backend routes and API integrations
+  ✅ OpenAI / Replit Secrets — do not access or log
+  ✅ Usage limits / cost controls
+  ✅ Email signup form (Early Access)
+  ✅ Social links
+  ✅ Quick Start 5-step guide
+  ✅ View Full Guide link
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL QA CHECKLIST — VERIFY ALL BEFORE CLOSING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run through this checklist and report pass/fail for each item:
+
+USER FLOW:
+□ New user can generate first prompt in under 10 seconds
+□ No confusion about what to do first on the page
+□ Welcome modal appears with delay and only once
+□ Daily nudge does NOT appear for first-time visitors pre-generation
+□ After generation: output auto-scrolls into view
+□ Copy Prompt and Run With AI are the first visible actions post-generation
+□ Optimized Prompt and AI Response are in separate, labeled sections
+
+FEATURES:
+□ Generate Prompt works end-to-end
+□ Help Me Start (Guide Me) wizard completes all 4 steps correctly
+□ Run With AI produces response in AI Response section only
+□ Auto Optimize still activates and applies suggestions
+□ Expert Mode activates when "Switch to Expert Mode" is clicked
+□ Expert Mode warning modal still appears
+□ Prompt History saves, restores, and exports correctly
+□ Compare Two prompts works
+□ Backup / Restore works
+□ Fine-Tune / Update Prompt works
+□ Undo Last Change works
+□ All 3 Refine buttons work
+□ Prompt Strength score appears after generation
+□ Check Prompt Quality works
+□ Money Mode, Human Voice, Clarity Boost, Photo Prompt toggles work
+□ File upload and image generation work (if present in codebase)
+□ All 6 use case cards load the builder correctly
+□ Demo Values loads a sample prompt
+□ Dark Mode toggles correctly
+
+LAYOUT:
+□ Desktop: builder and output sections are cleanly aligned
+□ Desktop: no floating or misaligned elements
+□ Mobile: sticky bottom bar is visible and functional
+□ Mobile: all buttons are minimum 44px tap targets
+□ Mobile: Generate Prompt button is reachable within 2 scrolls
+□ Mobile: no overlapping or clipped elements
+□ Header height reduced — does not dominate the page
+
+COPY + TRUST:
+□ Privacy Policy reflects accurate AI data handling
+□ "0+ prompts generated" counter is removed
+□ "Expert Mode Active" label is removed from default view
+□ "PromptMeGood v1" label is removed
+□ "Why It Matters" duplicate is removed (first instance only)
+□ Footer has updated "founding member" copy
+□ Testimonial section has updated heading
+□ Contact link is in the footer
+
+STABILITY:
+□ No console errors on page load
+□ No console errors after generating a prompt
+□ No console errors on mobile
+□ All files modified are listed in a final report
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL DELIVERABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When complete, provide:
+1. List of every file that was modified
+2. Summary of every change made per step
+3. QA checklist results (pass/fail for each item)
+4. Any items you could NOT complete and why
+5. Any risks or notes the developer should review before going live
