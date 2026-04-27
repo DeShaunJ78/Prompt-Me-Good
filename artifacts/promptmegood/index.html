@@ -2743,7 +2743,7 @@
             <p class="hero-subtext">Your AI answers are only as good as your questions. PromptMeGood structures your goal into a prompt that gets <strong>real results</strong> — in seconds.</p>
           </div>
           <p class="trust-line">A structured prompt builder that tells AI exactly what to do — and how to say it.</p>
-          <p id="usageCounter" class="usage-counter" style="display:none;" aria-live="polite">
+          <p id="usageCounter" class="usage-counter" hidden style="display:none;" aria-live="polite">
             <span id="usageCount">0</span>+ prompts generated
           </p>
           <div class="hero-actions">
@@ -2925,7 +2925,7 @@
                 <span class="weekly-goal-pin-sub">Try this before the week ends.</span>
               </div>
               <button type="button" class="weekly-goal-pin-cta" id="weekly-goal-cta" aria-label="Use this week's focus as your goal">
-                <span class="weekly-goal-pin-body" id="weekly-goal-body">Loading this week's focus…</span>
+                <span class="weekly-goal-pin-body" id="weekly-goal-body">Solve a real-life problem you've been avoiding</span>
                 <span class="weekly-goal-pin-action">Use as goal →</span>
               </button>
             </div>
@@ -9078,5 +9078,28 @@ Context:
     }
   })()
   </script>
+
+<script>
+(function(){
+  function syncPhoto(){
+    var t=document.getElementById('photoMode');
+    var ib=document.getElementById('imageBtn');
+    var rb=document.getElementById('runBtn');
+    if(!t||!ib||!rb) return;
+    if(t.checked){
+      ib.style.display='inline-flex';
+      rb.style.display='none';
+    } else {
+      ib.style.display='none';
+      rb.style.display='';
+    }
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    var t=document.getElementById('photoMode');
+    if(t) t.addEventListener('change', syncPhoto);
+    syncPhoto();
+  });
+})();
+</script>
 </body>
 </html>
