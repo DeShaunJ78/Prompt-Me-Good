@@ -2757,6 +2757,64 @@
     }
 
     /* ── End PMG Overhaul Polish ── */
+
+    /* ── Image Generation ── */
+    .image-result-section { margin-top: var(--space-4); }
+    .image-result-wrap {
+      width: 100%;
+      background: var(--color-surface-2);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #imageResultImg { display: block; width: 100%; height: auto; border-radius: var(--radius-lg); }
+    .image-generating-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-3);
+      padding: var(--space-8);
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+    }
+    .image-generating-spinner {
+      width: 32px; height: 32px;
+      border: 3px solid var(--color-border);
+      border-top-color: var(--color-primary);
+      border-radius: 50%;
+      animation: imgSpin 0.8s linear infinite;
+    }
+    @keyframes imgSpin { to { transform: rotate(360deg); } }
+    body.photo-mode-active #imageBtn { display: inline-flex !important; }
+    body.photo-mode-active #runBtn { display: none; }
+    /* ── End Image Generation ── */
+
+    /* ── Build CTA Guidance + Demo Helper ── */
+    .build-cta-guidance {
+      display: flex; align-items: center; gap: 10px;
+      margin: 0 0 var(--space-3); padding: 10px 14px;
+      background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+      border: 1px solid color-mix(in srgb, var(--color-primary) 35%, transparent);
+      border-radius: var(--radius-md);
+      color: var(--color-text); font-size: var(--text-sm); line-height: 1.45;
+      transition: opacity 220ms ease;
+    }
+    .build-cta-guidance[hidden] { display: none; }
+    .build-cta-guidance.is-fading { opacity: 0; }
+    .build-cta-guidance-icon { flex: 0 0 auto; line-height: 1; }
+    .build-cta-guidance-text { flex: 1 1 auto; min-width: 0; }
+    .demo-helper { margin: 10px 0 0; font-size: var(--text-sm); color: var(--color-text-muted); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .demo-helper-link { font-weight: 700; color: var(--color-primary); padding: 2px 6px; text-decoration: underline; text-underline-offset: 3px; background: transparent; border: 0; cursor: pointer; font: inherit; }
+    .demo-helper-link:hover, .demo-helper-link:focus-visible { background: color-mix(in srgb, var(--color-primary) 15%, transparent); outline: none; }
+    .guidance-show-link { display: none; background: transparent; border: 0; padding: 2px 6px; color: var(--color-primary); font: inherit; font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; border-radius: 4px; }
+    .guidance-show-link:hover, .guidance-show-link:focus-visible { background: color-mix(in srgb, var(--color-primary) 12%, transparent); outline: none; }
+    body.guidance-hidden .guidance-show-link { display: inline-flex; align-items: center; }
+    /* ── End Build CTA Guidance + Demo Helper ── */
 </style>
 </head>
 <body>
@@ -2988,6 +3046,10 @@
             </div>
           </div>
           <div class="form-wrap">
+            <p class="build-cta-guidance" id="build-cta-guidance" role="status" aria-live="polite" hidden>
+              <span class="build-cta-guidance-icon" aria-hidden="true">✨</span>
+              <span class="build-cta-guidance-text">Start with <strong>Guide me</strong> if you want PromptMeGood to set things up for you.</span>
+            </p>
                         <div class="guided-cta-row" id="guided-cta-row">
               <div class="guided-cta-text">
                 <strong>Guide me</strong>
@@ -3043,8 +3105,8 @@
                 </div>
                 <button class="btn btn-secondary" type="button" id="random-prompt" title="Surprise me with a random prompt">🎲 Random prompt</button>
               </div>
-              
-              
+              <p class="demo-helper">Not sure where to start? <button type="button" class="link-btn demo-helper-link" id="demo-helper-link">See it in action.</button> <button type="button" class="guidance-show-link" id="guidance-show-link" data-action="show-tips">Show tips</button></p>
+
 
               <details id="settingsPanel" class="settings-panel">
                 <summary class="settings-panel-summary">
@@ -3335,6 +3397,25 @@
                 <span aria-hidden="true">▶</span> Run With AI
               </button>
               <p class="run-section-meta">Uses 1 AI execution &middot; Free during Early access</p>
+              <button class="btn btn-secondary run-btn" type="button" id="imageBtn" onclick="generateImage()" style="display:none;">
+                <span aria-hidden="true">🎨</span> Generate Image
+              </button>
+            </div>
+
+            
+            <!-- IMAGE RESULT — shown when Photo Prompt Mode generates an image -->
+            <div class="image-result-section" id="imageResultSection" hidden>
+              <div class="run-section-divider"></div>
+              <h3 class="run-section-title">Your generated image</h3>
+              <p class="run-section-helper">Created from your prompt — right here in the app.</p>
+              <div class="image-result-wrap" id="imageResultWrap">
+                <img id="imageResultImg" src="" alt="AI generated image" style="width:100%;border-radius:var(--radius-lg);display:block;" />
+              </div>
+              <div class="image-result-actions" style="display:flex;gap:var(--space-2);margin-top:var(--space-3);flex-wrap:wrap;">
+                <a id="imageDownloadBtn" href="" download="promptmegood-image.png" class="btn btn-primary" style="text-decoration:none;">Download image</a>
+                <button class="btn btn-secondary" type="button" id="imageGenerateAgainBtn" onclick="generateImage()">Generate another</button>
+              </div>
+              <p class="run-section-meta" style="margin-top:var(--space-2);">Uses 1 image credit &middot; Free during Early access</p>
             </div>
 
             <!-- AI RESPONSE — hidden until run completes -->
@@ -9101,6 +9182,67 @@ Context:
       }
       setInterval(ping, PING_MS);
     })();
+  </script>
+
+  <script>
+  (function () {
+    function $(id) { return document.getElementById(id); }
+    const photoToggle = document.getElementById('photoMode');
+    if (photoToggle) {
+      function syncPhotoMode() {
+        if (photoToggle.checked) document.body.classList.add('photo-mode-active');
+        else document.body.classList.remove('photo-mode-active');
+      }
+      photoToggle.addEventListener('change', syncPhotoMode);
+      syncPhotoMode();
+    }
+    async function generateImage() {
+      const resultBox = document.getElementById('resultBox');
+      const prompt = (resultBox && (resultBox.textContent || resultBox.innerText) || '').trim();
+      if (!prompt) { alert('Generate a prompt first, then click Generate Image.'); return; }
+      const section = $('imageResultSection');
+      const wrap = $('imageResultWrap');
+      const dlBtn = $('imageDownloadBtn');
+      const againBtn = $('imageGenerateAgainBtn');
+      const genBtn = $('imageBtn');
+      if (section) section.hidden = false;
+      if (wrap) wrap.innerHTML = '<div class="image-generating-state"><div class="image-generating-spinner"></div><span>Creating your image…</span></div>';
+      if (genBtn) { genBtn.disabled = true; genBtn.textContent = 'Generating…'; }
+      if (againBtn) againBtn.disabled = true;
+      try {
+        const res = await fetch('/api/image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.url) {
+          const msg = data.error || 'Image generation failed. Please try again.';
+          if (wrap) wrap.innerHTML = '<div class="image-generating-state"><span>' + msg + '</span></div>';
+          return;
+        }
+        if (wrap) {
+          wrap.innerHTML = '';
+          const newImg = document.createElement('img');
+          newImg.id = 'imageResultImg';
+          newImg.src = data.url;
+          newImg.alt = 'AI generated image';
+          newImg.style.cssText = 'width:100%;border-radius:var(--radius-lg);display:block;';
+          wrap.appendChild(newImg);
+        }
+        if (dlBtn) { dlBtn.href = data.url; dlBtn.style.display = 'inline-flex'; }
+        if (section) {
+          setTimeout(() => { section.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+        }
+      } catch (err) {
+        if (wrap) wrap.innerHTML = '<div class="image-generating-state"><span>Network error. Please try again.</span></div>';
+      } finally {
+        if (genBtn) { genBtn.disabled = false; genBtn.innerHTML = '<span aria-hidden="true">🎨</span> Generate Image'; }
+        if (againBtn) againBtn.disabled = false;
+      }
+    }
+    window.generateImage = generateImage;
+  })();
   </script>
 </body>
 </html>
