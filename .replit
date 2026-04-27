@@ -38,3 +38,6 @@ externalPort = 6000
 [[ports]]
 localPort = 20882
 externalPort = 3000
+
+[nix]
+packages = ["run"]
