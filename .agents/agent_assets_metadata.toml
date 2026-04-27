@@ -24,3 +24,9 @@ id = "iCVZ4NsW32sWP2QuQRK8z"
 uri = "file://pmg_full.tar.gz"
 type = "unspecified"
 title = "PromptMeGood — index.html, guide.html, pricing.html, ai.ts"
+
+[[outputs]]
+id = "zD24eHEh0PdjhpsMiHUVM"
+uri = "file://pmg_overhaul_vs_rollback.diff.tar.gz"
+type = "unspecified"
+title = "Full diff: PMG Overhaul (51f0313) → Rollback (e5f82bd) — 334 lines"
