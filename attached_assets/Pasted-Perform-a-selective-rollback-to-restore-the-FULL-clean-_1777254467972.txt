@@ -1,0 +1,127 @@
+Perform a selective rollback to restore the FULL clean UI from this morning while preserving and reintegrating ALL AI features added today.
+
+IMPORTANT:
+I do NOT want a simplified version.
+I want the full earlier look back:
+- all buttons
+- all sections
+- all styling
+- all spacing
+- all cards
+- all builder controls
+- all helper elements
+- all features that existed in the clean morning version
+
+But I also want to KEEP ALL AI FEATURES added today.
+
+STEP 1 — FIND CLEAN MORNING VERSION
+Inspect:
+- Replit checkpoints
+- git history
+- file timestamps
+- recent changed files
+
+Find the clean version from this morning before today’s visual/layout changes.
+
+STEP 2 — RESTORE FULL FRONTEND UI
+Restore the full frontend/UI from that clean version:
+- header
+- hero
+- Build A Prompt button
+- See Use Cases button
+- use case cards
+- Guide Me / Help Me Start
+- This Week’s Focus
+- builder
+- all buttons
+- advanced options
+- expert mode
+- manual/help
+- prompt history
+- pricing section
+- footer
+- mobile layout
+- desktop layout
+- spacing and styling
+
+Do NOT remove buttons or features from the clean version.
+
+STEP 3 — PRESERVE ALL AI FEATURES
+Before rollback, identify and preserve ALL AI-related work added today, including:
+
+TEXT AI:
+- Node/Express backend
+- /api/generate
+- /api/generate-stream if present
+- /api/run or Run With AI endpoint if present
+- OpenAI text generation
+- streaming responses
+- AI Response section
+- AI loading states
+- AI error states
+- local fallback if API fails
+
+IMAGE AI:
+- image generation endpoint/routes
+- image prompt generation logic
+- photo prompt mode
+- image generation UI/buttons
+- image preview/output area
+- image loading states
+- image error states
+- image usage limits
+- any image API/model configuration
+
+SECURITY / COST CONTROLS:
+- Replit Secrets usage
+- no API keys exposed frontend
+- usage limits
+- rate limiting
+- token/output caps
+- image generation caps
+- monthly/free-tier guardrails
+
+STEP 4 — REINTEGRATE AI WITHOUT CHANGING LOOK
+After restoring the clean UI, carefully reinsert ALL AI functionality:
+
+- Generate Prompt should call the AI backend
+- Run With AI should remain available
+- AI Response must stay separate from Generated Prompt
+- Image generation must remain available
+- Photo Prompt Mode must still work
+- Image outputs must display cleanly
+- Usage limits must remain active
+- API keys must remain server-side only
+
+Do NOT:
+- visually redesign the page
+- simplify the UI
+- remove existing buttons
+- remove any AI features
+- overwrite backend AI files
+- expose API keys
+
+STEP 5 — FINAL QA
+Confirm:
+- site looks like the clean morning version
+- all original buttons are back
+- all original sections are back
+- all text AI features work
+- all image AI features work
+- Generate Prompt works
+- Run With AI works
+- Image generation works
+- Photo Prompt Mode works
+- desktop layout is clean
+- mobile layout is clean
+- no API key exposed
+- no console errors
+- no broken links/buttons
+
+REPORT BACK:
+1. Which checkpoint/version was restored
+2. Which files were rolled back
+3. Which text AI features were preserved
+4. Which image AI features were preserved
+5. Which AI features were reinserted into the restored UI
+6. Any remaining issue needing my decision
