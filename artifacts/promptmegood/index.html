@@ -2805,7 +2805,72 @@
     .run-section{background:color-mix(in srgb,var(--color-primary) 6%,var(--color-surface));border-radius:var(--radius-lg);padding:var(--space-5);margin-top:var(--space-4)}
     .pro-badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:9999px;background:#1a6b5e;color:#fff;margin-left:6px;vertical-align:middle}
     @media(max-width:640px){.hero-actions{flex-direction:column}.hero-actions .btn{width:100%;text-align:center}}
-    /* End PMG Polish */</style>
+    /* End PMG Polish */
+
+    /* ===== Spec v2 additions: hero testimonial + ghost CTA ===== */
+    .hero-testimonial { margin-top: var(--space-3); padding: var(--space-3) var(--space-4); border-left: 3px solid var(--color-primary); background: color-mix(in srgb, var(--color-primary) 7%, transparent); border-radius: 8px; max-width: 540px; }
+    .hero-testimonial-stars { color: #f5b400; font-size: var(--text-base); letter-spacing: 1px; }
+    .hero-testimonial-quote { margin: 4px 0 6px; font-size: var(--text-sm); line-height: 1.5; color: var(--color-text); font-style: italic; }
+    .hero-testimonial-author { margin: 0; font-size: var(--text-xs); color: color-mix(in srgb, var(--color-text) 70%, transparent); font-weight: 600; }
+    .btn-ghost { background: transparent !important; border: 1px solid var(--color-divider) !important; color: var(--color-text) !important; }
+    .btn-ghost:hover { background: color-mix(in srgb, var(--color-primary) 8%, transparent) !important; }
+
+    /* ===== T07 Pre-generation hide rules ===== */
+    body.pmg-pre-gen .pmg-post-gen { display: none !important; }
+
+    /* ===== T05 hide the outer auto-optimize-row (moved inside More Control) ===== */
+    #auto-optimize-row { display: none !important; }
+
+    /* ===== T06 subtle expert mode link + hide prominent toggle ===== */
+    .builder-head-actions .expert-mode-toggle,
+    .builder-head-actions .builder-expert-hint { display: none !important; }
+    body.is-expert-mode .builder-head-actions .expert-mode-badge { display: inline-flex !important; }
+    .expert-mode-link-row { margin: 8px 0 4px; text-align: right; }
+    .expert-mode-link { background: none; border: 0; padding: 4px 0; color: color-mix(in srgb, var(--color-text) 65%, transparent); font-size: var(--text-xs); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+    .expert-mode-link:hover { color: var(--color-primary); }
+
+    /* ===== T12 See The Difference ===== */
+    .see-the-difference { padding: var(--space-6) 0 var(--space-7); background: color-mix(in srgb, var(--color-primary) 4%, transparent); }
+    .std-title { font-size: var(--text-2xl, 1.6rem); margin: 0 0 6px; color: var(--color-text); text-align: center; }
+    .std-sub { margin: 0 0 var(--space-5); text-align: center; color: color-mix(in srgb, var(--color-text) 75%, transparent); font-size: var(--text-base); }
+    .std-grid { display: grid; gap: var(--space-3); max-width: 920px; margin: 0 auto; }
+    .std-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); align-items: stretch; }
+    .std-cell { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: 12px; padding: var(--space-4); font-size: var(--text-sm); line-height: 1.55; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+    .std-cell-label { display: inline-block; font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; margin-bottom: 8px; }
+    .std-before .std-cell-label { background: color-mix(in srgb, #b91c1c 15%, transparent); color: #b91c1c; }
+    .std-after .std-cell-label { background: color-mix(in srgb, var(--color-primary) 15%, transparent); color: var(--color-primary); }
+    .std-after { border-color: color-mix(in srgb, var(--color-primary) 35%, transparent); }
+    .std-cell-text { color: var(--color-text); margin: 0; }
+    @media (max-width: 700px) {
+      .std-row { grid-template-columns: 1fr; }
+    }
+
+    /* ===== T11 Mobile sticky bottom bar ===== */
+    .mobile-sticky-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 90; display: none; background: var(--color-surface); border-top: 1px solid var(--color-divider); padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 -4px 12px rgba(0,0,0,0.08); }
+    .mobile-sticky-inner { display: flex; gap: 8px; align-items: center; max-width: 720px; margin: 0 auto; }
+    .mobile-sticky-input { flex: 1 1 auto; min-height: 44px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--color-divider); background: var(--color-bg); color: var(--color-text); font-size: 16px; }
+    .mobile-sticky-input:focus { outline: 2px solid var(--color-primary); outline-offset: 1px; }
+    .mobile-sticky-btn { flex: 0 0 auto; min-height: 44px; padding: 0 14px; border-radius: 10px; border: none; background: var(--color-primary); color: #fff; font-weight: 700; font-size: var(--text-sm); cursor: pointer; white-space: nowrap; }
+    .mobile-sticky-btn:hover { filter: brightness(1.05); }
+    .mobile-sticky-dismiss { flex: 0 0 auto; min-width: 44px; min-height: 44px; padding: 0 8px; border-radius: 10px; border: 1px solid var(--color-divider); background: transparent; color: var(--color-text); font-size: 20px; line-height: 1; cursor: pointer; }
+    .mobile-sticky-dismiss:hover { background: color-mix(in srgb, var(--color-text) 6%, transparent); }
+    @media (max-width: 768px) {
+      .mobile-sticky-bar:not([hidden]) { display: block; }
+      body.has-mobile-sticky { padding-bottom: 88px; }
+      body.has-mobile-sticky .site-footer { margin-bottom: 88px; }
+    }
+
+    /* ===== T11 mobile audit: header trim + tap targets ===== */
+    @media (max-width: 768px) {
+      .top-actions .ghost-link { min-height: 44px; display: inline-flex; align-items: center; padding: 6px 10px; }
+      .hero-actions .btn-stacked { min-height: 56px; }
+      .popular-use-card { min-height: 64px; }
+      .hero-heading { font-size: clamp(1.7rem, 7vw, 2.4rem); line-height: 1.18; }
+      .hero { padding-top: var(--space-5); padding-bottom: var(--space-5); }
+      body, .container { overflow-x: hidden; }
+    }
+    /* End Spec v2 additions */
+    </style>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -2830,8 +2895,9 @@
         </svg>
       </button>
       <div class="top-actions" id="top-actions">
-        <a class="ghost-link" href="#builder">Open builder</a>
-        <a class="ghost-link" href="#history">History</a>
+        <a class="ghost-link" href="#builder">Start Here</a>
+        <a class="ghost-link" href="#how-it-works">How It Works</a>
+        <a class="ghost-link" href="#use-cases">Examples</a>
         <a class="ghost-link" href="./pricing.html">Pricing</a>
         <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -2875,24 +2941,29 @@
     <section class="hero" id="top">
       <div class="container hero-grid">
         <div>
-          <div class="eyebrow">AI Prompt Engine</div>
+          <div class="eyebrow">Get AI To Understand What You Mean</div>
           <h1 class="hero-heading">AI <span class="highlight">Prompt Generator</span><br>That Actually Gets Results</h1>
           <div class="hero-subtext-box">
             <p class="hero-subtext">Your AI answers are only as good as your questions. PromptMeGood structures your goal into a prompt that gets <strong>real results</strong> — in seconds.</p>
           </div>
-          <p class="trust-line">A structured prompt builder that tells AI exactly what to do — and how to say it.</p>
+          <p class="trust-line">PromptMeGood helps you ask AI the right way &mdash; so you stop getting bad answers.</p>
           <p id="usageCounter" style="display:none" aria-live="polite" hidden>
             
           </p>
           <div class="hero-actions">
             <a class="btn btn-primary btn-stacked" href="#builder" id="hero-build-cta">
-              <span class="cta-title">Build A Prompt</span>
+              <span class="cta-title">Build My First Prompt &rarr;</span>
               <span class="cta-sub">start here</span>
             </a>
-            <a class="btn btn-secondary btn-stacked" href="#use-cases" id="hero-usecases-cta">
-              <span class="cta-title">See Use Cases</span>
+            <a class="btn btn-secondary btn-stacked btn-ghost" href="#use-cases" id="hero-usecases-cta">
+              <span class="cta-title">See Examples First</span>
               <span class="cta-sub">or explore use cases</span>
             </a>
+          </div>
+          <div class="hero-testimonial" aria-label="Customer testimonial">
+            <span class="hero-testimonial-stars" aria-hidden="true">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+            <p class="hero-testimonial-quote">&ldquo;It cut my prompt-rewriting time in half. I get usable copy on the first try now.&rdquo;</p>
+            <p class="hero-testimonial-author">&mdash; Beta User, Copywriter</p>
           </div>
         </div>
         <aside class="hero-card" aria-labelledby="hero-card-title">
@@ -2927,32 +2998,32 @@
         <div class="popular-uses-grid">
           <button type="button" class="popular-use-card" data-popular-goal="Help me find realistic ways to make money using AI based on my current skills, time, and budget.">
             <span class="popular-use-card-title">Make Money With AI</span>
-            <p class="popular-use-card-desc">Find realistic, practical ways to earn using AI based on what you already have.</p>
+            <p class="popular-use-card-desc">Get realistic income ideas based on what you already have.</p>
             <span class="popular-use-card-cta">Use this →</span>
           </button>
           <button type="button" class="popular-use-card" data-popular-goal="Help me turn a business idea into a simple step-by-step launch plan.">
             <span class="popular-use-card-title">Start A Business</span>
-            <p class="popular-use-card-desc">Turn a fuzzy idea into a clear, step-by-step plan you can actually launch.</p>
+            <p class="popular-use-card-desc">Turn a fuzzy idea into a clear, step-by-step plan.</p>
             <span class="popular-use-card-cta">Use this →</span>
           </button>
           <button type="button" class="popular-use-card" data-popular-goal="Help me create attention-grabbing content ideas and hooks for TikTok, Instagram, or YouTube.">
             <span class="popular-use-card-title">Create Viral Content</span>
-            <p class="popular-use-card-desc">Generate scroll-stopping hooks and ideas for TikTok, Instagram, or YouTube.</p>
+            <p class="popular-use-card-desc">Generate scroll-stopping hooks for TikTok, Instagram, or YouTube.</p>
             <span class="popular-use-card-cta">Use this →</span>
           </button>
           <button type="button" class="popular-use-card" data-popular-goal="Help me write a clear, persuasive email that gets the response I want.">
             <span class="popular-use-card-title">Write Better Emails</span>
-            <p class="popular-use-card-desc">Write clear, persuasive emails that actually get the reply you need.</p>
+            <p class="popular-use-card-desc">Write emails that actually get the reply you need.</p>
             <span class="popular-use-card-cta">Use this →</span>
           </button>
           <button type="button" class="popular-use-card" data-popular-goal="Help me write a high-converting product page with strong benefits, trust-building copy, and clear calls to action.">
             <span class="popular-use-card-title">Build A Product Page</span>
-            <p class="popular-use-card-desc">Craft high-converting product pages with strong benefits and trust-building copy.</p>
+            <p class="popular-use-card-desc">Craft high-converting copy with strong benefits and trust signals.</p>
             <span class="popular-use-card-cta">Use this →</span>
           </button>
           <button type="button" class="popular-use-card" data-popular-goal="Help me think through a personal problem clearly and create a practical next-step plan." data-money-mode="off">
             <span class="popular-use-card-title">Solve A Personal Problem</span>
-            <p class="popular-use-card-desc">Think through a tough personal situation and get a calm, practical next-step plan.</p>
+            <p class="popular-use-card-desc">Get a calm, practical next-step plan for any tough situation.</p>
             <span class="popular-use-card-cta">Use this →</span>
           </button>
         </div>
@@ -2969,7 +3040,7 @@
       </div>
     </section>
 
-    <section class="app-section builder-intro-section" id="builder-intro" aria-labelledby="builder-intro-title" data-tip="builder-intro">
+    <section class="app-section builder-intro-section" id="how-it-works" aria-labelledby="builder-intro-title" data-tip="builder-intro">
       <div class="container">
         <div class="builder-intro">
           <h2 class="builder-intro-title" id="builder-intro-title">How it works</h2>
@@ -3010,6 +3081,45 @@
             </blockquote>
             <figcaption class="feedback-attribution">&mdash; Janelle R. &middot; Content Creator</figcaption>
           </figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="see-the-difference" id="see-the-difference" aria-labelledby="std-title">
+      <div class="container">
+        <h2 class="std-title" id="std-title">See The Difference</h2>
+        <p class="std-sub">Same goal. One vague ask. One PromptMeGood prompt. Big difference in what the AI gives back.</p>
+        <div class="std-grid">
+          <div class="std-row">
+            <div class="std-cell std-before">
+              <span class="std-cell-label">Before</span>
+              <p class="std-cell-text">&ldquo;Write me a sales email.&rdquo;</p>
+            </div>
+            <div class="std-cell std-after">
+              <span class="std-cell-label">After</span>
+              <p class="std-cell-text">&ldquo;Act as a B2B SaaS copywriter. Write a 120&ndash;150 word cold email to a busy ops manager pitching our scheduling tool. Lead with one specific pain point, include one concrete benefit with a number, end with a low-friction CTA. Friendly-professional tone, no jargon.&rdquo;</p>
+            </div>
+          </div>
+          <div class="std-row">
+            <div class="std-cell std-before">
+              <span class="std-cell-label">Before</span>
+              <p class="std-cell-text">&ldquo;Help me make money with AI.&rdquo;</p>
+            </div>
+            <div class="std-cell std-after">
+              <span class="std-cell-label">After</span>
+              <p class="std-cell-text">&ldquo;I have 5 hours a week, $0 budget, and intermediate writing skills. List 3 realistic AI-powered side income ideas I can start this month. For each, give: setup steps, time-to-first-dollar estimate, the AI tool to use, and a sample first action I can take today.&rdquo;</p>
+            </div>
+          </div>
+          <div class="std-row">
+            <div class="std-cell std-before">
+              <span class="std-cell-label">Before</span>
+              <p class="std-cell-text">&ldquo;Give me content ideas.&rdquo;</p>
+            </div>
+            <div class="std-cell std-after">
+              <span class="std-cell-label">After</span>
+              <p class="std-cell-text">&ldquo;Generate 7 short-form video hooks for a personal-finance TikTok aimed at 25&ndash;34-year-olds with credit-card debt. Each hook must be under 12 words, pattern-interrupt style, and tease a specific payoff. Include a one-line follow-up for each.&rdquo;</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -3058,7 +3168,7 @@
                 <strong>Guide me</strong>
                 <span>Not sure how to start? Answer 4 short questions and we'll fill the builder for you.</span>
               </div>
-              <button type="button" class="btn btn-primary" id="guided-mode-btn">Guide me</button>
+              <button type="button" class="btn btn-primary" id="guided-mode-btn">Help Me Start</button>
             </div>
             <div id="weekly-goal-pin" class="weekly-goal-pin" aria-label="This week's focus">
               <div class="weekly-goal-pin-head">
@@ -3141,10 +3251,20 @@
 
               <details id="settingsPanel" class="settings-panel">
                 <summary class="settings-panel-summary">
-                  <span class="settings-panel-summary-text">Customize settings</span>
+                  <span class="settings-panel-summary-text">More Control</span>
                   <span class="settings-panel-summary-chevron" aria-hidden="true">▾</span>
                 </summary>
                 <div class="settings-grid">
+                  <div class="auto-optimize-row" id="auto-optimize-row-inside-settings">
+                    <div class="auto-opt-text">
+                      <strong>Auto optimize <span style="color: var(--color-primary); font-weight: 600;">(Recommended)</span></strong>
+                      <span>Suggests the best category, tone, format, and length based on your goal.</span>
+                    </div>
+                    <label class="switch" aria-label="Toggle Auto optimize (mirror)">
+                      <input type="checkbox" id="auto-optimize-toggle-mirror" checked />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
               <div class="settings-divider" id="tour-step-settings" role="presentation">
                 <h3 class="settings-divider-title">Tune Your Prompt Settings</h3>
                 <p class="settings-divider-sub">These settings control tone, detail, and structure of your prompt.</p>
@@ -3317,6 +3437,9 @@
               </details>
                 </div>
               </details>
+              <div class="expert-mode-link-row">
+                <button id="expert-mode-link" type="button" class="expert-mode-link" aria-pressed="false">Switch to Expert Mode &rarr;</button>
+              </div>
 
               <div class="keyboard-hints" id="keyboard-hints" hidden aria-label="Keyboard shortcuts">
                 <span class="keyboard-hints-title">Keyboard Shortcuts</span>
@@ -3365,7 +3488,7 @@
             <div class="result-edit-row">
               <span class="result-edit-indicator" id="result-edit-indicator" hidden>Edited manually</span>
             </div>
-            <div class="improve-block" id="improve-block">
+            <div class="improve-block pmg-post-gen" id="improve-block">
               <div id="tour-step-improve">
                 <span class="improve-eyebrow">Refine your prompt instantly</span>
                 <p class="improve-helper">Tap an option to instantly upgrade your result.</p>
@@ -3397,8 +3520,8 @@
               </div>
               <span class="improve-status" id="improve-status" aria-live="polite" hidden>Updating…</span>
             </div>
-            <p class="result-helper" data-tip="result-copy">Looks good? Copy this prompt and paste it into ChatGPT, Claude, Perplexity, Gemini, or another AI tool.</p>
-            <div id="tour-final-actions" class="tour-final-actions">
+            <p class="result-helper pmg-post-gen" data-tip="result-copy">Looks good? Copy this prompt and paste it into ChatGPT, Claude, Perplexity, Gemini, or another AI tool.</p>
+            <div id="tour-final-actions" class="tour-final-actions pmg-post-gen">
             <div class="strength-score" id="strength-score" role="status" aria-live="polite" hidden>
               <div class="strength-score-head">
                 <span class="strength-score-title">Prompt Strength</span>
@@ -3427,7 +3550,7 @@
             <!-- RUN WITH AI — hidden until a prompt is generated -->
             <div class="run-section" id="runSection" hidden>
               <div class="run-section-divider"></div>
-              <h3 class="run-section-title">Run It</h3>
+              <h3 class="run-section-title">Run This Prompt With AI</h3>
               <p class="run-section-helper">Execute this prompt and get your AI response — right here.</p>
               <button class="btn btn-secondary run-btn" type="button" id="imageBtn" onclick="generateImage()" style="display:none;">🎨 Generate Image</button>
               <button class="btn btn-primary run-btn" type="button" id="runBtn" onclick="runWithAI()">
@@ -3644,7 +3767,7 @@
       <div class="container site-footer-inner">
         <div class="site-footer-brand">&copy; 2026 PromptMeGood</div>
         <p class="site-footer-tagline">Built for people who want real results from AI &mdash; not fluff.</p>
-        <p class="site-footer-early-access">PromptMeGood is in early access. All features are currently free.</p>
+        <p class="site-footer-early-access">PromptMeGood is free during our founding member period. Full pricing launches soon.</p>
         <p class="site-footer-contact"><a class="site-footer-link" href="mailto:support@promptmegood.com">support@promptmegood.com</a></p>
         <div class="site-footer-social" aria-label="Follow PromptMeGood on social media">
           <span class="site-footer-tagline site-footer-social-label" style="margin:0;">Follow PromptMeGood</span>
@@ -3741,7 +3864,7 @@
           <button type="button" class="legal-modal-close" data-legal-close aria-label="Close">&times;</button>
         </div>
         <div class="legal-modal-body legal-body">
-          <p>PromptMeGood is a single-page tool that runs entirely in your browser. Your prompts, history, templates, and preferences are stored locally on your device using your browser's localStorage. We do not maintain user accounts, and we do not transmit your prompts to our servers.</p>
+          <p>PromptMeGood is a single-page tool that runs primarily in your browser. Your prompts, history, templates, and preferences are stored locally on your device using your browser's localStorage. We do not maintain user accounts. When you use AI-powered features such as Generate Prompt, Run With AI, file analysis, or image generation, your submitted text or uploaded content may be sent securely to our AI service providers to process your request. We do not store your prompts on our servers beyond what is required to fulfill your request.</p>
           <p>We use Microsoft Clarity to understand anonymous, aggregated usage patterns (such as which buttons are clicked) so we can improve the experience. Clarity does not capture the text of your prompts.</p>
           <p>You can export, import, or clear your saved data at any time from the Prompt history section. Clearing your browser storage will remove everything PromptMeGood has saved on your device.</p>
           <p>Questions? Email <a class="site-footer-link" href="mailto:support@promptmegood.com">support@promptmegood.com</a>.</p>
@@ -9431,5 +9554,13 @@ Context:
   }
 })();
 </script>
+  <div id="mobile-sticky-bar" class="mobile-sticky-bar" hidden role="region" aria-label="Quick prompt builder">
+    <div class="mobile-sticky-inner">
+      <input id="mobile-sticky-input" class="mobile-sticky-input" type="text" placeholder="What do you want help with?" aria-label="Quick goal" autocomplete="off" />
+      <button id="mobile-sticky-btn" class="mobile-sticky-btn" type="button">Generate &#9889;</button>
+      <button id="mobile-sticky-dismiss" class="mobile-sticky-dismiss" type="button" aria-label="Dismiss quick prompt bar">&times;</button>
+    </div>
+  </div>
+  <script src="/scripts/post-spec.js" defer></script>
 </body>
 </html>

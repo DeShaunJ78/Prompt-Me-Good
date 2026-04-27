@@ -1,0 +1,258 @@
+You are working on PromptMeGood — a single-page web app that helps everyday people generate better AI prompts. Your job is to make focused, safe improvements to the existing codebase. Do NOT rebuild anything. Do NOT delete features. Do NOT expose API keys or alter backend routes.
+
+---
+
+STEP 0 — INSPECT FIRST, CHANGE NOTHING YET
+
+Before making any changes, inspect the codebase and report:
+
+1. Which file(s) control the homepage layout
+2. Which file(s) control the builder section
+3. Which file(s) control AI generation (Generate Prompt)
+4. Which file(s) control Run With AI
+5. Which file(s) control file/image upload and image generation
+6. Which file(s) control the Pricing page
+7. Which file(s) control Privacy Policy and Terms of Service
+8. Which file(s) control the help/guide/manual
+9. Which file(s) control backend API routes
+10. Where secrets/API keys are stored (report location only, do NOT log or print them)
+
+Then create a backup branch or snapshot before touching anything.
+
+---
+
+STEP 1 — PRIVACY POLICY (DO THIS FIRST — LEGAL PRIORITY)
+
+Find the Privacy Policy text in the codebase.
+
+Replace or append this text where appropriate:
+
+OLD: "we do not transmit your prompts to our servers"
+
+NEW: "When you use AI-powered features such as Generate Prompt, Run With AI, file analysis, or image generation, your submitted text or uploaded content may be sent securely to our AI service providers to process your request. We do not store your prompts on our servers beyond what is required to fulfill your request."
+
+Preserve the rest of the Privacy Policy. Do not delete any existing sections.
+
+---
+
+STEP 2 — PLAIN LANGUAGE COPY REPLACEMENTS
+
+Make the following text replacements site-wide. Do not change functionality — only the visible labels:
+
+| Find (current) | Replace with |
+|---|---|
+| "AI Prompt Engine" | "Get AI To Understand What You Mean" |
+| "Guide Me" (button label only) | "Help Me Start" |
+| "Guardrails" | "Rules Or Limits" |
+| "Run It" | "Run This Prompt With AI" |
+| "Customize Settings" | "More Control" |
+| "Open Builder" (nav only) | "Start Here" |
+| "History" (nav only) | Remove from top nav; keep in builder sidebar |
+
+Do not rename variables, function names, IDs, or CSS classes — only the visible user-facing text strings.
+
+---
+
+STEP 3 — HERO SECTION IMPROVEMENTS
+
+In the hero/above-the-fold section:
+
+1. Add this tagline directly under the main headline (or under the logo in the nav if that is cleaner):
+   "PromptMeGood helps you ask AI the right way — so you stop getting bad answers."
+
+2. Make the two existing CTAs use a primary/secondary visual hierarchy:
+   - Primary (filled, high contrast): "Build My First Prompt →"
+   - Secondary (outlined/ghost style): "See Examples First"
+   Both buttons keep their existing scroll targets. Only the visual style and label change.
+
+3. Add one testimonial directly below the CTA buttons:
+   ⭐⭐⭐⭐⭐ "It cut my prompt-rewriting time in half. I get usable copy on the first try now."
+   — Beta User, Copywriter
+
+---
+
+STEP 4 — NAVIGATION REORDER
+
+Reorder the top nav to:
+Start Here | How It Works | Examples | Pricing
+
+- "Start Here" scrolls to the builder (same as current "Open Builder")
+- "How It Works" scrolls to the existing how-it-works section
+- "Examples" scrolls to the use cases section
+- "Pricing" links to pricing.html (unchanged)
+- Remove "History" from the nav — it is already accessible inside the builder
+
+---
+
+STEP 5 — SIMPLIFY DEFAULT BUILDER VIEW
+
+This is the most important UX change. Use progressive disclosure.
+
+DEFAULT VIEW (visible on page load before any interaction):
+- Goal textarea
+- "Help Me Start" button (was "Guide Me")
+- "Generate Prompt" button
+- "Use Demo Values" button
+- "See Use Cases" link
+
+MOVE THESE into a collapsed "More Control ▾" section (hidden by default, expandable on click):
+- Category selector
+- Experience Level selector
+- Tone selector
+- Output Format selector
+- Max Response Length
+- Output Language
+- Personality Mode
+- Extra Details textarea
+- Rules Or Limits textarea (was "What should AI avoid")
+- Advanced Options panel
+- Expert Mode toggle
+- Keyboard shortcuts panel
+- Auto Optimize toggle
+
+The "More Control" section should have a clear expand/collapse toggle. When expanded, all features work exactly as they do now. Nothing is removed.
+
+---
+
+STEP 6 — EXPERT MODE CHANGE
+
+Move Expert Mode out of the main builder view.
+
+Instead, show a small subtle text link below the "More Control" section:
+"Switch to Expert Mode →"
+
+When clicked, it enables Expert Mode exactly as it works today. No functional change — only placement.
+
+Keep the Expert Mode warning modal exactly as-is.
+
+---
+
+STEP 7 — SHOW ADVANCED OUTPUT TOOLS ONLY AFTER GENERATION
+
+Currently, some output/refine tools are visible before any prompt is generated. Change this:
+
+Hide these elements until a prompt has been successfully generated:
+- Refine Your Prompt section (More Detailed, More Aggressive, Beginner Friendly buttons)
+- Fine-Tune Your Prompt textarea
+- Undo Last Change
+- Prompt Strength bar
+- Check Prompt Quality button
+- Copy Prompt button
+- Copy shareable link
+- Print / Save PDF
+- Run With AI section
+- AI Response section
+
+Show them immediately after the first successful generation. Use a CSS class toggle or display:none/block — do not remove the HTML.
+
+---
+
+STEP 8 — USE CASE CARD MICRO-DESCRIPTIONS
+
+Find the 6 use case cards. Under each card title, add a one-line description:
+
+| Card Title | Add This Line |
+|---|---|
+| Make Money With AI | "Get realistic income ideas based on what you already have" |
+| Start A Business | "Turn a fuzzy idea into a clear, step-by-step plan" |
+| Create Viral Content | "Generate scroll-stopping hooks for TikTok, Instagram, or YouTube" |
+| Write Better Emails | "Write emails that actually get the reply you need" |
+| Build A Product Page | "Craft high-converting copy with strong benefits and trust signals" |
+| Solve A Personal Problem | "Get a calm, practical next-step plan for any tough situation" |
+
+---
+
+STEP 9 — DAILY PROMPT NUDGE TIMING
+
+Find the code that triggers the "Daily prompt nudge" banner.
+
+Change its trigger from page load to post-first-generation.
+
+Logic:
+- If user has NEVER generated a prompt on this device → do not show the nudge on load
+- After the user generates their first prompt → show the nudge once as a subtle banner
+- If user has previously generated prompts → show the nudge on load as it currently works (returning users)
+
+Use localStorage to track whether a first prompt has ever been generated on this device.
+
+---
+
+STEP 10 — FOOTER COPY UPDATE
+
+Find the footer text that says:
+"PromptMeGood is in early access. All features are currently free."
+
+Replace it with:
+"PromptMeGood is free during our founding member period. Full pricing launches soon."
+
+---
+
+STEP 11 — MOBILE AUDIT AND FIXES
+
+On mobile viewport (max-width: 768px):
+
+1. Add a sticky bottom bar containing:
+   - A short goal input field (placeholder: "What do you need help with?")
+   - A "Generate ⚡" button
+   When tapped, it scrolls to and focuses the main goal textarea in the builder.
+   This bar should be dismissible with an X.
+
+2. Audit and fix:
+   - Cards with text touching the edges (add padding: 16px minimum)
+   - Buttons that are too small to tap comfortably (minimum 44px height)
+   - Header that feels thick or cluttered (reduce logo/nav padding on mobile)
+   - Any elements that overlap or clip on small screens
+   - The Generate button should not require significant scrolling to reach
+
+---
+
+STEP 12 — BEFORE/AFTER SECTION (NEW SECTION)
+
+Between the "How It Works" section and the builder section, insert a new section titled:
+
+"See The Difference"
+
+Content (3-row comparison table):
+
+| Without PromptMeGood | With PromptMeGood |
+|---|---|
+| "Write me a business plan" | Structured prompt with role, context, constraints, tone, and format |
+| Vague, generic AI response | Specific, actionable output you can actually use |
+| Rewriting the same prompt 5 times | Getting it right on the first try |
+
+Style it to match the existing site design. Do not introduce new fonts or color systems.
+
+---
+
+SAFETY RULES (NEVER VIOLATE THESE)
+
+- Do NOT delete any existing features
+- Do NOT alter any backend API routes
+- Do NOT log, print, or expose API keys or secrets
+- Do NOT merge the Optimized Prompt and AI Response sections
+- Do NOT redesign or restyle the app from scratch
+- Do NOT introduce new dependencies without flagging them first
+- Do NOT change any function names, variable names, IDs, or CSS class names — only visible text and CSS display properties
+
+---
+
+FINAL QA CHECKLIST
+
+After all changes, verify and report:
+
+□ New user can generate first prompt in under 10 seconds
+□ All 6 use cases work and load the builder correctly
+□ Guide Me / Help Me Start flow works end-to-end
+□ Generate Prompt produces output correctly
+□ Run With AI produces AI Response in the correct section
+□ Optimized Prompt and AI Response remain separate
+□ More Control section expands and collapses cleanly
+□ Expert Mode still works when activated
+□ Prompt History still saves and restores correctly
+□ Export/Import/Backup still works
+□ Privacy Policy reflects accurate AI data handling
+□ Pricing page is accessible from nav
+□ Mobile sticky bar scrolls to builder correctly
+□ No console errors on page load
+□ No features removed or broken
+□ Report every file that was modified
