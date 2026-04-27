@@ -1,0 +1,196 @@
+Perform a UX refinement and feature alignment pass on the existing PromptMeGood application. Do NOT remove any features. Do NOT break any functionality. Only improve clarity, flow, and usability.
+
+========================
+CORE GOAL
+========================
+Make the product feel intuitive, structured, and frictionless for a beginner user while preserving all existing features.
+
+========================
+1. SEARCH FUNCTION (CRITICAL FIX)
+========================
+
+Fix and expand the global search so it works as users expect.
+
+Search must include:
+- Saved prompts
+- Prompt history (generated prompts)
+- User input/goals
+- Generated output text
+
+Behavior:
+- Case-insensitive
+- Partial matches allowed
+- Sort results by most recent first
+
+UI:
+- Label results clearly:
+  “From History”
+  “Saved Prompts”
+- If no results:
+  “No matches found — try different keywords”
+
+Do NOT remove current search — expand it.
+
+========================
+2. WORKSPACE CLARITY (SEE THE DIFFERENCE → BUILDER)
+========================
+
+Fix the transition into the working area so users understand context shift.
+
+Add a header above:
+- “Write Something”
+- “Create Image”
+
+Header:
+“Workspace”
+
+Subtext:
+“Create, refine, and run your prompts here”
+
+UI Improvements:
+- Add spacing above header
+- Add subtle divider or background change
+- Visually separate workspace from previous section
+
+Goal:
+User clearly understands they entered a working environment.
+
+========================
+3. BUTTON HIERARCHY & PLACEMENT
+========================
+
+Fix CTA layout so user knows exactly what to do first.
+
+Rules:
+- ONE primary action
+- Others are secondary
+
+Changes:
+1. Make “Generate Prompt” the primary button:
+   - Largest
+   - Most visually dominant
+
+2. Group secondary actions:
+   - Run With AI
+   - Create Image
+   - Try Demo
+
+3. Layout:
+   Desktop → horizontal alignment
+   Mobile → stacked layout
+
+4. Ensure:
+   - Even spacing
+   - No extra bottom padding
+   - No visual imbalance
+
+Goal:
+User instantly understands:
+Step 1 → Generate
+Step 2 → Run or Copy
+
+========================
+4. POST-GENERATION GUIDANCE
+========================
+
+After a prompt is generated, add a clear next-step guide:
+
+“What next?
+• Run With AI → see results instantly
+• Copy → use anywhere
+• Refine → improve your prompt”
+
+This must appear directly under the generated output.
+
+========================
+5. REMOVE OUTDATED MESSAGING
+========================
+
+Replace any outdated instructions like:
+
+“copy your finished prompt into your favorite AI tool”
+
+With:
+
+“Click Generate → then run it with AI or copy it anywhere.”
+
+Ensure ALL messaging reflects:
+- Built-in AI execution
+- Modern workflow
+
+========================
+6. UPLOAD COMPONENT CLEANUP (DESKTOP BUG FIX)
+========================
+
+Fix file/image upload UI:
+
+- Remove broken image icon before file selection
+- Remove placeholder glitches (e.g., “Selecte”)
+- Show preview ONLY after valid file selected
+- Display file name when selected
+- Show fallback: “No file selected”
+
+Ensure:
+- Clean UI
+- No layout shift
+- No console errors
+
+========================
+7. GLOBAL FEATURE ALIGNMENT CHECK
+========================
+
+Audit all UI elements:
+
+Each feature must clearly answer:
+1. What it does
+2. When to use it
+3. What happens next
+
+Fix:
+- Missing explanations
+- Confusing labels
+- Duplicate guidance
+- Out-of-place elements
+
+========================
+8. TOUR UPDATE
+========================
+
+Update guided tour to match current product.
+
+Limit to 4–5 steps:
+
+1. Type what you want
+2. Click Generate
+3. Run it instantly with AI or copy it
+4. Upload files/images for better results
+5. Use Help if stuck
+
+Rules:
+- Beginner-friendly language
+- No technical jargon
+- Keep concise
+
+========================
+FINAL CHECK
+========================
+
+Ensure:
+- No outdated messaging remains
+- Search returns real results
+- Workspace is clearly defined
+- Buttons feel intentional and balanced
+- Upload UI is clean
+- User always knows what to do next
+- No functionality is broken
+
+========================
+END GOAL
+========================
+
+The app should feel:
+- Clear
+- Guided
+- Smooth
+- Beginner-friendly
+- Powerful without confusion

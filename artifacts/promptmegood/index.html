@@ -1210,6 +1210,13 @@
     .example-chip { padding: 6px 12px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent); background: color-mix(in srgb, var(--color-primary) 6%, transparent); color: var(--color-text); font-size: var(--text-sm); cursor: pointer; transition: background var(--transition-interactive), border-color var(--transition-interactive); }
     .example-chip:hover { background: color-mix(in srgb, var(--color-primary) 18%, transparent); border-color: var(--color-primary); }
     .result-helper { font-size: var(--text-sm); color: var(--color-text-muted); margin-top: var(--space-2); }
+    .what-next { margin-top: var(--space-4); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md, 10px); background: color-mix(in srgb, var(--color-primary) 7%, transparent); border-left: 3px solid var(--color-primary); }
+    .what-next-title { margin: 0 0 var(--space-2); font-size: var(--text-sm); font-weight: 700; color: var(--color-text); letter-spacing: 0.01em; }
+    .what-next-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+    .what-next-list li { font-size: var(--text-sm); line-height: 1.45; color: var(--color-text); }
+    .what-next-list li strong { color: var(--color-primary); font-weight: 700; }
+    .what-next-list li span { color: var(--color-text-muted); }
+    [data-theme="dark"] .what-next { background: color-mix(in srgb, var(--color-primary) 14%, transparent); }
     .save-tip {
       display: none;
       align-items: center;
@@ -3230,7 +3237,7 @@
 
               <div class="post-uc-guidance" id="post-uc-guidance" role="status" aria-live="polite">
                 <span class="post-uc-guidance-icon" aria-hidden="true">✅</span>
-                <span class="post-uc-guidance-text">Great start — review the details, click Generate, then copy your finished prompt into your favorite AI tool.</span>
+                <span class="post-uc-guidance-text">You're ready — generate your prompt, then run it instantly with AI or copy it.</span>
                 <button type="button" class="post-uc-guidance-close" id="post-uc-guidance-close" aria-label="Dismiss">×</button>
               </div>
 
@@ -3522,7 +3529,14 @@
               </div>
               <span class="improve-status" id="improve-status" aria-live="polite" hidden>Updating…</span>
             </div>
-            <p class="result-helper pmg-post-gen" data-tip="result-copy">Looks good? Copy this prompt and paste it into ChatGPT, Claude, Perplexity, Gemini, or another AI tool.</p>
+            <aside class="what-next pmg-post-gen" id="what-next" aria-label="What next">
+              <h3 class="what-next-title">What next?</h3>
+              <ul class="what-next-list">
+                <li><strong>Run With AI</strong> &rarr; <span>see results instantly, right here</span></li>
+                <li><strong>Copy</strong> &rarr; <span>paste it into ChatGPT, Claude, Perplexity, Gemini, or anywhere</span></li>
+                <li><strong>Refine</strong> &rarr; <span>tweak your prompt with the buttons above before you run it</span></li>
+              </ul>
+            </aside>
             <div id="tour-final-actions" class="tour-final-actions pmg-post-gen">
             <div class="strength-score" id="strength-score" role="status" aria-live="polite" hidden>
               <div class="strength-score-head">
@@ -3615,7 +3629,7 @@
               Shortcuts: press <kbd>G</kbd> to generate, <kbd>C</kbd> to copy, <kbd>/</kbd> to search history.
             </p>
           </div>
-          <p class="early-access-note">Early access &mdash; All features are unlocked for now. Some advanced tools may become Pro features later.</p>
+          <p class="early-access-note">PromptMeGood is free during our founding member period. Full pricing launches soon.</p>
         </section>
       </div>
     </section>
@@ -7080,59 +7094,47 @@ Context:
       const ONBOARDING_KEY = 'promptmegood:onboarding:v1';
       const OB_STEPS = [
         {
-          selector: '.hero-actions',
-          fallbackSelector: '#hero-build-cta',
-          title: 'Choose your starting path',
-          text: 'Start Here. Use Build A Prompt when you already have a task in mind, See Use Cases for ideas, or Help Me Start to answer a few questions and let us fill the builder.'
-        },
-        {
           selector: '#goal',
-          title: 'Enter your goal',
-          text: "Type your goal in plain words, or use Help Me Start at the top of the builder to answer a few questions instead. As you type, we suggest the best category, tone, format, and length for you."
-        },
-        {
-          selector: '#auto-optimize-row',
-          fallbackSelector: '#auto-optimize-toggle',
-          title: 'Auto optimize is on',
-          text: 'When this is on, smart suggestions are applied automatically to fields you have not edited yourself. Turn it off if you want full manual control.'
-        },
-        {
-          selector: '#tour-step-settings',
-          fallbackSelector: '.settings-divider',
-          title: 'Tune your prompt settings',
-          text: 'These shape the final prompt. Pick category, tone, format, max response length, and add guardrails for what the AI should avoid. Suggested badges show our recommendations.'
+          title: 'Type what you want',
+          text: "Tell us what you need help with — in plain, everyday words. We'll turn it into a clear prompt for you."
         },
         {
           selector: '#tour-step-generate',
-          fallbackSelector: '#prompt-form button[type="submit"]',
-          title: 'Generate or demo',
-          text: 'Tap Generate prompt when you are ready. If you are not sure what to enter, hit Try Demo for a full guided walkthrough of the app.'
-        },
-        {
-          selector: '#tour-step-improve',
-          fallbackSelector: '#improve-block',
-          title: 'Refine, undo, and check strength',
-          text: 'Your first prompt is not final. Refine it, fine-tune one part, undo changes, see your prompt strength score, or tap Check prompt quality for quick suggestions.'
+          fallbackSelector: '#generateBtn',
+          title: 'Click Generate',
+          text: 'Tap Generate Prompt. We turn your idea into a structured prompt in seconds.'
         },
         {
           selector: '#tour-final-actions',
           fallbackSelector: '#copy-btn',
-          title: 'Use your prompt anywhere',
-          text: 'Copy uses your clipboard. The ChatGPT, Claude, and Perplexity buttons copy your prompt and open the AI tool in a new tab. We highlight the best fit for your goal. Advanced users can enable Expert Mode in the builder header for full control.'
+          title: 'Run it with AI or copy it',
+          text: 'Tap Run With AI to see results right here in the app, or Copy to paste it into ChatGPT, Claude, Perplexity, or anywhere else.'
+        },
+        {
+          selector: '#upload-field',
+          fallbackSelector: '#analyze-file',
+          title: 'Upload a file or image (optional)',
+          text: "Got a PDF, contract, or screenshot? Upload it and the AI will read it before answering — for sharper, more relevant results."
+        },
+        {
+          selector: '#guided-mode-btn',
+          fallbackSelector: '.guided-cta-row',
+          title: "Stuck? Use Help Me Start",
+          text: "Not sure how to phrase your goal? Tap Help Me Start and we'll ask 4 short questions and fill the builder for you."
         }
       ];
       const DEMO_STEPS = [
         {
           selector: '#prompt-form',
           fallbackSelector: '#builder-panel',
-          title: 'Step 1: Fill the builder',
-          text: "We added a sample goal and settings. As you type your own goal, smart suggestions appear automatically. You can also use Help Me Start to answer a few questions instead."
+          title: 'Step 1: Type what you want',
+          text: "We added a sample goal so you can see how it works. Yours can be just as simple."
         },
         {
           selector: '#tour-step-generate',
-          fallbackSelector: '#prompt-form button[type="submit"]',
-          title: 'Step 2: Generating your prompt…',
-          text: 'This turns your idea into a structured prompt.',
+          fallbackSelector: '#generateBtn',
+          title: 'Step 2: Click Generate',
+          text: 'Watch — we turn the goal into a clear, structured prompt right now.',
           onEnter: function () {
             runDemoGenerationStep();
           }
@@ -7140,32 +7142,20 @@ Context:
         {
           selector: '#resultBox',
           fallbackSelector: '#result-panel',
-          title: 'Step 3: See the output',
-          text: 'This is your prompt. You can use it or adjust it.'
+          title: 'Step 3: See your prompt',
+          text: 'This is your finished prompt. You can tweak it, run it, or copy it.'
         },
         {
-          selector: '#improve-block',
-          fallbackSelector: '#tour-step-improve',
-          title: 'Step 4: Refine and adjust',
-          text: 'Use these controls to refine results, limit length, or guide tone. Refine buttons, Fine-tune, plus the Guardrail field and Max response length up in the builder all shape the answer.'
-        },
-        {
-          selector: '#strength-score',
-          fallbackSelector: '#quality-row',
-          title: 'Step 5: Check your prompt strength',
-          text: 'Your prompt scores 0 to 100% based on goal clarity, context, guardrails, and length. Tap Check prompt quality below for extra tips.'
-        },
-        {
-          selector: '.open-in-block',
+          selector: '#tour-final-actions',
           fallbackSelector: '#copy-btn',
-          title: 'Step 6: Use in your favorite AI',
-          text: 'Copy your prompt, then open it in ChatGPT, Claude, Perplexity, or any AI platform you choose. We highlight the best fit for your specific goal.'
+          title: 'Step 4: Run with AI or copy it',
+          text: 'Tap Run With AI to see results right here, or Copy to paste it into ChatGPT, Claude, Perplexity, or anywhere else.'
         },
         {
           selector: '#replay-tour-btn',
           fallbackSelector: '.site-footer-replay-btn',
-          title: "You've seen the full flow",
-          text: "Now try your own goal. If you need help again, tap Replay tour at the bottom of the page. Advanced users can enable Expert Mode in the builder header for full control."
+          title: "Step 5: That's it",
+          text: "Now try your own goal. If you need help again, tap Replay tour at the bottom of the page."
         }
       ];
       const obOverlay = document.getElementById('ob-overlay');
