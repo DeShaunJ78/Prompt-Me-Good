@@ -6889,7 +6889,10 @@ Context:
 
         // AI-first STREAMING path. Shows live word-by-word output.
         // Fallback chain: stream → non-stream structured → local builder.
-        setPromptText('');
+        // We seed the box with a status line so the user sees activity even
+        // if the upstream model takes a moment to start streaming. The first
+        // streamed chunk replaces this seed (full text starts fresh).
+        setPromptText('Generating your prompt…');
         scrollToResult();
 
         let streamedText = '';
@@ -6942,19 +6945,14 @@ Context:
             return;
           }
           // If we already streamed partial content from /generate-stream, keep it.
-          if (!attempted.structured && !attempted.raw && streamedText && streamedText.trim()) {
+          if (streamedText && streamedText.trim()) {
             finalize(streamedText);
             return;
           }
-          // Walk the chain: structured → raw → local.
-          if (!attempted.structured && hasStructured) {
-            tryStructuredFallback();
-            return;
-          }
-          if (!attempted.raw && hasRaw) {
-            tryRawFallback();
-            return;
-          }
+          // Short-circuit straight to the local builder. The non-stream /generate
+          // and /generate-stream endpoints share the same upstream client, so if
+          // one timed out the others will too — chaining them just makes the user
+          // wait through three full timeouts before seeing a result.
           useLocalFallback();
         }
 
@@ -9009,9 +9007,21 @@ Context:
 
       // Streams /api/generate-stream as Server-Sent Events. onChunk(chunk, fullText)
       // is called for each delta. Returns the full assembled text on completion.
+      // Two timers protect the user from hung upstream streams:
+      //   - overallTimeoutId: hard cap on the total stream lifetime
+      //   - firstChunkTimeoutId: aborts if the upstream sends no data within N seconds,
+      //     so the form submit handler can fall through to the local builder quickly
+      //     instead of leaving the user staring at an empty box.
       async function callGenerateStream(payload, onChunk) {
         const ctrl = new AbortController();
-        const timeoutId = window.setTimeout(function () { ctrl.abort(); }, 90000);
+        const overallTimeoutId = window.setTimeout(function () { ctrl.abort(); }, 18000);
+        let firstChunkTimeoutId = window.setTimeout(function () { ctrl.abort(); }, 5000);
+        function clearFirstChunkTimer() {
+          if (firstChunkTimeoutId !== null) {
+            window.clearTimeout(firstChunkTimeoutId);
+            firstChunkTimeoutId = null;
+          }
+        }
         try {
           const resp = await fetch(API_BASE + '/generate-stream', {
             method: 'POST',
@@ -9052,6 +9062,7 @@ Context:
                   const parsed = JSON.parse(raw);
                   if (parsed.error) { streamErr = new Error(parsed.error); }
                   else if (typeof parsed.text === 'string' && parsed.text) {
+                    clearFirstChunkTimer();
                     full += parsed.text;
                     if (typeof onChunk === 'function') {
                       try { onChunk(parsed.text, full); } catch (_) {}
@@ -9066,7 +9077,8 @@ Context:
           if (!full || !full.trim()) throw new Error('AI returned an empty response.');
           return full;
         } finally {
-          window.clearTimeout(timeoutId);
+          window.clearTimeout(overallTimeoutId);
+          clearFirstChunkTimer();
         }
       }
 

@@ -288,11 +288,14 @@ router.post("/generate", generateLimiter, generateCostCheck, async (req, res) =>
   // Charge ONLY after validation — invalid bodies cannot drain the daily budget.
   chargeCost("generate");
   try {
-    const completion = await openai.chat.completions.create({
-      model: GENERATE_MODEL,
-      max_completion_tokens: GENERATE_MAX_OUTPUT_TOKENS,
-      messages: built.messages,
-    });
+    const completion = await openai.chat.completions.create(
+      {
+        model: GENERATE_MODEL,
+        max_completion_tokens: GENERATE_MAX_OUTPUT_TOKENS,
+        messages: built.messages,
+      },
+      { timeout: 20_000, maxRetries: 0 },
+    );
     const text = completion.choices[0]?.message?.content?.trim() ?? "";
     if (!text) {
       res.status(502).json({
@@ -338,12 +341,15 @@ router.post("/generate-stream", generateLimiter, generateCostCheck, async (req, 
 
   let total = 0;
   try {
-    const stream = await openai.chat.completions.create({
-      model: STREAM_MODEL,
-      max_completion_tokens: GENERATE_MAX_OUTPUT_TOKENS,
-      stream: true,
-      messages: built.messages,
-    });
+    const stream = await openai.chat.completions.create(
+      {
+        model: STREAM_MODEL,
+        max_completion_tokens: GENERATE_MAX_OUTPUT_TOKENS,
+        stream: true,
+        messages: built.messages,
+      },
+      { timeout: 20_000, maxRetries: 0 },
+    );
 
     for await (const chunk of stream) {
       const text = chunk.choices?.[0]?.delta?.content ?? "";
