@@ -1,0 +1,397 @@
+/**
+ * PromptMeGood — Complete Overhaul Script
+ * Run from repo root: node pmg_overhaul.js
+ * Creates a timestamped backup before touching anything.
+ */
+
+const fs = require('fs');
+const FILE = 'artifacts/promptmegood/index.html';
+
+if (!fs.existsSync(FILE)) {
+  console.error('ERROR: Cannot find ' + FILE + '. Run this from your repo root.');
+  process.exit(1);
+}
+
+fs.copyFileSync(FILE, FILE + '.bak.' + Date.now());
+let h = fs.readFileSync(FILE, 'utf8');
+const fixes = [];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 1. NAV — Hide the global search bar from the topbar entirely.
+//    It belongs in a dedicated search page or collapsible, not the main nav.
+//    Power users can still use the "/" keyboard shortcut.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  /\.global-search \{ position: relative; flex: 1 1 240px;[^}]+\}/,
+  '.global-search { display: none; }'
+);
+h = h.replace(
+  /\.global-search-label \{[^}]+\}/g, ''
+);
+h = h.replace(
+  /\.global-search input \{[^}]+\}/g, ''
+);
+h = h.replace(
+  /\.global-search input:focus \{[^}]+\}/g, ''
+);
+h = h.replace(
+  /\.global-search-helper \{[^}]+\}/g, ''
+);
+fixes.push('1. ✅  Global search hidden from nav (/ shortcut still works)');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2. HERO — Remove the "AI Prompt Engine" eyebrow. The logo already says
+//    PromptMeGood. This redundant label cheapens the hero.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  '<div class="eyebrow">AI Prompt Engine</div>\n',
+  ''
+);
+fixes.push('2. ✅  "AI Prompt Engine" eyebrow removed from hero');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 3. HERO — Sharpen the headline. The current headline is descriptive.
+//    The new one leads with the user's pain.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  'AI <span class="highlight">Prompt Generator</span><br>That Actually Gets Results',
+  'Stop getting <span class="highlight">weak answers</span><br>from AI'
+);
+fixes.push('3. ✅  Hero headline sharpened — leads with user pain');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 4. HERO — Remove the redundant italic trust-line below the subheadline.
+//    The subheadline already says the same thing better.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  '<p class="trust-line">A structured prompt builder that tells AI exactly what to do — and how to say it.</p>\n',
+  ''
+);
+fixes.push('4. ✅  Redundant trust-line removed');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 5. HERO CTAs — Make the primary CTA the only real choice.
+//    "See use cases" becomes a text link, not a second full button.
+//    Two equal buttons = decision paralysis.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  '<a class="btn btn-secondary btn-stacked" href="#use-cases" id="hero-usecases-cta">\n              <span class="cta-title">See use cases</span>\n              <span class="cta-sub">or explore use cases</span>\n            </a>',
+  '<a class="hero-text-link" href="#use-cases" id="hero-usecases-cta">or explore use cases →</a>'
+);
+fixes.push('5. ✅  Hero CTAs: one primary button + one text link (no more two equal buttons)');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 6. HERO — Add CSS for the new text link
+// ─────────────────────────────────────────────────────────────────────────────
+const heroCss = `
+    .hero-text-link {
+      display: inline-block;
+      margin-top: var(--space-3);
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      transition: color var(--transition-interactive);
+    }
+    .hero-text-link:hover { color: var(--color-primary); }
+`;
+h = h.replace('/* ── End PMG Aesthetic Polish ── */', heroCss + '\n    /* ── End PMG Aesthetic Polish ── */');
+fixes.push('6. ✅  Hero text link CSS added');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 7. BUILDER — Remove "Recommended First Step" badge from Guide Me row.
+//    It's preachy. The button label is enough.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  '<span class="guided-cta-recommended-badge">Recommended First Step</span>\n                <strong>Guide me</strong>',
+  '<strong>Guide me</strong>'
+);
+fixes.push('7. ✅  "Recommended First Step" badge removed — too loud');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 8. BUILDER — Remove the build-cta-guidance banner ("Start with Guide Me...")
+//    It shows above the form and adds visual noise before the user does anything.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  /(<p class="build-cta-guidance"[^>]*>[\s\S]*?<\/p>)\n/,
+  ''
+);
+fixes.push('8. ✅  "Start with Guide Me" pre-form banner removed');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 9. BUILDER — Remove the goal field label redundancy.
+//    "Your Goal (Start Here)" — the placeholder already says what to do.
+//    Simplify to just "Your goal"
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  '<label for="goal">Your Goal (Start Here)</label>',
+  '<label for="goal">Your goal</label>'
+);
+fixes.push('9. ✅  Goal label simplified to "Your goal"');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 10. BUILDER — Remove helper text below goal field.
+//     The placeholder already shows an example. Double-explaining is noise.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  '<p class="helper">\n                  Describe what you want the AI to help you do.<br />\n                  Example: &ldquo;I need to make money online fast&rdquo; or &ldquo;Help me find a winning product&rdquo;\n                </p>',
+  ''
+);
+fixes.push('10. ✅  Redundant goal helper text removed');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 11. BUILDER — Remove the tip block ("🚀 Ready? Generate your prompt...")
+//     Users can see the generate button. They don't need a tip telling them
+//     to click the button that's right in front of them.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  /<p class="tip-block generate-helper-tip"[^>]*>[\s\S]*?<\/p>/,
+  ''
+);
+fixes.push('11. ✅  "Ready? Generate" tip block removed — button speaks for itself');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 12. BUILDER — Remove the demo-helper line ("Not sure where to start?
+//     See it in action. Show tips") — this is a 4th way to get started
+//     and just adds clutter below the generate button.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  /<p class="demo-helper">[\s\S]*?<\/p>/,
+  ''
+);
+fixes.push('12. ✅  Demo helper line removed');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 13. RESULT PANEL — Remove the decorative pill row ("Role assignment",
+//     "Clear constraints", "Useful output format"). These look like broken
+//     tags to users who don't know what they mean. Remove them.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  '<div class="pill-row" aria-hidden="true">\n              <span class="pill">Role assignment</span>\n              <span class="pill">Clear constraints</span>\n              <span class="pill">Useful output format</span>\n            </div>',
+  ''
+);
+fixes.push('13. ✅  Decorative "Role assignment" pills removed from result panel');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 14. RESULT PANEL — Remove the redundant "result-helper" paragraph
+//     ("Looks good? Copy this prompt and paste it into ChatGPT...")
+//     The Copy Prompt button is right there. Stop explaining it.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  '<p class="result-helper" data-tip="result-copy">Looks good? Copy this prompt and paste it into ChatGPT, Claude, Perplexity, Gemini, or another AI tool.</p>',
+  ''
+);
+fixes.push('14. ✅  "Looks good? Copy this..." helper removed from result panel');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 15. RESULT PANEL — Remove the inline shortcuts reminder
+//     ("Shortcuts: press G to generate, C to copy...")
+//     Keyboard shortcuts belong in Expert Mode only.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  '<p style="margin: var(--space-3) 0 0; font-size: var(--text-xs); color: var(--color-text-muted);">\n              Shortcuts: press <kbd>G</kbd> to generate, <kbd>C</kbd> to copy, <kbd>/</kbd> to search history.\n            </p>',
+  ''
+);
+fixes.push('15. ✅  Inline shortcuts reminder removed from result panel');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 16. RUN SECTION — Rename "Run This Prompt With AI" to "Run it"
+//     Shorter, more confident, more action-oriented.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  '<h3 class="run-section-title">Run This Prompt With AI</h3>',
+  '<h3 class="run-section-title">Run it</h3>'
+);
+h = h.replace(
+  '<p class="run-section-helper">Your prompt is ready. Review it above, edit if needed, then run it here.</p>',
+  '<p class="run-section-helper">Execute this prompt and get your AI response — right here.</p>'
+);
+fixes.push('16. ✅  "Run This Prompt With AI" renamed to "Run it"');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 17. QUICK START — Remove the `open` attribute so it starts collapsed.
+//     It's at the bottom of the page. Nobody needs it expanded by default.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  '<details class="quick-start-card" id="quick-start-card" open>',
+  '<details class="quick-start-card" id="quick-start-card">'
+);
+fixes.push('17. ✅  Quick Start accordion starts collapsed');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 18. HISTORY — Trim the history panel action buttons label text.
+//     "Clear all history" → "Clear all" etc. Shorter = cleaner on mobile.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace('>Show archived<', '>Archived<');
+h = h.replace('>Compare two<', '>Compare<');
+h = h.replace('>Collapse all<', '>Collapse<');
+h = h.replace('>Clear all history<', '>Clear all<');
+h = h.replace('>Export everything<', '>Export all<');
+h = h.replace('>Import backup<', '>Import<');
+fixes.push('18. ✅  History + dashboard button labels shortened for mobile');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 19. TESTIMONIALS — Fix "Guide me" → "Guide Me" in testimonial body
+//     (our earlier lowercase patch over-corrected a proper noun)
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  'Guide me walked me through everything',
+  'Guide Me walked me through everything'
+);
+fixes.push('19. ✅  "Guide Me" capitalization fixed in testimonial');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 20. WHY IT MATTERS — The hero card duplicates the "Why It Matters" section
+//     below it. Remove the "Why It Matters" eyebrow from the hero card
+//     since the section below has its own eyebrow. Avoid repetition.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  '<span class="hero-card-badge"><span class="hero-card-badge-dot" aria-hidden="true"></span>Why It Matters</span>\n          <h2 class="hero-card-title" id="hero-card-title">Build better prompts for ChatGPT, Claude, and any AI tool</h2>',
+  '<h2 class="hero-card-title" id="hero-card-title">Build better prompts for ChatGPT, Claude, and any AI tool</h2>'
+);
+fixes.push('20. ✅  Duplicate "Why It Matters" eyebrow removed from hero card');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 21. RESULT PANEL — "Your ready-to-use prompt" is passive.
+//     Change to something more confident.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  '<h2 id="result-title">Your ready-to-use prompt</h2>\n            <p>Copy this and paste it into ChatGPT, Claude, Perplexity, Google, or any AI/search tool.</p>',
+  '<h2 id="result-title">Your prompt is ready</h2>\n            <p>Copy it and paste into ChatGPT, Claude, Perplexity, or any AI tool — or run it right here.</p>'
+);
+fixes.push('21. ✅  Result panel headline made more confident');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 22. EARLY ACCESS NOTE — Remove from inside the result panel.
+//     It belongs in the footer, not sandwiched between the output and history.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  '<p class="early-access-note">Early access &mdash; All features are unlocked for now. Some advanced tools may become Pro features later.</p>',
+  ''
+);
+fixes.push('22. ✅  Early access note removed from result panel (stays in footer)');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 23. IMPROVE SECTION — "Refine your prompt instantly" eyebrow is redundant.
+//     The buttons below explain themselves. Remove it.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  '<span class="improve-eyebrow">Refine your prompt instantly</span>\n                <p class="improve-helper">Tap an option to instantly upgrade your result.</p>',
+  ''
+);
+fixes.push('23. ✅  Redundant "Refine your prompt instantly" eyebrow removed');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 24. BUILDER TITLE — "Build your prompt" + "Fill in your goal below..."
+//     The sub-description is too instructional. Trim it.
+// ─────────────────────────────────────────────────────────────────────────────
+h = h.replace(
+  '<p class="builder-transition">Fill in your goal below — the more specific, the better. Hit Generate and get a prompt you can use instantly.</p>',
+  '<p class="builder-transition">Describe what you need. We\'ll build the prompt.</p>'
+);
+fixes.push('24. ✅  Builder subtitle tightened');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 25. AESTHETIC CSS — Comprehensive polish block
+// ─────────────────────────────────────────────────────────────────────────────
+const aestheticCss = `
+    /* ── PMG Overhaul Polish ── */
+
+    /* Hero: generous breathing room */
+    .hero { padding-top: clamp(3.5rem, 9vw, 6rem); padding-bottom: clamp(2rem, 5vw, 4rem); }
+
+    /* Hero heading: tighter tracking for impact */
+    .hero-heading { letter-spacing: -1px; }
+
+    /* Primary CTA: slightly more presence */
+    .btn-primary { letter-spacing: -0.01em; }
+
+    /* Generate button transitions */
+    #generateBtn { transition: opacity 180ms ease, background 180ms ease, transform 180ms ease; }
+    #generateBtn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+    /* Result panel: smoother highlight */
+    @keyframes pmgHighlight {
+      0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 0%, transparent); }
+      25%  { box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 40%, transparent); }
+      100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 0%, transparent); }
+    }
+    .result-panel.is-highlight { animation: pmgHighlight 1s ease forwards; }
+
+    /* Testimonials: proper card treatment */
+    .feedback-card-grid {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      background: var(--color-surface);
+      transition: box-shadow var(--transition-interactive), transform var(--transition-interactive);
+    }
+    .feedback-card-grid:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    /* Use case cards: consistent hover */
+    .popular-use-card { transition: box-shadow var(--transition-interactive), transform var(--transition-interactive); }
+    .popular-use-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+    /* Strength score: smooth reveal */
+    .strength-score:not([hidden]) { animation: pmgFadeUp 0.3s ease; }
+    @keyframes pmgFadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    /* Result box: never collapses to nothing */
+    .result-box { min-height: 120px; }
+
+    /* Guide me card: subtle, not promotional */
+    .guided-cta-row { border-color: var(--color-border) !important; }
+
+    /* Weekly focus: quieter */
+    .weekly-new-badge { animation: none !important; }
+
+    /* History panel head actions: wrap cleanly on mobile */
+    .panel-head-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+    .panel-head-actions .btn { font-size: var(--text-xs) !important; padding: 6px 12px !important; min-height: 36px !important; }
+
+    /* Improve block: cleaner spacing */
+    .improve-block { border-top: 1px solid var(--color-divider); padding-top: var(--space-4); margin-top: var(--space-4); }
+
+    /* Run section: visually distinct */
+    .run-section { background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface)); border-radius: var(--radius-lg); padding: var(--space-5); margin-top: var(--space-5); }
+    .run-section-title { font-size: var(--text-base); font-weight: 700; color: var(--color-primary); margin-bottom: var(--space-1); }
+
+    /* Mobile */
+    @media (max-width: 640px) {
+      .hero-actions { flex-direction: column; align-items: flex-start; gap: var(--space-2); }
+      .hero-actions .btn { width: 100%; text-align: center; }
+      .feedback-grid { grid-template-columns: 1fr; }
+      .panel-head-actions { justify-content: flex-start; }
+    }
+
+    /* Dark mode run section */
+    [data-theme="dark"] .run-section {
+      background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
+    }
+
+    /* ── End PMG Overhaul Polish ── */
+`;
+
+const lastStyleIdx = h.lastIndexOf('</style>', h.indexOf('</head>'));
+if (lastStyleIdx !== -1) {
+  h = h.slice(0, lastStyleIdx) + aestheticCss + h.slice(lastStyleIdx);
+  fixes.push('25. ✅  Comprehensive aesthetic CSS injected');
+} else {
+  fixes.push('25. ⚠️  Could not inject CSS — style block not found');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Write output
+// ─────────────────────────────────────────────────────────────────────────────
+fs.writeFileSync(FILE, h);
+
+console.log('\n── PromptMeGood Overhaul Complete ─────────────────────────────');
+fixes.forEach(f => console.log(' ' + f));
+console.log('\n Total fixes: ' + fixes.length);
+console.log(' File written: ' + FILE);
+console.log('────────────────────────────────────────────────────────────────');
+console.log('\n Next: redeploy your Replit app to see the changes live.');
+console.log(' Hard refresh on mobile: hold reload → "Reload Without Cache"\n');
