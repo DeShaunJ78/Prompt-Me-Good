@@ -3070,7 +3070,7 @@
           <figure class="feedback-card-grid">
             <blockquote class="feedback-quote">
               <span class="feedback-quote-mark" aria-hidden="true">&ldquo;</span>
-              Guide me walked me through everything in under two minutes. I didn&rsquo;t have to think about prompt structure at all.
+              Help Me Start walked me through everything in under two minutes. I didn&rsquo;t have to think about prompt structure at all.
             </blockquote>
             <figcaption class="feedback-attribution">&mdash; Marcus T. &middot; Small Business Owner</figcaption>
           </figure>
@@ -3160,12 +3160,12 @@
           <div class="form-wrap">
             <p class="build-cta-guidance" id="build-cta-guidance" role="status" aria-live="polite" hidden>
               <span class="build-cta-guidance-icon" aria-hidden="true">✨</span>
-              <span class="build-cta-guidance-text">Start with <strong>Guide me</strong> if you want PromptMeGood to set things up for you.</span>
+              <span class="build-cta-guidance-text">Start with <strong>Help Me Start</strong> if you want PromptMeGood to set things up for you.</span>
             </p>
             <div class="guided-cta-row" id="guided-cta-row">
               <div class="guided-cta-text">
                 <span class="guided-cta-recommended-badge"></span>
-                <strong>Guide me</strong>
+                <strong>Help Me Start</strong>
                 <span>Not sure how to start? Answer 4 short questions and we'll fill the builder for you.</span>
               </div>
               <button type="button" class="btn btn-primary" id="guided-mode-btn">Help Me Start</button>
@@ -3825,7 +3825,7 @@
     <dialog id="guided-mode-dialog" class="guided-dialog" aria-labelledby="guided-mode-title">
       <form method="dialog" class="guided-form" id="guided-mode-form">
         <header class="guided-head">
-          <h3 id="guided-mode-title">Guide me</h3>
+          <h3 id="guided-mode-title">Help Me Start</h3>
           <p>Answer a few quick questions. We'll fill the builder for you.</p>
         </header>
         <div class="guided-step" data-guided-step="0">
@@ -3867,9 +3867,11 @@
           <button type="button" class="legal-modal-close" data-legal-close aria-label="Close">&times;</button>
         </div>
         <div class="legal-modal-body legal-body">
-          <p>PromptMeGood is a single-page tool that runs primarily in your browser. Your prompts, history, templates, and preferences are stored locally on your device using your browser's localStorage. We do not maintain user accounts. When you use AI-powered features such as Generate Prompt, Run With AI, file analysis, or image generation, your submitted text or uploaded content may be sent securely to our AI service providers to process your request. We do not store your prompts on our servers beyond what is required to fulfill your request.</p>
-          <p>We use Microsoft Clarity to understand anonymous, aggregated usage patterns (such as which buttons are clicked) so we can improve the experience. Clarity does not capture the text of your prompts.</p>
-          <p>You can export, import, or clear your saved data at any time from the Prompt history section. Clearing your browser storage will remove everything PromptMeGood has saved on your device.</p>
+          <p><strong>What stays on your device.</strong> PromptMeGood is a single-page tool that runs primarily in your browser. Your prompts, history, templates, settings, and preferences are stored locally on your device using your browser's localStorage. We do not maintain user accounts and we do not have a copy of any of this on our servers.</p>
+          <p><strong>What gets sent to AI providers.</strong> When you use an AI-powered feature &mdash; <em>Generate Prompt</em>, <em>Run With AI</em>, <em>Upload File or Image</em>, or <em>Generate Image</em> &mdash; the text you typed and any file or image you uploaded is sent securely to our AI service providers (such as OpenAI) so they can process your request and return a response. We do not store this content on our servers beyond what is required to complete the request.</p>
+          <p><strong>What we never do.</strong> We do not sell your data. We do not share your prompts, files, or images with advertisers. We do not require you to create an account to use the app.</p>
+          <p><strong>Anonymous usage analytics.</strong> We use Microsoft Clarity to understand anonymous, aggregated usage patterns (such as which buttons are clicked) so we can improve the experience. Clarity does not capture the text of your prompts.</p>
+          <p><strong>You're in control.</strong> You can export, import, or clear your saved data at any time from the Prompt history section. Clearing your browser storage will remove everything PromptMeGood has saved on your device.</p>
           <p>Questions? Email <a class="site-footer-link" href="mailto:support@promptmegood.com">support@promptmegood.com</a>.</p>
         </div>
       </div>
@@ -7079,12 +7081,12 @@ Context:
           selector: '.hero-actions',
           fallbackSelector: '#hero-build-cta',
           title: 'Choose your starting path',
-          text: 'Start Here. Use Build A Prompt when you already have a task in mind, See Use Cases for ideas, or Guide me to answer a few questions and let us fill the builder.'
+          text: 'Start Here. Use Build A Prompt when you already have a task in mind, See Use Cases for ideas, or Help Me Start to answer a few questions and let us fill the builder.'
         },
         {
           selector: '#goal',
           title: 'Enter your goal',
-          text: "Type your goal in plain words, or use Guide me at the top of the builder to answer a few questions instead. As you type, we suggest the best category, tone, format, and length for you."
+          text: "Type your goal in plain words, or use Help Me Start at the top of the builder to answer a few questions instead. As you type, we suggest the best category, tone, format, and length for you."
         },
         {
           selector: '#auto-optimize-row',
@@ -7102,7 +7104,7 @@ Context:
           selector: '#tour-step-generate',
           fallbackSelector: '#prompt-form button[type="submit"]',
           title: 'Generate or demo',
-          text: 'Tap Generate prompt when you are ready. If you are not sure what to enter, hit Use demo values for a full guided walkthrough of the app.'
+          text: 'Tap Generate prompt when you are ready. If you are not sure what to enter, hit Try Demo for a full guided walkthrough of the app.'
         },
         {
           selector: '#tour-step-improve',
@@ -7122,7 +7124,7 @@ Context:
           selector: '#prompt-form',
           fallbackSelector: '#builder-panel',
           title: 'Step 1: Fill the builder',
-          text: "We added a sample goal and settings. As you type your own goal, smart suggestions appear automatically. You can also use Guide me to answer a few questions instead."
+          text: "We added a sample goal and settings. As you type your own goal, smart suggestions appear automatically. You can also use Help Me Start to answer a few questions instead."
         },
         {
           selector: '#tour-step-generate',
@@ -8032,7 +8034,7 @@ Context:
       }
       fillDemoBtn.addEventListener('click', function () {
         // Step 1: Immediate feedback — disable button, swap label, queue inline status.
-        const originalBtnLabel = 'Use demo values';
+        const originalBtnLabel = 'Try Demo';
         const demoLoadingEl = document.getElementById('demo-loading');
         const demoNextStepEl = document.getElementById('demo-next-step');
         const goalEl = document.getElementById('goal');
@@ -8732,7 +8734,7 @@ Context:
           titleEl.textContent = 'Need help getting started?';
           bodyEl.hidden = true;
           bodyEl.textContent = '';
-          actionsEl.appendChild(makeBtn('Guide me', 'primary', function () {
+          actionsEl.appendChild(makeBtn('Help Me Start', 'primary', function () {
             dismissAssist(true);
             clickById('guided-mode-btn');
           }));
@@ -8743,8 +8745,8 @@ Context:
         } else {
           titleEl.textContent = 'Still stuck?';
           bodyEl.hidden = false;
-          bodyEl.textContent = "Use Guide me for step-by-step setup, try a demo, explore Use Cases, or replay the tour.";
-          actionsEl.appendChild(makeBtn('Guide me', 'primary', function () {
+          bodyEl.textContent = "Use Help Me Start for step-by-step setup, try a demo, explore Use Cases, or replay the tour.";
+          actionsEl.appendChild(makeBtn('Help Me Start', 'primary', function () {
             dismissAssist(true);
             clickById('guided-mode-btn');
           }));
