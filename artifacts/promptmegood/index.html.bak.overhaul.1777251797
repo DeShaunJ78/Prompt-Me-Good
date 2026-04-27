@@ -1314,11 +1314,11 @@
     .history-item.is-compare-selected { outline: 2px solid var(--color-primary); outline-offset: 2px; }
     .compare-banner { display: none; padding: var(--space-3); margin-bottom: var(--space-3); border-radius: var(--radius-md); background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-primary); font-weight: 500; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
     .compare-banner.is-active { display: flex; }
-    .global-search { position: relative; flex: 1 1 240px; max-width: 360px; margin: 0 var(--space-3); display: flex; flex-direction: column; gap: 3px; }
-    .global-search-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); line-height: 1; }
-    .global-search input { width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); font-size: 14px; }
-    .global-search input:focus { outline: 2px solid var(--color-primary); outline-offset: 1px; }
-    .global-search-helper { font-size: 11px; color: var(--color-text-faint); line-height: 1.2; margin-top: 1px; }
+    .global-search { display: none; }
+    
+    
+    
+    
     .global-results { position: absolute; top: calc(100% + 6px); left: 0; right: 0; max-height: 360px; overflow: auto; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: 0 12px 32px rgba(0,0,0,0.18); z-index: 100; display: none; }
     .global-results.is-open { display: block; }
     .global-result { display: block; width: 100%; text-align: left; padding: 10px 12px; background: transparent; border: 0; border-bottom: 1px solid var(--color-border); cursor: pointer; color: var(--color-text); }
@@ -1335,7 +1335,7 @@
       .brand { flex: 1 1 auto; }
       .nav-toggle { display: inline-flex; flex: 0 0 auto; }
       .global-search { order: 3; flex-basis: 100%; max-width: none; margin: 10px 0 0; }
-      .global-search input { min-height: 44px; padding: 10px 14px; font-size: 16px; }
+      
       .top-actions {
         order: 4; flex-basis: 100%; flex-direction: column; align-items: stretch;
         gap: 10px; margin-top: 12px; padding: 14px;
@@ -2643,6 +2643,18 @@
     .weekly-new-badge { animation: none !important; }
     .weekly-goal-pin { margin-bottom: var(--space-3); }
 
+    
+    .hero-text-link {
+      display: inline-block;
+      margin-top: var(--space-3);
+      font-size: var(--text-sm);
+      color: var(--color-text-muted);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      transition: color var(--transition-interactive);
+    }
+    .hero-text-link:hover { color: var(--color-primary); }
+
     /* ── End PMG Aesthetic Polish ── */
 
     /* ── PMG v3 Polish ── */
@@ -2667,19 +2679,22 @@
     }
     /* ── End PMG v3 Polish ── */
 
-    /* ── PMG Safe Polish ── */
+    /* ── PMG Overhaul Polish ── */
 
-    /* Hero: comfortable breathing room */
+    /* Hero: generous breathing room */
     .hero { padding-top: clamp(3.5rem, 9vw, 6rem); padding-bottom: clamp(2rem, 5vw, 4rem); }
 
     /* Hero heading: tighter tracking for impact */
     .hero-heading { letter-spacing: -1px; }
 
-    /* Generate button: smooth state transitions */
-    #generateBtn { transition: opacity 180ms ease, background 180ms ease, transform 180ms ease; }
-    #generateBtn:disabled { opacity: 0.65; cursor: not-allowed; transform: none !important; }
+    /* Primary CTA: slightly more presence */
+    .btn-primary { letter-spacing: -0.01em; }
 
-    /* Result highlight: clean flash */
+    /* Generate button transitions */
+    #generateBtn { transition: opacity 180ms ease, background 180ms ease, transform 180ms ease; }
+    #generateBtn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+    /* Result panel: smoother highlight */
     @keyframes pmgHighlight {
       0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 0%, transparent); }
       25%  { box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 40%, transparent); }
@@ -2687,8 +2702,12 @@
     }
     .result-panel.is-highlight { animation: pmgHighlight 1s ease forwards; }
 
-    /* Testimonial cards: hover lift */
+    /* Testimonials: proper card treatment */
     .feedback-card-grid {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      background: var(--color-surface);
       transition: box-shadow var(--transition-interactive), transform var(--transition-interactive);
     }
     .feedback-card-grid:hover {
@@ -2696,46 +2715,35 @@
       transform: translateY(-2px);
     }
 
-    /* Use case cards: hover lift */
-    .popular-use-card {
-      transition: box-shadow var(--transition-interactive), transform var(--transition-interactive);
-    }
+    /* Use case cards: consistent hover */
+    .popular-use-card { transition: box-shadow var(--transition-interactive), transform var(--transition-interactive); }
     .popular-use-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 
     /* Strength score: smooth reveal */
     .strength-score:not([hidden]) { animation: pmgFadeUp 0.3s ease; }
     @keyframes pmgFadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-    /* Run section: visually distinct */
-    .run-section {
-      background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));
-      border-radius: var(--radius-lg);
-      padding: var(--space-5);
-      margin-top: var(--space-5);
-    }
-    .run-section-title {
-      color: var(--color-primary);
-    }
-    [data-theme="dark"] .run-section {
-      background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
-    }
+    /* Result box: never collapses to nothing */
+    .result-box { min-height: 120px; }
 
-    /* History panel actions: compact on mobile */
+    /* Guide me card: subtle, not promotional */
+    .guided-cta-row { border-color: var(--color-border) !important; }
+
+    /* Weekly focus: quieter */
+    .weekly-new-badge { animation: none !important; }
+
+    /* History panel head actions: wrap cleanly on mobile */
     .panel-head-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
-    .panel-head-actions .btn {
-      font-size: var(--text-xs) !important;
-      padding: 6px 12px !important;
-      min-height: 36px !important;
-    }
+    .panel-head-actions .btn { font-size: var(--text-xs) !important; padding: 6px 12px !important; min-height: 36px !important; }
 
-    /* Improve block: breathing room */
-    .improve-block {
-      border-top: 1px solid var(--color-divider);
-      padding-top: var(--space-4);
-      margin-top: var(--space-4);
-    }
+    /* Improve block: cleaner spacing */
+    .improve-block { border-top: 1px solid var(--color-divider); padding-top: var(--space-4); margin-top: var(--space-4); }
 
-    /* Mobile full-width CTAs */
+    /* Run section: visually distinct */
+    .run-section { background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface)); border-radius: var(--radius-lg); padding: var(--space-5); margin-top: var(--space-5); }
+    .run-section-title { font-size: var(--text-base); font-weight: 700; color: var(--color-primary); margin-bottom: var(--space-1); }
+
+    /* Mobile */
     @media (max-width: 640px) {
       .hero-actions { flex-direction: column; align-items: flex-start; gap: var(--space-2); }
       .hero-actions .btn { width: 100%; text-align: center; }
@@ -2743,7 +2751,12 @@
       .panel-head-actions { justify-content: flex-start; }
     }
 
-    /* ── End PMG Safe Polish ── */
+    /* Dark mode run section */
+    [data-theme="dark"] .run-section {
+      background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
+    }
+
+    /* ── End PMG Overhaul Polish ── */
 </style>
 </head>
 <body>
@@ -2814,13 +2827,11 @@
     <section class="hero" id="top">
       <div class="container hero-grid">
         <div>
-          <div class="eyebrow">AI Prompt Engine</div>
-          <h1 class="hero-heading">Stop getting <span class="highlight">weak answers</span><br>from AI</h1>
+                    <h1 class="hero-heading">Stop getting <span class="highlight">weak answers</span><br>from AI</h1>
           <div class="hero-subtext-box">
             <p class="hero-subtext">Your AI answers are only as good as your questions. PromptMeGood structures your goal into a prompt that gets <strong>real results</strong> — in seconds.</p>
           </div>
-          <p class="trust-line">A structured prompt builder that tells AI exactly what to do — and how to say it.</p>
-          <p id="usageCounter" class="usage-counter" style="display:none;" aria-live="polite">
+                    <p id="usageCounter" class="usage-counter" style="display:none;" aria-live="polite">
             <span id="usageCount">0</span>+ prompts generated
           </p>
           <div class="hero-actions">
@@ -2828,14 +2839,10 @@
               <span class="cta-title">Build a prompt</span>
               <span class="cta-sub">start here</span>
             </a>
-            <a class="btn btn-secondary btn-stacked" href="#use-cases" id="hero-usecases-cta">
-              <span class="cta-title">See use cases</span>
-              <span class="cta-sub">or explore use cases</span>
-            </a>
+            <a class="hero-text-link" href="#use-cases" id="hero-usecases-cta">or explore use cases →</a>
           </div>
         </div>
         <aside class="hero-card" aria-labelledby="hero-card-title">
-          <span class="hero-card-badge"><span class="hero-card-badge-dot" aria-hidden="true"></span>Why It Matters</span>
           <h2 class="hero-card-title" id="hero-card-title">Build better prompts for ChatGPT, Claude, and any AI tool</h2>
           <ul class="hero-list">
             <li><span>1</span><span>Turns vague problems into <strong>sharper instructions</strong> AI can actually use.</span></li>
@@ -2959,7 +2966,7 @@
           <div class="panel-head panel-head-row">
             <div>
               <h2 id="builder-title">Build your prompt</h2>
-              <p class="builder-transition">Describe what you want. We'll build the prompt.</p>
+              <p class="builder-transition">Describe what you need. We'll build the prompt.</p>
             </div>
             <div class="builder-head-actions">
               <span class="expert-mode-badge" id="expert-mode-badge" hidden>Expert mode active</span>
@@ -2981,13 +2988,8 @@
             </div>
           </div>
           <div class="form-wrap">
-            <p class="build-cta-guidance" id="build-cta-guidance" role="status" aria-live="polite" hidden>
-              <span class="build-cta-guidance-icon" aria-hidden="true">✨</span>
-              <span class="build-cta-guidance-text">Start with <strong>Guide me</strong> if you want PromptMeGood to set things up for you.</span>
-            </p>
-            <div class="guided-cta-row" id="guided-cta-row">
+                        <div class="guided-cta-row" id="guided-cta-row">
               <div class="guided-cta-text">
-                <span class="guided-cta-recommended-badge">Recommended First Step</span>
                 <strong>Guide me</strong>
                 <span>Not sure how to start? Answer 4 short questions and we'll fill the builder for you.</span>
               </div>
@@ -3023,10 +3025,7 @@
                   <button type="button" class="btn-clear" id="clear-goal-btn" aria-label="Clear goal" data-clear-target="goal">Clear</button>
                 </div>
                 <textarea id="goal" name="goal" rows="3" placeholder="I need to make money online fast using skills I already have…" aria-required="true"></textarea>
-                <p class="helper">
-                  Describe what you want the AI to help you do.<br />
-                  Example: &ldquo;I need to make money online fast&rdquo; or &ldquo;Help me find a winning product&rdquo;
-                </p>
+                
               </div>
 
               <div class="post-uc-guidance" id="post-uc-guidance" role="status" aria-live="polite">
@@ -3044,12 +3043,8 @@
                 </div>
                 <button class="btn btn-secondary" type="button" id="random-prompt" title="Surprise me with a random prompt">🎲 Random prompt</button>
               </div>
-              <p class="tip-block generate-helper-tip" data-tip="generate">
-                <span class="tip-block-icon" aria-hidden="true">🚀</span>
-                <span class="tip-block-text">Ready? Generate your prompt, then review and copy it.</span>
-                <button type="button" class="tip-block-dismiss" data-action="dismiss-tips" aria-label="Hide all tips">Hide Tip</button>
-              </p>
-              <p class="demo-helper">Not sure where to start? <button type="button" class="link-btn demo-helper-link" id="demo-helper-link">See it in action.</button> <button type="button" class="guidance-show-link" id="guidance-show-link" data-action="show-tips">Show tips</button></p>
+              
+              
 
               <details id="settingsPanel" class="settings-panel">
                 <summary class="settings-panel-summary">
@@ -3260,11 +3255,7 @@
             <p class="demo-next-step" id="demo-next-step" role="status" aria-live="polite" hidden>This is a sample prompt. Copy it, refine it, or go back and enter your own goal.</p>
           </div>
           <div class="result-wrap">
-            <div class="pill-row" aria-hidden="true">
-              <span class="pill">Role assignment</span>
-              <span class="pill">Clear constraints</span>
-              <span class="pill">Useful output format</span>
-            </div>
+            
             <div id="pinned-note" class="pinned-note" aria-live="polite">
               <div class="pinned-note-head">
                 <span>📌 Pinned note</span>
@@ -3279,8 +3270,7 @@
             </div>
             <div class="improve-block" id="improve-block">
               <div id="tour-step-improve">
-                <span class="improve-eyebrow">Refine your prompt instantly</span>
-                <p class="improve-helper">Tap an option to instantly upgrade your result.</p>
+                
                 <div class="actions-row">
                   <button class="btn btn-ai" type="button" id="improve-with-ai-btn" aria-describedby="improve-with-ai-hint">
                     <span class="btn-ai-spark" aria-hidden="true">✨</span>
@@ -3309,7 +3299,7 @@
               </div>
               <span class="improve-status" id="improve-status" aria-live="polite" hidden>Updating…</span>
             </div>
-            <p class="result-helper" data-tip="result-copy">Looks good? Copy this prompt and paste it into ChatGPT, Claude, Perplexity, Gemini, or another AI tool.</p>
+            
             <div id="tour-final-actions" class="tour-final-actions">
             <div class="strength-score" id="strength-score" role="status" aria-live="polite" hidden>
               <div class="strength-score-head">
@@ -3384,11 +3374,9 @@
               </div>
             </div>
             </div>
-            <p style="margin: var(--space-3) 0 0; font-size: var(--text-xs); color: var(--color-text-muted);">
-              Shortcuts: press <kbd>G</kbd> to generate, <kbd>C</kbd> to copy, <kbd>/</kbd> to search history.
-            </p>
+            
           </div>
-          <p class="early-access-note">Early access &mdash; All features are unlocked for now. Some advanced tools may become Pro features later.</p>
+          
         </section>
       </div>
     </section>

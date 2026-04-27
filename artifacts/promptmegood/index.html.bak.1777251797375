@@ -2666,84 +2666,6 @@
       .hero-actions .btn { width: 100%; text-align: center; }
     }
     /* ── End PMG v3 Polish ── */
-
-    /* ── PMG Safe Polish ── */
-
-    /* Hero: comfortable breathing room */
-    .hero { padding-top: clamp(3.5rem, 9vw, 6rem); padding-bottom: clamp(2rem, 5vw, 4rem); }
-
-    /* Hero heading: tighter tracking for impact */
-    .hero-heading { letter-spacing: -1px; }
-
-    /* Generate button: smooth state transitions */
-    #generateBtn { transition: opacity 180ms ease, background 180ms ease, transform 180ms ease; }
-    #generateBtn:disabled { opacity: 0.65; cursor: not-allowed; transform: none !important; }
-
-    /* Result highlight: clean flash */
-    @keyframes pmgHighlight {
-      0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 0%, transparent); }
-      25%  { box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 40%, transparent); }
-      100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 0%, transparent); }
-    }
-    .result-panel.is-highlight { animation: pmgHighlight 1s ease forwards; }
-
-    /* Testimonial cards: hover lift */
-    .feedback-card-grid {
-      transition: box-shadow var(--transition-interactive), transform var(--transition-interactive);
-    }
-    .feedback-card-grid:hover {
-      box-shadow: var(--shadow-md);
-      transform: translateY(-2px);
-    }
-
-    /* Use case cards: hover lift */
-    .popular-use-card {
-      transition: box-shadow var(--transition-interactive), transform var(--transition-interactive);
-    }
-    .popular-use-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-
-    /* Strength score: smooth reveal */
-    .strength-score:not([hidden]) { animation: pmgFadeUp 0.3s ease; }
-    @keyframes pmgFadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-
-    /* Run section: visually distinct */
-    .run-section {
-      background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));
-      border-radius: var(--radius-lg);
-      padding: var(--space-5);
-      margin-top: var(--space-5);
-    }
-    .run-section-title {
-      color: var(--color-primary);
-    }
-    [data-theme="dark"] .run-section {
-      background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));
-    }
-
-    /* History panel actions: compact on mobile */
-    .panel-head-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
-    .panel-head-actions .btn {
-      font-size: var(--text-xs) !important;
-      padding: 6px 12px !important;
-      min-height: 36px !important;
-    }
-
-    /* Improve block: breathing room */
-    .improve-block {
-      border-top: 1px solid var(--color-divider);
-      padding-top: var(--space-4);
-      margin-top: var(--space-4);
-    }
-
-    /* Mobile full-width CTAs */
-    @media (max-width: 640px) {
-      .hero-actions { flex-direction: column; align-items: flex-start; gap: var(--space-2); }
-      .hero-actions .btn { width: 100%; text-align: center; }
-      .feedback-grid { grid-template-columns: 1fr; }
-      .panel-head-actions { justify-content: flex-start; }
-    }
-
-    /* ── End PMG Safe Polish ── */
 </style>
 </head>
 <body>
@@ -2815,7 +2737,7 @@
       <div class="container hero-grid">
         <div>
           <div class="eyebrow">AI Prompt Engine</div>
-          <h1 class="hero-heading">Stop getting <span class="highlight">weak answers</span><br>from AI</h1>
+          <h1 class="hero-heading">AI <span class="highlight">Prompt Generator</span><br>That Actually Gets Results</h1>
           <div class="hero-subtext-box">
             <p class="hero-subtext">Your AI answers are only as good as your questions. PromptMeGood structures your goal into a prompt that gets <strong>real results</strong> — in seconds.</p>
           </div>
@@ -2938,7 +2860,7 @@
           <figure class="feedback-card-grid">
             <blockquote class="feedback-quote">
               <span class="feedback-quote-mark" aria-hidden="true">&ldquo;</span>
-              Guide Me walked me through everything in under two minutes. I didn&rsquo;t have to think about prompt structure at all.
+              Guide me walked me through everything in under two minutes. I didn&rsquo;t have to think about prompt structure at all.
             </blockquote>
             <figcaption class="feedback-attribution">&mdash; Marcus T. &middot; Small Business Owner</figcaption>
           </figure>
@@ -2959,7 +2881,7 @@
           <div class="panel-head panel-head-row">
             <div>
               <h2 id="builder-title">Build your prompt</h2>
-              <p class="builder-transition">Describe what you want. We'll build the prompt.</p>
+              <p class="builder-transition">Fill in your goal below — the more specific, the better. Hit Generate and get a prompt you can use instantly.</p>
             </div>
             <div class="builder-head-actions">
               <span class="expert-mode-badge" id="expert-mode-badge" hidden>Expert mode active</span>
@@ -3019,7 +2941,7 @@
               </div>
               <div class="field field-primary">
                 <div class="field-label-row">
-                  <label for="goal">Your goal</label>
+                  <label for="goal">Your Goal (Start Here)</label>
                   <button type="button" class="btn-clear" id="clear-goal-btn" aria-label="Clear goal" data-clear-target="goal">Clear</button>
                 </div>
                 <textarea id="goal" name="goal" rows="3" placeholder="I need to make money online fast using skills I already have…" aria-required="true"></textarea>
@@ -3255,8 +3177,8 @@
 
         <section class="panel" id="result-panel" aria-labelledby="result-title">
           <div class="panel-head">
-            <h2 id="result-title">Your prompt is ready</h2>
-            <p>Copy it and paste into ChatGPT, Claude, Perplexity, or any AI tool — or run it right here.</p>
+            <h2 id="result-title">Your ready-to-use prompt</h2>
+            <p>Copy this and paste it into ChatGPT, Claude, Perplexity, Google, or any AI/search tool.</p>
             <p class="demo-next-step" id="demo-next-step" role="status" aria-live="polite" hidden>This is a sample prompt. Copy it, refine it, or go back and enter your own goal.</p>
           </div>
           <div class="result-wrap">
@@ -3339,8 +3261,8 @@
             <!-- RUN WITH AI — hidden until a prompt is generated -->
             <div class="run-section" id="runSection" hidden>
               <div class="run-section-divider"></div>
-              <h3 class="run-section-title">Run it</h3>
-              <p class="run-section-helper">Execute this prompt and get your AI response — right here.</p>
+              <h3 class="run-section-title">Run This Prompt With AI</h3>
+              <p class="run-section-helper">Your prompt is ready. Review it above, edit if needed, then run it here.</p>
               <button class="btn btn-primary run-btn" type="button" id="runBtn" onclick="runWithAI()">
                 <span aria-hidden="true">▶</span> Run With AI
               </button>
@@ -3403,8 +3325,8 @@
                 <p>This is what you entered to generate your prompt.</p>
               </div>
               <div class="panel-head-actions">
-                <button class="btn btn-secondary" type="button" id="export-everything" title="Download all your data as a JSON backup">Export all</button>
-                <button class="btn btn-secondary" type="button" id="import-everything" title="Restore from a JSON backup">Import</button>
+                <button class="btn btn-secondary" type="button" id="export-everything" title="Download all your data as a JSON backup">Export everything</button>
+                <button class="btn btn-secondary" type="button" id="import-everything" title="Restore from a JSON backup">Import backup</button>
                 <input type="file" id="import-everything-file" accept="application/json,.json" style="display:none" />
               </div>
             </div>
@@ -3448,13 +3370,13 @@
                 <p>Your last 25 generated prompts are saved on this device. Restore one to copy or remix it again.</p>
               </div>
               <div class="panel-head-actions">
-                <button class="btn btn-secondary" type="button" id="toggle-archived" aria-pressed="false">Archived</button>
-                <button class="btn btn-secondary" type="button" id="compare-two" aria-pressed="false">Compare</button>
+                <button class="btn btn-secondary" type="button" id="toggle-archived" aria-pressed="false">Show archived</button>
+                <button class="btn btn-secondary" type="button" id="compare-two" aria-pressed="false">Compare two</button>
                 <button class="btn btn-secondary" type="button" id="export-history">Export</button>
                 <button class="btn btn-secondary" type="button" id="import-history">Import</button>
                 <button class="btn btn-secondary" type="button" id="open-backup">🔑 Backup / restore</button>
-                <button class="btn btn-secondary" type="button" id="collapse-all-history">Collapse</button>
-                <button class="btn btn-secondary" type="button" id="clear-history">Clear all</button>
+                <button class="btn btn-secondary" type="button" id="collapse-all-history">Collapse all</button>
+                <button class="btn btn-secondary" type="button" id="clear-history">Clear all history</button>
                 <input type="file" id="import-history-file" accept="application/json,.json" style="display:none" />
               </div>
             </div>
@@ -3481,7 +3403,7 @@
     <section class="app-section" id="manual">
       <div class="container">
         <div class="panel manual-panel">
-          <details class="quick-start-card" id="quick-start-card">
+          <details class="quick-start-card" id="quick-start-card" open>
             <summary class="quick-start-summary">
               <span class="quick-start-icon" aria-hidden="true">⚡</span>
               <span class="quick-start-text">
