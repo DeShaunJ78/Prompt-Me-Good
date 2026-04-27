@@ -1,6 +1,8 @@
-import { Router, type IRouter, type Request, type Response } from "express";
+import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import multer from "multer";
+import { PDFParse } from "pdf-parse";
 import { openai } from "../lib/openai-client";
 import { logger } from "../lib/logger";
 import { clampString, sanitizeGoal } from "../middlewares/sanitize";
@@ -671,6 +673,164 @@ router.post("/image-prompt", rateLimit, async (req, res) => {
       .json({ ok: false, error: "AI service is unavailable. Try again." });
   }
 });
+
+/* ============================================================================
+ * /api/analyze — file + image upload analysis
+ * Accepts multipart/form-data with `prompt` (text goal) and optional `file`
+ * (PDF, JPG, or PNG, ≤10MB). PDFs are parsed for text; images go to the
+ * vision model. Files are processed in-memory and discarded after the call.
+ * ============================================================================ */
+const ANALYZE_MAX_BYTES = 10 * 1024 * 1024;
+const ANALYZE_MAX_TEXT_CHARS = 12000;
+const ANALYZE_MAX_GOAL_CHARS = 4000;
+const ANALYZE_MAX_OUTPUT_TOKENS = 1500;
+const ANALYZE_VISION_MODEL = "gpt-4o";
+const ALLOWED_ANALYZE_MIMES = new Set([
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+]);
+
+const analyzeUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: ANALYZE_MAX_BYTES, files: 1 },
+  fileFilter: (_req, file, cb) => {
+    if (ALLOWED_ANALYZE_MIMES.has(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("INVALID_MIMETYPE"));
+    }
+  },
+});
+
+function handleAnalyzeUpload(req: Request, res: Response, next: NextFunction): void {
+  analyzeUpload.single("file")(req, res, (err: unknown) => {
+    if (!err) {
+      next();
+      return;
+    }
+    const e = err as { code?: string; message?: string };
+    if (e?.code === "LIMIT_FILE_SIZE") {
+      res.status(400).json({ success: false, ok: false, error: "File too large. Maximum size is 10MB." });
+      return;
+    }
+    if (e?.message === "INVALID_MIMETYPE") {
+      res.status(400).json({ success: false, ok: false, error: "Unsupported file type. Use PDF, JPG, or PNG." });
+      return;
+    }
+    logger.warn({ err: e?.message }, "analyze upload failed");
+    res.status(400).json({ success: false, ok: false, error: "Upload failed. Please try a different file." });
+  });
+}
+
+router.post(
+  "/analyze",
+  runLimiter,
+  handleAnalyzeUpload,
+  runCostCheck,
+  async (req: Request, res: Response) => {
+    const file = (req as Request & { file?: Express.Multer.File }).file;
+    const goalRaw = typeof req.body?.prompt === "string" ? req.body.prompt : "";
+    const goal = clampString(goalRaw, ANALYZE_MAX_GOAL_CHARS);
+
+    if (!goal && !file) {
+      res.status(400).json({ success: false, ok: false, error: "Provide a goal or attach a file." });
+      return;
+    }
+
+    if (goal) {
+      const sanitized = sanitizeGoal(goal);
+      if (!sanitized.ok) {
+        res.status(sanitized.status).json({ success: false, ok: false, error: sanitized.error });
+        return;
+      }
+    }
+
+    let extractedText = "";
+    let isImage = false;
+
+    if (file) {
+      try {
+        if (file.mimetype === "application/pdf") {
+          const parser = new PDFParse({ data: new Uint8Array(file.buffer) });
+          const result = await parser.getText();
+          extractedText = (result?.text ?? "").slice(0, ANALYZE_MAX_TEXT_CHARS).trim();
+          if (!extractedText) {
+            res.status(400).json({
+              success: false,
+              ok: false,
+              error: "Could not extract text from this PDF. Try a different file.",
+            });
+            return;
+          }
+        } else if (file.mimetype === "image/jpeg" || file.mimetype === "image/png") {
+          isImage = true;
+        }
+      } catch (err) {
+        logger.error({ err: err instanceof Error ? err.message : "unknown" }, "analyze extract failed");
+        res.status(400).json({
+          success: false,
+          ok: false,
+          error: "Could not read this file. Please try another.",
+        });
+        return;
+      }
+    }
+
+    const userGoal = goal || (isImage ? "Describe this image and suggest how I could use it." : "Summarize this document.");
+
+    const messages: Array<Record<string, unknown>> = [
+      {
+        role: "system",
+        content:
+          "You are PromptMeGood's AI analysis engine. Read the user's goal and any attached reference (text or image) and produce a clear, practical, well-structured response that helps them accomplish their goal. Use plain language. Be specific.",
+      },
+    ];
+
+    if (isImage && file) {
+      const dataUrl = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+      messages.push({
+        role: "user",
+        content: [
+          { type: "text", text: userGoal },
+          { type: "image_url", image_url: { url: dataUrl } },
+        ],
+      });
+    } else if (extractedText) {
+      messages.push({
+        role: "user",
+        content: `Goal: ${userGoal}\n\nReference document (${file?.originalname ?? "uploaded file"}):\n\n${extractedText}`,
+      });
+    } else {
+      messages.push({ role: "user", content: userGoal });
+    }
+
+    try {
+      const completion = await openai.chat.completions.create({
+        model: ANALYZE_VISION_MODEL,
+        max_completion_tokens: ANALYZE_MAX_OUTPUT_TOKENS,
+        messages: messages as never,
+      });
+
+      const responseText = completion.choices[0]?.message?.content?.trim() ?? "";
+      if (!responseText) {
+        res.status(502).json({ success: false, ok: false, error: "AI returned an empty response. Please try again." });
+        return;
+      }
+
+      bumpRunCount();
+
+      const promptDescription = file
+        ? `${userGoal} — with attachment: ${file.originalname}`
+        : userGoal;
+
+      res.json({ success: true, ok: true, prompt: promptDescription, response: responseText });
+    } catch (err) {
+      logger.error({ err: err instanceof Error ? err.message : "unknown" }, "analyze completion failed");
+      res.status(502).json({ success: false, ok: false, error: "AI service is unavailable. Try again." });
+    }
+  },
+);
 
 export { IMAGE_MODEL };
 export default router;

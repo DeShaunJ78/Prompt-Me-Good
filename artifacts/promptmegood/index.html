@@ -2688,7 +2688,108 @@
     .image-result-wrap img{display:block;width:100%;height:auto;border-radius:var(--radius-lg)}
     .image-spinner{width:36px;height:36px;border:3px solid var(--color-border);border-top-color:var(--color-primary);border-radius:50%;animation:imgSpin .8s linear infinite;margin:0 auto 1rem}
     @keyframes imgSpin{to{transform:rotate(360deg)}}
-    /* ── End Mode Switch ── */</style>
+    /* ── End Mode Switch ── */
+
+    /* ── File / Image Upload ── */
+    .upload-field {
+      margin-top: 16px;
+      padding: 16px;
+      border: 1px dashed var(--color-border, #d4d4d8);
+      border-radius: 12px;
+      background: var(--color-surface-alt, rgba(0, 0, 0, 0.02));
+    }
+    .upload-field .upload-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .upload-helper {
+      margin: 0 0 12px 0;
+      font-size: 0.875rem;
+      color: var(--color-text-muted, #6b7280);
+    }
+    .upload-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .upload-input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    .upload-btn {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .upload-hint {
+      font-size: 0.875rem;
+      color: var(--color-text-muted, #6b7280);
+    }
+    .upload-preview {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: var(--color-bg, #fff);
+      border: 1px solid var(--color-border, #e5e7eb);
+      border-radius: 8px;
+    }
+    .upload-preview-img {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid var(--color-border, #e5e7eb);
+      flex-shrink: 0;
+    }
+    .upload-preview-meta {
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .upload-preview-name {
+      font-weight: 500;
+      font-size: 0.9375rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .upload-preview-size {
+      font-size: 0.8125rem;
+      color: var(--color-text-muted, #6b7280);
+    }
+    .upload-remove-btn {
+      flex-shrink: 0;
+    }
+    .upload-analyze-btn {
+      margin-top: 12px;
+    }
+    .upload-status {
+      margin: 10px 0 0 0;
+      font-size: 0.875rem;
+      color: var(--color-text-muted, #6b7280);
+    }
+    .upload-status.error {
+      color: #b91c1c;
+    }
+    @media (max-width: 640px) {
+      .upload-controls { gap: 8px; }
+      .upload-analyze-btn { width: 100%; }
+    }
+    /* ── End Upload ── */</style>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -2977,6 +3078,26 @@
                   Describe what you want the AI to help you do.<br />
                   Example: &ldquo;I need to make money online fast&rdquo; or &ldquo;Help me find a winning product&rdquo;
                 </p>
+              </div>
+
+              <div class="field upload-field" id="upload-field">
+                <label for="analyze-file" class="upload-label">Upload A File Or Image (Optional)</label>
+                <p class="helper upload-helper">PDF, JPG, or PNG &mdash; up to 10MB. We'll read the file and use it to write a better response.</p>
+                <div class="upload-controls">
+                  <input type="file" id="analyze-file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" class="upload-input" />
+                  <label for="analyze-file" class="btn btn-secondary upload-btn" id="upload-btn-label">Choose File</label>
+                  <span class="upload-hint" id="upload-hint">No file chosen</span>
+                </div>
+                <div class="upload-preview" id="upload-preview" hidden>
+                  <img id="upload-preview-img" class="upload-preview-img" alt="Selected image preview" hidden />
+                  <div class="upload-preview-meta">
+                    <span class="upload-preview-name" id="upload-preview-name"></span>
+                    <span class="upload-preview-size" id="upload-preview-size"></span>
+                  </div>
+                  <button type="button" class="btn-clear upload-remove-btn" id="upload-remove-btn" aria-label="Remove file">Remove</button>
+                </div>
+                <button type="button" class="btn btn-primary upload-analyze-btn" id="upload-analyze-btn" hidden>Analyze My File</button>
+                <p class="upload-status" id="upload-status" role="status" aria-live="polite" hidden></p>
               </div>
 
               <div class="post-uc-guidance" id="post-uc-guidance" role="status" aria-live="polite">
@@ -9163,6 +9284,135 @@ Context:
     finally{if(btn){btn.disabled=false;btn.innerHTML='🎨 Generate Image'}}
   };
   window.generateImage=window.runImageGeneration;
+})();
+</script>
+
+<!-- ===== File / Image Upload + /api/analyze handler ===== -->
+<script>
+(function(){
+  var input = document.getElementById('analyze-file');
+  if (!input) return;
+  var hint = document.getElementById('upload-hint');
+  var preview = document.getElementById('upload-preview');
+  var previewImg = document.getElementById('upload-preview-img');
+  var previewName = document.getElementById('upload-preview-name');
+  var previewSize = document.getElementById('upload-preview-size');
+  var removeBtn = document.getElementById('upload-remove-btn');
+  var analyzeBtn = document.getElementById('upload-analyze-btn');
+  var statusEl = document.getElementById('upload-status');
+  var btnLabel = document.getElementById('upload-btn-label');
+
+  var ALLOWED = ['application/pdf','image/jpeg','image/png'];
+  var MAX_BYTES = 10 * 1024 * 1024;
+  var currentObjectUrl = null;
+
+  function fmtBytes(n){
+    if (n < 1024) return n + ' B';
+    if (n < 1024*1024) return Math.round(n/1024) + ' KB';
+    return (n/1024/1024).toFixed(1) + ' MB';
+  }
+  function setStatus(msg, isError){
+    if (!statusEl) return;
+    if (!msg){ statusEl.hidden = true; statusEl.textContent = ''; statusEl.classList.remove('error'); return; }
+    statusEl.hidden = false;
+    statusEl.textContent = msg;
+    statusEl.classList.toggle('error', !!isError);
+  }
+  function clearFile(){
+    input.value = '';
+    if (currentObjectUrl){ URL.revokeObjectURL(currentObjectUrl); currentObjectUrl = null; }
+    if (preview) preview.hidden = true;
+    if (previewImg){ previewImg.hidden = true; previewImg.removeAttribute('src'); }
+    if (previewName) previewName.textContent = '';
+    if (previewSize) previewSize.textContent = '';
+    if (analyzeBtn) analyzeBtn.hidden = true;
+    if (hint) hint.textContent = 'No file chosen';
+    if (btnLabel) btnLabel.textContent = 'Choose File';
+    setStatus('');
+  }
+  if (removeBtn) removeBtn.addEventListener('click', clearFile);
+
+  input.addEventListener('change', function(){
+    var file = input.files && input.files[0];
+    if (!file) { clearFile(); return; }
+    if (ALLOWED.indexOf(file.type) === -1) {
+      setStatus('Unsupported file type. Use PDF, JPG, or PNG.', true);
+      clearFile();
+      return;
+    }
+    if (file.size > MAX_BYTES) {
+      setStatus('File too large. Maximum is 10MB.', true);
+      clearFile();
+      return;
+    }
+    setStatus('');
+    if (hint) hint.textContent = '';
+    if (btnLabel) btnLabel.textContent = 'Change File';
+    if (preview) preview.hidden = false;
+    if (previewName) previewName.textContent = file.name;
+    if (previewSize) previewSize.textContent = fmtBytes(file.size);
+    if (analyzeBtn) analyzeBtn.hidden = false;
+    if (file.type === 'image/jpeg' || file.type === 'image/png') {
+      if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
+      currentObjectUrl = URL.createObjectURL(file);
+      if (previewImg){ previewImg.src = currentObjectUrl; previewImg.hidden = false; }
+    } else {
+      if (previewImg){ previewImg.hidden = true; previewImg.removeAttribute('src'); }
+    }
+  });
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+    });
+  }
+  function renderResponse(text){
+    var section = document.getElementById('aiResponseSection');
+    var output = document.getElementById('aiResponseOutput');
+    if (section) section.hidden = false;
+    if (output) {
+      output.innerHTML = '<div class="ai-response-content">' + escapeHtml(text).replace(/\n/g,'<br>') + '</div>';
+      try { output.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e){}
+    } else if (typeof window.showToast === 'function') {
+      window.showToast('Analysis ready (no output container found).');
+    }
+  }
+
+  if (analyzeBtn) {
+    analyzeBtn.addEventListener('click', async function(){
+      var file = input.files && input.files[0];
+      if (!file) { setStatus('Pick a file first.', true); return; }
+      var goalEl = document.getElementById('goal');
+      var goal = (goalEl && goalEl.value || '').trim();
+
+      var fd = new FormData();
+      fd.append('prompt', goal);
+      fd.append('file', file);
+
+      analyzeBtn.disabled = true;
+      var originalLabel = analyzeBtn.textContent;
+      analyzeBtn.textContent = 'Analyzing…';
+      setStatus('Reading your file and asking the AI…');
+
+      try {
+        var res = await fetch('/api/analyze', { method: 'POST', body: fd });
+        var data = null;
+        try { data = await res.json(); } catch(e) {}
+        if (!res.ok || !data || !data.success) {
+          var msg = (data && data.error) ? data.error : 'Analysis failed. Please try again.';
+          setStatus(msg, true);
+          return;
+        }
+        setStatus('Done.');
+        renderResponse(data.response);
+      } catch (err) {
+        setStatus('Network error. Please try again.', true);
+      } finally {
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = originalLabel;
+      }
+    });
+  }
 })();
 </script>
 </body>
