@@ -3843,7 +3843,7 @@
 
     <footer class="site-footer" id="site-footer">
       <div class="container site-footer-inner">
-        <p class="site-footer-tagline" style="font-weight:600;color:var(--color-text);margin:0 0 8px 0;">AI That Finally Does What You Ask. PromptMeGood Fixes That In Seconds.</p>
+        <p class="site-footer-tagline" style="font-weight:600;color:var(--color-text);margin:0 0 8px 0;">Stop Getting Weak AI Answers. PromptMeGood Fixes That In Seconds.</p>
         <div class="site-footer-brand">&copy; 2026 PromptMeGood</div>
         <p class="site-footer-tagline">Built for people who want real results from AI &mdash; not fluff.</p>
         <p class="site-footer-early-access">PromptMeGood Is Free During Our Founding Member Period. Full Pricing Launches Soon.</p>
