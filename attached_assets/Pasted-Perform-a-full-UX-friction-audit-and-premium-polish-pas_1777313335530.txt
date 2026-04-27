@@ -1,0 +1,170 @@
+Perform a full UX friction audit and premium polish pass on PromptMeGood. Do not remove current features. Do not break backend/API/AI functionality. Improve clarity, flow, trust, and visual polish.
+
+CORE GOAL:
+Make the app feel like the best product in its niche for users who want better AI results.
+
+PRIMARY USER:
+Everyday users who want AI to understand what they mean and give better answers.
+
+IMPORTANT STYLE RULE:
+Use Title Case for:
+- Buttons
+- Section titles
+- Card titles
+- Feature labels
+- Short subtitles
+- Badges
+- Navigation items
+- Modal titles
+- Tour titles
+- CTA text
+
+Example:
+“generate prompt” → “Generate Prompt”
+“run with ai” → “Run With AI”
+“help me start” → “Help Me Start”
+“see use cases” → “See Use Cases”
+“what next?” → “What Next?”
+
+Do NOT force Title Case on:
+- Long body paragraphs
+- Privacy Policy paragraphs
+- Terms paragraphs
+- Help/manual explanations
+- Error messages if they read better naturally
+
+AUDIT FOR NEW USER FRICTION:
+Inspect the entire site and identify anything that makes a first-time user hesitate, including:
+- unclear buttons
+- buried primary actions
+- too many choices before first generation
+- outdated messaging
+- duplicated helper text
+- confusing labels
+- weak feedback after clicks
+- broken visual hierarchy
+- mobile/desktop layout issues
+- dead-click-looking elements
+- features that appear without explanation
+
+FLOW STANDARD:
+A new user should understand this in under 10 seconds:
+1. Type what they want
+2. Generate a better prompt
+3. Run it with AI or copy it anywhere
+4. Refine if needed
+
+PRESERVE ALL FEATURES:
+- Generate Prompt
+- Run With AI
+- Optimized Prompt section
+- AI Response section
+- Upload file/image
+- Generate Image if present
+- Help Me Start
+- Use Demo Values
+- Use Cases
+- Dice idea generator
+- More Control
+- Expert Mode
+- Advanced Options
+- Prompt Strength
+- Check Prompt Quality
+- Refine / Fine-Tune / Undo
+- Prompt History
+- Early Access form
+- Pricing
+- Privacy Policy
+- Terms
+- Backend/API routes
+- Usage/cost controls
+
+PREMIUM POLISH REQUIREMENTS:
+1. Make the primary action obvious:
+- Generate Prompt should clearly be the main action.
+- Secondary actions should not visually compete.
+
+2. Improve labels:
+Replace technical language with user-friendly language:
+- “Guardrails” → “Rules Or Limits”
+- “Guide Me” → “Help Me Start”
+- “Run It” → “Run With AI”
+- “Prompt Engine” → “Get AI To Understand You”
+- “Customize Settings” → “More Control”
+
+3. Improve post-generation flow:
+After a prompt is generated, clearly show:
+“What Next?”
+- Run With AI → See Results Instantly
+- Copy → Use Anywhere
+- Refine → Make It Better
+
+4. Improve upload clarity:
+Upload section should clearly explain:
+“Upload A File Or Image For Smarter Results”
+Fix any desktop upload overflow, broken preview, long filename, or button cutoff issues.
+
+5. Improve trust:
+Remove fake-looking placeholders like:
+- “Beta User”
+- “0+ prompts generated”
+- generic testimonials
+
+Only show counters if real and meaningful.
+
+6. Improve tour/demo:
+Update tour and demo to match current AI-powered flow:
+- Type what you want
+- Generate Prompt
+- Run With AI or Copy
+- Upload files/images if needed
+- Use Help Me Start if stuck
+
+Keep tour short and smooth.
+
+7. Improve manual/help:
+Update only outdated sections.
+Keep main help short.
+Move deep help behind Full Guide or Advanced Help.
+
+8. Improve policies:
+Make sure Privacy Policy accurately says AI features may send submitted prompts, files, or images to AI service providers for processing.
+Do not claim everything stays local if AI/backend features are active.
+
+9. Improve mobile and desktop:
+Check:
+- no horizontal overflow
+- no text hugging edges
+- no cut-off buttons
+- clean header spacing
+- clear card padding
+- readable modals
+- smooth transitions
+- accessible tap targets
+
+WOW FACTOR GOAL:
+The site should feel:
+- simple at first
+- powerful after first use
+- polished enough to trust
+- useful enough to pay for
+
+DO NOT:
+- Remove features
+- Rebuild from scratch
+- Change backend logic unless required for bug fixes
+- Expose API keys
+- Add clutter
+- Add unnecessary popups
+- Overwhelm beginner users
+
+FINAL REPORT:
+After completing, report:
+1. New user friction points found
+2. Copy/title/button capitalization fixed
+3. UX flow improvements made
+4. Mobile fixes made
+5. Desktop fixes made
+6. Features preserved
+7. Any remaining decisions I need to make
+8. Final QA checklist
