@@ -30,3 +30,9 @@ id = "zD24eHEh0PdjhpsMiHUVM"
 uri = "file://pmg_overhaul_vs_rollback.diff.tar.gz"
 type = "unspecified"
 title = "Full diff: PMG Overhaul (51f0313) → Rollback (e5f82bd) — 334 lines"
+
+[[outputs]]
+id = "jkPQVRlM_Ol6mPn0u23fY"
+uri = "file://pmg_api.tar.gz"
+type = "unspecified"
+title = "PMG API + frontend bundle (5 files, 106K)"
