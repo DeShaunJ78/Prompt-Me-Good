@@ -2666,7 +2666,8 @@
       .hero-actions .btn { width: 100%; text-align: center; }
     }
     /* ── End PMG v3 Polish ── */
-</style>
+
+    .image-result-section{margin-top:var(--space-4)}.image-result-wrap{width:100%;background:var(--color-surface-2);border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--color-border);min-height:200px;display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-3)}.image-placeholder{font-size:var(--text-sm);color:var(--color-text-faint);padding:var(--space-8)}#imageResultWrap img{display:block;width:100%;height:auto;border-radius:var(--radius-lg)}.image-result-actions{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-bottom:var(--space-2)}.image-generating-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-3);padding:var(--space-8);color:var(--color-text-muted);font-size:var(--text-sm);text-align:center}.image-spinner{width:36px;height:36px;border:3px solid var(--color-border);border-top-color:var(--color-primary);border-radius:50%;animation:imgSpin 0.8s linear infinite}@keyframes imgSpin{to{transform:rotate(360deg)}}body.photo-mode-active #imageBtn{display:inline-flex!important}body.photo-mode-active #runBtn{display:none!important}</style>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -3263,6 +3264,7 @@
               <div class="run-section-divider"></div>
               <h3 class="run-section-title">Run This Prompt With AI</h3>
               <p class="run-section-helper">Your prompt is ready. Review it above, edit if needed, then run it here.</p>
+              <button class="btn btn-secondary run-btn" type="button" id="imageBtn" onclick="generateImage()" style="display:none;">🎨 Generate Image</button>
               <button class="btn btn-primary run-btn" type="button" id="runBtn" onclick="runWithAI()">
                 <span aria-hidden="true">▶</span> Run With AI
               </button>
@@ -3279,6 +3281,19 @@
                 <button class="btn btn-secondary" type="button" id="copyResponseBtn" onclick="copyAIResponse()">Copy Response</button>
                 <button class="btn btn-secondary" type="button" id="runAgainBtn" onclick="runWithAI()">Run Again</button>
               </div>
+            </div>
+
+            
+            <div class="image-result-section" id="imageResultSection" hidden>
+              <div class="run-section-divider"></div>
+              <h3 class="run-section-title">Your generated image</h3>
+              <p class="run-section-helper">Created by DALL·E 3 — right here in the app.</p>
+              <div class="image-result-wrap" id="imageResultWrap"><div class="image-placeholder">Your image will appear here</div></div>
+              <div class="image-result-actions">
+                <a id="imageDownloadBtn" href="" download="promptmegood-image.png" class="btn btn-primary" style="display:none;text-decoration:none;">⬇ Download</a>
+                <button class="btn btn-secondary" type="button" id="imageAgainBtn" onclick="generateImage()">Generate another</button>
+              </div>
+              <p class="run-section-meta">DALL·E 3 · Free during Early access</p>
             </div>
 
             <div class="save-tip" id="save-tip" role="status" aria-live="polite">
@@ -9035,6 +9050,33 @@ Context:
       }
       setInterval(ping, PING_MS);
     })();
+  </script>
+
+  <script>
+  (function(){
+    function $(id){return document.getElementById(id)}
+    var pt=$('photoMode');
+    if(pt){pt.addEventListener('change',function(){document.body.classList.toggle('photo-mode-active',pt.checked)});document.body.classList.toggle('photo-mode-active',pt.checked)}
+    window.generateImage=async function(){
+      var rb=$('resultBox'),prompt=((rb&&(rb.textContent||rb.innerText))||'').trim();
+      if(!prompt){alert('Generate a prompt first, then click Generate Image.');return}
+      var sec=$('imageResultSection'),wrap=$('imageResultWrap'),dl=$('imageDownloadBtn'),again=$('imageAgainBtn'),btn=$('imageBtn');
+      if(sec)sec.hidden=false;
+      if(wrap)wrap.innerHTML='<div class="image-generating-state"><div class="image-spinner"></div><span>Creating your image…<br><small>About 10 seconds</small></span></div>';
+      if(dl)dl.style.display='none';
+      if(btn){btn.disabled=true;btn.innerHTML='⏳ Generating…'}
+      if(again)again.disabled=true;
+      setTimeout(function(){if(sec)sec.scrollIntoView({behavior:'smooth',block:'center'})},100);
+      try{
+        var res=await fetch('/api/image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt})});
+        var data=await res.json();
+        if(!res.ok||!data.url){if(wrap)wrap.innerHTML='<div class="image-generating-state"><span>⚠️ '+(data.error||'Failed. Try again.')+'</span></div>';return}
+        if(wrap){wrap.innerHTML='';var img=document.createElement('img');img.src=data.url;img.alt='AI generated image';img.onload=function(){if(sec)sec.scrollIntoView({behavior:'smooth',block:'center'})};wrap.appendChild(img)}
+        if(dl){dl.href=data.url;dl.style.display='inline-flex'}
+      }catch(e){if(wrap)wrap.innerHTML='<div class="image-generating-state"><span>⚠️ Network error. Try again.</span></div>'}
+      finally{if(btn){btn.disabled=false;btn.innerHTML='🎨 Generate Image'}if(again)again.disabled=false}
+    }
+  })()
   </script>
 </body>
 </html>
