@@ -1210,6 +1210,10 @@
     .example-chip { padding: 6px 12px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent); background: color-mix(in srgb, var(--color-primary) 6%, transparent); color: var(--color-text); font-size: var(--text-sm); cursor: pointer; transition: background var(--transition-interactive), border-color var(--transition-interactive); }
     .example-chip:hover { background: color-mix(in srgb, var(--color-primary) 18%, transparent); border-color: var(--color-primary); }
     .result-helper { font-size: var(--text-sm); color: var(--color-text-muted); margin-top: var(--space-2); }
+    /* S3: emphasize Generate Prompt as the single primary builder action */
+    #prompt-form .actions-row #generateBtn { font-size: var(--text-base); font-weight: 700; min-height: 48px; padding-inline: var(--space-5); box-shadow: 0 6px 18px color-mix(in srgb, var(--color-primary) 22%, transparent); }
+    #prompt-form .actions-row #generateBtn:hover { box-shadow: 0 8px 22px color-mix(in srgb, var(--color-primary) 30%, transparent); }
+    @media (max-width: 640px) { #prompt-form .actions-row { flex-direction: column; align-items: stretch; } #prompt-form .actions-row #generateBtn { width: 100%; } }
     .what-next { margin-top: var(--space-4); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md, 10px); background: color-mix(in srgb, var(--color-primary) 7%, transparent); border-left: 3px solid var(--color-primary); }
     .what-next-title { margin: 0 0 var(--space-2); font-size: var(--text-sm); font-weight: 700; color: var(--color-text); letter-spacing: 0.01em; }
     .what-next-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
@@ -2681,6 +2685,10 @@
 
     .image-result-section{margin-top:var(--space-4)}.image-result-wrap{width:100%;background:var(--color-surface-2);border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--color-border);min-height:200px;display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-3)}.image-placeholder{font-size:var(--text-sm);color:var(--color-text-faint);padding:var(--space-8)}#imageResultWrap img{display:block;width:100%;height:auto;border-radius:var(--radius-lg)}.image-result-actions{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-bottom:var(--space-2)}.image-generating-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-3);padding:var(--space-8);color:var(--color-text-muted);font-size:var(--text-sm);text-align:center}.image-spinner{width:36px;height:36px;border:3px solid var(--color-border);border-top-color:var(--color-primary);border-radius:50%;animation:imgSpin 0.8s linear infinite}@keyframes imgSpin{to{transform:rotate(360deg)}}body.photo-mode-active #imageBtn{display:inline-flex!important}body.photo-mode-active #runBtn{display:none!important}
     /* ── Mode Switch ── */
+    .workspace-header { margin: 0 0 var(--space-4); padding: 0 0 var(--space-3); border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); display: flex; flex-direction: column; gap: 4px; }
+    .workspace-header-eyebrow { display: inline-block; font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-primary); }
+    .workspace-header-sub { margin: 0; color: var(--color-text-muted); font-size: var(--text-sm); line-height: 1.5; }
+    @media (max-width: 640px) { .workspace-header { padding-bottom: var(--space-2); margin-bottom: var(--space-3); } }
     .mode-switch{display:flex;gap:0;background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-full);padding:4px;margin-bottom:var(--space-5);width:100%;max-width:360px}
     .mode-switch-btn{flex:1;padding:10px 16px;border:none;border-radius:var(--radius-full);font-size:var(--text-sm);font-weight:600;cursor:pointer;background:transparent;color:var(--color-text-muted);transition:all 180ms ease;display:flex;align-items:center;justify-content:center;gap:6px}
     .mode-switch-btn.active{background:var(--color-primary);color:#fff;box-shadow:var(--shadow-sm)}
@@ -3136,7 +3144,10 @@
     <section class="app-section" id="builder">
       <div class="container app-shell">
         <section class="panel" id="builder-panel" aria-labelledby="builder-title">
-          
+          <header class="workspace-header" id="workspace-header" aria-label="Workspace">
+            <span class="workspace-header-eyebrow">Workspace</span>
+            <p class="workspace-header-sub">Create, refine, and run your prompts here.</p>
+          </header>
           <div class="mode-switch" id="modeSwitch" role="group" aria-label="Choose what to create">
             <button class="mode-switch-btn active" id="writeModeBtn" type="button" onclick="setMode('write')">✍️ Write something</button>
             <button class="mode-switch-btn" id="imageModeBtn" type="button" onclick="setMode('image')">🎨 Create an image</button>
@@ -3221,7 +3232,7 @@
                 <div class="upload-controls">
                   <input type="file" id="analyze-file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" class="upload-input" />
                   <label for="analyze-file" class="btn btn-secondary upload-btn" id="upload-btn-label">Choose File</label>
-                  <span class="upload-hint" id="upload-hint">No file chosen</span>
+                  <span class="upload-hint" id="upload-hint">No file selected</span>
                 </div>
                 <div class="upload-preview" id="upload-preview" hidden>
                   <img id="upload-preview-img" class="upload-preview-img" alt="Selected image preview" hidden />
@@ -3476,7 +3487,7 @@
         <section class="panel" id="result-panel" aria-labelledby="result-title">
           <div class="panel-head">
             <h2 id="result-title">Your ready-to-use prompt</h2>
-            <p>Copy this and paste it into ChatGPT, Claude, Perplexity, Google, or any AI/search tool.</p>
+            <p>Run it with AI right here, or copy it to use anywhere.</p>
             <p class="demo-next-step" id="demo-next-step" role="status" aria-live="polite" hidden>This is a sample prompt. Copy it, refine it, or go back and enter your own goal.</p>
           </div>
           <div class="result-wrap">
@@ -3493,7 +3504,7 @@
               <div id="pinned-note-text"></div>
               <div class="pinned-note-source" id="pinned-note-source"></div>
             </div>
-            <div class="result-box" id="resultBox" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Generated prompt (editable)">Your generated prompt will appear here. Once it looks good, copy it into your favorite AI tool.</div>
+            <div class="result-box" id="resultBox" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Generated prompt (editable)">Your generated prompt will appear here. Run it with AI right here, or copy it to use anywhere.</div>
             <div class="result-edit-row">
               <span class="result-edit-indicator" id="result-edit-indicator" hidden>Edited manually</span>
             </div>
@@ -5305,7 +5316,7 @@ Context:
           const trimmed = title.trim().slice(0, 80);
           if (!trimmed) { showToast('Template needs a name.'); return; }
           const list = loadUserTemplates();
-          list.push({ title: trimmed, data: JSON.parse(JSON.stringify(item.data)) });
+          list.push({ id: 't_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8), title: trimmed, data: JSON.parse(JSON.stringify(item.data)), savedAt: Date.now(), createdAt: Date.now() });
           saveUserTemplates(list);
           renderTemplates();
           showToast('Saved as template: ' + trimmed);
@@ -6200,7 +6211,7 @@ Context:
         function check() {
           const data = getFormData();
           const promptText = (resultBox && resultBox.textContent ? resultBox.textContent.trim() : '');
-          const placeholder = 'Your generated prompt will appear here. Once it looks good, copy it into your favorite AI tool.';
+          const placeholder = 'Your generated prompt will appear here. Run it with AI right here, or copy it to use anywhere.';
           const hasGenerated = promptText && promptText !== placeholder && promptText.indexOf('Generating demo prompt') === -1;
           const issues = [];
           if (!data.goal || data.goal.length < 30) {
@@ -6223,7 +6234,7 @@ Context:
           const trimmed = issues.slice(0, 3);
           out.hidden = false;
           if (trimmed.length === 0) {
-            out.innerHTML = '<span class="quality-feedback-title">Looks solid.</span> Your prompt covers the basics. Generate, refine, and copy it into your favorite AI tool.';
+            out.innerHTML = '<span class="quality-feedback-title">Looks solid.</span> Your prompt covers the basics. Generate, refine, then run it with AI or copy it to use anywhere.';
           } else {
             const items = trimmed.map(function (s) { return '<li>' + s.replace(/</g, '&lt;') + '</li>'; }).join('');
             out.innerHTML = '<span class="quality-feedback-title">Quick suggestions:</span><ul>' + items + '</ul>';
@@ -6236,7 +6247,7 @@ Context:
       const clearPromptBtn = document.getElementById('clear-prompt-btn');
       if (clearPromptBtn) {
         clearPromptBtn.addEventListener('click', function () {
-          const placeholder = 'Your generated prompt will appear here. Once it looks good, copy it into your favorite AI tool.';
+          const placeholder = 'Your generated prompt will appear here. Run it with AI right here, or copy it to use anywhere.';
           if (typeof setPromptText === 'function') {
             setPromptText(placeholder);
           } else {
@@ -6486,8 +6497,14 @@ Context:
       function ensureTemplateIds() {
         const list = loadUserTemplates();
         let mutated = false;
-        list.forEach(function (t) {
-          if (!t.id) { t.id = 't_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8); mutated = true; }
+        list.forEach(function (t, idx) {
+          if (!t.id) { t.id = 't_' + Date.now() + '_' + idx + '_' + Math.random().toString(36).slice(2, 8); mutated = true; }
+          if (!t.savedAt && !t.createdAt && !t.updatedAt) {
+            const backfill = Date.now() - (list.length - idx) * 1000;
+            t.savedAt = backfill;
+            t.createdAt = backfill;
+            mutated = true;
+          }
         });
         if (mutated) saveUserTemplates(list);
         return list;
@@ -6591,7 +6608,12 @@ Context:
             const valid = incoming.filter(function (t) {
               return t && typeof t === 'object' && typeof t.title === 'string' && t.data && typeof t.data === 'object' && typeof t.data.goal === 'string';
             }).map(function (t) {
-              return { title: String(t.title).slice(0, 80), data: t.data };
+              const out = { title: String(t.title).slice(0, 80), data: t.data, savedAt: typeof t.savedAt === 'number' ? t.savedAt : Date.now(), createdAt: typeof t.createdAt === 'number' ? t.createdAt : Date.now() };
+              if (typeof t.id === 'string' && t.id) out.id = t.id;
+              if (typeof t.updatedAt === 'number') out.updatedAt = t.updatedAt;
+              if (typeof t.useCount === 'number') out.useCount = t.useCount;
+              if (typeof t.lastUsedAt === 'number') out.lastUsedAt = t.lastUsedAt;
+              return out;
             });
             if (valid.length === 0) { showToast('No valid templates in that file.'); return; }
             const replace = window.confirm('Import ' + valid.length + ' template' + (valid.length === 1 ? '' : 's') + '?\n\nOK = replace your custom templates.\nCancel = add to what you have.');
@@ -8265,11 +8287,19 @@ Context:
         const results = [];
         const items = loadHistory();
         items.forEach(function (i) {
-          const hay = [i.nickname || '', i.data.goal || '', i.prompt || '', (i.tags || []).join(' ')].join(' ').toLowerCase();
+          const hay = [
+            i.nickname || '',
+            (i.data && i.data.goal) || '',
+            (i.data && i.data.details) || '',
+            i.prompt || '',
+            i.aiResponse || i.response || '',
+            (i.tags || []).join(' ')
+          ].join(' ').toLowerCase();
           if (hay.includes(needle)) {
             results.push({
-              kind: 'History',
-              title: i.nickname || i.data.goal || 'Untitled prompt',
+              kind: 'From History',
+              sortKey: i.lastUsedAt || i.createdAt || i.savedAt || 0,
+              title: i.nickname || (i.data && i.data.goal) || 'Untitled prompt',
               snippet: (i.prompt || '').slice(0, 120),
               target: { type: 'history', id: i.id }
             });
@@ -8277,12 +8307,19 @@ Context:
         });
         const tpls = loadUserTemplates();
         tpls.forEach(function (t) {
-          const hay = [t.title || '', (t.data && t.data.goal) || ''].join(' ').toLowerCase();
+          const hay = [
+            t.title || '',
+            (t.data && t.data.goal) || '',
+            (t.data && t.data.details) || '',
+            (t.data && t.data.prompt) || '',
+            t.prompt || ''
+          ].join(' ').toLowerCase();
           if (hay.includes(needle)) {
             results.push({
-              kind: 'Template',
-              title: t.title || 'Template',
-              snippet: ((t.data && t.data.goal) || '').slice(0, 120),
+              kind: 'Saved Prompts',
+              sortKey: t.updatedAt || t.createdAt || t.savedAt || 0,
+              title: t.title || 'Saved Prompt',
+              snippet: ((t.data && t.data.goal) || (t.data && t.data.prompt) || '').slice(0, 120),
               target: { type: 'template', id: t.id }
             });
           }
@@ -8290,14 +8327,15 @@ Context:
         const tagSet = new Set();
         items.forEach(function (i) { (i.tags || []).forEach(function (tag) { if (tag.toLowerCase().includes(needle)) tagSet.add(tag); }); });
         tagSet.forEach(function (tag) {
-          results.push({ kind: 'Tag', title: '#' + tag, snippet: 'Filter history by this tag', target: { type: 'tag', value: tag } });
+          results.push({ kind: 'Tag', sortKey: 0, title: '#' + tag, snippet: 'Filter history by this tag', target: { type: 'tag', value: tag } });
         });
+        results.sort(function (a, b) { return (b.sortKey || 0) - (a.sortKey || 0); });
         return results.slice(0, 12);
       }
 
       function renderGlobalResults(results) {
         if (!results.length) {
-          globalSearchResults.innerHTML = '<div class="global-empty">Your saved prompts will appear here as you generate them.</div>';
+          globalSearchResults.innerHTML = '<div class="global-empty">No matches found — try different keywords.</div>';
           globalSearchResults.classList.add('is-open');
           return;
         }
@@ -9462,7 +9500,7 @@ Context:
     if (previewName) previewName.textContent = '';
     if (previewSize) previewSize.textContent = '';
     if (analyzeBtn) analyzeBtn.hidden = true;
-    if (hint) hint.textContent = 'No file chosen';
+    if (hint) hint.textContent = 'No file selected';
     if (btnLabel) btnLabel.textContent = 'Choose File';
     setStatus('');
   }
