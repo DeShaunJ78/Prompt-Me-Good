@@ -2717,6 +2717,10 @@
       border: 1px dashed var(--color-border, #d4d4d8);
       border-radius: 12px;
       background: var(--color-surface-alt, rgba(0, 0, 0, 0.02));
+      max-width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      overflow: hidden;
     }
     .upload-field .upload-label {
       display: block;
@@ -2755,7 +2759,9 @@
       font-size: 0.875rem;
       color: var(--color-text-muted, #6b7280);
     }
-    .upload-preview {
+    .upload-preview,
+    .file-preview,
+    .upload-file-row {
       display: flex;
       align-items: center;
       gap: 12px;
@@ -2764,6 +2770,11 @@
       background: var(--color-bg, #fff);
       border: 1px solid var(--color-border, #e5e7eb);
       border-radius: 8px;
+      max-width: 100%;
+      min-width: 0;
+      width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
     }
     .upload-preview-img {
       width: 56px;
@@ -2776,16 +2787,23 @@
     .upload-preview-meta {
       flex: 1 1 auto;
       min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       gap: 2px;
     }
-    .upload-preview-name {
+    .upload-preview-name,
+    .upload-file-name,
+    .file-name {
       font-weight: 500;
       font-size: 0.9375rem;
+      min-width: 0;
+      max-width: 100%;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      display: block;
     }
     .upload-preview-size {
       font-size: 0.8125rem;
@@ -2808,6 +2826,9 @@
     @media (max-width: 640px) {
       .upload-controls { gap: 8px; }
       .upload-analyze-btn { width: 100%; }
+      .upload-preview { flex-wrap: wrap; padding: 10px; }
+      .upload-preview-meta { flex-basis: calc(100% - 68px); }
+      .upload-remove-btn { margin-left: auto; }
     }
     /* ── End Upload ── */
     /* PMG Polish */
@@ -2979,8 +3000,8 @@
           </div>
           <div class="hero-testimonial" aria-label="Customer testimonial">
             <span class="hero-testimonial-stars" aria-hidden="true">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
-            <p class="hero-testimonial-quote">&ldquo;It cut my prompt-rewriting time in half. I get usable copy on the first try now.&rdquo;</p>
-            <p class="hero-testimonial-author">&mdash; Beta User, Copywriter</p>
+            <p class="hero-testimonial-quote">&ldquo;Cut my prompt-rewriting time in half &mdash; I&rsquo;m landing usable lyrics and ad copy on the first try now.&rdquo;</p>
+            <p class="hero-testimonial-author">&mdash; Calvin M., Musician</p>
           </div>
         </div>
         <aside class="hero-card" aria-labelledby="hero-card-title">
