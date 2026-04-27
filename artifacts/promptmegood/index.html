@@ -2830,6 +2830,36 @@
       .upload-preview-meta { flex-basis: calc(100% - 68px); }
       .upload-remove-btn { margin-left: auto; }
     }
+    /* Generic file-row containment (works alongside .upload-preview) */
+    .file-container {
+      padding: 14px 18px;
+      border-radius: 12px;
+      overflow: hidden;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    .file-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+    .file-name {
+      flex: 1;
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      word-break: break-word;
+    }
+    @media (max-width: 640px) {
+      .file-container { padding: 10px 12px; }
+      .file-row { flex-wrap: wrap; }
+    }
     /* ── End Upload ── */
     /* PMG Polish */
     .feedback-card-grid{transition:box-shadow 180ms ease,transform 180ms ease}
@@ -3255,10 +3285,10 @@
                   <label for="analyze-file" class="btn btn-secondary upload-btn" id="upload-btn-label">Choose File</label>
                   <span class="upload-hint" id="upload-hint">No file selected</span>
                 </div>
-                <div class="upload-preview" id="upload-preview" hidden>
+                <div class="upload-preview file-container file-row" id="upload-preview" hidden>
                   <img id="upload-preview-img" class="upload-preview-img" alt="Selected image preview" hidden />
                   <div class="upload-preview-meta">
-                    <span class="upload-preview-name" id="upload-preview-name"></span>
+                    <span class="upload-preview-name file-name" id="upload-preview-name" title=""></span>
                     <span class="upload-preview-size" id="upload-preview-size"></span>
                   </div>
                   <button type="button" class="btn-clear upload-remove-btn" id="upload-remove-btn" aria-label="Remove file">Remove</button>
@@ -9518,7 +9548,7 @@ Context:
     if (currentObjectUrl){ URL.revokeObjectURL(currentObjectUrl); currentObjectUrl = null; }
     if (preview) preview.hidden = true;
     if (previewImg){ previewImg.hidden = true; previewImg.removeAttribute('src'); }
-    if (previewName) previewName.textContent = '';
+    if (previewName) { previewName.textContent = ''; previewName.title = ''; }
     if (previewSize) previewSize.textContent = '';
     if (analyzeBtn) analyzeBtn.hidden = true;
     if (hint) hint.textContent = 'No file selected';
@@ -9544,7 +9574,7 @@ Context:
     if (hint) hint.textContent = '';
     if (btnLabel) btnLabel.textContent = 'Change File';
     if (preview) preview.hidden = false;
-    if (previewName) previewName.textContent = file.name;
+    if (previewName) { previewName.textContent = file.name; previewName.title = file.name; }
     if (previewSize) previewSize.textContent = fmtBytes(file.size);
     if (analyzeBtn) analyzeBtn.hidden = false;
     if (file.type === 'image/jpeg' || file.type === 'image/png') {
