@@ -2764,8 +2764,8 @@
             <p class="hero-subtext">Your AI answers are only as good as your questions. PromptMeGood structures your goal into a prompt that gets <strong>real results</strong> — in seconds.</p>
           </div>
           <p class="trust-line">A structured prompt builder that tells AI exactly what to do — and how to say it.</p>
-          <p id="usageCounter" class="usage-counter" hidden style="display:none;" aria-live="polite">
-            <span id="usageCount">0</span>+ prompts generated
+          <p id="usageCounter" style="display:none" aria-live="polite">
+            
           </p>
           <div class="hero-actions">
             <a class="btn btn-primary btn-stacked" href="#builder" id="hero-build-cta">
@@ -2937,7 +2937,7 @@
             </p>
             <div class="guided-cta-row" id="guided-cta-row">
               <div class="guided-cta-text">
-                <span class="guided-cta-recommended-badge">Recommended First Step</span>
+                <span class="guided-cta-recommended-badge"></span>
                 <strong>Guide me</strong>
                 <span>Not sure how to start? Answer 4 short questions and we'll fill the builder for you.</span>
               </div>
@@ -3290,8 +3290,8 @@
             <!-- RUN WITH AI — hidden until a prompt is generated -->
             <div class="run-section" id="runSection" hidden>
               <div class="run-section-divider"></div>
-              <h3 class="run-section-title">Run This Prompt With AI</h3>
-              <p class="run-section-helper">Your prompt is ready. Review it above, edit if needed, then run it here.</p>
+              <h3 class="run-section-title">Run it</h3>
+              <p class="run-section-helper">Execute this prompt and get your AI response — right here.</p>
               <button class="btn btn-secondary run-btn" type="button" id="imageBtn" onclick="generateImage()" style="display:none;">🎨 Generate Image</button>
               <button class="btn btn-primary run-btn" type="button" id="runBtn" onclick="runWithAI()">
                 <span aria-hidden="true">▶</span> Run With AI
@@ -3446,7 +3446,7 @@
     <section class="app-section" id="manual">
       <div class="container">
         <div class="panel manual-panel">
-          <details class="quick-start-card" id="quick-start-card" open>
+          <details class="quick-start-card" id="quick-start-card">
             <summary class="quick-start-summary">
               <span class="quick-start-icon" aria-hidden="true">⚡</span>
               <span class="quick-start-text">
