@@ -1,0 +1,170 @@
+You are a senior full-stack developer improving PromptMeGood — an AI prompt 
+builder at promptmegood.com for everyday people who want better AI results.
+
+RULES BEFORE YOU START:
+- Create a checkpoint before touching anything
+- Do not rebuild from scratch
+- Do not remove any working AI or backend features
+- Do not expose API keys — server side only
+- Do not use heredoc syntax in shell commands
+- Write all scripts as separate .js files using fs.writeFileSync
+- Test each task before moving to the next
+
+═══════════════════════════════
+TASK 1 — FILE AND IMAGE UPLOAD (Most Important)
+═══════════════════════════════
+
+Add file and image upload capability near the goal field.
+
+UI:
+- Add upload area below the goal textarea: "Upload a file or image (optional)"
+- Show filename after upload
+- Show image preview for JPG/PNG
+- Show remove button to clear upload
+- Keep it simple and optional — do not clutter the form
+
+SUPPORTED FILE TYPES: PDF, DOCX, TXT, JPG, PNG
+MAX FILE SIZE: 10MB
+
+BACKEND — Add POST /api/analyze endpoint:
+- Accept multipart/form-data with text goal + optional file
+- Extract text from PDF, DOCX, TXT documents
+- Send images + goal to vision-capable OpenAI model
+- Combine user goal + extracted content into structured prompt
+- Return: { success: true, prompt: "...", response: "..." }
+- Validate file types and size
+- Rate limit this endpoint
+- Do NOT store files permanently
+
+═══════════════════════════════
+TASK 2 — PROMPT BUILDER IMPROVEMENTS
+═══════════════════════════════
+
+- Auto-detect intent from user input and suggest settings quietly
+- Ask follow-up questions only when necessary
+- Keep advanced controls behind "More Control" toggle
+- Show "Why This Works" explanation after generating (simple language)
+- Add one-click refine options after generation
+- Show "What's Missing?" suggestions on weak prompts
+
+═══════════════════════════════
+TASK 3 — AI OUTPUT FLOW
+═══════════════════════════════
+
+Keep these clearly separate in the UI:
+1. Optimized Prompt section
+2. AI Response section
+
+Make sure users understand both clearly with simple labels.
+Add smooth transitions between states.
+
+═══════════════════════════════
+TASK 4 — PREMIUM FEATURES
+═══════════════════════════════
+
+Add subtle Pro indicators (not aggressive paywalls) for:
+- Unlimited AI runs
+- File and image deep analysis
+- Custom personas
+- Advanced prompt history
+
+Make Pro feel obvious and valuable, not forced.
+Update pricing.html to reflect these features.
+
+═══════════════════════════════
+TASK 5 — UX CLEANUP
+═══════════════════════════════
+
+- Hide keyboard shortcuts panel by default, show only in Expert Mode
+- Fix weekly focus: replace "Loading this week's focus…" with static 
+  rotating content — no fetch required
+- Hide "0+ prompts generated" counter until real count exceeds 100
+- Collapse Quick Start accordion by default
+- Remove "Recommended First Step" badge from Guide Me card
+- Hide prompt strength score until a prompt is generated
+- Tour modal: only show to first-time visitors using localStorage check
+- Daily nudge: only show to returning users who have existing history
+- Remove "Free monthly limit applies" disclaimer from improve section
+
+═══════════════════════════════
+TASK 6 — COPY FIXES
+═══════════════════════════════
+
+Apply these exact text replacements:
+- "Beta User · Copywriter" → "Sarah M. · Freelance Copywriter"
+- "Beta User · Small Business Owner" → "Marcus T. · Small Business Owner"  
+- "Beta User · Content Creator" → "Janelle R. · Content Creator"
+- "Aggressive" tone option → "Bold & Direct"
+- "More Aggressive" button → "More Bold & Direct"
+- "Loading this week's focus…" → "Solve A Real-Life Problem You've Been Avoiding"
+- "Run This Prompt With AI" → "Run It"
+- "Your Ready-To-Use Prompt" → "Your Prompt Is Ready"
+- Remove "AI Prompt Engine" eyebrow text above hero headline
+
+═══════════════════════════════
+TASK 7 — DESIGN POLISH
+═══════════════════════════════
+
+Typography:
+- All buttons: Title Case
+- All headers and subheaders: Title Case
+- Body text and helper text: sentence case
+
+Mobile:
+- Hero CTAs full width on screens under 640px
+- Image result section readable at 375px
+- No horizontal overflow on any new elements
+- All toasts visible and not blocked by UI
+
+Desktop:
+- Generous hero padding
+- Smooth generate button transition
+- Result box minimum height when empty
+- Testimonial cards get hover lift effect
+- Use case cards get hover lift effect
+
+Animations:
+- Strength score fades in smoothly when revealed
+- Result panel flashes teal border on successful generation
+- Generate button shows "Generating..." during load
+- Image generation shows spinner with "Creating with DALL·E 3..."
+
+═══════════════════════════════
+TASK 8 — BACKEND SAFETY
+═══════════════════════════════
+
+Confirm all of these are working:
+- API key is server-side only, never in frontend code
+- Rate limits enforced on all endpoints
+- Cost caps enforced — daily limit $3 text, $0.67 images
+- File upload validates type and size before processing
+- Graceful error handling — no silent failures
+- Health endpoint returns { status: "ok" }
+
+═══════════════════════════════
+TASK 9 — SEO AND META
+═══════════════════════════════
+
+In index.html head:
+- Page title: "PromptMeGood — Build AI Prompts That Actually Work"
+- Meta description: "Build better prompts for ChatGPT, Claude, and 
+  Perplexity in seconds. Free AI prompt builder for everyday people."
+- Confirm og:image points to a real asset
+- Confirm JSON-LD structured data is present
+
+═══════════════════════════════
+AFTER ALL TASKS:
+═══════════════════════════════
+
+Run a full QA check:
+- Generate a prompt — does it work?
+- Upload a file — does /api/analyze respond?
+- Upload an image — does vision analysis work?
+- Toggle Photo Prompt Mode — does Generate Image appear?
+- Click Generate Image — does DALL·E 3 return an image?
+- Check mobile at 375px — does layout hold?
+- Check dark mode — does everything still look good?
+- Confirm no API keys in frontend code
+- Confirm cost guards are active
+
+Then deploy and confirm the live site at promptmegood.com reflects all changes.
