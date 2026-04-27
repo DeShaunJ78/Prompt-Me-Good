@@ -2793,6 +2793,28 @@
     body.photo-mode-active #imageBtn { display: inline-flex !important; }
     body.photo-mode-active #runBtn { display: none; }
     /* ── End Image Generation ── */
+
+    /* ── Build CTA Guidance + Demo Helper ── */
+    .build-cta-guidance {
+      display: flex; align-items: center; gap: 10px;
+      margin: 0 0 var(--space-3); padding: 10px 14px;
+      background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+      border: 1px solid color-mix(in srgb, var(--color-primary) 35%, transparent);
+      border-radius: var(--radius-md);
+      color: var(--color-text); font-size: var(--text-sm); line-height: 1.45;
+      transition: opacity 220ms ease;
+    }
+    .build-cta-guidance[hidden] { display: none; }
+    .build-cta-guidance.is-fading { opacity: 0; }
+    .build-cta-guidance-icon { flex: 0 0 auto; line-height: 1; }
+    .build-cta-guidance-text { flex: 1 1 auto; min-width: 0; }
+    .demo-helper { margin: 10px 0 0; font-size: var(--text-sm); color: var(--color-text-muted); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .demo-helper-link { font-weight: 700; color: var(--color-primary); padding: 2px 6px; text-decoration: underline; text-underline-offset: 3px; background: transparent; border: 0; cursor: pointer; font: inherit; }
+    .demo-helper-link:hover, .demo-helper-link:focus-visible { background: color-mix(in srgb, var(--color-primary) 15%, transparent); outline: none; }
+    .guidance-show-link { display: none; background: transparent; border: 0; padding: 2px 6px; color: var(--color-primary); font: inherit; font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; border-radius: 4px; }
+    .guidance-show-link:hover, .guidance-show-link:focus-visible { background: color-mix(in srgb, var(--color-primary) 12%, transparent); outline: none; }
+    body.guidance-hidden .guidance-show-link { display: inline-flex; align-items: center; }
+    /* ── End Build CTA Guidance + Demo Helper ── */
 </style>
 </head>
 <body>
@@ -3024,6 +3046,10 @@
             </div>
           </div>
           <div class="form-wrap">
+            <p class="build-cta-guidance" id="build-cta-guidance" role="status" aria-live="polite" hidden>
+              <span class="build-cta-guidance-icon" aria-hidden="true">✨</span>
+              <span class="build-cta-guidance-text">Start with <strong>Guide me</strong> if you want PromptMeGood to set things up for you.</span>
+            </p>
                         <div class="guided-cta-row" id="guided-cta-row">
               <div class="guided-cta-text">
                 <strong>Guide me</strong>
@@ -3079,8 +3105,8 @@
                 </div>
                 <button class="btn btn-secondary" type="button" id="random-prompt" title="Surprise me with a random prompt">🎲 Random prompt</button>
               </div>
-              
-              
+              <p class="demo-helper">Not sure where to start? <button type="button" class="link-btn demo-helper-link" id="demo-helper-link">See it in action.</button> <button type="button" class="guidance-show-link" id="guidance-show-link" data-action="show-tips">Show tips</button></p>
+
 
               <details id="settingsPanel" class="settings-panel">
                 <summary class="settings-panel-summary">
