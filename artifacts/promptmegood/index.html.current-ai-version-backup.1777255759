@@ -2757,6 +2757,11 @@
     }
 
     /* ── End PMG Overhaul Polish ── */
+
+    /* ── Photo mode → swap Run for Image button ── */
+    body.photo-mode-active #imageBtn { display: inline-flex !important; }
+    body.photo-mode-active #runBtn { display: none; }
+    /* ── End Photo mode swap ── */
 </style>
 </head>
 <body>
@@ -3333,6 +3338,9 @@
               <p class="run-section-helper">Execute this prompt and get your AI response — right here.</p>
               <button class="btn btn-primary run-btn" type="button" id="runBtn" onclick="runWithAI()">
                 <span aria-hidden="true">▶</span> Run With AI
+              </button>
+              <button class="btn btn-secondary run-btn" type="button" id="imageBtn" onclick="generateImage()" style="display:none;">
+                <span aria-hidden="true">🎨</span> Generate Image
               </button>
               <p class="run-section-meta">Uses 1 AI execution &middot; Free during Early access</p>
             </div>
@@ -9101,6 +9109,54 @@ Context:
       }
       setInterval(ping, PING_MS);
     })();
+  </script>
+
+  <script>
+  // ── Photo mode toggle sync + Generate Image (opens result in new tab; no in-page card) ──
+  (function () {
+    const photoToggle = document.getElementById('photoMode');
+    function syncPhotoMode() {
+      if (!photoToggle) return;
+      if (photoToggle.checked) document.body.classList.add('photo-mode-active');
+      else document.body.classList.remove('photo-mode-active');
+    }
+    if (photoToggle) {
+      photoToggle.addEventListener('change', syncPhotoMode);
+      syncPhotoMode();
+    }
+    async function generateImage() {
+      const resultBox = document.getElementById('resultBox');
+      const prompt = (resultBox && (resultBox.textContent || resultBox.innerText) || '').trim();
+      if (!prompt) { alert('Generate a prompt first, then click Generate Image.'); return; }
+      const btn = document.getElementById('imageBtn');
+      const originalHtml = btn ? btn.innerHTML : '';
+      if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
+      try {
+        const res = await fetch('/api/image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+        const data = await res.json().catch(function () { return {}; });
+        if (!res.ok || !data.url) {
+          alert(data.error || 'Image generation failed. Please try again.');
+          return;
+        }
+        const win = window.open();
+        if (win) {
+          win.document.write('<title>PromptMeGood — Generated image</title><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="' + data.url + '" alt="AI generated image" style="max-width:100%;max-height:100vh;display:block;"/></body>');
+          win.document.close();
+        } else {
+          alert('Image generated. Please allow pop-ups to view it.');
+        }
+      } catch (err) {
+        alert('Network error generating image. Please try again.');
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = originalHtml; }
+      }
+    }
+    window.generateImage = generateImage;
+  })();
   </script>
 </body>
 </html>
