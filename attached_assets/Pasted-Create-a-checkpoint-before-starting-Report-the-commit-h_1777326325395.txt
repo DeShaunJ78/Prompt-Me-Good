@@ -1,0 +1,245 @@
+Create a checkpoint before starting. Report the commit hash. Do not use heredoc syntax in any shell commands. Write all scripts as separate .js files using fs.writeFileSync. Test after each section. Stop and report if anything breaks.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 0 — INSPECT FIRST. NO CHANGES YET.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Before making any change:
+1. Create a git commit snapshot. Report the commit hash.
+2. List all files that control: homepage, builder, AI generation, Run With AI, Prompt History, Pricing page, Privacy Policy.
+3. List all localStorage keys currently in use.
+4. Report which file contains the primary Generate button.
+5. Report which file contains pricing copy.
+Only proceed after completing this inventory.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GOAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Improve first-time UX, conversion, aesthetics, and monetization positioning without breaking existing functionality.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PRODUCT DIRECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PromptMeGood should feel like a premium prompt rescue engine, not a cluttered prompt utility. The first-time user should immediately understand: messy idea → stronger prompt → better AI answer.
+
+CORE POSITIONING:
+Headline: Stop Getting Weak AI Answers
+Subhead: Paste your messy idea. PromptMeGood turns it into a clear, powerful prompt you can run in ChatGPT, Claude, Perplexity, or right here.
+Primary CTA: Fix My Prompt
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ABSOLUTE CONSTRAINTS — NEVER VIOLATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- Do NOT remove any working feature or functionality
+- Do NOT add new dependencies without flagging first
+- Do NOT expose secrets or alter backend security logic
+- Do NOT rename localStorage keys, JavaScript variables, function names, CSS class names, or HTML element IDs
+- Do NOT alter any backend API routes or cost control logic
+- Do NOT edit pricing logic or feature gate checks in backend code
+- Keep all changes focused and individually reversible
+
+LABEL RENAME RULE: When renaming any user-facing label, ONLY change the visible display text the user reads. Never change the underlying code reference. If you cannot safely separate the text from the code reference, leave it unchanged and flag it in your report.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+UX CHANGES — IMPLEMENT IN ORDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. SIMPLIFY THE FIRST SCREEN
+
+Default view shows only:
+- One large goal textarea. Placeholder: "Paste your messy idea here — we'll fix it."
+- One primary CTA button: "Fix My Prompt" (visible label change only — underlying generate function unchanged)
+- One secondary option: "Help Me Start" (same function as Guide Me)
+- One tertiary text link: "See Examples"
+
+Hide until after first generation using CSS display:none — DO NOT DELETE:
+- All settings (category, tone, format, length, language, personality)
+- Advanced Options panel
+- Expert Mode toggle and label
+- Random Prompt button
+- This Week's Focus widget
+- Suggestion chips
+- Keyboard shortcuts section
+- Replay Tour button (move to a small question mark icon)
+- Global search bar
+- Backup/Restore
+- All tip cards and excess helper text
+
+Collapse settings under "Power Ups" toggle (visible label only — do not rename any code reference). All settings work exactly as before when expanded.
+
+2. ADD BEFORE/AFTER TRANSFORMATION ABOVE THE FOLD
+
+Insert a visual before/after block directly below the hero CTA buttons.
+
+LEFT CARD — label: "What Most People Type:" Content (italic, muted): "Help me make money with AI."
+
+RIGHT CARD — label: "What PromptMeGood Creates:" Content: "Act as a startup advisor with expertise in AI-powered income streams. I am a [background] looking to earn an extra $[amount]/month using AI tools I already have access to. Give me 5 realistic, specific strategies ranked by ease of entry and income potential. Format as a numbered list with an estimated time to first dollar for each."
+
+Style: two cards side by side. Left card muted/faded. Right card uses existing accent color with subtle border emphasis. Match existing design system. No new fonts or color variables.
+
+3. MAKE RUN WITH AI THE MAIN AHA MOMENT
+
+After successful generation, auto-scroll to output and reveal:
+
+a. Optimized prompt in its own clearly labeled box. Label: "Your Fixed Prompt". Subtext: "This is your optimized prompt."
+
+b. Guidance block directly below with three clickable options:
+- Run With AI — see results instantly (triggers existing run function)
+- Copy — use it in any AI tool (triggers existing copy function)
+- Refine — make it even better (triggers existing refine function)
+
+c. Primary action: Fix My Prompt / Run With AI — single dominant button.
+d. Secondary row: Copy, Refine
+e. Tertiary: all other output tools
+
+Keep Optimized Prompt and AI Response in permanently separate labeled sections. Never merge them.
+
+4. RENAME VISIBLE USER-FACING LABELS ONLY
+
+Apply these visible text changes only. Do NOT change any code reference, variable, key, or function name.
+
+"Prompt History" section heading → "Prompt Vault" (add lock emoji before label)
+"Pinned Templates" section heading → "Best Prompts"
+"Advanced Options" → "Power Ups"
+"Generate Prompt" builder CTA only → "Fix My Prompt"
+"AI Prompt Engine" → "Get AI To Understand You"
+"Guide Me" → "Help Me Start"
+"Guardrails" → "Rules Or Limits"
+"Open Builder" nav only → "Start Here"
+"Tune Your Prompt Settings" → "Power Ups (Optional)"
+"Expert Mode Active" label → REMOVE label, keep function
+"PromptMeGood v1" corner label → REMOVE
+"0+ prompts generated" → REMOVE entirely
+
+5. PROGRESSIVE DISCLOSURE — POST-GENERATION REVEALS
+
+After first successful generation:
+- Set localStorage key "pmg_has_generated" = "true"
+- Increment localStorage key "pmg_prompt_count" (integer)
+- Reveal: suggestion chips, This Week's Focus, Random Prompt
+- Reveal: Prompt Vault section
+- Show "Switch To Expert Mode" as a small text link below Power Ups section
+
+Welcome modal:
+- Add 3-second delay on first visit
+- Only show once per device using localStorage flag "pmg_modal_shown"
+- Replace buttons with: Primary: "Show Me How It Works" (triggers tour). Text link: "I'll Figure It Out Myself" (closes modal)
+
+Daily nudge:
+- First-time visitors with no "pmg_has_generated" key: suppress on load
+- After first generation: show once as dismissible banner
+- Returning visitors: show on load as before
+
+6. VISUAL IMPROVEMENTS — WITHIN EXISTING CSS ONLY
+
+- Large rounded input field for goal textarea (match or slightly increase existing border-radius)
+- Subtle border glow using existing accent color variable around generated prompt box only
+- Before/After cards: left card muted, right card uses accent border
+- Minimum 8px gap between all button groups
+- Minimum 16px padding on all cards
+- Reduce header height by 20% on desktop via CSS only
+- Strong contrast on primary CTA button
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MONETIZATION POSITIONING — COPY ONLY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Update visible pricing page copy only. Do NOT alter backend feature gates, usage limits, or API cost controls.
+
+FREE TIER copy:
+- Unlimited local prompt building (Fix My Prompt)
+- Limited AI-powered improvements
+- Limited Run With AI executions
+- Local Prompt Vault (saved on this device)
+
+PRO TIER copy:
+- Unlimited Run With AI
+- Cloud Prompt Vault
+- Money Mode Pro Workflows
+- Image Generation
+- File And Image Analysis
+- Brand Voice Profiles
+- Prompt Chains
+- Export And Share Tools
+
+Remove any copy that says "free forever" or "unlimited" if it contradicts actual AI execution limits. Replace with: "Free During Our Founding Member Period."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ADDITIONAL FIXES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Privacy Policy — update this sentence:
+OLD: "we do not transmit your prompts to our servers"
+NEW: "When you use AI-powered features — including Fix My Prompt, Run With AI, file analysis, or image generation — your submitted text or uploaded content may be sent securely to our AI service providers to process your request. We do not sell your data. Files and prompts are not permanently stored beyond what is required to fulfill your request."
+
+Upload component bug:
+- No broken image icon before file selection
+- Default state shows only: "No File Selected"
+- Preview only renders after valid file is selected
+- No layout shifts or console errors during upload
+
+This Week's Focus fallback: If widget fails to load, show: "Try This: Write A Prompt To Help You Earn Extra Income This Week." Never show a blank spinner without fallback text.
+
+Export Tip toast: Only trigger when pmg_prompt_count is 3 or higher.
+
+Navigation order: Start Here | How It Works | Examples | Pricing. Remove "History" from top nav (keep in sidebar).
+
+Footer:
+REPLACE: "PromptMeGood is in early access. All features are free."
+WITH: "PromptMeGood Is Free During Our Founding Member Period. Full Pricing Launches Soon."
+ADD above copyright: "Stop Getting Weak AI Answers. PromptMeGood Fixes That In Seconds."
+ADD to footer links: Contact linked to support@promptmegood.com
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BUILD VALIDATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run pnpm run typecheck if available. If not available, skip and note it.
+Run pnpm -r --if-present run build. If build fails, report the error, list all changed files, and stop. Do NOT attempt to auto-fix build errors.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL QA CHECKLIST — REPORT PASS/FAIL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Report pass or fail for each:
+- New user can generate first prompt in under 10 seconds
+- No confusion about what to do first on the page
+- Before/After block visible above the fold
+- Welcome modal appears once with delay, never again
+- Daily nudge suppressed for first-time pre-generation visitors
+- Output auto-scrolls after generation
+- Guidance block appears below output
+- Fix My Prompt / Run With AI is the dominant post-gen action
+- Optimized Prompt and AI Response are separate labeled sections
+- Fix My Prompt works end-to-end
+- Help Me Start wizard completes all steps correctly
+- Run With AI produces response in AI Response section only
+- Prompt Vault saves, restores, exports correctly
+- Expert Mode activates via text link, warning modal still appears
+- Power Ups expands and collapses cleanly
+- All renamed labels show new text, all functions unchanged
+- Pricing page copy reflects Free/Pro split accurately
+- Privacy Policy reflects accurate AI data handling
+- Upload component shows no broken icon in default state
+- Mobile: all buttons minimum 44px height
+- Mobile: Fix My Prompt button reachable within 2 scrolls
+- Mobile: no overlapping or clipped elements
+- No console errors on page load
+- No console errors after generating a prompt
+- No console errors on mobile
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL OUTPUT — REPORT THESE EXACTLY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Git commit hash created before changes
+2. All files modified (full list)
+3. UX improvements completed per section
+4. Monetization improvements completed
+5. Build and typecheck results
+6. QA checklist results (pass/fail per item)
+7. Items NOT completed and why
+8. Anything requiring manual review before going live
