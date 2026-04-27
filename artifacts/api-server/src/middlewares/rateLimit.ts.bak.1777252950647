@@ -19,8 +19,6 @@ export function makeRateLimiter(opts: { windowMs: number; max: number; label: st
           ? "Too many AI executions. Please wait before trying again."
           : opts.label === "generate"
           ? "Too many prompt generations. Please wait before trying again."
-          : opts.label === "image"
-          ? "Image limit reached. You can generate 3 images per hour — try again soon."
           : "Too many requests. Please wait a moment and try again.",
       });
       return;
@@ -40,4 +38,3 @@ const HOUR_MS = 60 * 60 * 1000;
 export const generateLimiter = makeRateLimiter({ windowMs: HOUR_MS, max: 20, label: "generate" });
 export const runLimiter = makeRateLimiter({ windowMs: HOUR_MS, max: 5, label: "run" });
 export const rateLimit = makeRateLimiter({ windowMs: 60 * 1000, max: 10, label: "general" });
-export const imageLimiter = makeRateLimiter({ windowMs: HOUR_MS, max: 3, label: "image" }); // 3 images/hour per IP

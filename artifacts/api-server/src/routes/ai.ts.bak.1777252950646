@@ -4,8 +4,8 @@ import * as path from "node:path";
 import { openai } from "../lib/openai-client";
 import { logger } from "../lib/logger";
 import { clampString, sanitizeGoal } from "../middlewares/sanitize";
-import { generateLimiter, runLimiter, rateLimit, imageLimiter } from "../middlewares/rateLimit";
-import { chargeCost, generateCostCheck, runCostCheck, imageCheck, chargeImage } from "../middlewares/costGuard";
+import { generateLimiter, runLimiter, rateLimit } from "../middlewares/rateLimit";
+import { chargeCost, generateCostCheck, runCostCheck } from "../middlewares/costGuard";
 
 const router: IRouter = Router();
 
@@ -438,102 +438,6 @@ router.post("/run", runLimiter, runCostCheck, async (req, res) => {
     } catch {
       // socket already closed
     }
-  }
-});
-
-
-// /api/image — generates an image using DALL-E 3 from the user's prompt.
-// The user's prompt is treated as a description — we enhance it automatically
-// into a professional image prompt before sending to OpenAI.
-const IMAGE_PROMPT_ENHANCER =
-  "You are a professional photographer, art director, and AI image prompt specialist. " +
-  "Take the user's description and rewrite it as a single, highly detailed image generation prompt. " +
-  "Include: subject, setting, lighting, camera angle, mood, style, and technical quality descriptors. " +
-  "Make it vivid and specific. Output ONLY the enhanced prompt — no commentary, no preamble.";
-
-router.post("/image", imageLimiter, async (req: Request, res: Response) => {
-  const descRaw = req.body?.prompt ?? req.body?.description ?? req.body?.goal;
-  if (typeof descRaw !== "string" || !descRaw.trim()) {
-    res.status(400).json({ success: false, ok: false, error: "A description is required." });
-    return;
-  }
-  const description = descRaw.trim().slice(0, 1000);
-
-  // Check image daily cost budget
-  if (!imageCheck()) {
-    res.status(429).json({
-      success: false,
-      ok: false,
-      error: "Daily image limit reached. Resets at midnight UTC — try again tomorrow.",
-    });
-    return;
-  }
-
-  try {
-    // Step 1: Enhance the user's plain description into a professional image prompt
-    const enhancedPromptResult = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      max_completion_tokens: 300,
-      messages: [
-        { role: "system", content: IMAGE_PROMPT_ENHANCER },
-        { role: "user", content: description },
-      ],
-    });
-
-    const enhancedPrompt = enhancedPromptResult.choices[0]?.message?.content?.trim() ?? description;
-
-    // Step 2: Generate the image with gpt-image-1 (Replit AI Integrations
-    // proxy supports gpt-image-1, not dall-e-3). Returns base64 — we wrap it
-    // as a data URL so the frontend can render it without a separate fetch.
-    const imageResult = await openai.images.generate({
-      model: "gpt-image-1",
-      prompt: enhancedPrompt,
-      n: 1,
-      size: "1024x1024",
-      quality: "medium",
-    });
-
-    const b64 = imageResult.data?.[0]?.b64_json;
-    if (!b64) {
-      res.status(502).json({
-        success: false,
-        ok: false,
-        error: "Image generation returned no result. Please try again.",
-      });
-      return;
-    }
-    const imageUrl = `data:image/png;base64,${b64}`;
-
-    // Charge cost only after successful generation
-    chargeImage();
-    bumpRunCount();
-
-    res.json({
-      success: true,
-      ok: true,
-      url: imageUrl,
-      enhancedPrompt,
-    });
-
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Image generation failed.";
-    logger.error({ err: message }, "image generation failed");
-
-    // Handle OpenAI content policy rejection gracefully
-    if (message.includes("content_policy") || message.includes("safety")) {
-      res.status(400).json({
-        success: false,
-        ok: false,
-        error: "Your description was flagged by content policy. Try rephrasing it.",
-      });
-      return;
-    }
-
-    res.status(502).json({
-      success: false,
-      ok: false,
-      error: "Image generation failed. Please try again.",
-    });
   }
 });
 

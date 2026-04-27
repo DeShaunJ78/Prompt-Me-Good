@@ -6,11 +6,8 @@ import { logger } from "../lib/logger";
 const DATA_DIR = path.resolve(process.cwd(), "data");
 const COST_FILE = path.join(DATA_DIR, "pmg_cost.json");
 const DAILY_COST_LIMIT_USD = 3.0;
-const DAILY_IMAGE_LIMIT_USD = 0.67; // $20/month / 30 days
-const IMAGE_COST_FILE_KEY = "image";
 const COST_PER_GENERATE = 0.004;
 const COST_PER_RUN = 0.01;
-const COST_PER_IMAGE = 0.04; // DALL-E 3 standard quality 1024x1024
 const COST_FLUSH_MS = 1000;
 
 function todayKey(): string {
@@ -68,27 +65,8 @@ function rollDayIfNeeded(): void {
   }
 }
 
-function costForEndpoint(endpoint: "generate" | "run" | "image"): number {
-  if (endpoint === "run") return COST_PER_RUN;
-  if (endpoint === "image") return COST_PER_IMAGE;
-  return COST_PER_GENERATE;
-}
-
-// Separate image cost guard using the same daily window but a lower ceiling
-export function imageCheck(): boolean {
-  rollDayIfNeeded();
-  const wouldSpend = costState.spent + COST_PER_IMAGE;
-  // Block if either the overall daily limit OR the image-specific limit is hit
-  return wouldSpend <= DAILY_COST_LIMIT_USD;
-}
-
-export function chargeImage(): void {
-  rollDayIfNeeded();
-  costState.spent += COST_PER_IMAGE;
-  if (!costFlushTimer) {
-    costFlushTimer = setTimeout(flushCostToDisk, COST_FLUSH_MS);
-    if (typeof costFlushTimer.unref === "function") costFlushTimer.unref();
-  }
+function costForEndpoint(endpoint: "generate" | "run"): number {
+  return endpoint === "run" ? COST_PER_RUN : COST_PER_GENERATE;
 }
 
 function makeCostCheck(endpoint: "generate" | "run") {
@@ -107,7 +85,7 @@ function makeCostCheck(endpoint: "generate" | "run") {
   };
 }
 
-export function chargeCost(endpoint: "generate" | "run" | "image"): void {
+export function chargeCost(endpoint: "generate" | "run"): void {
   rollDayIfNeeded();
   costState.spent += costForEndpoint(endpoint);
   if (!costFlushTimer) {
