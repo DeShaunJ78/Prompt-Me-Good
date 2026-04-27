@@ -2990,7 +2990,7 @@
                 <button type="button" id="image-generate-btn" onclick="runImageGeneration()">🎨 Generate Image</button>
                 <div class="demo-stack">
                   <button class="btn btn-secondary" type="button" id="fill-demo">Use demo values</button>
-                  <p class="demo-microcopy" id="demo-microcopy">See How It Works &mdash; loads a sample prompt instantly.</p>
+                  <p class="demo-microcopy" id="demo-microcopy">See how it works &mdash; loads a sample prompt instantly.</p>
                   <p class="demo-loading" id="demo-loading" role="status" aria-live="polite" hidden>Generating demo prompt&hellip;</p>
                 </div>
                 <button class="btn btn-secondary" type="button" id="random-prompt" title="Surprise me with a random prompt">🎲 Random prompt</button>
@@ -3290,7 +3290,7 @@
             <!-- RUN WITH AI — hidden until a prompt is generated -->
             <div class="run-section" id="runSection" hidden>
               <div class="run-section-divider"></div>
-              <h3 class="run-section-title">Run It</h3>
+              <h3 class="run-section-title">Run it</h3>
               <p class="run-section-helper">Execute this prompt and get your AI response — right here.</p>
               <button class="btn btn-secondary run-btn" type="button" id="imageBtn" onclick="generateImage()" style="display:none;">🎨 Generate Image</button>
               <button class="btn btn-primary run-btn" type="button" id="runBtn" onclick="runWithAI()">
@@ -3460,7 +3460,7 @@
                 <li><strong>Enter your goal.</strong> Type what you need help with in plain words.</li>
                 <li><strong>Customize if you want.</strong> Settings are optional — generate first, refine after.</li>
                 <li><strong>Generate your prompt.</strong> Click Generate Prompt and review the result.</li>
-                <li><strong>Refine if needed.</strong> Tap More Detailed, More Bold & Direct, or Beginner Friendly.</li>
+                <li><strong>Refine if needed.</strong> Tap More Detailed, More Aggressive, or Beginner Friendly.</li>
                 <li><strong>Copy and use in any AI platform.</strong> Paste into ChatGPT, Claude, Perplexity, or anywhere.</li>
               </ol>
             </div>
