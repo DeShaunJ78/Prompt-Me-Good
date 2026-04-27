@@ -1,0 +1,299 @@
+TITLE: PromptMeGood Full UX, Feature Alignment, and Stability Audit (Implementation Plan)
+
+---
+
+## 🎯 CORE OBJECTIVE
+
+Refine and elevate the existing PromptMeGood application so that:
+
+* All current features remain intact (DO NOT REMOVE ANY FEATURES)
+* The user experience is intuitive for beginners
+* All UI/UX messaging reflects current AI-powered capabilities
+* Friction is minimized across desktop and mobile
+* The product feels trustworthy, polished, and worth paying for
+
+---
+
+## ⚠️ NON-NEGOTIABLE RULES
+
+* Do NOT remove any features
+* Do NOT break existing functionality
+* Do NOT expose API keys
+* Do NOT alter backend logic unless explicitly required for stability
+* Only refine, reposition, clarify, and enhance
+
+---
+
+## 🧠 TARGET USER
+
+Primary user:
+
+> The everyday person who wants AI to actually understand them
+
+Implications:
+
+* They do NOT understand prompts
+* They do NOT care about technical settings
+* They want clarity, speed, and results
+* They need guidance without feeling overwhelmed
+
+---
+
+## 🔍 SECTION 1 — CRITICAL UI BUG FIXES
+
+### 1. File/Image Upload Preview Bug (DESKTOP)
+
+Fix the upload component so that:
+
+* No broken image icon appears before file selection
+* No placeholder artifacts (e.g., “Selecte”) are visible
+* Preview only renders AFTER a valid file is selected
+* Display file name after selection
+* Provide clean fallback state:
+  “No file selected”
+
+Ensure:
+
+* Consistent behavior across mobile and desktop
+* No layout shifts
+* No console errors
+
+---
+
+## 🧼 SECTION 2 — OUTDATED COPY REMOVAL & REPLACEMENT
+
+### Problem:
+
+Current messaging reflects OLD workflow (copy → external AI)
+
+### Replace outdated banner:
+
+OLD:
+“review the details, click Generate, then copy your finished prompt into your favorite AI tool”
+
+NEW:
+“Click Generate → then run it with AI or copy it anywhere.”
+
+OR:
+“You’re ready — generate your prompt, then run it instantly with AI or copy it.”
+
+---
+
+## 🧭 SECTION 3 — ADD “WHAT NEXT” GUIDANCE
+
+After prompt generation, insert:
+
+“What next?
+• Run With AI → see results instantly
+• Copy → use anywhere
+• Refine → improve your prompt”
+
+Goal:
+
+* Eliminate confusion
+* Guide next action
+* Reduce bounce
+
+---
+
+## 🧩 SECTION 4 — FEATURE ALIGNMENT AUDIT (GLOBAL)
+
+Audit EVERY UI element and ensure:
+
+Each feature answers:
+
+1. What does it do?
+2. When should I use it?
+3. What happens after I click it?
+
+---
+
+### 🔥 Identify and fix:
+
+* Any references to outdated workflows
+* Missing explanations for new features:
+
+  * Run With AI
+  * File/Image Upload
+  * Image Generation
+* Duplicate or conflicting guidance
+* Features visible too early (causing overwhelm)
+
+---
+
+## 🧠 SECTION 5 — SIMPLIFY USER FLOW (WITHOUT REMOVING FEATURES)
+
+### Default experience should be:
+
+1. User types goal
+2. Clicks “Generate Prompt”
+3. Sees result
+4. Chooses:
+
+   * Run With AI
+   * Copy
+   * Refine
+
+---
+
+### Advanced features:
+
+* Keep them
+* But hide behind:
+  “More Options” or similar toggle
+
+---
+
+## 🎯 SECTION 6 — TOUR UPDATE (CRITICAL)
+
+Current tour is outdated.
+
+Replace with simplified 4–5 step flow:
+
+1. “Type what you want”
+2. “Click Generate”
+3. “Run it instantly with AI or copy it”
+4. “Upload files/images to improve results”
+5. “Use Help Me if you’re stuck”
+
+Rules:
+
+* Max 5 steps
+* No technical language
+* Beginner-friendly tone
+
+---
+
+## 🔍 SECTION 7 — MICROCOPY IMPROVEMENTS (IN-APP)
+
+Add clarity directly in UI:
+
+### Under input box:
+
+“Describe what you want. We’ll turn it into a clear prompt.”
+
+### Under upload:
+
+“Optional: upload a file or image for better results”
+
+### Under Run With AI:
+
+“See what AI returns using this prompt”
+
+### After generation:
+
+“This is your optimized prompt. Run it with AI or copy it.”
+
+---
+
+## 📘 SECTION 8 — HELP / MANUAL UPDATE
+
+Add structured help:
+
+### Getting Started
+
+1. Type what you want
+2. Click Generate
+3. Review prompt
+4. Run With AI or copy
+
+---
+
+### Feature explanations:
+
+* Generate Prompt
+* Run With AI
+* Help Me (rename if needed to something friendlier)
+* Use Demo Values
+* Upload File/Image
+
+---
+
+### Advanced section:
+
+* Expert Mode
+* Additional controls
+
+Keep separate from beginner flow
+
+---
+
+## 🔐 SECTION 9 — PRIVACY POLICY UPDATE (CRITICAL)
+
+Add AI disclosure:
+
+* Prompts, files, and images may be sent to AI providers
+* Data is not sold
+* Files are not permanently stored (unless explicitly stated)
+
+Ensure:
+
+* Simple language
+* Clear explanation of data handling
+
+---
+
+## ⚙️ SECTION 10 — PERFORMANCE & STABILITY
+
+Ensure:
+
+* No duplicate event listeners
+* No memory leaks
+* No UI flickering
+* No layout shifts
+* Smooth transitions
+* Fast load time
+
+---
+
+## 📱 SECTION 11 — MOBILE & DESKTOP CONSISTENCY
+
+Verify:
+
+* No overlapping UI elements
+* Buttons are accessible
+* Upload feature works cleanly
+* CTA flow is identical in logic (layout can differ)
+
+---
+
+## 🔁 SECTION 12 — FINAL ALIGNMENT CHECK
+
+Before completing:
+
+Confirm:
+
+* No outdated messaging remains
+* Every feature has a clear purpose
+* User always knows what to do next
+* No broken UI states exist
+* Tour reflects current product
+* Help section matches actual behavior
+
+---
+
+## 🚀 FINAL OUTCOME
+
+The product should feel:
+
+* Effortless
+* Clear
+* Guided
+* Trustworthy
+* Beginner-friendly
+* Powerful without being overwhelming
+
+---
+
+## 🔥 PRIORITY ORDER (EXECUTION)
+
+1. Fix upload UI bug
+2. Replace outdated banner messaging
+3. Add “What next” guidance
+4. Update tour
+5. Run full feature alignment audit
+6. Update help + privacy
+
+---
+
+END OF INSTRUCTIONS
