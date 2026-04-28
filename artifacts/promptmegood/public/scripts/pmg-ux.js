@@ -4910,3 +4910,593 @@
     init();
   }
 })();
+
+/* =====================================================================
+ * T23 — PHASE C: Photography Suite + Image Generator stack.
+ *
+ * Builds two new full-width sections immediately after the existing
+ * builder section so the page now reads as three stacked workspaces:
+ *
+ *   TOP    = Prompt Builder        (existing #builder section)
+ *   MIDDLE = Photography Suite     (new — built here)
+ *   BOTTOM = Image Generator       (existing #imageResultSection,
+ *                                   relocated and always visible)
+ *
+ * Photography Suite is a guided, NO-TEXT-PROMPT pipeline: the user
+ * taps pills inside collapsible groups (Style / Camera & Lens /
+ * Lighting & Mood / Composition / Color Palette), then clicks
+ * "Send to Image Generator". We synthesize the photo prompt
+ * internally, drop it into the canonical #goal field that the
+ * existing window.generateImage() pipeline already reads, switch
+ * the app into image mode, and trigger generation. The user never
+ * sees or has to edit a text prompt to get an image.
+ *
+ * Image Generator section is moved out of the result panel and placed
+ * as its own bottom card with three action buttons: Download
+ * (existing #imageDownloadBtn), Regenerate (existing #imageAgainBtn),
+ * and a new "Use As Reference" pill that copies the last image URL
+ * to the clipboard for use elsewhere.
+ *
+ * Hard rules respected: NO backend / API changes, NO renames of
+ * existing IDs/classes/JS, all new logic centralized here, CSS
+ * variables only, no flex/order reordering tricks (real DOM moves).
+ * ===================================================================== */
+(function pmgT23PhotoSuite() {
+  if (window.__pmgT23Init) return;
+  window.__pmgT23Init = true;
+
+  var STYLE_ID = 'pmg-t23-photo-suite-style';
+  var SUITE_ID = 'pmg-photo-suite';
+  var SUMMARY_ID = 'pmg-photo-summary';
+  var IMG_GEN_HOST_ID = 'pmg-image-generator-section';
+  var TOAST_ID = 'pmg-photo-toast';
+
+  /* ---------------- Catalog of pill options per group --------------- */
+  var GROUPS = [
+    {
+      id: 'style', label: 'Style', icon: '🎨',
+      pills: [
+        'Cinematic', 'Portrait', 'Documentary', 'Editorial',
+        'Street Photography', 'Fashion', 'Landscape', 'Surreal',
+        'Vintage', 'Hyperrealistic', 'Black & White', 'Polaroid'
+      ]
+    },
+    {
+      id: 'camera', label: 'Camera & Lens', icon: '📷',
+      pills: [
+        '85mm Portrait', '35mm Wide', '50mm Standard', 'Macro',
+        'Telephoto', 'Fisheye', 'DSLR', 'Mirrorless',
+        'Film Grain', 'Drone Aerial', 'GoPro Action', 'iPhone Snap'
+      ]
+    },
+    {
+      id: 'lighting', label: 'Lighting & Mood', icon: '💡',
+      pills: [
+        'Golden Hour', 'Blue Hour', 'Studio Softbox', 'Backlit',
+        'Natural Window Light', 'Dramatic Shadows', 'Neon Glow',
+        'Candle Lit', 'Overcast Diffused', 'Moonlit',
+        'Harsh Noon', 'Cinematic Low-Key'
+      ]
+    },
+    {
+      id: 'composition', label: 'Composition', icon: '🖼️',
+      pills: [
+        'Rule Of Thirds', 'Centered', 'Symmetrical',
+        'Close-Up', 'Wide Shot', 'Bird\'s-Eye View',
+        'Worm\'s-Eye View', 'Dutch Angle', 'Leading Lines',
+        'Negative Space', 'Frame Within A Frame'
+      ]
+    },
+    {
+      id: 'palette', label: 'Color Palette', icon: '🎨',
+      pills: [
+        'Warm Tones', 'Cool Blues', 'Monochrome', 'Pastel Soft',
+        'High Contrast', 'Muted Earth', 'Neon Saturated',
+        'Sepia', 'Teal & Orange', 'Forest Greens', 'Sunset Reds'
+      ]
+    }
+  ];
+
+  /* ------------------------ Style injection ------------------------- */
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* Section card shell shared by Photography Suite + Image Gen. */
+      '.pmg-stack-section { padding: var(--space-6) 0; }',
+      '.pmg-stack-section .container { max-width: 880px; }',
+      '.pmg-stack-card {',
+      '  background: var(--color-surface);',
+      '  border: 1px solid var(--color-border);',
+      '  border-radius: var(--radius-lg);',
+      '  padding: var(--space-5);',
+      '  box-shadow: 0 1px 2px rgba(0,0,0,0.04);',
+      '}',
+      '.pmg-stack-card-head {',
+      '  display: flex; align-items: center; gap: var(--space-2);',
+      '  margin-bottom: var(--space-2);',
+      '}',
+      '.pmg-stack-card-head h2 {',
+      '  margin: 0; font-size: var(--text-xl); font-weight: 700;',
+      '  color: var(--color-text);',
+      '}',
+      '.pmg-stack-card-head .pmg-eyebrow {',
+      '  display: inline-block; padding: 2px 10px; font-size: var(--text-xs);',
+      '  font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;',
+      '  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface-2));',
+      '  color: var(--color-primary);',
+      '  border-radius: var(--radius-full); margin-right: var(--space-2);',
+      '}',
+      '.pmg-stack-helper { color: var(--color-text-muted); font-size: var(--text-sm); margin: 0 0 var(--space-4); }',
+
+      /* Photography Suite groups */
+      '#' + SUITE_ID + ' .pmg-photo-group {',
+      '  border: 1px solid var(--color-border); border-radius: var(--radius-md);',
+      '  margin-bottom: var(--space-3); background: var(--color-surface-2);',
+      '  overflow: hidden;',
+      '}',
+      '#' + SUITE_ID + ' .pmg-photo-group-head {',
+      '  display: flex; align-items: center; justify-content: space-between;',
+      '  width: 100%; padding: 12px 16px; background: transparent; border: 0;',
+      '  cursor: pointer; text-align: left; color: var(--color-text);',
+      '  font-size: var(--text-base); font-weight: 600;',
+      '}',
+      '#' + SUITE_ID + ' .pmg-photo-group-head:hover { background: color-mix(in srgb, var(--color-primary) 6%, transparent); }',
+      '#' + SUITE_ID + ' .pmg-photo-group-head .pmg-photo-group-count {',
+      '  font-size: var(--text-xs); font-weight: 600; color: var(--color-primary);',
+      '  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));',
+      '  padding: 2px 8px; border-radius: var(--radius-full); margin-left: auto; margin-right: 8px;',
+      '  min-width: 20px; text-align: center;',
+      '}',
+      '#' + SUITE_ID + ' .pmg-photo-group-count[data-count="0"] { display: none; }',
+      '#' + SUITE_ID + ' .pmg-photo-group-chevron { transition: transform 200ms ease; color: var(--color-text-muted); }',
+      '#' + SUITE_ID + ' .pmg-photo-group.is-collapsed .pmg-photo-group-chevron { transform: rotate(-90deg); }',
+      '#' + SUITE_ID + ' .pmg-photo-group-body {',
+      '  padding: 0 16px 14px; display: flex; flex-wrap: wrap; gap: 8px;',
+      '}',
+      '#' + SUITE_ID + ' .pmg-photo-group.is-collapsed .pmg-photo-group-body { display: none; }',
+      '#' + SUITE_ID + ' .pmg-photo-pill {',
+      '  display: inline-flex; align-items: center; gap: 6px;',
+      '  padding: 7px 14px; font-size: var(--text-sm); font-weight: 500;',
+      '  background: var(--color-surface); color: var(--color-text);',
+      '  border: 1.5px solid var(--color-border); border-radius: var(--radius-full);',
+      '  cursor: pointer; user-select: none;',
+      '  transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 120ms ease;',
+      '}',
+      '#' + SUITE_ID + ' .pmg-photo-pill:hover {',
+      '  border-color: color-mix(in srgb, var(--color-primary) 50%, var(--color-border));',
+      '  transform: translateY(-1px);',
+      '}',
+      '#' + SUITE_ID + ' .pmg-photo-pill.is-active {',
+      '  background: var(--color-primary); color: #fff; border-color: var(--color-primary);',
+      '  box-shadow: 0 2px 6px color-mix(in srgb, var(--color-primary) 30%, transparent);',
+      '}',
+      '#' + SUITE_ID + ' .pmg-photo-pill.is-active::before { content: "✓"; font-weight: 700; }',
+
+      /* Live summary line */
+      '#' + SUMMARY_ID + ' {',
+      '  margin-top: var(--space-4); padding: var(--space-3) var(--space-4);',
+      '  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface-2));',
+      '  border: 1px dashed color-mix(in srgb, var(--color-primary) 30%, var(--color-border));',
+      '  border-radius: var(--radius-md);',
+      '  font-size: var(--text-sm); color: var(--color-text); line-height: 1.5;',
+      '}',
+      '#' + SUMMARY_ID + ' .pmg-summary-label {',
+      '  font-weight: 700; color: var(--color-primary); margin-right: 6px;',
+      '}',
+      '#' + SUMMARY_ID + '.is-empty { color: var(--color-text-muted); font-style: italic; }',
+
+      /* Action row */
+      '#' + SUITE_ID + ' .pmg-photo-actions {',
+      '  display: flex; flex-wrap: wrap; gap: var(--space-2);',
+      '  margin-top: var(--space-4); align-items: center;',
+      '}',
+      '#' + SUITE_ID + ' .pmg-photo-send {',
+      '  flex: 1 1 auto; min-height: 52px; padding: 12px 24px;',
+      '  font-size: var(--text-base); font-weight: 700;',
+      '  border-radius: var(--radius-full);',
+      '  background: linear-gradient(135deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 60%, #6c63ff));',
+      '  color: #fff; border: 0; cursor: pointer;',
+      '  display: inline-flex; align-items: center; justify-content: center; gap: 8px;',
+      '  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 25%, transparent);',
+      '  transition: transform 120ms ease, box-shadow 180ms ease, filter 180ms ease;',
+      '}',
+      '#' + SUITE_ID + ' .pmg-photo-send:hover { transform: translateY(-1px); filter: brightness(1.05); }',
+      '#' + SUITE_ID + ' .pmg-photo-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }',
+      '#' + SUITE_ID + ' .pmg-photo-surprise, #' + SUITE_ID + ' .pmg-photo-clear {',
+      '  padding: 10px 18px; font-size: var(--text-sm); font-weight: 600;',
+      '  background: var(--color-surface); color: var(--color-text);',
+      '  border: 1.5px solid var(--color-border); border-radius: var(--radius-full); cursor: pointer;',
+      '  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;',
+      '}',
+      '#' + SUITE_ID + ' .pmg-photo-surprise:hover { border-color: var(--color-primary); color: var(--color-primary); }',
+      '#' + SUITE_ID + ' .pmg-photo-clear { background: transparent; border-style: dashed; color: var(--color-text-muted); }',
+      '#' + SUITE_ID + ' .pmg-photo-clear:hover { color: #d04848; border-color: #d04848; }',
+
+      /* Image Generator host: override the global image-mode hide rule. */
+      '#' + IMG_GEN_HOST_ID + ' { display: block !important; }',
+      '#' + IMG_GEN_HOST_ID + ' .image-result-section,',
+      '#' + IMG_GEN_HOST_ID + ' #imageResultSection {',
+      '  display: block !important; margin-top: 0 !important;',
+      '}',
+      '#' + IMG_GEN_HOST_ID + ' .image-result-section[hidden] { display: block !important; }',
+      '#' + IMG_GEN_HOST_ID + ' .run-section-divider { display: none; }',
+      '#' + IMG_GEN_HOST_ID + ' .run-section-title { display: none; }',
+      '#' + IMG_GEN_HOST_ID + ' .image-result-actions { gap: var(--space-2); margin-top: var(--space-3); }',
+      '#' + IMG_GEN_HOST_ID + ' .image-result-actions .btn { border-radius: var(--radius-full); }',
+
+      /* Toast */
+      '#' + TOAST_ID + ' {',
+      '  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px);',
+      '  background: var(--color-text); color: var(--color-surface);',
+      '  padding: 10px 20px; border-radius: var(--radius-full); font-size: var(--text-sm);',
+      '  font-weight: 600; opacity: 0; pointer-events: none;',
+      '  transition: opacity 220ms ease, transform 220ms ease;',
+      '  z-index: 9999; box-shadow: 0 4px 20px rgba(0,0,0,0.2);',
+      '}',
+      '#' + TOAST_ID + '.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }',
+
+      /* Mobile tweaks */
+      '@media (max-width: 640px) {',
+      '  .pmg-stack-section { padding: var(--space-4) 0; }',
+      '  .pmg-stack-card { padding: var(--space-4); }',
+      '  #' + SUITE_ID + ' .pmg-photo-actions { flex-direction: column; }',
+      '  #' + SUITE_ID + ' .pmg-photo-send { width: 100%; }',
+      '  #' + SUITE_ID + ' .pmg-photo-surprise, #' + SUITE_ID + ' .pmg-photo-clear { width: 100%; }',
+      '}'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  /* ----------------------- Toast helper ----------------------------- */
+  function showToast(msg) {
+    var t = document.getElementById(TOAST_ID);
+    if (!t) {
+      t = document.createElement('div');
+      t.id = TOAST_ID;
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.classList.add('is-visible');
+    clearTimeout(t.__hideTimer);
+    t.__hideTimer = setTimeout(function () {
+      t.classList.remove('is-visible');
+    }, 2400);
+  }
+
+  /* ----------------------- State + summary -------------------------- */
+  function getSelections() {
+    var picks = {};
+    GROUPS.forEach(function (g) { picks[g.id] = []; });
+    document.querySelectorAll('#' + SUITE_ID + ' .pmg-photo-pill.is-active').forEach(function (el) {
+      var g = el.getAttribute('data-group');
+      var v = el.getAttribute('data-value');
+      if (g && v && picks[g]) picks[g].push(v);
+    });
+    return picks;
+  }
+
+  function buildPromptText(picks) {
+    var parts = [];
+    if (picks.style && picks.style.length) parts.push(picks.style.join(', ') + ' style');
+    if (picks.camera && picks.camera.length) parts.push('shot on ' + picks.camera.join(' / '));
+    if (picks.lighting && picks.lighting.length) parts.push(picks.lighting.join(', ') + ' lighting');
+    if (picks.composition && picks.composition.length) parts.push(picks.composition.join(', ') + ' composition');
+    if (picks.palette && picks.palette.length) parts.push(picks.palette.join(', ') + ' color palette');
+    return parts.join(', ');
+  }
+
+  function refreshSummary() {
+    var sum = document.getElementById(SUMMARY_ID);
+    if (!sum) return;
+    var picks = getSelections();
+    var text = buildPromptText(picks);
+
+    /* Update count badges per group. */
+    GROUPS.forEach(function (g) {
+      var c = document.querySelector('#' + SUITE_ID + ' .pmg-photo-group-count[data-group="' + g.id + '"]');
+      if (c) {
+        var n = (picks[g.id] || []).length;
+        c.setAttribute('data-count', String(n));
+        c.textContent = n > 0 ? String(n) : '';
+      }
+    });
+
+    /* Enable / disable Send button. */
+    var sendBtn = document.querySelector('#' + SUITE_ID + ' .pmg-photo-send');
+    var hasAny = Object.keys(picks).some(function (k) { return picks[k].length > 0; });
+    if (sendBtn) sendBtn.disabled = !hasAny;
+
+    if (!text) {
+      sum.classList.add('is-empty');
+      sum.innerHTML = '<span class="pmg-summary-label">Your Vibe:</span>Pick a few options above to compose your shot.';
+    } else {
+      sum.classList.remove('is-empty');
+      sum.innerHTML = '<span class="pmg-summary-label">Your Vibe:</span>' + escapeHtml(text);
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  /* ----------------------- Build the suite -------------------------- */
+  function buildSuite() {
+    if (document.getElementById(SUITE_ID)) return;
+
+    var section = document.createElement('section');
+    section.className = 'app-section pmg-stack-section';
+    section.id = 'photo-suite-section';
+    section.setAttribute('aria-labelledby', SUITE_ID + '-title');
+
+    var html = [
+      '<div class="container">',
+      '  <div class="pmg-stack-card" id="' + SUITE_ID + '">',
+      '    <div class="pmg-stack-card-head">',
+      '      <span class="pmg-eyebrow">Step 2</span>',
+      '      <h2 id="' + SUITE_ID + '-title">📸 Photography Suite</h2>',
+      '    </div>',
+      '    <p class="pmg-stack-helper">Pick a vibe in each group. We\'ll build the perfect photo prompt and send it straight to the image generator — no copy and paste needed.</p>'
+    ];
+
+    GROUPS.forEach(function (g) {
+      html.push('<div class="pmg-photo-group" data-group="' + g.id + '">');
+      html.push('  <button type="button" class="pmg-photo-group-head" aria-expanded="true">');
+      html.push('    <span><span aria-hidden="true">' + g.icon + '</span> ' + g.label + '</span>');
+      html.push('    <span class="pmg-photo-group-count" data-group="' + g.id + '" data-count="0"></span>');
+      html.push('    <span class="pmg-photo-group-chevron" aria-hidden="true">▾</span>');
+      html.push('  </button>');
+      html.push('  <div class="pmg-photo-group-body">');
+      g.pills.forEach(function (p) {
+        html.push('    <button type="button" class="pmg-photo-pill" data-group="' + g.id + '" data-value="' + escapeHtml(p) + '">' + escapeHtml(p) + '</button>');
+      });
+      html.push('  </div>');
+      html.push('</div>');
+    });
+
+    html.push('<div id="' + SUMMARY_ID + '" class="is-empty"></div>');
+    html.push('<div class="pmg-photo-actions">');
+    html.push('  <button type="button" class="pmg-photo-send" disabled><span aria-hidden="true">✨</span><span>Send To Image Generator</span></button>');
+    html.push('  <button type="button" class="pmg-photo-surprise"><span aria-hidden="true">🎲</span> Surprise Me</button>');
+    html.push('  <button type="button" class="pmg-photo-clear">Clear Picks</button>');
+    html.push('</div>');
+    html.push('  </div>');
+    html.push('</div>');
+
+    section.innerHTML = html.join('\n');
+
+    /* Insert directly after the existing builder app-section. */
+    var builder = document.getElementById('builder');
+    if (builder && builder.parentNode) {
+      builder.parentNode.insertBefore(section, builder.nextSibling);
+    } else {
+      document.body.appendChild(section);
+    }
+
+    wireSuite(section);
+  }
+
+  function wireSuite(root) {
+    /* Group collapse toggles. */
+    root.querySelectorAll('.pmg-photo-group-head').forEach(function (h) {
+      h.addEventListener('click', function () {
+        var grp = h.parentNode;
+        var collapsed = grp.classList.toggle('is-collapsed');
+        h.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      });
+    });
+    /* Pill toggles. */
+    root.querySelectorAll('.pmg-photo-pill').forEach(function (p) {
+      p.addEventListener('click', function () {
+        p.classList.toggle('is-active');
+        refreshSummary();
+      });
+    });
+    /* Send. */
+    var sendBtn = root.querySelector('.pmg-photo-send');
+    if (sendBtn) sendBtn.addEventListener('click', sendToImageGenerator);
+    /* Surprise. */
+    var surprise = root.querySelector('.pmg-photo-surprise');
+    if (surprise) surprise.addEventListener('click', surpriseMe);
+    /* Clear. */
+    var clear = root.querySelector('.pmg-photo-clear');
+    if (clear) clear.addEventListener('click', clearAllPicks);
+
+    refreshSummary();
+  }
+
+  function clearAllPicks() {
+    document.querySelectorAll('#' + SUITE_ID + ' .pmg-photo-pill.is-active').forEach(function (p) {
+      p.classList.remove('is-active');
+    });
+    refreshSummary();
+  }
+
+  function surpriseMe() {
+    clearAllPicks();
+    GROUPS.forEach(function (g) {
+      /* Pick 1 or 2 random pills per group. */
+      var n = Math.random() < 0.4 ? 2 : 1;
+      var pool = g.pills.slice();
+      for (var i = 0; i < n && pool.length > 0; i++) {
+        var idx = Math.floor(Math.random() * pool.length);
+        var val = pool.splice(idx, 1)[0];
+        var sel = '#' + SUITE_ID + ' .pmg-photo-pill[data-group="' + g.id + '"][data-value="' + cssEscape(val) + '"]';
+        var el = document.querySelector(sel);
+        if (el) el.classList.add('is-active');
+      }
+    });
+    refreshSummary();
+    showToast('Surprise picks applied!');
+  }
+
+  function cssEscape(s) {
+    if (window.CSS && CSS.escape) return CSS.escape(s);
+    return String(s).replace(/["'\\]/g, '\\$&');
+  }
+
+  function sendToImageGenerator() {
+    var picks = getSelections();
+    var photoText = buildPromptText(picks);
+    if (!photoText) { showToast('Pick at least one option first.'); return; }
+
+    /* Build the final prompt. Use the user's existing builder goal as
+       the subject (if present), otherwise a friendly default. */
+    var goal = document.getElementById('goal');
+    var subject = (goal && goal.value && goal.value.trim()) ? goal.value.trim() : 'A striking photograph';
+    var finalPrompt = subject + ' — ' + photoText + '.';
+
+    /* Populate the canonical image-mode goal field. */
+    if (goal) {
+      goal.value = finalPrompt;
+      try { goal.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
+    }
+
+    /* Switch into image mode if the helper exists. */
+    if (typeof window.setMode === 'function') {
+      try { window.setMode('image'); } catch (e) {}
+    }
+
+    /* Reveal the relocated image generator section. */
+    var host = document.getElementById(IMG_GEN_HOST_ID);
+    if (host) host.style.display = 'block';
+    var imgSec = document.getElementById('imageResultSection');
+    if (imgSec) {
+      imgSec.hidden = false;
+      imgSec.removeAttribute('hidden');
+    }
+
+    /* Fire the existing pipeline. */
+    if (typeof window.generateImage === 'function') {
+      try { window.generateImage(); } catch (e) {}
+    } else if (typeof window.runImageGeneration === 'function') {
+      try { window.runImageGeneration(); } catch (e) {}
+    } else {
+      var btn = document.getElementById('image-generate-btn') || document.getElementById('imageBtn');
+      if (btn) btn.click();
+    }
+
+    /* Scroll the user down to the image section. */
+    setTimeout(function () {
+      var target = document.getElementById(IMG_GEN_HOST_ID) || document.getElementById('imageResultSection');
+      if (target) {
+        try { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+      }
+    }, 200);
+
+    showToast('Sending to image generator…');
+  }
+
+  /* -------------------- Image Generator section --------------------- */
+  function buildImageGeneratorSection() {
+    if (document.getElementById(IMG_GEN_HOST_ID)) return;
+    var imgSec = document.getElementById('imageResultSection');
+    if (!imgSec) return;
+
+    var section = document.createElement('section');
+    section.className = 'app-section pmg-stack-section';
+    section.id = IMG_GEN_HOST_ID;
+    section.setAttribute('aria-labelledby', IMG_GEN_HOST_ID + '-title');
+
+    var container = document.createElement('div');
+    container.className = 'container';
+    var card = document.createElement('div');
+    card.className = 'pmg-stack-card';
+
+    var head = document.createElement('div');
+    head.className = 'pmg-stack-card-head';
+    head.innerHTML =
+      '<span class="pmg-eyebrow">Step 3</span>' +
+      '<h2 id="' + IMG_GEN_HOST_ID + '-title">🖼️ Image Generator</h2>';
+    card.appendChild(head);
+
+    var helper = document.createElement('p');
+    helper.className = 'pmg-stack-helper';
+    helper.textContent = 'Your generated image will appear here. Download it, regenerate for a fresh take, or save the URL as a reference.';
+    card.appendChild(helper);
+
+    /* Move the existing imageResultSection into our card. */
+    card.appendChild(imgSec);
+    /* Force visible. */
+    imgSec.removeAttribute('hidden');
+    imgSec.style.display = 'block';
+    container.appendChild(card);
+    section.appendChild(container);
+
+    /* Insert after the photo suite section. */
+    var photoSection = document.getElementById('photo-suite-section');
+    var anchor = photoSection || document.getElementById('builder');
+    if (anchor && anchor.parentNode) {
+      anchor.parentNode.insertBefore(section, anchor.nextSibling);
+    } else {
+      document.body.appendChild(section);
+    }
+
+    /* Add the Use As Reference button if not already present. */
+    addUseAsReferenceButton();
+  }
+
+  function addUseAsReferenceButton() {
+    var actions = document.querySelector('#imageResultSection .image-result-actions');
+    if (!actions || actions.querySelector('.pmg-use-as-ref-btn')) return;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-secondary pmg-use-as-ref-btn';
+    btn.innerHTML = '<span aria-hidden="true">🔗</span> Use As Reference';
+    btn.addEventListener('click', function () {
+      var img = document.querySelector('#imageResultWrap img');
+      if (!img || !img.src) {
+        showToast('Generate an image first.');
+        return;
+      }
+      var url = img.src;
+      function done(ok) {
+        showToast(ok ? 'Image URL copied to clipboard!' : 'Could not copy. Try again.');
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function () { done(true); }, function () { done(false); });
+      } else {
+        try {
+          var ta = document.createElement('textarea');
+          ta.value = url; document.body.appendChild(ta); ta.select();
+          var ok = document.execCommand('copy'); document.body.removeChild(ta);
+          done(!!ok);
+        } catch (e) { done(false); }
+      }
+    });
+    actions.appendChild(btn);
+  }
+
+  /* ----------------------------- Init ------------------------------- */
+  function init() {
+    injectStyles();
+    buildSuite();
+    buildImageGeneratorSection();
+
+    /* Late-mount safety: a body-level observer keeps trying to (a) build
+       the photo suite section, (b) relocate the image generator into our
+       host card, and (c) keep the Use-As-Reference button mounted. The
+       individual builders are themselves idempotent (existence checks at
+       the top), so calling them repeatedly is cheap. The observer is
+       short-lived to avoid lingering work after page settles. */
+    try {
+      var bodyObs = new MutationObserver(function () {
+        if (!document.getElementById(SUITE_ID)) buildSuite();
+        if (!document.getElementById(IMG_GEN_HOST_ID)) buildImageGeneratorSection();
+        addUseAsReferenceButton();
+      });
+      bodyObs.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { try { bodyObs.disconnect(); } catch (e) {} }, 120000);
+    } catch (e) { /* ignore */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
