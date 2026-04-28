@@ -1,0 +1,684 @@
+Create a checkpoint before starting. Read the entire 
+codebase first. Do not make any changes until the full 
+audit is complete. Write all fixes as separate .js files. 
+Do not use heredoc syntax. Test after each fix. Report 
+pass/fail for every item.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PRODUCT CONTEXT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PromptMeGood is an AI prompt builder at promptmegood.com. 
+Users type a goal, click Fix My Prompt, get a structured 
+AI prompt, then run it with AI in-app or copy it to 
+ChatGPT, Claude, or Perplexity. It also generates images 
+via DALL-E 3 in Create An Image mode.
+
+There are two complete user journeys:
+
+JOURNEY 1 — PROMPT PRODUCTION:
+Land → Type Goal → Fix My Prompt → See Generated Prompt 
+→ Choose: Run With AI / Copy / Refine → Done
+
+JOURNEY 2 — IMAGE PRODUCTION:
+Land → Switch To Create An Image → Answer 6 Photo 
+Questions → Build My Image Prompt → Generate Image 
+→ See Image → Download → Done
+
+Every element on the page must serve one of these 
+two journeys or support them directly. Nothing else.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ABSOLUTE CONSTRAINTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- Do NOT remove any features or functionality
+- Do NOT rename any JS variables, function names, 
+  CSS class names, or HTML element IDs
+- Do NOT use CSS flex order or grid order to reorder 
+  DOM sections — this breaks anchor navigation
+- Do NOT break any #anchor links
+- Do NOT hardcode colors — always use existing 
+  CSS variables from the design system
+- Do NOT use heredoc syntax in shell commands
+- Create a checkpoint before touching anything
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OWNER STANDARDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TITLE CASE: Every button, heading, subheading, nav 
+item, CTA, sub-label, badge, pill, dropdown option, 
+tab label, modal title, card title, wizard step, 
+placeholder in labeled fields, confirmation message, 
+and any text attached to a control must use Title Case. 
+Body paragraphs stay sentence case. No exceptions.
+
+PROXIMITY: Every instruction must sit immediately 
+adjacent to the component it describes. No orphaned 
+boxes. No instruction text floating away from its 
+related control.
+
+FLOW: Every step must lead clearly to the next. 
+Users must never wonder what to do after completing 
+an action.
+
+COLOR SYSTEM: The user can change accent color via 
+swatches (green, blue, purple, gold, slate). Always 
+use CSS variables. Never hardcode colors.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 1 — KEYBOARD POPUP ON MOBILE (HIGHEST PRIORITY)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+On mobile, the keyboard triggers unexpectedly when:
+- Tapping buttons that are not text inputs
+- Tapping non-interactive elements
+- Navigating between sections
+
+This is caused by buttons or links inadvertently 
+focusing hidden inputs or textareas on tap.
+
+Audit and fix every instance:
+
+1. Find every button, link, toggle, pill, card, 
+   and clickable element in the codebase. For each 
+   one that is NOT intended to open a text input, 
+   add this attribute: inputmode="none"
+   
+   Specifically target:
+   - All .btn elements that are not submit buttons 
+     for text forms
+   - All nav links and anchor tags
+   - All toggle switches
+   - All mode switch pills (Write Something / 
+     Create An Image)
+   - All use case cards
+   - All swatch buttons (accent color picker)
+   - All accordion/details summary elements
+   - All history card buttons
+   - All template card buttons
+   - All refine buttons (More Detailed, More Bold & 
+     Direct, Beginner Friendly, Improve With AI)
+   - The Copy Prompt button
+   - The Run With AI button
+   - The Fix My Prompt button
+   - The Generate Image button
+   - The Help Me Start button
+   - The Guide Me wizard Next and Back buttons
+
+2. For every textarea and input that should NOT 
+   auto-focus on page load, ensure there is no 
+   autofocus attribute present.
+
+3. On the sticky bottom bar on mobile, the mini 
+   goal input field should only focus (and trigger 
+   keyboard) when the user explicitly taps it. 
+   Add this to the sticky bar input:
+   autocomplete="off"
+   autocorrect="off" 
+   autocapitalize="off"
+   spellcheck="false"
+
+4. For the Help Me Start wizard on mobile, the 
+   Next and Back buttons must not trigger the 
+   keyboard. Add touch-action: pan-y to the 
+   wizard container. Add inputmode="none" to 
+   Next and Back buttons. Only the actual 
+   answer input fields inside the wizard 
+   should trigger the keyboard.
+
+5. After any button click that does NOT require 
+   text input, explicitly blur any focused element:
+   Add this JS to run after every non-input button 
+   click: document.activeElement.blur()
+   
+   Apply this specifically to:
+   - Copy Prompt button (after copy action)
+   - Run With AI button (after triggering run)
+   - All refine buttons
+   - Mode switch pills
+   - Use case cards
+   - Swatch buttons
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 2 — ELIMINATE WHITE BUTTONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The owner does not want white buttons anywhere 
+on the site. Audit every button and replace 
+white or near-white button styles with 
+appropriate alternatives using existing 
+CSS variables only.
+
+Current button hierarchy to establish:
+
+PRIMARY buttons (Fix My Prompt, Generate Image, 
+Run With AI, Help Me Start, Update Prompt):
+- Background: var(--color-primary)
+- Color: #ffffff
+- These are already correct — verify they are
+
+SECONDARY buttons (Copy Prompt, More Detailed, 
+More Bold & Direct, Beginner Friendly, 
+Copy Shareable Link, Export, Import, Compare):
+- Replace white/near-white background with:
+  background: color-mix(in srgb, 
+  var(--color-primary) 12%, var(--color-surface-2))
+- Color: var(--color-primary)
+- Border: 1px solid color-mix(in srgb, 
+  var(--color-primary) 25%, var(--color-border))
+
+TERTIARY buttons (Clear Prompt, Print / Save PDF, 
+Clear All History, Collapse All, Undo Last Change):
+- Replace white with:
+  background: var(--color-surface-2)
+- Color: var(--color-text-muted)
+- Border: 1px solid var(--color-border)
+
+DESTRUCTIVE buttons (Clear All History confirm, 
+any delete/remove actions):
+- Background: color-mix(in srgb, #dc2626 10%, 
+  var(--color-surface-2))
+- Color: #dc2626
+- Border: 1px solid color-mix(in srgb, 
+  #dc2626 25%, var(--color-border))
+
+Apply these as CSS overrides targeting specific 
+button IDs and classes. Do not change button 
+functionality — only visual style.
+
+Also check:
+- The tour modal buttons
+- The Expert Mode warning modal buttons
+- The upload Choose File button
+- The history action buttons
+- The template card buttons
+- The What Next? block action items
+- The Use Your Prompt In section buttons 
+  (ChatGPT, Claude, Perplexity)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 3 — ELIMINATE ORPHANED BOXES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+No box, card, or container should exist without 
+being directly connected to an actionable component 
+or serving as instruction immediately adjacent to one.
+
+Audit every visual box on the page and fix:
+
+1. Any box that contains only text with no adjacent 
+   button or input — move it to sit directly above 
+   or below its related component. If it cannot be 
+   connected to any component, remove its box 
+   treatment and render it as plain instructional 
+   text in the appropriate location.
+
+2. This Week's Focus widget — if shown before 
+   generation it is an orphaned box with no clear 
+   connection to an action. Hide it before first 
+   generation. Show it only after localStorage key 
+   "pmg_has_generated" is set. When visible, place 
+   it directly above the goal field with a 
+   "Use This As My Goal →" button that pre-fills 
+   the goal field.
+
+3. The Help Me Start card — currently shows as a 
+   full card with title, description, and a separate 
+   button. Convert to: a single clearly labeled 
+   button "Help Me Start" placed immediately below 
+   the goal textarea. The description becomes 
+   a small helper text directly under the button:
+   "Answer 4 quick questions and we'll fill 
+   the form for you."
+
+4. The "Role Assignment", "Clear Constraints", 
+   "Useful Output Format" pills on the result panel 
+   — these are decorative and confuse users. 
+   Remove them entirely. They serve no actionable 
+   purpose.
+
+5. The "Recommended First Step" banner above 
+   Help Me Start — remove it. The button speaks 
+   for itself.
+
+6. The keyboard shortcuts panel — remove from 
+   the default builder view entirely. Show only 
+   when Expert Mode is active.
+
+7. Any tip banner or helper text block that is 
+   not immediately adjacent to the component it 
+   describes — move it or remove its box treatment.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 4 — BUILDER ABOVE THE FOLD ON DESKTOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The builder is buried below 6 marketing sections.
+On desktop (min-width 920px) users never scroll 
+far enough to find the tool. 45% scroll depth 
+in Clarity confirms this.
+
+DO NOT use CSS order or flex reorder — this 
+breaks anchor navigation.
+
+The correct approach:
+
+1. Compress hero vertical space on desktop:
+@media (min-width: 920px) {
+  .hero {
+    padding-top: clamp(1.5rem, 3vw, 2.5rem) !important;
+    padding-bottom: clamp(0.75rem, 1.5vw, 1.25rem) !important;
+    min-height: unset !important;
+  }
+  .hero-heading {
+    font-size: clamp(2rem, 3.2vw, 3rem) !important;
+    margin-bottom: var(--space-2) !important;
+  }
+  .hero-subtext-box {
+    margin-bottom: var(--space-2) !important;
+  }
+  .hero-actions {
+    margin-bottom: var(--space-2) !important;
+  }
+  .hero-card {
+    display: none !important;
+  }
+}
+
+2. On desktop, hide the 6 sections between hero 
+   and builder initially. Reveal them when user 
+   scrolls past the builder using IntersectionObserver.
+   
+   Add class "pmg-marketing-section" to:
+   - section#use-cases
+   - section#why-prompts-fail
+   - section#how-it-works
+   - section#early-feedback
+   - section#see-the-difference
+   
+   Add this CSS:
+@media (min-width: 920px) {
+  .pmg-marketing-section {
+    display: none !important;
+  }
+  .pmg-marketing-section.pmg-revealed {
+    display: block !important;
+  }
+}
+
+   Add this JavaScript before </body>:
+   
+   On desktop only, use IntersectionObserver to 
+   watch section#builder. When builder scrolls 
+   out of view (user scrolled past it), add class 
+   "pmg-revealed" to all .pmg-marketing-section 
+   elements.
+   
+   CRITICAL: When any nav link targeting these 
+   sections is clicked, immediately add 
+   "pmg-revealed" to all marketing sections 
+   BEFORE scrolling so the anchor destination 
+   is visible when reached.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 5 — COMPLETE JOURNEY CLARITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every step of both user journeys must be crystal 
+clear with no dead ends.
+
+JOURNEY 1 — PROMPT PRODUCTION:
+
+STEP 1 — Goal Entry:
+- Goal field label: "Your Goal"
+- Placeholder: "Describe What You Want — 
+  We'll Build The Perfect Prompt."
+- Helper text directly below field (not in a 
+  separate box): "The more specific you are, 
+  the better your prompt."
+- Live strength indicator below helper text 
+  (already exists — verify it is visible)
+
+STEP 2 — Generation:
+- Fix My Prompt button: full width, immediately 
+  below goal field, no elements between them
+- Sub-label under button: "No Signup. Free."
+- Help Me Start: small secondary button 
+  immediately below Fix My Prompt
+- Helper under Help Me Start: "Answer 4 quick 
+  questions and we'll fill the form for you."
+
+STEP 3 — Result:
+- Section title: "Your Fixed Prompt"
+- Auto-scroll to result with scroll-margin-top: 24px
+- Result box: clearly bordered, easy to read
+- Immediately below result box — What Would You 
+  Like To Do? block with three options:
+  
+  Option 1: "Run With AI"
+  Description: "See your AI answer right here 
+  — no copy-paste needed"
+  Action: triggers existing runWithAI function
+  
+  Option 2: "Copy Prompt"  
+  Description: "Take it to ChatGPT, Claude, 
+  or any AI tool you use"
+  Action: triggers existing copy function
+  
+  Option 3: "Refine It"
+  Description: "Make it stronger before you run it"
+  Action: scrolls to refine section
+
+STEP 4 — Run With AI:
+- Section clearly labeled: "Your AI Response"
+- Response streams in with visible loading state
+- After completion show: "Copy Response" button
+  and "Run Again" button immediately below response
+
+JOURNEY 2 — IMAGE PRODUCTION:
+
+STEP 1 — Mode Switch:
+- Mode pills clearly visible at top of builder
+- When Create An Image is selected:
+  - Goal field label changes to "Your Image"
+  - Placeholder changes to image example
+  - Photographer assistant appears above field
+
+STEP 2 — Photographer Assistant:
+- 6 questions in clear sequence
+- Each question labeled clearly in Title Case
+- Pill options for each question
+- "Build My Image Prompt →" button at bottom
+- When clicked: combines all answers and 
+  pre-fills the goal field
+
+STEP 3 — Image Generation:
+- Generate Image button: immediately below 
+  goal field, nothing between them
+- Upload section: below Generate Image button, 
+  collapsed by default labeled 
+  "Add A File Or Image (Optional)"
+
+STEP 4 — Image Result:
+- Section title: "Your Generated Image"
+- Auto-scroll with scroll-margin-top: 24px
+- Image renders full width
+- Immediately below image:
+  "Download Image" button (primary)
+  "Generate Another" button (secondary)
+  Caption: "Created With DALL·E 3 · 
+  Free During Early Access"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 6 — LINK AND NAVIGATION CLARITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every link must lead to a destination that:
+- Has a clearly visible Title Case heading
+- Shows what that section is for
+- Provides clear next steps
+
+Audit every link and anchor:
+
+1. Nav links — verify each scrolls to correct 
+   section and that section has a visible heading:
+   "Start Here" → #builder → heading: "Build Your Prompt"
+   "How It Works" → #how-it-works → heading: "How It Works"
+   "Examples" → #use-cases → heading: "Start With A Use Case"
+   "Pricing" → pricing.html → heading: "Simple Pricing"
+
+2. Use case cards — each card "Use This →" button 
+   must scroll to builder AND pre-fill the goal 
+   field with a relevant example goal. Verify 
+   this works for all 6 cards. If any card's 
+   button does not pre-fill the goal, fix it.
+
+3. Footer links — verify Privacy and Terms link 
+   to /privacy.html and /terms.html as real pages 
+   not modal triggers.
+
+4. "See Examples" / "Or See What It Can Do →" 
+   link in hero — verify it scrolls to #use-cases 
+   smoothly.
+
+5. After generating a prompt, the "Use Your Prompt In:" 
+   section shows ChatGPT, Claude, Perplexity buttons. 
+   Verify each opens the correct external URL in 
+   a new tab.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 7 — HERO REWRITE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Replace hero content. Keep all existing IDs and 
+class names exactly as they are:
+
+H1 (class="hero-heading"):
+AI That <span class="highlight">Finally Gets</span> 
+What You Mean
+
+SUBTEXT (class="hero-subtext"):
+Most people get bad AI answers because AI doesn't 
+understand what they actually want. PromptMeGood 
+<strong>fixes your prompt instantly</strong> — so 
+you get the result you meant to ask for.
+
+PRIMARY CTA (id="hero-build-cta") keep href="#builder":
+cta-title: "Fix My Prompt — It's Free"
+cta-sub: "No Signup. Works In Seconds."
+
+SECONDARY CTA (id="hero-usecases-cta") keep 
+href="#use-cases":
+cta-title: "See What It Can Do"
+cta-sub: "Real Examples, Real Results"
+
+Add social proof bar after hero-actions closing div:
+
+<div class="hero-proof-bar">
+  <span class="hero-proof-item">
+    <span aria-hidden="true">⚡</span> 
+    Works In Seconds
+  </span>
+  <span class="hero-proof-sep" aria-hidden="true">·</span>
+  <span class="hero-proof-item">
+    <span aria-hidden="true">🔒</span> 
+    No Signup Needed
+  </span>
+  <span class="hero-proof-sep" aria-hidden="true">·</span>
+  <span class="hero-proof-item">
+    <span aria-hidden="true">✓</span> 
+    Free During Early Access
+  </span>
+  <span class="hero-proof-sep" aria-hidden="true">·</span>
+  <span class="hero-proof-item">
+    <span aria-hidden="true">🌍</span> 
+    Used In 10+ Countries
+  </span>
+</div>
+
+CSS for proof bar:
+.hero-proof-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: color-mix(in srgb, 
+    var(--color-primary) 6%, var(--color-surface));
+  border-radius: var(--radius-full);
+  border: 1px solid color-mix(in srgb, 
+    var(--color-primary) 15%, var(--color-border));
+}
+.hero-proof-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+.hero-proof-sep {
+  color: var(--color-border);
+}
+@media (max-width: 540px) {
+  .hero-proof-sep { display: none; }
+  .hero-proof-bar { border-radius: var(--radius-lg); }
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 8 — TITLE CASE GLOBAL SWEEP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Find and fix every Title Case violation in 
+artifacts/promptmegood/index.html, 
+artifacts/promptmegood/pricing.html, and 
+artifacts/promptmegood/guide.html.
+
+Visible text only — no variable names or IDs.
+
+Key fixes required:
+"Fix my prompt" → "Fix My Prompt"
+"Help me start" → "Help Me Start"
+"Run with AI" → "Run With AI"
+"Copy prompt" → "Copy Prompt"
+"Clear prompt" → "Clear Prompt"
+"Update prompt" → "Update Prompt"
+"Improve with AI" → "Improve With AI"
+"More detailed" → "More Detailed"
+"More bold & direct" → "More Bold & Direct"
+"Beginner friendly" → "Beginner Friendly"
+"Undo last change" → "Undo Last Change"
+"Check prompt quality" → "Check Prompt Quality"
+"Copy shareable link" → "Copy Shareable Link"
+"Print / save PDF" → "Print / Save PDF"
+"Run again" → "Run Again"
+"Copy response" → "Copy Response"
+"Use demo values" → "Use Demo Values"
+"Random prompt" → "Random Prompt"
+"Show archived" → "Show Archived"
+"Compare two" → "Compare Two"
+"Collapse all" → "Collapse All"
+"Clear all history" → "Clear All History"
+"Export everything" → "Export Everything"
+"Import backup" → "Import Backup"
+"Backup / restore" → "Backup / Restore"
+"Notes only" → "Notes Only"
+"Hide tip" → "Hide Tip"
+"Use this →" → "Use This →"
+"Need ideas?" → "Need Ideas?"
+"What next?" → "What Next?"
+"Your goal" → "Your Goal"
+"Your image" → "Your Image"
+"Fine-tune your prompt" → "Fine-Tune Your Prompt"
+"Use your prompt in:" → "Use Your Prompt In:"
+"Tag insights" → "Tag Insights"
+"Daily streak" → "Daily Streak"
+"Saved prompts" → "Saved Prompts"
+"Total reuses" → "Total Reuses"
+"Top tag" → "Top Tag"
+"This week at a glance" → "This Week At A Glance"
+"Why most AI prompts fail" → "Why Most AI Prompts Fail"
+"What people are saying" → "What People Are Saying"
+"See the difference" → "See The Difference"
+"THIS WEEK AT A GLANCE" → "This Week At A Glance"
+"MOST-USED TEMPLATE" → "Most-Used Template"
+"DAILY STREAK" → "Daily Streak"
+"SAVED PROMPTS" → "Saved Prompts"
+"TOTAL REUSES" → "Total Reuses"
+"TOP TAG" → "Top Tag"
+"WHY IT MATTERS" → "Why It Matters"
+"EARLY FEEDBACK" → "Early Feedback"
+"THIS WEEK'S FOCUS" → "This Week's Focus"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 9 — MOBILE POLISH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Hide global search bar on mobile via CSS:
+@media (max-width: 768px) {
+  .site-search,
+  #global-search-input,
+  .global-search,
+  .search-label,
+  .search-helper { display: none !important; }
+}
+
+2. All buttons minimum 44px height:
+@media (max-width: 768px) {
+  .btn, button, [role="button"] {
+    min-height: 44px !important;
+  }
+}
+
+3. After mode switch pills the very next element 
+   must be the goal field — no cards or widgets 
+   between them on mobile.
+
+4. Tour modal: 3-second delay, show only once 
+   using localStorage "pmg_modal_shown".
+
+5. Daily nudge: hide for users without 
+   localStorage key "pmg_has_generated".
+
+6. Remove "Recommended First Step" badge.
+
+7. Remove "NEW" badge from This Week's Focus.
+
+8. Replay Tour: remove from builder view, 
+   keep only in hamburger menu.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL VERIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After all fixes verify:
+
+ANCHOR LINKS:
+- #builder scrolls to builder ✓
+- #use-cases scrolls to use cases ✓  
+- #history scrolls to history ✓
+- #how-it-works scrolls to how it works ✓
+- #early-feedback scrolls to testimonials ✓
+
+COLOR PICKER:
+- Each swatch changes entire UI accent color ✓
+- No white buttons visible anywhere ✓
+
+JOURNEY 1 — PROMPT:
+- Type goal → Fix My Prompt → prompt appears ✓
+- What Would You Like To Do? block appears ✓
+- Run With AI produces streaming response ✓
+- Copy Prompt copies to clipboard ✓
+
+JOURNEY 2 — IMAGE:
+- Switch to Create An Image mode ✓
+- 6 photographer questions appear ✓
+- Build My Image Prompt pre-fills goal field ✓
+- Generate Image produces image ✓
+- Download button saves image ✓
+
+MOBILE:
+- No unexpected keyboard popups on button taps ✓
+- All buttons minimum 44px ✓
+- Fix My Prompt reachable within 2 scrolls ✓
+- No white buttons anywhere ✓
+
+DESKTOP:
+- Builder visible without scrolling ✓
+- Marketing sections appear after builder ✓
+- Anchor links still work ✓
+
+Commit with message "Full site QC — journeys, 
+keyboard fix, no white buttons, orphaned boxes, 
+above fold, hero, Title Case"
+Push to origin main
+Deploy
+
+Report pass/fail for every numbered fix and 
+every sub-item. List anything not completed 
+and why. Flag anything needing manual review.
