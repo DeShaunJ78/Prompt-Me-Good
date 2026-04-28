@@ -448,7 +448,8 @@
       background: var(--color-surface-2);
     }
     .field textarea { min-height: 112px; padding: var(--space-4); resize: vertical; line-height: 1.5; }
-    .field textarea#goal { min-height: 96px; padding: var(--space-3) var(--space-4); line-height: 1.5; resize: none; overflow: hidden; }
+    .field textarea#goal { min-height: 96px; padding: var(--space-3) var(--space-4); line-height: 1.5; resize: none; overflow: hidden; border-color: color-mix(in srgb, var(--color-primary) 30%, var(--color-border)); }
+    #goal:focus, #goal:focus-visible { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent); }
     .field input::placeholder, .field textarea::placeholder { color: var(--color-text-faint); }
     select,
     .field select,
