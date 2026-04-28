@@ -4491,3 +4491,154 @@
     init();
   }
 })();
+
+/* =====================================================================
+ * T21 — PHASE A: real-estate cleanup.
+ *
+ * Removes the high-noise, low-value elements the user identified as the
+ * source of "paralysis by analysis", frees up the right column by killing
+ * the marketing sidebar, and prepares the layout for the upcoming
+ * 3-pipeline stack (Prompt Builder → Photography Suite → Image Generator).
+ *
+ * All changes are CSS hides (no DOM deletions, no ID/class renames),
+ * idempotent, and reversible by removing this <style> block.
+ *
+ * KILLED FROM VIEW (still in DOM so existing JS handlers stay intact):
+ *   - .hero-card                       sidebar "Build Better Prompts..." box
+ *   - .demo-stack                      "Use Demo Values" pill
+ *   - #pmg-help-me-start-recommend-row "⭐ Recommended For Best Results" pill
+ *   - .pmg-help-me-start-helper        "Answer 4 quick questions..." caption
+ *   - .pmg-expert-mode-row             Expert Mode pill+caption inside builder
+ *   - #upload-field                    standalone "Add A File Or Image" box
+ *   - #what-next                       legacy "What Next?" sidebar aside
+ *   - #pmg-what-next-block             redundant "What Would You Like To Do?" box
+ *
+ * KEPT (per user) but visually compacted:
+ *   - .popular-uses cards              shrunk so they take ~60% of the
+ *                                       footprint without losing the
+ *                                       social-proof / starter value.
+ *
+ * Hero now spans the full content width since the right column is empty.
+ * ===================================================================== */
+(function pmgT21PhaseACleanup() {
+  if (window.__pmgT21Init) return;
+  window.__pmgT21Init = true;
+
+  var STYLE_ID = 'pmg-t21-phase-a-style';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* ===== Kill the marketing sidebar; let the hero breathe.
+              Higher-specificity selector beats an earlier override at
+              pmg-ux.js:2093 ("aside.hero-card { display:block }"). ===== */
+      'aside.hero-card, .hero-card { display: none !important; }',
+      '.hero-grid { grid-template-columns: 1fr !important; max-width: 880px; margin-left: auto; margin-right: auto; }',
+      '.hero-grid > .hero-side { max-width: 100%; }',
+
+      /* ===== Pre-builder noise — gone. ===== */
+      '.demo-stack { display: none !important; }',
+      '#pmg-help-me-start-recommend-row { display: none !important; }',
+      '#pmg-helpstart-pair-row { display: block !important; }',
+      '#pmg-helpstart-pair-row > #guided-mode-btn { width: 100% !important; max-width: 420px; margin: 0 auto; display: block; }',
+      '.pmg-help-me-start-helper { display: none !important; }',
+      '.pmg-expert-mode-row { display: none !important; }',
+
+      /* ===== Standalone file upload — gone (paperclip lands in Phase B). ===== */
+      '#upload-field { display: none !important; }',
+
+      /* ===== Redundant post-result blocks — gone. ===== */
+      '#what-next { display: none !important; }',
+      '#pmg-what-next-block { display: none !important; }',
+
+      /* ===== Examples grid: kept but shrunk. ===== */
+      '.popular-uses-grid {',
+      '  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;',
+      '  gap: var(--space-3) !important;',
+      '}',
+      '.popular-use-card {',
+      '  padding: var(--space-3) var(--space-4) !important;',
+      '  font-size: var(--text-sm) !important;',
+      '}',
+      '.popular-use-card-title { font-size: var(--text-base) !important; line-height: 1.3 !important; }',
+      '.popular-use-card-desc { font-size: var(--text-xs) !important; line-height: 1.4 !important; margin-top: 4px !important; }',
+      '.popular-use-card-cta { font-size: var(--text-xs) !important; }',
+      '.popular-use-card-pill { font-size: 9px !important; padding: 1px 6px !important; }',
+
+      /* ===== Top nav gets a small Expert Mode text link (replacement
+              for the killed in-builder pill). ===== */
+      '#pmg-nav-expert-link {',
+      '  display: inline-flex; align-items: center; gap: 4px;',
+      '  font-size: var(--text-xs); font-weight: 600;',
+      '  color: var(--color-text-muted);',
+      '  background: transparent; border: 0; cursor: pointer;',
+      '  padding: 6px 10px; border-radius: var(--radius-full);',
+      '  transition: color 160ms ease, background 160ms ease;',
+      '}',
+      '#pmg-nav-expert-link:hover {',
+      '  color: var(--color-primary);',
+      '  background: color-mix(in srgb, var(--color-primary) 8%, transparent);',
+      '}',
+      'body.is-expert-mode #pmg-nav-expert-link, body.pmg-expert-mode #pmg-nav-expert-link {',
+      '  color: var(--color-primary);',
+      '  background: color-mix(in srgb, var(--color-primary) 12%, transparent);',
+      '}'
+    ].join('\n');
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  /* Add a small "Expert Mode" text link to the top nav. Drives the same
+     #expert-mode-toggle checkbox so existing handlers fire. */
+  function addNavExpertLink() {
+    if (document.getElementById('pmg-nav-expert-link')) return;
+    var nav = document.querySelector('.top-actions, .nav-toggle')
+      ? document.querySelector('.top-actions') || document.querySelector('.nav-toggle').parentNode
+      : null;
+    if (!nav) {
+      var fallback = document.querySelector('header nav, header .container, header');
+      nav = fallback || null;
+    }
+    if (!nav) return;
+    var btn = document.createElement('button');
+    btn.id = 'pmg-nav-expert-link';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Toggle Expert Mode');
+    btn.innerHTML = '<span aria-hidden="true">⚙</span><span>Expert Mode</span>';
+    btn.addEventListener('click', function () {
+      var nextOn = !document.body.classList.contains('is-expert-mode');
+      document.body.classList.toggle('pmg-expert-mode', nextOn);
+      document.body.classList.toggle('is-expert-mode', nextOn);
+      var checkbox = document.getElementById('expert-mode-toggle');
+      if (checkbox && checkbox.checked !== nextOn) {
+        checkbox.checked = nextOn;
+        try { checkbox.dispatchEvent(new Event('change', { bubbles: true })); } catch (e) {}
+      }
+    });
+    /* Place at the very start of top-actions so it sits before the search/theme buttons. */
+    if (nav.firstChild) {
+      nav.insertBefore(btn, nav.firstChild);
+    } else {
+      nav.appendChild(btn);
+    }
+  }
+
+  function init() {
+    injectStyles();
+    addNavExpertLink();
+    /* Late-mount safety. */
+    try {
+      var mo = new MutationObserver(function () { addNavExpertLink(); });
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 30000);
+    } catch (e) { /* ignore */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
