@@ -3609,7 +3609,9 @@
       '}',
       '#' + PILL_ID + ' {',
       '  display: inline-flex; align-items: center; gap: 6px;',
-      '  margin: 14px 0 6px; padding: 5px 12px;',
+      /* Sit right above the Help Me Start button: small breathing room
+         from the element above, near-zero gap to the button below. */
+      '  margin: 8px 0 -2px; padding: 5px 12px;',
       '  background: linear-gradient(135deg, var(--pmg-t16-amber-bg-from) 0%, var(--pmg-t16-amber-bg-to) 100%);',
       '  border: 1px solid var(--pmg-t16-amber);',
       '  border-radius: 999px;',
