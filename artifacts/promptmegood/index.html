@@ -15,6 +15,31 @@
         }
       } catch (e) { /* no-op */ }
     })();
+    /* Strip in-app builder/goal hashes on a fresh page load before the browser
+       performs its native anchor-scroll. The hero CTA writes #builder into the
+       URL on click; without this, returning visitors (refresh, bookmark, browser
+       history, shared link) get auto-scrolled past the hero straight to the
+       Fix My Prompt box. In-page CTA clicks still work because they don't
+       trigger a fresh page load. */
+    (function () {
+      try {
+        var INAPP = ['#builder', '#goal'];
+        var h = window.location.hash;
+        if (!h || INAPP.indexOf(h) === -1) return;
+        var fresh = true;
+        try {
+          var nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || null;
+          if (nav && nav.type) {
+            fresh = nav.type === 'navigate' || nav.type === 'reload' || nav.type === 'back_forward';
+          } else if (performance.navigation) {
+            var t = performance.navigation.type;
+            fresh = (t === 0 || t === 1 || t === 2);
+          }
+        } catch (e) {}
+        if (!fresh) return;
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+      } catch (e) { /* no-op */ }
+    })();
   </script>
   <title>PromptMeGood — Build AI Prompts That Actually Work</title>
   <meta name="description" content="Turn your ideas into powerful AI prompts in seconds. PromptMeGood helps you get better results from ChatGPT, Claude, Perplexity, and any AI tool. No fluff—just results." />

@@ -30,7 +30,58 @@
     }
   } catch (e) {}
 
-  function scrollTopIfNoHash() {
+  /* Hashes that point to in-app form/builder regions. If a user clicks the
+     hero CTA (href="#builder") and then returns to the homepage later via
+     bookmark, refresh, browser history, or a shared link, the browser will
+     auto-scroll past the hero and land them straight on the Fix My Prompt
+     box — confusing on mobile in particular. Strip these hashes on a fresh
+     page load (defense-in-depth — the head-inline script in index.html is
+     the primary path; this is the fallback if it gets blocked).
+
+     IMPORTANT: We snapshot the initial hash at script-start and only strip
+     that exact value, exactly once. This guarantees we never strip a hash
+     that was set later by an in-page click (e.g. user tapping the hero CTA
+     before DOMContentLoaded fires on slow mobile). */
+  var INAPP_HASHES = ['#builder', '#goal'];
+  var initialHashAtLoad = '';
+  try { initialHashAtLoad = window.location.hash || ''; } catch (e) {}
+  var didStripInitialHash = false;
+
+  function isFreshPageLoad() {
+    try {
+      var nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || null;
+      if (nav && nav.type) return nav.type === 'navigate' || nav.type === 'reload' || nav.type === 'back_forward';
+      if (performance.navigation) {
+        var t = performance.navigation.type;
+        return t === 0 || t === 1 || t === 2;
+      }
+    } catch (e) {}
+    return true;
+  }
+
+  function maybeStripInitialHash() {
+    if (didStripInitialHash) return false;
+    try {
+      var current = window.location.hash;
+      /* Only strip if the hash is still exactly the initial-load hash AND
+         the initial hash is one of the in-app builder hashes AND this is a
+         fresh navigation (not a stripping triggered by a later user click). */
+      if (
+        current &&
+        current === initialHashAtLoad &&
+        INAPP_HASHES.indexOf(current) !== -1 &&
+        isFreshPageLoad()
+      ) {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+        didStripInitialHash = true;
+        return true;
+      }
+    } catch (e) {}
+    didStripInitialHash = true; /* never try again — avoids racing later clicks */
+    return false;
+  }
+
+  function scrollTopIfNoHashOrStripped() {
     try {
       if (!window.location.hash) {
         window.scrollTo(0, 0);
@@ -38,12 +89,15 @@
     } catch (e) {}
   }
 
+  /* Run as early as possible so we beat the browser's anchor-scroll. */
+  maybeStripInitialHash();
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', scrollTopIfNoHash, { once: true });
+    document.addEventListener('DOMContentLoaded', scrollTopIfNoHashOrStripped, { once: true });
   } else {
-    scrollTopIfNoHash();
+    scrollTopIfNoHashOrStripped();
   }
-  window.addEventListener('load', scrollTopIfNoHash, { once: true });
+  window.addEventListener('load', scrollTopIfNoHashOrStripped, { once: true });
 
   /* ================================================================
    * BUG 4 — Hide post-generation tools until a prompt exists
