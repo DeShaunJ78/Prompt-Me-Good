@@ -1,0 +1,72 @@
+Act On Bucket A And Bucket B First.
+
+Do Not Redesign From Scratch.
+Do Not Change Backend, API, AI Logic, Payments, Secrets, Or Database Logic.
+Do Not Remove Features Permanently.
+Use CSS Display/Visibility, Copy Changes, And Small HTML Repositioning Only.
+
+Fix These Items:
+
+1. Remove The Duplicate “Help Me Start” Button
+Keep only the best-positioned Help Me Start button directly below Fix My Prompt.
+Remove or hide the duplicate near the mode toggle.
+
+2. Consolidate Expert Mode Entry Points
+Keep only “More Control” as the beginner-facing entry.
+Hide “Switch To Expert Mode →” and the “Expert Mode — Full Control Over Every Setting” pill until after the user generates a prompt.
+
+3. Move The Real Prompt Input Above The Fold On Desktop
+Do not use CSS order if it breaks anchors.
+Prefer moving the actual #builder section higher in the DOM, directly after the hero, while preserving all IDs and anchor targets.
+Do not duplicate builder controls.
+
+4. Improve Right Column Empty State
+Replace empty filler with a helpful preview:
+Title: “Your Fixed Prompt Will Appear Here”
+Body: “Type what you want on the left, then click Fix My Prompt.”
+Show three small steps:
+“1. Type Your Goal”
+“2. Fix My Prompt”
+“3. Run With AI Or Copy”
+Hide keyboard shortcuts and pricing notice until after first generation.
+
+5. Reduce Hero Competition
+Make the hero point directly to the builder.
+Primary CTA: “Fix My Prompt — Free”
+Secondary Link: “Or See What It Can Do →”
+Avoid competing sidebar/value cards above the workspace.
+
+6. Hide Clear Button Until Text Exists
+The Clear button should only appear after the user types in the goal textarea.
+
+7. Hide Empty Dashboard Stats For Brand-New Users
+Hide empty stats such as Quiet Week So Far, No Streak Yet, 0 Saved Prompts, 0 Total Reuses, and Top Tag: — until meaningful data exists.
+
+8. Hide Export Everything / Import Backup When There Is Nothing To Export
+Do not remove functionality. Only hide these controls until user has saved prompts/history/input summary content.
+
+9. Header Simplification On First Visit
+On desktop, hide the large search box by default because new users have no prompt history.
+Keep a search icon if needed.
+Keep nav simple:
+Start Here
+How It Works
+Examples
+Pricing
+Theme Toggle
+Hide Replay Tour from header unless user has already started onboarding.
+
+10. Remove Keyboard Shortcut Hint Until First Generation
+Do not show shortcut hints before the first result.
+
+Acceptance Criteria:
+- Homepage loads.
+- No console errors.
+- #builder, #goal, #use-cases, and #how-it-works anchors still work.
+- Goal textarea appears above the fold on desktop.
+- Fix My Prompt is immediately adjacent to the textarea.
+- Only one Help Me Start button is visible in the builder.
+- Only one beginner-facing Expert/Control entry is visible.
+- Empty dashboard stats are hidden for first-time users.
+- Existing features still work and are only progressively revealed.
+- Report exactly what files changed and what was hidden, moved, or renamed.
