@@ -5658,3 +5658,200 @@
     init();
   }
 })();
+
+/* =====================================================================
+ * T25 — Marketing sections: collapsed-with-labels.
+ *
+ * User feedback: "Collapse with labels" — the below-the-fold marketing
+ * sections (Popular Use Cases, Why Prompts Fail, How It Works, Early
+ * Feedback, See The Difference) take up a lot of vertical space and
+ * push the active app workspaces around. Solution: convert each
+ * .pmg-marketing-section into a click-to-expand row that shows only
+ * the section's title + a chevron. Default state is collapsed.
+ *
+ * Implementation:
+ *   - Wrap each section's first heading in a clickable button that
+ *     toggles a .pmg-mkt-collapsed class on the section.
+ *   - CSS hides every direct child except the heading container when
+ *     collapsed.
+ *   - All anchors keep working: clicking a hash link (e.g. from the
+ *     top nav or footer) auto-expands the matching section.
+ *
+ * No HTML edits, no class renames, no JS hooks broken.
+ * ===================================================================== */
+(function pmgT25CollapseMarketing() {
+  if (window.__pmgT25Init) return;
+  window.__pmgT25Init = true;
+
+  var STYLE_ID = 'pmg-t25-marketing-collapse-style';
+  var COLLAPSED = 'pmg-mkt-collapsed';
+  var WIRED = 'data-pmg-t25-wired';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* Compact the section padding when collapsed. */
+      '.pmg-marketing-section.' + COLLAPSED + ' { padding-top: 0 !important; padding-bottom: 0 !important; }',
+      '.pmg-marketing-section.' + COLLAPSED + ' > * { display: none !important; }',
+      '.pmg-marketing-section.' + COLLAPSED + ' > .pmg-mkt-toggle-wrap { display: block !important; }',
+
+      /* Toggle wrapper sits flush with neighbors and takes minimal room. */
+      '.pmg-mkt-toggle-wrap {',
+      '  max-width: 880px; margin: 0 auto; padding: 0 var(--space-4);',
+      '}',
+      '.pmg-mkt-toggle-btn {',
+      '  display: flex; align-items: center; justify-content: space-between;',
+      '  width: 100%; padding: 14px 18px; margin: 8px 0;',
+      '  background: var(--color-surface);',
+      '  border: 1px solid var(--color-border);',
+      '  border-radius: var(--radius-md);',
+      '  color: var(--color-text);',
+      '  font-size: var(--text-base); font-weight: 600;',
+      '  text-align: left; cursor: pointer;',
+      '  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;',
+      '}',
+      '.pmg-mkt-toggle-btn:hover {',
+      '  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));',
+      '  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));',
+      '  color: var(--color-primary);',
+      '}',
+      '.pmg-mkt-toggle-icon {',
+      '  display: inline-flex; align-items: center; justify-content: center;',
+      '  width: 24px; height: 24px; margin-left: 12px;',
+      '  color: var(--color-text-muted);',
+      '  transition: transform 200ms ease, color 160ms ease;',
+      '}',
+      '.pmg-marketing-section:not(.' + COLLAPSED + ') .pmg-mkt-toggle-icon { transform: rotate(180deg); color: var(--color-primary); }',
+      '.pmg-mkt-toggle-label-prefix {',
+      '  display: inline-block; margin-right: 8px;',
+      '  font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.06em;',
+      '  text-transform: uppercase; color: var(--color-text-muted);',
+      '}',
+      '.pmg-marketing-section:not(.' + COLLAPSED + ') .pmg-mkt-toggle-btn {',
+      '  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));',
+      '  border-color: color-mix(in srgb, var(--color-primary) 40%, var(--color-border));',
+      '  color: var(--color-primary);',
+      '}'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  /* Friendly label per section id. Keep short — appears as the row label. */
+  var LABELS = {
+    'use-cases':        { prefix: 'Examples',  label: 'Choose A Use Case To Get Started' },
+    'why-prompts-fail': { prefix: 'Insight',   label: 'Why Most AI Prompts Fail' },
+    'how-it-works':     { prefix: 'Guide',     label: 'How It Works' },
+    'early-feedback':   { prefix: 'Reviews',   label: 'Real People. First Tries. Real Results.' },
+    'see-the-difference': { prefix: 'Compare', label: 'See The Difference' }
+  };
+
+  function findSectionTitle(section) {
+    var titledById = section.getAttribute('aria-labelledby');
+    if (titledById) {
+      var t = document.getElementById(titledById);
+      if (t && t.textContent && t.textContent.trim()) return t.textContent.trim();
+    }
+    var h = section.querySelector('h1, h2');
+    if (h && h.textContent && h.textContent.trim()) return h.textContent.trim();
+    return null;
+  }
+
+  function buildToggle(section) {
+    if (section.getAttribute(WIRED) === '1') return;
+    var sid = section.id || '';
+    var meta = LABELS[sid] || {};
+    var label = meta.label || findSectionTitle(section) || 'More';
+    var prefix = meta.prefix || 'Section';
+
+    var wrap = document.createElement('div');
+    wrap.className = 'pmg-mkt-toggle-wrap';
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pmg-mkt-toggle-btn';
+    btn.setAttribute('aria-expanded', 'false');
+    if (sid) btn.setAttribute('aria-controls', sid);
+    btn.innerHTML =
+      '<span><span class="pmg-mkt-toggle-label-prefix">' + escapeHtml(prefix) + '</span>' +
+      '<span class="pmg-mkt-toggle-label">' + escapeHtml(label) + '</span></span>' +
+      '<span class="pmg-mkt-toggle-icon" aria-hidden="true">' +
+      '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' +
+      '<polyline points="6 9 12 15 18 9"></polyline></svg></span>';
+
+    btn.addEventListener('click', function () {
+      var nowCollapsed = section.classList.toggle(COLLAPSED);
+      btn.setAttribute('aria-expanded', nowCollapsed ? 'false' : 'true');
+      if (!nowCollapsed) {
+        /* Smoothly bring the expanded content into view. */
+        try { section.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+      }
+    });
+
+    wrap.appendChild(btn);
+    /* Insert toggle as the first child so CSS can show only it when collapsed. */
+    section.insertBefore(wrap, section.firstChild);
+    section.classList.add(COLLAPSED);
+    section.setAttribute(WIRED, '1');
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function wireAll() {
+    document.querySelectorAll('section.pmg-marketing-section').forEach(buildToggle);
+  }
+
+  /* Auto-expand the matching section when an in-page anchor is followed. */
+  function expandFromHash() {
+    var h = (location.hash || '').replace(/^#/, '');
+    if (!h) return;
+    var sec = document.getElementById(h);
+    if (sec && sec.classList.contains('pmg-marketing-section') && sec.classList.contains(COLLAPSED)) {
+      sec.classList.remove(COLLAPSED);
+      var btn = sec.querySelector('.pmg-mkt-toggle-btn');
+      if (btn) btn.setAttribute('aria-expanded', 'true');
+    }
+  }
+
+  function interceptAnchorClicks() {
+    document.addEventListener('click', function (ev) {
+      var a = ev.target && ev.target.closest && ev.target.closest('a[href^="#"]');
+      if (!a) return;
+      var href = a.getAttribute('href') || '';
+      var id = href.replace(/^#/, '');
+      if (!id) return;
+      var sec = document.getElementById(id);
+      if (sec && sec.classList.contains('pmg-marketing-section') && sec.classList.contains(COLLAPSED)) {
+        sec.classList.remove(COLLAPSED);
+        var btn = sec.querySelector('.pmg-mkt-toggle-btn');
+        if (btn) btn.setAttribute('aria-expanded', 'true');
+      }
+    }, true);
+  }
+
+  function init() {
+    injectStyles();
+    wireAll();
+    expandFromHash();
+    interceptAnchorClicks();
+    window.addEventListener('hashchange', expandFromHash);
+    /* Late-mount safety. */
+    try {
+      var mo = new MutationObserver(wireAll);
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 60000);
+    } catch (e) { /* ignore */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
