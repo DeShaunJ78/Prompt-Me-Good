@@ -3078,3 +3078,414 @@
     init();
   }
 })();
+
+/* =====================================================================
+ * T15 — Friction reduction pass
+ * Scope: consolidate competing CTAs (Help Me Start ×3, Expert Mode ×3,
+ * Run With AI ×2), restyle mode switch as a true segmented control,
+ * strengthen weak labels, move Need Ideas under carousel, collapse photo
+ * accordion by category, surface image result + download placeholder,
+ * hide unexplained sticky dock, hide WORKSPACE eyebrow, fix Real Examples
+ * sub-line redundancy.
+ * Hard rules: NEW logic only, no DOM rewrites, no ID/class renames,
+ * hide/move/collapse over delete, anchors preserved, Title Case, all CSS
+ * via vars. Re-entry guarded.
+ * ===================================================================== */
+(function pmgT15FrictionPass() {
+  'use strict';
+  if (window.__pmg_t15_friction) return;
+  window.__pmg_t15_friction = true;
+
+  var STYLE_ID = 'pmg-t15-friction-style';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      '/* ===== T15.1 Mode switch — true segmented control look ===== */',
+      '.mode-switch { background: var(--color-surface-2, color-mix(in srgb, var(--color-text) 5%, var(--color-surface))); border: 1px solid var(--color-border); border-radius: 999px; padding: 4px; gap: 0; box-shadow: none !important; }',
+      '.mode-switch-btn { box-shadow: none !important; font-weight: 600; transition: background 180ms ease, color 180ms ease; }',
+      '.mode-switch-btn:not(.active) { background: transparent !important; color: var(--color-text-muted) !important; border: 0 !important; }',
+      '.mode-switch-btn:not(.active):hover { color: var(--color-text) !important; background: color-mix(in srgb, var(--color-text) 4%, transparent) !important; }',
+      '.mode-switch-btn.active { background: var(--color-primary) !important; color: var(--color-text-inverse, #ffffff) !important; box-shadow: var(--shadow-sm) !important; }',
+      '',
+      '/* ===== T15.2 Help Me Start consolidation: hide dups ONLY when canonical keeper exists (body.pmg-t15-help-ok) ===== */',
+      '.pmg-t15-hide-dup { display: none !important; }',
+      'body.pmg-t15-help-ok #pmg-help-me-start-btn { display: none !important; }',
+      'body.pmg-t15-help-ok #build-cta-guidance { display: none !important; }',
+      '/* Center surviving Help Me Start button text */',
+      'body.pmg-t15-applied #guided-mode-btn { text-align: center !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 8px; }',
+      '',
+      '/* ===== T15.3 Expert Mode consolidation: hide dups ONLY when canonical keeper exists (body.pmg-t15-expert-ok) ===== */',
+      'body.pmg-t15-expert-ok #expert-mode-link { display: none !important; }',
+      'body.pmg-t15-expert-ok .expert-mode-link-row { display: none !important; }',
+      'body.pmg-t15-expert-ok #expert-mode-toggle-wrap { display: none !important; }',
+      'body.pmg-t15-expert-ok #builder-expert-hint { display: none !important; }',
+      '',
+      '/* ===== T15.4 Strengthen "Your Goal" label — handled in JS via textContent ===== */',
+      '',
+      '/* ===== T15.5 WORKSPACE eyebrow hide ===== */',
+      'body.pmg-t15-applied .workspace-header-eyebrow { display: none !important; }',
+      'body.pmg-t15-applied .workspace-header { padding-bottom: var(--space-2) !important; }',
+      '',
+      '/* ===== T15.6 Need Ideas under carousel — handled in JS via DOM move ===== */',
+      '.pmg-need-ideas-wrap { display: flex; justify-content: center; margin-top: var(--space-4, 16px); }',
+      '.pmg-need-ideas-wrap .usecases-dice-btn { margin: 0; }',
+      '',
+      '/* ===== T15.7 Photo accordion — collapsible category sections ===== */',
+      '.pmg-photo-q-header { all: unset; display: flex; align-items: center; justify-content: space-between; width: 100%; cursor: pointer; padding: 4px 0 8px; font-size: 13px; font-weight: 700; color: var(--color-text); box-sizing: border-box; user-select: none; }',
+      '.pmg-photo-q-header:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 4px; }',
+      '.pmg-photo-q-header-text { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }',
+      '.pmg-photo-q-chevron { display: inline-block; transition: transform 200ms ease; color: var(--color-text-muted); font-size: 14px; line-height: 1; }',
+      '.pmg-photo-q.pmg-cat-collapsed .pmg-photo-q-chevron { transform: rotate(-90deg); }',
+      '.pmg-photo-q-body { padding-top: 4px; }',
+      '.pmg-photo-q.pmg-cat-collapsed .pmg-photo-q-body { display: none !important; }',
+      '.pmg-photo-q-summary { font-size: 12px; font-weight: 500; color: var(--color-text-muted); font-style: italic; }',
+      '.pmg-photo-q.pmg-cat-collapsed .pmg-photo-q-summary { color: var(--color-primary); font-style: normal; }',
+      '',
+      '/* ===== T15.8 Image result container + download discoverability ===== */',
+      'body.image-mode #imageResultSection { display: block !important; }',
+      'body.image-mode #imageResultSection[hidden] { display: block !important; }',
+      'body.image-mode #imageResultSection .image-placeholder { display: block; padding: var(--space-8, 32px); text-align: center; color: var(--color-text-faint, var(--color-text-muted)); font-size: var(--text-sm); }',
+      'body.image-mode #imageDownloadBtn.pmg-t15-hint { display: inline-flex !important; opacity: 0.45; pointer-events: none; cursor: not-allowed; }',
+      'body.image-mode #imageResultSection .pmg-t15-image-hint { display: block; margin-top: 8px; font-size: var(--text-xs); color: var(--color-text-muted); text-align: center; font-style: italic; }',
+      '',
+      '/* ===== T15.9 Sticky bottom dock — hide (unexplained, duplicates builder) ===== */',
+      '#mobile-sticky-bar, .mobile-sticky-bar { display: none !important; }',
+      'body { padding-bottom: 0 !important; }',
+      '',
+      '/* ===== T15.10 Demote duplicate Run With AI: hide #runSection (v6 .pmg-action-stack covers it) ===== */',
+      'body.pmg-t15-applied #runSection { display: none !important; }',
+      '',
+      '/* ===== T15.11 "Or See Real Examples" sub-line — handled in JS ===== */'
+    ].join('\n');
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  function strengthenGoalLabel() {
+    try {
+      var label = document.querySelector('label[for="goal"]');
+      if (!label) return;
+      if (document.body && document.body.classList.contains('image-mode')) return;
+      var t = (label.textContent || '').replace(/\s+/g, ' ').trim();
+      if (t === 'What Do You Want AI To Help You With?') return;
+      if (/^Your Goal$/i.test(t)) {
+        label.textContent = 'What Do You Want AI To Help You With?';
+      }
+    } catch (e) { /* swallow */ }
+  }
+
+  function isInModalOrHidden(el) {
+    if (!el) return true;
+    if (el.hasAttribute('hidden')) return true;
+    if (el.closest('[role="dialog"], .modal, [aria-modal="true"], [hidden]')) return true;
+    var s = window.getComputedStyle(el);
+    if (s.display === 'none' || s.visibility === 'hidden') return true;
+    return false;
+  }
+
+  function isHelpMeStartLabel(t) {
+    if (!t) return false;
+    var stripped = t.replace(/[^A-Za-z]/g, '');
+    return /^HelpMeStart$/i.test(stripped);
+  }
+
+  function consolidateHelpMeStart() {
+    try {
+      /* Only act if the canonical keeper #guided-mode-btn exists AND is visible.
+       * Otherwise leave dups visible so users still have an entry point.
+       * Visibility check guards against pre-existing v3 CSS hide of #guided-cta-row. */
+      var canonical = document.getElementById('guided-mode-btn');
+      if (!canonical) return;
+      if (canonical.offsetParent === null && getComputedStyle(canonical).position !== 'fixed') return;
+      document.body.classList.add('pmg-t15-help-ok');
+      var ctaRow = document.getElementById('guided-cta-row');
+      if (ctaRow) {
+        var hasButton = !!ctaRow.querySelector('button:not(.pmg-t15-hide-dup), a.btn:not(.pmg-t15-hide-dup)');
+        if (!hasButton) ctaRow.classList.add('pmg-t15-hide-dup');
+      }
+      var seen = [];
+      var btns = document.querySelectorAll('button, a.btn');
+      Array.prototype.forEach.call(btns, function (b) {
+        if (b.classList.contains('pmg-t15-hide-dup')) return;
+        var t = (b.textContent || '').replace(/\s+/g, ' ').trim();
+        if (!isHelpMeStartLabel(t)) return;
+        if (b.closest('[role="dialog"], .modal, [aria-modal="true"]')) return;
+        if (b.id === 'guided-mode-title') return;
+        seen.push(b);
+      });
+      if (seen.length <= 1) return;
+      var keeper = null;
+      for (var i = 0; i < seen.length; i++) {
+        if (seen[i].id === 'guided-mode-btn') { keeper = seen[i]; break; }
+      }
+      if (!keeper) keeper = seen[0];
+      seen.forEach(function (b) {
+        if (b !== keeper) b.classList.add('pmg-t15-hide-dup');
+      });
+      var helper = document.getElementById('pmg-help-me-start-helper');
+      if (helper) {
+        if (keeper && keeper.id === 'guided-mode-btn') {
+          helper.classList.remove('pmg-t15-hide-dup');
+        } else {
+          helper.classList.add('pmg-t15-hide-dup');
+        }
+      }
+    } catch (e) { /* swallow */ }
+  }
+
+  function consolidateExpertMode() {
+    try {
+      /* Only act if the canonical keeper #pmg-expert-toggle-btn exists AND is visible.
+       * Otherwise, leave fallback entries untouched so users still have an Expert Mode entry point. */
+      var keeper = document.getElementById('pmg-expert-toggle-btn');
+      if (!keeper) return;
+      if (keeper.offsetParent === null && getComputedStyle(keeper).position !== 'fixed') return;
+      document.body.classList.add('pmg-t15-expert-ok');
+      var seen = [];
+      var nodes = document.querySelectorAll('button, a, label.expert-mode-toggle, .expert-mode-link, [data-toggle="expert-mode"]');
+      Array.prototype.forEach.call(nodes, function (b) {
+        if (b === keeper || keeper.contains(b) || b.contains(keeper)) return;
+        if (b.classList.contains('pmg-t15-hide-dup')) return;
+        var t = (b.textContent || '').replace(/\s+/g, ' ').trim();
+        if (!/Expert Mode/i.test(t)) return;
+        if (b.id === 'expert-warning-confirm' || b.id === 'expert-warning-title') return;
+        if (b.closest('[role="dialog"], .modal, [aria-modal="true"]')) return;
+        if (b.closest('#expert-warning-modal')) return;
+        if (b.closest('.expert-mode-badge')) return;
+        seen.push(b);
+      });
+      seen.forEach(function (b) {
+        b.classList.add('pmg-t15-hide-dup');
+        var row = b.closest('.expert-mode-link-row');
+        if (row && !row.contains(keeper)) row.classList.add('pmg-t15-hide-dup');
+      });
+      var hint = document.getElementById('builder-expert-hint');
+      if (hint) hint.classList.add('pmg-t15-hide-dup');
+    } catch (e) { /* swallow */ }
+  }
+
+  function demoteRunWithAi() {
+    try {
+      var seen = [];
+      var btns = document.querySelectorAll('button, a.btn');
+      Array.prototype.forEach.call(btns, function (b) {
+        if (b.classList.contains('pmg-t15-hide-dup')) return;
+        var t = (b.textContent || '').replace(/\s+/g, ' ').trim();
+        if (!/Run With AI/i.test(t)) return;
+        if (/Run Again/i.test(t)) return;
+        if (b.closest('[role="dialog"], .modal, [aria-modal="true"]')) return;
+        var s = window.getComputedStyle(b);
+        if (s.display === 'none') return;
+        seen.push(b);
+      });
+      if (seen.length <= 1) return;
+      var keeper = null;
+      for (var i = 0; i < seen.length; i++) {
+        if (seen[i].closest('.pmg-action-stack, .pmg-what-next-block')) { keeper = seen[i]; break; }
+      }
+      if (!keeper) keeper = seen[0];
+      seen.forEach(function (b) {
+        if (b === keeper) return;
+        var section = b.closest('#runSection');
+        if (section) section.classList.add('pmg-t15-hide-dup');
+        else b.classList.add('pmg-t15-hide-dup');
+      });
+    } catch (e) { /* swallow */ }
+  }
+
+  function fixRealExamplesCta() {
+    var cta = document.getElementById('hero-usecases-cta');
+    if (!cta) return;
+    var spans = cta.querySelectorAll('span');
+    Array.prototype.forEach.call(spans, function (s) {
+      var t = (s.textContent || '').trim();
+      if (/^Real Examples,?\s*Real Results$/i.test(t)) {
+        s.textContent = 'See How It Works';
+      }
+    });
+  }
+
+  function moveNeedIdeasUnderCarousel() {
+    var btn = document.getElementById('usecases-dice-btn');
+    var section = document.getElementById('use-cases');
+    if (!btn || !section) return;
+    if (btn.dataset.pmgT15Moved === '1') return;
+    var grid = section.querySelector('.popular-uses-grid');
+    if (!grid || !grid.parentNode) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'pmg-need-ideas-wrap';
+    grid.parentNode.insertBefore(wrap, grid.nextSibling);
+    wrap.appendChild(btn);
+    btn.dataset.pmgT15Moved = '1';
+    var headRow = section.querySelector('.popular-uses-head-row');
+    if (headRow && headRow.parentNode) {
+      var heading = headRow.querySelector('h2');
+      if (heading) {
+        headRow.parentNode.insertBefore(heading, headRow);
+        if (!headRow.querySelector('button, a')) headRow.classList.add('pmg-t15-hide-dup');
+      }
+    }
+  }
+
+  function surfaceImageResultPanel() {
+    var section = document.getElementById('imageResultSection');
+    var dl = document.getElementById('imageDownloadBtn');
+    if (!section) return;
+    if (section.hasAttribute('hidden')) section.removeAttribute('hidden');
+    if (dl && (dl.style.display === 'none' || !dl.getAttribute('href') || dl.getAttribute('href').length < 4)) {
+      dl.classList.add('pmg-t15-hint');
+      dl.setAttribute('aria-disabled', 'true');
+      dl.title = 'Download will become available after your image is generated.';
+      if (!section.querySelector('.pmg-t15-image-hint')) {
+        var hint = document.createElement('p');
+        hint.className = 'pmg-t15-image-hint';
+        hint.textContent = 'Download Will Activate Once Your Image Is Ready.';
+        var actions = section.querySelector('.image-result-actions');
+        if (actions && actions.parentNode) {
+          actions.parentNode.insertBefore(hint, actions.nextSibling);
+        }
+      }
+    }
+  }
+
+  function unhintImageDownloadBtn() {
+    var dl = document.getElementById('imageDownloadBtn');
+    if (!dl) return;
+    if (!dl.classList.contains('pmg-t15-hint')) return;
+    var href = dl.getAttribute('href');
+    if (!href) return;
+    var trimmed = href.replace(/^\s+|\s+$/g, '');
+    if (trimmed.length < 4 || trimmed === '#') return;
+    /* Accept any usable URL: http(s):, blob:, data:, root-relative, or relative path. */
+    var isUsable = /^(https?:|blob:|data:|\/|\.{0,2}\/|[^#?\s])/i.test(trimmed) && trimmed.charAt(0) !== '#';
+    if (!isUsable) return;
+    dl.classList.remove('pmg-t15-hint');
+    dl.removeAttribute('aria-disabled');
+    dl.style.display = 'inline-flex';
+    var hint = document.querySelector('.pmg-t15-image-hint');
+    if (hint && hint.parentNode) hint.parentNode.removeChild(hint);
+  }
+
+  function collapsePhotoCategories() {
+    var accordion = document.getElementById('pmg-photo-assistant');
+    if (!accordion) return false;
+    var qs = accordion.querySelectorAll('.pmg-photo-q');
+    if (!qs.length) return false;
+    if (accordion.dataset.pmgT15Collapsed === '1') return true;
+    Array.prototype.forEach.call(qs, function (q, i) {
+      var label = q.querySelector('.pmg-photo-q-label');
+      if (!label) return;
+      var labelText = (label.textContent || '').trim();
+      var body = document.createElement('div');
+      body.className = 'pmg-photo-q-body';
+      var node = label.nextSibling;
+      while (node) {
+        var nxt = node.nextSibling;
+        body.appendChild(node);
+        node = nxt;
+      }
+      q.appendChild(body);
+      var header = document.createElement('button');
+      header.type = 'button';
+      header.className = 'pmg-photo-q-header';
+      header.setAttribute('aria-expanded', i === 0 ? 'true' : 'false');
+      var headerText = document.createElement('span');
+      headerText.className = 'pmg-photo-q-header-text';
+      var labelSpan = document.createElement('span');
+      labelSpan.textContent = labelText;
+      var summary = document.createElement('span');
+      summary.className = 'pmg-photo-q-summary';
+      headerText.appendChild(labelSpan);
+      headerText.appendChild(summary);
+      var chevron = document.createElement('span');
+      chevron.className = 'pmg-photo-q-chevron';
+      chevron.setAttribute('aria-hidden', 'true');
+      chevron.textContent = '\u02C5';
+      header.appendChild(headerText);
+      header.appendChild(chevron);
+      q.replaceChild(header, label);
+      if (i !== 0) q.classList.add('pmg-cat-collapsed');
+      header.addEventListener('click', function () {
+        var collapsed = q.classList.toggle('pmg-cat-collapsed');
+        header.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      });
+      var updateSummary = function () {
+        var pressed = body.querySelector('.pmg-photo-pill[aria-pressed="true"]');
+        var input = body.querySelector('.pmg-photo-q-input');
+        if (pressed) {
+          var pt = (pressed.textContent || '').trim();
+          summary.textContent = '\u2014 ' + (pt.length > 32 ? pt.slice(0, 30) + '\u2026' : pt);
+        } else if (input && input.value && input.value.trim()) {
+          var v = input.value.trim();
+          summary.textContent = '\u2014 ' + (v.length > 32 ? v.slice(0, 30) + '\u2026' : v);
+        } else {
+          summary.textContent = '';
+        }
+      };
+      body.addEventListener('click', function (ev) {
+        if (ev.target && ev.target.classList && ev.target.classList.contains('pmg-photo-pill')) {
+          setTimeout(updateSummary, 0);
+        }
+      });
+      var inputEl = body.querySelector('.pmg-photo-q-input');
+      if (inputEl) inputEl.addEventListener('input', updateSummary);
+    });
+    accordion.dataset.pmgT15Collapsed = '1';
+    return true;
+  }
+
+  function watchImageDownload() {
+    var dl = document.getElementById('imageDownloadBtn');
+    if (!dl) return;
+    var mo = new MutationObserver(unhintImageDownloadBtn);
+    mo.observe(dl, { attributes: true, attributeFilter: ['href', 'style'] });
+  }
+
+  function runConsolidationPass() {
+    strengthenGoalLabel();
+    consolidateHelpMeStart();
+    consolidateExpertMode();
+    demoteRunWithAi();
+  }
+
+  function watchGoalLabel() {
+    var label = document.querySelector('label[for="goal"]');
+    if (!label) return;
+    var mo = new MutationObserver(function () { strengthenGoalLabel(); });
+    mo.observe(label, { childList: true, characterData: true, subtree: true });
+    var write = document.getElementById('writeModeBtn');
+    if (write) write.addEventListener('click', function () { setTimeout(strengthenGoalLabel, 50); });
+  }
+
+  function init() {
+    injectStyles();
+    document.body.classList.add('pmg-t15-applied');
+    strengthenGoalLabel();
+    watchGoalLabel();
+    fixRealExamplesCta();
+    moveNeedIdeasUnderCarousel();
+    surfaceImageResultPanel();
+    watchImageDownload();
+    runConsolidationPass();
+    /* Re-run consolidation a few times to catch late JS-injected dups (v6 setupHelpMeStartButton, addExpertModeRow, rebuildPostGenStack, etc.) */
+    [200, 600, 1500, 3000].forEach(function (delay) {
+      setTimeout(runConsolidationPass, delay);
+    });
+    if (!collapsePhotoCategories()) {
+      var mo = new MutationObserver(function () {
+        if (collapsePhotoCategories()) mo.disconnect();
+      });
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 10000);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
