@@ -3613,8 +3613,12 @@
          flex-basis:100% + width:100% breaks to a new line in flex-wrap parents
          and acts as a normal block in non-flex parents. */
       '#' + ROW_ID + ' {',
+      /* flex-start aligns the pill DIRECTLY under the Help Me Start button
+         (which is left-aligned in the parent flex row). Without this the
+         pill would center in the column and visually drift away from its
+         button — making it look like it belongs to Fix My Prompt instead. */
       '  display: flex;',
-      '  align-items: center; justify-content: center;',
+      '  align-items: center; justify-content: flex-start;',
       '  width: 100%;',
       '  flex-basis: 100%;',
       '  margin: 4px 0 0;',
