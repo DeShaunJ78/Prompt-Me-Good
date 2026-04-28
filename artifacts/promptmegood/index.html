@@ -2981,6 +2981,89 @@
     .top-actions .search, .site-search, #site-search, .search-bar { display: none !important; }
     .guided-modal, .guided-wizard, .tour-card { touch-action: pan-y; }
   }
+
+  .hero-punch {
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--color-primary);
+    margin: 0 0 var(--space-3);
+    letter-spacing: -0.01em;
+  }
+
+  .hero-text-link {
+    display: inline-block;
+    margin-top: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color var(--transition-interactive);
+  }
+
+  .hero-text-link:hover { color: var(--color-primary); }
+
+  .hero-proof-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2) var(--space-4);
+    margin-top: var(--space-5);
+    padding: var(--space-3) var(--space-4);
+    background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));
+    border-radius: var(--radius-full);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 15%, var(--color-border));
+  }
+
+  .hero-proof-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+  }
+
+  .hero-proof-icon { font-size: 14px; }
+
+  .hero-proof-divider {
+    color: var(--color-border);
+    font-size: var(--text-sm);
+  }
+
+  @media (max-width: 540px) {
+    .hero-proof-divider { display: none; }
+    .hero-proof-bar { gap: var(--space-2); }
+  }
+
+  @media (min-width: 920px) {
+    .hero {
+      padding-top: clamp(2rem, 4vw, 3rem) !important;
+      padding-bottom: clamp(1rem, 2vw, 1.5rem) !important;
+    }
+    .hero-heading {
+      font-size: clamp(2.2rem, 3.5vw, 3.2rem) !important;
+    }
+    main#main {
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    section.hero { order: 1 !important; }
+    section#builder { order: 2 !important; padding-top: var(--space-6) !important; }
+    section#use-cases { order: 3 !important; }
+    section#why-prompts-fail { order: 4 !important; }
+    section#how-it-works { order: 5 !important; }
+    section#see-the-difference { order: 6 !important; }
+    section#early-feedback { order: 7 !important; }
+    section#dashboard { order: 8 !important; }
+    section#templates { order: 9 !important; }
+    section#history { order: 10 !important; }
+    section#manual { order: 11 !important; }
+    section#email-capture { order: 12 !important; }
+    main#main > footer#site-footer { order: 13 !important; }
+    main#main > * { order: 14; }
+  }
 </style>
 
 </head>
@@ -3055,8 +3138,9 @@
         <div>
           <div class="eyebrow" hidden style="display:none">Get AI To Understand You</div>
           <h1 class="hero-heading">AI That Finally <span class="highlight">Does What You Ask</span></h1>
+          <p class="hero-punch">The tool that makes AI understand you — the first time.</p>
           <div class="hero-subtext-box">
-            <p class="hero-subtext">Stop rewording the same prompt over and over. PromptMeGood builds the perfect AI prompt from your idea &mdash; in seconds.</p>
+            <p class="hero-subtext">Most people get bad AI answers because they ask the wrong way. PromptMeGood fixes your prompt instantly &mdash; so AI gives you exactly what you meant.</p>
           </div>
           <p class="trust-line" hidden style="display:none">PromptMeGood helps you ask AI the right way &mdash; so you stop getting bad answers.</p>
           <p id="usageCounter" style="display:none" aria-live="polite" hidden>
@@ -3064,13 +3148,31 @@
           </p>
           <div class="hero-actions">
             <a class="btn btn-primary btn-stacked" href="#builder" id="hero-build-cta">
-              <span class="cta-title">Fix My Prompt &rarr;</span>
-              <span class="cta-sub">Turn Your Idea Into A Powerful Prompt</span>
+              <span class="cta-title">Fix My Prompt — Free</span>
+              <span class="cta-sub">No signup. Works instantly.</span>
             </a>
-            <a class="btn btn-secondary btn-stacked btn-ghost" href="#use-cases" id="hero-usecases-cta">
-              <span class="cta-title">See Examples</span>
-              <span class="cta-sub" hidden style="display:none">or explore use cases</span>
-            </a>
+            <a class="hero-text-link" href="#use-cases" id="hero-usecases-cta">Or see what it can do →</a>
+          </div>
+          <div class="hero-proof-bar">
+            <span class="hero-proof-item">
+              <span class="hero-proof-icon" aria-hidden="true">⚡</span>
+              Works in seconds
+            </span>
+            <span class="hero-proof-divider" aria-hidden="true">·</span>
+            <span class="hero-proof-item">
+              <span class="hero-proof-icon" aria-hidden="true">🔒</span>
+              No signup needed
+            </span>
+            <span class="hero-proof-divider" aria-hidden="true">·</span>
+            <span class="hero-proof-item">
+              <span class="hero-proof-icon" aria-hidden="true">✓</span>
+              Free during early access
+            </span>
+            <span class="hero-proof-divider" aria-hidden="true">·</span>
+            <span class="hero-proof-item">
+              <span class="hero-proof-icon" aria-hidden="true">🌍</span>
+              Used in 10+ countries
+            </span>
           </div>
           <div class="hero-testimonial" aria-label="Customer testimonial">
             <span class="hero-testimonial-stars" aria-hidden="true">&#9733;&#9733;&#9733;&#9733;&#9733;</span>

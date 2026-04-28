@@ -1,0 +1,225 @@
+Create a checkpoint before starting. Do not use heredoc syntax. 
+Write all fixes as separate .js files. Test after changes. 
+Report pass/fail for every item.
+
+Only edit artifacts/promptmegood/index.html.
+Do NOT remove any features or rename any IDs or functions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1 — KILLER HERO REWRITE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Find the hero section starting at line 3053:
+<section class="hero" id="top">
+
+Make these exact changes inside it:
+
+1. Replace the H1 at line 3057:
+FROM:
+<h1 class="hero-heading">AI That Finally <span class="highlight">Does What You Ask</span></h1>
+
+TO:
+<h1 class="hero-heading">AI That Finally <span class="highlight">Does What You Ask</span></h1>
+<p class="hero-punch">The tool that makes AI understand you — the first time.</p>
+
+2. Replace the hero-subtext-box paragraph:
+FROM:
+<p class="hero-subtext">Stop rewording the same prompt over and over. PromptMeGood builds the perfect AI prompt from your idea &mdash; in seconds.</p>
+
+TO:
+<p class="hero-subtext">Most people get bad AI answers because they ask the wrong way. PromptMeGood fixes your prompt instantly &mdash; so AI gives you exactly what you meant.</p>
+
+3. Replace the primary CTA button content inside 
+   id="hero-build-cta". Find the .cta-title and 
+   .cta-sub spans inside it and change them to:
+   cta-title: "Fix My Prompt — Free"
+   cta-sub: "No signup. Works instantly."
+
+4. Replace the secondary CTA button content inside
+   id="hero-usecases-cta". Change it from a 
+   btn-stacked button to a simple text link:
+   Remove the btn-secondary and btn-stacked and 
+   btn-ghost classes. Add class "hero-text-link".
+   Change the visible text to: "Or see what it can do →"
+
+5. Add this CSS in the existing style block before </head>:
+
+.hero-punch {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-primary);
+  margin: 0 0 var(--space-3);
+  letter-spacing: -0.01em;
+}
+
+.hero-text-link {
+  display: inline-block;
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--transition-interactive);
+}
+
+.hero-text-link:hover { color: var(--color-primary); }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2 — BUILDER ABOVE THE FOLD ON DESKTOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The builder section starts at line 3239.
+Between the hero (line 3053) and the builder (line 3239)
+there are 4 sections eating screen real estate:
+- popular-uses (use cases)
+- why-prompts-fail
+- builder-intro (how it works)
+- feedback (testimonials)
+- see-the-difference
+
+On desktop these push the builder below the fold.
+A first-time visitor on a PC never sees the tool.
+
+Make these CSS changes in the existing style block:
+
+1. Reduce hero padding on desktop so it takes less 
+   vertical space:
+@media (min-width: 920px) {
+  .hero {
+    padding-top: clamp(2rem, 4vw, 3rem) !important;
+    padding-bottom: clamp(1rem, 2vw, 1.5rem) !important;
+  }
+  
+  .hero-heading {
+    font-size: clamp(2.2rem, 3.5vw, 3.2rem) !important;
+  }
+}
+
+2. On desktop, hide the sections between hero and 
+   builder from the initial scroll position by making
+   the builder appear directly after the hero.
+   Do this by reordering with CSS order property
+   on the main element's flex children.
+   
+   Add this CSS:
+@media (min-width: 920px) {
+  main#main {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  section.hero { order: 1 !important; }
+  
+  section#builder { order: 2 !important; }
+  
+  section#use-cases { order: 3 !important; }
+  
+  section#why-prompts-fail { order: 4 !important; }
+  
+  section#how-it-works { order: 5 !important; }
+  
+  section#see-the-difference { order: 6 !important; }
+  
+  section#early-feedback { order: 7 !important; }
+  
+  section#dashboard { order: 8 !important; }
+  
+  section#templates { order: 9 !important; }
+  
+  section#history { order: 10 !important; }
+  
+  section#manual { order: 11 !important; }
+}
+
+This moves the builder directly below the hero on 
+desktop only. Mobile order stays unchanged.
+
+3. On desktop make the builder section padding 
+   tighter so it sits closer to the hero:
+@media (min-width: 920px) {
+  section#builder {
+    padding-top: var(--space-6) !important;
+  }
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3 — HERO SOCIAL PROOF BAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add a social proof bar directly below the hero-actions 
+div and above the closing hero section tag.
+
+Insert this HTML after the closing </div> of hero-actions:
+
+<div class="hero-proof-bar">
+  <span class="hero-proof-item">
+    <span class="hero-proof-icon" aria-hidden="true">⚡</span>
+    Works in seconds
+  </span>
+  <span class="hero-proof-divider" aria-hidden="true">·</span>
+  <span class="hero-proof-item">
+    <span class="hero-proof-icon" aria-hidden="true">🔒</span>
+    No signup needed
+  </span>
+  <span class="hero-proof-divider" aria-hidden="true">·</span>
+  <span class="hero-proof-item">
+    <span class="hero-proof-icon" aria-hidden="true">✓</span>
+    Free during early access
+  </span>
+  <span class="hero-proof-divider" aria-hidden="true">·</span>
+  <span class="hero-proof-item">
+    <span class="hero-proof-icon" aria-hidden="true">🌍</span>
+    Used in 10+ countries
+  </span>
+</div>
+
+Add this CSS for the proof bar:
+
+.hero-proof-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  background: color-mix(in srgb, var(--color-primary) 6%, 
+    var(--color-surface));
+  border-radius: var(--radius-full);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 
+    15%, var(--color-border));
+}
+
+.hero-proof-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.hero-proof-icon { font-size: 14px; }
+
+.hero-proof-divider {
+  color: var(--color-border);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 540px) {
+  .hero-proof-divider { display: none; }
+  .hero-proof-bar { gap: var(--space-2); }
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AFTER ALL SECTIONS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Commit with message "Killer hero + builder above fold 
+on desktop + social proof bar"
+Push to origin main
+Deploy
+
+Report pass/fail for every numbered item.
+Flag anything that could not be changed safely.
