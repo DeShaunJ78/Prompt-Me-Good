@@ -54,3 +54,9 @@ id = "nkiXH9xgunn3d21faxEIU"
 uri = "file://screenshots/narrow-pill.jpg"
 type = "image"
 title = "Restored layout with narrow gold pill matching Help Me Start width"
+
+[[outputs]]
+id = "VvgS4b6z4dO6aAj2x_jsY"
+uri = "file://screenshots/parallel-final.jpg"
+type = "image"
+title = "Right-aligned pill + Use Demo Values parallel with Help Me Start"

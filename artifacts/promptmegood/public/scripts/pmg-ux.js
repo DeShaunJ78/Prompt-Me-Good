@@ -3615,7 +3615,9 @@
       '#' + ROW_ID + ' {',
       '  display: flex;',
       '  align-items: center;',
-      '  justify-content: flex-start;',
+      /* Right-aligned: pill sits over Help Me Start (which is the right
+         button in the parallel demo|help row below). */
+      '  justify-content: flex-end;',
       '  width: 100%;',
       '  flex-basis: 100%;',
       '  margin: 8px 0 -2px;',
@@ -3838,6 +3840,75 @@
         clearInterval(iv);
         startVisibilitySync();
         startWidthSync();
+      }
+    });
+    try { mo.observe(document.body, { childList: true, subtree: true }); } catch (e) {}
+    setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 12000);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+
+/* =====================================================================
+ * T16c — Bring Use Demo Values up parallel with Help Me Start
+ *
+ * After T15 relocates #guided-mode-btn next to #generateBtn, and T16
+ * inserts the right-aligned Recommended pill, this IIFE moves
+ * .demo-stack (containing #fill-demo "Use Demo Values") to be a direct
+ * sibling immediately BEFORE #guided-mode-btn — so they render parallel
+ * (demo on left, help on right) in the .actions-row flex-wrap parent.
+ *
+ * Hard-rule compliant: hide/move (no deletion), no rename of any IDs/
+ * classes, no flex order:N, anchors preserved, all logic centralized.
+ * Idempotent — only moves once.
+ * ===================================================================== */
+(function pmgT16cParallelDemoButton() {
+  if (window.__pmgT16cInit) return;
+  window.__pmgT16cInit = true;
+
+  function moveDemoStack() {
+    var demo = document.querySelector('.demo-stack');
+    var help = document.getElementById('guided-mode-btn');
+    if (!demo || !help || !help.parentNode) return false;
+    /* Only move after T15 has placed help in the same parent as generate. */
+    var generate = document.getElementById('generateBtn');
+    if (!generate || generate.parentNode !== help.parentNode) return false;
+
+    var didWork = false;
+
+    /* (a) Pin the "No Signup. Free." sublabel directly after Fix My Prompt
+       so it stays visually under the green button regardless of what other
+       IIFEs insert later. */
+    var sublabel = document.getElementById('pmg-generate-sublabel');
+    if (sublabel && generate.nextElementSibling !== sublabel) {
+      generate.parentNode.insertBefore(sublabel, generate.nextSibling);
+      didWork = true;
+    }
+
+    /* (b) Move demo-stack to be the sibling immediately before help, so
+       Use Demo Values renders parallel to Help Me Start. */
+    if (demo.nextElementSibling !== help) {
+      help.parentNode.insertBefore(demo, help);
+      didWork = true;
+    }
+    return didWork || (demo.nextElementSibling === help);
+  }
+
+  function init() {
+    if (moveDemoStack()) return;
+    var attempts = 0;
+    var iv = setInterval(function () {
+      attempts++;
+      if (moveDemoStack() || attempts > 30) clearInterval(iv);
+    }, 250);
+    var mo = new MutationObserver(function () {
+      if (moveDemoStack()) {
+        try { mo.disconnect(); } catch (e) {}
+        clearInterval(iv);
       }
     });
     try { mo.observe(document.body, { childList: true, subtree: true }); } catch (e) {}
