@@ -3617,7 +3617,7 @@
       '  align-items: center; justify-content: center;',
       '  width: 100%;',
       '  flex-basis: 100%;',
-      '  margin: 6px 0 0;',
+      '  margin: 4px 0 0;',
       '  padding: 0;',
       '}',
       '#' + ROW_ID + '.pmg-t16-hidden { display: none !important; }',
@@ -3699,12 +3699,16 @@
     var relocated = !oldRow || (generate && generate.nextElementSibling === help);
     if (!relocated) return false;
     var pill = buildPill();
-    /* Wrap pill in a full-width row so it stacks ABOVE the Help Me Start
-       button instead of sitting next to it in the parent flex row. */
+    /* Wrap pill in a full-width row so it stacks BELOW the Help Me Start
+       button as a caption — text under its respective button. */
     var row = document.createElement('div');
     row.id = ROW_ID;
     row.appendChild(pill);
-    help.parentNode.insertBefore(row, help);
+    if (help.nextSibling) {
+      help.parentNode.insertBefore(row, help.nextSibling);
+    } else {
+      help.parentNode.appendChild(row);
+    }
     return true;
   }
 
