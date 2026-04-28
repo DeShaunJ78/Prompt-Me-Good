@@ -2983,255 +2983,6 @@
   }
 </style>
 
-
-<style id="pmg-conversion-above-fold-css">
-  html {
-    scroll-padding-top: 24px;
-  }
-
-  #builder,
-  #result-panel,
-  #resultBox,
-  #aiResponseSection,
-  #imageResultSection {
-    scroll-margin-top: 24px;
-  }
-
-  .pmg-builder-top {
-    display: none;
-  }
-
-  @media (min-width: 920px) {
-    .pmg-builder-top {
-      display: block;
-      width: min(calc(100% - 32px), 1100px);
-      margin: 24px auto 32px;
-    }
-
-    .pmg-builder-top-card {
-      display: grid;
-      grid-template-columns: minmax(0, 40%) minmax(0, 60%);
-      gap: 32px;
-      align-items: center;
-      padding: 24px;
-      border: 1px solid var(--color-border);
-      border-radius: 24px;
-      background: var(--color-surface);
-      box-shadow: 0 24px 70px color-mix(in srgb, var(--color-primary) 12%, transparent);
-    }
-
-    .pmg-builder-top-copy h2 {
-      margin: 0 0 10px;
-      font-size: clamp(2rem, 3vw, 3rem);
-      letter-spacing: -0.04em;
-      line-height: 1;
-    }
-
-    .pmg-builder-top-copy p {
-      margin: 0;
-      color: var(--color-muted);
-      line-height: 1.55;
-    }
-
-    .pmg-builder-top-eyebrow {
-      margin-bottom: 8px !important;
-      font-weight: 800;
-      color: var(--color-primary) !important;
-    }
-
-    .pmg-builder-top-form {
-      display: grid;
-      gap: 12px;
-    }
-
-    .pmg-builder-top-form label {
-      font-weight: 800;
-    }
-
-    #pmg-top-goal {
-      width: 100%;
-      min-height: 112px;
-      resize: vertical;
-      border-radius: 18px;
-      border: 1px solid var(--color-border);
-      background: var(--color-bg);
-      color: var(--color-text);
-      padding: 16px;
-      font: inherit;
-      line-height: 1.5;
-    }
-
-    #pmg-top-goal:focus {
-      outline: 2px solid color-mix(in srgb, var(--color-primary) 45%, transparent);
-      border-color: var(--color-primary);
-    }
-
-    .pmg-builder-top-actions {
-      display: grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap: 10px;
-    }
-
-    .pmg-builder-top-actions .btn {
-      min-height: 52px;
-      font-weight: 850;
-    }
-
-    .pmg-builder-top-proof {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 2px;
-    }
-
-    .pmg-builder-top-proof span {
-      padding: 7px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--color-border);
-      background: color-mix(in srgb, var(--color-primary) 6%, transparent);
-      color: var(--color-muted);
-      font-size: .86rem;
-      font-weight: 700;
-    }
-  }
-
-  @media (max-width: 919px) {
-    .pmg-builder-top {
-      display: none !important;
-    }
-  }
-
-  .pmg-hidden-what-next,
-  #what-next[hidden] {
-    display: none !important;
-  }
-
-  @media (min-width: 920px) {
-    .app-shell {
-      max-width: 1100px !important;
-      margin-inline: auto !important;
-      display: grid !important;
-      grid-template-columns: minmax(0, 45%) minmax(0, 55%) !important;
-      gap: 32px !important;
-      align-items: start !important;
-    }
-
-    #result-panel {
-      position: sticky !important;
-      top: 92px !important;
-      align-self: start !important;
-    }
-
-    body.pmg-has-result #result-panel {
-      box-shadow: 0 22px 60px color-mix(in srgb, var(--color-primary) 16%, transparent);
-      border-color: color-mix(in srgb, var(--color-primary) 24%, var(--color-border));
-    }
-  }
-
-  @media (max-width: 919px) {
-    .app-shell {
-      width: min(calc(100% - 16px), 1100px) !important;
-      margin-inline: auto !important;
-    }
-
-    button,
-    .btn,
-    input,
-    select,
-    textarea,
-    [role="button"] {
-      min-height: 44px;
-    }
-
-    .top-actions .search,
-    .site-search,
-    #site-search,
-    .search-bar,
-    #global-search-input,
-    #global-search-results {
-      display: none !important;
-    }
-
-    body:not(.pmg-has-result) #tour-step-generate {
-      position: sticky !important;
-      bottom: 10px !important;
-      z-index: 30 !important;
-      padding: 10px !important;
-      border-radius: 18px !important;
-      background: color-mix(in srgb, var(--color-surface) 92%, transparent) !important;
-      backdrop-filter: blur(14px);
-      box-shadow: 0 12px 34px rgba(0,0,0,.16);
-    }
-  }
-
-  #prompt-form {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-  }
-
-  .field-primary {
-    order: 1 !important;
-  }
-
-  #tour-step-generate {
-    order: 2 !important;
-    margin-top: 0 !important;
-  }
-
-  #guided-cta-row {
-    order: 3 !important;
-  }
-
-  #upload-field {
-    order: 4 !important;
-    border: 1.5px dashed color-mix(in srgb, var(--color-primary) 35%, var(--color-border)) !important;
-    background: color-mix(in srgb, var(--color-primary) 5%, transparent) !important;
-    overflow: hidden !important;
-  }
-
-  #settingsPanel {
-    order: 5 !important;
-  }
-
-  #weekly-goal-pin,
-  #post-uc-guidance,
-  #keyboard-hints,
-  #auto-optimize-row {
-    display: none !important;
-  }
-
-  #generateBtn,
-  #image-generate-btn {
-    width: 100% !important;
-    min-height: 56px !important;
-    font-size: 1.05rem !important;
-    font-weight: 850 !important;
-    box-shadow: 0 14px 30px color-mix(in srgb, var(--color-primary) 28%, transparent) !important;
-  }
-
-  #resultBox {
-    min-height: 220px !important;
-    padding: 22px !important;
-    border-radius: 20px !important;
-    line-height: 1.65 !important;
-    border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--color-border)) !important;
-  }
-
-  .pmg-primary-result-actions {
-    display: grid !important;
-    grid-template-columns: 1.15fr 1fr 1fr;
-    gap: 10px;
-    margin-top: 12px;
-  }
-
-  @media (max-width: 760px) {
-    .pmg-primary-result-actions {
-      grid-template-columns: 1fr !important;
-    }
-  }
-</style>
-
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -3313,7 +3064,7 @@
           </p>
           <div class="hero-actions">
             <a class="btn btn-primary btn-stacked" href="#builder" id="hero-build-cta">
-              <span class="cta-title">Fix My Prompt — Free &rarr;</span>
+              <span class="cta-title">Fix My Prompt &rarr;</span>
               <span class="cta-sub">Turn Your Idea Into A Powerful Prompt</span>
             </a>
             <a class="btn btn-secondary btn-stacked btn-ghost" href="#use-cases" id="hero-usecases-cta">
@@ -3338,34 +3089,6 @@
         </aside>
       </div>
     </section>
-
-<section id="builder-top" class="pmg-builder-top" aria-label="Fix My Prompt Preview">
-  <div class="pmg-builder-top-card">
-    <div class="pmg-builder-top-copy">
-      <p class="pmg-builder-top-eyebrow">Try It Now</p>
-      <h2>Tell AI What You Mean</h2>
-      <p>Type one sentence. PromptMeGood turns it into a clearer prompt you can run instantly or copy anywhere.</p>
-    </div>
-
-    <div class="pmg-builder-top-form">
-      <label for="pmg-top-goal">What Do You Want AI To Help With?</label>
-      <textarea id="pmg-top-goal" rows="4" placeholder="Example: Help Me Write A Better Email To A Client"></textarea>
-
-      <div class="pmg-builder-top-actions">
-        <button type="button" class="btn btn-primary" id="pmg-top-generate">Fix My Prompt — Free</button>
-        <button type="button" class="btn btn-secondary" id="pmg-top-help">Help Me Start</button>
-      </div>
-
-      <div class="pmg-builder-top-proof" aria-label="Trust Signals">
-        <span>No Signup</span>
-        <span>Works Instantly</span>
-        <span>Free To Use</span>
-        <span>Used In 10+ Countries</span>
-      </div>
-    </div>
-  </div>
-</section>
-
 
     <section class="popular-uses" id="use-cases" aria-labelledby="popular-uses-title">
       <div class="container">
@@ -3911,7 +3634,14 @@
               </div>
               <span class="improve-status" id="improve-status" aria-live="polite" hidden>Updating…</span>
             </div>
-            <aside class="what-next pmg-post-gen pmg-hidden-what-next" id="what-next" hidden aria-hidden="true"></aside>
+            <aside class="what-next pmg-post-gen" id="what-next" aria-label="What next">
+              <h3 class="what-next-title">What Next?</h3>
+              <ul class="what-next-list">
+                <li><strong>Run With AI</strong> &rarr; <span>See Results Instantly — no copy-paste needed</span></li>
+                <li><strong>Refine</strong> &rarr; <span>Make It Better</span></li>
+                <li><strong>Copy</strong> &rarr; <span>Use Anywhere</span></li>
+              </ul>
+            </aside>
             <div id="tour-final-actions" class="tour-final-actions pmg-post-gen">
             <div class="strength-score" id="strength-score" role="status" aria-live="polite" hidden>
               <div class="strength-score-head">
@@ -3970,7 +3700,7 @@
               <p class="run-section-helper">Created by DALL·E 3 — right here in the app.</p>
               <div class="image-result-wrap" id="imageResultWrap"><div class="image-placeholder">Your Image Will Appear Here</div></div>
               <div class="image-result-actions">
-                <a id="imageDownloadBtn" href="" download="promptmegood-image.png" class="btn btn-primary" style="display:none;text-decoration:none;">⬇ Download Image</a>
+                <a id="imageDownloadBtn" href="" download="promptmegood-image.png" class="btn btn-primary" style="display:none;text-decoration:none;">⬇ Download</a>
                 <button class="btn btn-secondary" type="button" id="imageAgainBtn" onclick="generateImage()">Generate Another Image</button>
               </div>
               <p class="run-section-meta">DALL·E 3 · Free During Early Access</p>
@@ -4157,7 +3887,7 @@
 
     <footer class="site-footer" id="site-footer">
       <div class="container site-footer-inner">
-        <p class="site-footer-tagline" style="font-weight:600;color:var(--color-text);margin:0 0 8px 0;">Still Fixing Prompts?. PromptMeGood Fixes That In Seconds.</p>
+        <p class="site-footer-tagline" style="font-weight:600;color:var(--color-text);margin:0 0 8px 0;">AI That Finally Does What You Ask. PromptMeGood Fixes That In Seconds.</p>
         <div class="site-footer-brand">&copy; 2026 PromptMeGood</div>
         <p class="site-footer-tagline">Built for people who want real results from AI &mdash; not fluff.</p>
         <p class="site-footer-early-access">PromptMeGood Is Free During Our Founding Member Period. Full Pricing Launches Soon.</p>
@@ -4904,7 +4634,7 @@
 
         const toneInstruction = {
           professional: 'Use a polished, professional tone with direct language and zero fluff.',
-          bold-direct: 'Use a bold, high-agency tone that pushes decisive action without encouraging recklessness.',
+          'bold-direct': 'Use a bold, high-agency tone that pushes decisive action without encouraging recklessness.',
           casual: 'Use a casual, conversational tone that still stays sharp, useful, and clear.',
           expert: 'Use an expert tone with confident reasoning, strong structure, and specific recommendations.'
         };
@@ -4937,7 +4667,7 @@
 
         const remixInstructions = {
           detailed: 'Make the answer more detailed than normal. Add examples, decision criteria, risks, templates, and a concrete execution checklist.',
-          bold-direct: 'Make the answer more direct, urgent, and action-oriented. Challenge weak assumptions. Cut vague advice. Push toward execution.',
+          'bold-direct': 'Make the answer more direct, urgent, and action-oriented. Challenge weak assumptions. Cut vague advice. Push toward execution.',
           beginner: 'Make the answer beginner-friendly. Slow down the explanation, define key terms, and give a simple first-step path.'
         };
 
@@ -4948,16 +4678,16 @@ Extra context to respect:
 ${data.details}`
           : '';
 
-        const rules or limitsBlock = data.rules or limits
+        const rulesOrLimitsBlock = data['rules or limits']
           ? `
 
 Things to avoid (rules or limits):
-${data.rules or limits}`
+${data['rules or limits']}`
           : '';
 
-        const rules or limitsLine = data.rules or limits
+        const rulesOrLimitsLine = data['rules or limits']
           ? `
-- Respect these rules or limits — do NOT do any of these: ${data.rules or limits}`
+- Respect these rules or limits — do NOT do any of these: ${data['rules or limits']}`
           : '';
 
         const maxLengthLine = data.maxLength
@@ -5035,13 +4765,13 @@ Here's what I need from you:
 - Format the answer as ${articleFor(data.outputFormat)} ${titleCase(data.outputFormat)}.
 - Avoid vague advice, filler, or generic motivation.
 - Include examples, templates, checklists, or scripts when useful.
-- End with the top 3 actions I should take next.${maxLengthLine}${rules or limitsLine}${personalityLine}${moneyMode}${humanLine}${clarityLine}${photoLine}${languageLine}${remixLine}
+- End with the top 3 actions I should take next.${maxLengthLine}${rulesOrLimitsLine}${personalityLine}${moneyMode}${humanLine}${clarityLine}${photoLine}${languageLine}${remixLine}
 
 Context:
 - Category: ${categoryLabels[categoryKey]}
 - Experience level: ${titleCase(data.skillLevel)}
 - Tone: ${titleCase(data.tone)}
-- Output format: ${titleCase(data.outputFormat)}${personalityContext}${extraDetails}${rules or limitsBlock}`;
+- Output format: ${titleCase(data.outputFormat)}${personalityContext}${extraDetails}${rulesOrLimitsBlock}`;
       }
 
       function getFormData() {
@@ -5058,7 +4788,7 @@ Context:
             if (!isNaN(n) && n > 0) maxLength = n;
           }
         }
-        const rules or limitsEl = document.getElementById('rules or limits');
+        const rulesOrLimitsEl = document.getElementById('rules or limits');
         return {
           goal: document.getElementById('goal').value.trim(),
           category: document.getElementById('category').value,
@@ -5066,7 +4796,7 @@ Context:
           tone: document.getElementById('tone').value,
           outputFormat: document.getElementById('outputFormat').value,
           details: document.getElementById('details').value.trim(),
-          rules or limits: rules or limitsEl ? rules or limitsEl.value.trim() : '',
+          'rules or limits': rulesOrLimitsEl ? rulesOrLimitsEl.value.trim() : '',
           maxLength: maxLength,
           moneyMode: document.getElementById('moneyMode').checked,
           humanTone: document.getElementById('humanTone').checked,
@@ -5584,8 +5314,8 @@ Context:
         document.getElementById('tone').value = item.data.tone || 'bold-direct';
         document.getElementById('outputFormat').value = item.data.outputFormat || 'step-by-step';
         document.getElementById('details').value = item.data.details || '';
-        const rules or limitsEl = document.getElementById('rules or limits');
-        if (rules or limitsEl) rules or limitsEl.value = item.data.rules or limits || '';
+        const rulesOrLimitsEl = document.getElementById('rules or limits');
+        if (rulesOrLimitsEl) rulesOrLimitsEl.value = item.data['rules or limits'] || '';
         const maxLengthSel = document.getElementById('maxLength');
         const maxLengthCustom = document.getElementById('maxLengthCustom');
         if (maxLengthSel) {
@@ -6334,7 +6064,7 @@ Context:
           if (data.details && data.details.trim().length > 10) score += 20;
           else insights.push('No extra context — add audience, budget, or constraints.');
 
-          if (data.rules or limits && data.rules or limits.trim().length > 0) score += 15;
+          if (data['rules or limits'] && data['rules or limits'].trim().length > 0) score += 15;
           else insights.push('No Rules Or Limits — tell the AI what to avoid.');
 
           if (data.maxLength && data.maxLength > 0) score += 10;
@@ -6350,7 +6080,7 @@ Context:
           // Positive insights when strong
           const strongInsights = [];
           if (goal.length >= 60) strongInsights.push('Strong, specific goal.');
-          if (data.rules or limits && data.maxLength) strongInsights.push('Clear Constraints set.');
+          if (data['rules or limits'] && data.maxLength) strongInsights.push('Clear Constraints set.');
           if (data.details && data.details.trim().length > 10) strongInsights.push('Good context provided.');
 
           // Pick 2-3 insights: prefer suggestions if score < 90, else show strengths
@@ -6583,9 +6313,9 @@ Context:
           if (!data.goal || data.goal.length < 30) {
             issues.push('Your goal is short — add more specifics so the AI knows exactly what you want.');
           }
-          if (!data.details && !data.rules or limits) {
+          if (!data.details && !data['rules or limits']) {
             issues.push('No extra details or Rules Or Limits — try adding budget, audience, or things to avoid.');
-          } else if (!data.rules or limits) {
+          } else if (!data['rules or limits']) {
             issues.push('No Rules Or Limits set — tell the AI what to avoid (e.g. jargon, length, tone).');
           }
           if (!data.maxLength) {
@@ -7195,7 +6925,7 @@ Context:
           language: data.outputLanguage,
           personality: data.personality,
           extraDetails: data.extraDetails,
-          avoid: data.rules or limits,
+          avoid: data['rules or limits'],
           moneyMode: !!data.moneyMode,
           humanVoice: !!data.humanTone,
           clarityBoost: !!data.clarityBoost,
@@ -8453,8 +8183,8 @@ Context:
           _set('tone', 'bold-direct');
           _set('outputFormat', 'step-by-step');
           _set('details', 'I need a low-cost plan, something I can sell fast, and I do not want complicated tech setup.');
-          const rules or limitsEl = document.getElementById('rules or limits');
-          if (rules or limitsEl) rules or limitsEl.value = "Don't sound robotic, avoid vague advice, and skip jargon a beginner won't understand.";
+          const rulesOrLimitsEl = document.getElementById('rules or limits');
+          if (rulesOrLimitsEl) rulesOrLimitsEl.value = "Don't sound robotic, avoid vague advice, and skip jargon a beginner won't understand.";
           const maxLengthSel = document.getElementById('maxLength');
           const maxLengthCustom = document.getElementById('maxLengthCustom');
           if (maxLengthSel) {
@@ -10043,101 +9773,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     } catch (e) {}
   }, 3000);
-});
-</script>
-
-
-<script id="pmg-conversion-above-fold-js">
-document.addEventListener("DOMContentLoaded", function () {
-  const topGoal = document.getElementById("pmg-top-goal");
-  const realGoal = document.getElementById("goal");
-  const topGenerate = document.getElementById("pmg-top-generate");
-  const realGenerate = document.getElementById("generateBtn");
-  const topHelp = document.getElementById("pmg-top-help");
-  const realHelp = document.getElementById("guided-start") || document.querySelector("[data-guided-start]");
-
-  function markResult() {
-    document.body.classList.add("pmg-has-result");
-    try { localStorage.setItem("pmg_has_generated", "1"); } catch (e) {}
-  }
-
-  if (topGenerate) {
-    topGenerate.addEventListener("click", function () {
-      if (topGoal && realGoal) {
-        realGoal.value = topGoal.value;
-        realGoal.dispatchEvent(new Event("input", { bubbles: true }));
-        realGoal.dispatchEvent(new Event("change", { bubbles: true }));
-      }
-      if (realGenerate) {
-        realGenerate.click();
-        markResult();
-      } else {
-        document.getElementById("builder")?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    });
-  }
-
-  if (topHelp) {
-    topHelp.addEventListener("click", function () {
-      if (realHelp) realHelp.click();
-      else document.getElementById("builder")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  }
-
-  const whatNext = document.getElementById("what-next");
-  if (whatNext) {
-    whatNext.hidden = true;
-    whatNext.setAttribute("aria-hidden", "true");
-  }
-
-  const finalActions = document.getElementById("tour-final-actions");
-  const runBtn = document.getElementById("runBtn");
-  const copyBtn = document.getElementById("copy-btn");
-  const improveBlock = document.getElementById("improve-block");
-
-  if (finalActions && runBtn && copyBtn && improveBlock && !document.querySelector(".pmg-primary-result-actions")) {
-    const row = document.createElement("div");
-    row.className = "pmg-primary-result-actions";
-
-    const run = document.createElement("button");
-    run.type = "button";
-    run.className = "btn btn-primary";
-    run.textContent = "Run With AI";
-    run.addEventListener("click", function () { runBtn.click(); });
-
-    const copy = document.createElement("button");
-    copy.type = "button";
-    copy.className = "btn btn-secondary";
-    copy.textContent = "Copy Prompt";
-    copy.addEventListener("click", function () {
-      copyBtn.click();
-      const original = copy.textContent;
-      copy.textContent = "Copied ✓";
-      setTimeout(function () { copy.textContent = original; }, 1400);
-    });
-
-    const refine = document.createElement("button");
-    refine.type = "button";
-    refine.className = "btn btn-secondary";
-    refine.textContent = "Refine Prompt";
-    refine.addEventListener("click", function () {
-      improveBlock.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-
-    row.append(run, copy, refine);
-    finalActions.prepend(row);
-  }
-
-  ["generateBtn", "image-generate-btn"].forEach(function (id) {
-    const btn = document.getElementById(id);
-    if (btn) btn.addEventListener("click", markResult);
-  });
-
-  try {
-    if (localStorage.getItem("pmg_has_generated") === "1") {
-      document.body.classList.add("pmg-has-result");
-    }
-  } catch (e) {}
 });
 </script>
 

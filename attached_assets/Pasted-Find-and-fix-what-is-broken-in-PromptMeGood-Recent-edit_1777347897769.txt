@@ -1,0 +1,66 @@
+Find and fix what is broken in PromptMeGood. Recent edits likely broke CSS and JavaScript. Do not redesign the site. Do not make new UX changes. Your job is debugging and repair only.
+
+Scope:
+- Frontend only unless a backend error is directly caused by a frontend call.
+- Main files are likely:
+  - artifacts/promptmegood/index.html
+  - artifacts/promptmegood/pricing.html
+  - artifacts/promptmegood/guide.html
+- Do not touch secrets, API keys, backend routes, AI provider logic, payment logic, database logic, or usage/cost controls.
+
+Required process:
+1. Create a checkpoint before changing anything.
+2. Run the app and reproduce the break.
+3. Open browser console and identify JavaScript errors.
+4. Inspect broken CSS rules, malformed style tags, duplicate injected patches, unclosed braces, invalid selectors, broken media queries, and layout rules hiding important sections.
+5. Search for recently injected blocks with IDs like:
+   - pmg-conversion-above-fold-css
+   - pmg-conversion-above-fold-js
+   - pmg-desktop-mobile-polish-css
+   - pmg-desktop-mobile-polish-js
+   - pmg-premium-polish-css
+   - pmg-premium-polish-js
+6. If any injected patch block is malformed, duplicated, or causing runtime errors, remove or repair only that block.
+7. Validate that these core elements exist and are not hidden:
+   - #top
+   - #builder
+   - #goal
+   - #generateBtn
+   - #result-panel
+   - #resultBox
+   - #runBtn
+   - #copy-btn
+8. Validate that anchors still work:
+   - #top
+   - #builder
+   - #use-cases
+   - #how-it-works
+9. Validate that these actions work:
+   - Typing into the goal field
+   - Clicking Fix My Prompt
+   - Copy Prompt
+   - Run With AI
+   - Help Me Start
+   - Mode switch between Write Something and Create An Image
+10. Fix only the minimum necessary CSS/JS/HTML errors to restore the working app.
+
+Likely fixes to check:
+- Remove duplicate injected CSS/JS patch blocks if more than one exists.
+- Remove any malformed script that references missing IDs without null checks.
+- Remove CSS that uses display:none on important app sections.
+- Remove CSS that changes DOM order with flex/grid order if it breaks layout.
+- Remove or fix sticky mobile bottom bar CSS if it covers content.
+- Fix any unclosed <style>, <script>, <section>, <div>, or template literal.
+- Fix invalid JavaScript caused by smart quotes, unescaped apostrophes, or duplicate const declarations.
+- Fix any button listener that calls undefined functions directly.
+- Make all new JS defensive with optional chaining or null checks.
+
+Success criteria:
+- Homepage loads without blank screen.
+- Browser console has no fatal JavaScript errors.
+- CSS renders normally on desktop and mobile.
+- Builder is visible and usable.
+- Fix My Prompt works.
+- Run With AI and Copy Prompt still work.
+- Existing backend/API/AI functionality is not changed.
+- Report every file changed and the exact issue fixed.
