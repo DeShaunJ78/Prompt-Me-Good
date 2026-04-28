@@ -1338,10 +1338,9 @@
   }
 
   function setupNavSearchToggle() {
-    var search = document.querySelector('.global-search');
-    if (!search) return;
+    var initialSearch = document.querySelector('.global-search');
+    if (!initialSearch) return;
     if (document.getElementById('pmg-nav-search-toggle')) return;
-    var input = search.querySelector('input');
     var topActions = document.querySelector('.top-actions');
     var navToggle = document.querySelector('.nav-toggle');
     var btn = document.createElement('button');
@@ -1351,27 +1350,52 @@
     btn.setAttribute('aria-label', 'Search');
     btn.setAttribute('aria-expanded', 'false');
     btn.innerHTML = '🔍';
-    btn.addEventListener('click', function () {
-      var expanded = search.classList.toggle('pmg-expanded');
-      btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-      if (expanded && input) setTimeout(function () { input.focus(); }, 50);
+    /* Re-query .global-search on every interaction in case other IIFEs reparent it. */
+    function getSearch() { return document.querySelector('.global-search'); }
+    function setExpanded(open) {
+      var s = getSearch();
+      if (!s) return;
+      if (open) s.classList.add('pmg-expanded'); else s.classList.remove('pmg-expanded');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.innerHTML = open ? '✕' : '🔍';
+      btn.setAttribute('aria-label', open ? 'Close Search' : 'Search');
+      if (open) {
+        var input = s.querySelector('input');
+        if (input) setTimeout(function () { try { input.focus(); } catch (e) {} }, 50);
+      }
+    }
+    btn.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      var s = getSearch();
+      if (!s) return;
+      setExpanded(!s.classList.contains('pmg-expanded'));
     });
     if (navToggle && navToggle.parentNode) {
       navToggle.parentNode.insertBefore(btn, navToggle);
     } else if (topActions && topActions.parentNode) {
       topActions.parentNode.insertBefore(btn, topActions);
-    } else if (search.parentNode) {
-      search.parentNode.insertBefore(btn, search);
+    } else if (initialSearch.parentNode) {
+      initialSearch.parentNode.insertBefore(btn, initialSearch);
     }
+    /* Tap outside the expanded search (and outside the toggle) closes it. */
+    document.addEventListener('click', function (ev) {
+      var s = getSearch();
+      if (!s || !s.classList.contains('pmg-expanded')) return;
+      if (ev.target === btn || btn.contains(ev.target)) return;
+      if (s.contains(ev.target)) return;
+      setExpanded(false);
+    });
     document.addEventListener('keydown', function (ev) {
       var t = ev.target;
       var inField = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || (t.getAttribute && t.getAttribute('contenteditable') === 'true'));
+      var s = getSearch();
+      if (!s) return;
       if (ev.key === '/' && !inField) {
         ev.preventDefault();
-        if (!search.classList.contains('pmg-expanded')) btn.click();
-        else if (input) input.focus();
-      } else if (ev.key === 'Escape' && search.classList.contains('pmg-expanded')) {
-        btn.click();
+        if (!s.classList.contains('pmg-expanded')) setExpanded(true);
+        else { var input = s.querySelector('input'); if (input) input.focus(); }
+      } else if (ev.key === 'Escape' && s.classList.contains('pmg-expanded')) {
+        setExpanded(false);
       }
     });
   }
@@ -2089,9 +2113,11 @@
       /* ===== FIX 6: hide the original .what-next-list (the v6 stack replaces it) ===== */
       '#what-next .what-next-list { display: none !important; }',
 
-      /* ===== FIX 12: mobile reinforcement ===== */
+      /* ===== FIX 12: mobile reinforcement (preserve .global-search.pmg-expanded so the nav search toggle can re-open it) ===== */
       '@media (max-width: 768px) {',
-      '  .site-search, #global-search-input, .global-search, .search-label, .search-helper { display: none !important; }',
+      '  .site-search, #global-search-input, .global-search:not(.pmg-expanded), .search-label, .search-helper { display: none !important; }',
+      '  .global-search.pmg-expanded { display: flex !important; }',
+      '  .global-search.pmg-expanded #global-search-input { display: block !important; }',
       '  .btn, button, [role="button"] { min-height: 44px; }',
       '}',
 
