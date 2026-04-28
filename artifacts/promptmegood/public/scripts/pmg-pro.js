@@ -340,9 +340,12 @@
     }
     var rem = pmgRemainingToday(feature);
     var lim = DAILY_LIMITS[feature];
-    hint.textContent = rem > 0
+    var nextText = rem > 0
       ? '(' + rem + ' Of ' + lim + ' Free Today)'
       : '(Daily Limit Reached — Upgrade For Unlimited)';
+    /* Idempotent: only touch DOM when text actually changes. Avoids
+       infinite MutationObserver feedback loops. */
+    if (hint.textContent !== nextText) hint.textContent = nextText;
   }
   function refreshDailyHints() {
     if (pmgIsPro()) return;
@@ -519,28 +522,26 @@
   /* =================================================================
    * INIT
    * ================================================================= */
-  function init() {
-    injectStyles();
-    if (pmgIsPro()) document.body.classList.add('pmg-is-pro');
-
+  function applyAll() {
     decorateGatedButtons();
     refreshDailyHints();
     gateMoneyMode();
     addCloudSyncButton();
     addTeamExportButton();
     addBrandVoiceButton();
+  }
 
-    /* Late-mount: re-run as the DOM settles for ~12s */
-    var mo = new MutationObserver(function () {
-      decorateGatedButtons();
-      refreshDailyHints();
-      gateMoneyMode();
-      addCloudSyncButton();
-      addTeamExportButton();
-      addBrandVoiceButton();
+  function init() {
+    injectStyles();
+    if (pmgIsPro()) document.body.classList.add('pmg-is-pro');
+    applyAll();
+    /* Late-mount catch: a few delayed re-runs instead of a
+       MutationObserver. Cheap, idempotent, and cannot create a
+       feedback loop with other scripts that are also mutating
+       the DOM during page warm-up. */
+    [400, 1200, 3000, 6000].forEach(function (ms) {
+      setTimeout(applyAll, ms);
     });
-    try { mo.observe(document.body, { childList: true, subtree: true }); } catch (e) {}
-    setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 12000);
   }
 
   if (document.readyState === 'loading') {
