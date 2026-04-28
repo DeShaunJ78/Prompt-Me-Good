@@ -5500,3 +5500,161 @@
     init();
   }
 })();
+
+/* =====================================================================
+ * T24 — Density + Help Me Start promotion.
+ *
+ * User feedback after Phase C: the page is a touch busy with all five
+ * Photography Suite groups expanded by default, and the 4-question
+ * guided flow ("Help Me Start") should be promoted as the secondary-
+ * but-most-recommended path on the builder.
+ *
+ * This block:
+ *   1. Collapses every Photography Suite group EXCEPT the first one
+ *      (Style) on first paint. User can still expand any group by
+ *      clicking its header — the existing toggle wiring is preserved.
+ *   2. Restyles the existing #pmg-help-me-start-btn with a soft warm
+ *      highlight, an inset "✨ Most Loved" pill badge, and a clearer
+ *      label that frames it as the recommended path. Stays a secondary
+ *      action (does not steal click-emphasis from the primary Fix My
+ *      Prompt button); just visually approved-and-recommended.
+ *
+ * No new IDs/classes renamed; we add presentation-only classes and
+ * decorate via CSS variables.
+ * ===================================================================== */
+(function pmgT24DensityPlusHelpMeStart() {
+  if (window.__pmgT24Init) return;
+  window.__pmgT24Init = true;
+
+  var STYLE_ID = 'pmg-t24-density-style';
+  var HMS_BADGE_CLASS = 'pmg-hms-most-loved';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* ===== Help Me Start: Most Loved promotion =====
+         The button keeps its existing #pmg-help-me-start-btn id, so all
+         existing click wiring (delegating to #guided-mode-btn) keeps
+         working. We only repaint and prepend a badge. */
+      '#pmg-help-me-start-btn.pmg-help-me-start-btn {',
+      '  position: relative;',
+      '  background: linear-gradient(135deg,',
+      '    color-mix(in srgb, var(--color-primary) 12%, var(--color-surface)),',
+      '    color-mix(in srgb, var(--color-primary) 4%, var(--color-surface))) !important;',
+      '  border: 1.5px solid color-mix(in srgb, var(--color-primary) 45%, var(--color-border)) !important;',
+      '  color: var(--color-text) !important;',
+      '  font-weight: 700 !important;',
+      '  border-radius: var(--radius-lg) !important;',
+      '  padding: 14px 18px !important;',
+      '  min-height: 56px !important;',
+      '  display: inline-flex !important;',
+      '  align-items: center !important;',
+      '  justify-content: center !important;',
+      '  gap: 10px;',
+      '  box-shadow: 0 1px 4px color-mix(in srgb, var(--color-primary) 15%, transparent);',
+      '  transition: transform 120ms ease, box-shadow 180ms ease, border-color 180ms ease;',
+      '}',
+      '#pmg-help-me-start-btn.pmg-help-me-start-btn:hover {',
+      '  transform: translateY(-1px);',
+      '  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 25%, transparent);',
+      '  border-color: var(--color-primary) !important;',
+      '}',
+      /* The Most Loved corner badge. */
+      '.' + HMS_BADGE_CLASS + ' {',
+      '  position: absolute;',
+      '  top: -10px; right: 14px;',
+      '  display: inline-flex; align-items: center; gap: 4px;',
+      '  background: linear-gradient(135deg, #f5b400, #e88a00);',
+      '  color: #fff;',
+      '  font-size: 10px; font-weight: 800; letter-spacing: 0.06em;',
+      '  text-transform: uppercase;',
+      '  padding: 4px 10px;',
+      '  border-radius: var(--radius-full);',
+      '  box-shadow: 0 2px 6px rgba(232, 138, 0, 0.35);',
+      '  white-space: nowrap;',
+      '  pointer-events: none;',
+      '}',
+      '.' + HMS_BADGE_CLASS + '::before { content: "✨"; font-size: 11px; }',
+      /* Tiny helper line under the button. */
+      '#pmg-hms-helper {',
+      '  display: block;',
+      '  text-align: center;',
+      '  font-size: var(--text-xs);',
+      '  color: var(--color-text-muted);',
+      '  margin: 4px 0 0;',
+      '  font-style: italic;',
+      '}',
+      'body.image-mode #pmg-hms-helper { display: none; }'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  /* Collapse all Photography Suite groups except the first (Style). */
+  function collapsePhotoGroups() {
+    var groups = document.querySelectorAll('#pmg-photo-suite .pmg-photo-group');
+    if (!groups.length) return false;
+    groups.forEach(function (g, i) {
+      if (i === 0) return; /* keep Style open */
+      if (!g.classList.contains('is-collapsed')) {
+        g.classList.add('is-collapsed');
+        var head = g.querySelector('.pmg-photo-group-head');
+        if (head) head.setAttribute('aria-expanded', 'false');
+      }
+    });
+    return true;
+  }
+
+  /* Decorate the existing Help Me Start button with the badge + helper. */
+  function decorateHelpMeStart() {
+    var btn = document.getElementById('pmg-help-me-start-btn');
+    if (!btn) return false;
+    /* Update the visible label to better frame the recommendation,
+       while keeping the original emoji style. */
+    if (!btn.dataset.pmgT24Labeled) {
+      btn.textContent = '💡 Help Me Start (Answer 4 Quick Questions)';
+      btn.dataset.pmgT24Labeled = '1';
+    }
+    /* Add the corner badge once. */
+    if (!btn.querySelector('.' + HMS_BADGE_CLASS)) {
+      var badge = document.createElement('span');
+      badge.className = HMS_BADGE_CLASS;
+      badge.textContent = 'Most Loved';
+      badge.setAttribute('aria-hidden', 'true');
+      btn.appendChild(badge);
+    }
+    /* Add a tiny italic helper directly beneath the button. */
+    if (!document.getElementById('pmg-hms-helper') && btn.parentNode) {
+      var help = document.createElement('p');
+      help.id = 'pmg-hms-helper';
+      help.textContent = 'Recommended for the best results — guided in under a minute.';
+      btn.parentNode.insertBefore(help, btn.nextSibling);
+    }
+    return true;
+  }
+
+  function tick() {
+    collapsePhotoGroups();
+    decorateHelpMeStart();
+  }
+
+  function init() {
+    injectStyles();
+    tick();
+    /* Late-mount safety: photo suite + help me start button are both
+       built by other IIFEs, possibly after us. Watch the body briefly. */
+    try {
+      var mo = new MutationObserver(tick);
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 60000);
+    } catch (e) { /* ignore */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
