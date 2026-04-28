@@ -29,7 +29,7 @@
    * BUG 4 — Hide post-generation tools until a prompt exists
    * ================================================================ */
   var STORAGE_KEY = 'pmg_has_generated';
-  var PLACEHOLDER = 'Your generated prompt will appear here.';
+  var PLACEHOLDER = 'Your fixed prompt will appear here.';
 
   function injectVisibilityCss() {
     if (document.getElementById('pmg-bugfix-result-visibility')) return;

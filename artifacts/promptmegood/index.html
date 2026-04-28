@@ -3560,7 +3560,7 @@
               <div id="pinned-note-text"></div>
               <div class="pinned-note-source" id="pinned-note-source"></div>
             </div>
-            <div class="result-box" id="resultBox" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Generated prompt (editable)">Your generated prompt will appear here.</div>
+            <div class="result-box" id="resultBox" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Generated prompt (editable)">Your fixed prompt will appear here.</div>
             <div class="result-edit-row">
               <span class="result-edit-indicator" id="result-edit-indicator" hidden>Edited manually</span>
             </div>
@@ -6269,7 +6269,7 @@ Context:
         function check() {
           const data = getFormData();
           const promptText = (resultBox && resultBox.textContent ? resultBox.textContent.trim() : '');
-          const placeholder = 'Your generated prompt will appear here.';
+          const placeholder = 'Your fixed prompt will appear here.';
           const hasGenerated = promptText && promptText !== placeholder && promptText.indexOf('Generating demo prompt') === -1;
           const issues = [];
           if (!data.goal || data.goal.length < 30) {
@@ -6305,7 +6305,7 @@ Context:
       const clearPromptBtn = document.getElementById('clear-prompt-btn');
       if (clearPromptBtn) {
         clearPromptBtn.addEventListener('click', function () {
-          const placeholder = 'Your generated prompt will appear here.';
+          const placeholder = 'Your fixed prompt will appear here.';
           if (typeof setPromptText === 'function') {
             setPromptText(placeholder);
           } else {
@@ -7753,7 +7753,7 @@ Context:
       const printContentEl = document.getElementById('print-content');
       printBtn.addEventListener('click', function () {
         const text = resultBox.textContent || '';
-        if (!text || text.indexOf('Your generated prompt will appear here') === 0) {
+        if (!text || text.indexOf('Your fixed prompt will appear here') === 0) {
           showToast('Generate a prompt first.');
           return;
         }
@@ -7776,7 +7776,7 @@ Context:
 
       copyBtn.addEventListener('click', async function () {
         const text = resultBox.textContent.trim();
-        if (!text || text.indexOf('Your generated prompt will appear here') === 0) {
+        if (!text || text.indexOf('Your fixed prompt will appear here') === 0) {
           showToast('Generate a prompt first.');
           return;
         }
@@ -7812,7 +7812,7 @@ Context:
         if (!text) return true;
         const t = text.trim();
         if (!t) return true;
-        return t.indexOf('Your generated prompt will appear here') === 0
+        return t.indexOf('Your fixed prompt will appear here') === 0
           || t.indexOf('Please enter a goal') === 0
           || t.indexOf('Add a clear goal first') === 0;
       }
@@ -9141,7 +9141,7 @@ Context:
         if (!text) return true;
         const t = text.trim();
         if (!t) return true;
-        return t.indexOf('Your generated prompt will appear here') === 0
+        return t.indexOf('Your fixed prompt will appear here') === 0
           || t.indexOf('Please enter a goal') === 0
           || t.indexOf('Add a clear goal first') === 0;
       }
