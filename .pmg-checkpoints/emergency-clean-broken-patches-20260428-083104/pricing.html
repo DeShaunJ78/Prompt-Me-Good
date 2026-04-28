@@ -170,6 +170,48 @@
     [data-theme="dark"][data-accent="slate"] { --color-primary: #cbd5e1; --color-primary-strong: #e2e8f0; }
   </style>
 
+<style id="pmg-premium-polish-css">
+  :root { --content-default: 1100px; }
+  html { scroll-padding-top: 24px; }
+  #builder, #result-panel, #image-result, #ai-response, #optimized-prompt, #generated-image, .result-card, .panel, section { scroll-margin-top: 24px; }
+  .container { width: min(calc(100% - 2rem), 1100px) !important; }
+  .builder-grid, .builder-layout, .builder-shell { max-width: 1100px; margin-inline: auto; }
+  @media (min-width: 900px) {
+    .builder-grid, .builder-layout, .builder-shell, .builder-main-grid { display: grid; grid-template-columns: minmax(0, 45%) minmax(0, 55%); gap: 32px; align-items: start; }
+    .result-column, .results-column, .builder-results, #result-panel { position: sticky; top: 96px; align-self: start; }
+    .what-next-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px !important; }
+  }
+  .panel, .card, .result-card, .settings-panel, .upload-field, .what-next { padding: max(var(--space-5, 20px), 20px) !important; border-radius: 18px; }
+  #prompt-form { gap: 16px !important; }
+  #prompt-form .field-primary { order: 1; }
+  #prompt-form .actions-row { order: 2; margin-top: 0 !important; }
+  #guided-cta-row { order: 3; }
+  #upload-field { order: 4; border: 1.5px dashed color-mix(in srgb, var(--color-primary) 34%, transparent); background: color-mix(in srgb, var(--color-primary) 5%, transparent); overflow: hidden; }
+  #post-uc-guidance { order: 5; }
+  #settingsPanel { order: 6; }
+  #generateBtn { width: 100%; min-height: 54px !important; font-weight: 800 !important; font-size: 1.05rem !important; box-shadow: 0 12px 28px color-mix(in srgb, var(--color-primary) 28%, transparent) !important; }
+  #image-generate-btn { width: 100%; min-height: 54px; border-radius: var(--radius-full); font-weight: 800; background: var(--color-primary); color: var(--color-text-inverse); box-shadow: 0 12px 28px color-mix(in srgb, var(--color-primary) 28%, transparent); }
+  .upload-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+  #upload-hint, .upload-preview-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .upload-preview { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 12px; align-items: center; max-width: 100%; }
+  .upload-preview-img[hidden], .upload-preview[hidden] { display: none !important; }
+  .upload-preview-img { width: 56px; height: 56px; object-fit: cover; border-radius: 12px; }
+  .what-next { border: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent) !important; border-left: 0 !important; background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 10%, transparent), color-mix(in srgb, var(--color-primary) 4%, transparent)) !important; }
+  .what-next-title { font-size: 1rem !important; margin-bottom: 12px !important; }
+  .what-next-list li { padding: 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); background: var(--color-surface); }
+  #weekly-goal-pin, #replay-tour-btn-builder, .guided-cta-recommended-badge:empty { display: none !important; }
+  body.pmg-has-generated #weekly-goal-pin { display: block !important; }
+  body.image-mode label[for="goal"] { font-size: 0; }
+  body.image-mode label[for="goal"]::after { content: "Your Image"; font-size: var(--text-base); }
+  @media (max-width: 760px) {
+    .container { width: min(calc(100% - 1rem), 1100px) !important; }
+    .panel, .card, .result-card, .settings-panel, .upload-field, .what-next { padding: max(var(--space-4, 16px), 16px) !important; }
+    button, .btn, input, select, textarea, [role="button"] { min-height: 44px; }
+    .actions-row { display: grid !important; grid-template-columns: 1fr !important; gap: 10px !important; }
+    .top-actions .search, .site-search, #site-search, .search-bar { display: none !important; }
+    .guided-modal, .guided-wizard, .tour-card { touch-action: pan-y; }
+  }
+</style>
 
 </head>
 <body>
