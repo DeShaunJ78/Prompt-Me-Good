@@ -2835,6 +2835,13 @@
 
     /* ===== T07 Pre-generation hide rules ===== */
     body.pmg-pre-gen .pmg-post-gen { display: none !important; }
+    body:not(.pmg-has-result) #quality-row,
+    body:not(.pmg-has-result) #copy-btn,
+    body:not(.pmg-has-result) #runSection,
+    body:not(.pmg-has-result) #improve-block,
+    body:not(.pmg-has-result) .fine-tune,
+    body:not(.pmg-has-result) #what-next { display: none !important; }
+    body.pmg-has-result #runSection { display: block !important; }
 
     /* ===== T05 hide the outer auto-optimize-row (moved inside More Control) ===== */
     #auto-optimize-row { display: none !important; }
