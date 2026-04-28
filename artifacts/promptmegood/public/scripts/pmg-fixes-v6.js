@@ -29,7 +29,8 @@
       /* ===== FIX 1: hero polish (additive — main hero work already shipped in v5) ===== */
       '.hero-text-link { display: block; text-align: center; margin-top: var(--space-2); font-size: var(--text-sm); color: var(--color-text-muted); text-decoration: underline; text-underline-offset: 3px; transition: color 180ms ease; }',
       '.hero-text-link:hover { color: var(--color-primary); }',
-      'aside.hero-card { display: none !important; }',
+      /* Per user override: keep hero-card visible at all sizes (was hidden by brief). */
+      'aside.hero-card { display: block !important; }',
       '@media (min-width: 920px) {',
       '  .hero { padding-top: clamp(1.5rem, 3vw, 2.5rem) !important; padding-bottom: clamp(0.75rem, 1.5vw, 1.25rem) !important; min-height: unset !important; }',
       '  .hero-heading { font-size: clamp(2rem, 3.2vw, 3rem) !important; margin-bottom: var(--space-2) !important; }',

@@ -16,8 +16,7 @@
       '  .hero-heading { font-size: clamp(2rem, 3.2vw, 3rem) !important; margin-bottom: var(--space-2) !important; }',
       '  .hero-subtext-box { margin-bottom: var(--space-2) !important; }',
       '  .hero-actions { margin-bottom: var(--space-2) !important; }',
-      '  .hero-card { display: none !important; }',
-      '  .hero-grid { grid-template-columns: 1fr !important; }',
+      '  .hero-grid { grid-template-columns: 1fr 1fr !important; align-items: start !important; }',
       '  .hero-testimonial { margin-top: var(--space-3) !important; }',
       '}',
 
