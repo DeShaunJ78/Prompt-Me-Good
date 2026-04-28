@@ -3615,9 +3615,10 @@
       '#' + ROW_ID + ' {',
       '  display: flex;',
       '  align-items: center;',
-      /* Centered: pill sits symmetrically above the demo|help pair so
-         it doesn't look lopsided over either single button. */
-      '  justify-content: center;',
+      /* Right-aligned: pill sits directly above Help Me Start (the right
+         button in the demo|help pair). syncWidth() pins pill width to
+         match the Help Me Start button so they align edge-to-edge. */
+      '  justify-content: flex-end;',
       '  width: 100%;',
       '  flex-basis: 100%;',
       '  margin: 8px 0 -2px;',
