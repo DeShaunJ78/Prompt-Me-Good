@@ -6,8 +6,11 @@
   var HAS_GENERATED_KEY = 'pmg_has_generated';
 
   function readHasGenerated() {
-    try { return localStorage.getItem(HAS_GENERATED_KEY) === 'true'; }
-    catch (e) { return false; }
+    try {
+      var v = localStorage.getItem(HAS_GENERATED_KEY);
+      if (v === 'true' || v === '1') return true;
+    } catch (e) {}
+    return !!(document.body && document.body.classList && document.body.classList.contains('pmg-has-generated'));
   }
 
   function injectStyles() {
@@ -473,10 +476,10 @@
       btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
       if (expanded && input) setTimeout(function () { input.focus(); }, 50);
     });
-    if (topActions && navToggle && navToggle.parentNode === topActions) {
-      topActions.insertBefore(btn, navToggle);
-    } else if (topActions) {
-      topActions.insertBefore(btn, topActions.firstChild);
+    if (navToggle && navToggle.parentNode) {
+      navToggle.parentNode.insertBefore(btn, navToggle);
+    } else if (topActions && topActions.parentNode) {
+      topActions.parentNode.insertBefore(btn, topActions);
     } else if (search.parentNode) {
       search.parentNode.insertBefore(btn, search);
     }
@@ -513,15 +516,10 @@
   }
 
   function setupResultStickyDesktop() {
-    var resultBox = document.getElementById('resultBox');
-    if (!resultBox) return;
-    var resultCard = resultBox.closest('.result-card, .card, section, article, div');
-    while (resultCard && resultCard.parentNode && resultCard.parentNode.id !== 'builder' && resultCard.parentNode.tagName !== 'MAIN') {
-      var p = resultCard.parentNode;
-      if (p && p.classList && (p.classList.contains('builder-grid') || p.classList.contains('grid') || p.classList.contains('two-col'))) break;
-      resultCard = p;
+    var resultPanel = document.getElementById('result-panel');
+    if (resultPanel) {
+      resultPanel.classList.add('pmg-result-sticky');
     }
-    if (resultCard) resultCard.classList.add('pmg-result-sticky');
   }
 
   function setupImageGenerateMode() {
