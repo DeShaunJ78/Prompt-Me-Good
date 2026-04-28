@@ -4304,21 +4304,28 @@
       '}',
       '#print-btn .pmg-print-icon svg { width: 100%; height: 100%; display: block; }',
 
-      /* ---- Fine-Tune textarea overflow fix ---- */
+      /* ---- Fine-Tune textarea: full placeholder visible, no clipping ---- */
       '.fine-tune-row textarea#fine-tune-input {',
-      '  min-height: 132px !important;',
-      '  padding-right: calc(var(--space-3) + 10px) !important;',
-      '  line-height: 1.55 !important;',
+      '  min-height: 200px !important;',
+      '  padding: var(--space-3) calc(var(--space-3) + 10px) var(--space-3) var(--space-3) !important;',
+      '  font-size: var(--text-sm) !important;',
+      '  line-height: 1.5 !important;',
       '  overflow-y: auto;',
       '  scrollbar-gutter: stable;',
+      '  resize: vertical;',
+      '  box-sizing: border-box;',
       '}',
       '.fine-tune-row textarea#fine-tune-input::placeholder {',
       '  white-space: pre-wrap;',
-      '  line-height: 1.55;',
+      '  line-height: 1.5;',
+      '  font-size: var(--text-sm);',
       '  opacity: 0.85;',
       '}',
-      '@media (max-width: 600px) {',
-      '  .fine-tune-row textarea#fine-tune-input { min-height: 148px !important; }',
+      '@media (max-width: 760px) {',
+      '  .fine-tune-row textarea#fine-tune-input { min-height: 240px !important; font-size: 14px !important; }',
+      '}',
+      '@media (max-width: 480px) {',
+      '  .fine-tune-row textarea#fine-tune-input { min-height: 280px !important; font-size: 13px !important; }',
       '}'
     ].join('\n');
     var style = document.createElement('style');
