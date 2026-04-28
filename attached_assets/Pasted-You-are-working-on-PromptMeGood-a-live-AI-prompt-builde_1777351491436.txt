@@ -1,0 +1,518 @@
+You are working on PromptMeGood — a live AI prompt builder 
+at www.promptmegood.com. Read the entire codebase before 
+touching anything. Create a checkpoint first.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CRITICAL RULES — NEVER VIOLATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- Create a git checkpoint before any changes
+- Do NOT use heredoc syntax in any shell commands
+- Do NOT remove any features or functionality
+- Do NOT rename any JavaScript variables, function 
+  names, CSS class names, or HTML element IDs
+- Do NOT reorder DOM elements — CSS only for layout
+- Do NOT hardcode colors — use existing CSS variables
+- Do NOT break any anchor navigation (#builder, 
+  #use-cases, #history, etc.)
+- Only change visible text and CSS display properties 
+  unless explicitly told otherwise
+- Test anchor links after every change
+- Write all scripts as separate .js files
+- Report pass/fail for every item when done
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHAT THIS PRODUCT IS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PromptMeGood helps everyday people get better results 
+from AI. User types a goal, clicks Fix My Prompt, gets 
+a structured prompt, then runs it with AI in-app or 
+copies it to ChatGPT, Claude, or Perplexity. It also 
+has DALL-E 3 image generation in Create An Image mode.
+
+Primary user: everyday people who use AI and get 
+frustrated because AI doesn't understand what they mean.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHAT THE DATA SHOWS (MICROSOFT CLARITY)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- 43 sessions yesterday, 37 unique users, 0% returning
+- Users from US, Germany, Netherlands, Ireland, 
+  Canada, Russia, Bhutan — organic, zero paid ads
+- 45.97% average scroll depth — users stop halfway
+- 1.4 minutes active out of 3.6 minutes total
+- Many sessions: 00:01 duration, 0 clicks — immediate bounce
+- German cluster: 8 users in 3 minutes from one share,
+  all left within 2 minutes with 0-4 clicks
+- 58% medium intent, 39% low intent, 2% high intent
+
+ROOT CAUSE: The builder tool is below the fold on 
+desktop. Users see hero and marketing, scroll halfway, 
+leave before they ever find the tool. The product is 
+never tried.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CURRENT PAGE STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DOM order in index.html:
+1. section.hero #top — hero/landing
+2. section.popular-uses #use-cases — use cases
+3. section #why-prompts-fail — educational
+4. section #how-it-works — how it works  
+5. section #early-feedback — testimonials
+6. section #see-the-difference — before/after
+7. section #builder — THE ACTUAL TOOL (too far down)
+8. section #dashboard — user stats
+9. section #templates — saved templates
+10. section #history — prompt history
+11. section #manual — help guide
+
+IMPORTANT: A previous attempt used CSS flex order to 
+reorder sections on desktop. This broke all anchor 
+navigation. DO NOT use CSS order or flex reorder. 
+The DOM order must stay as-is.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OWNER STANDARDS — APPLY EVERYWHERE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TITLE CASE: Every button, heading, subheading, section 
+title, nav item, CTA, sub-label, badge, pill, dropdown 
+option, tab label, modal title, card title, wizard step 
+label, placeholder text in labeled fields, confirmation 
+message, and any text directly attached to a control 
+must use Title Case. Body paragraphs and long 
+descriptive sentences stay in sentence case.
+
+PROXIMITY: Every action button must be immediately 
+adjacent to its related input. No unrelated content 
+between an input and its button.
+
+FLOW: Every step must lead clearly to the next. After 
+generation the user must never wonder what to do next.
+
+COLOR SYSTEM: User can change accent color via swatches 
+(green, blue, purple, gold, slate). Always use CSS 
+variables — never hardcode colors.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 1 — BUILDER ABOVE THE FOLD ON DESKTOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The builder must be visible without scrolling on 
+desktop (min-width 920px). Do NOT reorder DOM. 
+Do NOT use CSS flex order. Do NOT break anchors.
+
+The correct approach:
+
+1. Compress the hero section on desktop so it takes 
+   less vertical space:
+
+@media (min-width: 920px) {
+  .hero {
+    padding-top: clamp(1.5rem, 3vw, 2.5rem) !important;
+    padding-bottom: clamp(1rem, 2vw, 1.5rem) !important;
+    min-height: unset !important;
+  }
+  .hero-heading {
+    font-size: clamp(2rem, 3.2vw, 3rem) !important;
+    margin-bottom: var(--space-3) !important;
+  }
+  .hero-subtext-box {
+    margin-bottom: var(--space-3) !important;
+  }
+  .hero-actions {
+    margin-bottom: var(--space-3) !important;
+  }
+}
+
+2. Hide the marketing sections between hero and builder 
+   on desktop. They move below the builder visually by 
+   being hidden on load and revealed on scroll using 
+   an IntersectionObserver. Do NOT use CSS order.
+   
+   Instead, on desktop only, hide these sections 
+   initially and show them after the builder:
+   
+   Add a CSS class .desktop-below-fold to these sections:
+   - section#use-cases
+   - section#why-prompts-fail  
+   - section#how-it-works
+   - section#early-feedback
+   - section#see-the-difference
+   
+   Then add this CSS:
+   
+@media (min-width: 920px) {
+  .desktop-below-fold {
+    display: none !important;
+  }
+  .desktop-below-fold.revealed {
+    display: block !important;
+  }
+}
+
+   Then add JavaScript that reveals them after the 
+   builder section has been scrolled past:
+   
+   Use IntersectionObserver on section#builder. When 
+   the builder is no longer intersecting (user scrolled 
+   past it), add class "revealed" to all 
+   .desktop-below-fold elements.
+   
+   This means on desktop: hero → builder → then all 
+   marketing sections below. Anchor links still work 
+   because DOM order is unchanged.
+
+3. Verify that clicking #use-cases, #why-prompts-fail, 
+   #how-it-works, #early-feedback, #see-the-difference 
+   in the nav still scrolls to those sections correctly 
+   after this change. If a section is hidden when its 
+   anchor is clicked, reveal it first then scroll.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 2 — KILLER HERO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Replace the hero content with this — keep all existing 
+class names and IDs exactly as they are:
+
+H1 (class="hero-heading"):
+AI That <span class="highlight">Finally Gets</span> 
+What You Mean
+
+SUBTEXT (inside hero-subtext-box, class="hero-subtext"):
+Most people get bad AI answers because AI 
+doesn't understand what they actually want. 
+PromptMeGood <strong>fixes your prompt instantly</strong> 
+— so you get the result you meant to ask for.
+
+PRIMARY CTA (id="hero-build-cta") — keep href="#builder":
+cta-title span: "Fix My Prompt — It's Free"
+cta-sub span: "No Signup. Works In Seconds."
+
+SECONDARY CTA (id="hero-usecases-cta") — keep 
+href="#use-cases". Change visible text only:
+cta-title span: "See What It Can Do"
+cta-sub span: "Real Examples, Real Results"
+
+Add this social proof bar HTML directly after the 
+closing </div> of the hero-actions div:
+
+<div class="hero-proof-bar">
+  <span class="hero-proof-item">
+    <span aria-hidden="true">⚡</span> Works In Seconds
+  </span>
+  <span class="hero-proof-sep" aria-hidden="true">·</span>
+  <span class="hero-proof-item">
+    <span aria-hidden="true">🔒</span> No Signup Needed
+  </span>
+  <span class="hero-proof-sep" aria-hidden="true">·</span>
+  <span class="hero-proof-item">
+    <span aria-hidden="true">✓</span> Free During Early Access
+  </span>
+  <span class="hero-proof-sep" aria-hidden="true">·</span>
+  <span class="hero-proof-item">
+    <span aria-hidden="true">🌍</span> Used In 10+ Countries
+  </span>
+</div>
+
+Add this CSS for the proof bar:
+
+.hero-proof-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: color-mix(in srgb, var(--color-primary) 
+    6%, var(--color-surface));
+  border-radius: var(--radius-full);
+  border: 1px solid color-mix(in srgb, 
+    var(--color-primary) 15%, var(--color-border));
+}
+.hero-proof-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+.hero-proof-sep {
+  color: var(--color-border);
+  font-size: var(--text-sm);
+}
+@media (max-width: 540px) {
+  .hero-proof-sep { display: none; }
+  .hero-proof-bar { 
+    gap: var(--space-2);
+    border-radius: var(--radius-lg);
+  }
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 3 — TITLE CASE SWEEP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Find and fix every instance of these in visible text. 
+Change visible text only — no variable names or IDs:
+
+BUTTONS AND CTAS:
+"Fix my prompt" → "Fix My Prompt"
+"Help me start" → "Help Me Start"
+"Run with AI" → "Run With AI"
+"Copy prompt" → "Copy Prompt"
+"Clear prompt" → "Clear Prompt"
+"Update prompt" → "Update Prompt"
+"Improve with AI" → "Improve With AI"
+"More detailed" → "More Detailed"
+"More bold & direct" → "More Bold & Direct"
+"Beginner friendly" → "Beginner Friendly"
+"Undo last change" → "Undo Last Change"
+"Check prompt quality" → "Check Prompt Quality"
+"Copy shareable link" → "Copy Shareable Link"
+"Print / save PDF" → "Print / Save PDF"
+"Run again" → "Run Again"
+"Copy response" → "Copy Response"
+"Use demo values" → "Use Demo Values"
+"Random prompt" → "Random Prompt"
+"Show archived" → "Show Archived"
+"Compare two" → "Compare Two"
+"Collapse all" → "Collapse All"
+"Clear all history" → "Clear All History"
+"Export everything" → "Export Everything"
+"Import backup" → "Import Backup"
+"Backup / restore" → "Backup / Restore"
+"Export yours" → "Export Yours"
+"Notes only" → "Notes Only"
+"Hide tip" → "Hide Tip"
+"Show tips" → "Show Tips"
+"Get updates" → "Get Updates"
+"Try it" → "Try It"
+"Dismiss" → "Dismiss"
+"Use this →" → "Use This →"
+"Need ideas?" → "Need Ideas?"
+"See examples" → "See Examples"
+
+SECTION HEADINGS AND SUBHEADINGS:
+"What next?" → "What Next?"
+"Your goal" → "Your Goal"
+"Your image" → "Your Image"
+"Build your prompt" → "Build Your Prompt"
+"Your fixed prompt" → "Your Fixed Prompt"
+"Your generated image" → "Your Generated Image"
+"Refine your prompt" → "Refine Your Prompt"
+"Fine-tune your prompt" → "Fine-Tune Your Prompt"
+"Run this prompt with AI" → "Run This Prompt With AI"
+"Use your prompt in:" → "Use Your Prompt In:"
+"What people are saying" → "What People Are Saying"
+"Why most AI prompts fail" → "Why Most AI Prompts Fail"
+"How it works" → "How It Works"
+"See the difference" → "See The Difference"
+"Tag insights" → "Tag Insights"
+"Daily streak" → "Daily Streak"
+"Saved prompts" → "Saved Prompts"
+"Total reuses" → "Total Reuses"
+"Top tag" → "Top Tag"
+"Most-used prompt" → "Most-Used Prompt"
+"Most-used template" → "Most-Used Template"
+"This week at a glance" → "This Week At A Glance"
+"Pinned templates" → "Pinned Templates"
+"Prompt vault" → "Prompt Vault"
+"Best prompts" → "Best Prompts"
+
+ALL CAPS TO TITLE CASE:
+"THIS WEEK AT A GLANCE" → "This Week At A Glance"
+"MOST-USED TEMPLATE" → "Most-Used Template"
+"MOST-USED PROMPT" → "Most-Used Prompt"
+"DAILY STREAK" → "Daily Streak"
+"SAVED PROMPTS" → "Saved Prompts"
+"TOTAL REUSES" → "Total Reuses"
+"TOP TAG" → "Top Tag"
+"WHY IT MATTERS" → "Why It Matters"
+"EARLY FEEDBACK" → "Early Feedback"
+"REFINE YOUR PROMPT INSTANTLY" → "Refine Your Prompt"
+"THIS WEEK'S FOCUS" → "This Week's Focus"
+
+SUB-LABELS AND DESCRIPTIONS UNDER BUTTONS:
+"No signup. Works instantly." → "No Signup. Works Instantly."
+"See how it works — loads a sample prompt instantly." 
+  → "See How It Works — Loads A Sample Prompt Instantly."
+"Sends your current prompt to AI for a deeper rewrite." 
+  → "Sends Your Current Prompt To AI For A Deeper Rewrite."
+"Not feeling the change? Undo and try another." 
+  → "Not Feeling The Change? Undo And Try Another."
+"Tell me what to change — no need to start over." 
+  → "Tell Me What To Change — No Need To Start Over."
+
+DROPDOWN OPTIONS:
+"No personality added" → "No Personality Added"
+"Direct & straightforward" → "Direct & Straightforward"
+"Friendly & conversational" → "Friendly & Conversational"
+"Bold & persuasive" → "Bold & Persuasive"
+"Professional & structured" → "Professional & Structured"
+"Creative & expressive" → "Creative & Expressive"
+"Faith-based & convicting" → "Faith-Based & Convicting"
+"Street-smart & practical" → "Street-Smart & Practical"
+"Luxury brand voice" → "Luxury Brand Voice"
+"Viral social media voice" → "Viral Social Media Voice"
+"Step-by-step" → "Step-By-Step"
+"Detailed breakdown" → "Detailed Breakdown"
+"No limit" → "No Limit"
+"Custom…" → "Custom…"
+"Beginner" → "Beginner"
+"Intermediate" → "Intermediate"
+"Advanced" → "Advanced"
+"Professional" → "Professional"
+"Bold & direct" → "Bold & Direct"
+"Casual" → "Casual"
+"Expert" → "Expert"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 4 — POST GENERATION FLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After a prompt is generated the user must never 
+wonder what to do. The existing "What Next?" block 
+must be:
+
+1. Hidden before generation using CSS display:none
+2. Revealed immediately after successful generation
+3. Positioned directly below the generated prompt box
+4. Showing three clear tappable options with 
+   minimum 52px height on mobile:
+   - Run With AI → triggers existing run function
+   - Copy Prompt → triggers existing copy function  
+   - Refine It → scrolls to refine section
+
+Do not create new buttons. Wire the existing 
+what-next block's links to the existing functions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 5 — SCROLL MARGIN FOR ALL TARGETS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every section that gets auto-scrolled to must have 
+scroll-margin-top: 24px so its heading is never 
+half-cut when the page snaps to it.
+
+Verify this CSS rule exists and applies to:
+#builder, #result-panel, #image-result, 
+#ai-response, #use-cases, #history, 
+#templates, #dashboard, #manual,
+#why-prompts-fail, #how-it-works, 
+#early-feedback, #see-the-difference
+
+If the rule exists, confirm it. If not, add it.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 6 — MOBILE SPECIFIC
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Hide global search bar on mobile (max-width 768px):
+   Target: #global-search-input and its label and 
+   helper text. Add display:none via CSS. The / 
+   keyboard shortcut still works on desktop.
+
+2. All buttons minimum 44px height on mobile.
+
+3. Fix My Prompt button reachable within 2 scrolls 
+   from top on mobile.
+
+4. Guide Me / Help Me Start wizard: add 
+   touch-action: pan-y to the wizard container so 
+   vertical swipe scrolls content and does NOT 
+   trigger Next/Back navigation.
+
+5. The sticky bottom bar must show only:
+   - Short goal input placeholder: 
+     "What Do You Need Help With?"
+   - Generate button label: "Generate ⚡"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 7 — COPY AND MESSAGING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Remove "0+ prompts generated" entirely if visible.
+
+2. Tour modal: only show once using localStorage key 
+   "pmg_modal_shown". Add 3-second delay on first visit.
+
+3. Daily nudge: only show if localStorage key 
+   "pmg_has_generated" exists. Hide for new visitors.
+
+4. This Week's Focus: if content fails to load after 
+   3 seconds show fallback: 
+   "Try This: Write A Prompt To Help You Earn 
+   Extra Income This Week."
+
+5. Footer text:
+   REPLACE: "PromptMeGood is in early access. 
+   All features are free."
+   WITH: "PromptMeGood Is Free During Our Founding 
+   Member Period. Full Pricing Launches Soon."
+
+6. Remove "Recommended First Step" badge from 
+   Help Me Start card.
+
+7. Remove "NEW" badge from This Week's Focus widget.
+
+8. Replay Tour button: remove from main builder view. 
+   Keep only in hamburger menu.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 8 — PRICING PAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In pricing.html update visible copy only:
+
+FREE TIER label: "Free"
+FREE TIER features list:
+- "Unlimited Local Prompt Building (Fix My Prompt)"
+- "Limited AI-Powered Improvements"
+- "Limited Run With AI Executions"  
+- "Local Prompt Vault (Saved On This Device)"
+
+PRO TIER label: "Pro"
+PRO TIER features list:
+- "Unlimited Run With AI"
+- "Cloud Prompt Vault"
+- "Money Mode Pro Workflows"
+- "Image Generation"
+- "File And Image Analysis"
+- "Brand Voice Profiles"
+- "Prompt Chains"
+- "Export And Share Tools"
+
+Remove any text saying "free forever" or "unlimited" 
+that contradicts actual AI execution limits.
+Replace with: "Free During Our Founding Member Period."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AFTER ALL FIXES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Verify anchor links all work:
+- Click #builder in nav → scrolls to builder ✓
+- Click #use-cases → scrolls to use cases ✓
+- Click #history → scrolls to history ✓
+- Click #how-it-works → scrolls to how it works ✓
+
+Verify color picker still works:
+- Click each swatch → entire UI changes accent color ✓
+
+Commit with message "Full QC pass — hero, above fold, 
+Title Case, flow, mobile, pricing"
+Push to origin main
+Deploy
+
+Report pass/fail for every numbered fix and every 
+sub-item. List anything not completed and why.
+Flag anything needing manual review before going live.
