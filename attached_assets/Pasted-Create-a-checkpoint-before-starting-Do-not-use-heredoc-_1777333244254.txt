@@ -1,0 +1,185 @@
+Create a checkpoint before starting. Do not use heredoc syntax. Write all fixes as separate .js files. Test after each section. Report pass/fail for every item.
+
+You are making targeted, surgical improvements to artifacts/promptmegood/index.html. Do NOT remove any features. Do NOT rename any variables, IDs, or CSS classes. Only change visible user-facing text and CSS display properties.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1 — HERO CLEANUP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Remove the "GET AI TO UNDERSTAND YOU" eyebrow text above the H1. The headline speaks for itself.
+
+2. Remove the italic secondary tagline that reads "PromptMeGood helps you ask AI the right way — so you stop getting bad answers." It competes with the subheadline.
+
+3. Change the sub-label under the "Fix My Prompt" button from "paste a messy idea, get a clear prompt!" to "Turn Your Idea Into A Powerful Prompt"
+
+4. Change the secondary CTA label from "See Examples First" to "See Examples" and remove the sub-label "or explore use cases"
+
+5. Change the hero card title from "Build better prompts for ChatGPT, Claude, and any AI tool" to "Build Better Prompts For ChatGPT, Claude, And Any AI Tool"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2 — BUILDER REWORK (MOBILE AND DESKTOP)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The builder has too many elements interrupting the path to the goal field. Apply these changes:
+
+1. Remove the "Build Your Prompt" title and its description paragraph "Paste your messy idea below — the more specific, the better. Tap Fix My Prompt and get a clear prompt you can use instantly." The mode switch pills and goal field make this redundant.
+
+2. Move the "Replay Tour" button out of the builder entirely. Place it only inside the hamburger menu. Remove it from the main builder view.
+
+3. Collapse the "Help Me Start" card into a single small text link reading "Not Sure Where To Start? Let Us Help →" placed directly below the Fix My Prompt button. Remove the full card treatment with title, description, and separate button.
+
+4. Hide "THIS WEEK'S FOCUS" widget before a prompt has been generated. Show it only after the user has generated their first prompt. Use localStorage key "pmg_has_generated" to control this.
+
+5. Remove the "NEW" badge from the This Week's Focus widget permanently.
+
+6. Change the goal field label from "What Do You Want AI To Help You With?" to "Your Goal"
+
+7. Change the goal field placeholder to "Describe what you want — we'll build the perfect prompt."
+
+8. Change the "Try Demo" button sub-label from "See How It Works — loads a sample prompt instantly." to "Load A Sample"
+
+9. Remove the "Random Prompt" button from the default builder view. Move it inside the "More Control" panel.
+
+10. Remove "Not sure where to start? See it in action. Show tips" line from the builder. It is a fourth help option that adds confusion.
+
+11. Change "TRY ONE OF THESE:" suggestion chips label to "Quick Start Ideas:"
+
+12. Change the file upload section heading from "Upload A File Or Image For Smarter Results" to "Upload A File Or Image" and change the description to "Optional — we'll use it to build a smarter prompt."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3 — OUTPUT PANEL CLEANUP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Change "REFINE YOUR PROMPT INSTANTLY" all-caps eyebrow to "Refine Your Prompt"
+
+2. Change "Fine-tune your prompt" to "Fine-Tune Your Prompt"
+
+3. Make the "What Next?" guidance block more visually prominent. Add a subtle teal left border and slightly increase font weight on the three action labels: "Run With AI", "Copy", "Refine"
+
+4. Add a short context line above "Check Prompt Quality" reading "Want To Know How Strong Your Prompt Is?"
+
+5. Make "Copy Prompt" the visually dominant button in the output action row. Make "Print / Save PDF" visually smaller — change it to a plain text link instead of a button.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 4 — TITLE CASE SWEEP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Find and fix all of these visible text strings to Title Case. Change visible text only — do NOT change any variable names, IDs, or function names:
+
+"Why most AI prompts fail" → "Why Most AI Prompts Fail"
+"Use this →" → "Use This →"
+"Your input summary" → "Your Input Summary"
+"Fine-tune your prompt" → "Fine-Tune Your Prompt"
+"Not sure where to start?" → "Not Sure Where To Start?"
+"See it in action." → "See It In Action"
+"Show tips" → "Show Tips"
+"Hide tip" → "Hide Tip"
+"More control" → "More Control"
+"Switch to Expert Mode →" → "Switch To Expert Mode →"
+"Try one of these:" → "Try One Of These:"
+"Copy shareable link" → "Copy Shareable Link"
+"Print / save PDF" → "Print / Save PDF"
+"Clear prompt" → "Clear Prompt"
+"Update prompt" → "Update Prompt"
+"Undo last change" → "Undo Last Change"
+"Check prompt quality" → "Check Prompt Quality"
+"Run with AI" → "Run With AI"
+"Copy response" → "Copy Response"
+"Run again" → "Run Again"
+"Show archived" → "Show Archived"
+"Compare two" → "Compare Two"
+"Collapse all" → "Collapse All"
+"Clear all history" → "Clear All History"
+"Export everything" → "Export Everything"
+"Import backup" → "Import Backup"
+"Export yours" → "Export Yours"
+"Notes only" → "Notes Only"
+"Backup / restore" → "Backup / Restore"
+"Tag insights" → "Tag Insights"
+"Last 30 days" → "Last 30 Days"
+"Quiet day" → "Quiet Day"
+"Generated a prompt" → "Generated A Prompt"
+"Most-used template" → "Most-Used Template"
+"Most-used prompt" → "Most-Used Prompt"
+"Saved prompts" → "Saved Prompts"
+"Daily streak" → "Daily Streak"
+"Total reuses" → "Total Reuses"
+"Top tag" → "Top Tag"
+"This week at a glance" → "This Week At A Glance"
+"Add tags to organize" → "Add Tags To Organize"
+"Across history" → "Across History & Templates"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 5 — ALL CAPS NORMALIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Convert these ALL CAPS visible labels to Title Case. Visible text only:
+
+"THIS WEEK AT A GLANCE" → "This Week At A Glance"
+"MOST-USED TEMPLATE" → "Most-Used Template"
+"MOST-USED PROMPT" → "Most-Used Prompt"
+"DAILY STREAK" → "Daily Streak"
+"SAVED PROMPTS" → "Saved Prompts"
+"TOTAL REUSES" → "Total Reuses"
+"TOP TAG" → "Top Tag"
+"WHY IT MATTERS" → "Why It Matters"
+"EARLY FEEDBACK" → "Early Feedback"
+"REFINE YOUR PROMPT INSTANTLY" → "Refine Your Prompt"
+"GET AI TO UNDERSTAND YOU" → remove entirely
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 6 — MOBILE SPECIFIC FIXES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+On mobile screens (max-width: 768px):
+
+1. Hide the global search bar using CSS display:none
+
+2. After the mode switch pills (Write Something / Create An Image), the next visible element must be the goal field. No cards, no widgets, no buttons in between.
+
+3. Minimum button height 44px on all buttons
+
+4. Ensure "Fix My Prompt" button is reachable within 2 scrolls from the top on mobile
+
+5. The sticky bottom bar (if present) should show "What Do You Need Help With?" placeholder and "Generate" button only — remove any X dismiss button if it clutters the bar
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 7 — PROXIMITY AND ACTION FIXES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. The "Help Me Start" action must be physically adjacent to the goal field — not separated by any other card or widget
+
+2. The "Fix My Prompt" button must be immediately below the goal field with no elements between them
+
+3. The "Run With AI" button must be the first and largest button visible after generation
+
+4. Group all output actions in this order top to bottom:
+   - Run With AI (primary, largest)
+   - What Next? guidance block
+   - Copy Prompt (secondary)
+   - Refine options (Improve With AI, More Detailed, More Bold & Direct, Beginner Friendly)
+   - Fine-Tune Your Prompt textarea
+   - Check Prompt Quality
+   - Copy Shareable Link | Print / Save PDF | Clear Prompt (tertiary, smallest)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 8 — WEEKLY FOCUS AND NUDGE GATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. This Week's Focus: hide on page load for first-time visitors. Show only after pmg_has_generated is set to true in localStorage.
+
+2. Daily nudge: hide on load for users without pmg_has_generated key. Show only for returning users.
+
+3. Weekly focus fallback: if content fails to load after 3 seconds show "Try This: Write A Prompt To Help You Earn Extra Income This Week." Never show a blank spinner.
+
+4. Tour modal: add 3-second delay on first visit. Use localStorage key "pmg_modal_shown" to never show again after first dismissal.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AFTER ALL SECTIONS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Commit with message "Full UX friction audit and Title Case sweep"
+Push to origin main
+Deploy
+Report pass/fail for every numbered item above
+List anything that could not be changed safely and why

@@ -269,6 +269,7 @@
   }
 
   function setupStickyCollapse() {
+    return;
     var bar = document.getElementById('mobile-sticky-bar');
     var dismiss = document.getElementById('mobile-sticky-dismiss');
     if (!bar || !dismiss) return;
