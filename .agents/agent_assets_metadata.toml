@@ -42,3 +42,9 @@ id = "6_mFTKpocnJMJCuqq2eDn"
 uri = "file://pmg_for_chatgpt.tar.gz"
 type = "unspecified"
 title = "pmg_for_chatgpt.tar.gz"
+
+[[outputs]]
+id = "FwRhjNy0LBCtehFMrdb3i"
+uri = "file://screenshots/2h-ago-layout.jpg"
+type = "image"
+title = "Layout from 2 hours ago (commit e11d47b)"
