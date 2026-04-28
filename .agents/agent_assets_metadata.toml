@@ -48,3 +48,9 @@ id = "FwRhjNy0LBCtehFMrdb3i"
 uri = "file://screenshots/2h-ago-layout.jpg"
 type = "image"
 title = "Layout from 2 hours ago (commit e11d47b)"
+
+[[outputs]]
+id = "nkiXH9xgunn3d21faxEIU"
+uri = "file://screenshots/narrow-pill.jpg"
+type = "image"
+title = "Restored layout with narrow gold pill matching Help Me Start width"

@@ -3608,27 +3608,24 @@
       '  --pmg-t16-amber-text: #78350f;',
       '  --pmg-t16-amber-text-dark: #fcd34d;',
       '}',
-      /* Wrapper row forces the pill onto its own line above the Help Me Start
-         button (instead of rendering side-by-side in the parent flex row).
-         flex-basis:100% + width:100% breaks to a new line in flex-wrap parents
-         and acts as a normal block in non-flex parents. */
+      /* Wrapper row forces the pill onto its own line in the parent
+         flex-wrap row, then keeps the pill left-aligned (matching the
+         left-aligned Help Me Start button below it). The pill itself is
+         narrow — JS syncWidth() pins its width to #guided-mode-btn. */
       '#' + ROW_ID + ' {',
-      /* flex-start aligns the pill DIRECTLY under the Help Me Start button
-         (which is left-aligned in the parent flex row). Without this the
-         pill would center in the column and visually drift away from its
-         button — making it look like it belongs to Fix My Prompt instead. */
       '  display: flex;',
-      '  align-items: center; justify-content: flex-start;',
+      '  align-items: center;',
+      '  justify-content: flex-start;',
       '  width: 100%;',
       '  flex-basis: 100%;',
-      '  margin: 4px 0 0;',
+      '  margin: 8px 0 -2px;',
       '  padding: 0;',
       '}',
       '#' + ROW_ID + '.pmg-t16-hidden { display: none !important; }',
       '#' + PILL_ID + ' {',
-      /* Match the small Help Me Start button width — NOT the wide
-         green button. JS sets explicit width via syncWidth() to exactly
-         the button's measured width. */
+      /* Pill is narrow and matches the small Help Me Start button width
+         (set explicitly by JS syncWidth()). inline-flex so it shrink-wraps
+         its content by default until JS pins the width. */
       '  display: inline-flex; align-items: center; justify-content: center; gap: 6px;',
       '  margin: 0; padding: 5px 12px;',
       '  background: linear-gradient(135deg, var(--pmg-t16-amber-bg-from) 0%, var(--pmg-t16-amber-bg-to) 100%);',
@@ -3639,13 +3636,8 @@
       '  letter-spacing: 0.02em;',
       '  line-height: 1.2;',
       '  box-sizing: border-box;',
-      '  width: auto;',
-      '  flex-basis: auto;',
-      '  flex-grow: 0; flex-shrink: 0;',
-      '  align-self: flex-start;',
       '  box-shadow: 0 1px 3px color-mix(in srgb, var(--pmg-t16-amber) 18%, transparent);',
       '  user-select: none;',
-      '  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;',
       '}',
       '#' + PILL_ID + ' .pmg-t16-star {',
       '  font-size: 13px; line-height: 1; transform: translateY(-0.5px);',
@@ -3682,9 +3674,7 @@
     star.setAttribute('aria-hidden', 'true');
     star.textContent = '⭐';
     var text = document.createElement('span');
-    /* Short label so it fits inside the small Help Me Start button width
-       without being truncated by ellipsis. */
-    text.textContent = 'Recommended';
+    text.textContent = 'Recommended For Best Results';
     pill.appendChild(star);
     pill.appendChild(text);
     return pill;
@@ -3703,16 +3693,12 @@
     var relocated = !oldRow || (generate && generate.nextElementSibling === help);
     if (!relocated) return false;
     var pill = buildPill();
-    /* Wrap pill in a full-width row so it stacks BELOW the Help Me Start
-       button as a caption — text under its respective button. */
+    /* Wrap pill in a full-width row so it stacks ABOVE the Help Me Start
+       button on its own line, while pill itself stays narrow + left-aligned. */
     var row = document.createElement('div');
     row.id = ROW_ID;
     row.appendChild(pill);
-    if (help.nextSibling) {
-      help.parentNode.insertBefore(row, help.nextSibling);
-    } else {
-      help.parentNode.appendChild(row);
-    }
+    help.parentNode.insertBefore(row, help);
     return true;
   }
 
@@ -3721,15 +3707,39 @@
     return insertPill();
   }
 
-  /* Sync pill WIDTH to exactly match the Help Me Start button width.
-     The pill should look like a label *for* that small button, not a
-     full-width banner. Re-runs on resize and on visibility sync. */
+  /* Pin pill width to the Help Me Start button width so they always
+     match exactly. Re-runs on resize, on font load, and when the button
+     mutates (e.g. text change). Uses ResizeObserver where available;
+     falls back to a brief polling window. */
   function syncWidth() {
     var pill = document.getElementById(PILL_ID);
     var help = document.getElementById('guided-mode-btn');
     if (!pill || !help) return;
     var w = help.getBoundingClientRect().width;
-    if (w > 0) pill.style.width = Math.round(w) + 'px';
+    if (w > 0) {
+      var px = Math.round(w) + 'px';
+      if (pill.style.width !== px) pill.style.width = px;
+    }
+  }
+
+  function startWidthSync() {
+    syncWidth();
+    var help = document.getElementById('guided-mode-btn');
+    if (help && typeof ResizeObserver !== 'undefined') {
+      try {
+        var ro = new ResizeObserver(function () { syncWidth(); });
+        ro.observe(help);
+      } catch (e) {}
+    }
+    window.addEventListener('resize', syncWidth);
+    /* Bounded polling fallback: 5Hz for 6 seconds to absorb late layout shifts
+       (font load, theme switch reflow, etc.). After that, ResizeObserver and
+       resize listeners are the source of truth. */
+    var ticks = 0;
+    var iv = setInterval(function () {
+      syncWidth();
+      if (++ticks > 30) clearInterval(iv);
+    }, 200);
   }
 
   /* Sync pill visibility to mirror the Help Me Start button.
@@ -3765,13 +3775,7 @@
   }
 
   function startVisibilitySync() {
-    syncWidth();
     syncVisibility();
-    /* Re-measure pill width whenever the window resizes (mobile layout
-       breakpoints can change the help button width). */
-    window.addEventListener('resize', function () {
-      setTimeout(syncWidth, 0);
-    });
     /* Re-sync on body class/style changes (mode switch toggles body.image-mode
        and toggles 'active' class on mode buttons). No subtree observer — too
        broad. Targeted body observer + click delegation covers all known
@@ -3804,7 +3808,6 @@
        that, the body observer + click delegation are the source of truth. */
     var ticks = 0;
     var iv = setInterval(function () {
-      syncWidth();
       syncVisibility();
       if (++ticks > 30) clearInterval(iv);
     }, 200);
@@ -3814,6 +3817,7 @@
     var inserted = tryInsert();
     if (inserted) {
       startVisibilitySync();
+      startWidthSync();
       return;
     }
     /* Observe DOM until T15 relocation has happened, then insert + sync. */
@@ -3823,6 +3827,7 @@
       if (tryInsert()) {
         clearInterval(iv);
         startVisibilitySync();
+        startWidthSync();
       } else if (attempts > 30) {
         clearInterval(iv);
       }
@@ -3832,212 +3837,11 @@
         try { mo.disconnect(); } catch (e) {}
         clearInterval(iv);
         startVisibilitySync();
+        startWidthSync();
       }
     });
     try { mo.observe(document.body, { childList: true, subtree: true }); } catch (e) {}
     setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 12000);
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-})();
-
-/* =====================================================================
- * T16b — Symmetric CTA grid: parallel Use Demo Values + Help Me Start,
- * gold Recommended pill on top of Help Me Start, helper text directly
- * and symmetrically under each respective button.
- *
- *   Layout (desktop):
- *     [               ] [⭐ Recommended ]   <- pill row
- *     [Use Demo Values] [ Help Me Start]   <- buttons (same width)
- *     [demo caption   ] [help caption  ]   <- captions (centered)
- *
- *   Mobile (≤600px) collapses to a single column, Help Me Start first
- *   (with its pill on top), then Use Demo Values below it — preserving
- *   the recommended path priority.
- *
- *   No IDs/classes/JS variables are renamed. Buttons are MOVED, not
- *   recreated. Existing helpers (#pmg-help-me-start-helper, #demo-microcopy)
- *   are hidden in favor of the new grid captions.
- * ===================================================================== */
-(function pmgT16bSymmetricCtaGrid() {
-  if (window.__pmgT16bInit) return;
-  window.__pmgT16bInit = true;
-
-  var GRID_ID = 'pmg-symmetric-cta-grid';
-  var STYLE_ID = 'pmg-t16b-symmetric-style';
-
-  function injectStyles() {
-    if (document.getElementById(STYLE_ID)) return;
-    var css = [
-      '#' + GRID_ID + ' {',
-      '  display: grid;',
-      '  grid-template-columns: 1fr 1fr;',
-      '  grid-template-rows: auto auto auto;',
-      '  column-gap: 12px;',
-      '  row-gap: 6px;',
-      '  width: 100%;',
-      '  margin: 12px 0 4px;',
-      '  align-items: stretch;',
-      '  justify-items: stretch;',
-      '  box-sizing: border-box;',
-      '}',
-      /* Pill cell sits in column 2 (above Help Me Start) */
-      '#' + GRID_ID + ' .pmg-t16b-pill-cell {',
-      '  grid-column: 2; grid-row: 1;',
-      '  display: flex; align-items: center; justify-content: center;',
-      '  min-height: 0;',
-      '}',
-      /* Empty spacer in column 1 row 1 to keep the grid square */
-      '#' + GRID_ID + ' .pmg-t16b-spacer-cell {',
-      '  grid-column: 1; grid-row: 1;',
-      '}',
-      '#' + GRID_ID + ' .pmg-t16b-demo-cell {',
-      '  grid-column: 1; grid-row: 2;',
-      '  display: flex;',
-      '}',
-      '#' + GRID_ID + ' .pmg-t16b-help-cell {',
-      '  grid-column: 2; grid-row: 2;',
-      '  display: flex;',
-      '}',
-      '#' + GRID_ID + ' .pmg-t16b-demo-cap,',
-      '#' + GRID_ID + ' .pmg-t16b-help-cap {',
-      '  margin: 0; padding: 0 4px;',
-      '  font-size: 12px; line-height: 1.35;',
-      '  text-align: center;',
-      '  color: var(--color-muted, #6b7280);',
-      '}',
-      '#' + GRID_ID + ' .pmg-t16b-demo-cap { grid-column: 1; grid-row: 3; }',
-      '#' + GRID_ID + ' .pmg-t16b-help-cap { grid-column: 2; grid-row: 3; }',
-      /* Stretch buttons to fill their grid cell so they are visually identical */
-      '#' + GRID_ID + ' #fill-demo,',
-      '#' + GRID_ID + ' #guided-mode-btn {',
-      '  width: 100%;',
-      '  margin: 0;',
-      '  box-sizing: border-box;',
-      '}',
-      /* Pill stretches to match cell width (overrides T16 syncWidth inline px) */
-      '#' + GRID_ID + ' #pmg-help-me-start-recommend {',
-      '  width: 100% !important;',
-      '  max-width: 100%;',
-      '  box-sizing: border-box;',
-      '}',
-      /* Wrapper row from T16 collapses inside the grid cell */
-      '#' + GRID_ID + ' #pmg-help-me-start-recommend-row {',
-      '  width: 100%; margin: 0; padding: 0;',
-      '  display: flex; justify-content: center;',
-      '}',
-      /* Mobile: single column, Help Me Start path first */
-      '@media (max-width: 600px) {',
-      '  #' + GRID_ID + ' {',
-      '    grid-template-columns: 1fr;',
-      '    grid-template-rows: auto auto auto auto auto;',
-      '    row-gap: 4px;',
-      '  }',
-      '  #' + GRID_ID + ' .pmg-t16b-pill-cell  { grid-column: 1; grid-row: 1; }',
-      '  #' + GRID_ID + ' .pmg-t16b-help-cell  { grid-column: 1; grid-row: 2; }',
-      '  #' + GRID_ID + ' .pmg-t16b-help-cap   { grid-column: 1; grid-row: 3; margin-bottom: 8px; }',
-      '  #' + GRID_ID + ' .pmg-t16b-demo-cell  { grid-column: 1; grid-row: 4; }',
-      '  #' + GRID_ID + ' .pmg-t16b-demo-cap   { grid-column: 1; grid-row: 5; }',
-      '  #' + GRID_ID + ' .pmg-t16b-spacer-cell { display: none; }',
-      '}'
-    ].join('\n');
-    var style = document.createElement('style');
-    style.id = STYLE_ID;
-    style.textContent = css;
-    document.head.appendChild(style);
-  }
-
-  function build() {
-    if (document.getElementById(GRID_ID)) return true;
-    var demo = document.getElementById('fill-demo');
-    var help = document.getElementById('guided-mode-btn');
-    var generate = document.getElementById('generateBtn');
-    var pillRow = document.getElementById('pmg-help-me-start-recommend-row');
-    if (!demo || !help || !generate || !pillRow) return false;
-    /* Wait until T15 has relocated help next to generate (otherwise help
-       is still inside the orphan #guided-cta-row). */
-    var oldRow = help.closest('#guided-cta-row');
-    if (oldRow) return false;
-
-    var grid = document.createElement('div');
-    grid.id = GRID_ID;
-
-    var spacerCell = document.createElement('div');
-    spacerCell.className = 'pmg-t16b-spacer-cell';
-
-    var pillCell = document.createElement('div');
-    pillCell.className = 'pmg-t16b-pill-cell';
-
-    var demoCell = document.createElement('div');
-    demoCell.className = 'pmg-t16b-demo-cell';
-
-    var helpCell = document.createElement('div');
-    helpCell.className = 'pmg-t16b-help-cell';
-
-    var demoCap = document.createElement('p');
-    demoCap.className = 'pmg-t16b-demo-cap';
-    demoCap.textContent = 'See It Filled In With An Example.';
-
-    var helpCap = document.createElement('p');
-    helpCap.className = 'pmg-t16b-help-cap';
-    helpCap.textContent = "Answer 4 Quick Questions And We'll Fill It For You.";
-
-    /* Move existing buttons + pill row into the grid cells (no clones). */
-    pillCell.appendChild(pillRow);
-    demoCell.appendChild(demo);
-    helpCell.appendChild(help);
-
-    grid.appendChild(spacerCell);
-    grid.appendChild(pillCell);
-    grid.appendChild(demoCell);
-    grid.appendChild(helpCell);
-    grid.appendChild(demoCap);
-    grid.appendChild(helpCap);
-
-    /* Insert below the Fix My Prompt button + its sublabel. */
-    var afterEl = document.getElementById('pmg-generate-sublabel') || generate;
-    if (afterEl.parentNode) {
-      if (afterEl.nextSibling) {
-        afterEl.parentNode.insertBefore(grid, afterEl.nextSibling);
-      } else {
-        afterEl.parentNode.appendChild(grid);
-      }
-    }
-
-    /* Hide redundant captions that lived elsewhere in the old layout. */
-    var oldHelper = document.getElementById('pmg-help-me-start-helper');
-    if (oldHelper) oldHelper.style.display = 'none';
-    var oldMicrocopy = document.getElementById('demo-microcopy');
-    if (oldMicrocopy) oldMicrocopy.style.display = 'none';
-
-    /* Clear any inline width that T16's syncWidth() may have set on the
-       pill — the grid cell now controls width via 100%. */
-    var pill = document.getElementById('pmg-help-me-start-recommend');
-    if (pill) pill.style.width = '';
-
-    return true;
-  }
-
-  function init() {
-    injectStyles();
-    if (build()) return;
-    var attempts = 0;
-    var iv = setInterval(function () {
-      attempts++;
-      if (build() || attempts > 80) clearInterval(iv);
-    }, 200);
-    var mo = new MutationObserver(function () {
-      if (build()) {
-        try { mo.disconnect(); } catch (e) {}
-        clearInterval(iv);
-      }
-    });
-    try { mo.observe(document.body, { childList: true, subtree: true }); } catch (e) {}
-    setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 16000);
   }
 
   if (document.readyState === 'loading') {
