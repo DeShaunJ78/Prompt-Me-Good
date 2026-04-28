@@ -52,7 +52,7 @@
       '.tip-block, .generate-helper-tip, [data-action="dismiss-tips"] { display: none !important; }',
       '.guided-cta-recommended-badge, .weekly-new-badge, #weekly-goal-new-badge { display: none !important; }',
       '#replay-tour-btn-builder { display: none !important; }',
-      'body:not(.pmg-expert-mode):not(.is-expert-mode) #keyboard-hints { display: none !important; }',
+      'body:not(.pmg-expert-mode) #keyboard-hints { display: none !important; }',
 
       /* ===== FIX 4: Expert Mode visible row ===== */
       '.pmg-expert-mode-row { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-3); flex-wrap: wrap; }',
@@ -117,37 +117,7 @@
       '@media (max-width: 768px) {',
       '  .site-search, #global-search-input, .global-search, .search-label, .search-helper { display: none !important; }',
       '  .btn, button, [role="button"] { min-height: 44px; }',
-      '}',
-
-      /* ===== FIX 5: photographer accordion ===== */
-      '#pmg-photo-accordion { display: none; margin-top: var(--space-3); margin-bottom: var(--space-4); flex-direction: column; gap: var(--space-3); }',
-      'body.image-mode #pmg-photo-accordion { display: flex; }',
-      'body.image-mode #weekly-goal-pin { display: none !important; }',
-      '.pmg-photo-card { background: var(--color-surface-2); border: 1.5px solid color-mix(in srgb, var(--color-primary) 18%, var(--color-border)); border-radius: var(--radius-lg); padding: var(--space-4); transition: border-color 200ms ease, box-shadow 200ms ease, max-height 280ms ease, padding 200ms ease, opacity 200ms ease; overflow: hidden; }',
-      '.pmg-photo-card.pmg-photo-active { border-color: var(--color-primary); box-shadow: 0 4px 18px color-mix(in srgb, var(--color-primary) 14%, transparent); }',
-      '.pmg-photo-card.pmg-photo-collapsed { padding: var(--space-3) var(--space-4); animation: pmgSnap 200ms ease; }',
-      '.pmg-photo-card.pmg-photo-collapsed .pmg-photo-body { display: none; }',
-      '.pmg-photo-card.pmg-photo-pending { opacity: 0.5; pointer-events: none; }',
-      '.pmg-photo-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); cursor: pointer; user-select: none; }',
-      '.pmg-photo-title { font-size: var(--text-base); font-weight: 700; color: var(--color-text); margin: 0; flex: 1; }',
-      '.pmg-photo-card.pmg-photo-collapsed .pmg-photo-title { font-size: var(--text-sm); font-weight: 600; color: var(--color-text-muted); }',
-      '.pmg-photo-edit-link { font-size: var(--text-xs); font-weight: 600; color: var(--color-primary); text-decoration: none; white-space: nowrap; }',
-      '.pmg-photo-card:not(.pmg-photo-collapsed) .pmg-photo-edit-link { display: none; }',
-      '.pmg-photo-body { margin-top: var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); }',
-      '.pmg-photo-pills { display: flex; flex-wrap: wrap; gap: 8px; }',
-      '.pmg-photo-text-input { width: 100%; }',
-      '.pmg-photo-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; align-items: center; margin-top: var(--space-2); }',
-      '.pmg-photo-next-btn { background: var(--color-primary) !important; color: #ffffff !important; border: 1.5px solid var(--color-primary) !important; border-radius: var(--radius-full); padding: 8px 18px; font-size: var(--text-sm); font-weight: 700; cursor: pointer; min-height: 40px; }',
-      '.pmg-photo-skip-link { font-size: var(--text-sm); color: var(--color-text-muted); text-decoration: underline; cursor: pointer; background: transparent; border: 0; }',
-      '#pmg-build-image-btn { display: none; width: 100%; min-height: 56px; border-radius: var(--radius-full); border: 1.5px solid var(--color-primary); background: var(--color-primary); color: #ffffff; font-weight: 800; font-size: var(--text-base); cursor: pointer; box-shadow: 0 4px 14px color-mix(in srgb, var(--color-primary) 28%, transparent); margin-top: var(--space-2); }',
-      'body.image-mode #pmg-build-image-btn.pmg-ready { display: inline-flex; align-items: center; justify-content: center; }',
-      '#pmg-photo-build-msg { display: none; margin-top: var(--space-2); font-size: var(--text-sm); color: var(--color-text-muted); padding: var(--space-2) var(--space-3); background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface)); border-radius: var(--radius-md); border-left: 3px solid var(--color-primary); }',
-      '#pmg-photo-build-msg.pmg-shown { display: block; animation: pmgFadeUp 300ms ease forwards; }',
-
-      /* ===== FIX 5/11: image result loading shimmer + reveal ===== */
-      '#imageResultWrap.pmg-shimmer { background: linear-gradient(90deg, var(--color-surface-2) 25%, color-mix(in srgb, var(--color-primary) 8%, var(--color-surface-2)) 50%, var(--color-surface-2) 75%); background-size: 200% 100%; animation: pmgShimmer 1.5s linear infinite; }',
-      '#imageResultSection.pmg-revealed { animation: pmgFadeUp 400ms ease forwards; scroll-margin-top: 24px; }',
-      '#imageResultSection { scroll-margin-top: 24px; }'
+      '}'
     ].join('\n');
 
     var s = document.createElement('style');
@@ -192,51 +162,37 @@
       }
     });
 
-    function revealAll() {
-      nodes.forEach(function (n) { n.classList.add('pmg-shown'); });
-    }
-    function allShown() {
-      for (var i = 0; i < nodes.length; i++) if (!nodes[i].classList.contains('pmg-shown')) return false;
-      return true;
-    }
-
-    /* IntersectionObserver on #builder — reveal all when builder leaves viewport (single-shot) */
+    /* IntersectionObserver on #builder — reveal all when builder leaves viewport */
     var builder = document.getElementById('builder');
-    var io = null;
     if (builder && 'IntersectionObserver' in window) {
-      io = new IntersectionObserver(function (entries) {
+      var io = new IntersectionObserver(function (entries) {
         entries.forEach(function (e) {
           if (!e.isIntersecting) {
-            revealAll();
-            if (io) { io.disconnect(); io = null; }
+            nodes.forEach(function (n) { n.classList.add('pmg-shown'); });
           }
         });
       }, { threshold: 0.1 });
       io.observe(builder);
     }
 
-    /* Anchor click reveals all marketing sections immediately (single-shot) */
-    function anchorHandler(ev) {
+    /* Anchor click reveals all marketing sections immediately */
+    document.addEventListener('click', function (ev) {
       var a = ev.target && ev.target.closest && ev.target.closest('a[href^="#"]');
       if (!a) return;
       var href = a.getAttribute('href') || '';
       var id = href.slice(1);
       if (ids.indexOf(id) !== -1) {
-        revealAll();
-        document.removeEventListener('click', anchorHandler, true);
-        if (io) { io.disconnect(); io = null; }
+        nodes.forEach(function (n) { n.classList.add('pmg-shown'); });
       }
-    }
-    document.addEventListener('click', anchorHandler, true);
+    }, true);
 
-    /* Mirror v5 reveal class on these 5 nodes — disconnect after all revealed */
+    /* Mirror v5 reveal class on these 5 nodes */
     var mo = new MutationObserver(function () {
       nodes.forEach(function (n) {
         if ((n.classList.contains('pmg-revealed') || n.classList.contains('revealed')) && !n.classList.contains('pmg-shown')) {
           n.classList.add('pmg-shown');
         }
       });
-      if (allShown()) { mo.disconnect(); }
     });
     nodes.forEach(function (n) { mo.observe(n, { attributes: true, attributeFilter: ['class'] }); });
   }
@@ -318,37 +274,11 @@
     hint.textContent = 'Full Control Over Every Setting';
 
     btn.addEventListener('click', function () {
-      var nextOn = !document.body.classList.contains('is-expert-mode');
-      /* Mirror onto BOTH classes so v6 and existing code (v5/index.html) agree */
-      document.body.classList.toggle('pmg-expert-mode', nextOn);
-      document.body.classList.toggle('is-expert-mode', nextOn);
-      /* Drive the underlying checkbox so existing handlers also fire */
-      var checkbox = document.getElementById('expert-mode-toggle');
-      if (checkbox) {
-        if (checkbox.checked !== nextOn) {
-          checkbox.checked = nextOn;
-          try { checkbox.dispatchEvent(new Event('change', { bubbles: true })); } catch (e) {}
-        }
-      } else if (existing && typeof existing.click === 'function') {
+      document.body.classList.toggle('pmg-expert-mode');
+      if (existing && typeof existing.click === 'function') {
         try { existing.click(); } catch (e) {}
       }
     });
-
-    /* If existing toggle changes via other code paths, mirror onto v6 class */
-    var checkbox = document.getElementById('expert-mode-toggle');
-    if (checkbox) {
-      checkbox.addEventListener('change', function () {
-        document.body.classList.toggle('pmg-expert-mode', !!checkbox.checked);
-      });
-    }
-    /* Also observe is-expert-mode → mirror onto pmg-expert-mode */
-    if ('MutationObserver' in window) {
-      var bmo = new MutationObserver(function () {
-        var on = document.body.classList.contains('is-expert-mode');
-        document.body.classList.toggle('pmg-expert-mode', on);
-      });
-      bmo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-    }
 
     row.appendChild(btn);
     row.appendChild(hint);
@@ -671,326 +601,6 @@
   }
 
   /* ===================================================================
-   * FIX 5: photographer accordion
-   * =================================================================== */
-  var PHOTO_QUESTIONS = [
-    {
-      id: 'subject', kind: 'text',
-      title: 'What Is Your Main Subject?',
-      placeholder: 'A person, animal, object, landscape, scene...'
-    },
-    {
-      id: 'shot', kind: 'pills',
-      title: 'Shot Type — How Close Are We?',
-      options: ['Extreme Close-Up (Face, Texture, Detail)', 'Close-Up (Head And Shoulders)', 'Medium Shot (Waist Up)', 'Full Body Shot', 'Wide Shot (Subject + Environment)', "Aerial / Bird's Eye View", "Worm's Eye View (Looking Up)", 'Over The Shoulder']
-    },
-    {
-      id: 'lens', kind: 'pills',
-      title: 'Camera Lens Feel?',
-      options: ['Wide Angle (Expansive, Dramatic)', 'Standard (Natural, True To Life)', 'Telephoto (Compressed, Intimate)', 'Macro (Ultra Close Detail)', 'Fisheye (Distorted, Creative)', 'Tilt-Shift (Miniature Effect)']
-    },
-    {
-      id: 'lighting', kind: 'pills',
-      title: 'Lighting Setup?',
-      options: ['Golden Hour (Warm, Soft Sunset)', 'Blue Hour (Cool, Moody Dusk)', 'Harsh Midday Sun (High Contrast)', 'Overcast (Soft, Even, No Shadows)', 'Studio Lighting (Clean, Controlled)', 'Neon & Artificial (Urban Night)', 'Candlelight / Fire (Warm, Intimate)', 'Backlit (Silhouette, Halo Effect)']
-    },
-    {
-      id: 'mood', kind: 'pills',
-      title: 'Mood And Color Palette?',
-      options: ['Cinematic & Dramatic', 'Bright & Airy', 'Dark & Moody', 'Warm & Nostalgic', 'Cool & Minimal', 'Vibrant & Saturated', 'Black & White', 'Vintage Film Grain']
-    },
-    {
-      id: 'camera', kind: 'text', optional: true,
-      title: 'Camera And Film Style? (Optional)',
-      placeholder: 'Shot on iPhone 16 Pro, Canon 5D, Kodak Portra 400, 35mm film, 8K RAW...'
-    }
-  ];
-
-  /* Pretty label keys for collapsed headers */
-  var LABEL_KEYS = { subject: 'Subject', shot: 'Shot', lens: 'Lens', lighting: 'Lighting', mood: 'Mood', camera: 'Camera' };
-
-  function buildPhotoAccordion() {
-    if (!once('photoAccordion')) return;
-    if (document.getElementById('pmg-photo-accordion')) return;
-
-    /* Anchor: insert just BEFORE the form so it appears under the mode pills + image hint */
-    var hint = document.querySelector('.image-mode-hint');
-    var form = document.getElementById('prompt-form');
-    if (!form) return;
-
-    var acc = document.createElement('div');
-    acc.id = 'pmg-photo-accordion';
-    acc.setAttribute('aria-label', 'Guided Image Builder');
-
-    var answers = {};
-
-    function selectionLabel(qId) {
-      var v = answers[qId];
-      if (!v) return '';
-      var s = String(v);
-      if (s.length > 56) s = s.slice(0, 53) + '...';
-      return s;
-    }
-
-    function renderHeaderTitle(card, q, collapsed) {
-      var titleEl = card.querySelector('.pmg-photo-title');
-      if (!titleEl) return;
-      if (collapsed && answers[q.id]) {
-        titleEl.textContent = LABEL_KEYS[q.id] + ': ' + selectionLabel(q.id);
-      } else {
-        titleEl.textContent = q.title;
-      }
-    }
-
-    function setActiveCard(idx) {
-      var cards = acc.querySelectorAll('.pmg-photo-card');
-      Array.prototype.forEach.call(cards, function (c, i) {
-        c.classList.remove('pmg-photo-active', 'pmg-photo-pending');
-        if (i < idx) {
-          if (!c.classList.contains('pmg-photo-collapsed')) c.classList.add('pmg-photo-collapsed');
-        } else if (i === idx) {
-          c.classList.remove('pmg-photo-collapsed');
-          c.classList.add('pmg-photo-active');
-        } else {
-          c.classList.add('pmg-photo-pending');
-        }
-        renderHeaderTitle(c, PHOTO_QUESTIONS[i], c.classList.contains('pmg-photo-collapsed'));
-      });
-      maybeShowBuildBtn();
-    }
-
-    function commitAndAdvance(idx) {
-      var card = acc.querySelectorAll('.pmg-photo-card')[idx];
-      if (!card) return;
-      card.classList.add('pmg-photo-collapsed');
-      card.classList.remove('pmg-photo-active');
-      renderHeaderTitle(card, PHOTO_QUESTIONS[idx], true);
-      var nextIdx = idx + 1;
-      if (nextIdx < PHOTO_QUESTIONS.length) {
-        setTimeout(function () { setActiveCard(nextIdx); }, 220);
-      } else {
-        maybeShowBuildBtn();
-      }
-    }
-
-    function maybeShowBuildBtn() {
-      var btn = document.getElementById('pmg-build-image-btn');
-      if (!btn) return;
-      /* Subject is required; the rest can be empty (skipped) */
-      if (answers.subject && String(answers.subject).trim().length > 0) {
-        btn.classList.add('pmg-ready');
-      } else {
-        btn.classList.remove('pmg-ready');
-      }
-    }
-
-    PHOTO_QUESTIONS.forEach(function (q, idx) {
-      var card = document.createElement('div');
-      card.className = 'pmg-photo-card';
-      card.setAttribute('data-pmg-q', q.id);
-      if (idx > 0) card.classList.add('pmg-photo-pending');
-      else card.classList.add('pmg-photo-active');
-
-      var header = document.createElement('div');
-      header.className = 'pmg-photo-header';
-      var title = document.createElement('h4');
-      title.className = 'pmg-photo-title';
-      title.textContent = q.title;
-      var edit = document.createElement('a');
-      edit.href = '#';
-      edit.className = 'pmg-photo-edit-link';
-      edit.textContent = 'Tap To Edit';
-      edit.addEventListener('click', function (ev) { ev.preventDefault(); setActiveCard(idx); });
-      header.appendChild(title);
-      header.appendChild(edit);
-      header.addEventListener('click', function (ev) {
-        if (ev.target.tagName === 'A') return;
-        if (card.classList.contains('pmg-photo-collapsed')) setActiveCard(idx);
-      });
-      card.appendChild(header);
-
-      var body = document.createElement('div');
-      body.className = 'pmg-photo-body';
-
-      if (q.kind === 'text') {
-        var input = document.createElement('input');
-        input.type = 'text';
-        input.className = 'pmg-photo-text-input';
-        input.placeholder = q.placeholder || '';
-        input.setAttribute('aria-label', q.title);
-        input.addEventListener('keydown', function (ev) {
-          if (ev.key === 'Enter') { ev.preventDefault(); confirmText(); }
-        });
-        body.appendChild(input);
-
-        var actions = document.createElement('div');
-        actions.className = 'pmg-photo-actions';
-        var nextBtn = document.createElement('button');
-        nextBtn.type = 'button';
-        nextBtn.className = 'pmg-photo-next-btn';
-        nextBtn.textContent = idx === PHOTO_QUESTIONS.length - 1 ? 'Done' : 'Next →';
-        nextBtn.setAttribute('inputmode', 'none');
-        nextBtn.addEventListener('click', confirmText);
-        actions.appendChild(nextBtn);
-
-        if (q.optional) {
-          var skip = document.createElement('button');
-          skip.type = 'button';
-          skip.className = 'pmg-photo-skip-link';
-          skip.textContent = 'Skip This Step →';
-          skip.setAttribute('inputmode', 'none');
-          skip.addEventListener('click', function () {
-            answers[q.id] = '';
-            commitAndAdvance(idx);
-          });
-          actions.appendChild(skip);
-        }
-        body.appendChild(actions);
-
-        function confirmText() {
-          var v = (input.value || '').trim();
-          if (!v && !q.optional) { input.focus(); return; }
-          answers[q.id] = v;
-          commitAndAdvance(idx);
-        }
-      } else if (q.kind === 'pills') {
-        var pills = document.createElement('div');
-        pills.className = 'pmg-photo-pills';
-        q.options.forEach(function (opt) {
-          var p = document.createElement('button');
-          p.type = 'button';
-          p.className = 'pmg-photo-pill';
-          p.textContent = opt;
-          p.setAttribute('inputmode', 'none');
-          p.addEventListener('click', function () {
-            Array.prototype.forEach.call(pills.querySelectorAll('.pmg-photo-pill'), function (sib) { sib.classList.remove('selected'); });
-            p.classList.add('selected');
-            answers[q.id] = opt;
-            setTimeout(function () { commitAndAdvance(idx); }, 800);
-          });
-          pills.appendChild(p);
-        });
-        body.appendChild(pills);
-      }
-      card.appendChild(body);
-      acc.appendChild(card);
-    });
-
-    /* Build button */
-    var buildBtn = document.createElement('button');
-    buildBtn.type = 'button';
-    buildBtn.id = 'pmg-build-image-btn';
-    buildBtn.textContent = 'Build My Image';
-    buildBtn.setAttribute('inputmode', 'none');
-    buildBtn.addEventListener('click', function () {
-      var subject = (answers.subject || '').trim();
-      if (!subject) return;
-      var parts = [];
-      var lead = answers.shot ? (String(answers.shot).split(' (')[0] + ' of ') : '';
-      parts.push(lead + subject);
-      if (answers.lens) parts.push(String(answers.lens).split(' (')[0] + ' lens');
-      if (answers.lighting) parts.push(String(answers.lighting).split(' (')[0]);
-      if (answers.mood) parts.push(String(answers.mood));
-      if (answers.camera && String(answers.camera).trim()) parts.push(String(answers.camera).trim());
-      var phrase = parts.join(', ');
-
-      var goal = document.getElementById('goal');
-      if (goal) {
-        /* Animate text flowing into textarea */
-        goal.value = '';
-        try { goal.focus(); } catch (e) {}
-        var i = 0;
-        var step = Math.max(1, Math.floor(phrase.length / 60));
-        var timer = setInterval(function () {
-          i = Math.min(phrase.length, i + step);
-          goal.value = phrase.slice(0, i);
-          try { goal.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
-          if (i >= phrase.length) {
-            clearInterval(timer);
-            try { goal.blur(); } catch (e) {}
-          }
-        }, 18);
-      }
-
-      /* Confirmation message */
-      var msg = document.getElementById('pmg-photo-build-msg');
-      if (!msg) {
-        msg = document.createElement('p');
-        msg.id = 'pmg-photo-build-msg';
-        msg.textContent = 'Your Image Description Is Ready — Click Generate Image To Create It.';
-        buildBtn.parentNode.insertBefore(msg, buildBtn.nextSibling);
-      }
-      msg.classList.add('pmg-shown');
-
-      /* Smooth-collapse the entire accordion (visually) */
-      Array.prototype.forEach.call(acc.querySelectorAll('.pmg-photo-card'), function (c, i) {
-        c.classList.add('pmg-photo-collapsed');
-        renderHeaderTitle(c, PHOTO_QUESTIONS[i], true);
-      });
-
-      /* Scroll to image generate button */
-      var ig = document.getElementById('image-generate-btn');
-      if (ig) { try { ig.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }
-    });
-
-    /* Insertion point: replace image-mode-hint behavior so accordion follows it */
-    var anchor = hint && hint.parentNode ? hint : form;
-    if (hint && hint.parentNode) {
-      hint.parentNode.insertBefore(acc, hint.nextSibling);
-      acc.parentNode.insertBefore(buildBtn, acc.nextSibling);
-    } else {
-      form.parentNode.insertBefore(acc, form);
-      form.parentNode.insertBefore(buildBtn, form);
-    }
-  }
-
-  /* ===================================================================
-   * FIX 5/11: image result shimmer + reveal animation
-   * =================================================================== */
-  function watchImageResult() {
-    if (!once('watchImageResult')) return;
-    var section = document.getElementById('imageResultSection');
-    var wrap = document.getElementById('imageResultWrap');
-    var btn = document.getElementById('image-generate-btn');
-    if (!section || !wrap || !btn) return;
-
-    btn.addEventListener('click', function () {
-      wrap.classList.add('pmg-shimmer');
-      /* Always start a fresh terminal observer per click so we don't leak
-       * and so a retry after a previous error gets a fresh shimmer cycle. */
-      startObserver();
-      /* Hard safety: clear shimmer after 60s no matter what */
-      setTimeout(function () { wrap.classList.remove('pmg-shimmer'); }, 60000);
-    });
-
-    if (!('MutationObserver' in window)) return;
-
-    var current = null;
-    function startObserver() {
-      if (current) { current.disconnect(); current = null; }
-      var revealed = false;
-      var mo = new MutationObserver(function () {
-        var hasImg = !!wrap.querySelector('img');
-        var hasErr = !!wrap.querySelector('.image-error, [data-image-error], .error-message');
-        var bodyTxt = (wrap.textContent || '').toLowerCase();
-        var looksError = hasErr || /error|failed|too many|try again|denied/i.test(bodyTxt);
-        if (hasImg || looksError) {
-          wrap.classList.remove('pmg-shimmer');
-          if (hasImg && !revealed && !section.hidden) {
-            revealed = true;
-            section.classList.add('pmg-revealed');
-            try { section.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
-          }
-          mo.disconnect();
-          if (current === mo) current = null;
-        }
-      });
-      mo.observe(section, { childList: true, subtree: true, attributes: true });
-      current = mo;
-    }
-  }
-
-  /* ===================================================================
    * Init
    * =================================================================== */
   function init() {
@@ -1004,8 +614,6 @@
     watchResultPanel();
     hardenMobileKeyboard();
     titleCaseSweepV6();
-    buildPhotoAccordion();
-    watchImageResult();
   }
 
   if (document.readyState === 'loading') {
