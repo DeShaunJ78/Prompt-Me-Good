@@ -1,0 +1,517 @@
+Create a checkpoint before starting. Read the entire 
+codebase first. Write all changes as separate .js files.
+Do not use heredoc syntax. Test after each section.
+Report pass/fail for every item.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PromptMeGood has two tiers:
+
+FREE (available now, all unlocked during 
+founding member period):
+- Unlimited Fix My Prompt
+- Help Me Start wizard
+- Smart suggestions
+- Limited Run With AI (3 per day)
+- Limited Image Generation (1 per day)
+- Limited File And Image Analysis
+- Prompt Strength score
+- Refine, Undo, Fine-Tune controls
+- Local Prompt Vault
+- Export single prompts
+- One-click to ChatGPT, Claude, Perplexity
+- Shareable prompt links
+- Accent color themes and dark mode
+
+PRO ($9/month, coming soon):
+- Everything in Free
+- Unlimited Run With AI
+- Unlimited Image Generation
+- Unlimited File And Image Analysis
+- Cloud Prompt Vault (synced across devices)
+- Money Mode Pro Workflows
+- Brand Voice Profiles
+- Prompt Chains (multi-step)
+- Bulk Export and Team Folders
+- Priority Support
+- Early Access to new features
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 1 — PRO GATE SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create a single source of truth for Pro status.
+Add this to the top of the main JS block in 
+artifacts/promptmegood/index.html:
+
+const PMG_PRO_KEY = 'promptmegood:pro:v1';
+
+function pmgIsPro() {
+  try {
+    return localStorage.getItem(PMG_PRO_KEY) 
+      === 'true';
+  } catch(e) { return false; }
+}
+
+function pmgUnlockPro() {
+  try {
+    localStorage.setItem(PMG_PRO_KEY, 'true');
+    document.body.classList.add('pmg-is-pro');
+    document.querySelectorAll(
+      '.pmg-pro-feature'
+    ).forEach(function(el) {
+      el.classList.remove('pmg-locked');
+    });
+    showProUnlockedToast();
+  } catch(e) {}
+}
+
+function showProUnlockedToast() {
+  const t = document.createElement('div');
+  t.className = 'pmg-pro-toast';
+  t.innerHTML = '🎉 Pro Unlocked! All features 
+    are now available.';
+  document.body.appendChild(t);
+  setTimeout(function() { t.remove(); }, 4000);
+}
+
+On page load check pro status:
+if (pmgIsPro()) {
+  document.body.classList.add('pmg-is-pro');
+}
+
+TO UNLOCK PRO (you call this from browser 
+console when a user pays):
+pmgUnlockPro()
+
+TO REMOVE PRO (for testing):
+localStorage.removeItem('promptmegood:pro:v1')
+then refresh.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 2 — PRO LOCK CSS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add this CSS to index.html before </head>.
+Do NOT add position:relative to any element
+that already has layout positioning — only
+add it to the specific wrapper divs created
+for Pro features:
+
+.pmg-pro-wrapper {
+  position: relative;
+  display: contents;
+}
+
+.pmg-pro-feature {
+  position: relative;
+}
+
+.pmg-pro-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: color-mix(in srgb,
+    var(--color-primary) 10%,
+    var(--color-surface));
+  border: 1px solid color-mix(in srgb,
+    var(--color-primary) 25%,
+    var(--color-border));
+  border-radius: var(--radius-full);
+  padding: 2px 8px;
+  margin-left: 6px;
+  vertical-align: middle;
+  letter-spacing: 0.04em;
+}
+
+.pmg-locked .pmg-pro-lock-icon {
+  opacity: 1;
+}
+
+.pmg-pro-lock-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  opacity: 0.6;
+  margin-left: 4px;
+  vertical-align: middle;
+  cursor: pointer;
+  transition: opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.pmg-pro-lock-icon:hover {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+.pmg-locked > *:not(.pmg-pro-lock-icon):not(
+  .pmg-pro-badge) {
+  opacity: 0.5;
+  pointer-events: none;
+  user-select: none;
+  filter: blur(0.3px);
+}
+
+.pmg-locked .pmg-pro-lock-icon {
+  pointer-events: all;
+  opacity: 0.8;
+}
+
+body.pmg-is-pro .pmg-locked {
+  opacity: 1 !important;
+  pointer-events: all !important;
+  filter: none !important;
+}
+
+body.pmg-is-pro .pmg-pro-lock-icon {
+  display: none !important;
+}
+
+body.pmg-is-pro .pmg-pro-badge {
+  background: color-mix(in srgb,
+    var(--color-primary) 15%,
+    var(--color-surface));
+  color: var(--color-primary);
+}
+
+body.pmg-is-pro .pmg-pro-badge::before {
+  content: '✓ ';
+}
+
+.pmg-upgrade-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  animation: pmgFadeIn 200ms ease;
+}
+
+@keyframes pmgFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.pmg-upgrade-modal {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  max-width: 400px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid color-mix(in srgb,
+    var(--color-primary) 25%,
+    var(--color-border));
+  text-align: center;
+  animation: pmgSlideUp 250ms ease;
+}
+
+@keyframes pmgSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pmg-upgrade-modal-icon {
+  font-size: 2.5rem;
+  margin-bottom: var(--space-3);
+  display: block;
+}
+
+.pmg-upgrade-modal h3 {
+  font-size: var(--text-lg);
+  font-weight: 800;
+  margin: 0 0 var(--space-2);
+  color: var(--color-text);
+}
+
+.pmg-upgrade-modal p {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-5);
+  line-height: 1.6;
+}
+
+.pmg-upgrade-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.pmg-upgrade-cta {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: var(--text-base);
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 180ms ease;
+}
+
+.pmg-upgrade-cta:hover { opacity: 0.9; }
+
+.pmg-upgrade-dismiss {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  padding: var(--space-2);
+  transition: color 180ms ease;
+}
+
+.pmg-upgrade-dismiss:hover {
+  color: var(--color-text);
+}
+
+.pmg-pro-toast {
+  position: fixed;
+  bottom: var(--space-6);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-primary);
+  color: #fff;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  z-index: 300;
+  animation: pmgSlideUp 300ms ease;
+  white-space: nowrap;
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 3 — PRO UPGRADE MODAL FUNCTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add this JavaScript function to index.html:
+
+function showUpgradeModal(featureName) {
+  const existing = document.getElementById(
+    'pmg-upgrade-overlay'
+  );
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'pmg-upgrade-overlay';
+  overlay.id = 'pmg-upgrade-overlay';
+
+  overlay.innerHTML = 
+    '<div class="pmg-upgrade-modal">' +
+    '<span class="pmg-upgrade-modal-icon">' +
+      '🔒</span>' +
+    '<h3>' + featureName + ' Is A Pro Feature' +
+      '</h3>' +
+    '<p>Upgrade to Pro for $9/month and unlock ' +
+      'unlimited access to this feature plus ' +
+      'cloud sync, image generation, file ' +
+      'analysis, and more.</p>' +
+    '<div class="pmg-upgrade-modal-actions">' +
+    '<a class="pmg-upgrade-cta" ' +
+      'href="./pricing.html#early-access">' +
+      'Join Pro Early Access</a>' +
+    '<button class="pmg-upgrade-dismiss" ' +
+      'id="pmg-upgrade-dismiss-btn">' +
+      'Maybe Later</button>' +
+    '</div></div>';
+
+  document.body.appendChild(overlay);
+
+  document.getElementById(
+    'pmg-upgrade-dismiss-btn'
+  ).addEventListener('click', function() {
+    overlay.remove();
+  });
+
+  overlay.addEventListener('click', 
+    function(e) {
+      if (e.target === overlay) overlay.remove();
+    }
+  );
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 4 — APPLY LOCKS TO PRO FEATURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Apply Pro locks to these specific features.
+For each one: add class "pmg-pro-feature" to 
+the nearest container, add a lock icon that 
+triggers showUpgradeModal() on click, and 
+intercept the action to show the modal instead 
+when user is not Pro.
+
+DO NOT add position:relative to any element 
+that is part of the existing layout grid.
+Use the lock icon inline next to the button 
+label, not as an absolute positioned overlay.
+
+FEATURE 1 — Run With AI (after daily limit):
+Find id="runBtn". Add a 🔒 Pro badge next to 
+the button text visible as a small inline icon.
+Add a daily counter using localStorage key 
+"pmg_run_count_[date]" where date is 
+YYYY-MM-DD. Increment on each run. When count 
+reaches 3, intercept the next click and call 
+showUpgradeModal("Run With AI") instead of 
+running. Reset counter at midnight.
+When pmg-is-pro: no limit, no interception.
+
+FEATURE 2 — Image Generation (after daily limit):
+Find id="image-generate-btn" or the Generate 
+Image button. Same daily limit system — 1 per 
+day for free, unlimited for Pro. Use localStorage 
+key "pmg_img_count_[date]".
+When limit reached: call 
+showUpgradeModal("Image Generation").
+
+FEATURE 3 — File And Image Analysis:
+Find the Analyze My File button or the upload 
+analyze trigger. Add inline 🔒 icon next to 
+button. For free users limit to 1 analysis per 
+day using localStorage key 
+"pmg_analyze_count_[date]".
+When limit reached: showUpgradeModal(
+"File And Image Analysis").
+
+FEATURE 4 — Cloud Prompt Vault:
+This feature does not exist yet in the UI.
+Add a subtle "☁ Cloud Sync" button in the 
+Prompt Vault / History panel header.
+When clicked by free user: 
+showUpgradeModal("Cloud Prompt Vault").
+When Pro: show a "Syncing..." state (placeholder 
+for future implementation).
+
+FEATURE 5 — Money Mode Pro Workflows:
+Find the Money Mode toggle. Add inline 🔒 Pro 
+badge next to "Money Mode" label text.
+For free users: Money Mode still works normally 
+(it is available in free tier).
+Mark it visually as "Pro Enhanced" — add a 
+small PRO badge that when clicked shows 
+showUpgradeModal("Money Mode Pro Workflows") 
+explaining Pro gets advanced workflow templates.
+Do NOT disable the toggle for free users.
+
+FEATURE 6 — Brand Voice Profiles:
+This feature does not exist in UI yet.
+Add a "Brand Voice" button in the More Control 
+/ Advanced Options panel.
+When clicked: showUpgradeModal(
+"Brand Voice Profiles").
+
+FEATURE 7 — Bulk Export And Team Folders:
+Find the Export Everything button in History.
+Keep it working for free users (single export).
+Add a "Team Export" button next to it.
+When clicked: showUpgradeModal(
+"Bulk Export And Team Folders").
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 5 — PRO BADGE ON PRICING PAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+In pricing.html update the Free tier to show 
+which features have daily limits:
+
+Change these Free tier items to show limits:
+"Limited Run With AI (3 Per Day — Unlimited 
+  With Pro)"
+"Limited Image Generation (1 Per Day — 
+  Unlimited With Pro)"
+"Limited File And Image Analysis (1 Per Day 
+  — Unlimited With Pro)"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 6 — HOW TO UNLOCK PRO (FOR YOU)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When a user pays via Stripe (future):
+Call pmgUnlockPro() after payment confirms.
+This sets localStorage key 
+"promptmegood:pro:v1" to "true".
+All locks disappear instantly.
+Pro badge appears on the account.
+
+To manually unlock Pro for any user 
+(you testing, or manually granting access):
+Open browser console on promptmegood.com 
+and type: pmgUnlockPro()
+
+To lock it again for testing:
+localStorage.removeItem(
+  'promptmegood:pro:v1')
+then refresh the page.
+
+To check current status:
+pmgIsPro()
+Returns true or false.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 7 — VERIFY ALL PRO FEATURES EXIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Before implementing locks verify each feature 
+actually exists in the codebase:
+- Run With AI: find id="runBtn" ✓ or flag
+- Image Generation: find Generate Image 
+  button ✓ or flag
+- File Analysis: find Analyze My File 
+  button ✓ or flag
+- Money Mode toggle: find id="moneyMode" 
+  ✓ or flag
+- Export: find Export Everything button 
+  ✓ or flag
+
+For features that do NOT exist yet 
+(Cloud Sync, Brand Voice, Prompt Chains):
+Add placeholder buttons only — no backend 
+needed. Just UI that triggers the upgrade 
+modal.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AFTER ALL TASKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Test the complete flow:
+1. Open site as free user (no Pro key)
+2. Run With AI 3 times — 4th should show 
+   upgrade modal ✓
+3. Generate Image 1 time — 2nd should show 
+   upgrade modal ✓
+4. Click Cloud Sync — upgrade modal appears ✓
+5. Open browser console, type pmgUnlockPro()
+6. All locks disappear immediately ✓
+7. Run With AI unlimited — no modal ✓
+8. Type localStorage.removeItem(
+   'promptmegood:pro:v1') and refresh
+9. Locks return ✓
+
+Commit each task separately with clear message.
+Push all commits to origin main.
+Confirm everything is pushed.
+Then I will Republish from Replit to deploy.

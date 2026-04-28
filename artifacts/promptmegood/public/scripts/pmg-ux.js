@@ -3608,9 +3608,11 @@
       '  --pmg-t16-amber-text-dark: #fcd34d;',
       '}',
       '#' + PILL_ID + ' {',
-      '  display: inline-flex; align-items: center; gap: 6px;',
-      /* Sit right above the Help Me Start button: small breathing room
-         from the element above, near-zero gap to the button below. */
+      /* Match the Help Me Start button width exactly. The parent is a
+         column flex container (.pmg-action-stack) so align-self: stretch
+         + width: 100% + box-sizing: border-box pins the pill to the
+         same horizontal extent as the button below. */
+      '  display: flex; align-items: center; justify-content: center; gap: 6px;',
       '  margin: 8px 0 -2px; padding: 5px 12px;',
       '  background: linear-gradient(135deg, var(--pmg-t16-amber-bg-from) 0%, var(--pmg-t16-amber-bg-to) 100%);',
       '  border: 1px solid var(--pmg-t16-amber);',
@@ -3619,10 +3621,11 @@
       '  font-size: 12px; font-weight: 700;',
       '  letter-spacing: 0.02em;',
       '  line-height: 1.2;',
-      '  width: fit-content;',
+      '  width: 100%;',
+      '  box-sizing: border-box;',
       '  /* Force the pill to take its own row when inside a flex container */',
       '  flex-basis: 100%;',
-      '  align-self: flex-start;',
+      '  align-self: stretch;',
       '  box-shadow: 0 1px 3px color-mix(in srgb, var(--pmg-t16-amber) 18%, transparent);',
       '  user-select: none;',
       '}',
