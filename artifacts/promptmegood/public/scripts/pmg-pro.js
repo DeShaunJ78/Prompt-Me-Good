@@ -34,6 +34,27 @@
   if (window.__pmgProInit) return;
   window.__pmgProInit = true;
 
+  /* Defense-in-depth escape hatch: append `?nopmgpro` (or set
+     `localStorage.pmg_disable = '1'`) to instantly disable this entire
+     module without touching code. */
+  try {
+    if (
+      /[?&]nopmgpro\b/.test(location.search) ||
+      localStorage.getItem('pmg_disable') === '1'
+    ) {
+      window.pmgIsPro = function () { return false; };
+      window.showUpgradeModal = function () {};
+      window.pmgUnlockPro = function () {};
+      window.pmgRevokePro = function () {};
+      console.info('[pmg-pro] disabled via escape hatch');
+      return;
+    }
+  } catch (_) {}
+
+  /* Hard guard: any uncaught error in this module must NEVER break the
+     rest of the page. Wrap the entire body in try/catch. */
+  try {
+
   /* =================================================================
    * TASK 1 — Pro gate (single source of truth)
    * ================================================================= */
@@ -304,28 +325,34 @@
     'upload-analyze-btn':  { feature: 'analyze', label: 'File And Image Analysis' }
   };
 
-  /* Capture-phase intercept: runs BEFORE inline onclick handlers fire.
-     If user is at limit and not Pro -> open modal + stop everything.
-     Otherwise increment counter and let the original handler run. */
-  document.addEventListener('click', function (e) {
-    var t = e.target;
-    if (!t || !t.closest) return;
-    var btn = t.closest('button, a');
-    if (!btn || !btn.id) return;
-    var cfg = GATED[btn.id];
-    if (!cfg) return;
-    if (pmgIsPro()) return;
-
-    if (pmgLimitReached(cfg.feature)) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      showUpgradeModal(cfg.label);
-      return;
-    }
-    pmgIncrementDailyCount(cfg.feature);
-    /* Refresh hints after a tick so the count visually updates */
-    setTimeout(refreshDailyHints, 0);
-  }, true);
+  /* Per-button capture-phase intercept: attached ONLY to the specific
+     gated buttons. Runs before inline onclick handlers. We attach
+     idempotently in applyAll() so late-mounted buttons get covered too.
+     Using per-button listeners (not a global document listener) means a
+     bug here can NEVER block clicks on any other element on the page. */
+  function gatedClickHandler(cfg) {
+    return function (e) {
+      try {
+        if (pmgIsPro()) return;
+        if (pmgLimitReached(cfg.feature)) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          showUpgradeModal(cfg.label);
+          return;
+        }
+        pmgIncrementDailyCount(cfg.feature);
+        setTimeout(refreshDailyHints, 0);
+      } catch (_) { /* never break the underlying button */ }
+    };
+  }
+  function attachGatedListeners() {
+    Object.keys(GATED).forEach(function (id) {
+      var btn = document.getElementById(id);
+      if (!btn || btn.__pmgGated) return;
+      btn.__pmgGated = true;
+      btn.addEventListener('click', gatedClickHandler(GATED[id]), true);
+    });
+  }
 
   function ensureHint(btn, feature) {
     if (!btn || !btn.parentNode) return;
@@ -523,17 +550,18 @@
    * INIT
    * ================================================================= */
   function applyAll() {
-    decorateGatedButtons();
-    refreshDailyHints();
-    gateMoneyMode();
-    addCloudSyncButton();
-    addTeamExportButton();
-    addBrandVoiceButton();
+    try { attachGatedListeners(); } catch (_) {}
+    try { decorateGatedButtons(); } catch (_) {}
+    try { refreshDailyHints(); } catch (_) {}
+    try { gateMoneyMode(); } catch (_) {}
+    try { addCloudSyncButton(); } catch (_) {}
+    try { addTeamExportButton(); } catch (_) {}
+    try { addBrandVoiceButton(); } catch (_) {}
   }
 
   function init() {
-    injectStyles();
-    if (pmgIsPro()) document.body.classList.add('pmg-is-pro');
+    try { injectStyles(); } catch (_) {}
+    try { if (pmgIsPro()) document.body.classList.add('pmg-is-pro'); } catch (_) {}
     applyAll();
     /* Late-mount catch: a few delayed re-runs instead of a
        MutationObserver. Cheap, idempotent, and cannot create a
@@ -544,9 +572,19 @@
     });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+  /* Defer init until window load + 200ms so we never compete with
+     other scripts during first paint. Falls back to immediate init
+     if window has already loaded. */
+  function scheduleInit() { setTimeout(init, 200); }
+  if (document.readyState === 'complete') {
+    scheduleInit();
   } else {
-    init();
+    window.addEventListener('load', scheduleInit, { once: true });
+  }
+
+  } catch (err) {
+    /* Hard fail-safe: if anything in this module throws synchronously,
+       log it and disable Pro UI rather than break the page. */
+    try { console.warn('[pmg-pro] disabled due to error:', err); } catch (_) {}
   }
 })();
