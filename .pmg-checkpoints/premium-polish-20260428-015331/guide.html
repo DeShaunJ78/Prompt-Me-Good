@@ -324,50 +324,6 @@
     [data-accent="slate"] { --color-primary: #475569; --color-primary-hover: #334155; --color-primary-highlight: #e2e8f0; }
     [data-theme="dark"][data-accent="slate"] { --color-primary: #cbd5e1; --color-primary-hover: #e2e8f0; --color-primary-highlight: #1e293b; }
   </style>
-
-<style id="pmg-premium-polish-css">
-  :root { --content-default: 1100px; }
-  html { scroll-padding-top: 24px; }
-  #builder, #result-panel, #image-result, #ai-response, #optimized-prompt, #generated-image, .result-card, .panel, section { scroll-margin-top: 24px; }
-  .container { width: min(calc(100% - 2rem), 1100px) !important; }
-  .builder-grid, .builder-layout, .builder-shell { max-width: 1100px; margin-inline: auto; }
-  @media (min-width: 900px) {
-    .builder-grid, .builder-layout, .builder-shell, .builder-main-grid { display: grid; grid-template-columns: minmax(0, 45%) minmax(0, 55%); gap: 32px; align-items: start; }
-    .result-column, .results-column, .builder-results, #result-panel { position: sticky; top: 96px; align-self: start; }
-    .what-next-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px !important; }
-  }
-  .panel, .card, .result-card, .settings-panel, .upload-field, .what-next { padding: max(var(--space-5, 20px), 20px) !important; border-radius: 18px; }
-  #prompt-form { gap: 16px !important; }
-  #prompt-form .field-primary { order: 1; }
-  #prompt-form .actions-row { order: 2; margin-top: 0 !important; }
-  #guided-cta-row { order: 3; }
-  #upload-field { order: 4; border: 1.5px dashed color-mix(in srgb, var(--color-primary) 34%, transparent); background: color-mix(in srgb, var(--color-primary) 5%, transparent); overflow: hidden; }
-  #post-uc-guidance { order: 5; }
-  #settingsPanel { order: 6; }
-  #generateBtn { width: 100%; min-height: 54px !important; font-weight: 800 !important; font-size: 1.05rem !important; box-shadow: 0 12px 28px color-mix(in srgb, var(--color-primary) 28%, transparent) !important; }
-  #image-generate-btn { width: 100%; min-height: 54px; border-radius: var(--radius-full); font-weight: 800; background: var(--color-primary); color: var(--color-text-inverse); box-shadow: 0 12px 28px color-mix(in srgb, var(--color-primary) 28%, transparent); }
-  .upload-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; }
-  #upload-hint, .upload-preview-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .upload-preview { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 12px; align-items: center; max-width: 100%; }
-  .upload-preview-img[hidden], .upload-preview[hidden] { display: none !important; }
-  .upload-preview-img { width: 56px; height: 56px; object-fit: cover; border-radius: 12px; }
-  .what-next { border: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent) !important; border-left: 0 !important; background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 10%, transparent), color-mix(in srgb, var(--color-primary) 4%, transparent)) !important; }
-  .what-next-title { font-size: 1rem !important; margin-bottom: 12px !important; }
-  .what-next-list li { padding: 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); background: var(--color-surface); }
-  #weekly-goal-pin, #replay-tour-btn-builder, .guided-cta-recommended-badge:empty { display: none !important; }
-  body.pmg-has-generated #weekly-goal-pin { display: block !important; }
-  body.image-mode label[for="goal"] { font-size: 0; }
-  body.image-mode label[for="goal"]::after { content: "Your Image"; font-size: var(--text-base); }
-  @media (max-width: 760px) {
-    .container { width: min(calc(100% - 1rem), 1100px) !important; }
-    .panel, .card, .result-card, .settings-panel, .upload-field, .what-next { padding: max(var(--space-4, 16px), 16px) !important; }
-    button, .btn, input, select, textarea, [role="button"] { min-height: 44px; }
-    .actions-row { display: grid !important; grid-template-columns: 1fr !important; gap: 10px !important; }
-    .top-actions .search, .site-search, #site-search, .search-bar { display: none !important; }
-    .guided-modal, .guided-wizard, .tour-card { touch-action: pan-y; }
-  }
-</style>
-
 </head>
 <body>
   <a class="skip-link" href="#guide-main">Skip to guide</a>
@@ -440,8 +396,8 @@
                 <ol class="manual-steps">
                   <li><strong>Goal.</strong> Type what you want help with in plain words — the more specific, the better.</li>
                   <li><strong>Adjust settings or use Help Me Start (optional).</strong> Tweak Category, Tone, Format, or other fields — or click <strong>Help Me Start</strong> to be walked through the choices with 4 quick questions.</li>
-                  <li><strong>Generate.</strong> Click <strong>Generate Prompt</strong> — your structured prompt appears in the output box on the right. Or hit <strong>Use Demo Values</strong> to launch a guided walkthrough you can replay anytime from <strong>Replay Tour</strong> at the bottom of the page.</li>
-                  <li><strong>Refine / Undo.</strong> Tap <strong>More Detailed</strong>, <strong>More Bold & Direct</strong>, or <strong>Beginner Friendly</strong> to upgrade in place. Use <strong>Undo Last Change</strong> to step back. Set a <strong>Max Response Length</strong> or add <strong>Rules Or Limits</strong> in the builder to control length and avoid bad habits.</li>
+                  <li><strong>Generate.</strong> Click <strong>Generate Prompt</strong> — your structured prompt appears in the output box on the right. Or hit <strong>Try Demo</strong> to launch a guided walkthrough you can replay anytime from <strong>Replay Tour</strong> at the bottom of the page.</li>
+                  <li><strong>Refine / Undo.</strong> Tap <strong>More Detailed</strong>, <strong>More Aggressive</strong>, or <strong>Beginner Friendly</strong> to upgrade in place. Use <strong>Undo Last Change</strong> to step back. Set a <strong>Max Response Length</strong> or add <strong>Rules Or Limits</strong> in the builder to control length and avoid bad habits.</li>
                   <li><strong>Check / Copy / Use.</strong> Read your <strong>Prompt Strength</strong> score and tap <strong>Check Prompt Quality</strong> for quick suggestions, click <strong>Copy Prompt</strong>, then open it in ChatGPT, Claude, or Perplexity — we highlight the best fit for your goal.</li>
                 </ol>
               </article>
@@ -485,18 +441,18 @@
                 </div>
 
                 <div class="manual-feature">
-                  <h4>Use Demo Values</h4>
-                  <p>If you want to see what a finished prompt looks like before typing anything yourself, hit <strong>Use Demo Values</strong>. It loads a sample goal and walks the builder through a short guided tour so you can see every part of the app in action — no commitment, no signup.</p>
+                  <h4>Try Demo</h4>
+                  <p>If you want to see what a finished prompt looks like before typing anything yourself, hit <strong>Try Demo</strong>. It loads a sample goal and walks the builder through a short guided tour so you can see every part of the app in action — no commitment, no signup.</p>
                   <ol>
-                    <li>Click <strong>Use Demo Values</strong> next to the Generate button.</li>
+                    <li>Click <strong>Try Demo</strong> next to the Generate button.</li>
                     <li>Follow the on-screen tour to see how each piece works.</li>
                     <li>When it finishes, your sample prompt is ready in the output box. Replace the goal with your own and tap Generate again.</li>
                   </ol>
                 </div>
 
                 <div class="manual-feature">
-                  <h4>Upload A File Or Image For Smarter Results</h4>
-                  <p>Want the AI to read a document, contract, screenshot, or photo and write a response based on it? Use the <strong>Upload A File Or Image For Smarter Results (Optional)</strong> control inside the builder. We accept <strong>PDF, JPG, or PNG up to 10MB</strong>. This is a separate action from Generate Prompt — once you pick a file, an <strong>Analyze My File</strong> button appears, and tapping it sends the file (along with your goal, if you typed one) to the AI for a direct answer.</p>
+                  <h4>Upload A File Or Image</h4>
+                  <p>Want the AI to read a document, contract, screenshot, or photo and write a response based on it? Use the <strong>Upload A File Or Image (Optional)</strong> control inside the builder. We accept <strong>PDF, JPG, or PNG up to 10MB</strong>. This is a separate action from Generate Prompt — once you pick a file, an <strong>Analyze My File</strong> button appears, and tapping it sends the file (along with your goal, if you typed one) to the AI for a direct answer.</p>
                   <ol>
                     <li>Tap <strong>Choose File</strong> in the upload area.</li>
                     <li>Pick the PDF or image you want the AI to read.</li>
@@ -559,7 +515,7 @@
 
                 <div class="manual-feature">
                   <h4>Tone</h4>
-                  <p>Professional, Bold & Direct, Casual, or Expert — match it to where you'll use the answer.</p>
+                  <p>Professional, Aggressive, Casual, or Expert — match it to where you'll use the answer.</p>
                 </div>
 
                 <div class="manual-feature">
@@ -646,7 +602,7 @@
                   <p>One-tap upgrades that update the current prompt in place — no re-typing.</p>
                   <ul>
                     <li><strong>More Detailed</strong> — adds depth, examples, structure.</li>
-                    <li><strong>More Bold & Direct</strong> — sharper, more action-focused.</li>
+                    <li><strong>More Aggressive</strong> — sharper, more action-focused.</li>
                     <li><strong>Beginner Friendly</strong> — simpler explanations.</li>
                   </ul>
                 </div>
@@ -683,7 +639,7 @@
 
                 <div class="manual-feature">
                   <h4>Check Prompt Quality</h4>
-                  <p>Tap <strong>Check Prompt Quality</strong> below the output to get up to 3 quick suggestions — flags vague goals, missing details or rules or limits, and missing length limits. It runs locally and never leaves your device.</p>
+                  <p>Tap <strong>Check Prompt Quality</strong> below the output to get up to 3 quick suggestions — flags vague goals, missing details or guardrails, and missing length limits. It runs locally and never leaves your device.</p>
                 </div>
 
                 <div class="manual-feature">

@@ -727,7 +727,7 @@
       .guided-actions { justify-content: stretch; }
       .guided-actions .btn { flex: 1 1 auto; }
     }
-    /* Auto Optimize toggle row (above Help Me Start CTA) */
+    /* Auto optimize toggle row (above Guide me CTA) */
     .auto-optimize-row {
       display: flex; align-items: center; gap: var(--space-3);
       padding: 10px var(--space-4);
@@ -2648,7 +2648,7 @@
     }
 
     
-    /* Help Me Start: subtle, not screaming */
+    /* Guide me: subtle, not screaming */
     .guide-me-card, [class*='guide-me'] { 
       border-color: var(--color-border) !important;
       background: var(--color-surface) !important;
@@ -2939,50 +2939,6 @@
     }
     /* End Spec v2 additions */
     </style>
-
-<style id="pmg-premium-polish-css">
-  :root { --content-default: 1100px; }
-  html { scroll-padding-top: 24px; }
-  #builder, #result-panel, #image-result, #ai-response, #optimized-prompt, #generated-image, .result-card, .panel, section { scroll-margin-top: 24px; }
-  .container { width: min(calc(100% - 2rem), 1100px) !important; }
-  .builder-grid, .builder-layout, .builder-shell { max-width: 1100px; margin-inline: auto; }
-  @media (min-width: 900px) {
-    .builder-grid, .builder-layout, .builder-shell, .builder-main-grid { display: grid; grid-template-columns: minmax(0, 45%) minmax(0, 55%); gap: 32px; align-items: start; }
-    .result-column, .results-column, .builder-results, #result-panel { position: sticky; top: 96px; align-self: start; }
-    .what-next-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px !important; }
-  }
-  .panel, .card, .result-card, .settings-panel, .upload-field, .what-next { padding: max(var(--space-5, 20px), 20px) !important; border-radius: 18px; }
-  #prompt-form { gap: 16px !important; }
-  #prompt-form .field-primary { order: 1; }
-  #prompt-form .actions-row { order: 2; margin-top: 0 !important; }
-  #guided-cta-row { order: 3; }
-  #upload-field { order: 4; border: 1.5px dashed color-mix(in srgb, var(--color-primary) 34%, transparent); background: color-mix(in srgb, var(--color-primary) 5%, transparent); overflow: hidden; }
-  #post-uc-guidance { order: 5; }
-  #settingsPanel { order: 6; }
-  #generateBtn { width: 100%; min-height: 54px !important; font-weight: 800 !important; font-size: 1.05rem !important; box-shadow: 0 12px 28px color-mix(in srgb, var(--color-primary) 28%, transparent) !important; }
-  #image-generate-btn { width: 100%; min-height: 54px; border-radius: var(--radius-full); font-weight: 800; background: var(--color-primary); color: var(--color-text-inverse); box-shadow: 0 12px 28px color-mix(in srgb, var(--color-primary) 28%, transparent); }
-  .upload-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; }
-  #upload-hint, .upload-preview-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .upload-preview { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 12px; align-items: center; max-width: 100%; }
-  .upload-preview-img[hidden], .upload-preview[hidden] { display: none !important; }
-  .upload-preview-img { width: 56px; height: 56px; object-fit: cover; border-radius: 12px; }
-  .what-next { border: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent) !important; border-left: 0 !important; background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 10%, transparent), color-mix(in srgb, var(--color-primary) 4%, transparent)) !important; }
-  .what-next-title { font-size: 1rem !important; margin-bottom: 12px !important; }
-  .what-next-list li { padding: 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); background: var(--color-surface); }
-  #weekly-goal-pin, #replay-tour-btn-builder, .guided-cta-recommended-badge:empty { display: none !important; }
-  body.pmg-has-generated #weekly-goal-pin { display: block !important; }
-  body.image-mode label[for="goal"] { font-size: 0; }
-  body.image-mode label[for="goal"]::after { content: "Your Image"; font-size: var(--text-base); }
-  @media (max-width: 760px) {
-    .container { width: min(calc(100% - 1rem), 1100px) !important; }
-    .panel, .card, .result-card, .settings-panel, .upload-field, .what-next { padding: max(var(--space-4, 16px), 16px) !important; }
-    button, .btn, input, select, textarea, [role="button"] { min-height: 44px; }
-    .actions-row { display: grid !important; grid-template-columns: 1fr !important; gap: 10px !important; }
-    .top-actions .search, .site-search, #site-search, .search-bar { display: none !important; }
-    .guided-modal, .guided-wizard, .tour-card { touch-action: pan-y; }
-  }
-</style>
-
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -3250,20 +3206,20 @@
           <p class="image-mode-hint">Describe the image you want — plain English. We’ll turn it into a professional DALL·E 3 prompt automatically.</p>
           <div class="panel-head panel-head-row">
             <div>
-              <h2 id="builder-title" hidden style="display:none">Get AI To Understand You</h2>
-              <p class="builder-transition" hidden style="display:none">Type what you want below. Tap Fix My Prompt and get a clear prompt you can use instantly.</p>
+              <h2 id="builder-title" hidden style="display:none">Build Your Prompt</h2>
+              <p class="builder-transition" hidden style="display:none">Paste your messy idea below — the more specific, the better. Tap Fix My Prompt and get a clear prompt you can use instantly.</p>
             </div>
             <div class="builder-head-actions">
               <span class="expert-mode-badge" id="expert-mode-badge" hidden style="display:none" aria-hidden="true"></span>
               <p class="builder-expert-hint" id="builder-expert-hint">Power user? Turn on Expert Mode for full control.</p>
-              <label class="expert-mode-toggle" for="expert-mode-toggle" id="expert-mode-toggle-wrap" title="For Advanced Users Who Want Full Control.">
+              <label class="expert-mode-toggle" for="expert-mode-toggle" id="expert-mode-toggle-wrap" title="For advanced users who want full control.">
                 <span class="switch">
                   <input type="checkbox" id="expert-mode-toggle" />
                   <span class="slider" aria-hidden="true"></span>
                 </span>
                 <span class="expert-mode-toggle-text">
                   <span class="expert-mode-toggle-title">Expert Mode</span>
-                  <span class="expert-mode-toggle-sub">For Advanced Users Who Want Full Control.</span>
+                  <span class="expert-mode-toggle-sub">For advanced users who want full control.</span>
                 </span>
               </label>
               <button type="button" class="builder-replay-btn" id="replay-tour-btn-builder" aria-label="Replay the onboarding tour">
@@ -3281,30 +3237,30 @@
               <div class="guided-cta-text">
                 <span class="guided-cta-recommended-badge"></span>
                 <strong>Help Me Start</strong>
-                <span>Not Sure How To Start? Answer 4 Short Questions And We'll Fill The Builder For You.</span>
+                <span>Not sure how to start? Answer 4 short questions and we'll fill the builder for you.</span>
               </div>
               <button type="button" class="btn btn-primary" id="guided-mode-btn">Help Me Start</button>
             </div>
-            <div id="weekly-goal-pin" class="weekly-goal-pin pmg-post-gen" aria-label="This Week's Focus">
+            <div id="weekly-goal-pin" class="weekly-goal-pin pmg-post-gen" aria-label="This week's focus">
               <div class="weekly-goal-pin-head">
                 <span class="weekly-goal-pin-label">
-                  📌 This Week's Focus
+                  📌 This week's focus
                   <span class="weekly-new-badge" id="weekly-goal-new-badge" hidden style="display:none !important">New</span>
                 </span>
-                <span class="weekly-goal-pin-sub">Try This Before The Week Ends.</span>
+                <span class="weekly-goal-pin-sub">Try this before the week ends.</span>
               </div>
               <button type="button" class="weekly-goal-pin-cta" id="weekly-goal-cta" aria-label="Use this week's focus as your goal">
-                <span class="weekly-goal-pin-body" id="weekly-goal-body">Solve A Real-Life Problem You've Been Avoiding</span>
-                <span class="weekly-goal-pin-action">Use As Goal →</span>
+                <span class="weekly-goal-pin-body" id="weekly-goal-body">Solve a real-life problem you've been avoiding</span>
+                <span class="weekly-goal-pin-action">Use as goal →</span>
               </button>
             </div>
             <form id="prompt-form" class="form-grid">
               <div class="auto-optimize-row" id="auto-optimize-row">
                 <div class="auto-opt-text">
-                  <strong>Auto Optimize <span style="color: var(--color-primary); font-weight: 600;">(Recommended)</span></strong>
+                  <strong>Auto optimize <span style="color: var(--color-primary); font-weight: 600;">(Recommended)</span></strong>
                   <span>Suggests the best category, tone, format, and length based on your goal.</span>
                 </div>
-                <label class="switch" aria-label="Toggle Auto Optimize">
+                <label class="switch" aria-label="Toggle Auto optimize">
                   <input type="checkbox" id="auto-optimize-toggle" checked />
                   <span class="slider"></span>
                 </label>
@@ -3314,19 +3270,19 @@
                   <label for="goal">Your Goal</label>
                   <button type="button" class="btn-clear" id="clear-goal-btn" aria-label="Clear goal" data-clear-target="goal">Clear</button>
                 </div>
-                <textarea id="goal" name="goal" rows="3" placeholder="Describe What You Want — We'll Build The Perfect Prompt." aria-required="true"></textarea>
+                <textarea id="goal" name="goal" rows="3" placeholder="Describe what you want — we'll build the perfect prompt." aria-required="true"></textarea>
                 <p class="helper">
-                  The More Specific You Are, The Better Your Result.
+                  The more specific you are, the better your result.
                 </p>
               </div>
 
               <div class="field upload-field" id="upload-field">
-                <label for="analyze-file" class="upload-label">Upload A File Or Image For Smarter Results</label>
-                <p class="helper upload-helper">Add A File Or Image (Optional)</p>
+                <label for="analyze-file" class="upload-label">Upload A File Or Image</label>
+                <p class="helper upload-helper">Optional &mdash; we'll use it to build a smarter prompt.</p>
                 <div class="upload-controls">
                   <input type="file" id="analyze-file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" class="upload-input" />
                   <label for="analyze-file" class="btn btn-secondary upload-btn" id="upload-btn-label">Choose File</label>
-                  <span class="upload-hint" id="upload-hint">No File Selected</span>
+                  <span class="upload-hint" id="upload-hint">No file selected</span>
                 </div>
                 <div class="upload-preview file-container file-row" id="upload-preview" hidden>
                   <img id="upload-preview-img" class="upload-preview-img" alt="Selected image preview" hidden />
@@ -3342,7 +3298,7 @@
 
               <div class="post-uc-guidance" id="post-uc-guidance" role="status" aria-live="polite">
                 <span class="post-uc-guidance-icon" aria-hidden="true">✅</span>
-                <span class="post-uc-guidance-text">You're Ready — Generate Your Prompt, Then Run With AI Or Copy It.</span>
+                <span class="post-uc-guidance-text">You're ready — generate your prompt, then run it instantly with AI or copy it.</span>
                 <button type="button" class="post-uc-guidance-close" id="post-uc-guidance-close" aria-label="Dismiss">×</button>
               </div>
 
@@ -3350,15 +3306,15 @@
                 <button class="btn btn-primary" type="submit" id="generateBtn">Fix My Prompt</button>
                 <button type="button" id="image-generate-btn" onclick="runImageGeneration()">🎨 Generate Image</button>
                 <div class="demo-stack">
-                  <button class="btn btn-secondary" type="button" id="fill-demo">Use Demo Values</button>
-                  <p class="demo-microcopy" id="demo-microcopy">Use Demo Values</p>
-                  <p class="demo-loading" id="demo-loading" role="status" aria-live="polite" hidden>Generating Demo Prompt&hellip;</p>
+                  <button class="btn btn-secondary" type="button" id="fill-demo">Try Demo</button>
+                  <p class="demo-microcopy" id="demo-microcopy">Load A Sample</p>
+                  <p class="demo-loading" id="demo-loading" role="status" aria-live="polite" hidden>Generating demo prompt&hellip;</p>
                 </div>
-                <button class="btn btn-secondary pmg-post-gen pmg-random-prompt-btn" type="button" id="random-prompt" title="Surprise Me With A Random Prompt">🎲 Dice Idea Generator</button>
+                <button class="btn btn-secondary pmg-post-gen pmg-random-prompt-btn" type="button" id="random-prompt" title="Surprise me with a random prompt">🎲 Random Prompt</button>
               </div>
               <p class="tip-block generate-helper-tip" data-tip="generate">
                 <span class="tip-block-icon" aria-hidden="true">🚀</span>
-                <span class="tip-block-text">Ready? Generate Your Prompt, Then Review And Copy It.</span>
+                <span class="tip-block-text">Ready? Generate your prompt, then review and copy it.</span>
                 <button type="button" class="tip-block-dismiss" data-action="dismiss-tips" aria-label="Hide all tips">Hide Tip</button>
               </p>
               <p class="demo-helper" hidden style="display:none">Not Sure Where To Start? <button type="button" class="link-btn demo-helper-link" id="demo-helper-link">See It In Action</button> <button type="button" class="guidance-show-link" id="guidance-show-link" data-action="show-tips">Show Tips</button></p>
@@ -3371,10 +3327,10 @@
                 <div class="settings-grid">
                   <div class="auto-optimize-row" id="auto-optimize-row-inside-settings">
                     <div class="auto-opt-text">
-                      <strong>Auto Optimize <span style="color: var(--color-primary); font-weight: 600;">(Recommended)</span></strong>
+                      <strong>Auto optimize <span style="color: var(--color-primary); font-weight: 600;">(Recommended)</span></strong>
                       <span>Suggests the best category, tone, format, and length based on your goal.</span>
                     </div>
-                    <label class="switch" aria-label="Toggle Auto Optimize (mirror)">
+                    <label class="switch" aria-label="Toggle Auto optimize (mirror)">
                       <input type="checkbox" id="auto-optimize-toggle-mirror" checked />
                       <span class="slider"></span>
                     </label>
@@ -3413,7 +3369,7 @@
                 <label for="tone">Tone <span class="suggested-badge" id="suggested-tone" hidden>Suggested</span></label>
                 <select id="tone" name="tone">
                   <option value="professional">Professional</option>
-                  <option value="bold-direct">Bold &amp; Direct</option>
+                  <option value="aggressive">Bold &amp; Direct</option>
                   <option value="casual">Casual</option>
                   <option value="expert">Expert</option>
                 </select>
@@ -3485,10 +3441,10 @@
 
               <div class="field">
                 <div class="field-label-row">
-                  <label for="rules or limits">What Should AI Avoid? <span class="helper">(Optional)</span></label>
-                  <button type="button" class="btn-clear" id="clear-rules or limits-btn" aria-label="Clear rules or limits" data-clear-target="rules or limits">Clear</button>
+                  <label for="guardrails">What Should AI Avoid? <span class="helper">(Optional)</span></label>
+                  <button type="button" class="btn-clear" id="clear-guardrails-btn" aria-label="Clear guardrails" data-clear-target="guardrails">Clear</button>
                 </div>
-                <textarea id="rules or limits" name="rules or limits" rows="2" placeholder="Ex: Don't sound robotic, avoid jargon, don't exceed 200 words…"></textarea>
+                <textarea id="guardrails" name="guardrails" rows="2" placeholder="Ex: Don't sound robotic, avoid jargon, don't exceed 200 words…"></textarea>
                 <p class="helper">Tell the AI what NOT to do. These get added as Rules Or Limits in your prompt.</p>
               </div>
 
@@ -3581,7 +3537,7 @@
         <section class="panel" id="result-panel" aria-labelledby="result-title">
           <div class="panel-head">
             <h2 id="result-title">Your ready-to-use prompt</h2>
-            <p>Run With AI with AI right here, or copy it to use anywhere.</p>
+            <p>Run it with AI right here, or copy it to use anywhere.</p>
             <p class="demo-next-step" id="demo-next-step" role="status" aria-live="polite" hidden>This is a sample prompt. Copy it, refine it, or go back and enter your own goal.</p>
           </div>
           <div class="result-wrap">
@@ -3598,7 +3554,7 @@
               <div id="pinned-note-text"></div>
               <div class="pinned-note-source" id="pinned-note-source"></div>
             </div>
-            <div class="result-box" id="resultBox" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Generated prompt (editable)">Your generated prompt will appear here. Run With AI with AI right here, or copy it to use anywhere.</div>
+            <div class="result-box" id="resultBox" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Generated prompt (editable)">Your generated prompt will appear here. Run it with AI right here, or copy it to use anywhere.</div>
             <div class="result-edit-row">
               <span class="result-edit-indicator" id="result-edit-indicator" hidden>Edited manually</span>
             </div>
@@ -3612,7 +3568,7 @@
                     <span class="btn-ai-label">Improve with AI</span>
                   </button>
                   <button class="btn btn-secondary" type="button" data-remix="detailed">More Detailed</button>
-                  <button class="btn btn-secondary" type="button" data-remix="bold-direct">More Bold &amp; Direct</button>
+                  <button class="btn btn-secondary" type="button" data-remix="aggressive">More Bold &amp; Direct</button>
                   <button class="btn btn-secondary" type="button" data-remix="beginner">Beginner Friendly</button>
                 </div>
                 <p class="ai-improve-hint" id="improve-with-ai-hint">Sends your current prompt to AI for a deeper rewrite.</p>
@@ -3635,7 +3591,7 @@
               <span class="improve-status" id="improve-status" aria-live="polite" hidden>Updating…</span>
             </div>
             <aside class="what-next pmg-post-gen" id="what-next" aria-label="What next">
-              <h3 class="what-next-title">What Next?</h3>
+              <h3 class="what-next-title">What next?</h3>
               <ul class="what-next-list">
                 <li><strong>Run With AI</strong> &rarr; <span>see your answer right here in the app — no copy-paste needed</span></li>
                 <li><strong>Refine</strong> &rarr; <span>tweak your prompt with the buttons above before you run it</span></li>
@@ -3989,8 +3945,7 @@
         </div>
         <div class="legal-modal-body legal-body">
           <p><strong>What stays on your device.</strong> PromptMeGood is a single-page tool that runs primarily in your browser. Your prompts, history, templates, settings, and preferences are stored locally on your device using your browser's localStorage. We do not maintain user accounts and we do not have a copy of any of this on our servers.</p>
-          <p><strong>What gets sent to AI providers.</strong> When you use AI features, submitted prompts, files, images, and related context may be sent to AI service providers for processing so PromptMeGood can generate prompts, responses, image prompts, or image results. Do not submit sensitive information unless you are comfortable with that processing.</p>
-<p> When you use an AI-powered feature &mdash; <em>Fix My Prompt</em>, <em>Run With AI</em>, <em>Upload File or Image</em>, or <em>Generate Image</em> &mdash; the text you typed and any file or image you uploaded is sent securely to our AI service providers (such as OpenAI) so they can process your request and return a response. We do not store this content on our servers beyond what is required to complete the request.</p>
+          <p><strong>What gets sent to AI providers.</strong> When you use an AI-powered feature &mdash; <em>Fix My Prompt</em>, <em>Run With AI</em>, <em>Upload File or Image</em>, or <em>Generate Image</em> &mdash; the text you typed and any file or image you uploaded is sent securely to our AI service providers (such as OpenAI) so they can process your request and return a response. We do not store this content on our servers beyond what is required to complete the request.</p>
           <p><strong>What we never do.</strong> We do not sell your data. We do not share your prompts, files, or images with advertisers. We do not require you to create an account to use the app.</p>
           <p><strong>Anonymous usage analytics.</strong> We use Microsoft Clarity to understand anonymous, aggregated usage patterns (such as which buttons are clicked) so we can improve the experience. Clarity does not capture the text of your prompts.</p>
           <p><strong>You're in control.</strong> You can export, import, or clear your saved data at any time from the Prompt Vault section. Clearing your browser storage will remove everything PromptMeGood has saved on your device.</p>
@@ -4634,7 +4589,7 @@
 
         const toneInstruction = {
           professional: 'Use a polished, professional tone with direct language and zero fluff.',
-          bold-direct: 'Use a bold, high-agency tone that pushes decisive action without encouraging recklessness.',
+          aggressive: 'Use a bold, high-agency tone that pushes decisive action without encouraging recklessness.',
           casual: 'Use a casual, conversational tone that still stays sharp, useful, and clear.',
           expert: 'Use an expert tone with confident reasoning, strong structure, and specific recommendations.'
         };
@@ -4667,7 +4622,7 @@
 
         const remixInstructions = {
           detailed: 'Make the answer more detailed than normal. Add examples, decision criteria, risks, templates, and a concrete execution checklist.',
-          bold-direct: 'Make the answer more direct, urgent, and action-oriented. Challenge weak assumptions. Cut vague advice. Push toward execution.',
+          aggressive: 'Make the answer more direct, urgent, and action-oriented. Challenge weak assumptions. Cut vague advice. Push toward execution.',
           beginner: 'Make the answer beginner-friendly. Slow down the explanation, define key terms, and give a simple first-step path.'
         };
 
@@ -4678,16 +4633,16 @@ Extra context to respect:
 ${data.details}`
           : '';
 
-        const rules or limitsBlock = data.rules or limits
+        const guardrailsBlock = data.guardrails
           ? `
 
-Things to avoid (rules or limits):
-${data.rules or limits}`
+Things to avoid (guardrails):
+${data.guardrails}`
           : '';
 
-        const rules or limitsLine = data.rules or limits
+        const guardrailsLine = data.guardrails
           ? `
-- Respect these rules or limits — do NOT do any of these: ${data.rules or limits}`
+- Respect these guardrails — do NOT do any of these: ${data.guardrails}`
           : '';
 
         const maxLengthLine = data.maxLength
@@ -4765,13 +4720,13 @@ Here's what I need from you:
 - Format the answer as ${articleFor(data.outputFormat)} ${titleCase(data.outputFormat)}.
 - Avoid vague advice, filler, or generic motivation.
 - Include examples, templates, checklists, or scripts when useful.
-- End with the top 3 actions I should take next.${maxLengthLine}${rules or limitsLine}${personalityLine}${moneyMode}${humanLine}${clarityLine}${photoLine}${languageLine}${remixLine}
+- End with the top 3 actions I should take next.${maxLengthLine}${guardrailsLine}${personalityLine}${moneyMode}${humanLine}${clarityLine}${photoLine}${languageLine}${remixLine}
 
 Context:
 - Category: ${categoryLabels[categoryKey]}
 - Experience level: ${titleCase(data.skillLevel)}
 - Tone: ${titleCase(data.tone)}
-- Output format: ${titleCase(data.outputFormat)}${personalityContext}${extraDetails}${rules or limitsBlock}`;
+- Output format: ${titleCase(data.outputFormat)}${personalityContext}${extraDetails}${guardrailsBlock}`;
       }
 
       function getFormData() {
@@ -4788,7 +4743,7 @@ Context:
             if (!isNaN(n) && n > 0) maxLength = n;
           }
         }
-        const rules or limitsEl = document.getElementById('rules or limits');
+        const guardrailsEl = document.getElementById('guardrails');
         return {
           goal: document.getElementById('goal').value.trim(),
           category: document.getElementById('category').value,
@@ -4796,7 +4751,7 @@ Context:
           tone: document.getElementById('tone').value,
           outputFormat: document.getElementById('outputFormat').value,
           details: document.getElementById('details').value.trim(),
-          rules or limits: rules or limitsEl ? rules or limitsEl.value.trim() : '',
+          guardrails: guardrailsEl ? guardrailsEl.value.trim() : '',
           maxLength: maxLength,
           moneyMode: document.getElementById('moneyMode').checked,
           humanTone: document.getElementById('humanTone').checked,
@@ -5260,7 +5215,7 @@ Context:
             '<div class="history-item-remix">' +
               '<span class="history-item-remix-label">Remix:</span>' +
               '<button class="btn btn-secondary" type="button" data-history-action="remix" data-remix-mode="detailed">More Detailed</button>' +
-              '<button class="btn btn-secondary" type="button" data-history-action="remix" data-remix-mode="bold-direct">More Bold &amp; Direct</button>' +
+              '<button class="btn btn-secondary" type="button" data-history-action="remix" data-remix-mode="aggressive">More Bold &amp; Direct</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="remix" data-remix-mode="beginner">Beginner Friendly</button>' +
             '</div>' +
             '<div class="history-item-actions">' +
@@ -5311,11 +5266,11 @@ Context:
         document.getElementById('goal').value = item.data.goal || '';
         document.getElementById('category').value = item.data.category || 'business';
         document.getElementById('skillLevel').value = item.data.skillLevel || 'beginner';
-        document.getElementById('tone').value = item.data.tone || 'bold-direct';
+        document.getElementById('tone').value = item.data.tone || 'aggressive';
         document.getElementById('outputFormat').value = item.data.outputFormat || 'step-by-step';
         document.getElementById('details').value = item.data.details || '';
-        const rules or limitsEl = document.getElementById('rules or limits');
-        if (rules or limitsEl) rules or limitsEl.value = item.data.rules or limits || '';
+        const guardrailsEl = document.getElementById('guardrails');
+        if (guardrailsEl) guardrailsEl.value = item.data.guardrails || '';
         const maxLengthSel = document.getElementById('maxLength');
         const maxLengthCustom = document.getElementById('maxLengthCustom');
         if (maxLengthSel) {
@@ -5388,7 +5343,7 @@ Context:
         } else if (action === 'remix') {
           const mode = btn.dataset.remixMode || '';
           const remixed = generatePrompt(item.data, mode);
-          const modeLabel = mode === 'detailed' ? 'More detailed' : mode === 'bold-direct' ? 'More bold-direct' : mode === 'beginner' ? 'Beginner-friendly' : 'Remix';
+          const modeLabel = mode === 'detailed' ? 'More detailed' : mode === 'aggressive' ? 'More aggressive' : mode === 'beginner' ? 'Beginner-friendly' : 'Remix';
           bumpUse(item.id);
           openCompare({
             data: item.data,
@@ -5739,9 +5694,9 @@ Context:
       wireFieldClearBtn('clear-goal-btn', 'goal');
       wireFieldClearBtn('clear-details-btn', 'details');
       wireFieldClearBtn('clear-fine-tune-btn', 'fine-tune-input');
-      wireFieldClearBtn('clear-rules or limits-btn', 'rules or limits');
+      wireFieldClearBtn('clear-guardrails-btn', 'guardrails');
 
-      // ===== Smart Suggestions + Auto Optimize + AI Tool Recommender + Strength Score =====
+      // ===== Smart Suggestions + Auto optimize + AI Tool Recommender + Strength Score =====
       (function setupSmartSystems() {
         const AUTO_OPT_KEY = 'promptmegood:autoOptimize:v1';
         const goalEl = document.getElementById('goal');
@@ -5791,7 +5746,7 @@ Context:
           else if (/\b(relationship|personal|life|decision|advice|stress|anxious|family|friend|emotional|mental health)\b/.test(t)) out.category = 'personal';
 
           // Tone detection
-          if (/\b(fast|bold-direct|urgent|hustle|attack|push|crush|dominate|win|conquer|sell|profit)\b/.test(t)) out.tone = 'bold-direct';
+          if (/\b(fast|aggressive|urgent|hustle|attack|push|crush|dominate|win|conquer|sell|profit)\b/.test(t)) out.tone = 'aggressive';
           else if (/\b(email|client|customer|stakeholder|professional|formal|business|presentation|investor|board)\b/.test(t)) out.tone = 'professional';
           else if (/\b(friend|casual|chat|chill|fun|relaxed|conversational|easy)\b/.test(t)) out.tone = 'casual';
           else if (/\b(deep|expert|advanced|technical|in-depth|comprehensive|nuanced|architect|engineer)\b/.test(t)) out.tone = 'expert';
@@ -5900,7 +5855,7 @@ Context:
           goalDebounce = setTimeout(function () { recomputeSuggestions(false); }, 350);
         });
 
-        // Auto Optimize toggle: persist + recompute. Never clobbers manually-edited fields.
+        // Auto optimize toggle: persist + recompute. Never clobbers manually-edited fields.
         autoOptToggle.addEventListener('change', function () {
           try { localStorage.setItem(AUTO_OPT_KEY, autoOptToggle.checked ? '1' : '0'); } catch (e) {}
           // Recompute and apply only to fields the user has not touched (force=false)
@@ -5975,7 +5930,7 @@ Context:
               prevAdvancedOpen = null;
             }
           }
-          // Auto Optimize is forced OFF when Expert Mode is on
+          // Auto optimize is forced OFF when Expert Mode is on
           if (enabled && autoOptToggle && autoOptToggle.checked) {
             autoOptToggle.checked = false;
             try {
@@ -6064,7 +6019,7 @@ Context:
           if (data.details && data.details.trim().length > 10) score += 20;
           else insights.push('No extra context — add audience, budget, or constraints.');
 
-          if (data.rules or limits && data.rules or limits.trim().length > 0) score += 15;
+          if (data.guardrails && data.guardrails.trim().length > 0) score += 15;
           else insights.push('No Rules Or Limits — tell the AI what to avoid.');
 
           if (data.maxLength && data.maxLength > 0) score += 10;
@@ -6080,7 +6035,7 @@ Context:
           // Positive insights when strong
           const strongInsights = [];
           if (goal.length >= 60) strongInsights.push('Strong, specific goal.');
-          if (data.rules or limits && data.maxLength) strongInsights.push('Clear constraints set.');
+          if (data.guardrails && data.maxLength) strongInsights.push('Clear constraints set.');
           if (data.details && data.details.trim().length > 10) strongInsights.push('Good context provided.');
 
           // Pick 2-3 insights: prefer suggestions if score < 90, else show strengths
@@ -6147,7 +6102,7 @@ Context:
         sync();
       })();
 
-      // Help Me Start modal: 4-question flow that fills goal/details/rules or limits
+      // Guide me modal: 4-question flow that fills goal/details/guardrails
       (function setupGuidedMode() {
         const dialog = document.getElementById('guided-mode-dialog');
         const openBtn = document.getElementById('guided-mode-btn');
@@ -6236,7 +6191,7 @@ Context:
               reasonEl.textContent = s.reason;
               textWrap.appendChild(reasonEl);
             }
-            // Auto-flip only when Auto Optimize is on AND not in Expert Mode AND not already on.
+            // Auto-flip only when Auto optimize is on AND not in Expert Mode AND not already on.
             if (isAutoOptOn && !isExpert && !checkbox.checked) {
               checkbox.checked = true;
               try { checkbox.dispatchEvent(new Event('change', { bubbles: true })); } catch (e) {}
@@ -6260,7 +6215,7 @@ Context:
           if (detailsEl && detailsParts.length) {
             detailsEl.value = detailsParts.join(' ');
           }
-          const guardEl = document.getElementById('rules or limits');
+          const guardEl = document.getElementById('guardrails');
           if (guardEl && cons) {
             guardEl.value = cons;
           }
@@ -6307,15 +6262,15 @@ Context:
         function check() {
           const data = getFormData();
           const promptText = (resultBox && resultBox.textContent ? resultBox.textContent.trim() : '');
-          const placeholder = 'Your generated prompt will appear here. Run With AI with AI right here, or copy it to use anywhere.';
+          const placeholder = 'Your generated prompt will appear here. Run it with AI right here, or copy it to use anywhere.';
           const hasGenerated = promptText && promptText !== placeholder && promptText.indexOf('Generating demo prompt') === -1;
           const issues = [];
           if (!data.goal || data.goal.length < 30) {
             issues.push('Your goal is short — add more specifics so the AI knows exactly what you want.');
           }
-          if (!data.details && !data.rules or limits) {
+          if (!data.details && !data.guardrails) {
             issues.push('No extra details or Rules Or Limits — try adding budget, audience, or things to avoid.');
-          } else if (!data.rules or limits) {
+          } else if (!data.guardrails) {
             issues.push('No Rules Or Limits set — tell the AI what to avoid (e.g. jargon, length, tone).');
           }
           if (!data.maxLength) {
@@ -6343,7 +6298,7 @@ Context:
       const clearPromptBtn = document.getElementById('clear-prompt-btn');
       if (clearPromptBtn) {
         clearPromptBtn.addEventListener('click', function () {
-          const placeholder = 'Your generated prompt will appear here. Run With AI with AI right here, or copy it to use anywhere.';
+          const placeholder = 'Your generated prompt will appear here. Run it with AI right here, or copy it to use anywhere.';
           if (typeof setPromptText === 'function') {
             setPromptText(placeholder);
           } else {
@@ -6567,7 +6522,7 @@ Context:
             goal: 'Help me make my first $100 online this week with no audience and no budget',
             category: 'money',
             skillLevel: 'beginner',
-            tone: 'bold-direct',
+            tone: 'aggressive',
             outputFormat: 'step-by-step',
             details: 'I have a few hours per day. I want a low-cost, fast-to-launch path with concrete daily actions.',
             moneyMode: true
@@ -6925,7 +6880,7 @@ Context:
           language: data.outputLanguage,
           personality: data.personality,
           extraDetails: data.extraDetails,
-          avoid: data.rules or limits,
+          avoid: data.guardrails,
           moneyMode: !!data.moneyMode,
           humanVoice: !!data.humanTone,
           clarityBoost: !!data.clarityBoost,
@@ -7019,7 +6974,7 @@ Context:
         }
       });
 
-      // ===== Weekly rotating "This Week's Focus" =====
+      // ===== Weekly rotating "This week's focus" =====
       // Auto-rotates from a curated list every 7 days. Click fills the goal field.
       // Shows a "New" badge and a one-time-per-session reminder when the rotation index
       // differs from the last one this user viewed.
@@ -7032,7 +6987,7 @@ Context:
         "Improve your resume for a better job opportunity",
         "Plan a side hustle you can start this month",
         "Write a high-converting product description",
-        "Solve A Real-Life Problem You've Been Avoiding",
+        "Solve a real-life problem you've been avoiding",
         "Learn a new skill faster using AI"
       ];
       const WEEKLY_VIEWED_KEY = 'promptmegood:weeklyGoalViewedIndex:v1';
@@ -7123,7 +7078,7 @@ Context:
       const NUDGE_KEY = 'promptmegood:nudge:v1';
       const NUDGE_IDEAS = [
         { text: 'Take 5 minutes to draft a prompt that moves your week forward.' },
-        { text: 'Try a "remix more bold-direct" on your favorite saved prompt.' },
+        { text: 'Try a "remix more aggressive" on your favorite saved prompt.' },
         { text: 'Pick a tag you haven\'t used in a while and create something with it.' },
         { text: 'Run the random prompt button and see what sparks.' },
         { text: 'Refine yesterday\'s prompt with a sharper goal sentence.' },
@@ -7218,18 +7173,18 @@ Context:
           selector: '#tour-step-generate',
           fallbackSelector: '#generateBtn',
           title: 'Click Generate',
-          text: 'Tap Fix My Prompt. We turn your idea into a clear, structured prompt in seconds.'
+          text: 'Tap Fix My Prompt. We turn your messy idea into a clear, structured prompt in seconds.'
         },
         {
           selector: '#tour-final-actions',
           fallbackSelector: '#copy-btn',
-          title: 'Run With AI with AI or copy it',
+          title: 'Run it with AI or copy it',
           text: 'Tap Run With AI to see your answer right here — no copy-paste needed. Or hit Copy to take it to any AI tool you already use.'
         },
         {
           selector: '#upload-field',
           fallbackSelector: '#analyze-file',
-          title: 'Upload A File Or Image For Smarter Results For Smarter Results',
+          title: 'Upload A File Or Image For Smarter Results',
           text: "Got a PDF, contract, or screenshot? Upload it and the AI will read it before answering — for sharper, more relevant results."
         },
         {
@@ -8054,7 +8009,7 @@ Context:
       document.getElementById('random-prompt').addEventListener('click', function () {
         const categories = ['business', 'money', 'content', 'career', 'personal', 'productivity', 'learning', 'faith', 'other'];
         const skills = ['beginner', 'intermediate', 'advanced'];
-        const tones = ['professional', 'bold-direct', 'casual', 'expert'];
+        const tones = ['professional', 'aggressive', 'casual', 'expert'];
         const formats = ['step-by-step', 'list', 'detailed breakdown'];
         document.getElementById('goal').value = pickRandom(RANDOM_GOALS);
         document.getElementById('category').value = pickRandom(categories);
@@ -8095,7 +8050,7 @@ Context:
             window.setTimeout(function () { builderPanel.classList.add('is-fading'); }, 2400);
             window.setTimeout(function () { builderPanel.classList.remove('builder-glow', 'is-fading'); }, 3200);
           }
-          // Reveal inline guidance immediately and pulse the Help Me Start row.
+          // Reveal inline guidance immediately and pulse the Guide me row.
           if (guidance) {
             guidance.classList.remove('is-fading');
             guidance.removeAttribute('hidden');
@@ -8108,7 +8063,7 @@ Context:
                 guidance.classList.remove('is-fading');
               }, 240);
             }, 5000);
-            // Clicking Help Me Start dismisses guidance early.
+            // Clicking Guide me dismisses guidance early.
             const guideBtn = document.getElementById('guided-mode-btn');
             if (guideBtn && !guideBtn._guidanceWired) {
               guideBtn._guidanceWired = true;
@@ -8142,7 +8097,7 @@ Context:
       }
       fillDemoBtn.addEventListener('click', function () {
         // Step 1: Immediate feedback — disable button, swap label, queue inline status.
-        const originalBtnLabel = 'Use Demo Values';
+        const originalBtnLabel = 'Try Demo';
         const demoLoadingEl = document.getElementById('demo-loading');
         const demoNextStepEl = document.getElementById('demo-next-step');
         const goalEl = document.getElementById('goal');
@@ -8180,11 +8135,11 @@ Context:
           const _set = function (id, val) { const el = document.getElementById(id); if (el) el.value = val; };
           _set('category', 'money');
           _set('skillLevel', 'beginner');
-          _set('tone', 'bold-direct');
+          _set('tone', 'aggressive');
           _set('outputFormat', 'step-by-step');
           _set('details', 'I need a low-cost plan, something I can sell fast, and I do not want complicated tech setup.');
-          const rules or limitsEl = document.getElementById('rules or limits');
-          if (rules or limitsEl) rules or limitsEl.value = "Don't sound robotic, avoid vague advice, and skip jargon a beginner won't understand.";
+          const guardrailsEl = document.getElementById('guardrails');
+          if (guardrailsEl) guardrailsEl.value = "Don't sound robotic, avoid vague advice, and skip jargon a beginner won't understand.";
           const maxLengthSel = document.getElementById('maxLength');
           const maxLengthCustom = document.getElementById('maxLengthCustom');
           if (maxLengthSel) {
@@ -8602,7 +8557,7 @@ Context:
 
     // ===== Spec #8: Prompt sharing — encode builder state in URL hash =====
     (function () {
-      const SHARE_TEXT_KEYS = ['goal','category','skillLevel','tone','outputFormat','outputLanguage','personality','details','rules or limits','maxLength','maxLengthCustom'];
+      const SHARE_TEXT_KEYS = ['goal','category','skillLevel','tone','outputFormat','outputLanguage','personality','details','guardrails','maxLength','maxLengthCustom'];
       const SHARE_BOOL_KEYS = ['moneyMode','humanTone','clarityBoost'];
       function buildShareLink() {
         const params = new URLSearchParams();
@@ -8862,7 +8817,7 @@ Context:
             dismissAssist(true);
             clickById('guided-mode-btn');
           }));
-          actionsEl.appendChild(makeBtn('Use Demo Values', '', function () {
+          actionsEl.appendChild(makeBtn('Try Demo', '', function () {
             dismissAssist(true);
             clickById('fill-demo');
           }));
@@ -8874,7 +8829,7 @@ Context:
             dismissAssist(true);
             clickById('guided-mode-btn');
           }));
-          actionsEl.appendChild(makeBtn('Use Demo Values', '', function () {
+          actionsEl.appendChild(makeBtn('Try Demo', '', function () {
             dismissAssist(true);
             clickById('fill-demo');
           }));
@@ -9608,7 +9563,7 @@ Context:
     if (previewName) { previewName.textContent = ''; previewName.title = ''; }
     if (previewSize) previewSize.textContent = '';
     if (analyzeBtn) analyzeBtn.hidden = true;
-    if (hint) hint.textContent = 'No File Selected';
+    if (hint) hint.textContent = 'No file selected';
     if (btnLabel) btnLabel.textContent = 'Choose File';
     setStatus('');
   }
@@ -9708,73 +9663,5 @@ Context:
   <script src="/scripts/pmg-fixes-v2.js" defer></script>
   <script src="/scripts/pmg-fixes-v3.js" defer></script>
   <script src="/scripts/pmg-fixes-v4.js" defer></script>
-
-<script id="pmg-premium-polish-js">
-document.addEventListener("DOMContentLoaded", function () {
-  const form = document.getElementById("prompt-form");
-  const primary = document.querySelector(".field-primary");
-  const actions = document.getElementById("tour-step-generate");
-  const upload = document.getElementById("upload-field");
-  const guidance = document.getElementById("post-uc-guidance");
-  const settings = document.getElementById("settingsPanel");
-
-  if (form && primary && actions) primary.insertAdjacentElement("afterend", actions);
-  if (actions && upload) actions.insertAdjacentElement("afterend", upload);
-  if (upload && guidance) upload.insertAdjacentElement("afterend", guidance);
-  if (guidance && settings) guidance.insertAdjacentElement("afterend", settings);
-
-  const gen = document.getElementById("generateBtn");
-  if (gen) gen.textContent = "Fix My Prompt";
-
-  const imageBtn = document.getElementById("image-generate-btn");
-  if (imageBtn) imageBtn.textContent = "🎨 Generate Image";
-
-  const goal = document.getElementById("goal");
-  if (goal) goal.placeholder = "Describe What You Want — We'll Build The Perfect Prompt.";
-
-  const uploadLabel = document.querySelector('label[for="analyze-file"].upload-label');
-  if (uploadLabel) uploadLabel.textContent = "Add A File Or Image (Optional)";
-
-  const uploadHelper = document.querySelector(".upload-helper");
-  if (uploadHelper) uploadHelper.textContent = "Upload A File Or Image For Smarter Results";
-
-  const uploadHint = document.getElementById("upload-hint");
-  if (uploadHint) uploadHint.textContent = "Drop A File Here Or Click To Browse";
-
-  const whatNext = document.getElementById("what-next") || document.querySelector(".what-next");
-  if (whatNext) {
-    const title = whatNext.querySelector(".what-next-title,h3,h2");
-    if (title) title.textContent = "What Next?";
-    const items = whatNext.querySelectorAll("li");
-    if (items.length >= 3) {
-      items[0].innerHTML = "<strong>Run With AI</strong><br><span>See Results Instantly</span>";
-      items[1].innerHTML = "<strong>Copy Prompt</strong><br><span>Use Anywhere</span>";
-      items[2].innerHTML = "<strong>Refine It</strong><br><span>Make It Better</span>";
-    }
-  }
-
-  ["generateBtn", "image-generate-btn"].forEach(id => {
-    const btn = document.getElementById(id);
-    if (!btn) return;
-    btn.addEventListener("click", function () {
-      try { localStorage.setItem("pmg_has_generated", "1"); } catch (e) {}
-      document.body.classList.add("pmg-has-generated");
-    });
-  });
-
-  if (localStorage.getItem("pmg_has_generated") === "1") {
-    document.body.classList.add("pmg-has-generated");
-  }
-
-  setTimeout(function () {
-    try {
-      if (!localStorage.getItem("pmg_modal_shown")) {
-        localStorage.setItem("pmg_modal_shown", "1");
-      }
-    } catch (e) {}
-  }, 3000);
-});
-</script>
-
 </body>
 </html>
