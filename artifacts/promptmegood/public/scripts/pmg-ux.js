@@ -4246,3 +4246,126 @@
     injectStyles();
   }
 })();
+
+/* =====================================================================
+ * T19 — Print/Save PDF restyle + Fine-Tune textarea overflow fix.
+ *
+ * 1. The "Print / Save PDF" button (#print-btn) was a generic pill with
+ *    no icon, looking unpolished next to the other CTAs. Adds a printer
+ *    glyph, brand-tinted border, and a subtle hover lift — without
+ *    renaming the ID/class or rebinding any handlers.
+ *
+ * 2. The Fine-Tune textarea (#fine-tune-input) showed the placeholder
+ *    clipped on the bottom line ("...or simplify the" cut off). Raises
+ *    min-height so the full multi-line placeholder is visible and pads
+ *    the right side so the scrollbar never overlaps the text.
+ *
+ * Style + tiny DOM tweak only (icon glyph prepended once). Idempotent.
+ * ===================================================================== */
+(function pmgT19PrintAndFineTune() {
+  if (window.__pmgT19Init) return;
+  window.__pmgT19Init = true;
+
+  var STYLE_ID = 'pmg-t19-print-finetune-style';
+  var ICON_FLAG = 'pmgT19IconAdded';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* ---- Print / Save PDF button restyle ---- */
+      '#print-btn {',
+      '  display: inline-flex;',
+      '  align-items: center;',
+      '  justify-content: center;',
+      '  gap: 8px;',
+      '  font-weight: 600;',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 35%, var(--color-border)) !important;',
+      '  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface)) !important;',
+      '  color: var(--color-text) !important;',
+      '  border-radius: var(--radius-full);',
+      '  padding: 10px 18px;',
+      '  transition: transform 120ms ease, box-shadow 200ms ease, background 180ms ease, border-color 180ms ease;',
+      '  box-shadow: 0 1px 2px rgba(0,0,0,0.04);',
+      '}',
+      '#print-btn:hover {',
+      '  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface)) !important;',
+      '  border-color: var(--color-primary) !important;',
+      '  transform: translateY(-1px);',
+      '  box-shadow: 0 3px 10px color-mix(in srgb, var(--color-primary) 18%, transparent);',
+      '}',
+      '#print-btn:active { transform: translateY(0); }',
+      '#print-btn .pmg-print-icon {',
+      '  display: inline-flex;',
+      '  align-items: center;',
+      '  justify-content: center;',
+      '  width: 16px;',
+      '  height: 16px;',
+      '  flex: 0 0 16px;',
+      '}',
+      '#print-btn .pmg-print-icon svg { width: 100%; height: 100%; display: block; }',
+
+      /* ---- Fine-Tune textarea overflow fix ---- */
+      '.fine-tune-row textarea#fine-tune-input {',
+      '  min-height: 132px !important;',
+      '  padding-right: calc(var(--space-3) + 10px) !important;',
+      '  line-height: 1.55 !important;',
+      '  overflow-y: auto;',
+      '  scrollbar-gutter: stable;',
+      '}',
+      '.fine-tune-row textarea#fine-tune-input::placeholder {',
+      '  white-space: pre-wrap;',
+      '  line-height: 1.55;',
+      '  opacity: 0.85;',
+      '}',
+      '@media (max-width: 600px) {',
+      '  .fine-tune-row textarea#fine-tune-input { min-height: 148px !important; }',
+      '}'
+    ].join('\n');
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  /* Prepend a printer SVG glyph inside #print-btn (once). Keeps the
+     existing text node intact so any handlers reading textContent still
+     see "Print / Save PDF". */
+  function addPrintIcon() {
+    var btn = document.getElementById('print-btn');
+    if (!btn) return;
+    if (btn.dataset[ICON_FLAG] === '1') return;
+    if (btn.querySelector('.pmg-print-icon')) {
+      btn.dataset[ICON_FLAG] = '1';
+      return;
+    }
+    var icon = document.createElement('span');
+    icon.className = 'pmg-print-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" ' +
+      'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      '<polyline points="6 9 6 2 18 2 18 9"></polyline>' +
+      '<path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>' +
+      '<rect x="6" y="14" width="12" height="8"></rect>' +
+      '</svg>';
+    btn.insertBefore(icon, btn.firstChild);
+    btn.dataset[ICON_FLAG] = '1';
+  }
+
+  function init() {
+    injectStyles();
+    addPrintIcon();
+    /* Watch for late mounts (button is inside post-gen results section). */
+    try {
+      var mo = new MutationObserver(function () { addPrintIcon(); });
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 30000);
+    } catch (e) { /* ignore */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
