@@ -2932,7 +2932,10 @@
     .guided-modal, .guided-wizard, .tour-card { touch-action: pan-y; }
   }
 </style>
-
+  <script>
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    window.addEventListener('load', function () { window.scrollTo(0, 0); }, { once: true });
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
