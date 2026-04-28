@@ -33,28 +33,36 @@
 
   function injectVisibilityCss() {
     if (document.getElementById('pmg-bugfix-result-visibility')) return;
-    var css = [
-      'body:not(.pmg-has-result) #quality-row,',
-      'body:not(.pmg-has-result) #copy-btn,',
-      'body:not(.pmg-has-result) #share-btn,',
-      'body:not(.pmg-has-result) #print-btn,',
-      'body:not(.pmg-has-result) #clear-prompt-btn,',
-      'body:not(.pmg-has-result) #improve-block,',
-      'body:not(.pmg-has-result) #fine-tune-row,',
-      'body:not(.pmg-has-result) .fine-tune,',
-      'body:not(.pmg-has-result) #undo-btn,',
-      'body:not(.pmg-has-result) .undo-row,',
-      'body:not(.pmg-has-result) #runSection,',
-      'body:not(.pmg-has-result) .what-next,',
-      'body:not(.pmg-has-result) #what-next,',
-      'body:not(.pmg-has-result) .open-in-block,',
-      'body:not(.pmg-has-result) .save-tip,',
-      'body:not(.pmg-has-result) #strength-score,',
-      'body:not(.pmg-has-result) #aiResponseSection,',
-      'body:not(.pmg-has-result) .pmg-post-gen { display: none !important; }',
-      /* Result panel itself stays visible so user always sees the placeholder. */
-      ''
-    ].join('\n');
+    var hideSelectors = [
+      'body:not(.pmg-has-result) #quality-row',
+      'body:not(.pmg-has-result) #copy-btn',
+      'body:not(.pmg-has-result) #share-btn',
+      'body:not(.pmg-has-result) #print-btn',
+      'body:not(.pmg-has-result) #clear-prompt-btn',
+      'body:not(.pmg-has-result) #improve-block',
+      'body:not(.pmg-has-result) #fine-tune-row',
+      'body:not(.pmg-has-result) .fine-tune',
+      'body:not(.pmg-has-result) #undo-btn',
+      'body:not(.pmg-has-result) .undo-row',
+      'body:not(.pmg-has-result) #runSection',
+      'body:not(.pmg-has-result) .what-next',
+      'body:not(.pmg-has-result) #what-next',
+      'body:not(.pmg-has-result) .open-in-block',
+      'body:not(.pmg-has-result) .save-tip',
+      'body:not(.pmg-has-result) #strength-score',
+      'body:not(.pmg-has-result) #aiResponseSection',
+      'body:not(.pmg-has-result) .pmg-post-gen'
+    ].join(',\n');
+    /* These elements use the HTML `hidden` attribute by default. When the
+       result is revealed via CSS only (no finalize() call), `hidden` keeps
+       them invisible — explicit reveal rules override that. */
+    var revealSelectors = [
+      'body.pmg-has-result #runSection',
+      'body.pmg-has-result #aiResponseSection'
+    ].join(',\n');
+    var css =
+      hideSelectors + ' { display: none !important; }\n' +
+      revealSelectors + ' { display: block !important; }\n';
     var s = document.createElement('style');
     s.id = 'pmg-bugfix-result-visibility';
     s.textContent = css;
@@ -78,17 +86,32 @@
   }
 
   function markHasResult() {
-    if (document.body && !document.body.classList.contains('pmg-has-result')) {
+    if (document.body) {
       document.body.classList.add('pmg-has-result');
+      /* keep in sync with the existing v3 visibility gate so .pmg-post-gen
+         elements are also revealed on returning visits */
+      document.body.classList.add('pmg-has-generated');
+      document.body.classList.remove('pmg-pre-gen');
     }
-    try { localStorage.setItem(STORAGE_KEY, '1'); } catch (e) {}
+    /* v3 expects the literal string 'true'; v4 accepts both 'true' and '1'.
+       Write 'true' so every consumer sees a generated state. */
+    try { localStorage.setItem(STORAGE_KEY, 'true'); } catch (e) {}
   }
 
   function clearHasResult() {
-    if (document.body && document.body.classList.contains('pmg-has-result')) {
+    if (document.body) {
       document.body.classList.remove('pmg-has-result');
+      document.body.classList.remove('pmg-has-generated');
+      document.body.classList.add('pmg-pre-gen');
     }
-    /* Note: per spec, localStorage flag is sticky for returning users. */
+    /* Note: per spec, the localStorage flag is sticky for returning users. */
+  }
+
+  function readHasGeneratedFlag() {
+    try {
+      var v = localStorage.getItem(STORAGE_KEY);
+      return v === 'true' || v === '1';
+    } catch (e) { return false; }
   }
 
   function checkResultBox() {
@@ -125,11 +148,9 @@
   function applyOnLoad() {
     injectVisibilityCss();
     /* Returning users: surface tools immediately if they generated previously. */
-    try {
-      if (localStorage.getItem(STORAGE_KEY) === '1') {
-        markHasResult();
-      }
-    } catch (e) {}
+    if (readHasGeneratedFlag()) {
+      markHasResult();
+    }
     checkResultBox();
     watchResultBox();
     wireClearButton();
