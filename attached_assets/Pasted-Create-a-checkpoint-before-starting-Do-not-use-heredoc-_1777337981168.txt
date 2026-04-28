@@ -1,0 +1,317 @@
+Create a checkpoint before starting. Do not use heredoc syntax. Write all fixes as separate .js files. Test after each section. Report pass/fail for every item.
+
+Work on artifacts/promptmegood/index.html only unless backend changes are explicitly required. Do NOT remove any features. Do NOT rename variables, IDs, or CSS classes. Only change visible user-facing text and CSS display properties unless explicitly instructed otherwise.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1 — IMAGE MODE IDENTITY AND PHOTOGRAPHER ASSISTANT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When the user switches to "Create An Image" mode apply all of the following:
+
+1. Change the goal field label from "Your Goal" to "Your Image" using JavaScript when image mode is active. Revert to "Your Goal" when Write Something mode is active.
+
+2. Move the "Generate Image" button to immediately below the goal field. Move the upload card BELOW the Generate Image button — it is optional and secondary.
+
+3. Replace the image mode hint box text with: "Answer 6 quick questions and we'll build your perfect image prompt — like a professional photographer would."
+
+4. Add a photographer vision assistant directly above the goal field in image mode. It presents 6 questions in sequence. All answers combine to auto-fill the goal field when the user taps "Build My Image Prompt →". The assistant collapses after the field is filled. User can reopen it with a small link: "Edit Image Details"
+
+QUESTION 1 — Main Subject:
+Label: "What Is The Main Subject?"
+Input: text field
+Placeholder: "A person, animal, object, landscape, scene..."
+
+QUESTION 2 — Shot Type:
+Label: "Shot Type — How Close Are We?"
+Type: single select pill buttons
+Options:
+- Extreme Close-Up (Face, Texture, Detail)
+- Close-Up (Head And Shoulders)
+- Medium Shot (Waist Up)
+- Full Body Shot
+- Wide Shot (Subject + Environment)
+- Aerial / Bird's Eye View
+- Worm's Eye View (Looking Up)
+- Over The Shoulder
+
+QUESTION 3 — Lens Feel:
+Label: "Camera Lens Feel?"
+Type: single select pill buttons
+Options:
+- Wide Angle (Expansive, Dramatic)
+- Standard (Natural, True To Life)
+- Telephoto (Compressed, Intimate)
+- Macro (Ultra Close Detail)
+- Fisheye (Distorted, Creative)
+- Tilt-Shift (Miniature Effect)
+
+QUESTION 4 — Lighting:
+Label: "Lighting Setup?"
+Type: single select pill buttons
+Options:
+- Golden Hour (Warm, Soft Sunset)
+- Blue Hour (Cool, Moody Dusk)
+- Harsh Midday Sun (High Contrast)
+- Overcast (Soft, Even, No Shadows)
+- Studio Lighting (Clean, Controlled)
+- Neon & Artificial (Urban Night)
+- Candlelight / Fire (Warm, Intimate)
+- Backlit (Silhouette, Halo Effect)
+
+QUESTION 5 — Mood And Color:
+Label: "Mood And Color Palette?"
+Type: single select pill buttons
+Options:
+- Cinematic & Dramatic
+- Bright & Airy
+- Dark & Moody
+- Warm & Nostalgic
+- Cool & Minimal
+- Vibrant & Saturated
+- Black & White
+- Vintage Film Grain
+
+QUESTION 6 — Camera Style (Optional):
+Label: "Camera And Film Style? (Optional)"
+Input: text field
+Placeholder: "Shot on iPhone 16 Pro, Canon 5D, Kodak Portra 400, 35mm film, 8K RAW..."
+
+When user taps "Build My Image Prompt →" combine all answers into this format and auto-fill the goal field:
+"[Shot type] of [subject], [lens feel] lens, [lighting], [mood and color palette], [camera style if provided]"
+
+Example output:
+"Close-up of a woman walking through a rainy Tokyo street at night, telephoto lens, neon and artificial lighting, dark and moody, shot on Canon 5D, cinematic color grade"
+
+Style the assistant to match the existing design system. Use existing color variables, border-radius, and spacing. No new fonts or color systems.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2 — LIVE PROMPT STRENGTH INDICATOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add a live prompt strength indicator that updates as the user types in the goal field. This is separate from the existing post-generation prompt strength score.
+
+1. Place the indicator directly below the goal textarea. Show it as a pill with a colored dot and label:
+
+0-20 characters: grey dot — "Too Short"
+21-60 characters: yellow dot — "Getting There"
+61-120 characters: blue dot — "Good"
+120+ characters OR contains power words: green dot — "Strong ✓"
+
+Power words that trigger Strong: who, what, how, why, help me, I want, I need, my, for, because, so that, make sure, avoid, include, step by step, list, explain, create, write, build, find, give me, show me
+
+2. Visible on both mobile and desktop at all times while typing.
+
+3. Updates on every keystroke — no button press required.
+
+4. When indicator reaches "Strong" animate it with a brief subtle pulse using CSS animation to reward the user.
+
+5. The indicator is hidden before the user starts typing. It appears on first keystroke. It disappears after generation and reappears when the user types again.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3 — RESULT SECTION VISIBILITY ON SCROLL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When the page auto-scrolls to any result after generation:
+
+1. Add padding-top of 24px above every section heading that gets auto-scrolled to. This ensures the title is never half-visible when the page snaps to it.
+
+2. The result section title "Your Fixed Prompt" must be the first fully visible element after auto-scroll — never mid-cut, never requiring an additional scroll to see.
+
+3. After image generation, auto-scroll to the image result section so "Your Generated Image" title is fully visible at the top with 24px breathing room above it.
+
+4. Apply this same scroll padding rule to every section the app auto-scrolls to including the AI Response section and the image result section.
+
+5. Use scroll-margin-top: 24px on all auto-scroll target elements as the CSS solution.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 4 — WHAT WOULD YOU LIKE TO DO — POST GENERATION BLOCK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After a prompt is generated the user must never wonder what to do next.
+
+1. Immediately below the generated prompt box show a clearly styled "What Would You Like To Do?" block with three full-width tappable rows:
+
+ROW 1:
+Icon: ▶
+Label: "Run With AI"
+Description: "See your AI response right here — no copy-paste needed"
+Action: triggers existing Run With AI function
+
+ROW 2:
+Icon: 📋
+Label: "Copy Prompt"
+Description: "Take it to ChatGPT, Claude, or any AI tool you use"
+Action: triggers existing copy function
+
+ROW 3:
+Icon: ✏️
+Label: "Refine It"
+Description: "Make it stronger before you run it"
+Action: scrolls to the refine section
+
+2. Each row must be minimum 52px height on mobile — large enough to tap without precision.
+
+3. Style with a subtle teal left border on the entire block. Use existing color variables only.
+
+4. This block is hidden before generation using CSS display none. It appears immediately after successful generation.
+
+5. Do NOT change any underlying function logic — only the presentation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 5 — GUIDE ME WIZARD MOBILE SWIPE BUG FIX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The Help Me Start wizard on mobile incorrectly interprets vertical swipe as navigation between questions forcing users to tap Next repeatedly.
+
+1. Find the Guide Me wizard modal or panel container in the code.
+
+2. Add touch-action: pan-y to the wizard container element so vertical swipe is handled by the browser as scrolling and does NOT trigger Next or Back navigation.
+
+3. Add -webkit-overflow-scrolling: touch to the wizard content area for smooth iOS scrolling.
+
+4. Next and Back buttons must only respond to explicit tap or click events. Remove any swipe gesture listeners that advance or go back through questions if they exist.
+
+5. Ensure the wizard content area is scrollable on mobile if the question content is taller than the visible area.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 6 — HELP ME START VISIBILITY AND PLACEMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. In Write Something mode: "Help Me Start" must be a clearly visible button placed immediately below the Fix My Prompt button. Never separated from the goal field by another card or widget.
+
+2. In Create An Image mode: the photographer vision assistant from Section 1 replaces Help Me Start. Do not show both simultaneously.
+
+3. Remove the full card treatment for Help Me Start. Replace with a clean secondary button: "Help Me Start" directly below the Fix My Prompt button.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 7 — LAYOUT PROXIMITY AND ORDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every primary action button must be within one thumb reach of its related input on mobile. No action button should require scrolling past unrelated content.
+
+WRITE SOMETHING MODE — top to bottom order:
+1. Mode switch pills (Write Something / Create An Image)
+2. "Your Goal" label
+3. Goal textarea with live strength indicator below it
+4. Fix My Prompt button (immediately below textarea)
+5. Help Me Start button (immediately below Fix My Prompt)
+6. More Control collapsed toggle
+7. Switch To Expert Mode text link
+
+CREATE AN IMAGE MODE — top to bottom order:
+1. Mode switch pills
+2. Photographer vision assistant (6 questions)
+3. "Your Image" label
+4. Goal textarea
+5. Generate Image button (immediately below textarea)
+6. Upload section (below button, collapsed by default with toggle: "Add A File Or Image (Optional)")
+
+RESULT PANEL — top to bottom order:
+1. "Your Fixed Prompt" title with 24px scroll-margin-top
+2. Generated prompt box
+3. What Would You Like To Do block
+4. Run With AI section
+5. Refine options (Improve With AI, More Detailed, More Bold & Direct, Beginner Friendly)
+6. Fine-Tune Your Prompt textarea and Update Prompt button
+7. Check Prompt Quality
+8. Copy Prompt (primary button)
+9. Copy Shareable Link | Print / Save PDF | Clear Prompt (small tertiary links)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 8 — PROGRESSIVE DISCLOSURE AND GATE FIXES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. This Week's Focus widget: hidden on page load for first-time visitors. Show only after localStorage key "pmg_has_generated" is true.
+
+2. Daily nudge banner: hidden on load for users without "pmg_has_generated" key. Show only for returning users who have generated before.
+
+3. Weekly focus fallback: if content fails to load after 3 seconds replace spinner with: "Try This: Write A Prompt To Help You Earn Extra Income This Week." Never show a blank spinner without fallback.
+
+4. Tour modal: add 3-second delay on first visit. Use localStorage key "pmg_modal_shown" — if key exists never show the modal again. Set the key on any dismissal or completion.
+
+5. Replay Tour button: remove from main builder view entirely. Place only inside the hamburger menu.
+
+6. Suggestion chips "Quick Start Ideas": hide before first generation. Show after "pmg_has_generated" is set.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 9 — TITLE CASE AND COPY SWEEP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Apply Title Case to all visible user-facing strings. Change visible text only — do NOT change variable names, IDs, or function names.
+
+"Your goal" → "Your Goal"
+"Your image" → "Your Image"
+"Build my image prompt" → "Build My Image Prompt"
+"Edit image details" → "Edit Image Details"
+"Too short" → "Too Short"
+"Getting there" → "Getting There"
+"What would you like to do?" → "What Would You Like To Do?"
+"Run with AI" → "Run With AI"
+"Copy prompt" → "Copy Prompt"
+"Refine it" → "Refine It"
+"No file selected" → "No File Selected"
+"Choose file" → "Choose File"
+"Add a file or image (optional)" → "Add A File Or Image (Optional)"
+"Fine-tune your prompt" → "Fine-Tune Your Prompt"
+"Update prompt" → "Update Prompt"
+"Check prompt quality" → "Check Prompt Quality"
+"Copy shareable link" → "Copy Shareable Link"
+"Print / save PDF" → "Print / Save PDF"
+"Clear prompt" → "Clear Prompt"
+"Undo last change" → "Undo Last Change"
+"More bold & direct" → "More Bold & Direct"
+"Beginner friendly" → "Beginner Friendly"
+"More detailed" → "More Detailed"
+"Improve with AI" → "Improve With AI"
+"Run again" → "Run Again"
+"Copy response" → "Copy Response"
+"Show archived" → "Show Archived"
+"Compare two" → "Compare Two"
+"Collapse all" → "Collapse All"
+"Clear all history" → "Clear All History"
+"Export everything" → "Export Everything"
+"Import backup" → "Import Backup"
+"Backup / restore" → "Backup / Restore"
+"Notes only" → "Notes Only"
+"Export yours" → "Export Yours"
+"Tag insights" → "Tag Insights"
+"Daily streak" → "Daily Streak"
+"Saved prompts" → "Saved Prompts"
+"Total reuses" → "Total Reuses"
+"Top tag" → "Top Tag"
+"Most-used prompt" → "Most-Used Prompt"
+"Most-used template" → "Most-Used Template"
+"This week at a glance" → "This Week At A Glance"
+"Why most AI prompts fail" → "Why Most AI Prompts Fail"
+"Use this →" → "Use This →"
+"Need ideas?" → "Need Ideas?"
+"Hide tip" → "Hide Tip"
+"Show tips" → "Show Tips"
+"Switch to Expert Mode →" → "Switch To Expert Mode →"
+"Not sure where to start?" → "Not Sure Where To Start?"
+"Quick start ideas:" → "Quick Start Ideas:"
+
+ALL CAPS labels — convert to Title Case:
+"THIS WEEK AT A GLANCE" → "This Week At A Glance"
+"MOST-USED TEMPLATE" → "Most-Used Template"
+"MOST-USED PROMPT" → "Most-Used Prompt"
+"DAILY STREAK" → "Daily Streak"
+"SAVED PROMPTS" → "Saved Prompts"
+"TOTAL REUSES" → "Total Reuses"
+"TOP TAG" → "Top Tag"
+"WHY IT MATTERS" → "Why It Matters"
+"EARLY FEEDBACK" → "Early Feedback"
+"REFINE YOUR PROMPT INSTANTLY" → "Refine Your Prompt"
+"GET AI TO UNDERSTAND YOU" → remove entirely
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AFTER ALL SECTIONS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Commit with message "Image photographer assistant, live strength indicator, What Next block, wizard mobile fix, full Title Case sweep"
+Push to origin main
+Deploy
+
+Report pass/fail for every numbered item above.
+List anything that could not be changed safely and why.
+Flag anything that needs manual review before going live.

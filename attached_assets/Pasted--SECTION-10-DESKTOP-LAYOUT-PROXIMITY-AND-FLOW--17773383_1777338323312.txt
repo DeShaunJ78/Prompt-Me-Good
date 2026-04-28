@@ -1,0 +1,122 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 10 — DESKTOP LAYOUT: PROXIMITY AND FLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The desktop layout must follow the same proximity and flow 
+principles as mobile. Every action must be adjacent to its 
+input. No element should interrupt the path from goal to result.
+
+DESKTOP WRITE SOMETHING MODE — two column layout:
+
+LEFT COLUMN (input side):
+1. Mode switch pills at the top — Write Something / Create An Image
+2. "Your Goal" label immediately below
+3. Goal textarea — large, prominent, minimum 160px height
+4. Live strength indicator immediately below textarea
+5. Fix My Prompt button — full width of left column, immediately below indicator
+6. Help Me Start — clean secondary button immediately below Fix My Prompt
+7. More Control collapsed toggle — below Help Me Start
+8. Switch To Expert Mode text link — small, below More Control
+9. Nothing else visible until user interacts
+
+RIGHT COLUMN (result side):
+1. Starts empty with a clean placeholder state:
+   Centered text: "Your Fixed Prompt Will Appear Here"
+   Subtext: "Fill in your goal and click Fix My Prompt"
+   Style: muted, no borders, just centered text in the result area
+2. After generation the placeholder is replaced by:
+   - "Your Fixed Prompt" title with scroll-margin-top 24px
+   - Generated prompt box
+   - What Would You Like To Do block (full width of right column)
+   - Run With AI (primary, full width)
+   - Copy Prompt (secondary)
+   - Refine options
+   - Fine-Tune textarea
+   - Tertiary actions
+
+DESKTOP CREATE AN IMAGE MODE — two column layout:
+
+LEFT COLUMN:
+1. Mode switch pills
+2. Photographer vision assistant — 6 questions displayed cleanly
+   in a card with clear section dividers between each question
+3. Pill button options displayed in wrapping rows — 
+   minimum 2 pills per row, wrap naturally
+4. "Build My Image Prompt →" button full width at bottom 
+   of the assistant card
+5. "Your Image" label
+6. Goal textarea — pre-filled after assistant completes
+7. Generate Image button — full width, immediately below textarea
+8. "Add A File Or Image (Optional)" — collapsed toggle below button
+   Expands to show Choose File + preview area
+
+RIGHT COLUMN:
+1. Starts with clean placeholder:
+   Centered text: "Your Generated Image Will Appear Here"
+   Subtext: "Complete the 6 questions and click Generate Image"
+2. After generation:
+   - "Your Generated Image" title with scroll-margin-top 24px
+   - Image renders full width of right column
+   - Download Image button — primary, full width
+   - Generate Another button — secondary
+   - Small caption: "Created with DALL·E 3 · Free during Early Access"
+
+DESKTOP GLOBAL LAYOUT RULES:
+
+1. The search bar in the nav is hidden by default on all screen 
+   sizes. It activates only when the user presses "/" or clicks 
+   a search icon. Replace the always-visible search input with 
+   a small search icon button in the nav that expands on click.
+
+2. The nav on desktop shows: 
+   Start Here | How It Works | Examples | Pricing | search icon | theme toggle
+   Nothing else. History, Replay Tour, and all secondary items 
+   move to the hamburger menu or sidebar.
+
+3. Maximum content width of the builder area: 1100px centered.
+   Left column: 45% width
+   Right column: 55% width
+   Gap between columns: 32px
+
+4. Remove all visual noise between the mode switch pills and 
+   the first input field. On desktop that means:
+   - No "Build Your Prompt" title or description paragraph
+   - No Replay Tour button in the builder
+   - No Help Me Start full card treatment — button only
+   - No This Week's Focus widget before first generation
+   - No suggestion chips before first generation
+   - No tip banners or helper text blocks
+
+5. Every card and section must have minimum 20px padding on 
+   all sides on desktop. No content touching edges.
+
+6. The result right column must be sticky on desktop — it stays 
+   in view as the user scrolls the left column settings. 
+   Use position: sticky with top: 24px on the right column.
+   This means users always see their result without scrolling.
+
+7. On desktop the What Would You Like To Do block displays as 
+   three horizontal cards side by side instead of stacked rows:
+   [▶ Run With AI] [📋 Copy Prompt] [✏️ Refine It]
+   Each card equal width, min-height 80px, centered content.
+   Tapping any card triggers its existing function.
+
+8. After generation on desktop: do NOT auto-scroll the page.
+   Instead the right column result area updates in place since 
+   it is sticky. The result appears without any page movement.
+   Only on mobile should the page scroll to the result.
+
+9. The file upload section on desktop: 
+   Default state shows only a clean dashed border drop zone:
+   "Drop A File Here Or Click To Browse"
+   "PDF, JPG, PNG — Up To 10MB"
+   No broken image icons. No placeholder artifacts.
+   Preview appears inside the drop zone after file selection.
+   Remove button appears as a small X in the top right of preview.
+
+10. Typography hierarchy on desktop:
+    Section titles: font-size var(--text-lg), font-weight 700
+    Input labels: font-size var(--text-sm), font-weight 600
+    Helper text: font-size var(--text-xs), color var(--color-text-muted)
+    Button text: font-weight 600, letter-spacing -0.01em
+    All following existing CSS variable system — no new values.
