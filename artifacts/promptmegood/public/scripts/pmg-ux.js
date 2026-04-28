@@ -3592,6 +3592,7 @@
   window.__pmgT16Init = true;
 
   var PILL_ID = 'pmg-help-me-start-recommend';
+  var ROW_ID = 'pmg-help-me-start-recommend-row';
   var STYLE_ID = 'pmg-t16-recommend-style';
 
   function injectStyles() {
@@ -3607,13 +3608,25 @@
       '  --pmg-t16-amber-text: #78350f;',
       '  --pmg-t16-amber-text-dark: #fcd34d;',
       '}',
+      /* Wrapper row forces the pill onto its own line above the Help Me Start
+         button (instead of rendering side-by-side in the parent flex row).
+         flex-basis:100% + width:100% breaks to a new line in flex-wrap parents
+         and acts as a normal block in non-flex parents. */
+      '#' + ROW_ID + ' {',
+      '  display: flex;',
+      '  align-items: center; justify-content: center;',
+      '  width: 100%;',
+      '  flex-basis: 100%;',
+      '  margin: 6px 0 0;',
+      '  padding: 0;',
+      '}',
+      '#' + ROW_ID + '.pmg-t16-hidden { display: none !important; }',
       '#' + PILL_ID + ' {',
       /* Match the small Help Me Start button width — NOT the wide
          green button. JS sets explicit width via syncWidth() to exactly
-         the button's measured width. align-self:flex-start keeps the
-         pill left-aligned with its sibling button instead of stretching. */
+         the button's measured width. */
       '  display: inline-flex; align-items: center; justify-content: center; gap: 6px;',
-      '  margin: 8px 0 -2px; padding: 5px 12px;',
+      '  margin: 0; padding: 5px 12px;',
       '  background: linear-gradient(135deg, var(--pmg-t16-amber-bg-from) 0%, var(--pmg-t16-amber-bg-to) 100%);',
       '  border: 1px solid var(--pmg-t16-amber);',
       '  border-radius: 999px;',
@@ -3686,7 +3699,12 @@
     var relocated = !oldRow || (generate && generate.nextElementSibling === help);
     if (!relocated) return false;
     var pill = buildPill();
-    help.parentNode.insertBefore(pill, help);
+    /* Wrap pill in a full-width row so it stacks ABOVE the Help Me Start
+       button instead of sitting next to it in the parent flex row. */
+    var row = document.createElement('div');
+    row.id = ROW_ID;
+    row.appendChild(pill);
+    help.parentNode.insertBefore(row, help);
     return true;
   }
 
@@ -3733,6 +3751,9 @@
       }
     }
     pill.classList.toggle('pmg-t16-hidden', hidden);
+    /* Hide the wrapper row too so it doesn't reserve a blank line. */
+    var row = document.getElementById(ROW_ID);
+    if (row) row.classList.toggle('pmg-t16-hidden', hidden);
   }
 
   function startVisibilitySync() {
