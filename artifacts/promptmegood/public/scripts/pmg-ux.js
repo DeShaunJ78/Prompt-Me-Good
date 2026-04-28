@@ -3569,3 +3569,223 @@
     init();
   }
 })();
+
+/* ================================================================
+ * T16 — "Recommended For Best Results" pill above Help Me Start
+ * ----------------------------------------------------------------
+ * Adds a small accent-aware "⭐ Recommended For Best Results" pill
+ * directly above the Help Me Start button so users who don't know
+ * what to type are nudged toward the guided 4-question flow.
+ *
+ * Restraint by design:
+ *  - Pill, not a banner — does NOT compete with Fix My Prompt for
+ *    primary CTA visual weight.
+ *  - Soft amber/gold styling that reads as "editor's pick" without
+ *    fighting any of the 5 accent themes (green, blue, purple, gold,
+ *    slate).
+ *  - Hidden when Help Me Start itself is hidden (image mode, expert
+ *    mode) via existing body classes.
+ *  - Idempotent: never inserts more than once per page lifetime.
+ * ================================================================ */
+(function pmgT16RecommendedPill() {
+  if (window.__pmgT16Init) return;
+  window.__pmgT16Init = true;
+
+  var PILL_ID = 'pmg-help-me-start-recommend';
+  var STYLE_ID = 'pmg-t16-recommend-style';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* T16-scoped CSS variables — single source of truth for the pill palette.
+         Amber/gold is intentionally accent-agnostic so the "Editor's Pick"
+         affordance reads consistently across all 5 accent themes. */
+      ':root {',
+      '  --pmg-t16-amber: #f59e0b;',
+      '  --pmg-t16-amber-bg-from: #fef3c7;',
+      '  --pmg-t16-amber-bg-to: #fde68a;',
+      '  --pmg-t16-amber-text: #78350f;',
+      '  --pmg-t16-amber-text-dark: #fcd34d;',
+      '}',
+      '#' + PILL_ID + ' {',
+      '  display: inline-flex; align-items: center; gap: 6px;',
+      '  margin: 14px 0 6px; padding: 5px 12px;',
+      '  background: linear-gradient(135deg, var(--pmg-t16-amber-bg-from) 0%, var(--pmg-t16-amber-bg-to) 100%);',
+      '  border: 1px solid var(--pmg-t16-amber);',
+      '  border-radius: 999px;',
+      '  color: var(--pmg-t16-amber-text);',
+      '  font-size: 12px; font-weight: 700;',
+      '  letter-spacing: 0.02em;',
+      '  line-height: 1.2;',
+      '  width: fit-content;',
+      '  /* Force the pill to take its own row when inside a flex container */',
+      '  flex-basis: 100%;',
+      '  align-self: flex-start;',
+      '  box-shadow: 0 1px 3px color-mix(in srgb, var(--pmg-t16-amber) 18%, transparent);',
+      '  user-select: none;',
+      '}',
+      '#' + PILL_ID + ' .pmg-t16-star {',
+      '  font-size: 13px; line-height: 1; transform: translateY(-0.5px);',
+      '}',
+      '[data-theme="dark"] #' + PILL_ID + ' {',
+      '  background: linear-gradient(135deg, color-mix(in srgb, var(--pmg-t16-amber) 18%, transparent) 0%, color-mix(in srgb, var(--pmg-t16-amber) 28%, transparent) 100%);',
+      '  border-color: color-mix(in srgb, var(--pmg-t16-amber) 60%, transparent);',
+      '  color: var(--pmg-t16-amber-text-dark);',
+      '  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);',
+      '}',
+      '/* Defensive CSS guard — JS visibility sync below is the source of truth */',
+      'body.image-mode #' + PILL_ID + ',',
+      'body.is-expert-mode #' + PILL_ID + ',',
+      'body.pmg-expert-mode #' + PILL_ID + ',',
+      '#' + PILL_ID + '.pmg-t16-hidden { display: none !important; }',
+      '@media (max-width: 600px) {',
+      '  #' + PILL_ID + ' { font-size: 11px; padding: 4px 10px; margin-top: 12px; }',
+      '  #' + PILL_ID + ' .pmg-t16-star { font-size: 12px; }',
+      '}'
+    ].join('\n');
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  function buildPill() {
+    var pill = document.createElement('div');
+    pill.id = PILL_ID;
+    pill.setAttribute('role', 'note');
+    pill.setAttribute('aria-label', 'Recommended for best results');
+    var star = document.createElement('span');
+    star.className = 'pmg-t16-star';
+    star.setAttribute('aria-hidden', 'true');
+    star.textContent = '⭐';
+    var text = document.createElement('span');
+    text.textContent = 'Recommended For Best Results';
+    pill.appendChild(star);
+    pill.appendChild(text);
+    return pill;
+  }
+
+  function insertPill() {
+    if (document.getElementById(PILL_ID)) return true;
+    var help = document.getElementById('guided-mode-btn');
+    if (!help || !help.parentNode) return false;
+    /* Only insert once Help Me Start has been relocated next to Fix My Prompt
+       by T15's reorderHelpMeStart(); otherwise the pill could appear in the
+       old orphaned .guided-cta-row wrapper. Heuristic: the relocated button
+       is a direct sibling of #generateBtn or sits outside #guided-cta-row. */
+    var oldRow = help.closest('#guided-cta-row');
+    var generate = document.getElementById('generateBtn');
+    var relocated = !oldRow || (generate && generate.nextElementSibling === help);
+    if (!relocated) return false;
+    var pill = buildPill();
+    help.parentNode.insertBefore(pill, help);
+    return true;
+  }
+
+  function tryInsert() {
+    injectStyles();
+    return insertPill();
+  }
+
+  /* Sync pill visibility to mirror the Help Me Start button.
+     If Help Me Start is hidden (image mode, expert mode, parent collapsed,
+     etc.), hide the pill too. Bulletproof against any future changes to
+     how the help button visibility is toggled. */
+  function syncVisibility() {
+    var pill = document.getElementById(PILL_ID);
+    var help = document.getElementById('guided-mode-btn');
+    if (!pill || !help) return;
+    var hidden = false;
+    /* offsetParent is null when element or any ancestor has display:none */
+    if (help.offsetParent === null && getComputedStyle(help).position !== 'fixed') {
+      hidden = true;
+    } else if (getComputedStyle(help).visibility === 'hidden') {
+      hidden = true;
+    } else if (document.body.classList.contains('image-mode') ||
+               document.body.classList.contains('is-expert-mode') ||
+               document.body.classList.contains('pmg-expert-mode')) {
+      /* In image or expert modes, the guided 4-question flow doesn't apply */
+      hidden = true;
+    } else {
+      /* Direct check on mode toggle button's active state — most reliable */
+      var imgBtn = document.getElementById('imageModeBtn');
+      if (imgBtn && imgBtn.classList.contains('active')) {
+        hidden = true;
+      }
+    }
+    pill.classList.toggle('pmg-t16-hidden', hidden);
+  }
+
+  function startVisibilitySync() {
+    syncVisibility();
+    /* Re-sync on body class/style changes (mode switch toggles body.image-mode
+       and toggles 'active' class on mode buttons). No subtree observer — too
+       broad. Targeted body observer + click delegation covers all known
+       triggers without background churn. */
+    var moBody = new MutationObserver(syncVisibility);
+    try {
+      moBody.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style']
+      });
+    } catch (e) {}
+    /* Direct binding to mode toggle buttons for guaranteed coverage */
+    ['imageModeBtn', 'writeModeBtn', 'textModeBtn'].forEach(function (id) {
+      var btn = document.getElementById(id);
+      if (btn) {
+        btn.addEventListener('click', function () {
+          setTimeout(syncVisibility, 30);
+          setTimeout(syncVisibility, 200);
+        });
+      }
+    });
+    /* Catch-all capture-phase click delegation for late-bound mode toggles */
+    document.addEventListener('click', function (e) {
+      var t = e.target && e.target.closest && e.target.closest('.mode-switch-btn, [data-mode], [onclick*="setMode"]');
+      if (!t) return;
+      setTimeout(syncVisibility, 30);
+      setTimeout(syncVisibility, 200);
+    }, true);
+    /* Bounded fallback poll: 5Hz for the first 6 seconds after init. After
+       that, the body observer + click delegation are the source of truth. */
+    var ticks = 0;
+    var iv = setInterval(function () {
+      syncVisibility();
+      if (++ticks > 30) clearInterval(iv);
+    }, 200);
+  }
+
+  function init() {
+    var inserted = tryInsert();
+    if (inserted) {
+      startVisibilitySync();
+      return;
+    }
+    /* Observe DOM until T15 relocation has happened, then insert + sync. */
+    var attempts = 0;
+    var iv = setInterval(function () {
+      attempts++;
+      if (tryInsert()) {
+        clearInterval(iv);
+        startVisibilitySync();
+      } else if (attempts > 30) {
+        clearInterval(iv);
+      }
+    }, 250);
+    var mo = new MutationObserver(function () {
+      if (tryInsert()) {
+        try { mo.disconnect(); } catch (e) {}
+        clearInterval(iv);
+        startVisibilitySync();
+      }
+    });
+    try { mo.observe(document.body, { childList: true, subtree: true }); } catch (e) {}
+    setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 12000);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
