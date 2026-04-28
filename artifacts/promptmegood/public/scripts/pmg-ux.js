@@ -4376,3 +4376,118 @@
     init();
   }
 })();
+
+/* =====================================================================
+ * T20 — Single Copy Prompt + reorder around Check Prompt Quality.
+ *
+ * User asked to remove the duplicate white "Copy Prompt" pill (which lives
+ * inside #pmg-copy-wrap) and to move the "What Would You Like To Do?" box
+ * (#pmg-what-next-block) directly beneath the Check Prompt Quality button
+ * (.quality-row), with the Print/Save PDF + Clear Prompt action row
+ * sitting right beneath the box (same relative position to the box).
+ *
+ * Hides the dup via CSS so the underlying #copy-btn still exists for any
+ * delegated handler (the box's "Copy Prompt" row programmatically clicks
+ * #copy-btn). DOM moves are idempotent and only happen when all anchors
+ * are present.
+ * ===================================================================== */
+(function pmgT20WhatNextRelocate() {
+  if (window.__pmgT20Init) return;
+  window.__pmgT20Init = true;
+
+  var STYLE_ID = 'pmg-t20-relocate-style';
+  var DONE_FLAG = 'pmgT20Placed';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* Hide the duplicate "Copy Prompt" pill wrapper but keep #copy-btn
+         in the DOM (other code clicks it programmatically). */
+      '#pmg-copy-wrap { display: none !important; }',
+      /* Visual breathing room around the relocated box. */
+      '#pmg-what-next-block.pmg-t20-placed { margin-top: var(--space-3); }',
+      '.actions-row.pmg-t20-tail { margin-top: var(--space-3); justify-content: flex-start; }'
+    ].join('\n');
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  /* Find the original Print/Save PDF + Clear Prompt actions row.
+     This is the .actions-row that contains #print-btn (the one inside
+     #tour-final-actions in index.html). */
+  function findPrintClearRow() {
+    var printBtn = document.getElementById('print-btn');
+    if (!printBtn) return null;
+    var row = printBtn.closest('.actions-row');
+    /* Defensive: do not pick up #pmg-copy-wrap if somehow it qualifies. */
+    if (row && row.id === 'pmg-copy-wrap') return null;
+    return row;
+  }
+
+  function relocate() {
+    var qualityRow = document.getElementById('quality-row');
+    var whatNext = document.getElementById('pmg-what-next-block');
+    var tailRow = findPrintClearRow();
+    if (!qualityRow || !whatNext || !tailRow) return false;
+
+    var parent = qualityRow.parentNode;
+    if (!parent) return false;
+
+    /* If both already in the right slots, nothing to do. */
+    if (
+      qualityRow.nextSibling === whatNext &&
+      whatNext.nextSibling === tailRow &&
+      whatNext.dataset[DONE_FLAG] === '1'
+    ) {
+      return true;
+    }
+
+    try {
+      /* Move the box directly after Check Prompt Quality. */
+      if (whatNext.parentNode !== parent) {
+        parent.appendChild(whatNext);
+      }
+      parent.insertBefore(whatNext, qualityRow.nextSibling);
+
+      /* Move Print/Save PDF + Clear Prompt directly after the box. */
+      if (tailRow.parentNode !== parent) {
+        /* Adopt into the same parent so insertBefore works cleanly. */
+        parent.appendChild(tailRow);
+      }
+      parent.insertBefore(tailRow, whatNext.nextSibling);
+
+      whatNext.classList.add('pmg-t20-placed');
+      whatNext.dataset[DONE_FLAG] = '1';
+      tailRow.classList.add('pmg-t20-tail');
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function init() {
+    injectStyles();
+    if (relocate()) return;
+    /* Re-attempt as the post-gen DOM mounts. */
+    var attempts = 0;
+    var iv = setInterval(function () {
+      attempts += 1;
+      if (relocate() || attempts > 60) {
+        clearInterval(iv);
+      }
+    }, 250);
+    try {
+      var mo = new MutationObserver(function () { relocate(); });
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 60000);
+    } catch (e) { /* ignore */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
