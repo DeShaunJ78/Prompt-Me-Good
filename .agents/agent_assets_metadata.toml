@@ -36,3 +36,9 @@ id = "jkPQVRlM_Ol6mPn0u23fY"
 uri = "file://pmg_api.tar.gz"
 type = "unspecified"
 title = "PMG API + frontend bundle (5 files, 106K)"
+
+[[outputs]]
+id = "6_mFTKpocnJMJCuqq2eDn"
+uri = "file://pmg_for_chatgpt.tar.gz"
+type = "unspecified"
+title = "pmg_for_chatgpt.tar.gz"
