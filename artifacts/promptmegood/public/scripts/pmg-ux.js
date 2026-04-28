@@ -4642,3 +4642,271 @@
     init();
   }
 })();
+
+/* =====================================================================
+ * T22 — PHASE B: post-result polish.
+ *
+ * Re-orders the post-generation block so the user sees one obvious
+ * primary action (Run With AI) and a clear, compact set of secondary
+ * actions, while featuring the tone shifters the user explicitly asked
+ * to keep prominent.
+ *
+ * NEW POST-RESULT ORDER (top to bottom):
+ *   1. Your Fixed Prompt  (with a tiny 🖨 printer icon next to the title)
+ *   2. Tone Shifter row   (Improve With AI / More Detailed / More Bold &
+ *                           Direct / Beginner Friendly / Undo)
+ *                           — restyled as a featured, colorful pill row
+ *   3. ▶ Run With AI       — single big primary button (stripped of the
+ *                           redundant "Run This Prompt With AI" heading +
+ *                           divider + helper text)
+ *   4. Secondary actions   — small pill buttons:
+ *                              Copy Prompt · Refine It · Check Quality ·
+ *                              Start Over
+ *   5. Fine-Tune Your Prompt  (textarea, unchanged)
+ *
+ * KILLED FROM VIEW (already / now):
+ *   - "Run This Prompt With AI" section heading + divider + helper +
+ *     meta (only the button itself stays, repositioned).
+ *   - The standalone .quality-row "Want To Know How Strong Your Prompt
+ *     Is?" wrapper (Check Quality button still works via the new
+ *     secondary row).
+ *   - The original Print/Save PDF + Clear Prompt actions-row pills
+ *     (Print → printer icon, Clear → Start Over secondary pill).
+ *
+ * No backend / DB / handler changes; secondary buttons just delegate
+ * clicks to the existing canonical buttons (#copy-btn, #fine-tune-input,
+ * #check-quality-btn, #clear-prompt-btn, #print-btn).
+ * ===================================================================== */
+(function pmgT22PhaseBPostResult() {
+  if (window.__pmgT22Init) return;
+  window.__pmgT22Init = true;
+
+  var STYLE_ID = 'pmg-t22-phase-b-style';
+  var SECONDARY_ROW_ID = 'pmg-secondary-actions-row';
+  var TITLE_ICON_ID = 'pmg-result-print-icon';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* ===== Featured tone shifter row ===== */
+      '#improve-block #tour-step-improve > .actions-row {',
+      '  display: flex; flex-wrap: wrap; gap: var(--space-2);',
+      '  padding: var(--space-3); margin-top: var(--space-2);',
+      '  background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface-2));',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--color-border));',
+      '  border-radius: var(--radius-lg);',
+      '}',
+      '#improve-block #tour-step-improve > .actions-row .btn {',
+      '  flex: 1 1 auto; min-width: 140px;',
+      '  padding: 10px 16px; font-size: var(--text-sm); font-weight: 600;',
+      '  border-radius: var(--radius-full);',
+      '  background: var(--color-surface) !important;',
+      '  color: var(--color-text) !important;',
+      '  border: 1.5px solid color-mix(in srgb, var(--color-primary) 30%, var(--color-border)) !important;',
+      '  transition: transform 120ms ease, background 180ms ease, border-color 180ms ease, color 180ms ease;',
+      '}',
+      '#improve-block #tour-step-improve > .actions-row .btn:hover {',
+      '  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface)) !important;',
+      '  border-color: var(--color-primary) !important;',
+      '  color: var(--color-primary) !important;',
+      '  transform: translateY(-1px);',
+      '}',
+      /* Featured AI button keeps its accent. */
+      '#improve-block #improve-with-ai-btn {',
+      '  background: linear-gradient(135deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 60%, #6c63ff)) !important;',
+      '  color: #fff !important;',
+      '  border-color: transparent !important;',
+      '}',
+      '#improve-block #improve-with-ai-btn:hover {',
+      '  color: #fff !important;',
+      '  filter: brightness(1.05);',
+      '}',
+      '#improve-block .undo-row { margin-top: var(--space-2); display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }',
+      '#improve-block .undo-helper { font-size: var(--text-xs); color: var(--color-text-muted); }',
+
+      /* ===== Strip the Run section chrome; promote the button ===== */
+      '#runSection { background: transparent !important; padding: var(--space-3) 0 0 !important; margin-top: var(--space-3) !important; }',
+      '#runSection .run-section-divider { display: none !important; }',
+      '#runSection .run-section-title { display: none !important; }',
+      '#runSection .run-section-helper { display: none !important; }',
+      '#runSection .run-section-meta { text-align: center; margin-top: 8px !important; }',
+      '#runSection #runBtn {',
+      '  width: 100%;',
+      '  min-height: 56px;',
+      '  font-size: var(--text-base);',
+      '  font-weight: 700;',
+      '  border-radius: var(--radius-full);',
+      '  display: inline-flex; align-items: center; justify-content: center; gap: 8px;',
+      '  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 25%, transparent);',
+      '}',
+      '#runSection #runBtn:hover { transform: translateY(-1px); box-shadow: 0 4px 14px color-mix(in srgb, var(--color-primary) 35%, transparent); }',
+
+      /* ===== Hide the redundant standalone Quality + Actions rows ===== */
+      '#quality-row { display: none !important; }',
+      '#tour-final-actions > .actions-row:not(#pmg-secondary-actions-row):not(.pmg-copy-wrap) { display: none !important; }',
+
+      /* ===== Secondary action pills row ===== */
+      '#' + SECONDARY_ROW_ID + ' {',
+      '  display: flex; flex-wrap: wrap; gap: var(--space-2);',
+      '  margin-top: var(--space-3); justify-content: center;',
+      '}',
+      '#' + SECONDARY_ROW_ID + ' .pmg-sec-btn {',
+      '  display: inline-flex; align-items: center; gap: 6px;',
+      '  padding: 8px 16px;',
+      '  font-size: var(--text-sm); font-weight: 600;',
+      '  border-radius: var(--radius-full);',
+      '  background: var(--color-surface);',
+      '  color: var(--color-text);',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 24%, var(--color-border));',
+      '  cursor: pointer;',
+      '  transition: transform 120ms ease, background 180ms ease, border-color 180ms ease, color 180ms ease;',
+      '}',
+      '#' + SECONDARY_ROW_ID + ' .pmg-sec-btn:hover {',
+      '  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));',
+      '  border-color: var(--color-primary);',
+      '  color: var(--color-primary);',
+      '  transform: translateY(-1px);',
+      '}',
+      '#' + SECONDARY_ROW_ID + ' .pmg-sec-btn.is-danger:hover {',
+      '  background: color-mix(in srgb, #d04848 10%, var(--color-surface));',
+      '  border-color: #d04848;',
+      '  color: #d04848;',
+      '}',
+
+      /* ===== Tiny printer icon next to "Your Fixed Prompt" title ===== */
+      '#' + TITLE_ICON_ID + ' {',
+      '  display: inline-flex; align-items: center; justify-content: center;',
+      '  width: 28px; height: 28px;',
+      '  margin-left: 8px; vertical-align: middle;',
+      '  border-radius: var(--radius-full);',
+      '  background: transparent;',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 25%, var(--color-border));',
+      '  color: var(--color-text-muted);',
+      '  cursor: pointer;',
+      '  transition: color 160ms ease, background 160ms ease, border-color 160ms ease;',
+      '}',
+      '#' + TITLE_ICON_ID + ':hover {',
+      '  color: var(--color-primary);',
+      '  background: color-mix(in srgb, var(--color-primary) 8%, transparent);',
+      '  border-color: var(--color-primary);',
+      '}',
+      '#' + TITLE_ICON_ID + ' svg { width: 14px; height: 14px; }'
+    ].join('\n');
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  /* Add the tiny printer icon next to "Your Fixed Prompt" title. */
+  function addPrinterIcon() {
+    if (document.getElementById(TITLE_ICON_ID)) return;
+    var title = document.getElementById('result-title');
+    var printBtn = document.getElementById('print-btn');
+    if (!title || !printBtn) return;
+    var icon = document.createElement('button');
+    icon.id = TITLE_ICON_ID;
+    icon.type = 'button';
+    icon.setAttribute('aria-label', 'Print or save as PDF');
+    icon.title = 'Print or save as PDF';
+    icon.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" ' +
+      'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      '<polyline points="6 9 6 2 18 2 18 9"></polyline>' +
+      '<path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>' +
+      '<rect x="6" y="14" width="12" height="8"></rect>' +
+      '</svg>';
+    icon.addEventListener('click', function () { printBtn.click(); });
+    title.appendChild(icon);
+  }
+
+  /* Build the secondary action pills row. */
+  function buildSecondaryRow() {
+    if (document.getElementById(SECONDARY_ROW_ID)) return;
+    var runSection = document.getElementById('runSection');
+    if (!runSection || !runSection.parentNode) return;
+
+    var row = document.createElement('div');
+    row.id = SECONDARY_ROW_ID;
+
+    function addBtn(label, icon, danger, handler) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'pmg-sec-btn' + (danger ? ' is-danger' : '');
+      b.innerHTML = '<span aria-hidden="true">' + icon + '</span><span>' + label + '</span>';
+      b.addEventListener('click', handler);
+      row.appendChild(b);
+    }
+
+    addBtn('Copy Prompt', '📋', false, function () {
+      var b = document.getElementById('copy-btn');
+      if (b) b.click();
+    });
+    addBtn('Refine It', '✏️', false, function () {
+      var t = document.getElementById('fine-tune-input');
+      if (t) {
+        try { t.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+        try { t.focus({ preventScroll: true }); } catch (e) { try { t.focus(); } catch (e2) {} }
+      }
+    });
+    addBtn('Check Quality', '✓', false, function () {
+      var b = document.getElementById('check-quality-btn');
+      if (b) b.click();
+    });
+    addBtn('Start Over', '↺', true, function () {
+      var b = document.getElementById('clear-prompt-btn');
+      if (b) b.click();
+    });
+
+    runSection.parentNode.insertBefore(row, runSection.nextSibling);
+  }
+
+  /* Re-order DOM so improve-block (tone shifters) and runSection sit
+     directly after the result, ahead of the secondary row and fine-tune. */
+  function reorderPostResult() {
+    var resultWrap = document.querySelector('.result-wrap');
+    var improveBlock = document.getElementById('improve-block');
+    var runSection = document.getElementById('runSection');
+    var secRow = document.getElementById(SECONDARY_ROW_ID);
+    var fineTune = document.querySelector('.fine-tune#tour-step-finalize') || document.getElementById('tour-step-finalize');
+    if (!improveBlock || !runSection || !improveBlock.parentNode) return;
+    var parent = improveBlock.parentNode;
+    try {
+      /* Order: improveBlock → runSection → secRow → fineTune */
+      if (runSection.parentNode !== parent) parent.appendChild(runSection);
+      parent.insertBefore(runSection, improveBlock.nextSibling);
+      if (secRow) {
+        if (secRow.parentNode !== parent) parent.appendChild(secRow);
+        parent.insertBefore(secRow, runSection.nextSibling);
+      }
+      if (fineTune) {
+        if (fineTune.parentNode !== parent) parent.appendChild(fineTune);
+        var anchor = secRow || runSection;
+        parent.insertBefore(fineTune, anchor.nextSibling);
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  function init() {
+    injectStyles();
+    addPrinterIcon();
+    buildSecondaryRow();
+    reorderPostResult();
+    /* Late-mount safety. */
+    try {
+      var mo = new MutationObserver(function () {
+        addPrinterIcon();
+        buildSecondaryRow();
+        reorderPostResult();
+      });
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 60000);
+    } catch (e) { /* ignore */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
