@@ -2949,3 +2949,132 @@
     init();
   }
 })();
+
+/* ==========================================================================
+ * T14 — Scroll-fatigue trim (mobile + desktop)
+ *
+ *   1. Hide the "Why It Matters / Why Most AI Prompts Fail" section.
+ *      Its content recaps the hero subhead. The #why-prompts-fail anchor
+ *      still resolves to the (now zero-height) section position, which is
+ *      immediately above #how-it-works — the right semantic destination.
+ *
+ *   2. Progressive-reveal "See The Difference": show 1 Before/After example
+ *      by default, collapse the other 2 behind a "See N More Comparisons →"
+ *      button. Preserves all content; cuts ~60% of section height on first
+ *      view. Section anchor and IO reveal animation remain intact.
+ *
+ *   Hard rules: no DOM deletion, no rename of existing IDs/classes,
+ *   no flex/order CSS reorder, anchors keep working, Title Case labels.
+ * ========================================================================== */
+(function pmgT14ScrollTrim() {
+  'use strict';
+  if (window.__pmg_t14_scrolltrim) return;
+  window.__pmg_t14_scrolltrim = true;
+
+  var STYLE_ID = 'pmg-t14-scrolltrim-style';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      '@keyframes pmgT14FadeUp {',
+      '  from { opacity: 0; transform: translateY(8px); }',
+      '  to   { opacity: 1; transform: translateY(0); }',
+      '}',
+      '#why-prompts-fail.why-prompts-fail-section { display: none !important; }',
+      '#see-the-difference .std-row.pmg-std-collapsed { display: none !important; }',
+      '#see-the-difference .pmg-std-reveal-wrap {',
+      '  display: flex;',
+      '  justify-content: center;',
+      '  margin-top: var(--space-4, 16px);',
+      '}',
+      '#see-the-difference .pmg-std-reveal-btn {',
+      '  background: transparent;',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary, #0f7a78) 32%, transparent);',
+      '  color: var(--color-primary, #0f7a78);',
+      '  padding: 10px 22px;',
+      '  border-radius: 999px;',
+      '  font: inherit;',
+      '  font-weight: 600;',
+      '  cursor: pointer;',
+      '  transition: background 160ms ease, transform 160ms ease, border-color 160ms ease;',
+      '}',
+      '#see-the-difference .pmg-std-reveal-btn:hover {',
+      '  background: color-mix(in srgb, var(--color-primary, #0f7a78) 6%, transparent);',
+      '  border-color: color-mix(in srgb, var(--color-primary, #0f7a78) 55%, transparent);',
+      '  transform: translateY(-1px);',
+      '}',
+      '#see-the-difference .pmg-std-reveal-btn:focus-visible {',
+      '  outline: 2px solid var(--color-primary, #0f7a78);',
+      '  outline-offset: 2px;',
+      '}',
+      '#see-the-difference.pmg-std-expanded .pmg-std-reveal-wrap { display: none; }',
+      '#see-the-difference .std-row.pmg-std-revealed {',
+      '  animation: pmgT14FadeUp 360ms ease both;',
+      '}'
+    ].join('\n');
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  function trimSeeTheDifference() {
+    var section = document.getElementById('see-the-difference');
+    if (!section) return false;
+    if (section.dataset.pmgT14Trimmed === '1') return true;
+    var grid = section.querySelector('.std-grid');
+    if (!grid) return false;
+    var rows = grid.querySelectorAll(':scope > .std-row');
+    if (!rows || rows.length <= 1) {
+      section.dataset.pmgT14Trimmed = '1';
+      return true;
+    }
+    var hidden = [];
+    for (var i = 1; i < rows.length; i++) {
+      rows[i].classList.add('pmg-std-collapsed');
+      if (!rows[i].id) rows[i].id = 'pmg-std-row-extra-' + i;
+      hidden.push(rows[i]);
+    }
+    if (grid.parentNode.querySelector('.pmg-std-reveal-wrap')) {
+      section.dataset.pmgT14Trimmed = '1';
+      return true;
+    }
+    var wrap = document.createElement('div');
+    wrap.className = 'pmg-std-reveal-wrap';
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pmg-std-reveal-btn';
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-controls', hidden.map(function (r) { return r.id; }).join(' '));
+    btn.textContent = 'See ' + hidden.length + ' More Comparison' +
+      (hidden.length === 1 ? '' : 's') + ' →';
+    btn.addEventListener('click', function () {
+      hidden.forEach(function (row) {
+        row.classList.remove('pmg-std-collapsed');
+        row.classList.add('pmg-std-revealed');
+      });
+      section.classList.add('pmg-std-expanded');
+      btn.setAttribute('aria-expanded', 'true');
+    });
+    wrap.appendChild(btn);
+    grid.parentNode.insertBefore(wrap, grid.nextSibling);
+    section.dataset.pmgT14Trimmed = '1';
+    return true;
+  }
+
+  function init() {
+    injectStyles();
+    if (trimSeeTheDifference()) return;
+    var mo = new MutationObserver(function () {
+      if (trimSeeTheDifference()) mo.disconnect();
+    });
+    mo.observe(document.body, { childList: true, subtree: true });
+    setTimeout(function () { mo.disconnect(); }, 8000);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
