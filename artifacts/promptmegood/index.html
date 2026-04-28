@@ -2941,7 +2941,11 @@
 </style>
   <script>
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-    window.addEventListener('load', function () { window.scrollTo(0, 0); }, { once: true });
+    (function () {
+      function forceTop() { try { window.scrollTo(0, 0); } catch (e) {} }
+      window.addEventListener('load', forceTop, { once: true });
+      window.addEventListener('pageshow', function (e) { if (e.persisted) forceTop(); });
+    })();
   </script>
 </head>
 <body>
