@@ -2642,7 +2642,8 @@
     .mode-switch{display:flex;gap:0;background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-full);padding:4px;margin-bottom:var(--space-5);width:100%;max-width:360px}
     .mode-switch-btn{flex:1;padding:10px 16px;border:none;border-radius:var(--radius-full);font-size:var(--text-sm);font-weight:600;cursor:pointer;background:transparent;color:var(--color-text-muted);transition:all 180ms ease;display:flex;align-items:center;justify-content:center;gap:6px}
     .mode-switch-btn.active{background:var(--color-primary);color:#fff;box-shadow:var(--shadow-sm)}
-    .mode-switch-btn:not(.active):hover{color:var(--color-text);background:var(--color-surface)}
+    .mode-switch-btn:not(.active){color:var(--color-text);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--color-border) 80%,transparent)}
+    .mode-switch-btn:not(.active):hover{background:color-mix(in srgb,var(--color-primary) 8%,transparent);box-shadow:inset 0 0 0 1.5px var(--color-primary)}
     body.image-mode .builder-transition{display:none}
     body.image-mode #generateBtn{display:none}
     body.image-mode #image-generate-btn{display:flex!important}
