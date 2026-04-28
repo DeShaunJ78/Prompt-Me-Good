@@ -3608,11 +3608,11 @@
       '  --pmg-t16-amber-text-dark: #fcd34d;',
       '}',
       '#' + PILL_ID + ' {',
-      /* Match the Help Me Start button width exactly. The parent is a
-         column flex container (.pmg-action-stack) so align-self: stretch
-         + width: 100% + box-sizing: border-box pins the pill to the
-         same horizontal extent as the button below. */
-      '  display: flex; align-items: center; justify-content: center; gap: 6px;',
+      /* Match the small Help Me Start button width — NOT the wide
+         green button. JS sets explicit width via syncWidth() to exactly
+         the button's measured width. align-self:flex-start keeps the
+         pill left-aligned with its sibling button instead of stretching. */
+      '  display: inline-flex; align-items: center; justify-content: center; gap: 6px;',
       '  margin: 8px 0 -2px; padding: 5px 12px;',
       '  background: linear-gradient(135deg, var(--pmg-t16-amber-bg-from) 0%, var(--pmg-t16-amber-bg-to) 100%);',
       '  border: 1px solid var(--pmg-t16-amber);',
@@ -3621,13 +3621,14 @@
       '  font-size: 12px; font-weight: 700;',
       '  letter-spacing: 0.02em;',
       '  line-height: 1.2;',
-      '  width: 100%;',
       '  box-sizing: border-box;',
-      '  /* Force the pill to take its own row when inside a flex container */',
-      '  flex-basis: 100%;',
-      '  align-self: stretch;',
+      '  width: auto;',
+      '  flex-basis: auto;',
+      '  flex-grow: 0; flex-shrink: 0;',
+      '  align-self: flex-start;',
       '  box-shadow: 0 1px 3px color-mix(in srgb, var(--pmg-t16-amber) 18%, transparent);',
       '  user-select: none;',
+      '  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;',
       '}',
       '#' + PILL_ID + ' .pmg-t16-star {',
       '  font-size: 13px; line-height: 1; transform: translateY(-0.5px);',
@@ -3664,7 +3665,9 @@
     star.setAttribute('aria-hidden', 'true');
     star.textContent = '⭐';
     var text = document.createElement('span');
-    text.textContent = 'Recommended For Best Results';
+    /* Short label so it fits inside the small Help Me Start button width
+       without being truncated by ellipsis. */
+    text.textContent = 'Recommended';
     pill.appendChild(star);
     pill.appendChild(text);
     return pill;
@@ -3690,6 +3693,17 @@
   function tryInsert() {
     injectStyles();
     return insertPill();
+  }
+
+  /* Sync pill WIDTH to exactly match the Help Me Start button width.
+     The pill should look like a label *for* that small button, not a
+     full-width banner. Re-runs on resize and on visibility sync. */
+  function syncWidth() {
+    var pill = document.getElementById(PILL_ID);
+    var help = document.getElementById('guided-mode-btn');
+    if (!pill || !help) return;
+    var w = help.getBoundingClientRect().width;
+    if (w > 0) pill.style.width = Math.round(w) + 'px';
   }
 
   /* Sync pill visibility to mirror the Help Me Start button.
@@ -3722,7 +3736,13 @@
   }
 
   function startVisibilitySync() {
+    syncWidth();
     syncVisibility();
+    /* Re-measure pill width whenever the window resizes (mobile layout
+       breakpoints can change the help button width). */
+    window.addEventListener('resize', function () {
+      setTimeout(syncWidth, 0);
+    });
     /* Re-sync on body class/style changes (mode switch toggles body.image-mode
        and toggles 'active' class on mode buttons). No subtree observer — too
        broad. Targeted body observer + click delegation covers all known
@@ -3755,6 +3775,7 @@
        that, the body observer + click delegation are the source of truth. */
     var ticks = 0;
     var iv = setInterval(function () {
+      syncWidth();
       syncVisibility();
       if (++ticks > 30) clearInterval(iv);
     }, 200);
