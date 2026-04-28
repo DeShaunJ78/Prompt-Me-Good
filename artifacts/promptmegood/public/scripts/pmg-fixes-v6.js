@@ -518,12 +518,37 @@
     var rp = document.getElementById('result-panel');
     if (!rp || !('MutationObserver' in window)) return;
 
+    /* Gate the reveal on a real generated prompt rather than any >30-char
+     * mutation. Without this, mutations from labels, status pills, or
+     * banner injections inside #result-panel would prematurely fire the
+     * reveal animation and the smooth scroll. We mirror pmg-bugfix.js's
+     * hasRealPrompt logic (case-insensitive). */
+    var PLACEHOLDER_PREFIXES = [
+      'your fixed prompt will appear here',
+      'your generated prompt will appear here',
+      'generating your prompt',
+      'generating demo prompt',
+      'please enter a goal',
+      'add a clear goal first',
+      'could not generate'
+    ];
+
+    function isRealPrompt() {
+      var rb = document.getElementById('resultBox') || rp;
+      var t = (rb.textContent || '').trim();
+      if (!t) return false;
+      var lo = t.toLowerCase();
+      for (var i = 0; i < PLACEHOLDER_PREFIXES.length; i++) {
+        if (lo.indexOf(PLACEHOLDER_PREFIXES[i]) === 0) return false;
+      }
+      return t.replace(/\s+/g, '').length >= 30;
+    }
+
     var revealed = false;
     var mo = new MutationObserver(function () {
       if (revealed) return;
       var visible = rp.offsetParent !== null;
-      var hasContent = (rp.textContent || '').replace(/\s+/g, '').length > 30;
-      if (visible && hasContent) {
+      if (visible && isRealPrompt()) {
         revealed = true;
         rp.classList.add('pmg-result-revealed');
         try { rp.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}

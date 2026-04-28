@@ -73,14 +73,23 @@
     if (!text) return false;
     var t = String(text).trim();
     if (!t) return false;
-    if (t === PLACEHOLDER) return false;
-    if (t.indexOf('Your fixed prompt will appear here') === 0) return false;
-    if (t.indexOf('Your generated prompt will appear here') === 0) return false;
-    if (t.indexOf('Generating your prompt') === 0) return false;
-    if (t.indexOf('Generating demo prompt') === 0) return false;
-    if (t.indexOf('Please enter a goal') === 0) return false;
-    if (t.indexOf('Add a clear goal first') === 0) return false;
-    if (t.indexOf('Could not generate') === 0) return false;
+    /* Case-insensitive comparison: a downstream title-case sweep can rewrite
+       "Your fixed prompt will appear here." to "Your Fixed Prompt Will Appear Here."
+       and any case-sensitive match would silently miss it, marking the empty
+       placeholder as a real generated prompt. */
+    var lo = t.toLowerCase();
+    var placeholders = [
+      'your fixed prompt will appear here',
+      'your generated prompt will appear here',
+      'generating your prompt',
+      'generating demo prompt',
+      'please enter a goal',
+      'add a clear goal first',
+      'could not generate'
+    ];
+    for (var i = 0; i < placeholders.length; i++) {
+      if (lo.indexOf(placeholders[i]) === 0) return false;
+    }
     /* require at least 30 non-whitespace chars to count as a real prompt */
     return t.replace(/\s+/g, '').length >= 30;
   }
