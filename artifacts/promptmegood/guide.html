@@ -367,9 +367,12 @@
             <h2>Jump To A Section</h2>
             <p>A short, scannable guide to every part of PromptMeGood.</p>
             <nav class="manual-toc" aria-label="Guide sections">
+              <a href="#manual-whats-new" class="is-highlight">🆕 What's new (April 2026)</a>
               <a href="#manual-flow">1. The 5-step flow</a>
               <a href="#manual-core-features" class="is-highlight">🚀 Core AI features</a>
+              <a href="#manual-mode-switch">✍️ Write or 🎨 Image mode</a>
               <a href="#manual-guide-me" class="is-highlight">🟢 Help Me Start</a>
+              <a href="#manual-strength">📊 Goal strength indicator</a>
               <a href="#manual-usecases" class="is-highlight">⚡ Use cases</a>
               <a href="#manual-need-ideas">🎲 Get ideas instantly</a>
               <a href="#manual-smart-systems">✨ Smart systems</a>
@@ -379,12 +382,34 @@
               <a href="#manual-use">5. Using your prompt</a>
               <a href="#manual-clearing">6. Clearing text</a>
               <a href="#manual-history">7. Managing prompt history</a>
+              <a href="#manual-search-toggle">🔍 Mobile search toggle</a>
               <a href="#manual-tips">8. Pro tips</a>
               <a href="#manual-mistakes">9. Common mistakes</a>
             </nav>
           </div>
 
           <div class="form-wrap">
+            <!-- WHAT'S NEW -->
+            <section class="manual-group" aria-labelledby="group-whats-new">
+              <div class="manual-group-head">
+                <span class="manual-group-icon" aria-hidden="true">🆕</span>
+                <h2 id="group-whats-new">What's New</h2>
+              </div>
+
+              <article class="manual-section manual-callout" id="manual-whats-new">
+                <h3>What's New (April 2026)</h3>
+                <p>Recent improvements to make PromptMeGood faster and easier to use:</p>
+                <ul>
+                  <li><strong>Cleaner builder.</strong> The goal field is now labeled <em>"What Do You Want AI To Help You With?"</em> and there's only one Help Me Start button and one ⚙ Expert Mode entry — no more duplicates.</li>
+                  <li><strong>Goal strength indicator.</strong> A small pill above the goal field shows <em>Too Short</em>, <em>Good</em>, or <em>Strong ✓</em> as you type — instant feedback on whether your prompt has enough detail.</li>
+                  <li><strong>Mode switch.</strong> Toggle between <strong>✍️ Write Something</strong> and <strong>🎨 Create An Image</strong> with a single tap at the top of the builder.</li>
+                  <li><strong>Photo categories accordion.</strong> In image mode, the photo categories collapse by default so you can see your work without scrolling.</li>
+                  <li><strong>Mobile search toggle.</strong> The search bar now collapses behind a 🔍 icon on mobile to reclaim screen space. Tap to open, tap ✕ or anywhere outside to close.</li>
+                  <li><strong>Sharper hero.</strong> "Finally, AI That Understands You" — same product, clearer promise.</li>
+                </ul>
+              </article>
+            </section>
+
             <!-- BEGINNER GUIDE -->
             <section class="manual-group" aria-labelledby="group-beginner">
               <div class="manual-group-head">
@@ -402,6 +427,16 @@
                   <li><strong>Refine / Undo.</strong> Tap <strong>More Detailed</strong>, <strong>More Bold & Direct</strong>, or <strong>Beginner Friendly</strong> to upgrade in place. Use <strong>Undo Last Change</strong> to step back. Set a <strong>Max Response Length</strong> or add <strong>Rules Or Limits</strong> in the builder to control length and avoid bad habits.</li>
                   <li><strong>Check / Copy / Use.</strong> Read your <strong>Prompt Strength</strong> score and tap <strong>Check Prompt Quality</strong> for quick suggestions, click <strong>Copy Prompt</strong>, then open it in ChatGPT, Claude, or Perplexity — we highlight the best fit for your goal.</li>
                 </ol>
+              </article>
+
+              <article class="manual-section manual-callout" id="manual-mode-switch">
+                <h3>Write Or Image Mode</h3>
+                <p>At the top of the builder you'll see two pills: <strong>✍️ Write Something</strong> and <strong>🎨 Create An Image</strong>. Tap to switch between them at any time.</p>
+                <ul>
+                  <li><strong>Write Something</strong> (default) — for any text-based prompt: emails, business plans, scripts, study guides, content ideas, etc.</li>
+                  <li><strong>Create An Image</strong> — switches the builder into image mode. The goal label becomes <em>Your Image</em>, the photo categories accordion appears, and the Generate button becomes <strong>Generate Image</strong> (powered by DALL·E 3).</li>
+                </ul>
+                <p><strong>Tip:</strong> Your text and settings are kept when you switch modes, so you can experiment freely.</p>
               </article>
 
               <article class="manual-section manual-callout" id="manual-guide-me">
@@ -486,12 +521,24 @@
                 <p><strong>Tip:</strong> If none of the ideas fit, tap the dice again for a new set.</p>
               </article>
 
+              <article class="manual-section manual-callout" id="manual-strength">
+                <h3>Goal Strength Indicator</h3>
+                <p>As you type into the goal field, a small pill appears just above it showing how strong your goal is. There are four levels:</p>
+                <ul>
+                  <li><strong>Too Short</strong> (gray) — under ~20 characters. Add who it's for, what outcome you want, and any constraints.</li>
+                  <li><strong>Getting There</strong> (amber) — around 20–60 characters. The AI has the basics; a little more context will help.</li>
+                  <li><strong>Good</strong> (blue) — around 60–120 characters. Solid prompt; you're ready to generate.</li>
+                  <li><strong>Strong ✓</strong> (green) — over 120 characters, or shorter prompts that already include strong action words like <em>"help me,"</em> <em>"explain,"</em> <em>"step by step,"</em> or a clear audience.</li>
+                </ul>
+                <p><strong>Tip:</strong> The indicator updates live and counts characters, not words, so even a short but well-phrased goal can reach Strong. It's a guide, not a gate — you can generate at any strength.</p>
+              </article>
+
               <article class="manual-section" id="manual-fields">
                 <h3>2. Form Fields</h3>
 
                 <div class="manual-feature">
-                  <h4>Your Goal (Start Here)</h4>
-                  <p>The seed of the whole prompt. One honest sentence is enough.</p>
+                  <h4>Your Goal — "What Do You Want AI To Help You With?"</h4>
+                  <p>The seed of the whole prompt. One honest sentence is enough. As you type, the strength indicator above the field shows whether you've added enough detail (see <a href="#manual-strength">Goal Strength Indicator</a>).</p>
                 </div>
 
                 <div class="manual-feature">
@@ -685,6 +732,17 @@
                   <h4>Export &amp; Import</h4>
                   <p><strong>Export Everything</strong> downloads a JSON backup. <strong>Import Backup</strong> restores it on any device. Use it before clearing your browser or switching devices.</p>
                 </div>
+              </article>
+
+              <article class="manual-section manual-callout" id="manual-search-toggle">
+                <h3>Mobile Search Toggle</h3>
+                <p>On phones and small screens, the global search bar in the top nav collapses behind a 🔍 icon to reclaim screen space.</p>
+                <ul>
+                  <li><strong>Tap 🔍</strong> in the nav to open the search field. The icon flips to ✕.</li>
+                  <li><strong>Tap ✕ or anywhere outside</strong> the search bar to close it again.</li>
+                  <li><strong>On desktop</strong>, the search bar is always visible — no toggle needed.</li>
+                </ul>
+                <p>Search looks across the manual, FAQ, and key in-app sections, so it's the fastest way to jump to what you need.</p>
               </article>
             </section>
 
