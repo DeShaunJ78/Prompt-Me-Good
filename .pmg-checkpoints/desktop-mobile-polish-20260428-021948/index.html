@@ -3244,8 +3244,8 @@
             <p class="workspace-header-sub">Create, refine, and run your prompts here.</p>
           </header>
           <div class="mode-switch" id="modeSwitch" role="group" aria-label="Choose what to create">
-            <button class="mode-switch-btn active" id="writeModeBtn" type="button" onclick="setMode('write')">✍️ Write Something</button>
-            <button class="mode-switch-btn" id="imageModeBtn" type="button" onclick="setMode('image')">🎨 Create An Image</button>
+            <button class="mode-switch-btn active" id="writeModeBtn" type="button" onclick="setMode('write')">✍️ Write something</button>
+            <button class="mode-switch-btn" id="imageModeBtn" type="button" onclick="setMode('image')">🎨 Create an image</button>
           </div>
           <p class="image-mode-hint">Describe the image you want — plain English. We’ll turn it into a professional DALL·E 3 prompt automatically.</p>
           <div class="panel-head panel-head-row">
@@ -3326,7 +3326,7 @@
                 <div class="upload-controls">
                   <input type="file" id="analyze-file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" class="upload-input" />
                   <label for="analyze-file" class="btn btn-secondary upload-btn" id="upload-btn-label">Choose File</label>
-                  <span class="upload-hint" id="upload-hint">Drop A File Here Or Click To Browse</span>
+                  <span class="upload-hint" id="upload-hint">No File Selected</span>
                 </div>
                 <div class="upload-preview file-container file-row" id="upload-preview" hidden>
                   <img id="upload-preview-img" class="upload-preview-img" alt="Selected image preview" hidden />
@@ -3580,19 +3580,19 @@
 
         <section class="panel" id="result-panel" aria-labelledby="result-title">
           <div class="panel-head">
-            <h2 id="result-title">Your Fixed Prompt</h2>
+            <h2 id="result-title">Your ready-to-use prompt</h2>
             <p>Run With AI with AI right here, or copy it to use anywhere.</p>
             <p class="demo-next-step" id="demo-next-step" role="status" aria-live="polite" hidden>This is a sample prompt. Copy it, refine it, or go back and enter your own goal.</p>
           </div>
           <div class="result-wrap">
             <div class="pill-row" aria-hidden="true">
-              <span class="pill">Role Assignment</span>
-              <span class="pill">Clear Constraints</span>
-              <span class="pill">Useful Output Format</span>
+              <span class="pill">Role assignment</span>
+              <span class="pill">Clear constraints</span>
+              <span class="pill">Useful output format</span>
             </div>
             <div id="pinned-note" class="pinned-note" aria-live="polite">
               <div class="pinned-note-head">
-                <span>📌 Pinned Note</span>
+                <span>📌 Pinned note</span>
                 <button type="button" class="link-btn" id="pinned-note-unpin">Unpin</button>
               </div>
               <div id="pinned-note-text"></div>
@@ -3609,7 +3609,7 @@
                 <div class="actions-row">
                   <button class="btn btn-ai" type="button" id="improve-with-ai-btn" aria-describedby="improve-with-ai-hint">
                     <span class="btn-ai-spark" aria-hidden="true">✨</span>
-                    <span class="btn-ai-label">Improve With AI</span>
+                    <span class="btn-ai-label">Improve with AI</span>
                   </button>
                   <button class="btn btn-secondary" type="button" data-remix="detailed">More Detailed</button>
                   <button class="btn btn-secondary" type="button" data-remix="bold-direct">More Bold &amp; Direct</button>
@@ -3637,9 +3637,9 @@
             <aside class="what-next pmg-post-gen" id="what-next" aria-label="What next">
               <h3 class="what-next-title">What Next?</h3>
               <ul class="what-next-list">
-                <li><strong>Run With AI</strong> &rarr; <span>See Results Instantly — no copy-paste needed</span></li>
-                <li><strong>Refine</strong> &rarr; <span>Make It Better</span></li>
-                <li><strong>Copy</strong> &rarr; <span>Use Anywhere</span></li>
+                <li><strong>Run With AI</strong> &rarr; <span>see your answer right here in the app — no copy-paste needed</span></li>
+                <li><strong>Refine</strong> &rarr; <span>tweak your prompt with the buttons above before you run it</span></li>
+                <li><strong>Copy</strong> &rarr; <span>or take it to any AI tool you already use</span></li>
               </ul>
             </aside>
             <div id="tour-final-actions" class="tour-final-actions pmg-post-gen">
@@ -3678,7 +3678,7 @@
               <button class="btn btn-primary run-btn" type="button" id="runBtn" onclick="runWithAI()">
                 <span aria-hidden="true">▶</span> Run With AI
               </button>
-              <p class="run-section-meta">Uses 1 AI execution &middot; Free During Early Access</p>
+              <p class="run-section-meta">Uses 1 AI execution &middot; Free during Early access</p>
             </div>
 
             <!-- AI RESPONSE — hidden until run completes -->
@@ -3698,12 +3698,12 @@
               <div class="run-section-divider"></div>
               <h3 class="run-section-title">Your Generated Image</h3>
               <p class="run-section-helper">Created by DALL·E 3 — right here in the app.</p>
-              <div class="image-result-wrap" id="imageResultWrap"><div class="image-placeholder">Your Image Will Appear Here</div></div>
+              <div class="image-result-wrap" id="imageResultWrap"><div class="image-placeholder">Your image will appear here</div></div>
               <div class="image-result-actions">
                 <a id="imageDownloadBtn" href="" download="promptmegood-image.png" class="btn btn-primary" style="display:none;text-decoration:none;">⬇ Download</a>
-                <button class="btn btn-secondary" type="button" id="imageAgainBtn" onclick="generateImage()">Generate Another Image</button>
+                <button class="btn btn-secondary" type="button" id="imageAgainBtn" onclick="generateImage()">Generate Another</button>
               </div>
-              <p class="run-section-meta">DALL·E 3 · Free During Early Access</p>
+              <p class="run-section-meta">DALL·E 3 · Free during Early access</p>
             </div>
 
             <div class="save-tip" id="save-tip" role="status" aria-live="polite">
@@ -6080,7 +6080,7 @@ Context:
           // Positive insights when strong
           const strongInsights = [];
           if (goal.length >= 60) strongInsights.push('Strong, specific goal.');
-          if (data.rules or limits && data.maxLength) strongInsights.push('Clear Constraints set.');
+          if (data.rules or limits && data.maxLength) strongInsights.push('Clear constraints set.');
           if (data.details && data.details.trim().length > 10) strongInsights.push('Good context provided.');
 
           // Pick 2-3 insights: prefer suggestions if score < 90, else show strengths
@@ -8965,7 +8965,7 @@ Context:
       init();
     })();
 
-    /* ===== AI Client (window.__pmgAI) + "Improve With AI" button ===== */
+    /* ===== AI Client (window.__pmgAI) + "Improve with AI" button ===== */
     (function () {
       const API_BASE = '/api';
       const LIMITS = { generate: 100, refine: 50, image: 10 };
@@ -9169,7 +9169,7 @@ Context:
         },
       };
 
-      // Wire the "Improve With AI" button.
+      // Wire the "Improve with AI" button.
       const btn = document.getElementById('improve-with-ai-btn');
       const resultBox = document.getElementById('resultBox');
       const statusEl = document.getElementById('improve-status');
@@ -9246,7 +9246,7 @@ Context:
         btn.disabled = true;
         btn.setAttribute('aria-busy', 'true');
         const labelEl = btn.querySelector('.btn-ai-label');
-        const originalLabel = labelEl ? labelEl.textContent : 'Improve With AI';
+        const originalLabel = labelEl ? labelEl.textContent : 'Improve with AI';
         if (labelEl) labelEl.textContent = 'Improving…';
         setStatus('Improving your prompt with AI…', false);
 
@@ -9269,7 +9269,7 @@ Context:
           btn.dataset.busy = '0';
           btn.disabled = false;
           btn.removeAttribute('aria-busy');
-          if (labelEl) labelEl.textContent = originalLabel || 'Improve With AI';
+          if (labelEl) labelEl.textContent = originalLabel || 'Improve with AI';
         }
       });
     })();
@@ -9543,7 +9543,7 @@ Context:
     var goal=document.getElementById('goal');
     if(goal)goal.placeholder=isImg?'A woman walking through rainy Tokyo at night, cinematic…':'I need to make money online fast using skills I already have…';
     var title=document.getElementById('builder-title');
-    if(title)title.textContent=isImg?'Create An Image':'Build your prompt';
+    if(title)title.textContent=isImg?'Create an image':'Build your prompt';
     if(!isImg){var sec=document.getElementById('imageResultSection');if(sec)sec.hidden=true;}
   };
   window.runImageGeneration=async function(){
@@ -9608,7 +9608,7 @@ Context:
     if (previewName) { previewName.textContent = ''; previewName.title = ''; }
     if (previewSize) previewSize.textContent = '';
     if (analyzeBtn) analyzeBtn.hidden = true;
-    if (hint) hint.textContent = 'Drop A File Here Or Click To Browse';
+    if (hint) hint.textContent = 'No File Selected';
     if (btnLabel) btnLabel.textContent = 'Choose File';
     setStatus('');
   }

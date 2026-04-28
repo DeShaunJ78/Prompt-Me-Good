@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    /* Apex -> www redirect. Runs before any other resource so we don't waste a request on the wrong host. */
+    (function () {
+      try {
+        if (location.hostname === 'promptmegood.com') {
+          location.replace('https://www.promptmegood.com' + location.pathname + location.search + location.hash);
+        }
+      } catch (e) { /* no-op */ }
+    })();
+  </script>
+  <link rel="canonical" href="https://www.promptmegood.com/pricing.html" />
+  <title>Pricing — PromptMeGood</title>
+  <meta name="description" content="PromptMeGood pricing — Free during our founding member period. PRO is coming soon. Join early access for launch updates." />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=3" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48.png?v=3" />
+  <link rel="icon" type="image/png" href="/assets/pmg-logo.png?v=3" />
+  <link rel="apple-touch-icon" href="/assets/pmg-logo.png?v=3" />
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet" />
+  <script>
+    /* Mirror of the index.html theme-accent bootstrap so users keep their accent across pages. */
+    (function () {
+      try {
+        var v = localStorage.getItem('promptmegood:themeAccent:v1');
+        if (v && /^(green|blue|purple|gold|slate)$/.test(v) && v !== 'green') {
+          document.documentElement.setAttribute('data-accent', v);
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    :root, [data-theme="light"] {
+      --color-bg: #F7F9F8;
+      --color-surface: #FFFFFF;
+      --color-text: #0F1A1A;
+      --color-text-muted: #5A6F6F;
+      --color-primary: #0F766E;
+      --color-primary-strong: #115E59;
+      --color-border: #E1E9E6;
+      --color-accent: #FACC15;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 2px rgba(15, 26, 26, 0.04);
+      --shadow-md: 0 6px 18px rgba(15, 26, 26, 0.08);
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --space-7: 48px;
+      --space-8: 64px;
+      --text-xs: 12px;
+      --text-sm: 14px;
+      --text-md: 16px;
+      --text-lg: 18px;
+      --text-xl: 22px;
+      --text-2xl: 28px;
+      --text-3xl: 36px;
+    }
+    [data-theme="dark"] {
+      --color-bg: #0B1414;
+      --color-surface: #121E1E;
+      --color-text: #F0F4F4;
+      --color-text-muted: #A1B0B0;
+      --color-primary: #2DD4BF;
+      --color-primary-strong: #14B8A6;
+      --color-border: #1F2D2D;
+      --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.45);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: 'Satoshi', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: var(--text-md);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--color-primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 1080px; margin: 0 auto; padding: 0 var(--space-5); }
+    .topbar { background: var(--color-surface); border-bottom: 1px solid var(--color-border); }
+    .topbar-inner { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) 0; gap: var(--space-4); }
+    .brand { display: inline-flex; align-items: center; gap: var(--space-2); font-weight: 800; color: var(--color-text); font-size: var(--text-lg); }
+    .brand:hover { text-decoration: none; }
+    .logo { width: 32px; height: 32px; border-radius: 10px; display: block; object-fit: cover; }
+    .top-actions { display: inline-flex; gap: var(--space-3); align-items: center; }
+    .ghost-link { color: var(--color-text-muted); font-weight: 600; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); }
+    .ghost-link:hover { background: color-mix(in srgb, var(--color-primary) 8%, transparent); color: var(--color-text); text-decoration: none; }
+    .ghost-link.is-current { color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 10%, transparent); }
+    .theme-toggle { display: inline-flex; align-items: center; gap: 6px; background: transparent; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 6px 10px; color: var(--color-text-muted); cursor: pointer; font: inherit; font-size: var(--text-xs); }
+    .theme-toggle:hover { color: var(--color-text); border-color: var(--color-primary); }
+    .pricing-hero { padding: var(--space-7) 0 var(--space-5); text-align: center; }
+    .eyebrow { display: inline-block; font-size: var(--text-xs); font-weight: 700; color: var(--color-primary); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: var(--space-3); }
+    h1 { font-size: var(--text-3xl); margin: 0 0 var(--space-3); line-height: 1.2; }
+    .pricing-hero p { max-width: 640px; margin: 0 auto; color: var(--color-text-muted); font-size: var(--text-md); }
+    .pricing-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); padding: var(--space-5) 0 var(--space-7); }
+    @media (max-width: 760px) { .pricing-grid { grid-template-columns: 1fr; } }
+    .pricing-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-6); display: flex; flex-direction: column; box-shadow: var(--shadow-sm); position: relative; }
+    .pricing-card.is-featured { border-color: var(--color-primary); box-shadow: var(--shadow-md); }
+    .pricing-badge { position: absolute; top: -12px; right: var(--space-5); background: var(--color-accent); color: #2A1F00; font-size: var(--text-xs); font-weight: 800; padding: 4px 10px; border-radius: 999px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .tier-name { font-size: var(--text-xl); font-weight: 800; margin: 0 0 var(--space-2); }
+    .tier-price { display: flex; align-items: baseline; gap: 6px; margin: 0 0 var(--space-2); }
+    .tier-price-amount { font-size: var(--text-3xl); font-weight: 800; color: var(--color-text); }
+    .tier-price-period { font-size: var(--text-md); color: var(--color-text-muted); }
+    .tier-status { font-size: var(--text-xs); font-weight: 700; color: var(--color-primary); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: var(--space-4); }
+    .tier-summary { color: var(--color-text-muted); margin: 0 0 var(--space-5); font-size: var(--text-sm); }
+    .tier-features { list-style: none; padding: 0; margin: 0 0 var(--space-5); display: flex; flex-direction: column; gap: var(--space-2); }
+    .tier-features li { position: relative; padding-left: 26px; font-size: var(--text-sm); color: var(--color-text); line-height: 1.5; }
+    .tier-features li::before { content: '✓'; position: absolute; left: 0; top: 0; color: var(--color-primary); font-weight: 800; }
+    .tier-features.is-soon li::before { content: '○'; color: var(--color-text-muted); }
+    .tier-cta-row { margin-top: auto; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 20px; border-radius: var(--radius-md); font: inherit; font-weight: 700; font-size: var(--text-md); text-decoration: none; border: 1px solid transparent; cursor: pointer; transition: background 120ms ease, border-color 120ms ease, transform 120ms ease; width: 100%; }
+    .btn:hover { text-decoration: none; transform: translateY(-1px); }
+    .btn-primary { background: var(--color-primary); color: #FFFFFF; }
+    .btn-primary:hover { background: var(--color-primary-strong); }
+    .btn-secondary { background: transparent; color: var(--color-primary); border-color: var(--color-primary); }
+    .btn-secondary:hover { background: color-mix(in srgb, var(--color-primary) 8%, transparent); }
+    .pricing-footer-note { text-align: center; font-size: var(--text-sm); color: var(--color-text-muted); padding: 0 0 var(--space-6); }
+    .early-access { background: var(--color-surface); border: 1px solid color-mix(in srgb, var(--color-primary) 22%, var(--color-border)); border-radius: var(--radius-lg); padding: var(--space-6); text-align: center; max-width: 720px; margin: var(--space-5) auto var(--space-7); }
+    .early-access h2 { margin: 0 0 var(--space-2); font-size: var(--text-xl); }
+    .early-access p { color: var(--color-text-muted); margin: 0 0 var(--space-4); font-size: var(--text-sm); }
+    .early-access-form { display: flex; gap: var(--space-2); justify-content: center; flex-wrap: wrap; }
+    .early-access-form input[type="email"] { flex: 1 1 260px; max-width: 360px; padding: 12px 14px; font: inherit; font-size: var(--text-md); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); color: var(--color-text); }
+    .early-access-form input[type="email"]:focus { outline: 2px solid var(--color-primary); outline-offset: 1px; border-color: var(--color-primary); }
+    .early-access-form .btn { width: auto; }
+    .early-access-status { margin: var(--space-3) 0 0; font-size: var(--text-sm); min-height: 1.4em; }
+    .early-access-status.is-success { color: var(--color-primary); }
+    .early-access-status.is-error { color: #B91C1C; }
+    .visually-hidden { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    .site-footer { background: var(--color-surface); border-top: 1px solid var(--color-border); padding: var(--space-5) 0; }
+    .site-footer-inner { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); text-align: center; }
+    .site-footer-brand { font-size: var(--text-sm); color: var(--color-text-muted); }
+    .site-footer-tagline { margin: 0; font-style: italic; color: var(--color-text-muted); font-size: var(--text-sm); }
+    .site-footer-early-access { margin: 0; font-size: var(--text-xs); color: var(--color-text-muted); opacity: 0.85; }
+    .site-footer-link { color: var(--color-text-muted); }
+    .site-footer-divider { color: var(--color-border); margin: 0 var(--space-2); }
+    @media (max-width: 540px) {
+      .topbar-inner { flex-wrap: wrap; gap: var(--space-2); padding: var(--space-3) 0; }
+      .top-actions { flex-wrap: wrap; gap: var(--space-2); width: 100%; justify-content: flex-start; }
+      h1 { font-size: var(--text-2xl); }
+      .pricing-hero { padding: var(--space-6) 0 var(--space-4); }
+      .pricing-card { padding: var(--space-5); }
+    }
+    /* Interaction feedback polish (matches index.html). Because we suppress the default mobile
+       tap-highlight, we provide replacement feedback on EVERY tappable so links don't feel dead. */
+    html { -webkit-tap-highlight-color: transparent; }
+    button, a, [role="button"], summary, label[for], input[type="checkbox"], input[type="radio"] { touch-action: manipulation; }
+    .btn:active { transform: scale(0.98); }
+    a:active, button:not(.btn):active { opacity: 0.7; transition: opacity 100ms ease; }
+
+    /* Theme accent overrides — placed at end of stylesheet so they win over the base
+       :root / [data-theme="light"] declarations on equal-specificity ties.
+       pricing.html uses --color-primary-strong (its hover token) instead of --color-primary-hover. */
+    [data-accent="blue"] { --color-primary: #1e40af; --color-primary-strong: #1e3a8a; }
+    [data-theme="dark"][data-accent="blue"] { --color-primary: #93c5fd; --color-primary-strong: #bfdbfe; }
+    [data-accent="purple"] { --color-primary: #6d28d9; --color-primary-strong: #5b21b6; }
+    [data-theme="dark"][data-accent="purple"] { --color-primary: #c4b5fd; --color-primary-strong: #ddd6fe; }
+    [data-accent="gold"] { --color-primary: #b45309; --color-primary-strong: #92400e; }
+    [data-theme="dark"][data-accent="gold"] { --color-primary: #fcd34d; --color-primary-strong: #fde68a; }
+    [data-accent="slate"] { --color-primary: #475569; --color-primary-strong: #334155; }
+    [data-theme="dark"][data-accent="slate"] { --color-primary: #cbd5e1; --color-primary-strong: #e2e8f0; }
+  </style>
+
+<style id="pmg-premium-polish-css">
+  :root { --content-default: 1100px; }
+  html { scroll-padding-top: 24px; }
+  #builder, #result-panel, #image-result, #ai-response, #optimized-prompt, #generated-image, .result-card, .panel, section { scroll-margin-top: 24px; }
+  .container { width: min(calc(100% - 2rem), 1100px) !important; }
+  .builder-grid, .builder-layout, .builder-shell { max-width: 1100px; margin-inline: auto; }
+  @media (min-width: 900px) {
+    .builder-grid, .builder-layout, .builder-shell, .builder-main-grid { display: grid; grid-template-columns: minmax(0, 45%) minmax(0, 55%); gap: 32px; align-items: start; }
+    .result-column, .results-column, .builder-results, #result-panel { position: sticky; top: 96px; align-self: start; }
+    .what-next-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px !important; }
+  }
+  .panel, .card, .result-card, .settings-panel, .upload-field, .what-next { padding: max(var(--space-5, 20px), 20px) !important; border-radius: 18px; }
+  #prompt-form { gap: 16px !important; }
+  #prompt-form .field-primary { order: 1; }
+  #prompt-form .actions-row { order: 2; margin-top: 0 !important; }
+  #guided-cta-row { order: 3; }
+  #upload-field { order: 4; border: 1.5px dashed color-mix(in srgb, var(--color-primary) 34%, transparent); background: color-mix(in srgb, var(--color-primary) 5%, transparent); overflow: hidden; }
+  #post-uc-guidance { order: 5; }
+  #settingsPanel { order: 6; }
+  #generateBtn { width: 100%; min-height: 54px !important; font-weight: 800 !important; font-size: 1.05rem !important; box-shadow: 0 12px 28px color-mix(in srgb, var(--color-primary) 28%, transparent) !important; }
+  #image-generate-btn { width: 100%; min-height: 54px; border-radius: var(--radius-full); font-weight: 800; background: var(--color-primary); color: var(--color-text-inverse); box-shadow: 0 12px 28px color-mix(in srgb, var(--color-primary) 28%, transparent); }
+  .upload-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+  #upload-hint, .upload-preview-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .upload-preview { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 12px; align-items: center; max-width: 100%; }
+  .upload-preview-img[hidden], .upload-preview[hidden] { display: none !important; }
+  .upload-preview-img { width: 56px; height: 56px; object-fit: cover; border-radius: 12px; }
+  .what-next { border: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent) !important; border-left: 0 !important; background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 10%, transparent), color-mix(in srgb, var(--color-primary) 4%, transparent)) !important; }
+  .what-next-title { font-size: 1rem !important; margin-bottom: 12px !important; }
+  .what-next-list li { padding: 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); background: var(--color-surface); }
+  #weekly-goal-pin, #replay-tour-btn-builder, .guided-cta-recommended-badge:empty { display: none !important; }
+  body.pmg-has-generated #weekly-goal-pin { display: block !important; }
+  body.image-mode label[for="goal"] { font-size: 0; }
+  body.image-mode label[for="goal"]::after { content: "Your Image"; font-size: var(--text-base); }
+  @media (max-width: 760px) {
+    .container { width: min(calc(100% - 1rem), 1100px) !important; }
+    .panel, .card, .result-card, .settings-panel, .upload-field, .what-next { padding: max(var(--space-4, 16px), 16px) !important; }
+    button, .btn, input, select, textarea, [role="button"] { min-height: 44px; }
+    .actions-row { display: grid !important; grid-template-columns: 1fr !important; gap: 10px !important; }
+    .top-actions .search, .site-search, #site-search, .search-bar { display: none !important; }
+    .guided-modal, .guided-wizard, .tour-card { touch-action: pan-y; }
+  }
+</style>
+
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="./index.html" aria-label="PromptMeGood home">
+        <img class="logo" src="/assets/pmg-logo.png?v=3" alt="PromptMeGood logo" width="32" height="32" decoding="async" />
+        <span>PromptMeGood</span>
+      </a>
+      <div class="top-actions">
+        <a class="ghost-link" href="./index.html#builder">Start Here</a>
+        <a class="ghost-link" href="./guide.html">Guide</a>
+        <a class="ghost-link is-current" href="./pricing.html" aria-current="page">Pricing</a>
+        <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Switch theme">
+          <span id="theme-toggle-label">Dark Mode</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="pricing-hero">
+      <div class="container">
+        <span class="eyebrow">Pricing</span>
+        <h1>Simple, Honest Pricing</h1>
+        <p>The PromptMeGood builder is free during our founding member period. PRO is on the way — join early access and we&rsquo;ll let you know the moment it&rsquo;s live.</p>
+      </div>
+    </section>
+
+    <section class="container">
+      <div class="pricing-grid">
+        <article class="pricing-card" aria-labelledby="tier-free-name">
+          <h2 class="tier-name" id="tier-free-name">Free</h2>
+          <div class="tier-price">
+            <span class="tier-price-amount">$0</span>
+            <span class="tier-price-period">/ founding member period</span>
+          </div>
+          <p class="tier-status" style="color: var(--color-text-muted);">Available now</p>
+          <p class="tier-summary">Free during our founding member period. Everything you need to turn vague ideas into structured prompts that actually get results.</p>
+          <ul class="tier-features">
+            <li>Unlimited Local Prompt Building (Fix My Prompt)</li>
+            <li>Help Me Start Step-By-Step Builder</li>
+            <li>Smart Suggestions For Tone, Format, And Length</li>
+            <li>Limited AI-Powered Improvements</li>
+            <li>Limited Run With AI Executions</li>
+            <li>Prompt Strength Score &amp; Quality Check</li>
+            <li>Refine, Undo, And Fine-Tune Controls</li>
+            <li>Local Prompt Vault (Saved On This Device)</li>
+            <li>One-Click Export To ChatGPT, Claude, Perplexity</li>
+            <li>Shareable Prompt Links</li>
+            <li>Light &amp; Dark Mode</li>
+          </ul>
+          <div class="tier-cta-row">
+            <a class="btn btn-primary" href="./index.html#builder">Start Building Free</a>
+          </div>
+        </article>
+
+        <article class="pricing-card is-featured" aria-labelledby="tier-pro-name">
+          <span class="pricing-badge">Coming Soon</span>
+          <h2 class="tier-name" id="tier-pro-name">PRO</h2>
+          <div class="tier-price">
+            <span class="tier-price-amount">$9</span>
+            <span class="tier-price-period">/ month</span>
+          </div>
+          <p class="tier-status">Coming Soon</p>
+          <p class="tier-summary">Power tools for people who run on prompts every day. Unlimited Run With AI, cloud sync, and pro-grade workflows.</p>
+          <ul class="tier-features is-soon">
+            <li>Everything In Free</li>
+            <li>Unlimited Run With AI</li>
+            <li>Cloud Prompt Vault (Synced Across Devices)</li>
+            <li>Money Mode Pro Workflows</li>
+            <li>Image Generation</li>
+            <li>File And Image Analysis</li>
+            <li>Brand Voice Profiles</li>
+            <li>Prompt Chains (Multi-Step)</li>
+            <li>Export And Share Tools (Bulk + Team Folders)</li>
+            <li>Priority Support</li>
+            <li>Early Access To New Features</li>
+          </ul>
+          <div class="tier-cta-row">
+            <a class="btn btn-secondary" href="#early-access">Join Early Access</a>
+          </div>
+        </article>
+      </div>
+
+      <p class="pricing-footer-note">No credit card required for Free. PRO billing starts only after launch — early-access members will be notified before any charge.</p>
+
+      <div class="early-access" id="early-access">
+        <h2>Join PRO Early Access</h2>
+        <p>Drop your email and we&rsquo;ll send a single message when PRO opens up — plus a small thank-you for being early.</p>
+        <form class="early-access-form" id="early-access-form" novalidate>
+          <label class="visually-hidden" for="early-access-email">Email address</label>
+          <input id="early-access-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required />
+          <button type="submit" class="btn btn-primary">Notify Me</button>
+        </form>
+        <p class="early-access-status" id="early-access-status" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container site-footer-inner">
+      <div class="site-footer-brand">&copy; 2026 PromptMeGood</div>
+      <p class="site-footer-tagline">A structured prompt builder that tells AI exactly what to do — and how to say it.</p>
+      <p class="site-footer-early-access">PromptMeGood is free during our founding member period. Full pricing launches soon.</p>
+      <div>
+        <a class="site-footer-link" href="./index.html">Home</a>
+        <span class="site-footer-divider" aria-hidden="true">|</span>
+        <a class="site-footer-link" href="./guide.html">Help</a>
+        <span class="site-footer-divider" aria-hidden="true">|</span>
+        <a class="site-footer-link" href="./index.html#privacy">Privacy</a>
+        <span class="site-footer-divider" aria-hidden="true">|</span>
+        <a class="site-footer-link" href="./index.html#terms">Terms</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      const THEME_KEY = 'promptmegood:theme';
+      const root = document.documentElement;
+      const toggle = document.getElementById('theme-toggle');
+      const label = document.getElementById('theme-toggle-label');
+      function applyTheme(t) {
+        root.setAttribute('data-theme', t);
+        if (label) label.textContent = t === 'dark' ? 'Light Mode' : 'Dark Mode';
+      }
+      let saved = 'light';
+      try { saved = localStorage.getItem(THEME_KEY) || 'light'; } catch (e) {}
+      applyTheme(saved === 'dark' ? 'dark' : 'light');
+      if (toggle) {
+        toggle.addEventListener('click', function () {
+          const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+          applyTheme(next);
+          try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+        });
+      }
+    })();
+
+    (function () {
+      const form = document.getElementById('early-access-form');
+      const status = document.getElementById('early-access-status');
+      const STORAGE_KEY = 'promptmegood:emailCapture:v1';
+      const STORAGE_CAP = 200;
+      // FormSubmit.co — emails submissions to support@promptmegood.com.
+      // The /ajax/ variant returns JSON instead of redirecting.
+      const SUBMIT_ENDPOINT = 'https://formsubmit.co/ajax/support@promptmegood.com';
+      if (!form) return;
+      const submitBtn = form.querySelector('button[type="submit"], button:not([type])');
+      const originalBtnText = submitBtn ? submitBtn.textContent : '';
+      function setStatus(msg, kind) {
+        if (!status) return;
+        status.textContent = msg || '';
+        status.classList.remove('is-success', 'is-error');
+        if (kind) status.classList.add('is-' + kind);
+      }
+      function setBusy(busy) {
+        if (!submitBtn) return;
+        submitBtn.disabled = busy;
+        submitBtn.setAttribute('aria-busy', busy ? 'true' : 'false');
+        submitBtn.textContent = busy ? 'Sending…' : originalBtnText;
+      }
+      function saveLocalBackup(value) {
+        try {
+          let list = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+          if (!Array.isArray(list)) list = [];
+          list = list
+            .filter(function (e) { return typeof e === 'string'; })
+            .map(function (e) { return e.toLowerCase(); });
+          list = Array.from(new Set(list));
+          if (!list.includes(value)) list.push(value);
+          if (list.length > STORAGE_CAP) list = list.slice(-STORAGE_CAP);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+        } catch (e) {}
+      }
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const input = document.getElementById('early-access-email');
+        const raw = (input && input.value || '').trim();
+        const value = raw.toLowerCase();
+        const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+        if (!ok) {
+          setStatus('Please enter a valid email address.', 'error');
+          return;
+        }
+        setStatus('', null);
+        setBusy(true);
+        const payload = {
+          email: value,
+          source: 'PromptMeGood PRO early access form',
+          timestamp: new Date().toISOString(),
+          _subject: 'PromptMeGood — new early access signup',
+          _template: 'table',
+          // Honeypot to keep bots out (FormSubmit ignores submissions where _honey is filled).
+          _honey: ''
+        };
+        fetch(SUBMIT_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        })
+          .then(function (res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json().catch(function () { return {}; });
+          })
+          .then(function (data) {
+            // FormSubmit returns { success: "true" } on accepted submissions.
+            const okFlag = data && (data.success === true || data.success === 'true');
+            if (!okFlag) throw new Error('Submission rejected');
+            saveLocalBackup(value);
+            if (input) input.value = '';
+            setStatus("You\u2019re in. We\u2019ll notify you when PRO opens.", 'success');
+          })
+          .catch(function () {
+            setStatus('Something went wrong. Please try again.', 'error');
+          })
+          .then(function () {
+            setBusy(false);
+          });
+      });
+    })();
+  </script>
+</body>
+</html>
