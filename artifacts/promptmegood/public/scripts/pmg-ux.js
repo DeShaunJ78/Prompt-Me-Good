@@ -3870,15 +3870,62 @@
   if (window.__pmgT16cInit) return;
   window.__pmgT16cInit = true;
 
-  function moveDemoStack() {
+  var PAIR_ID = 'pmg-helpstart-pair-row';
+  var STYLE_ID = 'pmg-t16c-style';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* The pair row is its own 2-column flex container. It always renders
+         demo-stack and Help Me Start side-by-side, even when the parent
+         .actions-row collapses to a 1-column grid at <=760px viewport
+         (see index.html line ~2962). */
+      '#' + PAIR_ID + ' {',
+      '  display: flex;',
+      '  flex-wrap: nowrap;',
+      '  align-items: stretch;',
+      '  gap: 10px;',
+      '  width: 100%;',
+      '  flex-basis: 100%;',
+      '  margin: 0;',
+      '  padding: 0;',
+      '}',
+      '#' + PAIR_ID + ' > .demo-stack {',
+      '  flex: 1 1 0;',
+      '  min-width: 0;',
+      '  margin: 0;',
+      '}',
+      '#' + PAIR_ID + ' > #guided-mode-btn {',
+      '  flex: 1 1 0;',
+      '  min-width: 0;',
+      '  margin: 0;',
+      '}',
+      /* Override the global mobile rule (.actions-row .btn { width:100% })
+         that would otherwise force each button to fill the row and
+         break the parallel layout at <=640px. flex:1 already gives them
+         equal halves. */
+      '#' + PAIR_ID + ' > .demo-stack > .btn,',
+      '#' + PAIR_ID + ' > #guided-mode-btn {',
+      '  width: 100% !important;',
+      '  box-sizing: border-box;',
+      '}',
+      '#' + PAIR_ID + '.pmg-t16c-hidden { display: none !important; }'
+    ].join('\n');
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  function arrangePair() {
     var demo = document.querySelector('.demo-stack');
     var help = document.getElementById('guided-mode-btn');
     if (!demo || !help || !help.parentNode) return false;
-    /* Only move after T15 has placed help in the same parent as generate. */
+    /* Only run after T15 has placed help in the same parent as generate. */
     var generate = document.getElementById('generateBtn');
     if (!generate || generate.parentNode !== help.parentNode) return false;
 
-    var didWork = false;
+    injectStyles();
 
     /* (a) Pin the "No Signup. Free." sublabel directly after Fix My Prompt
        so it stays visually under the green button regardless of what other
@@ -3886,33 +3933,55 @@
     var sublabel = document.getElementById('pmg-generate-sublabel');
     if (sublabel && generate.nextElementSibling !== sublabel) {
       generate.parentNode.insertBefore(sublabel, generate.nextSibling);
-      didWork = true;
     }
 
-    /* (b) Move demo-stack to be the sibling immediately before help, so
-       Use Demo Values renders parallel to Help Me Start. */
-    if (demo.nextElementSibling !== help) {
-      help.parentNode.insertBefore(demo, help);
-      didWork = true;
+    /* (b) Build / reuse the pair wrapper. The wrapper itself takes one
+       slot in the parent (one flex item OR one grid cell), but inside
+       it forces demo|help to render parallel via inline flex. */
+    var wrap = document.getElementById(PAIR_ID);
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.id = PAIR_ID;
+      help.parentNode.insertBefore(wrap, help);
+    } else if (wrap.parentNode !== help.parentNode) {
+      help.parentNode.insertBefore(wrap, help);
     }
-    return didWork || (demo.nextElementSibling === help);
+
+    /* (c) Move demo and help INTO the wrapper, demo first then help. */
+    if (demo.parentNode !== wrap || wrap.firstElementChild !== demo) {
+      wrap.insertBefore(demo, wrap.firstChild);
+    }
+    if (help.parentNode !== wrap || demo.nextElementSibling !== help) {
+      wrap.insertBefore(help, demo.nextSibling);
+    }
+
+    /* (d) Re-anchor the T16 pill row so it sits ABOVE the pair wrapper.
+       T16 inserts the pill row before #guided-mode-btn, which now lives
+       inside the wrapper — that would put the pill INSIDE the pair.
+       Lift it back out, just before the wrapper. */
+    var pillRow = document.getElementById('pmg-help-me-start-recommend-row');
+    if (pillRow && (pillRow.parentNode !== wrap.parentNode ||
+                    pillRow.nextElementSibling !== wrap)) {
+      wrap.parentNode.insertBefore(pillRow, wrap);
+    }
+
+    return true;
   }
 
   function init() {
-    if (moveDemoStack()) return;
+    /* Run once now, then keep polling + observing for late-loaded DOM
+       (T15 may relocate help button asynchronously after page render).
+       Idempotent: arrangePair() is a no-op once the structure is set. */
+    arrangePair();
     var attempts = 0;
     var iv = setInterval(function () {
       attempts++;
-      if (moveDemoStack() || attempts > 30) clearInterval(iv);
+      arrangePair();
+      if (attempts > 40) clearInterval(iv);
     }, 250);
-    var mo = new MutationObserver(function () {
-      if (moveDemoStack()) {
-        try { mo.disconnect(); } catch (e) {}
-        clearInterval(iv);
-      }
-    });
+    var mo = new MutationObserver(function () { arrangePair(); });
     try { mo.observe(document.body, { childList: true, subtree: true }); } catch (e) {}
-    setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 12000);
+    setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 15000);
   }
 
   if (document.readyState === 'loading') {
