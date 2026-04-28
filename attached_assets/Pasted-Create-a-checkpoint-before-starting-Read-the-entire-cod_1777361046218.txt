@@ -1,0 +1,960 @@
+Create a checkpoint before starting. Read the 
+entire codebase before touching anything. Write 
+all fixes as separate .js files. Do not use 
+heredoc syntax. Test after each section. Deploy 
+when complete. Report pass/fail for every item.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+THE NORTH STAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PromptMeGood is a guided AI translator.
+Not a website. Not a feature list. A translator.
+
+The user should never think "where do I go next?"
+They should only feel:
+"I type. It improves. I run or copy. Done."
+
+CORE STANDARD — enforced on every element,
+every section, every page, every state:
+
+Every visible element must either help the user
+START, complete the CURRENT STEP, or choose
+the NEXT STEP.
+
+Everything else is hidden, collapsed, moved to
+navigation, or revealed only after the first
+successful generation.
+
+This is not about removing features.
+Every feature stays. But features are earned
+by completing the journey — not dumped on
+arrival.
+
+The experience must feel exciting and alive.
+Every transition, every state change, every
+moment between action and result gets a
+purposeful micro-animation that tells the user
+"something just happened for you."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ABSOLUTE CONSTRAINTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- Do NOT remove any backend features or API calls
+- Do NOT rename JS variables, function names,
+  CSS class names, or HTML element IDs
+- Do NOT use CSS order or flex reorder on sections
+  — this breaks anchor navigation
+- Do NOT break any anchor links
+- Do NOT hardcode colors — CSS variables only
+- No white buttons anywhere on the site
+- No orphaned explanation boxes that submit nothing
+- No tip banners with Hide buttons
+- No nudge toasts for first-time visitors
+- No fine print links without context
+- Every text field looks clearly interactive
+- Every instruction sits adjacent to its component
+- Title Case on every button, heading, subheading,
+  nav item, label, badge, pill, CTA, sub-label,
+  dropdown option, placeholder in labeled fields,
+  modal title, card title, wizard step, tab label,
+  confirmation message — anything attached to a
+  control. Body paragraphs stay sentence case.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 1 — HERO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The hero has one job: communicate the value
+in 3 seconds and pull the user to the builder.
+
+Keep all existing class names and IDs.
+Change visible text content only.
+
+H1 class="hero-heading":
+AI That <span class="highlight">Finally Gets
+</span> What You Mean
+
+SUBTEXT class="hero-subtext":
+You know what you want. AI just doesn't
+understand how you said it. PromptMeGood
+<strong>translates your idea into a prompt
+that works</strong> — instantly.
+
+PRIMARY CTA id="hero-build-cta" href="#builder":
+cta-title: "Fix My Prompt — Free"
+cta-sub: "No Signup. Works In Seconds."
+
+SECONDARY CTA id="hero-usecases-cta":
+Remove btn-secondary and btn-stacked classes.
+Add class "hero-text-link"
+Text: "Or see real examples →"
+
+Hide hero card on all screens:
+.hero-card { display: none !important; }
+
+Compress hero on desktop so builder is visible:
+@media (min-width: 920px) {
+  .hero {
+    padding-top: clamp(1.5rem, 3vw, 2.5rem)
+      !important;
+    padding-bottom: clamp(0.75rem, 1.5vw,
+      1.25rem) !important;
+    min-height: unset !important;
+  }
+  .hero-heading {
+    font-size: clamp(2rem, 3.2vw, 3rem)
+      !important;
+    margin-bottom: var(--space-2) !important;
+  }
+  .hero-subtext-box {
+    margin-bottom: var(--space-2) !important;
+  }
+  .hero-actions {
+    margin-bottom: var(--space-2) !important;
+  }
+}
+
+Add social proof bar after hero-actions div:
+
+<div class="hero-proof-bar">
+  <span class="hero-proof-item">
+    ⚡ Works In Seconds
+  </span>
+  <span class="hero-proof-sep">·</span>
+  <span class="hero-proof-item">
+    🔒 No Signup Needed
+  </span>
+  <span class="hero-proof-sep">·</span>
+  <span class="hero-proof-item">
+    ✓ Free During Early Access
+  </span>
+  <span class="hero-proof-sep">·</span>
+  <span class="hero-proof-item">
+    🌍 Used In 10+ Countries
+  </span>
+</div>
+
+Add CSS:
+.hero-text-link {
+  display: block;
+  text-align: center;
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 180ms ease;
+}
+.hero-text-link:hover {
+  color: var(--color-primary);
+}
+.hero-proof-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: color-mix(in srgb,
+    var(--color-primary) 6%,
+    var(--color-surface));
+  border-radius: var(--radius-full);
+  border: 1px solid color-mix(in srgb,
+    var(--color-primary) 15%,
+    var(--color-border));
+}
+.hero-proof-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+.hero-proof-sep {
+  color: var(--color-border);
+  font-size: var(--text-sm);
+}
+@media (max-width: 540px) {
+  .hero-proof-sep { display: none; }
+  .hero-proof-bar {
+    border-radius: var(--radius-lg);
+  }
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 2 — BUILDER ABOVE THE FOLD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Do NOT reorder DOM. Do NOT use CSS order.
+Do NOT break anchors.
+
+Add class "pmg-marketing" to:
+section#use-cases
+section#why-prompts-fail
+section#how-it-works
+section#early-feedback
+section#see-the-difference
+
+CSS:
+@media (min-width: 920px) {
+  .pmg-marketing {
+    display: none !important;
+  }
+  .pmg-marketing.pmg-shown {
+    display: block !important;
+  }
+}
+
+JavaScript — add before </body>:
+Use IntersectionObserver on section#builder.
+When builder is no longer intersecting add
+"pmg-shown" to all .pmg-marketing elements.
+
+When any nav link targeting a .pmg-marketing
+section is clicked add "pmg-shown" to ALL
+.pmg-marketing elements immediately before
+the scroll so the destination is visible.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 3 — MODE SWITCH PILLS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Both pills must feel pressable. Active state
+must be unmistakable. Clarity data shows users
+were tapping them expecting a response.
+
+INACTIVE:
+background: color-mix(in srgb,
+  var(--color-primary) 6%,
+  var(--color-surface-2))
+color: var(--color-text-muted)
+border: 1.5px solid color-mix(in srgb,
+  var(--color-primary) 20%, var(--color-border))
+border-radius: var(--radius-full)
+font-weight: 600
+min-height: 48px
+padding: 10px 20px
+cursor: pointer
+transition: all 180ms ease
+
+ACTIVE:
+background: var(--color-primary)
+color: #ffffff
+border-color: var(--color-primary)
+box-shadow: 0 4px 14px color-mix(in srgb,
+  var(--color-primary) 35%, transparent)
+font-weight: 700
+
+HOVER on inactive:
+background: color-mix(in srgb,
+  var(--color-primary) 14%,
+  var(--color-surface-2))
+border-color: color-mix(in srgb,
+  var(--color-primary) 40%, var(--color-border))
+color: var(--color-primary)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 4 — WRITE SOMETHING MODE LAYOUT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Top to bottom — one continuous guided path:
+
+REMOVE from view entirely (display:none):
+- "Ready? Generate Your Prompt, Then Review
+  And Copy It." box — submits nothing,
+  explains nothing actionable, wastes space
+- All .tip-block elements
+- All [data-action="dismiss-tips"] elements
+- .generate-helper-tip
+- .guided-cta-recommended-badge
+- .weekly-new-badge
+- Replay Tour button from builder view
+- Keyboard shortcuts panel unless Expert Mode
+
+ORDER — top to bottom in Write mode:
+
+1. Mode switch pills
+
+2. "Your Goal" label and textarea
+   BEFORE Help Me Start — not after
+   Label: "Your Goal"
+   Placeholder: "Type what you want here —
+   the more specific you are, the better
+   your result will be."
+   Textarea styling: see Fix 8
+
+3. Live strength indicator directly below
+   the textarea helper text
+
+4. Fix My Prompt button — full width,
+   immediately below strength indicator
+   Label: "Fix My Prompt"
+   Sub-label: "Turn Your Idea Into A
+   Powerful Prompt"
+   Style: var(--color-primary) background,
+   #ffffff text, min-height 56px
+   
+   LOADING STATE — while generating show
+   inside or directly below the button:
+   Animate the button label to:
+   "Building Your Prompt..."
+   Add a subtle pulse animation to the button
+   This moment must feel like the machine
+   is working for the user
+
+5. Help Me Start — secondary button,
+   immediately below Fix My Prompt
+   Label: "Help Me Start"
+   Style: tinted secondary — see Fix 7
+   Helper text directly below button
+   (not in a box):
+   "Answer 4 quick questions and we'll
+   fill everything in for you."
+
+6. This Week's Focus — below Help Me Start,
+   only after localStorage "pmg_has_generated"
+   is set. Include "Use This As My Goal →"
+   button that pre-fills the goal textarea.
+   When clicked animate the text flowing
+   into the textarea.
+
+7. More Control toggle — collapsed by default
+   All settings inside: category, tone,
+   format, length, language, personality,
+   extra details, rules or limits
+
+8. Expert Mode — NOT fine print. A small
+   visible button with context:
+   Button: "⚙ Expert Mode"
+   Hint beside it: "Full Control Over
+   Every Setting"
+   
+   Style:
+   .expert-mode-row {
+     display: flex;
+     align-items: center;
+     gap: var(--space-2);
+     margin-top: var(--space-3);
+   }
+   .btn-expert-toggle {
+     font-size: var(--text-xs);
+     font-weight: 600;
+     color: var(--color-text-muted);
+     background: color-mix(in srgb,
+       var(--color-primary) 8%,
+       var(--color-surface-2));
+     border: 1px solid color-mix(in srgb,
+       var(--color-primary) 20%,
+       var(--color-border));
+     border-radius: var(--radius-full);
+     padding: 6px 14px;
+     cursor: pointer;
+     transition: all 180ms ease;
+   }
+   .btn-expert-toggle:hover {
+     color: var(--color-primary);
+     border-color: var(--color-primary);
+   }
+   .expert-mode-hint {
+     font-size: var(--text-xs);
+     color: var(--color-text-faint);
+   }
+   Button must trigger existing Expert Mode
+   function — visual change only.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 5 — CREATE AN IMAGE MODE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Image mode is a guided shot-builder.
+One question at a time. Each answer collapses
+the section with a satisfying snap and reveals
+the next. The user feels like a photographer
+making deliberate creative choices.
+
+REMOVE from image mode:
+- Plain instruction box with no input — gone
+- "Generate An Image Prompt" button — gone
+- This Week's Focus — hide in image mode
+- All tip boxes and nudges
+
+GUIDED ACCORDION SYSTEM:
+
+Each section is a collapsible card.
+When a selection is made the card collapses
+after 800ms with a smooth animation.
+The next card opens with a gentle fade-in.
+The collapsed card header shows the selection.
+
+Collapsed header format:
+"[Label]: [Selection] · Tap To Edit"
+
+QUESTION 1 — Subject (open by default):
+Header: "What Is Your Main Subject?"
+Input: text field
+Placeholder: "A person, animal, object,
+landscape, scene..."
+After user types and presses Enter or Next:
+Collapses to: "Subject: [text] · Tap To Edit"
+
+QUESTION 2 — Shot Type:
+Header: "Shot Type — How Close Are We?"
+Pills:
+- Extreme Close-Up (Face, Texture, Detail)
+- Close-Up (Head And Shoulders)
+- Medium Shot (Waist Up)
+- Full Body Shot
+- Wide Shot (Subject + Environment)
+- Aerial / Bird's Eye View
+- Worm's Eye View (Looking Up)
+- Over The Shoulder
+Auto-collapses 800ms after selection.
+
+QUESTION 3 — Lens:
+Header: "Camera Lens Feel?"
+Pills:
+- Wide Angle (Expansive, Dramatic)
+- Standard (Natural, True To Life)
+- Telephoto (Compressed, Intimate)
+- Macro (Ultra Close Detail)
+- Fisheye (Distorted, Creative)
+- Tilt-Shift (Miniature Effect)
+Auto-collapses after selection.
+
+QUESTION 4 — Lighting:
+Header: "Lighting Setup?"
+Pills:
+- Golden Hour (Warm, Soft Sunset)
+- Blue Hour (Cool, Moody Dusk)
+- Harsh Midday Sun (High Contrast)
+- Overcast (Soft, Even, No Shadows)
+- Studio Lighting (Clean, Controlled)
+- Neon & Artificial (Urban Night)
+- Candlelight / Fire (Warm, Intimate)
+- Backlit (Silhouette, Halo Effect)
+Auto-collapses after selection.
+
+QUESTION 5 — Mood:
+Header: "Mood And Color Palette?"
+Pills:
+- Cinematic & Dramatic
+- Bright & Airy
+- Dark & Moody
+- Warm & Nostalgic
+- Cool & Minimal
+- Vibrant & Saturated
+- Black & White
+- Vintage Film Grain
+Auto-collapses after selection.
+
+QUESTION 6 — Camera Style (optional):
+Header: "Camera And Film Style? (Optional)"
+Text input
+Placeholder: "Shot on iPhone 16 Pro, Canon 5D,
+Kodak Portra 400, 35mm film, 8K RAW..."
+Include: "Skip This Step →" text link.
+After input or skip: collapses.
+
+AFTER ALL COMPLETE OR SKIPPED:
+
+Show "Build My Image" button — primary style,
+full width. When clicked:
+- Combine all answers:
+  "[Shot type] of [subject], [lens] lens,
+  [lighting], [mood], [camera style if given]"
+- Animate text flowing into goal textarea
+- Show below button:
+  "Your Image Description Is Ready —
+  Click Generate Image To Create It."
+- Entire accordion collapses with smooth animation
+
+Goal textarea:
+Label: "Your Image Description"
+Pre-filled, still editable
+Clearly interactive — see Fix 8
+
+Generate Image button immediately below textarea:
+Label: "Generate Image"
+Sub-label: "Creating With DALL·E 3"
+Full width, var(--color-primary), min-height 56px
+
+LOADING STATE during generation:
+Show inside result area:
+Animated: "Creating your image with DALL·E 3..."
+Subtle shimmer animation on the result container
+This moment must feel premium — not just a spinner
+
+Upload section below Generate Image:
+Collapsed toggle: "Add A Reference Image
+(Optional) ▾"
+Expands to file upload on click.
+
+IMAGE RESULT SECTION:
+Verify id="imageResultSection" exists.
+After successful generation:
+- Set imageResultSection.hidden = false
+- Animate it into view (fade + slight rise)
+- Scroll to it with scroll-margin-top: 24px
+- Title: "Your Generated Image"
+- Image renders full width with border-radius
+- Immediately below image:
+  "⬇ Download Image" (primary button)
+  "Generate Another" (secondary button)
+  Caption: "Created With DALL·E 3 ·
+  Free During Early Access"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 6 — POST GENERATION RESULT FLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After Fix My Prompt generates a result the
+entire experience shifts. The result becomes
+the focus. The builder recedes slightly.
+
+1. Animate the result panel into prominence:
+   Add subtle box-shadow to result panel:
+   box-shadow: 0 8px 32px color-mix(in srgb,
+     var(--color-primary) 20%, transparent)
+   Transition: 400ms ease
+
+2. Auto-scroll to result with scroll-margin-top
+   of 24px. Title "Your Fixed Prompt" must be
+   the first fully visible element.
+
+3. Result box: minimum 160px height, clearly
+   bordered with var(--color-primary) tinted
+   border, clearly readable.
+
+4. Immediately below result box — three action
+   rows. Animate them in sequentially:
+   Row 1 appears first, then Row 2 after 100ms,
+   then Row 3 after 200ms. Subtle fade-in.
+
+   ROW 1 — PRIMARY:
+   Button: "▶ Run With AI"
+   Description: "See your AI answer right
+   here — no copy-paste needed"
+   Background: var(--color-primary)
+   Color: #ffffff
+   Width: full width
+   Height: minimum 56px
+   Triggers: existing runWithAI function
+
+   ROW 2 — SECONDARY:
+   Button: "Copy Prompt"
+   Description: "Take it to ChatGPT, Claude,
+   or any AI tool you already use"
+   Style: tinted secondary
+   Triggers: existing copy function
+
+   ROW 3 — SECONDARY:
+   Button: "Refine It"
+   Description: "Make it stronger before
+   you run it"
+   Style: tinted secondary
+   Action: smooth scroll to refine section
+
+5. All three rows hidden before generation.
+   Revealed with staggered animation after
+   successful generation.
+   Each minimum 52px height on mobile.
+   Full width on mobile.
+
+6. After Run With AI completes:
+   AI Response section fades in smoothly.
+   Title: "Your AI Response"
+   Response streams in.
+   After streaming: "Copy Response" and
+   "Run Again" appear with fade-in animation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 7 — NO WHITE BUTTONS ANYWHERE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PRIMARY (Fix My Prompt, Generate Image,
+Run With AI, Help Me Start, Update Prompt,
+Build My Image, Download Image):
+background: var(--color-primary)
+color: #ffffff
+min-height: 52px on mobile
+box-shadow: 0 4px 14px color-mix(in srgb,
+  var(--color-primary) 28%, transparent)
+
+SECONDARY (Copy Prompt, Refine It, More
+Detailed, More Bold & Direct, Beginner
+Friendly, Copy Shareable Link, Export,
+Import, Compare, Generate Another,
+Copy Response, Run Again):
+background: color-mix(in srgb,
+  var(--color-primary) 10%,
+  var(--color-surface-2))
+color: var(--color-primary)
+border: 1.5px solid color-mix(in srgb,
+  var(--color-primary) 25%,
+  var(--color-border))
+font-weight: 600
+
+TERTIARY (Clear Prompt, Print / Save PDF,
+Collapse All, Undo Last Change, Skip):
+background: var(--color-surface-2)
+color: var(--color-text-muted)
+border: 1px solid var(--color-border)
+
+DESTRUCTIVE (Clear All History confirm,
+any delete/remove):
+background: color-mix(in srgb,
+  #dc2626 10%, var(--color-surface-2))
+color: #dc2626
+border: 1px solid color-mix(in srgb,
+  #dc2626 25%, var(--color-border))
+
+Apply to EVERY button site wide:
+Tour modal, Expert Mode modal, upload button,
+history buttons, template buttons, accordion
+controls, Use Your Prompt In section
+(ChatGPT, Claude, Perplexity), all swatch
+adjacent buttons. No exceptions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 8 — TEXT FIELD INTERACTIVITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every textarea and input must look interactive.
+Users must know immediately they can type in it.
+
+DEFAULT:
+background: var(--color-surface)
+border: 1.5px solid color-mix(in srgb,
+  var(--color-primary) 30%, var(--color-border))
+border-radius: var(--radius-md)
+padding: var(--space-4)
+font-size: var(--text-base)
+color: var(--color-text)
+cursor: text
+transition: border-color 180ms ease,
+  box-shadow 180ms ease
+min-height: 100px for textareas
+
+FOCUS:
+border-color: var(--color-primary)
+box-shadow: 0 0 0 3px color-mix(in srgb,
+  var(--color-primary) 20%, transparent)
+outline: none
+
+PLACEHOLDER:
+color: var(--color-text-faint)
+font-style: italic
+
+Apply to: #goal, #fine-tune-input, #details,
+photographer assistant text inputs, sticky
+bottom bar input, all visible form fields.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 9 — PILL STYLING SITE WIDE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every pill must look pressable. No white pills.
+
+UNSELECTED:
+background: color-mix(in srgb,
+  var(--color-primary) 8%, var(--color-surface))
+color: var(--color-text)
+border: 1.5px solid color-mix(in srgb,
+  var(--color-primary) 20%, var(--color-border))
+border-radius: var(--radius-full)
+font-weight: 500
+padding: 8px 16px
+cursor: pointer
+transition: all 150ms ease
+
+SELECTED:
+background: var(--color-primary)
+color: #ffffff
+border-color: var(--color-primary)
+font-weight: 700
+transform: scale(1.02)
+
+HOVER on unselected:
+background: color-mix(in srgb,
+  var(--color-primary) 16%, var(--color-surface))
+border-color: var(--color-primary)
+color: var(--color-primary)
+
+Apply to: photographer accordion pills,
+suggestion chips, use case chips, any
+clickable pill on the site.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 10 — MOBILE KEYBOARD POPUP FIX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+On mobile the keyboard triggers when tapping
+non-input buttons. This destroys the experience.
+
+1. After every non-input button click handler:
+setTimeout(function() {
+  if (document.activeElement &&
+    document.activeElement.blur) {
+    document.activeElement.blur();
+  }
+}, 10);
+
+Apply to: #generateBtn, #image-generate-btn,
+#runBtn, #copy-btn, all .btn-secondary,
+all .btn-ghost, all .accent-swatch, all
+.popular-use-card, all mode switch buttons,
+all pill option buttons, all history buttons,
+all template buttons, all accordion summaries,
+all refine buttons.
+
+2. Add inputmode="none" to every button that
+is not a submit for a text form.
+
+3. Sticky bottom bar input:
+No autofocus. autocomplete="off"
+autocorrect="off" autocapitalize="off"
+spellcheck="false"
+
+4. Wizard container: touch-action: pan-y
+Next and Back: inputmode="none"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 11 — MICRO-ANIMATIONS SITE WIDE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+These are not decoration. They tell the user
+something happened for them.
+
+Add these CSS animations:
+
+@keyframes pmgFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pmgPulse {
+  0%, 100% {
+    box-shadow: 0 4px 14px color-mix(in srgb,
+      var(--color-primary) 28%, transparent);
+  }
+  50% {
+    box-shadow: 0 4px 28px color-mix(in srgb,
+      var(--color-primary) 50%, transparent);
+  }
+}
+
+@keyframes pmgShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pmgSnap {
+  0% { transform: scaleY(1); }
+  50% { transform: scaleY(0.96); }
+  100% { transform: scaleY(1); }
+}
+
+Apply:
+
+Fix My Prompt button while generating:
+animation: pmgPulse 1.5s ease infinite
+
+Result panel on reveal:
+animation: pmgFadeUp 400ms ease forwards
+
+Each action row on reveal (staggered):
+animation: pmgFadeUp 300ms ease forwards
+Row 1: animation-delay: 0ms
+Row 2: animation-delay: 100ms
+Row 3: animation-delay: 200ms
+
+Image result on reveal:
+animation: pmgFadeUp 400ms ease forwards
+
+Photographer accordion card on collapse:
+animation: pmgSnap 200ms ease
+
+Image result loading shimmer:
+background: linear-gradient(90deg,
+  var(--color-surface-2) 25%,
+  color-mix(in srgb,
+    var(--color-primary) 8%,
+    var(--color-surface-2)) 50%,
+  var(--color-surface-2) 75%);
+background-size: 200% 100%;
+animation: pmgShimmer 1.5s linear infinite
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 12 — MOBILE LAYOUT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Mobile is one guided path. Not a compressed
+desktop. Not a feature dump. One path.
+
+Hide global search on mobile:
+@media (max-width: 768px) {
+  .site-search, #global-search-input,
+  .global-search, .search-label,
+  .search-helper {
+    display: none !important;
+  }
+}
+
+All buttons minimum 44px height:
+@media (max-width: 768px) {
+  .btn, button, [role="button"] {
+    min-height: 44px !important;
+  }
+}
+
+After mode switch pills: goal field is the
+very next element. Nothing between them.
+
+Tour modal: 3-second delay. Show once only
+using localStorage key "pmg_modal_shown".
+Set flag on any dismissal. Never show again.
+
+Daily nudge: only if "pmg_has_generated"
+exists in localStorage.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FIX 13 — TITLE CASE SWEEP ALL FILES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Apply to index.html, pricing.html, guide.html.
+Visible text only. No variable names or IDs.
+Body paragraphs stay sentence case.
+
+"Fix my prompt" → "Fix My Prompt"
+"Help me start" → "Help Me Start"
+"Run with AI" → "Run With AI"
+"Copy prompt" → "Copy Prompt"
+"Clear prompt" → "Clear Prompt"
+"Update prompt" → "Update Prompt"
+"Improve with AI" → "Improve With AI"
+"More detailed" → "More Detailed"
+"More bold & direct" → "More Bold & Direct"
+"Beginner friendly" → "Beginner Friendly"
+"Undo last change" → "Undo Last Change"
+"Check prompt quality" → "Check Prompt Quality"
+"Copy shareable link" → "Copy Shareable Link"
+"Print / save PDF" → "Print / Save PDF"
+"Run again" → "Run Again"
+"Copy response" → "Copy Response"
+"Use demo values" → "Use Demo Values"
+"Random prompt" → "Random Prompt"
+"Show archived" → "Show Archived"
+"Compare two" → "Compare Two"
+"Collapse all" → "Collapse All"
+"Clear all history" → "Clear All History"
+"Export everything" → "Export Everything"
+"Import backup" → "Import Backup"
+"Backup / restore" → "Backup / Restore"
+"Notes only" → "Notes Only"
+"Use this →" → "Use This →"
+"Need ideas?" → "Need Ideas?"
+"What next?" → "What Next?"
+"Your goal" → "Your Goal"
+"Your image" → "Your Image"
+"Your image description" →
+  "Your Image Description"
+"Fine-tune your prompt" →
+  "Fine-Tune Your Prompt"
+"Use your prompt in:" → "Use Your Prompt In:"
+"Tag insights" → "Tag Insights"
+"Daily streak" → "Daily Streak"
+"Saved prompts" → "Saved Prompts"
+"Total reuses" → "Total Reuses"
+"Top tag" → "Top Tag"
+"This week at a glance" →
+  "This Week At A Glance"
+"Why most AI prompts fail" →
+  "Why Most AI Prompts Fail"
+"What people are saying" →
+  "What People Are Saying"
+"See the difference" → "See The Difference"
+"Workspace" → "Workspace"
+"Build my image" → "Build My Image"
+"Generate another" → "Generate Another"
+"Skip this step →" → "Skip This Step →"
+"Tap to edit" → "Tap To Edit"
+"Add a reference image (optional)" →
+  "Add A Reference Image (Optional)"
+"THIS WEEK'S FOCUS" → "This Week's Focus"
+"THIS WEEK AT A GLANCE" →
+  "This Week At A Glance"
+"MOST-USED TEMPLATE" → "Most-Used Template"
+"MOST-USED PROMPT" → "Most-Used Prompt"
+"DAILY STREAK" → "Daily Streak"
+"SAVED PROMPTS" → "Saved Prompts"
+"TOTAL REUSES" → "Total Reuses"
+"TOP TAG" → "Top Tag"
+"WHY IT MATTERS" → "Why It Matters"
+"EARLY FEEDBACK" → "Early Feedback"
+"REFINE YOUR PROMPT INSTANTLY" →
+  "Refine Your Prompt"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINAL VERIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TEST WRITE JOURNEY END TO END:
+Land on site → builder visible without
+scrolling on desktop ✓
+Goal field is first interactive element ✓
+Fix My Prompt immediately below ✓
+Button pulses while generating ✓
+"Building Your Prompt..." shows during load ✓
+Result fades in with prominence ✓
+Three action rows animate in sequentially ✓
+Run With AI streams response ✓
+Copy Response and Run Again appear after ✓
+No white buttons visible ✓
+No tip boxes visible ✓
+No keyboard popup on button taps on mobile ✓
+
+TEST IMAGE JOURNEY END TO END:
+Mode pills show clear active state ✓
+Create An Image activates accordion ✓
+Questions reveal one at a time ✓
+Each collapses with snap after selection ✓
+Collapsed cards show selection and Tap To Edit ✓
+Build My Image animates text into textarea ✓
+Generate Image immediately below textarea ✓
+Loading shimmer shows during generation ✓
+Image fades into view after generation ✓
+Download Image button appears below ✓
+Generate Another button appears below ✓
+
+VERIFY ANCHOR NAVIGATION:
+All #anchor links scroll correctly ✓
+
+VERIFY COLOR PICKER:
+All swatches still change accent color ✓
+No white buttons in any accent color ✓
+
+VERIFY MOBILE:
+No unexpected keyboard on button taps ✓
+All buttons minimum 44px ✓
+Goal field reachable within 1 scroll ✓
+One clean path from top to result ✓
+
+Commit: "North Star rebuild — guided translator
+experience, image accordion, animations,
+no white buttons, keyboard fix, above fold,
+clean hero, all friction removed"
+Push to origin main
+Deploy
+Report pass/fail for every fix and sub-item.
+Flag anything needing manual review.
