@@ -1,0 +1,215 @@
+Pasted-Create-a-checkpoint-before-starting-Read-the-entire-cod_1777399273736.txt
+Create a checkpoint before starting. Read the entire 
+codebase first. Write all changes as separate .js files.
+Do not use heredoc syntax. Test after each section.
+Report pass/fail for every item.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PromptMeGood has two tiers:
+
+FREE (available now, all unlocked during 
+founding member period):
+- Unlimited Fix My Prompt
+- Help Me Start wizard
+- Smart suggestions
+- Limited Run With AI (3 per day)
+- Limited Image Generation (1 per day)
+- Limited File And Image Analysis
+- Prompt Strength score
+- Refine, Undo, Fine-Tune controls
+- Local Prompt Vault
+- Export single prompts
+- One-click to ChatGPT, Claude, Perplexity
+- Shareable prompt links
+- Accent color themes and dark mode
+
+PRO ($9/month, coming soon):
+- Everything in Free
+- Unlimited Run With AI
+- Unlimited Image Generation
+- Unlimited File And Image Analysis
+- Cloud Prompt Vault (synced across devices)
+- Money Mode Pro Workflows
+- Brand Voice Profiles
+- Prompt Chains (multi-step)
+- Bulk Export and Team Folders
+- Priority Support
+- Early Access to new features
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 1 — PRO GATE SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create a single source of truth for Pro status.
+Add this to the top of the main JS block in 
+artifacts/promptmegood/index.html:
+
+const PMG_PRO_KEY = 'promptmegood:pro:v1';
+
+function pmgIsPro() {
+  try {
+    return localStorage.getItem(PMG_PRO_KEY) 
+      === 'true';
+  } catch(e) { return false; }
+}
+
+function pmgUnlockPro() {
+  try {
+    localStorage.setItem(PMG_PRO_KEY, 'true');
+    document.body.classList.add('pmg-is-pro');
+    document.querySelectorAll(
+      '.pmg-pro-feature'
+    ).forEach(function(el) {
+      el.classList.remove('pmg-locked');
+    });
+    showProUnlockedToast();
+  } catch(e) {}
+}
+
+function showProUnlockedToast() {
+  const t = document.createElement('div');
+  t.className = 'pmg-pro-toast';
+  t.innerHTML = '🎉 Pro Unlocked! All features 
+    are now available.';
+  document.body.appendChild(t);
+  setTimeout(function() { t.remove(); }, 4000);
+}
+
+On page load check pro status:
+if (pmgIsPro()) {
+  document.body.classList.add('pmg-is-pro');
+}
+
+TO UNLOCK PRO (you call this from browser 
+console when a user pays):
+pmgUnlockPro()
+
+TO REMOVE PRO (for testing):
+localStorage.removeItem('promptmegood:pro:v1')
+then refresh.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TASK 2 — PRO LOCK CSS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add this CSS to index.html before </head>.
+Do NOT add position:relative to any element
+that already has layout positioning — only
+add it to the specific wrapper divs created
+for Pro features:
+
+.pmg-pro-wrapper {
+  position: relative;
+  display: contents;
+}
+
+.pmg-pro-feature {
+  position: relative;
+}
+
+.pmg-pro-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: color-mix(in srgb,
+    var(--color-primary) 10%,
+    var(--color-surface));
+  border: 1px solid color-mix(in srgb,
+    var(--color-primary) 25%,
+    var(--color-border));
+  border-radius: var(--radius-full);
+  padding: 2px 8px;
+  margin-left: 6px;
+  vertical-align: middle;
+  letter-spacing: 0.04em;
+}
+
+.pmg-locked .pmg-pro-lock-icon {
+  opacity: 1;
+}
+
+.pmg-pro-lock-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  opacity: 0.6;
+  margin-left: 4px;
+  vertical-align: middle;
+  cursor: pointer;
+  transition: opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.pmg-pro-lock-icon:hover {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+.pmg-locked > *:not(.pmg-pro-lock-icon):not(
+  .pmg-pro-badge) {
+  opacity: 0.5;
+  pointer-events: none;
+  user-select: none;
+  filter: blur(0.3px);
+}
+
+.pmg-locked .pmg-pro-lock-icon {
+  pointer-events: all;
+  opacity: 0.8;
+}
+
+body.pmg-is-pro .pmg-locked {
+  opacity: 1 !important;
+  pointer-events: all !important;
+  filter: none !important;
+}
+
+body.pmg-is-pro .pmg-pro-lock-icon {
+  display: none !important;
+}
+
+body.pmg-is-pro .pmg-pro-badge {
+  background: color-mix(in srgb,
+    var(--color-primary) 15%,
+    var(--color-surface));
+  color: var(--color-primary);
+}
+
+body.pmg-is-pro .pmg-pro-badge::before {
+  content: '✓ ';
+}
+
+.pmg-upgrade-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  animation: pmgFadeIn 200ms ease;
+}
+
+@keyframes pmgFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.pmg-upgrade-modal {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  max-width: 400px;
+  width: 100%;
+  box-shad...
