@@ -3540,7 +3540,7 @@
         <section class="panel" id="result-panel" aria-labelledby="result-title">
           <div class="panel-head">
             <h2 id="result-title">Your Fixed Prompt</h2>
-            <p>Run it with AI right here, or copy it to use anywhere.</p>
+            <p>Run With AI with AI right here, or copy it to use anywhere.</p>
             <p class="demo-next-step" id="demo-next-step" role="status" aria-live="polite" hidden>This is a sample prompt. Copy it, refine it, or go back and enter your own goal.</p>
           </div>
           <div class="result-wrap">
@@ -3557,7 +3557,7 @@
               <div id="pinned-note-text"></div>
               <div class="pinned-note-source" id="pinned-note-source"></div>
             </div>
-            <div class="result-box" id="resultBox" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Generated prompt (editable)">Your fixed prompt will appear here.</div>
+            <div class="result-box" id="resultBox" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Generated prompt (editable)">Your generated prompt will appear here. Run With AI with AI right here, or copy it to use anywhere.</div>
             <div class="result-edit-row">
               <span class="result-edit-indicator" id="result-edit-indicator" hidden>Edited manually</span>
             </div>
@@ -6266,7 +6266,7 @@ Context:
         function check() {
           const data = getFormData();
           const promptText = (resultBox && resultBox.textContent ? resultBox.textContent.trim() : '');
-          const placeholder = 'Your fixed prompt will appear here.';
+          const placeholder = 'Your generated prompt will appear here. Run With AI with AI right here, or copy it to use anywhere.';
           const hasGenerated = promptText && promptText !== placeholder && promptText.indexOf('Generating demo prompt') === -1;
           const issues = [];
           if (!data.goal || data.goal.length < 30) {
@@ -6302,7 +6302,7 @@ Context:
       const clearPromptBtn = document.getElementById('clear-prompt-btn');
       if (clearPromptBtn) {
         clearPromptBtn.addEventListener('click', function () {
-          const placeholder = 'Your fixed prompt will appear here.';
+          const placeholder = 'Your generated prompt will appear here. Run With AI with AI right here, or copy it to use anywhere.';
           if (typeof setPromptText === 'function') {
             setPromptText(placeholder);
           } else {
@@ -7182,7 +7182,7 @@ Context:
         {
           selector: '#tour-final-actions',
           fallbackSelector: '#copy-btn',
-          title: 'Run With AI or copy it',
+          title: 'Run With AI with AI or copy it',
           text: 'Tap Run With AI to see your answer right here — no copy-paste needed. Or hit Copy to take it to any AI tool you already use.'
         },
         {
@@ -7750,7 +7750,7 @@ Context:
       const printContentEl = document.getElementById('print-content');
       printBtn.addEventListener('click', function () {
         const text = resultBox.textContent || '';
-        if (!text || text.indexOf('Your fixed prompt will appear here') === 0) {
+        if (!text || text.indexOf('Your generated prompt will appear here') === 0) {
           showToast('Generate a prompt first.');
           return;
         }
@@ -7773,7 +7773,7 @@ Context:
 
       copyBtn.addEventListener('click', async function () {
         const text = resultBox.textContent.trim();
-        if (!text || text.indexOf('Your fixed prompt will appear here') === 0) {
+        if (!text || text.indexOf('Your generated prompt will appear here') === 0) {
           showToast('Generate a prompt first.');
           return;
         }
@@ -7809,7 +7809,7 @@ Context:
         if (!text) return true;
         const t = text.trim();
         if (!t) return true;
-        return t.indexOf('Your fixed prompt will appear here') === 0
+        return t.indexOf('Your generated prompt will appear here') === 0
           || t.indexOf('Please enter a goal') === 0
           || t.indexOf('Add a clear goal first') === 0;
       }
@@ -9138,7 +9138,7 @@ Context:
         if (!text) return true;
         const t = text.trim();
         if (!t) return true;
-        return t.indexOf('Your fixed prompt will appear here') === 0
+        return t.indexOf('Your generated prompt will appear here') === 0
           || t.indexOf('Please enter a goal') === 0
           || t.indexOf('Add a clear goal first') === 0;
       }
@@ -9663,7 +9663,6 @@ Context:
       <button id="mobile-sticky-dismiss" class="mobile-sticky-dismiss" type="button" aria-label="Dismiss quick prompt bar">&times;</button>
     </div>
   </div>
-  <script src="/scripts/pmg-bugfix.js"></script>
   <script src="/scripts/post-spec.js" defer></script>
   <script src="/scripts/pmg-fixes-v2.js" defer></script>
   <script src="/scripts/pmg-fixes-v3.js" defer></script>
