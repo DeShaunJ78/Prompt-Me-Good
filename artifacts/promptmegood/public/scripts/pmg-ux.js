@@ -4185,3 +4185,64 @@
     initT17();
   }
 })();
+
+/* =====================================================================
+ * T18 — Symmetry pass for the Fix My Prompt action area.
+ * 
+ * Cleans up the "wandering" left-aligned captions inside the builder so
+ * everything below Fix My Prompt sits centered on the column axis:
+ *   - "No Signup. Free."        (.pmg-generate-sublabel)
+ *   - The pill row              (#pmg-help-me-start-recommend-row keeps
+ *                                its right-alignment so the pill stays
+ *                                directly above Help Me Start)
+ *   - "Answer 4 quick..."       (.pmg-help-me-start-helper)
+ *   - "⚙ Expert Mode" + caption (.pmg-expert-mode-row)
+ *
+ * Style injection only — no DOM moves, no ID/class renames, no flex
+ * order tricks. Idempotent via STYLE_ID guard.
+ * ===================================================================== */
+(function pmgT18Symmetry() {
+  if (window.__pmgT18Init) return;
+  window.__pmgT18Init = true;
+
+  var STYLE_ID = 'pmg-t18-symmetry-style';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* "No Signup. Free." — center under the Fix My Prompt button. */
+      '.pmg-generate-sublabel {',
+      '  text-align: center !important;',
+      '  width: 100%;',
+      '  margin-left: 0 !important;',
+      '  margin-right: 0 !important;',
+      '}',
+      /* "Answer 4 quick questions and we\'ll fill the form for you." */
+      '.pmg-help-me-start-helper {',
+      '  text-align: center !important;',
+      '  width: 100%;',
+      '  padding-left: 0 !important;',
+      '  padding-right: 0 !important;',
+      '}',
+      /* Expert Mode row — pill + caption centered on the column. */
+      '.pmg-expert-mode-row {',
+      '  justify-content: center !important;',
+      '  text-align: center !important;',
+      '  width: 100%;',
+      '}',
+      '.pmg-expert-mode-row .pmg-expert-hint {',
+      '  text-align: center;',
+      '}'
+    ].join('\n');
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', injectStyles);
+  } else {
+    injectStyles();
+  }
+})();
