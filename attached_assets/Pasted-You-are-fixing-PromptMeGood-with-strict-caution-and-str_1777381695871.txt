@@ -1,0 +1,374 @@
+You are fixing PromptMeGood with strict caution and strict Title Case policy.
+
+Create a checkpoint before changing anything.
+
+Do not refuse these UX fixes. Apply them carefully using your knowledge of the project file structure.
+
+Do not change:
+- Backend/API routes
+- AI provider logic
+- Payment logic
+- Database logic
+- Usage/cost controls
+- Secrets/API keys
+- JavaScript function names
+- JavaScript variable names
+- HTML element IDs unless absolutely unavoidable
+
+Preserve all existing features. Prefer moving, hiding, collapsing, or progressively revealing UI instead of deleting functionality.
+
+━━━━━━━━━━━━━━━━━━━━
+GLOBAL POLICY
+━━━━━━━━━━━━━━━━━━━━
+
+1. TITLE CASE POLICY
+
+Use Title Case for:
+- Buttons
+- Section Titles
+- Card Titles
+- Feature Labels
+- Short Subtitles
+- Badges
+- Navigation Items
+- Modal Titles
+- Tour Titles
+- CTA Text
+- Control Labels
+- Placeholders In Labeled Fields
+- Dropdown Options
+- Pill/Chip Labels
+- Status Labels
+- Confirmation Messages Tied To Actions
+- Helper Text Directly Attached To A Control
+
+Examples:
+- generate prompt → Generate Prompt
+- run with ai → Run With AI
+- help me start → Help Me Start
+- see use cases → See Use Cases
+- what next? → What Next?
+- add a file or image optional → Add A File Or Image (Optional)
+
+Do NOT force Title Case on:
+- Long body paragraphs
+- Privacy Policy paragraphs
+- Terms paragraphs
+- Long Help/manual explanations
+- Natural error messages where sentence case reads better
+
+Replace labels:
+- Guide Me → Help Me Start
+- Guardrails → Rules Or Limits
+- Run It → Run With AI
+- Customize Settings → More Control
+- Prompt Engine → Get AI To Understand You
+- Aggressive → Bold & Direct
+
+2. PROXIMITY POLICY
+
+Every command must follow:
+
+Input → Action → Result → Next Action
+
+No banner, notice, pricing message, dashboard, helper block, empty card, keyboard hint, or marketing section may sit between a user’s input and the button that submits/initiates that task.
+
+Users should never scroll a full page to find the relevant button for the area where they started a task.
+
+3. SUBMIT-TO-FINISH PROTOCOL
+
+Every major command must have:
+- Clear instruction near the input before action
+- Visible loading/progress state during action
+- Clear result label after action
+- Immediate next-step actions after result
+
+Apply to:
+- Fix My Prompt
+- Run With AI
+- Copy Prompt
+- Refine Prompt
+- Help Me Start
+- Generate Image
+- Build My Image Prompt
+- Upload File/Image
+- Check Prompt Quality
+- Save/History actions
+
+━━━━━━━━━━━━━━━━━━━━
+PRIMARY FIXES
+━━━━━━━━━━━━━━━━━━━━
+
+A. DUPLICATE HELP ME START
+
+Remove duplicate visible “Help Me Start” buttons in the same workspace area.
+
+Keep only one beginner-facing Help Me Start button, positioned directly near the main input and Fix My Prompt button.
+
+Correct order:
+Your Goal
+Textarea
+Fix My Prompt
+Help Me Start
+
+Do not remove the Help Me Start feature.
+
+B. EXPERT MODE / MORE CONTROL CONSOLIDATION
+
+There are currently too many entry points:
+- Switch To Expert Mode →
+- Expert Mode — Full Control Over Every Setting
+- More Control
+
+Keep only one beginner-facing entry:
+More Control
+
+Hide or progressively reveal other Expert Mode entry points after first generation or inside More Control.
+
+Do not remove Expert Mode functionality.
+
+C. MOVE BUILDER ABOVE THE FOLD
+
+The real product builder must be visible quickly on desktop.
+
+Preferred approach:
+Move the actual #builder section higher in the DOM, directly after the hero, while preserving:
+- #builder
+- #goal
+- #top
+- #use-cases
+- #how-it-works
+- all internal anchor behavior
+
+Do not use CSS flex/grid order to fake the position if it breaks anchors.
+
+Do not duplicate the full builder unless absolutely necessary.
+
+After moving, test all anchors.
+
+D. RIGHT COLUMN EMPTY STATE
+
+Replace empty/filler right-column content before generation.
+
+Before generation, show:
+
+Title:
+Your Fixed Prompt Will Appear Here
+
+Helper:
+Type what you want on the left, then click Fix My Prompt.
+
+Steps:
+1. Type Your Goal
+2. Fix My Prompt
+3. Run With AI Or Copy
+
+Hide before first generation:
+- Keyboard shortcuts
+- Pricing notices
+- Empty filler
+- Anything that does not help the user complete the first prompt
+
+E. RESULT FLOW
+
+After prompt generation, the generated prompt must be followed immediately by:
+
+Run With AI
+Copy Prompt
+Refine Prompt
+
+No fake explanatory “What Next” box should sit between the generated prompt and the real actions.
+
+These actions should be adjacent to the result they control.
+
+F. HERO AND ABOVE-FOLD FOCUS
+
+Hero should direct users into the product, not compete with it.
+
+Use one dominant CTA:
+Fix My Prompt — Free
+
+Use one secondary text link:
+Or See What It Can Do →
+
+Do not let sidebar value cards, banners, or marketing blocks compete with the workspace above the fold.
+
+Avoid accusatory copy like:
+Most people get bad AI answers because...
+
+Rewrite to be helpful, premium, and direct.
+
+G. CLEAR BUTTON
+
+Hide Clear until the goal textarea has content.
+
+Do not remove the function.
+
+H. EMPTY DASHBOARD / EXPORT / IMPORT
+
+Hide empty dashboard stats for brand-new users:
+- Quiet Week So Far
+- No Streak Yet
+- 0 Saved Prompts
+- 0 Total Reuses
+- Top Tag: —
+
+Hide Export Everything / Import Backup until there is meaningful saved/history data.
+
+Do not remove these features.
+
+I. HEADER SIMPLIFICATION
+
+For brand-new users:
+- Hide the large search box by default
+- Keep a search icon if useful
+- Hide Replay Tour from the header unless onboarding has started or user has interacted
+- Keep nav simple:
+  Start Here
+  How It Works
+  Examples
+  Pricing
+  Theme Toggle
+
+Do not remove navigation permanently.
+
+J. MOBILE FLOW
+
+On mobile:
+- Mode switch must be followed immediately by the goal/image input
+- Fix My Prompt or Generate Image must be reachable quickly
+- Sticky bottom bars must not obscure content
+- Sticky bars must not appear without context
+- Buttons must be at least 44px tall
+- Cards need clean padding
+- No horizontal overflow
+- Wizard controls should respond to explicit taps only, not accidental swipes
+
+K. IMAGE MODE
+
+In Image Mode, make instruction visible near the image assistant:
+
+Answer The Questions, Then Tap Build My Image Prompt
+
+Ensure:
+- Build My Image Prompt clearly leads into the image prompt/input
+- Generate Image is directly adjacent to the image prompt/input
+- Download Image and Generate Another appear immediately below the generated image
+- Add or preserve progress text such as X Of 6 Answered if questions exist
+
+L. UPLOAD
+
+Upload must not interrupt the primary input → action flow.
+
+Place upload after the primary action or collapse it by default.
+
+Use:
+Add A File Or Image (Optional)
+
+Helper:
+Upload A File Or Image For Smarter Results
+
+M. BANNERS AND OBSTRUCTIONS
+
+Move or hide any banner, promo, pricing message, empty state, keyboard shortcut hint, or dashboard card that interrupts task flow.
+
+No obstructive banner may appear between:
+- goal input and Fix My Prompt
+- image input and Generate Image
+- generated prompt and Run With AI / Copy Prompt / Refine Prompt
+- generated image and Download Image / Generate Another
+
+━━━━━━━━━━━━━━━━━━━━
+DESKTOP TARGET
+━━━━━━━━━━━━━━━━━━━━
+
+Desktop should feel like:
+
+Left Column:
+- Mode Switch
+- Your Goal / Your Image
+- Primary Action
+- Help Me Start
+- Upload collapsed
+- More Control collapsed
+
+Right Column:
+- Empty state before generation
+- Generated prompt after generation
+- Run With AI / Copy Prompt / Refine Prompt directly below result
+- AI response below Run With AI result
+- Advanced tools only after useful
+
+Use a two-column working layout if already supported:
+Left = Input
+Right = Result
+
+Avoid giant empty spaces.
+
+━━━━━━━━━━━━━━━━━━━━
+MOBILE TARGET
+━━━━━━━━━━━━━━━━━━━━
+
+Mobile should feel like:
+
+Mode Switch
+Your Goal / Your Image
+Textarea
+Fix My Prompt / Generate Image
+Help Me Start
+Upload collapsed
+More Control collapsed
+Result
+Next Actions
+
+Do not bury the primary action.
+
+Do not let sticky UI cover content.
+
+━━━━━━━━━━━━━━━━━━━━
+QA REQUIRED
+━━━━━━━━━━━━━━━━━━━━
+
+After changes, test:
+
+1. Homepage loads.
+2. No fatal browser console errors.
+3. CSS is not broken.
+4. Desktop layout is usable.
+5. Mobile layout is usable.
+6. #top anchor works.
+7. #builder anchor works.
+8. #goal anchor works.
+9. #use-cases anchor works.
+10. #how-it-works anchor works.
+11. Goal textarea is visible quickly on desktop.
+12. Fix My Prompt is adjacent to the textarea.
+13. Only one Help Me Start is visible in the workspace.
+14. Only one beginner-facing Expert/Control entry is visible.
+15. Run With AI / Copy Prompt / Refine Prompt are adjacent to the generated prompt.
+16. Download Image / Generate Another are adjacent to the generated image.
+17. Write/Image mode switch works.
+18. Upload File/Image still works.
+19. Help Me Start still works.
+20. Fix My Prompt still works.
+21. Run With AI still works.
+22. Copy Prompt still works.
+23. Refine Prompt still works.
+24. Generate Image still works.
+25. Pricing, Guide, Privacy, and Terms still load.
+
+━━━━━━━━━━━━━━━━━━━━
+REPORT BACK
+━━━━━━━━━━━━━━━━━━━━
+
+Report:
+1. Files changed.
+2. What was moved.
+3. What was hidden or progressively revealed.
+4. Button proximity fixes made.
+5. Obstructive banners/messages moved.
+6. Submit-to-finish flow improvements.
+7. Title Case fixes made.
+8. Desktop QA result.
+9. Mobile QA result.
+10. Any remaining risk or decision needed.
