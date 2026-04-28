@@ -29,7 +29,7 @@
    * BUG 4 — Hide post-generation tools until a prompt exists
    * ================================================================ */
   var STORAGE_KEY = 'pmg_has_generated';
-  var PLACEHOLDER = 'Your fixed prompt will appear here.';
+  var PLACEHOLDER = 'Your generated prompt will appear here.';
 
   function injectVisibilityCss() {
     if (document.getElementById('pmg-bugfix-result-visibility')) return;
@@ -145,6 +145,22 @@
     });
   }
 
+  /* ================================================================
+   * STABILIZATION — remove duplicate "Use Demo Values" microcopy
+   * (item 3 of the stabilization brief)
+   * ================================================================ */
+  function hideDuplicateDemoMicrocopy() {
+    var btn = document.getElementById('fill-demo');
+    var micro = document.getElementById('demo-microcopy');
+    if (!btn || !micro) return;
+    var btnText = (btn.textContent || '').trim().toLowerCase();
+    var microText = (micro.textContent || '').trim().toLowerCase();
+    if (btnText && microText && btnText === microText) {
+      micro.setAttribute('hidden', '');
+      micro.style.display = 'none';
+    }
+  }
+
   function applyOnLoad() {
     injectVisibilityCss();
     /* Returning users: surface tools immediately if they generated previously. */
@@ -154,6 +170,7 @@
     checkResultBox();
     watchResultBox();
     wireClearButton();
+    hideDuplicateDemoMicrocopy();
   }
 
   if (document.readyState === 'loading') {

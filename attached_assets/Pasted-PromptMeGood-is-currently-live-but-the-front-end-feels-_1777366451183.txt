@@ -1,0 +1,142 @@
+PromptMeGood is currently live, but the front-end feels broken because sections, modals, tour content, help content, and CTAs appear duplicated or visually cluttered.
+
+Perform a stabilization and premium polish pass. Do not rebuild from scratch. Do not remove backend/API functionality. Do not remove core features. Do not change environment variables or API keys.
+
+Primary goal:
+Make the app feel clean, trustworthy, and simple for a first-time user.
+
+Core user flow:
+1. User lands on the page
+2. User understands the tool in under 10 seconds
+3. User enters a goal
+4. User clicks Fix My Prompt / Generate Prompt
+5. User sees a clean generated prompt
+6. User can Run With AI, Copy Prompt, or Refine
+
+Critical fixes:
+
+1. Move the builder/workspace much higher on the homepage.
+The product should not be buried under too many marketing sections.
+
+2. Remove duplicated or conflicting CTAs.
+There should be one primary CTA:
+“Fix My Prompt”
+or
+“Generate Prompt”
+Pick one and use it consistently.
+
+3. Fix broken copy:
+- Replace “Run With AI with AI right here” with:
+  “Run With AI right here, or copy it to use anywhere.”
+- Remove duplicate “Use Demo Values” buttons.
+- Fix any detached “Use This →” buttons so each belongs clearly to one card.
+- Remove incomplete or empty headings.
+
+4. Hide modal and tour content properly.
+Privacy Policy, Terms, Help Me Start, Compare Prompts, Backup/Restore, and Tour steps should not visually appear in the main page unless opened.
+Use proper hidden states, aria-hidden where appropriate, and CSS display/visibility handling.
+Do not delete the modals. Just make sure they are hidden until triggered.
+
+5. Simplify the top of the page.
+Recommended first screen:
+- Logo/nav
+- Strong headline
+- One short subheadline
+- Primary CTA to builder
+- Builder visible or immediately reachable
+
+6. Clean the generated prompt empty state.
+Before generation, show only:
+“Your generated prompt will appear here.”
+After generation, show:
+- Generated prompt
+- What Next?
+- Run With AI
+- Copy Prompt
+- Refine Prompt
+
+Do not show both sample prompt and empty-state text at the same time.
+
+7. Keep Title Case consistent for:
+- Buttons
+- Section titles
+- Card titles
+- Feature labels
+- Navigation items
+- Modal titles
+- CTA text
+
+Do not force Title Case on long body paragraphs, privacy text, terms text, or help explanations.
+
+8. Reduce visible clutter.
+Keep advanced controls collapsed by default:
+- More Control
+- Power Ups
+- Keyboard Shortcuts
+- Prompt Vault
+- Full Guide
+
+Beginner users should see a simple path first.
+
+9. Mobile polish:
+- Make top nav/actions stack or wrap cleanly
+- Ensure buttons are not cramped
+- Use full-width mobile buttons where helpful
+- Ensure no horizontal overflow
+- Ensure modals are readable on small screens
+- Ensure tap targets are at least 44px high
+
+10. Desktop polish:
+- Use a clean two-column workspace if possible:
+  left = builder
+  right = generated prompt/result
+- Keep spacing consistent
+- Avoid long sections interrupting the main workflow
+- Keep result actions close to the generated prompt
+
+11. Preserve these features:
+- Fix My Prompt / Generate Prompt
+- Run With AI
+- AI Response
+- Generate Image
+- Upload File/Image
+- Help Me Start
+- Use Demo Values
+- Use Cases
+- Dice Idea Generator
+- More Control
+- Expert Mode
+- Advanced Options
+- Prompt Strength
+- Check Prompt Quality
+- Refine / Fine-Tune / Undo
+- Prompt History / Prompt Vault
+- Pricing
+- Privacy Policy
+- Terms
+- Backend/API routes
+- Usage/cost controls
+
+12. Final QA:
+After changes, test:
+- Homepage loads without console errors
+- Builder anchor works
+- Fix My Prompt works
+- Copy Prompt works
+- Run With AI works
+- Generate Image works if configured
+- Upload File/Image does not break layout
+- Help Me Start opens and closes correctly
+- Privacy and Terms open only when clicked
+- Mobile view has no horizontal overflow
+- Buttons are readable and not cramped
+- No duplicate “Use Demo Values”
+- No “Run With AI with AI”
+- No visible modal/tour content unless opened
+
+Report back with:
+1. What was broken
+2. What was fixed
+3. What files changed
+4. What features were preserved
+5. Any remaining issues
