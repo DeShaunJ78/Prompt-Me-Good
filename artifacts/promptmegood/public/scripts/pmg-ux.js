@@ -3789,3 +3789,197 @@
     init();
   }
 })();
+
+/* =====================================================================
+ * T17 — Mobile UX fixes for the Help Me Start dialog + softer hero CTA
+ *
+ * Problems addressed (from real-user mobile feedback):
+ *   1. The guided dialog showed ALL 4 questions stacked at once because
+ *      author CSS `.guided-step { display: flex }` overrode the `[hidden]`
+ *      attribute set by the wizard's renderStep(). That pushed the Next
+ *      button below the fold and made the dialog feel huge.
+ *   2. Users tapped each visible field, then expected Next to read
+ *      "Done" — but the wizard JS still tracked step 1, so they had to
+ *      press Next 4 times anyway. Side-effect of #1.
+ *   3. The hero secondary CTA "Or See Real Examples" had a hard 2px solid
+ *      accent border. In gold/amber accent themes it read as a gold
+ *      button that clashed with the primary CTA. User asked for a subtle
+ *      pulsing glow instead.
+ *
+ * Approach (hard rules: no rename of IDs/classes/JS, CSS vars, no flex
+ * order:N, hide/move/collapse over delete, anchors preserved):
+ *   - T17.1: Defensive CSS to honor [hidden] on .guided-step.
+ *   - T17.2: Inject step-progress dots at the top of the dialog so users
+ *     see "this is multi-step" before they start typing. Synced via
+ *     MutationObserver on the [hidden] attribute of each step div.
+ *   - T17.3: Replace the solid border on #hero-usecases-cta with a soft
+ *     1px tinted border + pulsing accent-color glow. Honors
+ *     prefers-reduced-motion.
+ * ===================================================================== */
+(function pmgT17GuidedAndGlow() {
+  'use strict';
+  if (window.__pmgT17Init) return;
+  window.__pmgT17Init = true;
+
+  var STYLE_ID = 'pmg-t17-guided-glow-style';
+  var DOTS_CLASS = 'pmg-t17-progress-dots';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      ':root {',
+      '  --pmg-t17-glow-soft: color-mix(in srgb, var(--color-primary) 10%, transparent);',
+      '  --pmg-t17-glow-mid:  color-mix(in srgb, var(--color-primary) 16%, transparent);',
+      '  --pmg-t17-glow-ring: color-mix(in srgb, var(--color-primary) 14%, transparent);',
+      '  --pmg-t17-border-soft: color-mix(in srgb, var(--color-primary) 22%, transparent);',
+      '  --pmg-t17-border-hover: color-mix(in srgb, var(--color-primary) 36%, transparent);',
+      '  --pmg-t17-dot-idle: color-mix(in srgb, var(--color-text) 14%, transparent);',
+      '  --pmg-t17-dot-done: color-mix(in srgb, var(--color-primary) 55%, transparent);',
+      '}',
+
+      /* T17.1 — Honor [hidden] on guided-step so the wizard\'s renderStep
+         "show one step at a time" actually takes visual effect. */
+      '.guided-step[hidden] { display: none !important; }',
+
+      /* T17.2 — Step progress dots at top of dialog */
+      '.' + DOTS_CLASS + ' { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 4px 0 2px; }',
+      '.' + DOTS_CLASS + ' .pmg-t17-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pmg-t17-dot-idle); transition: background 220ms ease, transform 220ms ease; }',
+      '.' + DOTS_CLASS + ' .pmg-t17-dot.is-done { background: var(--pmg-t17-dot-done); }',
+      '.' + DOTS_CLASS + ' .pmg-t17-dot.is-current { background: var(--color-primary); transform: scale(1.35); }',
+
+      /* T17.3 — Subtle pulsing glow on the hero secondary CTA */
+      '#hero-usecases-cta {',
+      '  border: 1px solid var(--pmg-t17-border-soft) !important;',
+      '  box-shadow: 0 0 0 0 var(--pmg-t17-glow-soft), 0 6px 18px var(--pmg-t17-glow-soft) !important;',
+      '  animation: pmgT17Glow 3.2s ease-in-out infinite;',
+      '}',
+      '#hero-usecases-cta:hover, #hero-usecases-cta:focus-visible {',
+      '  animation: none;',
+      '  background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface)) !important;',
+      '  border-color: var(--pmg-t17-border-hover) !important;',
+      '  box-shadow: 0 0 0 5px var(--pmg-t17-glow-ring), 0 8px 22px var(--pmg-t17-glow-mid) !important;',
+      '}',
+      '@keyframes pmgT17Glow {',
+      '  0%, 100% { box-shadow: 0 0 0 0 var(--pmg-t17-glow-soft), 0 4px 14px var(--pmg-t17-glow-soft); }',
+      '  50%      { box-shadow: 0 0 0 6px var(--pmg-t17-glow-ring), 0 8px 22px var(--pmg-t17-glow-mid); }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  #hero-usecases-cta { animation: none !important; }',
+      '}'
+    ].join('\n');
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  function ensureProgressDots() {
+    var dialog = document.getElementById('guided-mode-dialog');
+    if (!dialog) return null;
+    var form = dialog.querySelector('#guided-mode-form');
+    if (!form) return null;
+    var existing = form.querySelector('.' + DOTS_CLASS);
+    if (existing) return existing;
+    var steps = form.querySelectorAll('[data-guided-step]');
+    var total = steps.length || 4;
+    var dots = document.createElement('div');
+    dots.className = DOTS_CLASS;
+    dots.setAttribute('aria-hidden', 'true');
+    for (var i = 0; i < total; i++) {
+      var d = document.createElement('span');
+      d.className = 'pmg-t17-dot';
+      dots.appendChild(d);
+    }
+    var head = form.querySelector('.guided-head');
+    if (head && head.parentNode === form) {
+      form.insertBefore(dots, head.nextSibling);
+    } else {
+      form.insertBefore(dots, form.firstChild);
+    }
+    return dots;
+  }
+
+  function syncProgressDots() {
+    var dialog = document.getElementById('guided-mode-dialog');
+    if (!dialog) return;
+    var dots = ensureProgressDots();
+    if (!dots) return;
+    var steps = dialog.querySelectorAll('[data-guided-step]');
+    var visibleIdx = -1;
+    for (var i = 0; i < steps.length; i++) {
+      if (!steps[i].hidden) {
+        visibleIdx = parseInt(steps[i].getAttribute('data-guided-step'), 10);
+        if (isNaN(visibleIdx)) visibleIdx = i;
+        break;
+      }
+    }
+    if (visibleIdx < 0) visibleIdx = 0;
+    var dotEls = dots.children;
+    for (var j = 0; j < dotEls.length; j++) {
+      dotEls[j].classList.remove('is-current', 'is-done');
+      if (j < visibleIdx) dotEls[j].classList.add('is-done');
+      else if (j === visibleIdx) dotEls[j].classList.add('is-current');
+    }
+  }
+
+  function watchDialog() {
+    var dialog = document.getElementById('guided-mode-dialog');
+    if (!dialog) return;
+    /* Per-element idempotency: if we already wired this dialog (possible
+       if init runs again via the late-mount observer), bail out. */
+    if (dialog.__pmgT17Watched) return;
+    dialog.__pmgT17Watched = true;
+
+    var openBtn = document.getElementById('guided-mode-btn');
+    if (openBtn) {
+      openBtn.addEventListener('click', function () {
+        setTimeout(syncProgressDots, 30);
+        setTimeout(syncProgressDots, 200);
+      });
+    }
+
+    dialog.addEventListener('click', function (e) {
+      var t = e.target && e.target.closest && e.target.closest('#guided-next, #guided-back');
+      if (!t) return;
+      setTimeout(syncProgressDots, 30);
+      setTimeout(syncProgressDots, 200);
+    });
+
+    /* Authoritative signal: each step div\'s [hidden] attribute is
+       toggled by renderStep() in index.html. Observing those is the
+       most reliable trigger for advancing the dots. */
+    var steps = dialog.querySelectorAll('[data-guided-step]');
+    if (steps.length) {
+      var mo = new MutationObserver(syncProgressDots);
+      steps.forEach(function (s) {
+        try { mo.observe(s, { attributes: true, attributeFilter: ['hidden'] }); } catch (e) {}
+      });
+    }
+
+    syncProgressDots();
+  }
+
+  function initT17() {
+    injectStyles();
+    ensureProgressDots();
+    watchDialog();
+
+    if (!document.getElementById('guided-mode-dialog')) {
+      var mo = new MutationObserver(function () {
+        if (document.getElementById('guided-mode-dialog')) {
+          ensureProgressDots();
+          watchDialog();
+          try { mo.disconnect(); } catch (e) {}
+        }
+      });
+      try { mo.observe(document.body, { childList: true, subtree: true }); } catch (e) {}
+      setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 12000);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initT17);
+  } else {
+    initT17();
+  }
+})();
