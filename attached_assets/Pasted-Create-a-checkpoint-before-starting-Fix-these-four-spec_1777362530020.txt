@@ -1,0 +1,102 @@
+Create a checkpoint before starting. Fix these 
+four specific bugs in artifacts/promptmegood/index.html.
+Do not touch anything else. Do not use heredoc syntax.
+Write fixes as separate .js files.
+
+BUG 1 — PAGE LOADS SCROLLED TO RESULT PANEL
+The page is opening at "Your Fixed Prompt" instead 
+of the top. On page load, force scroll to top:
+
+Add this JavaScript before </body>:
+window.addEventListener('load', function() {
+  if (!window.location.hash) {
+    window.scrollTo(0, 0);
+  }
+});
+
+Also check if there is a scroll restoration 
+issue. Add to the top of the existing JS:
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
+
+BUG 2 — DUPLICATE "WITH AI" TEXT
+Find every instance of:
+"Run With AI with AI right here"
+and replace with:
+"Run With AI right here"
+
+Find every instance of:
+"Run With AI with AI right here, or copy it 
+to use anywhere."
+and replace with:
+"Run it with AI right here, or copy it 
+to use anywhere."
+
+BUG 3 — RESULT BOX SHOWS PLACEHOLDER BEFORE GENERATION
+Find the result box (id="resultBox" or similar).
+The placeholder text inside it currently reads:
+"Your generated prompt will appear here. Run 
+With AI with AI right here, or copy it to 
+use anywhere."
+
+Replace that placeholder text with simply:
+"Your fixed prompt will appear here."
+
+Then ensure this placeholder is only visible 
+when no prompt has been generated. When a 
+prompt exists the placeholder disappears 
+and the prompt text shows.
+
+BUG 4 — RESULT PANEL ELEMENTS VISIBLE BEFORE GENERATION
+The following elements must be hidden before 
+a prompt is generated and revealed only after 
+successful generation. Use display:none via 
+CSS and reveal them with JavaScript after 
+the generate function completes:
+
+- "Want To Know How Strong Your Prompt Is?" 
+  label and the Check Prompt Quality button
+- Copy Prompt button
+- Copy Shareable Link button  
+- Print / Save PDF button
+- Clear Prompt button
+- The refine buttons section (Improve With AI,
+  More Detailed, More Bold & Direct, 
+  Beginner Friendly)
+- Fine-Tune Your Prompt section
+- Undo Last Change button
+- Run With AI section
+- What Next block
+- Use Your Prompt In section
+
+These elements must have display:none by default.
+After the generate function successfully 
+completes and a prompt is in the result box,
+add class "pmg-has-result" to the body element
+and use CSS to reveal them:
+
+body.pmg-has-result .result-actions,
+body.pmg-has-result #copy-btn,
+body.pmg-has-result #quality-row,
+body.pmg-has-result #improve-block,
+body.pmg-has-result #runSection,
+body.pmg-has-result #fine-tune-row,
+body.pmg-has-result .what-next,
+body.pmg-has-result .open-in-block,
+body.pmg-has-result .save-tip,
+body.pmg-has-result #strength-score {
+  display: block !important;
+}
+
+Also check localStorage on page load:
+If "pmg_has_generated" exists in localStorage
+add "pmg-has-result" to body on load so 
+returning users see their tools immediately.
+
+After all fixes commit with message 
+"Fix page scroll on load and result panel 
+visibility bugs" and push to origin main 
+then deploy.
+
+Report​​​​​​​​​​​​​​​​
