@@ -532,6 +532,20 @@
     obs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
   }
 
+  function setupReplayTourScrollGuard() {
+    var btns = [
+      document.getElementById('replay-tour-btn'),
+      document.getElementById('replay-tour-btn-builder')
+    ].filter(Boolean);
+    btns.forEach(function (btn) {
+      if (btn.dataset.pmgScrollGuard === '1') return;
+      btn.dataset.pmgScrollGuard = '1';
+      btn.addEventListener('click', function () {
+        try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { window.scrollTo(0, 0); }
+      }, { capture: true });
+    });
+  }
+
   function init() {
     injectStyles();
     setupGoalLabelMode();
@@ -547,6 +561,7 @@
     setupQuickStartGate();
     setupResultStickyDesktop();
     setupImageGenerateMode();
+    setupReplayTourScrollGuard();
   }
 
   if (document.readyState === 'loading') {
