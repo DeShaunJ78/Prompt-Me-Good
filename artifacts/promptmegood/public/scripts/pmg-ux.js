@@ -10808,3 +10808,270 @@
     try { console.warn('[pmg-t41] disabled due to error:', err); } catch (_) {}
   }
 })();
+
+/* ============================================================================
+ * T42 — Open-Beta Paywall Controller
+ * ----------------------------------------------------------------------------
+ * Until June 1, 2026 the product is fully unlocked for everyone. The backend
+ * is the only authority on this — we read /api/public-config (which calls
+ * the backend's isPaywallActive() helper) and mirror its decision to the
+ * browser:
+ *
+ *   - If paywallActive === false: force the existing pmg-is-pro UI flag on
+ *     for every visitor so all locked panels are unlocked. Pro/Founding
+ *     CTAs stay visible (they're "soft nudges" during beta), checkout still
+ *     works for anyone who wants to lock in lifetime now.
+ *   - If paywallActive === true: do nothing — fall through to the normal
+ *     T40+T41 plan-driven gating. Real Pro/Founding members keep their
+ *     access; Free users see the upgrade prompts.
+ *
+ * A non-blocking banner is rendered at the top of every page during beta:
+ *   "Free Beta Access Until June 1, 2026 — Founding Member Access
+ *    Available Now."
+ *
+ * The banner is dismissable for the session, but re-appears on page load so
+ * we never lose visibility of the upcoming change.
+ * ========================================================================= */
+(function () {
+  if (window.__pmgT42Init) return;
+  window.__pmgT42Init = true;
+
+  var BANNER_ID = 'pmg-t42-beta-banner';
+  var STYLE_ID = 'pmg-t42-styles';
+  var SESSION_DISMISS_KEY = 'promptmegood:t42-banner-dismissed';
+  var PRO_KEY = 'promptmegood:pro:v1';
+  /* Separate marker so we can distinguish "real Pro" (set by Stripe success
+     or T41 plan-sync) from "beta unlock" (set by T42). When the paywall
+     activates we MUST revoke the beta unlock without touching genuine paid
+     entitlements — otherwise users who visited during beta would keep
+     full access forever after June 1. */
+  var BETA_MARKER = 'promptmegood:t42-beta-unlock:v1';
+
+  /* Dev-only console.log gate. Production deployments live on *.replit.app
+     domains — anything else (localhost, *.replit.dev preview, vite preview)
+     counts as dev. Errors/warnings are NOT gated. */
+  function isDevHost() {
+    try {
+      var h = location.hostname || '';
+      return !/\.replit\.app$/i.test(h);
+    } catch (_) { return true; }
+  }
+  function devLog(msg) {
+    if (!isDevHost()) return;
+    try { console.log(msg); } catch (_) {}
+  }
+
+  function hasBetaMarker() {
+    try { return localStorage.getItem(BETA_MARKER) === '1'; } catch (_) { return false; }
+  }
+  function setBetaMarker() {
+    try { localStorage.setItem(BETA_MARKER, '1'); } catch (_) {}
+  }
+  function clearBetaMarker() {
+    try { localStorage.removeItem(BETA_MARKER); } catch (_) {}
+  }
+
+  /* Tear down anything T42 previously granted. Called when paywallActive
+     flips ON, or as a fail-safe when we cannot confirm beta status. We
+     ONLY clear pro state if WE were the ones who set it (BETA_MARKER
+     present). Genuine paid users have no marker so their cache is safe. */
+  function revokeBetaUnlock() {
+    if (!hasBetaMarker()) return;
+    try { localStorage.removeItem(PRO_KEY); } catch (_) {}
+    try { document.body && document.body.classList.remove('pmg-is-pro'); } catch (_) {}
+    try { document.body && document.body.classList.remove('pmg-beta-mode'); } catch (_) {}
+    clearBetaMarker();
+  }
+
+  function fmtActivationDate(iso) {
+    if (!iso) return 'June 1, 2026';
+    try {
+      var d = new Date(iso);
+      if (isNaN(d.getTime())) return 'June 1, 2026';
+      return d.toLocaleDateString(undefined, {
+        year: 'numeric', month: 'long', day: 'numeric'
+      });
+    } catch (_) { return 'June 1, 2026'; }
+  }
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    /* IMPORTANT: T41 already injects a rule
+       `body.pmg-is-pro .pmg-upgrade-btn[data-pmg-upgrade] { display: none }`
+       which would hide every upgrade CTA the moment T42 sets pmg-is-pro
+       during beta — directly violating the spec ("Keep all Upgrade /
+       Pricing buttons visible and functional"). The override rules below
+       use a more specific selector (body.pmg-beta-mode.pmg-is-pro …) so
+       they win the cascade and the buttons stay clickable. We restore
+       both the standalone Upgrade buttons AND the auto-injected inline
+       homepage CTA card. */
+    var css = [
+      '#' + BANNER_ID + ' {',
+      '  position: sticky; top: 0; z-index: 9000;',
+      '  display: flex; align-items: center; justify-content: center; gap: 12px;',
+      '  padding: 10px 16px; font: 600 14px/1.35 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;',
+      '  color: #0b3b3a; text-align: center;',
+      '  background: linear-gradient(90deg, #ffe8a3 0%, #ffd166 50%, #ffb84d 100%);',
+      '  border-bottom: 1px solid rgba(0,0,0,0.10);',
+      '  box-shadow: 0 2px 6px rgba(0,0,0,0.06);',
+      '}',
+      '#' + BANNER_ID + ' .pmg-t42-msg { max-width: 900px; }',
+      '#' + BANNER_ID + ' a { color: #0b3b3a; text-decoration: underline; font-weight: 700; }',
+      '#' + BANNER_ID + ' button.pmg-t42-close {',
+      '  appearance: none; border: 0; background: transparent; cursor: pointer;',
+      '  font-size: 18px; line-height: 1; padding: 4px 8px; color: #0b3b3a;',
+      '  border-radius: 4px;',
+      '}',
+      '#' + BANNER_ID + ' button.pmg-t42-close:hover { background: rgba(0,0,0,0.08); }',
+      '@media (max-width: 600px) { #' + BANNER_ID + ' { font-size: 13px; padding: 8px 12px; } }',
+      '@media print { #' + BANNER_ID + ' { display: none !important; } }',
+      /* Override T41 hide rules during beta — upgrade CTAs stay visible. */
+      'body.pmg-beta-mode.pmg-is-pro .pmg-upgrade-btn[data-pmg-upgrade] {',
+      '  display: inline-flex !important;',
+      '}',
+      'body.pmg-beta-mode.pmg-is-pro .pmg-t41-inline-cta {',
+      '  display: flex !important;',
+      '}'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.appendChild(document.createTextNode(css));
+    document.head.appendChild(s);
+  }
+
+  function renderBanner(activatesAtIso) {
+    if (document.getElementById(BANNER_ID)) return;
+    if (!document.body) return;
+    /* Honor session dismissal so the user can hide it once and not be
+       nagged on every page click — but we re-show on each fresh page load
+       (sessionStorage clears with the tab). */
+    try {
+      if (sessionStorage.getItem(SESSION_DISMISS_KEY) === '1') return;
+    } catch (_) {}
+
+    injectStyles();
+
+    var dateLabel = fmtActivationDate(activatesAtIso);
+    var bar = document.createElement('div');
+    bar.id = BANNER_ID;
+    bar.setAttribute('role', 'status');
+    bar.setAttribute('aria-live', 'polite');
+
+    var msg = document.createElement('span');
+    msg.className = 'pmg-t42-msg';
+    /* On pricing.html keep it as plain text — there's no need to link to the
+       page you're already on. Everywhere else, link "Founding Member Access"
+       to the pricing page so the call-to-action is one click away. */
+    var onPricing = /\/pricing\.html(?:[?#]|$)/i.test(location.pathname + location.search);
+    if (onPricing) {
+      msg.textContent = 'Free Beta Access Until ' + dateLabel + ' — Founding Member Access Available Now.';
+    } else {
+      msg.innerHTML = 'Free Beta Access Until ' + dateLabel +
+        ' — <a href="./pricing.html">Founding Member Access Available Now</a>.';
+    }
+    bar.appendChild(msg);
+
+    var close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'pmg-t42-close';
+    close.setAttribute('aria-label', 'Dismiss this notice for the rest of this session');
+    close.textContent = '×';
+    close.addEventListener('click', function () {
+      try { sessionStorage.setItem(SESSION_DISMISS_KEY, '1'); } catch (_) {}
+      bar.remove();
+    });
+    bar.appendChild(close);
+
+    /* Insert at the very top of <body> so it sits above any sticky headers. */
+    document.body.insertBefore(bar, document.body.firstChild);
+  }
+
+  function applyBetaUnlock() {
+    /* Mirror the existing Pro UI flag so all locked panels (pmg-locked,
+       pmg-t41 inline CTA hidden state, etc.) become unlocked for everyone
+       during open beta. We RECORD that T42 was the one to set it via
+       BETA_MARKER so revokeBetaUnlock() can cleanly tear it down once
+       paywallActive flips on (without touching genuine paid users).
+
+       We ALSO add `pmg-beta-mode` so the override CSS in injectStyles()
+       can re-show the upgrade buttons (T41's CSS hides them whenever
+       pmg-is-pro is on; the spec wants them visible during beta as soft
+       nudges). */
+    try {
+      document.body.classList.add('pmg-beta-mode');
+      if (typeof window.pmgUnlockPro === 'function') {
+        window.pmgUnlockPro();
+      } else {
+        document.body.classList.add('pmg-is-pro');
+        try { localStorage.setItem(PRO_KEY, 'true'); } catch (_) {}
+      }
+      setBetaMarker();
+    } catch (_) {}
+  }
+
+  function applyConfig(cfg) {
+    var paywallActive = !!(cfg && cfg.paywallActive === true);
+    if (paywallActive) {
+      devLog('[pmg-t42] Paywall: ON (Enforced) — normal plan gating active.');
+    } else {
+      devLog('[pmg-t42] Paywall: OFF (Beta Mode) — features unlocked until ' +
+        (cfg && cfg.paywallActivatesAt ? cfg.paywallActivatesAt : 'further notice'));
+    }
+
+    if (paywallActive) {
+      /* Paid-mode is in force. If we previously granted beta unlock, tear
+         it down so the user falls back to whatever T40/T41's auth-driven
+         plan sync says they should have. Genuine paid users (no marker)
+         are untouched. T40+T41 then run normally. */
+      var hadBeta = hasBetaMarker();
+      if (hadBeta && document.body) {
+        revokeBetaUnlock();
+      } else if (hadBeta) {
+        document.addEventListener('DOMContentLoaded', revokeBetaUnlock);
+      }
+      return;
+    }
+
+    /* Open beta — unlock UI + show banner. Wait for body if needed. */
+    if (document.body) {
+      applyBetaUnlock();
+      renderBanner(cfg && cfg.paywallActivatesAt);
+    } else {
+      document.addEventListener('DOMContentLoaded', function () {
+        applyBetaUnlock();
+        renderBanner(cfg && cfg.paywallActivatesAt);
+      });
+    }
+  }
+
+  /* Fail-safe: if the config fetch fails, we don't know whether beta is
+     still on. To avoid stale unlock surviving the activation date, REVOKE
+     any beta marker we previously set. Genuine paid cache is untouched. */
+  function failSafeRevoke() {
+    if (!hasBetaMarker()) return;
+    if (document.body) {
+      revokeBetaUnlock();
+    } else {
+      document.addEventListener('DOMContentLoaded', revokeBetaUnlock);
+    }
+  }
+
+  /* Independent fetch of /api/public-config. The backend caches this for
+     30s and T40 also requests it, so this is at most one extra request per
+     page. We do not depend on T40 because T42 must work even if Supabase
+     is misconfigured. */
+  fetch('/api/public-config', { credentials: 'same-origin' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (cfg) {
+      if (!cfg) {
+        try { console.warn('[pmg-t42] could not load /api/public-config — revoking any stale beta unlock'); } catch (_) {}
+        failSafeRevoke();
+        return;
+      }
+      applyConfig(cfg);
+    })
+    .catch(function (err) {
+      try { console.warn('[pmg-t42] fetch failed, revoking any stale beta unlock:', err); } catch (_) {}
+      failSafeRevoke();
+    });
+})();

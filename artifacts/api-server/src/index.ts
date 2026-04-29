@@ -1,5 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { logPaywallStatusOnce } from "./lib/paywall";
 
 const rawPort = process.env["PORT"];
 
@@ -22,4 +23,8 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+  // Surface "Paywall: OFF (Beta Mode)" or "Paywall: ON (Enforced)" once at
+  // boot so the operator can tell from the workflow log which mode the
+  // service is running in. Only logs in development.
+  logPaywallStatusOnce();
 });

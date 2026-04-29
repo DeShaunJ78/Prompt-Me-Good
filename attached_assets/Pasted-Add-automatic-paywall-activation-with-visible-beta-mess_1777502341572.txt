@@ -1,0 +1,62 @@
+Add automatic paywall activation with visible beta messaging.
+
+Goal:
+Keep PromptMeGood fully open during beta while clearly communicating that paid access is coming, then automatically enforce the paywall on June 1, 2026 at 12:00 AM.
+
+Environment variables:
+OPEN_BETA_MODE=true
+PAYWALL_ACTIVATES_AT=2026-06-01T00:00:00-05:00
+
+Core behavior:
+- While OPEN_BETA_MODE is true AND current time is before PAYWALL_ACTIVATES_AT:
+  - Bypass all Pro/payment restrictions
+  - Allow full access to core features (prompt generation, Money Mode, history, tools, etc.)
+  - Do NOT block usage based on plan, is_pro, or limits
+
+- After PAYWALL_ACTIVATES_AT:
+  - Automatically enforce all paywall restrictions
+  - Require payment for Pro features
+  - Respect plan, is_pro, subscription_status, founding_member, and usage limits
+
+Global enforcement:
+- Apply this logic across all checks:
+  - is_pro
+  - plan
+  - access_status
+  - subscription_status
+  - founding_member
+  - usage_limit / daily_limit
+
+- Create a central helper:
+  function isPaywallActive()
+  that returns true ONLY after PAYWALL_ACTIVATES_AT
+
+UI / Messaging Requirements:
+- During beta, display a visible but non-blocking message across key areas (header, pricing page, upgrade modal):
+
+  "Free Beta Access Until June 1, 2026 — Founding Member Access Available Now."
+
+- Keep all Upgrade / Pricing buttons visible and functional
+- Use soft upgrade nudges instead of hard locks during beta
+- Do NOT remove pricing cards or Stripe checkout flow
+
+System integrity:
+- Do NOT remove or break:
+  - Stripe checkout
+  - Stripe webhook logic
+  - Supabase authentication (Magic Link)
+  - Supabase profile/user data
+  - Existing backend routes
+
+- Keep usage tracking active, but do NOT enforce limits during beta
+
+Developer visibility:
+- Add console logs (development only):
+  - "Paywall: OFF (Beta Mode)" before June 1, 2026
+  - "Paywall: ON (Enforced)" after activation
+
+Manual override:
+- If OPEN_BETA_MODE=false, enforce paywall immediately regardless of date
+
+Expected result:
+PromptMeGood runs fully open during beta while clearly signaling upcoming paid access, then automatically transitions into a paid product on June 1, 2026 without requiring manual changes.
