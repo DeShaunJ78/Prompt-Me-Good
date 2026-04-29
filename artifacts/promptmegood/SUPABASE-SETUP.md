@@ -63,6 +63,64 @@ Set the **Site URL** to your production root, e.g.
 
 Save. Magic-link sign-in is now live.
 
+## 3. Create The `profiles` Table For Stripe Subscriptions
+
+The Stripe webhook handler writes subscription state to a `profiles` table.
+In **SQL Editor → New Query**, run:
+
+```sql
+-- One row per authenticated user. Created lazily by the API server on the
+-- first checkout request, then kept in sync by the Stripe webhook.
+create table if not exists public.profiles (
+  user_id              uuid primary key references auth.users (id) on delete cascade,
+  email                text,
+  plan                 text not null default 'free',
+  stripe_customer_id   text unique,
+  stripe_subscription_id text,
+  subscription_status  text,
+  current_period_end   timestamptz,
+  created_at           timestamptz not null default now()
+);
+
+create index if not exists profiles_stripe_customer_id_idx
+  on public.profiles (stripe_customer_id);
+
+-- Lock the table down: only the row owner may read it from the browser. The
+-- API server uses the SERVICE-ROLE key (bypasses RLS) to write subscription
+-- state from the webhook.
+alter table public.profiles enable row level security;
+
+drop policy if exists "Users Can Read Own Profile" on public.profiles;
+create policy "Users Can Read Own Profile"
+  on public.profiles
+  for select
+  to authenticated
+  using (auth.uid() = user_id);
+```
+
+**Important:** the browser does NOT need write access to `profiles`. The
+api-server is the only writer, via the Stripe webhook + the
+`/api/create-checkout-session` route. Do not add an INSERT or UPDATE policy
+for the authenticated role.
+
+## 4. Configure The Stripe Webhook Endpoint
+
+In your Stripe dashboard, **Developers → Webhooks → Add endpoint**:
+
+- **Endpoint URL:** `https://www.promptmegood.com/api/stripe-webhook`
+  (Use your Replit dev URL `https://<your-dev-domain>/api/stripe-webhook` while testing.)
+- **Listen to:** select these four events:
+  - `checkout.session.completed`
+  - `customer.subscription.created`
+  - `customer.subscription.updated`
+  - `customer.subscription.deleted`
+
+After saving, click **Reveal signing secret** and copy the `whsec_…` value
+into the Replit Secret named `STRIPE_WEBHOOK_SECRET`.
+
+For local testing, run `stripe listen --forward-to https://<your-dev-domain>/api/stripe-webhook`
+and use the temporary signing secret it prints.
+
 ## How It Works
 
 - The Supabase URL and **publishable** (anon) key live in Replit Secrets

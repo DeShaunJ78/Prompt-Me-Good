@@ -2,6 +2,7 @@ import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
+import stripeWebhookRouter from "./routes/stripe-webhook";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
@@ -31,6 +32,13 @@ app.use(
   }),
 );
 app.use(cors());
+
+// IMPORTANT: Stripe webhook MUST be registered BEFORE express.json() so the
+// raw request body (a Buffer of the exact bytes Stripe signed) is available
+// for signature verification. The webhook router applies its own
+// express.raw({ type: 'application/json' }) middleware to its single route.
+app.use("/api", stripeWebhookRouter);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

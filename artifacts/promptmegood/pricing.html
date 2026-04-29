@@ -265,7 +265,12 @@
             <li>Early Access To New Features</li>
           </ul>
           <div class="tier-cta-row">
-            <a class="btn btn-secondary" href="#early-access">Join Early Access</a>
+            <!-- T41 Stripe Checkout: pmg-ux.js wires this button click to
+                 POST /api/create-checkout-session and redirects to Stripe.
+                 If the user is signed out, T41 prompts them to sign in
+                 first via the Save-Your-Best-Prompts panel. -->
+            <button type="button" class="btn btn-primary pmg-upgrade-btn" data-pmg-upgrade>Upgrade To Pro</button>
+            <a class="btn btn-secondary" href="#early-access" style="margin-top: 8px;">Join Early Access</a>
           </div>
         </article>
       </div>
@@ -410,5 +415,16 @@
       });
     })();
   </script>
+
+  <!-- T40 — Supabase browser SDK loaded from CDN. Loads BEFORE pmg-ux.js so
+       the T40/T41 IIFEs inside pmg-ux.js can find `window.supabase`. -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+
+  <!-- pmg-ux.js carries the T41 Stripe Checkout IIFE that wires the
+       [data-pmg-upgrade] button on this page. It also re-runs T40's
+       Save-Your-Best-Prompts panel hooks, but on pricing.html the panel
+       simply isn't built (no #builder anchor) — that's intentional. -->
+  <script src="/scripts/pmg-ux.js" defer></script>
+  <script src="/scripts/pmg-pro.js?v=3" defer></script>
 </body>
 </html>

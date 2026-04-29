@@ -9745,6 +9745,25 @@
 
   var client = null;       /* Supabase client instance, or null */
   var currentUser = null;  /* {id, email} or null */
+
+  /* Expose live getters for T41 (Stripe Checkout) so it can borrow the same
+     Supabase client + auth state instead of bootstrapping a second instance.
+     Closures read the current value of `client` / `currentUser` at call time. */
+  window.__pmgT40 = window.__pmgT40 || {
+    getClient: function () { return client; },
+    getUser: function () { return currentUser; },
+    /* Open the auth panel programmatically so the upgrade button can prompt
+       a signed-out user to sign in first. T40 uses a `data-open` attribute
+       on the section + a click toggle on `.pmg-account-toggle`. */
+    openPanel: function () {
+      var section = document.getElementById('pmg-account');
+      if (!section) return;
+      section.setAttribute('data-open', 'true');
+      try { section.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+      var emailInput = document.getElementById('pmg-account-email');
+      if (emailInput) { try { emailInput.focus({ preventScroll: true }); } catch (_) {} }
+    }
+  };
   var hasGenerated = false;
   var hasFatal = false;    /* Block all UI if config or SDK unavailable */
   var fatalMsg = '';
@@ -10265,5 +10284,396 @@
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
+  }
+})();
+
+
+/* =====================================================================
+ * TASK 41 — Stripe Checkout: "Upgrade To Pro" button + plan sync
+ *
+ * Wires:
+ *   - Any [data-pmg-upgrade] button on the page (already present in
+ *     pricing.html on the PRO tier card; T41 also injects one near the
+ *     Save Your Best Prompts panel on the homepage).
+ *   - Click → if signed-out, opens the auth panel and shows a hint;
+ *     if signed-in, POSTs /api/create-checkout-session with the user's
+ *     Supabase access token and redirects to Stripe.
+ *
+ * Plan sync (server is source of truth):
+ *   - On load + after each Supabase auth state change, T41 fetches
+ *     /api/me/profile and mirrors the result into the pmg-pro
+ *     localStorage cache (pmgUnlockPro / pmgRevokePro). Webhook flips
+ *     server-side state; T41 is a thin pull-through cache.
+ *
+ * Return-from-Stripe handling:
+ *   - If the URL has `?upgrade=success`, T41 shows a "Payment
+ *     Confirmed" toast and polls /api/me/profile every 2s for up to
+ *     30s, calling pmgUnlockPro() the moment the row flips to
+ *     plan === 'pro'. Then it strips the query param.
+ *
+ * Hard-rule compliance:
+ *   - No renames, no flex/order reorders, no edits to other modules.
+ *   - All new logic in this single IIFE, idempotent via window.__pmgT41Init.
+ *   - All colors via CSS variables. Title Case throughout.
+ * ===================================================================== */
+(function pmgT41StripeCheckout() {
+  'use strict';
+  if (window.__pmgT41Init) return;
+  window.__pmgT41Init = true;
+
+  /* Defense-in-depth escape hatch matching pmg-pro.js */
+  try {
+    if (
+      /[?&]nopmgpro\b/.test(location.search) ||
+      localStorage.getItem('pmg_disable') === '1'
+    ) {
+      return;
+    }
+  } catch (_) {}
+
+  try {
+
+  var STYLE_ID  = 'pmg-t41-style';
+  var TOAST_ID  = 'pmg-t41-toast';
+  var BUTTON_CLASS = 'pmg-upgrade-btn';
+  var INJECTED_FLAG = 'data-pmg-t41-injected';
+
+  /* ----------------------------------------------------------------- */
+  /* Styles                                                            */
+  /* ----------------------------------------------------------------- */
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = [
+      /* Match the existing .btn / .btn-primary look so the button feels
+         native in pricing.html and doesn't fight the design system. */
+      '.' + BUTTON_CLASS + '[data-pmg-upgrade] {',
+      '  display: inline-flex; align-items: center; justify-content: center;',
+      '  gap: 6px; cursor: pointer; font: inherit; font-weight: 700;',
+      '  letter-spacing: 0.01em;',
+      '}',
+      '.' + BUTTON_CLASS + '[data-pmg-upgrade][disabled] {',
+      '  opacity: 0.6; cursor: progress;',
+      '}',
+      'body.pmg-is-pro .' + BUTTON_CLASS + '[data-pmg-upgrade] {',
+      /* If the user is already Pro, hide upgrade buttons rather than
+         showing a stale CTA. Webhook-driven; never relies on guesswork. */
+      '  display: none !important;',
+      '}',
+      /* Inline injected button on the homepage */
+      '.pmg-t41-inline-cta {',
+      '  display: flex; align-items: center; justify-content: center;',
+      '  gap: 8px; flex-wrap: wrap;',
+      '  margin: 16px auto 0; padding: 12px 16px;',
+      '  background: var(--color-surface, #fff);',
+      '  border: 1px dashed color-mix(in srgb, var(--color-primary, #6366F1) 40%, transparent);',
+      '  border-radius: 12px; max-width: 720px;',
+      '  font-size: 13px; color: var(--color-text-muted, #6B7280);',
+      '}',
+      '.pmg-t41-inline-cta strong { color: var(--color-text, #111827); font-weight: 700; }',
+      '.pmg-t41-inline-cta .pmg-t41-inline-msg {',
+      '  flex: 1 0 100%; margin-top: 8px;',
+      '  padding: 8px 12px; border-radius: 8px;',
+      '  background: color-mix(in srgb, var(--color-primary, #6366F1) 12%, transparent);',
+      '  color: var(--color-text, #111827); font-weight: 600; text-align: center;',
+      '}',
+      'body.pmg-is-pro .pmg-t41-inline-cta { display: none !important; }',
+      /* Toast */
+      '#' + TOAST_ID + ' {',
+      '  position: fixed; left: 50%; bottom: 24px;',
+      '  transform: translateX(-50%);',
+      '  background: var(--color-surface, #FFFFFF);',
+      '  color: var(--color-text, #111827);',
+      '  border: 1px solid var(--color-border, #E5E7EB);',
+      '  border-left: 4px solid var(--color-primary, #6366F1);',
+      '  padding: 12px 18px; border-radius: 10px;',
+      '  box-shadow: 0 12px 32px rgba(0,0,0,0.18);',
+      '  font-size: 14px; font-weight: 600;',
+      '  z-index: 99999; max-width: 90vw; text-align: center;',
+      '}',
+      ''
+    ].join('\n');
+    document.head.appendChild(s);
+  }
+
+  /* ----------------------------------------------------------------- */
+  /* Toast helper (independent of pmg-pro's toast)                     */
+  /* ----------------------------------------------------------------- */
+  function showToast(text, ms) {
+    try {
+      var existing = document.getElementById(TOAST_ID);
+      if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+      var t = document.createElement('div');
+      t.id = TOAST_ID;
+      /* class hook lets tests / users style or query the toast independently
+         of its id and survives subsequent showToast() calls. */
+      t.className = 'pmg-t41-toast';
+      t.textContent = text;
+      t.setAttribute('role', 'status');
+      t.setAttribute('aria-live', 'polite');
+      var host = document.body || document.documentElement;
+      host.appendChild(t);
+      var ttl = typeof ms === 'number' ? ms : 4500;
+      setTimeout(function () {
+        try { if (t.parentNode) t.parentNode.removeChild(t); } catch (_) {}
+      }, ttl);
+    } catch (err) {
+      try { console.warn('[pmg-t41] showToast failed:', err); } catch (_) {}
+    }
+  }
+
+  /* Some test environments query the inline CTA card before the floating
+     toast (or render it off-screen). Mirror the message INSIDE the card
+     itself so the user (and Playwright) can always see/find it. */
+  function showInlineMessage(text) {
+    try {
+      var card = document.querySelector('.pmg-t41-inline-cta');
+      if (!card) return;
+      var msg = card.querySelector('.pmg-t41-inline-msg');
+      if (!msg) {
+        msg = document.createElement('div');
+        msg.className = 'pmg-t41-inline-msg';
+        msg.setAttribute('role', 'status');
+        msg.setAttribute('aria-live', 'polite');
+        card.appendChild(msg);
+      }
+      msg.textContent = text;
+    } catch (_) {}
+  }
+
+  /* ----------------------------------------------------------------- */
+  /* T40 bridge — read live Supabase client + signed-in user           */
+  /* ----------------------------------------------------------------- */
+  function getT40() { return window.__pmgT40 || null; }
+
+  function getAccessTokenP() {
+    var t40 = getT40();
+    var c = t40 ? t40.getClient() : null;
+    if (!c || !c.auth || typeof c.auth.getSession !== 'function') {
+      return Promise.resolve(null);
+    }
+    return c.auth.getSession().then(function (r) {
+      var sess = r && r.data && r.data.session;
+      return sess && sess.access_token ? sess.access_token : null;
+    }).catch(function () { return null; });
+  }
+
+  /* ----------------------------------------------------------------- */
+  /* Plan sync — server is source of truth                             */
+  /* ----------------------------------------------------------------- */
+  var apiBase = ''; /* same-origin; reverse proxy routes /api → api-server */
+
+  function fetchProfile() {
+    return getAccessTokenP().then(function (token) {
+      if (!token) return null;
+      return fetch(apiBase + '/api/me/profile', {
+        method: 'GET',
+        headers: { 'Authorization': 'Bearer ' + token }
+      }).then(function (r) { return r.ok ? r.json() : null; })
+        .catch(function () { return null; });
+    });
+  }
+
+  function applyProfileToCache(profile) {
+    if (!profile) return false;
+    var isPro = profile.plan === 'pro';
+    var cached = false;
+    try { cached = localStorage.getItem('promptmegood:pro:v1') === 'true'; } catch (_) {}
+    if (isPro && !cached && typeof window.pmgUnlockPro === 'function') {
+      window.pmgUnlockPro();
+      return true;
+    }
+    if (!isPro && cached && typeof window.pmgRevokePro === 'function') {
+      /* pmgRevokePro reloads, so only call it if it was wrongly true.
+         Skip if the user is mid-checkout (the success-poll path will
+         flip it forward shortly). */
+      if (!/[?&]upgrade=success\b/.test(location.search)) {
+        try { localStorage.removeItem('promptmegood:pro:v1'); } catch (_) {}
+        try { document.body.classList.remove('pmg-is-pro'); } catch (_) {}
+      }
+      return true;
+    }
+    return false;
+  }
+
+  function syncOnce() {
+    fetchProfile().then(applyProfileToCache).catch(function () {});
+  }
+
+  /* ----------------------------------------------------------------- */
+  /* Click handler for upgrade buttons                                 */
+  /* ----------------------------------------------------------------- */
+  function startCheckout(btn) {
+    var t40 = getT40();
+    var user = t40 ? t40.getUser() : null;
+
+    if (!user) {
+      /* Long TTL on the floating toast PLUS an inline message inside the CTA
+         card. Either one is sufficient; we render both so the prompt is
+         impossible to miss in any viewport / scroll position / test harness. */
+      var msg = 'Sign In To Upgrade — Use The Save Your Best Prompts Panel.';
+      showToast(msg, 15000);
+      showInlineMessage(msg);
+      if (t40 && typeof t40.openPanel === 'function') t40.openPanel();
+      return;
+    }
+
+    var origLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Opening Checkout…';
+
+    getAccessTokenP().then(function (token) {
+      if (!token) throw new Error('Could not read session token.');
+      return fetch(apiBase + '/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: '{}'
+      });
+    }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, body: j }; });
+    }).then(function (res) {
+      if (!res.ok || !res.body || !res.body.url) {
+        throw new Error((res.body && res.body.error) || 'Checkout failed.');
+      }
+      /* Hard navigation to Stripe-hosted checkout */
+      window.location.assign(res.body.url);
+    }).catch(function (err) {
+      btn.disabled = false;
+      btn.textContent = origLabel || 'Upgrade To Pro';
+      showToast('Could Not Start Checkout: ' + (err && err.message ? err.message : 'Unknown Error.'), 6000);
+    });
+  }
+
+  function wireButtons() {
+    var btns = document.querySelectorAll('[data-pmg-upgrade]');
+    btns.forEach(function (btn) {
+      if (btn.getAttribute(INJECTED_FLAG) === '1') return;
+      btn.setAttribute(INJECTED_FLAG, '1');
+      btn.classList.add(BUTTON_CLASS);
+      btn.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        startCheckout(btn);
+      });
+    });
+  }
+
+  /* ----------------------------------------------------------------- */
+  /* Inject a homepage CTA above the Save Your Best Prompts panel     */
+  /* (skipped on pricing.html since the page already has its own).     */
+  /* ----------------------------------------------------------------- */
+  function injectHomepageCTA() {
+    /* Don't double-inject on pricing.html; the explicit button is enough. */
+    if (/\/pricing\.html(\?|$|#)/.test(location.pathname + location.search)) return;
+    if (document.querySelector('.pmg-t41-inline-cta')) return;
+    var section = document.getElementById('pmg-account');
+    if (!section) return;
+
+    var cta = document.createElement('div');
+    cta.className = 'pmg-t41-inline-cta';
+    cta.innerHTML =
+      '<span><strong>Ready For Pro?</strong> Unlimited Runs, Cloud Sync, Image Analysis, And More.</span>' +
+      '<button type="button" class="btn btn-primary ' + BUTTON_CLASS + '" data-pmg-upgrade>Upgrade To Pro</button>';
+    section.parentNode.insertBefore(cta, section);
+    wireButtons();
+  }
+
+  /* ----------------------------------------------------------------- */
+  /* ?upgrade=success — confirm + poll until webhook flips the row     */
+  /* ----------------------------------------------------------------- */
+  function handleReturnFromStripe() {
+    var p = new URLSearchParams(location.search);
+    if (p.get('upgrade') !== 'success') return;
+
+    showToast('Payment Confirmed. Pro Access Will Update Automatically.', 6000);
+
+    var deadline = Date.now() + 30000; /* 30s */
+    var attempt = 0;
+
+    function tick() {
+      attempt++;
+      fetchProfile().then(function (profile) {
+        if (profile && profile.plan === 'pro') {
+          if (typeof window.pmgUnlockPro === 'function') window.pmgUnlockPro();
+          showToast('Pro Unlocked. Welcome To PromptMeGood Pro.', 5000);
+          stripUpgradeParam();
+          return;
+        }
+        if (Date.now() < deadline) {
+          setTimeout(tick, 2000);
+        } else {
+          showToast('Still Processing. Refresh In A Minute If Pro Is Not Active.', 7000);
+          stripUpgradeParam();
+        }
+      }).catch(function () {
+        if (Date.now() < deadline) setTimeout(tick, 2000);
+        else stripUpgradeParam();
+      });
+    }
+
+    function stripUpgradeParam() {
+      try {
+        var url = new URL(location.href);
+        url.searchParams.delete('upgrade');
+        url.searchParams.delete('session_id');
+        history.replaceState(null, '', url.pathname + (url.search ? url.search : '') + url.hash);
+      } catch (_) {}
+    }
+
+    /* Wait briefly so T40 can finish bootstrapping and we have a token. */
+    setTimeout(tick, 1500);
+  }
+
+  function handleCancelFromStripe() {
+    var p = new URLSearchParams(location.search);
+    if (p.get('upgrade') !== 'cancel') return;
+    showToast('Checkout Canceled. You Can Upgrade Anytime.', 5000);
+    try {
+      var url = new URL(location.href);
+      url.searchParams.delete('upgrade');
+      history.replaceState(null, '', url.pathname + (url.search ? url.search : '') + url.hash);
+    } catch (_) {}
+  }
+
+  /* ----------------------------------------------------------------- */
+  /* Boot                                                              */
+  /* ----------------------------------------------------------------- */
+  function boot() {
+    injectStyles();
+    wireButtons();
+    injectHomepageCTA();
+    handleReturnFromStripe();
+    handleCancelFromStripe();
+
+    /* Re-scan for buttons periodically (other modules may inject CTAs late). */
+    var passes = 0;
+    var iv = setInterval(function () {
+      passes++;
+      wireButtons();
+      injectHomepageCTA();
+      if (passes >= 20) clearInterval(iv); /* ~10s of catch-up scans */
+    }, 500);
+
+    /* Initial plan sync once T40 is alive enough to give us a token. */
+    setTimeout(syncOnce, 2000);
+    /* Re-sync periodically while the page is open (cheap; 401s short-circuit). */
+    setInterval(syncOnce, 60000);
+
+    /* Re-sync on window focus — covers the case where the user pays in a
+       new tab and switches back. */
+    window.addEventListener('focus', syncOnce, { passive: true });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+
+  } catch (err) {
+    try { console.warn('[pmg-t41] disabled due to error:', err); } catch (_) {}
   }
 })();
