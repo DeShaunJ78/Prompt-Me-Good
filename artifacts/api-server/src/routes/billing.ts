@@ -97,10 +97,25 @@ router.post(
   requireSupabaseUser,
   async (req: AuthedRequest, res) => {
     const user = req.user!;
-    const priceId = process.env["STRIPE_PRICE_ID"];
+
+    // Pick the tier — defaults to 'pro' for backward compat with the original
+    // T41 button. Frontend sends { tier: 'pro' | 'founding' }.
+    const rawTier =
+      typeof req.body === "object" && req.body && typeof req.body.tier === "string"
+        ? req.body.tier.toLowerCase()
+        : "pro";
+    const tier: "pro" | "founding" = rawTier === "founding" ? "founding" : "pro";
+
+    const priceId =
+      tier === "founding"
+        ? process.env["STRIPE_FOUNDING_PRICE_ID"]
+        : process.env["STRIPE_PRICE_ID"];
     if (!priceId) {
-      req.log?.error("STRIPE_PRICE_ID not configured");
-      res.status(500).json({ error: "Billing is not configured." });
+      const which = tier === "founding" ? "STRIPE_FOUNDING_PRICE_ID" : "STRIPE_PRICE_ID";
+      req.log?.error({ tier, which }, "price id not configured");
+      res
+        .status(500)
+        .json({ error: `Billing is not configured (${which} missing).` });
       return;
     }
 
@@ -138,19 +153,34 @@ router.post(
       // Build return URLs from a strict allowlist (NOT the raw Origin header).
       const origin = pickOrigin(req.headers.origin as string | undefined);
 
-      const session = await stripe.checkout.sessions.create({
-        mode: "subscription",
+      // Two distinct checkout shapes:
+      //   - 'pro'      → recurring subscription (mode: 'subscription')
+      //   - 'founding' → one-time $49 lifetime (mode: 'payment')
+      // The webhook reads `metadata.tier` to know which side handled it.
+      const baseParams = {
         customer: customerId,
         line_items: [{ price: priceId, quantity: 1 }],
-        // Stamp user_id everywhere we can — webhook uses these to find the
-        // right profile row.
         client_reference_id: user.id,
-        metadata: { user_id: user.id },
-        subscription_data: { metadata: { user_id: user.id } },
+        metadata: { user_id: user.id, tier },
         allow_promotion_codes: true,
-        success_url: `${origin}/?upgrade=success&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/pricing.html?upgrade=cancel`,
-      });
+        success_url: `${origin}/?upgrade=success&tier=${tier}&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/pricing.html?upgrade=cancel&tier=${tier}`,
+      };
+
+      const session =
+        tier === "founding"
+          ? await stripe.checkout.sessions.create({
+              ...baseParams,
+              mode: "payment",
+              // Founding is a one-time purchase. No subscription_data here.
+            })
+          : await stripe.checkout.sessions.create({
+              ...baseParams,
+              mode: "subscription",
+              // Stamp user_id on the subscription too — webhook uses it for
+              // future customer.subscription.* events.
+              subscription_data: { metadata: { user_id: user.id, tier } },
+            });
 
       if (!session.url) {
         req.log?.error("Stripe returned a session without a url");

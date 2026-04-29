@@ -149,24 +149,48 @@ async function handleCheckoutCompleted(
       ? session.subscription
       : session.subscription?.id || null;
 
-  // Persist the customer + subscription pointer so customer.subscription.*
-  // events can find the user by stripe_customer_id even if metadata is lost.
-  // Don't flip plan to "pro" here — wait for subscription.updated to confirm
-  // the subscription is actually active.
+  // Founding member is a one-time $49 payment with mode='payment' AND
+  // payment_status='paid'. We flip plan immediately because there's no
+  // subscription event coming after this one. For mode='subscription' we
+  // wait for the subscription.updated event so we can verify status='active'.
+  const tier = (session.metadata && session.metadata["tier"]) || null;
+  const isFoundingPaid =
+    session.mode === "payment" &&
+    tier === "founding" &&
+    session.payment_status === "paid";
+
+  const upsertRow: Record<string, unknown> = {
+    user_id: userId,
+    email: session.customer_details?.email || null,
+    stripe_customer_id: customerId,
+    stripe_subscription_id: subscriptionId,
+  };
+  if (isFoundingPaid) {
+    upsertRow["plan"] = "founding";
+    upsertRow["subscription_status"] = "lifetime";
+  }
+
   const { error } = await supabaseAdmin
     .from("profiles")
-    .upsert(
-      {
-        user_id: userId,
-        email: session.customer_details?.email || null,
-        stripe_customer_id: customerId,
-        stripe_subscription_id: subscriptionId,
-      },
-      { onConflict: "user_id" },
-    );
+    .upsert(upsertRow, { onConflict: "user_id" });
   if (error) {
     throw new Error(`checkout.session.completed upsert failed: ${error.message}`);
   }
+}
+
+// Founding members hold a lifetime plan that subscription webhooks must NOT
+// overwrite. (Edge case: a founding member also opens a Pro sub later. We
+// keep them as 'founding' — it's strictly more privileged.)
+async function isFoundingMember(userId: string): Promise<boolean> {
+  const { data, error } = await supabaseAdmin
+    .from("profiles")
+    .select("plan")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) {
+    throw new Error(`profiles plan check failed: ${error.message}`);
+  }
+  return data?.plan === "founding";
 }
 
 async function handleSubscriptionUpsert(
@@ -190,19 +214,22 @@ async function handleSubscriptionUpsert(
     sub.items?.data?.[0]?.current_period_end ??
     null;
 
+  // Founding members hold a lifetime plan — never let a subscription event
+  // overwrite it (even if they later subscribe to Pro on top).
+  const founding = await isFoundingMember(userId);
+
+  const row: Record<string, unknown> = {
+    user_id: userId,
+    stripe_customer_id: customerId,
+    stripe_subscription_id: sub.id,
+    subscription_status: sub.status,
+    current_period_end: isoFromUnix(periodEndUnix),
+  };
+  if (!founding) row["plan"] = plan;
+
   const { error } = await supabaseAdmin
     .from("profiles")
-    .upsert(
-      {
-        user_id: userId,
-        stripe_customer_id: customerId,
-        stripe_subscription_id: sub.id,
-        plan,
-        subscription_status: sub.status,
-        current_period_end: isoFromUnix(periodEndUnix),
-      },
-      { onConflict: "user_id" },
-    );
+    .upsert(row, { onConflict: "user_id" });
   if (error) {
     throw new Error(`subscription upsert failed: ${error.message}`);
   }
@@ -219,18 +246,21 @@ async function handleSubscriptionDeleted(
   }
   if (!userId) return;
 
+  // Founding members hold a lifetime plan — never downgrade them when a
+  // separate subscription is canceled.
+  const founding = await isFoundingMember(userId);
+
+  const row: Record<string, unknown> = {
+    user_id: userId,
+    stripe_customer_id: customerId,
+    stripe_subscription_id: sub.id,
+    subscription_status: sub.status,
+  };
+  if (!founding) row["plan"] = "free";
+
   const { error } = await supabaseAdmin
     .from("profiles")
-    .upsert(
-      {
-        user_id: userId,
-        stripe_customer_id: customerId,
-        stripe_subscription_id: sub.id,
-        plan: "free",
-        subscription_status: sub.status,
-      },
-      { onConflict: "user_id" },
-    );
+    .upsert(row, { onConflict: "user_id" });
   if (error) {
     throw new Error(`subscription delete upsert failed: ${error.message}`);
   }

@@ -10312,14 +10312,24 @@
   /* ---------- init ---------- */
   function init() {
     injectStyles();
-    /* Builder may not be in the DOM yet on first paint. Retry briefly. */
+
+    /* T41 BUG FIX (2026-04-29): Supabase MUST bootstrap on every page,
+       not just pages where the "Save Your Best Prompts" panel lives.
+       Pricing.html, guide.html, etc. have no #builder element, so
+       buildPanel() never succeeded and the Supabase client never came
+       up — which made the Upgrade button always think the user was
+       signed out, even after a Magic Link sign-in. Now T40 boots on
+       every page, and the panel mounts only where the builder exists. */
+    fetchConfigAndInit();
+
+    /* Builder may not be in the DOM yet on first paint. Retry briefly.
+       This is independent of auth bootstrap. */
     var tries = 0;
     var iv = setInterval(function () {
       tries++;
       if (buildPanel()) {
         clearInterval(iv);
         watchForGenerated();
-        fetchConfigAndInit();
       } else if (tries >= 60) {
         clearInterval(iv);
       }
@@ -10529,7 +10539,9 @@
         window.__pmgT40.setPlanBadge(profile.plan);
       }
     } catch (_) {}
-    var isPro = profile.plan === 'pro';
+    /* Founding members count as paid for ALL entitlement checks. They
+       paid $49 lifetime — the cache must never get cleared on them. */
+    var isPro = profile.plan === 'pro' || profile.plan === 'founding';
     var cached = false;
     try { cached = localStorage.getItem('promptmegood:pro:v1') === 'true'; } catch (_) {}
     if (isPro && !cached && typeof window.pmgUnlockPro === 'function') {
@@ -10561,46 +10573,102 @@
   /* ----------------------------------------------------------------- */
   /* Click handler for upgrade buttons                                 */
   /* ----------------------------------------------------------------- */
-  function startCheckout(btn) {
-    var t40 = getT40();
-    var user = t40 ? t40.getUser() : null;
+  /* Read the LIVE Supabase session, not the cached T40 user variable.
+     The cached variable is only populated after T40's async getSession()
+     resolves, so on a freshly-loaded pricing page a fast click can land
+     before currentUser is set even though localStorage already holds a
+     valid session. The Supabase SDK's auth.getSession() reads that
+     persisted session and refreshes if needed.
 
-    if (!user) {
-      /* Long TTL on the floating toast PLUS an inline message inside the CTA
-         card. Either one is sufficient; we render both so the prompt is
-         impossible to miss in any viewport / scroll position / test harness. */
-      var msg = 'Sign In To Upgrade — Use The Save Your Best Prompts Panel.';
-      showToast(msg, 15000);
-      showInlineMessage(msg);
-      if (t40 && typeof t40.openPanel === 'function') t40.openPanel();
-      return;
-    }
+     Returns a Promise that resolves to a { user, accessToken } object,
+     or null if no session exists. */
+  /* Wait up to ~5s for T40's Supabase client to finish bootstrapping
+     (it's async — fetches /api/public-config and loads the SDK script). */
+  function waitForSupabaseClient(timeoutMs) {
+    return new Promise(function (resolve) {
+      var deadline = Date.now() + (timeoutMs || 5000);
+      function poll() {
+        var t40 = getT40();
+        var c = t40 ? t40.getClient() : null;
+        if (c) return resolve(c);
+        if (Date.now() >= deadline) return resolve(null);
+        setTimeout(poll, 100);
+      }
+      poll();
+    });
+  }
+
+  function resolveSession() {
+    return waitForSupabaseClient(5000).then(function (client) {
+      if (!client) {
+        try { console.log('[pmg-t41] resolveSession: supabase client not ready after wait'); } catch (_) {}
+        return null;
+      }
+      return client.auth.getSession()
+        .then(function (res) {
+          var sess = res && res.data && res.data.session;
+          if (sess && sess.user && sess.access_token) {
+            try {
+              console.log('[pmg-t41] resolveSession: signed in as', sess.user.email);
+            } catch (_) {}
+            return { user: sess.user, accessToken: sess.access_token };
+          }
+          try { console.log('[pmg-t41] resolveSession: no active session'); } catch (_) {}
+          return null;
+        })
+        .catch(function (err) {
+          try { console.warn('[pmg-t41] resolveSession error:', err); } catch (_) {}
+          return null;
+        });
+    });
+  }
+
+  function startCheckout(btn) {
+    var tier = (btn.getAttribute('data-pmg-tier') || 'pro').toLowerCase();
+    if (tier !== 'founding') tier = 'pro';
+    try { console.log('[pmg-t41] startCheckout click, tier=' + tier); } catch (_) {}
 
     var origLabel = btn.textContent;
     btn.disabled = true;
-    btn.textContent = 'Opening Checkout…';
+    btn.textContent = 'Checking Sign-In…';
 
-    getAccessTokenP().then(function (token) {
-      if (!token) throw new Error('Could not read session token.');
+    resolveSession().then(function (sess) {
+      if (!sess) {
+        btn.disabled = false;
+        btn.textContent = origLabel || (tier === 'founding' ? 'Become A Founding Member' : 'Upgrade To Pro');
+        var msg = 'Sign In To Upgrade.';
+        showToast(msg, 12000);
+        showInlineMessage(msg);
+        var t40 = getT40();
+        if (t40 && typeof t40.openPanel === 'function') t40.openPanel();
+        return null;
+      }
+
+      btn.textContent = 'Opening Checkout…';
+      try {
+        console.log('[pmg-t41] POST /api/create-checkout-session tier=' + tier);
+      } catch (_) {}
+
       return fetch(apiBase + '/api/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
+          'Authorization': 'Bearer ' + sess.accessToken
         },
-        body: '{}'
+        body: JSON.stringify({ tier: tier })
+      }).then(function (r) {
+        return r.json().then(function (j) { return { ok: r.ok, body: j }; });
+      }).then(function (res) {
+        if (!res.ok || !res.body || !res.body.url) {
+          throw new Error((res.body && res.body.error) || 'Checkout failed.');
+        }
+        try { console.log('[pmg-t41] redirect → Stripe Checkout'); } catch (_) {}
+        window.location.assign(res.body.url);
       });
-    }).then(function (r) {
-      return r.json().then(function (j) { return { ok: r.ok, body: j }; });
-    }).then(function (res) {
-      if (!res.ok || !res.body || !res.body.url) {
-        throw new Error((res.body && res.body.error) || 'Checkout failed.');
-      }
-      /* Hard navigation to Stripe-hosted checkout */
-      window.location.assign(res.body.url);
     }).catch(function (err) {
       btn.disabled = false;
-      btn.textContent = origLabel || 'Upgrade To Pro';
+      btn.textContent = origLabel || (tier === 'founding' ? 'Become A Founding Member' : 'Upgrade To Pro');
+      try { console.warn('[pmg-t41] startCheckout failed:', err); } catch (_) {}
       showToast('Could Not Start Checkout: ' + (err && err.message ? err.message : 'Unknown Error.'), 6000);
     });
   }
@@ -10645,7 +10713,9 @@
     var p = new URLSearchParams(location.search);
     if (p.get('upgrade') !== 'success') return;
 
-    showToast('Payment Confirmed. Pro Access Will Update Automatically.', 6000);
+    var tier = (p.get('tier') || 'pro').toLowerCase();
+    var label = tier === 'founding' ? 'Founding Member' : 'Pro';
+    showToast('Payment Confirmed. ' + label + ' Access Will Update Automatically.', 6000);
 
     var deadline = Date.now() + 30000; /* 30s */
     var attempt = 0;
@@ -10653,16 +10723,20 @@
     function tick() {
       attempt++;
       fetchProfile().then(function (profile) {
-        if (profile && profile.plan === 'pro') {
+        var done = profile && (
+          (tier === 'founding' && profile.plan === 'founding') ||
+          (tier !== 'founding' && (profile.plan === 'pro' || profile.plan === 'founding'))
+        );
+        if (done) {
           if (typeof window.pmgUnlockPro === 'function') window.pmgUnlockPro();
-          showToast('Pro Unlocked. Welcome To PromptMeGood Pro.', 5000);
+          showToast(label + ' Unlocked. Welcome To PromptMeGood ' + label + '.', 5000);
           stripUpgradeParam();
           return;
         }
         if (Date.now() < deadline) {
           setTimeout(tick, 2000);
         } else {
-          showToast('Still Processing. Refresh In A Minute If Pro Is Not Active.', 7000);
+          showToast('Still Processing. Refresh In A Minute If ' + label + ' Is Not Active.', 7000);
           stripUpgradeParam();
         }
       }).catch(function () {

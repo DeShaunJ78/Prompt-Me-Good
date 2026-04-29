@@ -207,7 +207,7 @@
       <div class="container">
         <span class="eyebrow">Pricing</span>
         <h1>Simple, Honest Pricing</h1>
-        <p>All three pipelines &mdash; the <strong>Prompt Builder</strong>, the <strong>Photography Suite</strong>, and the <strong>DALL·E 3 Image Generator</strong> &mdash; are free during our founding member period. PRO is on the way. Join early access and we&rsquo;ll let you know the moment it&rsquo;s live.</p>
+        <p>All three pipelines inside PromptMeGood &mdash; the <strong>Prompt Builder</strong>, the in-app <strong>Photography Suite</strong> (Style, Camera &amp; Lens, Lighting, Composition, Color), and the <strong>DALL·E 3 Image Generator</strong> &mdash; are free to try. Lock in lifetime access with our one-time <strong>Founding Member</strong> deal, or wait for the monthly <strong>PRO</strong> launch.</p>
       </div>
     </section>
 
@@ -241,7 +241,37 @@
           </div>
         </article>
 
-        <article class="pricing-card is-featured" aria-labelledby="tier-pro-name">
+        <article class="pricing-card is-featured" aria-labelledby="tier-founding-name">
+          <span class="pricing-badge">Limited Time</span>
+          <h2 class="tier-name" id="tier-founding-name">Founding Member</h2>
+          <div class="tier-price">
+            <span class="tier-price-amount">$49</span>
+            <span class="tier-price-period">/ one-time, lifetime</span>
+          </div>
+          <p class="tier-status" style="color: var(--color-primary);">Available Now</p>
+          <p class="tier-summary">Pay once, keep PromptMeGood Pro forever. No monthly bill, no renewal, no surprise pricing changes after PRO officially launches.</p>
+          <ul class="tier-features">
+            <li><strong>Everything In PRO &mdash; Forever.</strong> One payment of $49.</li>
+            <li>Unlimited Run With AI (No Daily Cap)</li>
+            <li>Unlimited DALL·E 3 Image Generation (No Daily Cap)</li>
+            <li>Unlimited File &amp; Image Analysis</li>
+            <li>Cloud Prompt Vault (Synced Across Devices)</li>
+            <li>Saved Photography Suite Presets &amp; Brand Looks</li>
+            <li>Money Mode Pro Workflows</li>
+            <li>Brand Voice Profiles</li>
+            <li>Founding Member Badge On Your Account</li>
+            <li>Locked-In Access To All Future PRO Features</li>
+          </ul>
+          <div class="tier-cta-row">
+            <!-- T41 Stripe Checkout: pmg-ux.js wires this button to
+                 POST /api/create-checkout-session with { tier: 'founding' }.
+                 Backend creates a one-time $49 payment session using
+                 STRIPE_FOUNDING_PRICE_ID and Stripe handles the rest. -->
+            <button type="button" class="btn btn-primary pmg-upgrade-btn" data-pmg-upgrade data-pmg-tier="founding">Become A Founding Member</button>
+          </div>
+        </article>
+
+        <article class="pricing-card" aria-labelledby="tier-pro-name">
           <span class="pricing-badge">Coming Soon</span>
           <h2 class="tier-name" id="tier-pro-name">PRO</h2>
           <div class="tier-price">
