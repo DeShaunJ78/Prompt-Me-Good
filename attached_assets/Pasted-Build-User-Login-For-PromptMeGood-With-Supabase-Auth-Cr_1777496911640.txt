@@ -1,0 +1,103 @@
+Build User Login For PromptMeGood With Supabase Auth.
+
+Create a checkpoint first.
+
+Goal:
+Add simple user login so visitors can sign in, save prompts, unlock paid access, and keep prompt history.
+
+Use Magic Link login first. Do not add password login yet.
+
+Do not change:
+- Backend/API AI logic
+- Stripe webhook logic
+- Payment secrets
+- Existing IDs used by the app
+- Prompt generation logic
+- Image generation logic
+
+Required UI:
+Add a small account area near the header or builder.
+
+Logged Out State:
+Title: Save Your Best Prompts
+Input Placeholder: Enter Email
+Button: Send Login Link
+Helper: Sign In To Save Prompts, Sync History, And Unlock Pro Features.
+
+Logged In State:
+Show:
+Signed In As [email]
+Button: Sign Out
+Optional Button: View Saved Prompts
+
+Title Case Policy:
+All labels, buttons, placeholders, badges, and short helper text must use Title Case.
+
+Supabase:
+Use the existing Supabase client if already configured.
+If no client exists, add one safely using:
+- NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY for Next.js
+or
+- browser Supabase client for static HTML.
+
+Auth Logic:
+1. On Send Login Link:
+- Read email input.
+- If empty, show: Enter Email First.
+- Call Supabase auth.signInWithOtp({ email }).
+- Redirect back to the current site URL.
+- Show: Check Your Email For Login Link.
+
+2. On Page Load:
+- Call Supabase auth.getUser().
+- If user exists, show logged-in state.
+- If user does not exist, show logged-out state.
+
+3. On Sign Out:
+- Call Supabase auth.signOut().
+- Update UI to logged-out state.
+Supabase signOut removes the browser session, so do not manually fake login state.
+
+Profiles:
+After login, ensure a profiles row exists for the user:
+- user_id
+- email
+- plan default free
+Do not overwrite paid/founding/pro plan values.
+
+Pro Access:
+If profiles.plan is founding or pro, show:
+Founding Member
+or
+Pro Member
+
+If no paid plan, show:
+Free Plan
+
+Placement:
+Do not put login between the goal textarea and Fix My Prompt.
+Do not block the first-use flow.
+Place account UI in the header, side panel, or below the main first-use path.
+
+QA:
+- Homepage loads.
+- No fatal console errors.
+- Enter Email field appears.
+- Send Login Link works.
+- User receives email.
+- Returning from email logs user in.
+- Signed In As email appears.
+- Sign Out works.
+- Fix My Prompt still works.
+- Run With AI still works.
+- Copy Prompt still works.
+- Generate Image still works.
+- Stripe webhook route still exists.
+- No service-role key appears in frontend code.
+
+Report:
+1. Files changed.
+2. Supabase auth method used.
+3. Where login UI was added.
+4. How profile row is created.
+5. QA results.

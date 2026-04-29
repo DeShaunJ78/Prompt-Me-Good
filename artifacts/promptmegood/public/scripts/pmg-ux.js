@@ -9762,6 +9762,20 @@
       try { section.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
       var emailInput = document.getElementById('pmg-account-email');
       if (emailInput) { try { emailInput.focus({ preventScroll: true }); } catch (_) {} }
+    },
+    /* Update the small plan pill next to "Signed In As ...". Called by T41
+       after every /api/me/profile fetch. plan values from the server:
+       'pro' → "Pro Member", 'founding' → "Founding Member", anything else
+       (including null/undefined) → "Free Plan". */
+    setPlanBadge: function (plan) {
+      var el = document.getElementById('pmg-account-plan-badge');
+      if (!el) return;
+      var p = (plan || 'free').toString().toLowerCase();
+      var label = 'Free Plan';
+      if (p === 'pro') label = 'Pro Member';
+      else if (p === 'founding') label = 'Founding Member';
+      el.textContent = label;
+      el.setAttribute('data-plan', (p === 'pro' || p === 'founding') ? p : 'free');
     }
   };
   var hasGenerated = false;
@@ -9838,6 +9852,18 @@
       '  font-size: var(--text-xs, 12px); color: var(--color-text-muted, #5f6b75);',
       '}',
       '#' + SECTION_ID + ' .pmg-account-meta strong { color: var(--color-text, #111827); }',
+      '#' + SECTION_ID + ' .pmg-account-plan-badge {',
+      '  display: inline-block; margin-left: 6px; padding: 2px 8px;',
+      '  border-radius: 999px; font-size: 11px; font-weight: 600;',
+      '  background: var(--color-surface-soft, #eef1f3); color: var(--color-text, #111827);',
+      '  border: 1px solid var(--color-border, #d6dde2); vertical-align: middle;',
+      '}',
+      '#' + SECTION_ID + ' .pmg-account-plan-badge[data-plan="pro"] {',
+      '  background: var(--color-primary, #0f6e6a); color: #fff; border-color: transparent;',
+      '}',
+      '#' + SECTION_ID + ' .pmg-account-plan-badge[data-plan="founding"] {',
+      '  background: linear-gradient(90deg, #b8860b, #f6c453); color: #1f2937; border-color: transparent;',
+      '}',
       '#' + SECTION_ID + ' .pmg-account-status {',
       '  font-size: var(--text-xs, 12px); min-height: 1em;',
       '  color: var(--color-text-muted, #5f6b75);',
@@ -9901,18 +9927,18 @@
       '<div class="pmg-account-body">' +
       /* signed-out */
       '  <div data-account-state="signed-out">' +
-      '    <p class="pmg-account-meta">Sign In With Your Email To Save And Re-Use Your Favorite Prompts. We\'ll Send You A Magic Link — No Password Needed.</p>' +
+      '    <p class="pmg-account-meta">Sign In To Save Prompts, Sync History, And Unlock Pro Features.</p>' +
       '    <div class="pmg-account-row">' +
-      '      <input type="email" id="' + EMAIL_INPUT_ID + '" placeholder="Enter Your Email" autocomplete="email" inputmode="email" />' +
-      '      <button type="button" id="' + SIGNIN_BTN_ID + '" class="pmg-account-btn">Sign In</button>' +
+      '      <input type="email" id="' + EMAIL_INPUT_ID + '" placeholder="Enter Email" autocomplete="email" inputmode="email" />' +
+      '      <button type="button" id="' + SIGNIN_BTN_ID + '" class="pmg-account-btn">Send Login Link</button>' +
       '    </div>' +
       '  </div>' +
       /* signed-in */
       '  <div data-account-state="signed-in">' +
-      '    <p class="pmg-account-meta">Signed In As <strong id="pmg-account-email-display"></strong></p>' +
+      '    <p class="pmg-account-meta">Signed In As <strong id="pmg-account-email-display"></strong> <span id="pmg-account-plan-badge" class="pmg-account-plan-badge" data-plan="free">Free Plan</span></p>' +
       '    <div class="pmg-account-row">' +
       '      <button type="button" id="' + SAVE_BTN_ID + '" class="pmg-account-btn" hidden><span aria-hidden="true">💾</span> Save Prompt</button>' +
-      '      <button type="button" id="' + LOAD_BTN_ID + '" class="pmg-account-btn is-secondary"><span aria-hidden="true">📂</span> Load Saved Prompts</button>' +
+      '      <button type="button" id="' + LOAD_BTN_ID + '" class="pmg-account-btn is-secondary"><span aria-hidden="true">📂</span> View Saved Prompts</button>' +
       '      <button type="button" id="' + SIGNOUT_BTN_ID + '" class="pmg-account-btn is-secondary">Sign Out</button>' +
       '    </div>' +
       '    <ul id="' + LIST_ID + '" class="pmg-account-list"></ul>' +
@@ -10061,9 +10087,24 @@
       if (session && session.user) {
         currentUser = { id: session.user.id, email: session.user.email || '' };
         setAuthState('in', currentUser.email);
+        /* Ask T41 (or anyone else listening) to refresh plan state and the
+           badge immediately, instead of waiting for the next 60s poll.
+           Also pings GET /api/me/profile, which upserts a profiles row
+           with plan='free' if one doesn't exist yet — without ever
+           overwriting an existing paid plan. */
+        try {
+          if (window.__pmgT41 && typeof window.__pmgT41.syncProfile === 'function') {
+            window.__pmgT41.syncProfile();
+          }
+        } catch (_) {}
       } else {
         currentUser = null;
         setAuthState('out');
+        try {
+          if (window.__pmgT40 && typeof window.__pmgT40.setPlanBadge === 'function') {
+            window.__pmgT40.setPlanBadge('free');
+          }
+        } catch (_) {}
       }
     });
   }
@@ -10080,7 +10121,12 @@
     if (!client) { setStatus('Sign-In Is Not Available Yet.', 'error'); return; }
     var input = document.getElementById(EMAIL_INPUT_ID);
     var email = (input && input.value || '').trim();
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!email) {
+      setStatus('Enter Email First.', 'error');
+      if (input) try { input.focus(); } catch (_) {}
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setStatus('Please Enter A Valid Email Address.', 'error');
       return;
     }
@@ -10095,7 +10141,7 @@
           setStatus(out.error.message || 'Could Not Send Magic Link.', 'error');
           return;
         }
-        setStatus('Check Your Email — We Sent You A Magic Link!', 'success');
+        setStatus('Check Your Email For Login Link.', 'success');
       })
       .catch(function (err) {
         if (btn) { btn.disabled = false; btn.removeAttribute('aria-busy'); }
@@ -10477,6 +10523,12 @@
 
   function applyProfileToCache(profile) {
     if (!profile) return false;
+    /* Surface the plan in the T40 panel badge regardless of cache state. */
+    try {
+      if (window.__pmgT40 && typeof window.__pmgT40.setPlanBadge === 'function') {
+        window.__pmgT40.setPlanBadge(profile.plan);
+      }
+    } catch (_) {}
     var isPro = profile.plan === 'pro';
     var cached = false;
     try { cached = localStorage.getItem('promptmegood:pro:v1') === 'true'; } catch (_) {}
@@ -10500,6 +10552,11 @@
   function syncOnce() {
     fetchProfile().then(applyProfileToCache).catch(function () {});
   }
+
+  /* Expose a tiny API so T40 (auth) can ask us to refresh immediately
+     after the user signs in — no waiting for the 60s poll. */
+  window.__pmgT41 = window.__pmgT41 || {};
+  window.__pmgT41.syncProfile = syncOnce;
 
   /* ----------------------------------------------------------------- */
   /* Click handler for upgrade buttons                                 */
