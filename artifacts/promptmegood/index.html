@@ -9802,6 +9802,14 @@ Context:
     `document.readyState === 'loading'` guards, so they still defer their
     main DOM work to DOMContentLoaded.
   -->
+  <!--
+    T40 — Supabase browser SDK loaded from CDN. Loads BEFORE pmg-ux.js so
+    the T40 IIFE inside pmg-ux.js can find `window.supabase`. Async-safe:
+    T40 retries on a short interval if the CDN bundle hasn't finished
+    parsing yet by the time DOMContentLoaded fires. Defer keeps document
+    parsing from blocking on the network round-trip.
+  -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="/scripts/pmg-ux.js" defer></script>
   <script src="/scripts/post-spec.js" defer></script>
   <script src="/scripts/pmg-image-fix.js" defer></script>

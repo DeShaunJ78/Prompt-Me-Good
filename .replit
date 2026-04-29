@@ -45,3 +45,9 @@ externalPort = 3000
 
 [nix]
 packages = ["run", "gh"]
+
+[userenv]
+
+[userenv.shared]
+SUPABASE_URL = "https://hewzpbgvaltqlywzjcqg.supabase.co"
+SUPABASE_PUBLISHABLE_KEY = "sb_publishable_32_fiDk_HBzcLZLDmKQ5ig_vVIry5Yk"

@@ -2,11 +2,13 @@ import { Router, type IRouter } from "express";
 import healthRouter from "./health";
 import aiRouter from "./ai";
 import reviewRouter from "./review";
+import publicConfigRouter from "./public-config";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(aiRouter);
+router.use(publicConfigRouter);
 
 // Dev-only Claude code-review endpoint. Mounted only when NODE_ENV !==
 // "production" so it never ships to live traffic. The handler also self-checks

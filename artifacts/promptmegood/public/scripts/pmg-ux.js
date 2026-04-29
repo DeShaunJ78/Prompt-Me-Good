@@ -9698,3 +9698,572 @@
     init();
   }
 })();
+
+/* =====================================================================
+ * T40 — Supabase Auth + Save/Load Best Prompts
+ * ---------------------------------------------------------------------
+ * Adds an opt-in "Save Your Best Prompts" panel above the prompt
+ * builder. Uses Supabase magic-link email auth (no passwords, no
+ * extra signup form). When signed in, a 💾 Save Prompt button appears
+ * (only after the user has generated a prompt) and a 📂 Load Saved
+ * Prompts list populates from the user's own `prompts` rows.
+ *
+ * Browser SDK loaded via CDN <script> in index.html. Supabase URL +
+ * publishable key fetched at runtime from /api/public-config so they
+ * stay in Replit Secrets — never hardcoded.
+ *
+ * Hard rules honored:
+ *   - No renames of existing IDs/classes/JS variables.
+ *   - New panel is added ABOVE #builder, doesn't touch the builder
+ *     internals or rearrange anything inside it.
+ *   - All new logic in this single T40 IIFE.
+ *   - Idempotent via window.__pmgT40Init.
+ *   - Title Case sweep for all visible labels.
+ *   - CSS variables only; no flex/order reorder.
+ *
+ * Supabase prerequisites (one-time, in Supabase dashboard):
+ *   - Run the SQL in artifacts/promptmegood/SUPABASE-SETUP.md to
+ *     create the `prompts` table and Row-Level-Security policies.
+ *   - Add your site URL (production domain + http://localhost) under
+ *     Authentication → URL Configuration → Redirect URLs so magic
+ *     links bring users back to the right place.
+ * ===================================================================== */
+(function pmgT40Auth() {
+  if (window.__pmgT40Init) return;
+  window.__pmgT40Init = true;
+
+  var STYLE_ID = 'pmg-t40-style';
+  var SECTION_ID = 'pmg-account';
+  var EMAIL_INPUT_ID = 'pmg-account-email';
+  var SAVE_BTN_ID = 'pmg-account-save';
+  var LOAD_BTN_ID = 'pmg-account-load';
+  var SIGNIN_BTN_ID = 'pmg-account-signin';
+  var SIGNOUT_BTN_ID = 'pmg-account-signout';
+  var STATUS_ID = 'pmg-account-status';
+  var LIST_ID = 'pmg-account-list';
+  var TOGGLE_ID = 'pmg-account-toggle';
+
+  var client = null;       /* Supabase client instance, or null */
+  var currentUser = null;  /* {id, email} or null */
+  var hasGenerated = false;
+  var hasFatal = false;    /* Block all UI if config or SDK unavailable */
+  var fatalMsg = '';
+
+  /* ---------- styles ---------- */
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      '#' + SECTION_ID + ' {',
+      '  margin: 0 auto 16px; max-width: 760px;',
+      '  background: var(--color-surface, #fff);',
+      '  border: 1px solid var(--color-border, #e5e7eb);',
+      '  border-radius: var(--radius-lg, 14px);',
+      '  box-shadow: 0 1px 2px rgba(0,0,0,0.03);',
+      '  overflow: hidden;',
+      '}',
+      '#' + SECTION_ID + ' .pmg-account-head {',
+      '  display: flex; align-items: center; justify-content: space-between;',
+      '  padding: 12px 16px; cursor: pointer;',
+      '  background: color-mix(in srgb, var(--color-primary, #0f6e6a) 6%, var(--color-surface, #fff));',
+      '}',
+      '#' + SECTION_ID + ' .pmg-account-head h3 {',
+      '  margin: 0; font-size: var(--text-base, 15px); font-weight: 700;',
+      '  color: var(--color-text, #111827);',
+      '  display: inline-flex; align-items: center; gap: 8px;',
+      '}',
+      '#' + SECTION_ID + ' .pmg-account-toggle {',
+      '  appearance: none; background: none; border: none; cursor: pointer;',
+      '  font-size: 18px; line-height: 1; color: var(--color-text-muted, #5f6b75);',
+      '  transition: transform 150ms ease;',
+      '}',
+      '#' + SECTION_ID + '[data-open="false"] .pmg-account-toggle { transform: rotate(-90deg); }',
+      '#' + SECTION_ID + '[data-open="false"] .pmg-account-body { display: none; }',
+      '#' + SECTION_ID + ' .pmg-account-body {',
+      '  padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px;',
+      '}',
+      '#' + SECTION_ID + ' .pmg-account-row {',
+      '  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;',
+      '}',
+      '#' + SECTION_ID + ' input[type="email"] {',
+      '  flex: 1 1 200px; min-width: 0;',
+      '  padding: 8px 12px;',
+      '  font: inherit; font-size: var(--text-sm, 14px);',
+      '  border: 1px solid var(--color-border, #d1d5db);',
+      '  border-radius: var(--radius-md, 8px);',
+      '  background: var(--color-surface, #fff);',
+      '  color: var(--color-text, #111827);',
+      '}',
+      '#' + SECTION_ID + ' input[type="email"]:focus-visible {',
+      '  outline: 2px solid var(--color-primary, #0f6e6a); outline-offset: 1px;',
+      '}',
+      '#' + SECTION_ID + ' button.pmg-account-btn {',
+      '  appearance: none; cursor: pointer;',
+      '  display: inline-flex; align-items: center; justify-content: center; gap: 6px;',
+      '  padding: 8px 14px;',
+      '  background: var(--color-primary, #0f6e6a); color: #fff;',
+      '  border: 1px solid var(--color-primary, #0f6e6a);',
+      '  border-radius: var(--radius-md, 8px);',
+      '  font: inherit; font-size: var(--text-sm, 14px); font-weight: 600;',
+      '  transition: filter 150ms ease;',
+      '}',
+      '#' + SECTION_ID + ' button.pmg-account-btn:hover { filter: brightness(1.06); }',
+      '#' + SECTION_ID + ' button.pmg-account-btn[disabled] { opacity: 0.6; cursor: progress; filter: none; }',
+      '#' + SECTION_ID + ' button.pmg-account-btn.is-secondary {',
+      '  background: var(--color-surface, #fff); color: var(--color-primary, #0f6e6a);',
+      '  border-color: color-mix(in srgb, var(--color-primary, #0f6e6a) 35%, var(--color-border, #d1d5db));',
+      '}',
+      '#' + SECTION_ID + ' button.pmg-account-btn.is-secondary:hover {',
+      '  background: color-mix(in srgb, var(--color-primary, #0f6e6a) 8%, var(--color-surface, #fff));',
+      '}',
+      '#' + SECTION_ID + ' .pmg-account-meta {',
+      '  font-size: var(--text-xs, 12px); color: var(--color-text-muted, #5f6b75);',
+      '}',
+      '#' + SECTION_ID + ' .pmg-account-meta strong { color: var(--color-text, #111827); }',
+      '#' + SECTION_ID + ' .pmg-account-status {',
+      '  font-size: var(--text-xs, 12px); min-height: 1em;',
+      '  color: var(--color-text-muted, #5f6b75);',
+      '}',
+      '#' + SECTION_ID + ' .pmg-account-status[data-state="error"] { color: #b3261e; }',
+      '#' + SECTION_ID + ' .pmg-account-status[data-state="success"] {',
+      '  color: var(--color-primary, #0f6e6a); font-weight: 600;',
+      '}',
+      '#' + SECTION_ID + ' .pmg-account-list {',
+      '  list-style: none; padding: 0; margin: 6px 0 0;',
+      '  display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto;',
+      '}',
+      '#' + SECTION_ID + ' .pmg-account-list li {',
+      '  display: flex; gap: 8px; align-items: flex-start;',
+      '  padding: 8px 10px;',
+      '  background: color-mix(in srgb, var(--color-primary, #0f6e6a) 4%, var(--color-surface, #fff));',
+      '  border: 1px solid var(--color-border, #e5e7eb);',
+      '  border-radius: var(--radius-md, 8px);',
+      '  font-size: var(--text-xs, 12px);',
+      '}',
+      '#' + SECTION_ID + ' .pmg-account-list .pmg-account-list-text {',
+      '  flex: 1 1 auto; min-width: 0;',
+      '  color: var(--color-text, #111827);',
+      '  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;',
+      '}',
+      '#' + SECTION_ID + ' .pmg-account-list .pmg-account-list-load {',
+      '  appearance: none; cursor: pointer; flex: 0 0 auto;',
+      '  padding: 4px 10px; font: inherit; font-size: var(--text-xs, 12px);',
+      '  background: var(--color-primary, #0f6e6a); color: #fff;',
+      '  border: 1px solid var(--color-primary, #0f6e6a); border-radius: var(--radius-md, 8px);',
+      '  font-weight: 600;',
+      '}',
+      /* Save button hidden until a prompt is generated. */
+      '#' + SAVE_BTN_ID + '[hidden] { display: none !important; }',
+      /* Show signed-in / signed-out body sections via data-state. */
+      '#' + SECTION_ID + ' [data-account-state] { display: none; }',
+      '#' + SECTION_ID + '[data-auth="in"]  [data-account-state="signed-in"]  { display: flex; flex-direction: column; gap: 10px; }',
+      '#' + SECTION_ID + '[data-auth="out"] [data-account-state="signed-out"] { display: flex; flex-direction: column; gap: 10px; }',
+      '#' + SECTION_ID + '[data-auth="fatal"] [data-account-state="fatal"]   { display: flex; flex-direction: column; gap: 6px; }'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID; s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  /* ---------- DOM ---------- */
+  function buildPanel() {
+    if (document.getElementById(SECTION_ID)) return true;
+    var builder = document.getElementById('builder');
+    if (!builder || !builder.parentNode) return false;
+    var section = document.createElement('section');
+    section.id = SECTION_ID;
+    section.setAttribute('data-open', 'false');
+    section.setAttribute('data-auth', 'out');
+    section.setAttribute('aria-label', 'Save Your Best Prompts');
+    section.innerHTML =
+      '<div class="pmg-account-head" id="' + TOGGLE_ID + '" role="button" tabindex="0" aria-expanded="false">' +
+      '  <h3><span aria-hidden="true">💾</span> Save Your Best Prompts</h3>' +
+      '  <button type="button" class="pmg-account-toggle" aria-label="Toggle Account Panel">▾</button>' +
+      '</div>' +
+      '<div class="pmg-account-body">' +
+      /* signed-out */
+      '  <div data-account-state="signed-out">' +
+      '    <p class="pmg-account-meta">Sign In With Your Email To Save And Re-Use Your Favorite Prompts. We\'ll Send You A Magic Link — No Password Needed.</p>' +
+      '    <div class="pmg-account-row">' +
+      '      <input type="email" id="' + EMAIL_INPUT_ID + '" placeholder="Enter Your Email" autocomplete="email" inputmode="email" />' +
+      '      <button type="button" id="' + SIGNIN_BTN_ID + '" class="pmg-account-btn">Sign In</button>' +
+      '    </div>' +
+      '  </div>' +
+      /* signed-in */
+      '  <div data-account-state="signed-in">' +
+      '    <p class="pmg-account-meta">Signed In As <strong id="pmg-account-email-display"></strong></p>' +
+      '    <div class="pmg-account-row">' +
+      '      <button type="button" id="' + SAVE_BTN_ID + '" class="pmg-account-btn" hidden><span aria-hidden="true">💾</span> Save Prompt</button>' +
+      '      <button type="button" id="' + LOAD_BTN_ID + '" class="pmg-account-btn is-secondary"><span aria-hidden="true">📂</span> Load Saved Prompts</button>' +
+      '      <button type="button" id="' + SIGNOUT_BTN_ID + '" class="pmg-account-btn is-secondary">Sign Out</button>' +
+      '    </div>' +
+      '    <ul id="' + LIST_ID + '" class="pmg-account-list"></ul>' +
+      '  </div>' +
+      /* fatal */
+      '  <div data-account-state="fatal">' +
+      '    <p class="pmg-account-meta">Account Sign-In Is Not Available Right Now.</p>' +
+      '    <p class="pmg-account-status" data-state="error" id="pmg-account-fatal-msg"></p>' +
+      '  </div>' +
+      '  <p class="pmg-account-status" id="' + STATUS_ID + '" aria-live="polite"></p>' +
+      '</div>';
+    builder.parentNode.insertBefore(section, builder);
+    wireEvents();
+    return true;
+  }
+
+  function wireEvents() {
+    var section = document.getElementById(SECTION_ID);
+    if (!section) return;
+
+    /* Header toggles open/closed. */
+    var head = document.getElementById(TOGGLE_ID);
+    if (head) {
+      head.addEventListener('click', toggleOpen);
+      head.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleOpen(); }
+      });
+    }
+
+    var signinBtn = document.getElementById(SIGNIN_BTN_ID);
+    if (signinBtn) signinBtn.addEventListener('click', onSignInClick);
+
+    var emailInput = document.getElementById(EMAIL_INPUT_ID);
+    if (emailInput) {
+      emailInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); onSignInClick(); }
+      });
+    }
+
+    var signoutBtn = document.getElementById(SIGNOUT_BTN_ID);
+    if (signoutBtn) signoutBtn.addEventListener('click', onSignOutClick);
+
+    var saveBtn = document.getElementById(SAVE_BTN_ID);
+    if (saveBtn) saveBtn.addEventListener('click', onSaveClick);
+
+    var loadBtn = document.getElementById(LOAD_BTN_ID);
+    if (loadBtn) loadBtn.addEventListener('click', onLoadClick);
+  }
+
+  function toggleOpen() {
+    var section = document.getElementById(SECTION_ID);
+    if (!section) return;
+    var open = section.getAttribute('data-open') === 'true';
+    section.setAttribute('data-open', open ? 'false' : 'true');
+    var head = document.getElementById(TOGGLE_ID);
+    if (head) head.setAttribute('aria-expanded', open ? 'false' : 'true');
+  }
+
+  function setStatus(msg, state) {
+    var el = document.getElementById(STATUS_ID);
+    if (!el) return;
+    el.textContent = msg || '';
+    if (state) el.setAttribute('data-state', state);
+    else el.removeAttribute('data-state');
+  }
+
+  function setAuthState(state, email) {
+    var section = document.getElementById(SECTION_ID);
+    if (!section) return;
+    section.setAttribute('data-auth', state);
+    if (state === 'in' && email) {
+      var disp = document.getElementById('pmg-account-email-display');
+      if (disp) disp.textContent = email;
+    }
+    refreshSaveBtn();
+  }
+
+  function refreshSaveBtn() {
+    var btn = document.getElementById(SAVE_BTN_ID);
+    if (!btn) return;
+    if (currentUser && hasGenerated) btn.removeAttribute('hidden');
+    else btn.setAttribute('hidden', '');
+  }
+
+  /* ---------- Supabase bootstrap ---------- */
+  function fetchConfigAndInit() {
+    fetch('/api/public-config', { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (cfg) {
+        if (!cfg || !cfg.supabaseUrl || !cfg.supabasePublishableKey) {
+          markFatal('Sign-In Is Not Configured Yet — Add Your Supabase URL And Publishable Key.');
+          return;
+        }
+        if (typeof window.supabase === 'undefined' || !window.supabase.createClient) {
+          /* CDN script not yet ready — retry briefly. */
+          var tries = 0;
+          var iv = setInterval(function () {
+            tries++;
+            if (window.supabase && window.supabase.createClient) {
+              clearInterval(iv);
+              initClient(cfg);
+            } else if (tries >= 50) {
+              clearInterval(iv);
+              markFatal('Could Not Load The Supabase Browser Library. Please Refresh The Page.');
+            }
+          }, 100);
+          return;
+        }
+        initClient(cfg);
+      })
+      .catch(function () {
+        markFatal('Could Not Load Sign-In Configuration. Please Refresh The Page.');
+      });
+  }
+
+  function initClient(cfg) {
+    try {
+      client = window.supabase.createClient(cfg.supabaseUrl, cfg.supabasePublishableKey, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+      });
+    } catch (e) {
+      markFatal('Could Not Initialize Sign-In: ' + (e && e.message ? e.message : 'unknown error'));
+      return;
+    }
+    /* Prime current session, subscribe to changes. */
+    client.auth.getSession().then(function (res) {
+      var sess = res && res.data && res.data.session;
+      if (sess && sess.user) {
+        currentUser = { id: sess.user.id, email: sess.user.email || '' };
+        setAuthState('in', currentUser.email);
+        /* If we just landed back from a magic link, the redirect has
+           a #access_token=... hash. Strip it so refresh doesn't fire
+           navigation-warnings and so the URL is clean. */
+        if (window.location.hash && /access_token=/.test(window.location.hash)) {
+          try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch (e) {}
+        }
+        setStatus('Welcome Back!', 'success');
+        /* Auto-open the panel briefly so the user sees the new state. */
+        var sec = document.getElementById(SECTION_ID);
+        if (sec && sec.getAttribute('data-open') === 'false') toggleOpen();
+      } else {
+        setAuthState('out');
+      }
+    });
+    client.auth.onAuthStateChange(function (event, session) {
+      if (session && session.user) {
+        currentUser = { id: session.user.id, email: session.user.email || '' };
+        setAuthState('in', currentUser.email);
+      } else {
+        currentUser = null;
+        setAuthState('out');
+      }
+    });
+  }
+
+  function markFatal(msg) {
+    hasFatal = true; fatalMsg = msg;
+    setAuthState('fatal');
+    var el = document.getElementById('pmg-account-fatal-msg');
+    if (el) el.textContent = msg;
+  }
+
+  /* ---------- handlers ---------- */
+  function onSignInClick() {
+    if (!client) { setStatus('Sign-In Is Not Available Yet.', 'error'); return; }
+    var input = document.getElementById(EMAIL_INPUT_ID);
+    var email = (input && input.value || '').trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setStatus('Please Enter A Valid Email Address.', 'error');
+      return;
+    }
+    var btn = document.getElementById(SIGNIN_BTN_ID);
+    if (btn) { btn.disabled = true; btn.setAttribute('aria-busy', 'true'); }
+    setStatus('Sending Magic Link…');
+    var redirect = window.location.origin + window.location.pathname;
+    client.auth.signInWithOtp({ email: email, options: { emailRedirectTo: redirect } })
+      .then(function (out) {
+        if (btn) { btn.disabled = false; btn.removeAttribute('aria-busy'); }
+        if (out && out.error) {
+          setStatus(out.error.message || 'Could Not Send Magic Link.', 'error');
+          return;
+        }
+        setStatus('Check Your Email — We Sent You A Magic Link!', 'success');
+      })
+      .catch(function (err) {
+        if (btn) { btn.disabled = false; btn.removeAttribute('aria-busy'); }
+        setStatus((err && err.message) || 'Network Error. Please Try Again.', 'error');
+      });
+  }
+
+  function onSignOutClick() {
+    if (!client) return;
+    setStatus('Signing Out…');
+    client.auth.signOut().then(function () {
+      currentUser = null;
+      setAuthState('out');
+      var list = document.getElementById(LIST_ID);
+      if (list) list.innerHTML = '';
+      setStatus('Signed Out.', 'success');
+    }).catch(function (err) {
+      setStatus((err && err.message) || 'Could Not Sign Out.', 'error');
+    });
+  }
+
+  function readGoal() {
+    var g = document.getElementById('goal');
+    return g ? String(g.value || '').trim() : '';
+  }
+  function readOutput() {
+    var o = document.getElementById('aiResponseOutput');
+    if (!o) return '';
+    return String(o.textContent || '').trim();
+  }
+
+  /* Resets a button's disabled+aria-busy state. Used in finally-style
+     handlers below so a network rejection cannot strand the UI. */
+  function resetBtn(id) {
+    var b = document.getElementById(id);
+    if (!b) return;
+    b.disabled = false;
+    b.removeAttribute('aria-busy');
+  }
+
+  function onSaveClick() {
+    if (!client || !currentUser) { setStatus('Please Sign In First.', 'error'); return; }
+    var input = readGoal();
+    var output = readOutput();
+    if (!input && !output) {
+      setStatus('There Is No Prompt To Save Yet — Generate One First.', 'error');
+      return;
+    }
+    var btn = document.getElementById(SAVE_BTN_ID);
+    if (btn) { btn.disabled = true; btn.setAttribute('aria-busy', 'true'); }
+    setStatus('Saving…');
+    client.from('prompts').insert({ user_id: currentUser.id, input: input, output: output })
+      .then(function (out) {
+        resetBtn(SAVE_BTN_ID);
+        if (out && out.error) {
+          setStatus(out.error.message || 'Could Not Save Prompt.', 'error');
+          return;
+        }
+        setStatus('Prompt Saved!', 'success');
+      })
+      .catch(function (err) {
+        resetBtn(SAVE_BTN_ID);
+        setStatus((err && err.message) || 'Network Error While Saving.', 'error');
+      });
+  }
+
+  function onLoadClick() {
+    if (!client || !currentUser) { setStatus('Please Sign In First.', 'error'); return; }
+    var btn = document.getElementById(LOAD_BTN_ID);
+    if (btn) { btn.disabled = true; btn.setAttribute('aria-busy', 'true'); }
+    setStatus('Loading Your Prompts…');
+    client.from('prompts')
+      .select('id, input, output, created_at')
+      .order('created_at', { ascending: false })
+      .limit(25)
+      .then(function (out) {
+        resetBtn(LOAD_BTN_ID);
+        if (out && out.error) {
+          setStatus(out.error.message || 'Could Not Load Prompts.', 'error');
+          return;
+        }
+        renderList(out && out.data ? out.data : []);
+        setStatus(((out && out.data && out.data.length) || 0) + ' Prompt(s) Loaded.', 'success');
+      })
+      .catch(function (err) {
+        resetBtn(LOAD_BTN_ID);
+        setStatus((err && err.message) || 'Network Error While Loading.', 'error');
+      });
+  }
+
+  function renderList(rows) {
+    var list = document.getElementById(LIST_ID);
+    if (!list) return;
+    list.innerHTML = '';
+    if (!rows.length) {
+      var li = document.createElement('li');
+      li.className = 'pmg-account-meta';
+      li.textContent = 'You Haven\'t Saved Any Prompts Yet.';
+      list.appendChild(li);
+      return;
+    }
+    rows.forEach(function (row) {
+      var li = document.createElement('li');
+      var snippet = (row.input || row.output || '').slice(0, 120);
+      var span = document.createElement('span');
+      span.className = 'pmg-account-list-text';
+      span.title = snippet;
+      span.textContent = snippet;
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'pmg-account-list-load';
+      btn.textContent = 'Load';
+      btn.addEventListener('click', function () { loadIntoBuilder(row); });
+      li.appendChild(span);
+      li.appendChild(btn);
+      list.appendChild(li);
+    });
+  }
+
+  function loadIntoBuilder(row) {
+    var goal = document.getElementById('goal');
+    if (!goal) return;
+    goal.value = row.input || row.output || '';
+    try {
+      goal.dispatchEvent(new Event('input', { bubbles: true }));
+      goal.dispatchEvent(new Event('change', { bubbles: true }));
+    } catch (e) { /* ignore */ }
+    try { goal.focus(); goal.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+    setStatus('Loaded Into The Builder — Edit And Re-Run As Needed.', 'success');
+  }
+
+  /* ---------- "has generated" detection ----------
+   * The canonical signal that the user has generated a prompt is the
+   * `pmg-has-result` class on <body> (set elsewhere in pmg-ux.js: see
+   * the pmg-bugfix-result-visibility block + result-panel logic). We
+   * watch <body class> for changes AND, as a defensive secondary
+   * trigger, watch the AI-response output for content. Either fires
+   * the Save Prompt button. */
+  function checkGenerated() {
+    if (hasGenerated) return;
+    var hasResultClass = document.body && document.body.classList &&
+      document.body.classList.contains('pmg-has-result');
+    var out = document.getElementById('aiResponseOutput');
+    var hasOutputText = !!(out && (out.textContent || '').trim().length > 0);
+    if (hasResultClass || hasOutputText) {
+      hasGenerated = true;
+      refreshSaveBtn();
+    }
+  }
+
+  function watchForGenerated() {
+    checkGenerated();
+    /* Watch <body class> for `pmg-has-result`. */
+    try {
+      var bodyMO = new MutationObserver(function () { checkGenerated(); });
+      bodyMO.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    } catch (e) { /* ignore */ }
+    /* Defensive: also watch the AI response container if it exists. */
+    var out = document.getElementById('aiResponseOutput');
+    if (out) {
+      try {
+        var outMO = new MutationObserver(function () { checkGenerated(); });
+        outMO.observe(out, { childList: true, characterData: true, subtree: true });
+      } catch (e) { /* ignore */ }
+    }
+  }
+
+  /* ---------- init ---------- */
+  function init() {
+    injectStyles();
+    /* Builder may not be in the DOM yet on first paint. Retry briefly. */
+    var tries = 0;
+    var iv = setInterval(function () {
+      tries++;
+      if (buildPanel()) {
+        clearInterval(iv);
+        watchForGenerated();
+        fetchConfigAndInit();
+      } else if (tries >= 60) {
+        clearInterval(iv);
+      }
+    }, 250);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

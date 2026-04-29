@@ -1,0 +1,105 @@
+Set Up Supabase Agent Skills And Then Configure Supabase For PromptMeGood.
+
+Create a checkpoint before making changes.
+
+Step 1: Install Supabase Agent Skills
+Run:
+npx skills add supabase/agent-skills
+
+This is optional helper tooling for the agent, but install it first so Supabase setup instructions are available.
+
+Step 2: Inspect The App Structure
+Determine whether PromptMeGood is:
+- Next.js / React app, or
+- Static HTML app using artifacts/promptmegood/index.html
+
+Do not guess.
+
+Step 3: Configure Supabase Based On The Actual App Type
+
+If This Is A Next.js App:
+1. Run:
+npm install @supabase/supabase-js @supabase/ssr
+
+2. Use Replit Secrets, not hardcoded secrets:
+NEXT_PUBLIC_SUPABASE_URL=https://hewzpbgvaltqlywzjcqg.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_32_fiDk_HBzcLZLDmKQ5ig_vVIry5Yk
+
+3. Create Supabase helpers:
+- utils/supabase/client.ts
+- utils/supabase/server.ts
+- utils/supabase/middleware.ts
+
+4. Use Supabase SSR helpers correctly.
+
+If This Is A Static HTML App:
+1. Do not add Next.js SSR files.
+2. Use the browser Supabase client:
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+3. Initialize Supabase safely in frontend code using the public URL and publishable key.
+4. Do not expose service-role keys or private secrets.
+
+Step 4: Add User Account Features
+Add UI near the builder without disrupting the main flow:
+
+- Save Your Best Prompts
+- Enter Email
+- Sign In
+- Sign Out
+- Save Prompt
+- Load Saved Prompts
+
+Follow Title Case policy.
+
+Save Prompt should only appear after a prompt has been generated.
+
+Step 5: Database Setup
+Create a Supabase table:
+
+prompts:
+- id uuid primary key
+- user_id uuid references auth.users
+- input text
+- output text
+- created_at timestamp with time zone default now()
+
+Enable Row Level Security.
+
+Add policies:
+- Users Can Read Own Prompts
+- Users Can Insert Own Prompts
+
+Step 6: Preserve Existing Features
+Do not change:
+- Backend/API routes
+- AI provider logic
+- Image generation logic
+- Payment logic
+- Database logic outside Supabase setup
+- Usage/cost controls
+- Existing button IDs
+- Existing JavaScript function names
+
+Step 7: QA
+Verify:
+- Homepage loads.
+- No fatal console errors.
+- Sign In works.
+- Sign Out works.
+- Save Prompt works for logged-in users.
+- Load Saved Prompts only loads that user’s prompts.
+- Fix My Prompt still works.
+- Run With AI still works.
+- Copy Prompt still works.
+- Refine Prompt still works.
+- Upload File/Image still works.
+- Generate Image still works.
+- Pricing, Guide, Privacy, and Terms still load.
+
+Report:
+1. Whether Supabase Agent Skills installed successfully.
+2. Whether the app is Next.js or static HTML.
+3. Files changed.
+4. Supabase client setup used.
+5. Database SQL/policies applied.
+6. QA results.
