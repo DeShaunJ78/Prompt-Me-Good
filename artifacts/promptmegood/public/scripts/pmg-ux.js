@@ -8741,3 +8741,129 @@
     init();
   }
 })();
+
+/* =====================================================================
+ * T35 — Defensive Photo Group Toggle + Use As Reference Description
+ * ---------------------------------------------------------------------
+ * User feedback after T34 deployed:
+ *   1. NONE of the Photography Suite group headers (Style, Camera &
+ *      Lens, Lighting & Mood, Composition, Color Palette) toggle when
+ *      clicked — they appear inert. T23 binds a direct click handler
+ *      to each .pmg-photo-group-head button, but in production the
+ *      handler is no longer firing (root cause unclear, possibly an
+ *      ordering / observer race with later IIFEs). We intervene
+ *      defensively at the document level.
+ *   2. The "Use As Reference" pill in the Image Generator action row
+ *      has no description — the user wants a brief plain-English
+ *      explanation of what it does, without changing the button layout.
+ *
+ * Approach (no rule violations):
+ *   (A) Add a capture-phase delegated listener on document for clicks
+ *       inside #pmg-photo-suite .pmg-photo-group-head. Use
+ *       stopImmediatePropagation() so any direct handler bound by T23
+ *       does NOT also fire (prevents double-toggle if both work). The
+ *       toggle logic mirrors T23 exactly: classList.toggle('is-collapsed')
+ *       on the parent .pmg-photo-group + sync aria-expanded.
+ *   (B) Add a brief italic helper line BELOW the .image-result-actions
+ *       row (not inside it) so the button row layout is unchanged. Also
+ *       add a native HTML `title` tooltip to the .pmg-use-as-ref-btn
+ *       button itself for hover discoverability.
+ *
+ * Hard rules honored: no backend / API / DB / secret changes; no
+ * renamed IDs/classes/JS variables; CSS variables only; idempotent via
+ * window.__pmgT35Init; MutationObserver on body subtree disconnects
+ * after 60s. No layout reflow of the existing button row.
+ * ===================================================================== */
+(function pmgT35GroupToggleAndRefDesc() {
+  if (window.__pmgT35Init) return;
+  window.__pmgT35Init = true;
+
+  var STYLE_ID = 'pmg-t35-style';
+  var REF_DESC_ID = 'pmg-t35-use-as-ref-desc';
+  var BODY_GUARD_ATTR = 'data-pmg-t35-toggle';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      '#' + REF_DESC_ID + ' {',
+      '  margin: 8px 0 0; padding: 0 var(--space-2, 8px);',
+      '  font-size: var(--text-xs, 12px);',
+      '  color: var(--color-text-muted, #666);',
+      '  font-style: italic; text-align: center; line-height: 1.45;',
+      '}'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  /* (A) Defensive delegated toggle for photo group heads. */
+  function ensureGroupToggle() {
+    if (document.body.getAttribute(BODY_GUARD_ATTR) === '1') return;
+    document.body.setAttribute(BODY_GUARD_ATTR, '1');
+    document.addEventListener('click', function (ev) {
+      if (!ev.target || !ev.target.closest) return;
+      var head = ev.target.closest('#pmg-photo-suite .pmg-photo-group-head');
+      if (!head) return;
+      /* Block any other handler (including T23's direct one) so the
+         toggle fires exactly once per click. */
+      ev.stopImmediatePropagation();
+      ev.preventDefault();
+      var grp = head.parentNode;
+      if (!grp) return;
+      var collapsed = grp.classList.toggle('is-collapsed');
+      head.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    }, true);
+  }
+
+  /* (B) Add a brief italic description below the image action row +
+     a native title tooltip on the button. */
+  function addUseAsRefDesc() {
+    var btn = document.querySelector('.pmg-use-as-ref-btn');
+    if (!btn) return false;
+    /* Always (re)apply the title attribute — cheap and idempotent. */
+    if (!btn.getAttribute('title')) {
+      btn.setAttribute(
+        'title',
+        'Copy The Image URL So You Can Paste It Into Another AI Tool As A Reference Or Inspiration For A Follow-Up.'
+      );
+    }
+    if (document.getElementById(REF_DESC_ID)) return true;
+    var actions = btn.parentNode; /* .image-result-actions */
+    if (!actions || !actions.parentNode) return false;
+    var desc = document.createElement('p');
+    desc.id = REF_DESC_ID;
+    desc.textContent =
+      'Use As Reference Copies The Image URL So You Can Paste It Into Another AI Tool As Inspiration For A Follow-Up.';
+    /* Insert AFTER the actions row, NOT inside it — preserves button
+       layout exactly as the user requested. */
+    if (actions.nextSibling) {
+      actions.parentNode.insertBefore(desc, actions.nextSibling);
+    } else {
+      actions.parentNode.appendChild(desc);
+    }
+    return true;
+  }
+
+  function tick() {
+    addUseAsRefDesc();
+  }
+
+  function init() {
+    injectStyles();
+    ensureGroupToggle();
+    tick();
+    try {
+      var mo = new MutationObserver(tick);
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 60000);
+    } catch (e) { /* ignore */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
