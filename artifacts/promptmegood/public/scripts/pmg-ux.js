@@ -7096,3 +7096,627 @@
     init();
   }
 })();
+
+
+/* =====================================================================
+ * T30 — Help Me Start At Top + Image Prompt 5-Step Wizard + Less White
+ * ---------------------------------------------------------------------
+ * User feedback after T29 shipped:
+ *   - "The columns are still uber white" — the panels themselves still
+ *     read as plain white even though the backdrop got a teal tint.
+ *   - "The two hero CTAs lead to nowhere — users don't know what to do
+ *     when they land on the column." There's no obvious next action at
+ *     the top of the column.
+ *   - "There are no text fields visible on either column" — the goal
+ *     textarea on the LEFT column is buried below the header copy and
+ *     the (1 Of 1 Free Today) chip + the helper text. The RIGHT column
+ *     has no visible text input at all (it shares #goal with the left
+ *     column but has no obvious entry point).
+ *   - "Bring back the Help Me Start 4–5 question flow at the top" —
+ *     the existing #guided-mode-btn (already a 4-question modal) should
+ *     be promoted to the top of the LEFT column so users see it first.
+ *   - "Build the SAME 4–5 question flow for the image side" — currently
+ *     the image column's Help Me Start just scrolls to the Photography
+ *     Suite. Users want a true guided wizard for image prompts too.
+ *   - "Give users who already know what they want a fast lane" — a
+ *     'Skip the questions, just start typing →' link that focuses the
+ *     goal textarea immediately.
+ *
+ * What this IIFE does:
+ *   1. Tints #builder-panel + #result-panel + #pmg-col-image with a
+ *      soft teal-to-white gradient so the columns no longer feel
+ *      sterile white.
+ *   2. Inserts a top-of-column dual-action callout under the LEFT
+ *      column header (#pmg-col-text-header):
+ *        - PRIMARY: "Help Me Start" → triggers existing #guided-mode-btn
+ *          (the existing 4-question modal that's been there all along —
+ *          we are NOT rebuilding it, just surfacing it).
+ *        - SECONDARY (link): "I Know What I Want — Just Start Typing →"
+ *          which scrolls to and focuses the #goal textarea.
+ *   3. Augments the RIGHT column's existing #pmg-image-help-row (built
+ *      by T28) with the same dual-action shape:
+ *        - PRIMARY: "Help Me Start" → opens our NEW T30 image-prompt
+ *          5-step wizard (modal).
+ *        - SECONDARY: same "Just Start Typing →" link that focuses the
+ *          goal textarea (image prompts and text prompts share #goal —
+ *          this is the existing PromptMeGood architecture).
+ *   4. Builds the IMAGE-PROMPT WIZARD: a single modal with 5 sequential
+ *      steps (Subject → Style → Mood/Lighting → Setting → Details).
+ *      Each step is one question with chip-options + a custom-text
+ *      escape hatch. On finish it composes a detailed photo prompt
+ *      string, drops it into #goal, closes the modal, and scrolls the
+ *      user to #builder-image so the existing Photography Suite +
+ *      generate flow takes over.
+ *   5. Wires the hero CTAs (#hero-build-cta, #hero-image-cta) so that
+ *      after their existing scroll fires, the matching help callout
+ *      gets a brief teal pulse to draw the eye — answering "where am
+ *      I supposed to look first?"
+ *
+ * Hard rules honored:
+ *   - No backend / API / DB / payment / secret changes.
+ *   - No renamed IDs, classes, or JS variables. We MOUNT alongside the
+ *     existing #guided-mode-btn (we don't replace it) and clone the
+ *     existing image-help button to swap its handler safely.
+ *   - All new logic lives in pmg-ux.js (this file).
+ *   - Idempotent via window.__pmgT30Init.
+ *   - CSS uses CSS variables and color-mix only.
+ * ===================================================================== */
+(function pmgT30HelpAndImageWizard() {
+  if (window.__pmgT30Init) return;
+  window.__pmgT30Init = true;
+
+  var STYLE_ID = 'pmg-t30-help-style';
+  var TEXT_HELP_ID = 'pmg-text-help-row';
+  var MODAL_ID = 'pmg-t30-image-modal';
+
+  /* Small HTML escape so user-typed strings inside attribute / text
+     positions don't break the markup or open injection holes. */
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* ===== Panel tinting — kill the uber-white look =====
+         The two left-column panels (#builder-panel + #result-panel)
+         and the right column wrapper (#pmg-col-image) get a soft
+         teal-to-white gradient inside their existing white surface.
+         This is purely visual; nothing inside reflows. */
+      '#pmg-col-text > #builder-panel,',
+      '#pmg-col-text > #result-panel,',
+      '#pmg-col-image {',
+      '  background-image: linear-gradient(180deg,',
+      '    color-mix(in srgb, var(--color-primary) 7%, var(--color-surface)),',
+      '    var(--color-surface) 55%) !important;',
+      '}',
+
+      /* ===== Top-of-LEFT-column dual-action help callout ===== */
+      '#' + TEXT_HELP_ID + ' {',
+      '  display: flex; flex-wrap: wrap; align-items: center;',
+      '  gap: var(--space-3);',
+      '  padding: var(--space-3) var(--space-4);',
+      '  margin: 0 0 var(--space-3);',
+      '  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 24%, transparent);',
+      '  border-radius: var(--radius-lg, 12px);',
+      '  transition: box-shadow 0.3s ease;',
+      '}',
+      '#' + TEXT_HELP_ID + ' .pmg-help-text { flex: 1 1 240px; min-width: 0; }',
+      '#' + TEXT_HELP_ID + ' .pmg-help-text strong {',
+      '  display: block; font-size: var(--text-base);',
+      '  font-weight: 800; color: var(--color-text);',
+      '}',
+      '#' + TEXT_HELP_ID + ' .pmg-help-text > span {',
+      '  display: block; font-size: var(--text-sm);',
+      '  color: var(--color-text-muted); margin-top: 2px;',
+      '}',
+      '#' + TEXT_HELP_ID + ' .pmg-help-actions {',
+      '  display: flex; flex-direction: column; gap: 6px; align-items: flex-end;',
+      '}',
+      '#' + TEXT_HELP_ID + ' .pmg-help-primary {',
+      '  padding: 10px 18px; min-height: 44px; border-radius: var(--radius-full);',
+      '  background: var(--color-primary); color: #fff;',
+      '  border: 1.5px solid var(--color-primary);',
+      '  font-weight: 700; cursor: pointer; white-space: nowrap;',
+      '}',
+      '#' + TEXT_HELP_ID + ' .pmg-help-primary:hover { filter: brightness(0.96); }',
+      '.pmg-help-secondary {',
+      '  background: none; border: none; padding: 0;',
+      '  color: var(--color-primary);',
+      '  font-size: 12.5px; font-weight: 600; cursor: pointer;',
+      '  text-decoration: underline; text-underline-offset: 3px;',
+      '  text-align: left;',
+      '}',
+      '.pmg-help-secondary:hover { color: var(--color-primary-hover); }',
+      '@media (max-width: 600px) {',
+      '  #' + TEXT_HELP_ID + ' .pmg-help-actions { width: 100%; align-items: stretch; }',
+      '  #' + TEXT_HELP_ID + ' .pmg-help-primary { width: 100%; }',
+      '}',
+
+      /* ===== Augment RIGHT column existing help row =====
+         T28 built #pmg-image-help-row with a single text+button shape.
+         We add a secondary skip link below the description text. */
+      '#pmg-image-help-row .pmg-image-help-text {',
+      '  display: flex; flex-direction: column;',
+      '}',
+      '#pmg-image-help-row .pmg-help-secondary {',
+      '  margin-top: 6px;',
+      '}',
+
+      /* ===== T30 Image-Prompt Wizard Modal ===== */
+      '#' + MODAL_ID + ' {',
+      '  position: fixed; inset: 0; display: none;',
+      '  align-items: center; justify-content: center;',
+      '  background: rgba(0,0,0,0.55); z-index: 9999; padding: 16px;',
+      '}',
+      '#' + MODAL_ID + '.is-open { display: flex; }',
+      '#' + MODAL_ID + ' .pmg-im-card {',
+      '  background: var(--color-surface, #fff); border-radius: var(--radius-xl, 16px);',
+      '  max-width: 560px; width: 100%; max-height: 92vh;',
+      '  display: flex; flex-direction: column; overflow: hidden;',
+      '  box-shadow: 0 30px 60px rgba(0,0,0,0.3);',
+      '  border-top: 6px solid var(--color-primary);',
+      '}',
+      '#' + MODAL_ID + ' .pmg-im-head {',
+      '  display: flex; align-items: flex-start; justify-content: space-between;',
+      '  padding: var(--space-4) var(--space-5);',
+      '  border-bottom: 1px solid var(--color-border, #eee);',
+      '  gap: var(--space-3);',
+      '}',
+      '#' + MODAL_ID + ' .pmg-im-title {',
+      '  margin: 0 0 4px; font-size: var(--text-lg);',
+      '  font-weight: 800; color: var(--color-primary-hover);',
+      '}',
+      '#' + MODAL_ID + ' .pmg-im-step {',
+      '  font-size: var(--text-xs); color: var(--color-text-muted);',
+      '  font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;',
+      '}',
+      '#' + MODAL_ID + ' .pmg-im-close {',
+      '  background: none; border: none; font-size: 26px;',
+      '  line-height: 1; cursor: pointer; color: var(--color-text-muted);',
+      '  padding: 0 4px;',
+      '}',
+      '#' + MODAL_ID + ' .pmg-im-progress {',
+      '  height: 4px; background: var(--color-border, #eee); width: 100%;',
+      '}',
+      '#' + MODAL_ID + ' .pmg-im-progress-bar {',
+      '  height: 100%; background: var(--color-primary);',
+      '  width: 20%; transition: width 0.25s;',
+      '}',
+      '#' + MODAL_ID + ' .pmg-im-body {',
+      '  padding: var(--space-5); overflow-y: auto; flex: 1 1 auto;',
+      '}',
+      '#' + MODAL_ID + ' .pmg-im-question {',
+      '  margin: 0 0 6px; font-size: var(--text-base);',
+      '  font-weight: 700; color: var(--color-text);',
+      '}',
+      '#' + MODAL_ID + ' .pmg-im-hint {',
+      '  margin: 0 0 var(--space-4); font-size: var(--text-sm);',
+      '  color: var(--color-text-muted);',
+      '}',
+      '#' + MODAL_ID + ' textarea, #' + MODAL_ID + ' input[type="text"] {',
+      '  width: 100%; padding: 12px 14px; border-radius: 12px;',
+      '  border: 1.5px solid var(--color-border, #ddd);',
+      '  font: inherit; resize: vertical; box-sizing: border-box;',
+      '  background: var(--color-surface);',
+      '}',
+      '#' + MODAL_ID + ' textarea { min-height: 72px; }',
+      '#' + MODAL_ID + ' textarea:focus, #' + MODAL_ID + ' input:focus {',
+      '  outline: none; border-color: var(--color-primary);',
+      '  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 22%, transparent);',
+      '}',
+      '#' + MODAL_ID + ' .pmg-im-chip-row {',
+      '  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: var(--space-3);',
+      '}',
+      '#' + MODAL_ID + ' .pmg-im-chip {',
+      '  padding: 8px 14px; border-radius: 999px;',
+      '  border: 1.5px solid var(--color-border, #ddd);',
+      '  background: var(--color-surface, #fff);',
+      '  font-size: var(--text-sm); font-weight: 600; color: var(--color-text);',
+      '  cursor: pointer; transition: all 0.15s;',
+      '}',
+      '#' + MODAL_ID + ' .pmg-im-chip:hover {',
+      '  border-color: var(--color-primary);',
+      '  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));',
+      '}',
+      '#' + MODAL_ID + ' .pmg-im-chip.is-selected {',
+      '  border-color: var(--color-primary);',
+      '  background: var(--color-primary); color: #fff;',
+      '}',
+      '#' + MODAL_ID + ' .pmg-im-foot {',
+      '  display: flex; justify-content: space-between; align-items: center;',
+      '  padding: var(--space-4) var(--space-5);',
+      '  border-top: 1px solid var(--color-border, #eee);',
+      '  background: color-mix(in srgb, var(--color-primary) 4%, var(--color-surface));',
+      '  gap: var(--space-3);',
+      '}',
+      '#' + MODAL_ID + ' .pmg-im-back, #' + MODAL_ID + ' .pmg-im-next {',
+      '  padding: 10px 22px; min-height: 44px; border-radius: var(--radius-full);',
+      '  font-weight: 700; cursor: pointer; font-size: var(--text-sm);',
+      '  border: 1.5px solid;',
+      '}',
+      '#' + MODAL_ID + ' .pmg-im-back {',
+      '  background: var(--color-surface); border-color: var(--color-border, #ddd);',
+      '  color: var(--color-text);',
+      '}',
+      '#' + MODAL_ID + ' .pmg-im-back:disabled { opacity: 0.4; cursor: not-allowed; }',
+      '#' + MODAL_ID + ' .pmg-im-next {',
+      '  background: var(--color-primary); border-color: var(--color-primary); color: #fff;',
+      '}',
+      '#' + MODAL_ID + ' .pmg-im-next:hover { filter: brightness(0.96); }'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  /* ===== Image-prompt question definitions =====
+     5 steps. Subject + Details are free-text. Style / Lighting /
+     Setting are chip pickers with a "type your own" custom escape
+     so users aren't locked into the presets. */
+  var QUESTIONS = [
+    {
+      key: 'subject',
+      title: 'Step 1 Of 5',
+      question: 'What Do You Want To Create?',
+      hint: 'Describe the main subject in plain words. The more specific, the better.',
+      type: 'textarea',
+      placeholder: 'e.g. A confident woman in her 30s, smiling, business attire'
+    },
+    {
+      key: 'style',
+      title: 'Step 2 Of 5',
+      question: 'What Visual Style?',
+      hint: 'Pick a style — or type your own.',
+      type: 'chips',
+      options: ['Realistic Photo', 'Cinematic', 'Illustration', '3D Render', 'Oil Painting', 'Watercolor', 'Anime', 'Minimalist'],
+      allowCustom: true,
+      placeholder: 'Or describe your own style...'
+    },
+    {
+      key: 'lighting',
+      title: 'Step 3 Of 5',
+      question: 'Mood & Lighting?',
+      hint: 'How should it feel? Pick one or describe your own.',
+      type: 'chips',
+      options: ['Bright & Clean', 'Golden Hour', 'Cinematic Moody', 'Soft & Warm', 'High Contrast', 'Studio Lighting', 'Dreamy & Soft', 'Neon Night'],
+      allowCustom: true,
+      placeholder: 'Or describe the mood...'
+    },
+    {
+      key: 'setting',
+      title: 'Step 4 Of 5',
+      question: 'Where Does It Happen?',
+      hint: 'The setting or background. Pick one or describe.',
+      type: 'chips',
+      options: ['Plain Studio Backdrop', 'Outdoors / Nature', 'Urban Street', 'Modern Office', 'Cozy Indoors', 'Abstract / Solid Color', 'Beach / Coast', 'No Background'],
+      allowCustom: true,
+      placeholder: 'Or describe the setting...'
+    },
+    {
+      key: 'details',
+      title: 'Step 5 Of 5',
+      question: 'Anything Else Important?',
+      hint: 'Composition, angle, colors, props, vibe. Or leave blank.',
+      type: 'textarea',
+      placeholder: 'e.g. close-up portrait, shallow depth of field, warm color palette',
+      optional: true
+    }
+  ];
+
+  var state = { step: 0, answers: {} };
+
+  function buildModal() {
+    var existing = document.getElementById(MODAL_ID);
+    if (existing) return existing;
+    var modal = document.createElement('div');
+    modal.id = MODAL_ID;
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', MODAL_ID + '-title');
+    modal.innerHTML =
+      '<div class="pmg-im-card">' +
+        '<header class="pmg-im-head">' +
+          '<div>' +
+            '<h2 class="pmg-im-title" id="' + MODAL_ID + '-title">Help Me Build An Image Prompt</h2>' +
+            '<span class="pmg-im-step" id="' + MODAL_ID + '-step-label">Step 1 Of 5</span>' +
+          '</div>' +
+          '<button type="button" class="pmg-im-close" id="' + MODAL_ID + '-close" aria-label="Close">×</button>' +
+        '</header>' +
+        '<div class="pmg-im-progress"><div class="pmg-im-progress-bar" id="' + MODAL_ID + '-progress"></div></div>' +
+        '<div class="pmg-im-body" id="' + MODAL_ID + '-body"></div>' +
+        '<footer class="pmg-im-foot">' +
+          '<button type="button" class="pmg-im-back" id="' + MODAL_ID + '-back">← Back</button>' +
+          '<button type="button" class="pmg-im-next" id="' + MODAL_ID + '-next">Next →</button>' +
+        '</footer>' +
+      '</div>';
+    document.body.appendChild(modal);
+
+    modal.querySelector('#' + MODAL_ID + '-close').addEventListener('click', closeModal);
+    modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+    });
+    modal.querySelector('#' + MODAL_ID + '-back').addEventListener('click', function () {
+      saveCurrentAnswer();
+      if (state.step > 0) { state.step--; renderStep(); }
+    });
+    modal.querySelector('#' + MODAL_ID + '-next').addEventListener('click', function () {
+      saveCurrentAnswer();
+      if (state.step < QUESTIONS.length - 1) { state.step++; renderStep(); }
+      else { finishWizard(); }
+    });
+    return modal;
+  }
+
+  function openModal() {
+    state.step = 0;
+    state.answers = {};
+    var modal = buildModal();
+    modal.classList.add('is-open');
+    renderStep();
+  }
+
+  function closeModal() {
+    var modal = document.getElementById(MODAL_ID);
+    if (modal) modal.classList.remove('is-open');
+  }
+
+  function renderStep() {
+    var q = QUESTIONS[state.step];
+    var body = document.getElementById(MODAL_ID + '-body');
+    var stepLabel = document.getElementById(MODAL_ID + '-step-label');
+    var progress = document.getElementById(MODAL_ID + '-progress');
+    var backBtn = document.getElementById(MODAL_ID + '-back');
+    var nextBtn = document.getElementById(MODAL_ID + '-next');
+    if (!body) return;
+
+    stepLabel.textContent = q.title;
+    progress.style.width = ((state.step + 1) / QUESTIONS.length * 100) + '%';
+    backBtn.disabled = state.step === 0;
+    nextBtn.textContent = (state.step === QUESTIONS.length - 1) ? 'Build My Image Prompt →' : 'Next →';
+
+    var html = '<p class="pmg-im-question">' + esc(q.question) +
+      (q.optional ? ' <span style="font-weight:500;color:var(--color-text-muted);font-size:13px;">(Optional)</span>' : '') +
+      '</p>';
+    html += '<p class="pmg-im-hint">' + esc(q.hint) + '</p>';
+
+    var prev = state.answers[q.key] || {};
+
+    if (q.type === 'chips') {
+      html += '<div class="pmg-im-chip-row" id="' + MODAL_ID + '-chips">';
+      q.options.forEach(function (opt) {
+        var sel = (prev.choice === opt) ? ' is-selected' : '';
+        html += '<button type="button" class="pmg-im-chip' + sel + '" data-choice="' + esc(opt) + '">' + esc(opt) + '</button>';
+      });
+      html += '</div>';
+      if (q.allowCustom) {
+        html += '<input type="text" id="' + MODAL_ID + '-custom" placeholder="' + esc(q.placeholder) + '" value="' + esc(prev.custom || '') + '" />';
+      }
+    } else if (q.type === 'textarea') {
+      html += '<textarea id="' + MODAL_ID + '-text" placeholder="' + esc(q.placeholder) + '" rows="3">' + esc(prev.text || '') + '</textarea>';
+    }
+
+    body.innerHTML = html;
+
+    if (q.type === 'chips') {
+      body.querySelectorAll('.pmg-im-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          body.querySelectorAll('.pmg-im-chip').forEach(function (c) { c.classList.remove('is-selected'); });
+          chip.classList.add('is-selected');
+          var custom = document.getElementById(MODAL_ID + '-custom');
+          if (custom) custom.value = '';
+        });
+      });
+    }
+
+    var firstInput = body.querySelector('textarea, input');
+    if (firstInput) { try { firstInput.focus(); } catch (e) {} }
+  }
+
+  function saveCurrentAnswer() {
+    var q = QUESTIONS[state.step];
+    var body = document.getElementById(MODAL_ID + '-body');
+    if (!body) return;
+    var ans = {};
+    if (q.type === 'chips') {
+      var selected = body.querySelector('.pmg-im-chip.is-selected');
+      if (selected) ans.choice = selected.getAttribute('data-choice');
+      var custom = body.querySelector('#' + MODAL_ID + '-custom');
+      if (custom && custom.value.trim()) ans.custom = custom.value.trim();
+    } else if (q.type === 'textarea') {
+      var ta = body.querySelector('#' + MODAL_ID + '-text');
+      if (ta) ans.text = ta.value.trim();
+    }
+    state.answers[q.key] = ans;
+  }
+
+  function pickValue(ans) {
+    if (!ans) return '';
+    if (ans.custom) return ans.custom;
+    if (ans.choice) return ans.choice;
+    return '';
+  }
+
+  function composePrompt() {
+    var a = state.answers;
+    var parts = [];
+    var subject = (a.subject && a.subject.text) || '';
+    if (subject) parts.push(subject);
+    var style = pickValue(a.style);
+    if (style) parts.push(style.toLowerCase() + ' style');
+    var lighting = pickValue(a.lighting);
+    if (lighting) parts.push(lighting.toLowerCase() + ' lighting');
+    var setting = pickValue(a.setting);
+    if (setting) {
+      var lower = setting.toLowerCase();
+      if (lower === 'no background') parts.push('no background, transparent');
+      else parts.push('set against ' + lower);
+    }
+    var details = (a.details && a.details.text) || '';
+    if (details) parts.push(details);
+    return parts.join(', ');
+  }
+
+  function finishWizard() {
+    var prompt = composePrompt();
+    var goal = document.getElementById('goal');
+    if (goal && prompt) {
+      goal.value = prompt;
+      goal.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    closeModal();
+    setTimeout(function () {
+      var img = document.getElementById('builder-image') || document.getElementById('pmg-col-image');
+      if (img) {
+        try { img.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+      }
+      showToast('Your Image Prompt Is Ready! Refine It Below Or Tap Generate.');
+    }, 200);
+  }
+
+  function showToast(msg) {
+    var t = document.getElementById('pmg-photo-toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'pmg-photo-toast';
+      t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--color-primary);color:#fff;padding:12px 22px;border-radius:999px;z-index:9998;box-shadow:0 8px 20px rgba(0,0,0,0.25);font-weight:600;font-size:14px;max-width:90vw;text-align:center;';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.display = 'block';
+    t.style.opacity = '1';
+    t.style.transition = '';
+    clearTimeout(t.__pmgT30Hide);
+    t.__pmgT30Hide = setTimeout(function () {
+      t.style.transition = 'opacity 0.4s';
+      t.style.opacity = '0';
+      setTimeout(function () { t.style.display = 'none'; t.style.transition = ''; }, 450);
+    }, 3500);
+  }
+
+  /* ===== LEFT column help callout ===== */
+  function buildTextHelpRow() {
+    if (document.getElementById(TEXT_HELP_ID)) return;
+    var col = document.getElementById('pmg-col-text');
+    if (!col) return;
+    var header = document.getElementById('pmg-col-text-header');
+    if (!header) return;
+
+    var row = document.createElement('div');
+    row.id = TEXT_HELP_ID;
+    row.innerHTML =
+      '<div class="pmg-help-text">' +
+        '<strong>Help Me Start <span style="display:inline-block;margin-left:4px;padding:2px 7px;border-radius:999px;background:rgba(255,193,7,0.18);color:#a07000;font-size:10px;font-weight:700;letter-spacing:0.02em;vertical-align:middle;">★ Most Loved</span></strong>' +
+        '<span>Answer 4 Quick Questions And We\'ll Build A Sharp Prompt For You.</span>' +
+      '</div>' +
+      '<div class="pmg-help-actions">' +
+        '<button type="button" class="pmg-help-primary" id="' + TEXT_HELP_ID + '-btn">Help Me Start</button>' +
+        '<button type="button" class="pmg-help-secondary" id="' + TEXT_HELP_ID + '-skip">I Know What I Want — Just Start Typing →</button>' +
+      '</div>';
+
+    if (header.nextSibling) col.insertBefore(row, header.nextSibling);
+    else col.appendChild(row);
+
+    row.querySelector('#' + TEXT_HELP_ID + '-btn').addEventListener('click', function () {
+      var existing = document.getElementById('guided-mode-btn');
+      if (existing) {
+        try { existing.click(); } catch (e) {}
+      }
+    });
+    row.querySelector('#' + TEXT_HELP_ID + '-skip').addEventListener('click', function () {
+      focusGoalTextarea();
+    });
+  }
+
+  function focusGoalTextarea() {
+    var goal = document.getElementById('goal');
+    if (!goal) return;
+    try { goal.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+    setTimeout(function () {
+      try { goal.focus({ preventScroll: true }); } catch (e) { goal.focus(); }
+    }, 350);
+  }
+
+  /* ===== RIGHT column help callout — augment existing #pmg-image-help-row ===== */
+  function augmentImageHelpRow() {
+    var row = document.getElementById('pmg-image-help-row');
+    if (!row) return;
+    if (row.getAttribute('data-pmg-t30') === '1') return;
+    row.setAttribute('data-pmg-t30', '1');
+
+    /* Swap the existing button's click handler. We clone the node to
+       strip the T28 listener (which scrolled to the suite) and wire
+       our 5-step modal instead. The text + classes stay identical. */
+    var btn = row.querySelector('#pmg-image-help-row-btn');
+    if (btn) {
+      var newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+      newBtn.addEventListener('click', function () { openModal(); });
+    }
+
+    /* Update the description copy + add the secondary skip link. */
+    var textEl = row.querySelector('.pmg-image-help-text');
+    if (textEl) {
+      textEl.innerHTML =
+        '<strong>Help Me Start</strong>' +
+        '<span>Answer 5 Quick Questions And We\'ll Build A Detailed Image Prompt For You.</span>' +
+        '<button type="button" class="pmg-help-secondary" id="pmg-image-help-skip">I Know What I Want — Just Start Typing →</button>';
+      var skip = textEl.querySelector('#pmg-image-help-skip');
+      if (skip) skip.addEventListener('click', focusGoalTextarea);
+    }
+  }
+
+  /* ===== Hero CTA destination polish =====
+     After the existing hero-CTA scroll fires, pulse the matching help
+     callout so the user has an obvious "do this next" target. */
+  function wireHeroCTAs() {
+    if (document.body.getAttribute('data-pmg-t30-hero') === '1') return;
+    document.body.setAttribute('data-pmg-t30-hero', '1');
+    document.addEventListener('click', function (ev) {
+      if (!ev.target || !ev.target.closest) return;
+      var t = ev.target.closest('#hero-build-cta, #hero-image-cta');
+      if (!t) return;
+      setTimeout(function () {
+        var helpRow = (t.id === 'hero-image-cta')
+          ? document.getElementById('pmg-image-help-row')
+          : document.getElementById(TEXT_HELP_ID);
+        if (!helpRow) return;
+        try { helpRow.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+        helpRow.style.boxShadow = '0 0 0 4px color-mix(in srgb, var(--color-primary) 35%, transparent)';
+        setTimeout(function () { helpRow.style.boxShadow = ''; }, 1400);
+      }, 600);
+    }, true);
+  }
+
+  function init() {
+    injectStyles();
+    buildTextHelpRow();
+    augmentImageHelpRow();
+    wireHeroCTAs();
+
+    /* T28 builds the columns asynchronously via observers, so retry
+       briefly until the help rows mount or we time out. */
+    var tries = 0;
+    var iv = setInterval(function () {
+      tries++;
+      buildTextHelpRow();
+      augmentImageHelpRow();
+      var leftReady = !!document.getElementById(TEXT_HELP_ID);
+      var rightRow = document.getElementById('pmg-image-help-row');
+      var rightReady = rightRow && rightRow.getAttribute('data-pmg-t30') === '1';
+      if (leftReady && rightReady) clearInterval(iv);
+      if (tries >= 30) clearInterval(iv);
+    }, 400);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
