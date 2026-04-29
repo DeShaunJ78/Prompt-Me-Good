@@ -9293,3 +9293,408 @@
     init();
   }
 })();
+
+/* =====================================================================
+ * T38 — Group Toggle Override (defeat T24's re-collapse race)
+ * ---------------------------------------------------------------------
+ * User reports the Photography Suite group toggles are broken AGAIN.
+ * Live diagnostic confirmed T35's capture-phase listener IS firing and
+ * IS toggling `is-collapsed` correctly — but T24 (the original
+ * collapse-everything-but-first IIFE) installs a MutationObserver on
+ * `document.body` with NO user-toggled guard, so the moment T35
+ * removes `is-collapsed`, T24's MO fires and re-adds it. Visually the
+ * group snaps back to collapsed. Style alone stays open because T24
+ * skips the first group (`if (i === 0) return;`).
+ *
+ * Fix without modifying T24 (hard rule: no renames / no rewriting
+ * existing IIFEs): introduce a parallel state attribute
+ * `data-pmg-state="open" | "closed"` on each .pmg-photo-group, and
+ * use !important CSS to make the visual state follow OUR attribute
+ * instead of `is-collapsed`. T24 can keep flipping `is-collapsed` —
+ * it will have no visual effect.
+ *
+ * Listener placement: attach a capture-phase click listener on
+ * `window` (NOT document) so it fires BEFORE T35's document-capture
+ * listener (which calls stopImmediatePropagation). This way, T38's
+ * state attribute is always set first, before any other handler can
+ * intercept the event.
+ *
+ * Init bootstrap: on first sight of the suite, mirror each group's
+ * existing `is-collapsed` state into `data-pmg-state` so the user's
+ * starting view (after T37 collapses all five) is preserved.
+ *
+ * Hard rules honored: idempotent via `window.__pmgT38Init`; no
+ * backend, IDs, classes, or layout changes; CSS variables only.
+ * ===================================================================== */
+(function pmgT38ToggleOverride() {
+  if (window.__pmgT38Init) return;
+  window.__pmgT38Init = true;
+
+  var STYLE_ID = 'pmg-t38-style';
+  var STATE_ATTR = 'data-pmg-state';
+  var WIRED_ATTR = 'data-pmg-t38-wired';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* When the user opens a group, force its body visible and the
+         chevron upright — overrides any later .is-collapsed re-add. */
+      '#pmg-photo-suite .pmg-photo-group[' + STATE_ATTR + '="open"] .pmg-photo-group-body {',
+      '  display: block !important;',
+      '}',
+      '#pmg-photo-suite .pmg-photo-group[' + STATE_ATTR + '="open"] .pmg-photo-group-chevron {',
+      '  transform: none !important;',
+      '}',
+      /* When the user closes a group, force its body hidden and the
+         chevron rotated — even if .is-collapsed was removed. */
+      '#pmg-photo-suite .pmg-photo-group[' + STATE_ATTR + '="closed"] .pmg-photo-group-body {',
+      '  display: none !important;',
+      '}',
+      '#pmg-photo-suite .pmg-photo-group[' + STATE_ATTR + '="closed"] .pmg-photo-group-chevron {',
+      '  transform: rotate(-90deg) !important;',
+      '}'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  /* Mirror current is-collapsed state into our parallel attribute on
+     each group that has not yet been initialised. Idempotent per-group
+     via WIRED_ATTR. */
+  function syncInitialStates() {
+    var groups = document.querySelectorAll('#pmg-photo-suite .pmg-photo-group');
+    if (!groups.length) return false;
+    var did = false;
+    groups.forEach(function (g) {
+      if (g.getAttribute(WIRED_ATTR) === '1') return;
+      g.setAttribute(WIRED_ATTR, '1');
+      var collapsed = g.classList.contains('is-collapsed');
+      g.setAttribute(STATE_ATTR, collapsed ? 'closed' : 'open');
+      var head = g.querySelector('.pmg-photo-group-head');
+      if (head) head.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      did = true;
+    });
+    return did;
+  }
+
+  /* Per-group debounce: some test runners (and certain pointer
+     synthesizers) fire two `click` events per logical click, which
+     would toggle our state back to its starting value. Anything
+     within 250ms on the same group counts as one logical click. */
+  var DEBOUNCE_ATTR = 'data-pmg-t38-clickts';
+  var DEBOUNCE_MS = 250;
+
+  function onGroupHeadClick(ev) {
+    if (!ev.target || !ev.target.closest) return;
+    var head = ev.target.closest('#pmg-photo-suite .pmg-photo-group-head');
+    if (!head) return;
+    var grp = head.parentNode;
+    if (!grp) return;
+    var now = Date.now();
+    var lastStr = grp.getAttribute(DEBOUNCE_ATTR);
+    var last = lastStr ? parseInt(lastStr, 10) : 0;
+    if (last && (now - last) < DEBOUNCE_MS) return;
+    grp.setAttribute(DEBOUNCE_ATTR, String(now));
+    var current = grp.getAttribute(STATE_ATTR);
+    /* If somehow not yet initialised, derive from is-collapsed. */
+    if (current !== 'open' && current !== 'closed') {
+      current = grp.classList.contains('is-collapsed') ? 'closed' : 'open';
+    }
+    var next = current === 'open' ? 'closed' : 'open';
+    grp.setAttribute(STATE_ATTR, next);
+    head.setAttribute('aria-expanded', next === 'open' ? 'true' : 'false');
+    /* Don't stop propagation — we want T35 / T24 to keep doing their
+       thing. Our CSS will out-rank theirs visually. */
+  }
+
+  function init() {
+    injectStyles();
+    syncInitialStates();
+    /* window-capture so this fires before document-capture handlers. */
+    window.addEventListener('click', onGroupHeadClick, true);
+    /* Bounded retries for late-mounted suite. */
+    var tries = 0;
+    var iv = setInterval(function () {
+      tries++;
+      syncInitialStates();
+      if (tries >= 40) clearInterval(iv);
+    }, 250);
+    try {
+      var mo = new MutationObserver(function () { syncInitialStates(); });
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 60000);
+    } catch (e) { /* ignore */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+
+/* =====================================================================
+ * T39 — Image Upload + Vision Analysis On Both Inline Typing Panels
+ * ---------------------------------------------------------------------
+ * User wants: when "I Know What I Want — Just Start Typing" reveals
+ * the inline text field on either column, ALSO show an "upload an
+ * image" affordance. The user picks a JPG/PNG, we POST it to the
+ * existing /api/analyze endpoint (which already proxies to the
+ * GPT-4o vision model), and we drop the AI's plain-English
+ * description into the textarea so they can edit it and proceed
+ * normally — Fix My Prompt on the text side, Photography Suite +
+ * Generate Image Here on the image side.
+ *
+ * Backend reuse: /api/analyze already exists in the api-server. It
+ * accepts multipart/form-data with `prompt` (text) + optional `file`
+ * (PDF/JPG/PNG ≤10MB) and returns { ok:true, prompt, response }. We
+ * send a tightly-scoped describe-it prompt so the response is
+ * directly usable as a starting point for the user's prompt.
+ *
+ * UI: a single small row inserted just BELOW the existing textarea
+ * inside each inline panel. Contains a button + hidden file input +
+ * a status line that shows "Analyzing…" / errors. Entirely contained
+ * within the existing inline panel — no other layout shifts.
+ *
+ * Side handling:
+ *   - text  panel → describe with focus on subject + tone, useful for
+ *     copy / writing prompts.
+ *   - image panel → describe with focus on subject + style + setting +
+ *     lighting + composition, useful for image-generation prompts.
+ *
+ * Hard rules honored: idempotent via window.__pmgT39Init; CSS
+ * variables only; no rename of existing IDs/classes; no DOM moves.
+ * The /api/analyze endpoint pre-existed — no new server routes added.
+ * ===================================================================== */
+(function pmgT39ImageUploadAnalyze() {
+  if (window.__pmgT39Init) return;
+  window.__pmgT39Init = true;
+
+  var STYLE_ID = 'pmg-t39-style';
+  var ROW_CLASS = 'pmg-t39-upload-row';
+  var BTN_CLASS = 'pmg-t39-upload-btn';
+  var FILE_CLASS = 'pmg-t39-upload-file';
+  var STATUS_CLASS = 'pmg-t39-upload-status';
+  var GUARD_ATTR = 'data-pmg-t39';
+
+  /* Side-specific describe prompt sent to /api/analyze. */
+  var DESCRIBE_PROMPTS = {
+    text:
+      'Describe this image in 2-3 plain, vivid sentences. Focus on the subject, ' +
+      'context, and tone. The description should be a useful starting point for a ' +
+      'writing or copy prompt — no advice or suggestions, just a clear description.',
+    image:
+      'Describe this image in 3-4 plain, vivid sentences. Focus on the subject, ' +
+      'setting, lighting, mood, and composition. The description should be a useful ' +
+      'starting point for an image-generation prompt — no advice or suggestions, ' +
+      'just a clear description.'
+  };
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      '.' + ROW_CLASS + ' {',
+      '  margin-top: 10px;',
+      '  display: flex; flex-direction: column; align-items: stretch;',
+      '  gap: 6px;',
+      '}',
+      '.' + BTN_CLASS + ' {',
+      '  appearance: none; cursor: pointer;',
+      '  display: inline-flex; align-items: center; justify-content: center;',
+      '  gap: 6px;',
+      '  padding: 8px 14px;',
+      '  background: color-mix(in srgb, var(--color-primary, #0f6e6a) 8%, var(--color-surface, #fff));',
+      '  border: 1px dashed color-mix(in srgb, var(--color-primary, #0f6e6a) 35%, var(--color-border, #e5e7eb));',
+      '  border-radius: var(--radius-md, 10px);',
+      '  font: inherit; font-size: var(--text-sm, 13px); font-weight: 600;',
+      '  color: var(--color-primary, #0f6e6a);',
+      '  transition: background 150ms ease, border-color 150ms ease;',
+      '}',
+      '.' + BTN_CLASS + ':hover {',
+      '  background: color-mix(in srgb, var(--color-primary, #0f6e6a) 14%, var(--color-surface, #fff));',
+      '  border-color: var(--color-primary, #0f6e6a);',
+      '}',
+      '.' + BTN_CLASS + '[disabled] {',
+      '  opacity: 0.6; cursor: progress;',
+      '}',
+      '.' + BTN_CLASS + ':focus-visible {',
+      '  outline: 2px solid var(--color-primary, #0f6e6a); outline-offset: 2px;',
+      '}',
+      '.' + STATUS_CLASS + ' {',
+      '  font-size: var(--text-xs, 12px);',
+      '  color: var(--color-text-muted, #5f6b75);',
+      '  text-align: center;',
+      '  min-height: 1em;',
+      '}',
+      '.' + STATUS_CLASS + '[data-state="error"] {',
+      '  color: #b3261e;',
+      '}',
+      '.' + STATUS_CLASS + '[data-state="success"] {',
+      '  color: var(--color-primary, #0f6e6a);',
+      '  font-weight: 600;',
+      '}'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  function panelSide(panel) {
+    var s = panel.getAttribute('data-side');
+    return (s === 'text' || s === 'image') ? s : 'text';
+  }
+
+  function decoratePanel(panel) {
+    if (!panel || panel.getAttribute(GUARD_ATTR) === '1') return false;
+    var side = panelSide(panel);
+    var textarea = panel.querySelector('textarea');
+    var foot = panel.querySelector('.pmg-inline-foot');
+    /* Don't burn the guard until we've confirmed the panel is ready
+       to be decorated; otherwise a partially-mounted panel could be
+       permanently skipped. */
+    if (!textarea) return false;
+    panel.setAttribute(GUARD_ATTR, '1');
+
+    var row = document.createElement('div');
+    row.className = ROW_CLASS;
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = BTN_CLASS;
+    btn.innerHTML = '<span aria-hidden="true">📎</span> Or Upload An Image — We\'ll Describe It For You';
+
+    var file = document.createElement('input');
+    file.type = 'file';
+    file.accept = 'image/jpeg,image/png';
+    file.className = FILE_CLASS;
+    file.style.display = 'none';
+
+    var status = document.createElement('div');
+    status.className = STATUS_CLASS;
+    status.setAttribute('aria-live', 'polite');
+
+    btn.addEventListener('click', function () { file.click(); });
+    file.addEventListener('change', function () {
+      var f = file.files && file.files[0];
+      if (!f) return;
+      runAnalyze(f, side, textarea, btn, status, function () {
+        /* Reset the input so picking the same file again still fires. */
+        try { file.value = ''; } catch (e) {}
+      });
+    });
+
+    row.appendChild(btn);
+    row.appendChild(file);
+    row.appendChild(status);
+
+    /* Insert just AFTER the textarea, before the foot (if foot exists). */
+    if (foot && foot.parentNode === panel) {
+      panel.insertBefore(row, foot);
+    } else if (textarea.nextSibling) {
+      panel.insertBefore(row, textarea.nextSibling);
+    } else {
+      panel.appendChild(row);
+    }
+    return true;
+  }
+
+  function runAnalyze(fileBlob, side, textarea, btn, status, done) {
+    if (fileBlob.size > 10 * 1024 * 1024) {
+      setStatus(status, 'error', 'Image is too large. Max 10 MB.');
+      done();
+      return;
+    }
+    if (!/^image\/(jpeg|png)$/.test(fileBlob.type)) {
+      setStatus(status, 'error', 'Only JPG or PNG images are supported.');
+      done();
+      return;
+    }
+    var fd = new FormData();
+    fd.append('prompt', DESCRIBE_PROMPTS[side] || DESCRIBE_PROMPTS.text);
+    fd.append('file', fileBlob, fileBlob.name || 'upload.jpg');
+
+    btn.disabled = true;
+    btn.setAttribute('aria-busy', 'true');
+    setStatus(status, 'loading', 'Analyzing your image…');
+
+    fetch('/api/analyze', { method: 'POST', body: fd, credentials: 'same-origin' })
+      .then(function (res) {
+        /* Tolerate non-JSON error bodies (e.g. proxy 502 HTML). */
+        return res.text().then(function (raw) {
+          var json = null;
+          try { json = raw ? JSON.parse(raw) : null; } catch (e) { json = null; }
+          return { res: res, json: json, raw: raw };
+        });
+      })
+      .then(function (out) {
+        if (!out.res.ok || !out.json || out.json.ok === false || !out.json.response) {
+          var msg =
+            (out.json && out.json.error) ||
+            (out.res.status >= 500
+              ? 'AI service is unavailable. Try again.'
+              : 'Could not analyze image. Please try another.');
+          setStatus(status, 'error', msg);
+          btn.disabled = false;
+          btn.removeAttribute('aria-busy');
+          done();
+          return;
+        }
+        var description = String(out.json.response).trim();
+        textarea.value = description;
+        try {
+          textarea.dispatchEvent(new Event('input', { bubbles: true }));
+          textarea.dispatchEvent(new Event('change', { bubbles: true }));
+        } catch (e) { /* ignore */ }
+        try { textarea.focus(); } catch (e) {}
+        setStatus(status, 'success', 'Image analyzed — edit the description below, then continue.');
+        btn.disabled = false;
+        btn.removeAttribute('aria-busy');
+        done();
+      })
+      .catch(function (err) {
+        setStatus(status, 'error', 'Network error. Please try again.');
+        btn.disabled = false;
+        btn.removeAttribute('aria-busy');
+        done();
+      });
+  }
+
+  function setStatus(el, state, msg) {
+    if (!el) return;
+    el.setAttribute('data-state', state || '');
+    el.textContent = msg || '';
+  }
+
+  function tick() {
+    var panels = document.querySelectorAll('.pmg-inline-typing');
+    if (!panels.length) return;
+    panels.forEach(function (p) { decoratePanel(p); });
+  }
+
+  function init() {
+    injectStyles();
+    tick();
+    /* The inline panels are built lazily when the user clicks
+       "I Know What I Want — Just Start Typing", so observe and retry. */
+    var tries = 0;
+    var iv = setInterval(function () {
+      tries++;
+      tick();
+      if (tries >= 200) clearInterval(iv);
+    }, 300);
+    try {
+      var mo = new MutationObserver(tick);
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 5 * 60 * 1000);
+    } catch (e) { /* ignore */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
