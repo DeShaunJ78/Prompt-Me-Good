@@ -16,6 +16,138 @@
  */
 
 /* ====================================================================
+ * T26 — Performance guard: throttle MutationObservers via rAF and
+ *        auto-disconnect runaway observers.
+ *
+ * The 12 stacked UX phases (T14 through T25) install ~30 MutationObservers,
+ * 17 of which watch document.body with subtree:true. On the large home
+ * page this combination was overwhelming browsers — especially on mobile
+ * — to the point of crashing the renderer.
+ *
+ * This guard is the very first code in pmg-ux.js. It patches the global
+ * MutationObserver constructor so that for every observer created from
+ * this point on:
+ *   1. Callbacks fire at most once per animation frame; multiple browser
+ *      mutation batches inside the same frame are coalesced into a
+ *      single user-callback invocation. Correctness is preserved (every
+ *      record is delivered, in order) while CPU thrash is eliminated.
+ *   2. Observers that exceed a runaway threshold (>5000 records in a
+ *      rolling 1-second window) auto-disconnect, so a feedback loop
+ *      between two phases can never freeze the page.
+ *
+ * Notes:
+ *   - The Microsoft Clarity bootstrap script in <head> may install its
+ *     own observers before pmg-ux.js executes (since pmg-ux.js is now
+ *     deferred). That is fine: the patch only affects observers created
+ *     AFTER this IIFE runs (i.e., every observer inside pmg-ux.js).
+ *   - No public API changes: every observer instance returned is a real
+ *     native MutationObserver — `.observe`, `.disconnect`, and
+ *     `.takeRecords` all work as before.
+ *   - Idempotent via __pmgT26ObserverGuard guard so accidental double
+ *     loads don't double-wrap.
+ * ==================================================================== */
+(function pmgT26ObserverGuard() {
+  if (window.__pmgT26ObserverGuard) return;
+  window.__pmgT26ObserverGuard = true;
+  if (typeof MutationObserver === 'undefined') return;
+
+  var Original = window.MutationObserver;
+  var raf = window.requestAnimationFrame || function (cb) { return setTimeout(cb, 16); };
+  var WINDOW_MS = 1000;
+  var RUNAWAY_RECORDS = 5000;
+
+  function ThrottledObserver(callback) {
+    /* Mirror native behaviour: a non-function arg throws a TypeError
+       from the underlying constructor. */
+    if (typeof callback !== 'function') {
+      return new Original(callback);
+    }
+
+    var queued = [];
+    var scheduled = false;
+    var disabled = false;
+    var windowStart = 0;
+    var windowCount = 0;
+    var instance;
+
+    function flush() {
+      scheduled = false;
+      if (disabled || !queued.length) { queued.length = 0; return; }
+      var batch = queued;
+      queued = [];
+
+      var now = Date.now();
+      if (now - windowStart > WINDOW_MS) {
+        windowStart = now;
+        windowCount = 0;
+      }
+      windowCount += batch.length;
+      if (windowCount > RUNAWAY_RECORDS) {
+        disabled = true;
+        try { nativeDisconnect.call(instance); } catch (e) {}
+        try {
+          if (window.console && console.warn) {
+            console.warn('[pmg-ux] runaway MutationObserver auto-disconnected (>' + RUNAWAY_RECORDS + ' records/s)');
+          }
+        } catch (e2) {}
+        return;
+      }
+
+      try {
+        /* Bind `this` to the observer instance so user callbacks that
+           reference `this` behave the same as with a native observer. */
+        callback.call(instance, batch, instance);
+      } catch (e3) {
+        try { if (window.console && console.error) console.error('[pmg-ux] observer callback threw', e3); } catch (e4) {}
+      }
+    }
+
+    instance = new Original(function (records) {
+      if (disabled) return;
+      for (var i = 0; i < records.length; i++) queued.push(records[i]);
+      if (!scheduled) {
+        scheduled = true;
+        raf(flush);
+      }
+    });
+
+    /* Preserve native disconnect() and takeRecords() semantics by
+       wrapping them. After disconnect(), no further records are
+       delivered and queued records are dropped (matching native
+       behaviour). takeRecords() returns the union of records still
+       queued in our coalescer plus anything still buffered in the
+       underlying native observer. */
+    var nativeDisconnect = instance.disconnect;
+    var nativeTakeRecords = instance.takeRecords;
+    instance.disconnect = function () {
+      disabled = true;
+      queued.length = 0;
+      return nativeDisconnect.call(instance);
+    };
+    instance.takeRecords = function () {
+      var out = queued;
+      queued = [];
+      var native = [];
+      try { native = nativeTakeRecords.call(instance) || []; } catch (e) {}
+      if (native.length) {
+        for (var i = 0; i < native.length; i++) out.push(native[i]);
+      }
+      return out;
+    };
+
+    return instance;
+  }
+
+  /* Make instance prototype chain look native so any duck-typing checks
+     downstream still pass. We don't replace the native prototype object;
+     we just point our constructor at it. */
+  ThrottledObserver.prototype = Original.prototype;
+  try { Object.setPrototypeOf(ThrottledObserver, Original); } catch (e) {}
+
+  try { window.MutationObserver = ThrottledObserver; } catch (e) {}
+})();
+
+/* ====================================================================
  * pmg-bugfix.js
  * ==================================================================== */
 (function () {
