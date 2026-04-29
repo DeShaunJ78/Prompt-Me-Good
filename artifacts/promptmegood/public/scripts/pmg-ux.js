@@ -6834,3 +6834,265 @@
     init();
   }
 })();
+
+
+/* =====================================================================
+ * T29 — Polish Pass: Center Hero, Brand Accents, Photo Cards Wiring
+ * ---------------------------------------------------------------------
+ * User feedback after T28 shipped:
+ *   - "Buttons look huge" — the hero stacked CTAs feel oversized and
+ *     the longer sub-titles (e.g. "Generate Here With DALL·E Or
+ *     Export") were crowding the rounded pill edges.
+ *   - "Everything looks plain and all white" — the build columns and
+ *     the marketing surfaces below them weren't carrying the teal /
+ *     dark-teal brand identity the rest of the site uses.
+ *   - "Hero needs to be centered for a more uniform look" — the hero
+ *     left column was left-aligned, making the page feel lopsided.
+ *   - "I don't see any photo prompts in the Need Ideas section" — the
+ *     six use-case cards were all text-prompt scenarios.
+ *   - "We can pretty much eliminate the See Real Examples button" —
+ *     the third hero CTA we added during T28 (#hero-usecases-cta)
+ *     duplicates what the Need Ideas grid already does.
+ *
+ * What this IIFE does (in order):
+ *   1. Hide #hero-usecases-cta entirely (CSS + remove from tab order
+ *      via aria-hidden, keep node alive so other scripts that do
+ *      getElementById on it don't crash).
+ *   2. Center the hero left column: text-align center, flex column
+ *      align-items center, hero-actions justified center, subtext
+ *      box gets margin auto so it sits in the middle.
+ *   3. Tighten the stacked CTAs: reduce min-height, increase
+ *      horizontal padding so long sub-titles never crowd the pill
+ *      edge, allow sub-title to wrap on a single tight line, shorten
+ *      the image-CTA sub copy to "DALL·E Or Any AI Tool" (cleaner).
+ *   4. Add brand-teal accents:
+ *        - thin teal top border on each build column (#pmg-col-text +
+ *          #pmg-col-image),
+ *        - subtle teal radial-gradient backdrop on the .app-shell so
+ *          the columns "float" on a tinted surface rather than pure
+ *          white,
+ *        - dark-teal column titles (var(--color-primary)),
+ *        - hero subtext box gets a slightly stronger teal wash.
+ *   5. Wire photo prompt cards (data-pmg-photo="1") so clicking them
+ *      drops the goal text into #goal AND scrolls to #builder-image
+ *      AND auto-clicks .pmg-photo-surprise to seed the Photography
+ *      Suite — instead of the default behaviour which scrolls to the
+ *      text builder.
+ *
+ * Hard rules honored: no backend/API/DB changes; no renamed IDs or
+ * classes; CSS variables + color-mix only; idempotent via
+ * window.__pmgT29Init; all logic lives in pmg-ux.js.
+ * ===================================================================== */
+(function pmgT29PolishPass() {
+  if (window.__pmgT29Init) return;
+  window.__pmgT29Init = true;
+
+  var STYLE_ID = 'pmg-t29-polish-style';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* --- 1) Hide the third hero CTA we added in T28 --- */
+      '#hero-usecases-cta { display: none !important; }',
+
+      /* --- 2) Center the hero left column for a uniform look ---
+         The left column is the first child of .hero-grid and holds
+         the heading + subtext + CTAs + proof bar + testimonial. We
+         keep the right-side hero-card untouched so nothing else
+         shifts. */
+      '.hero .hero-grid > div:first-child {',
+      '  display: flex; flex-direction: column; align-items: center;',
+      '  text-align: center;',
+      '}',
+      '.hero .hero-heading,',
+      '.hero .hero-subtext,',
+      '.hero .hero-testimonial-quote,',
+      '.hero .hero-testimonial-author { text-align: center !important; }',
+      '.hero .hero-subtext-box {',
+      '  margin-left: auto !important; margin-right: auto !important;',
+      /* Replace the strict left border with a dual-side teal accent
+         so the box reads as centered rather than left-anchored. */
+      '  border-left: none;',
+      '  border-top: 4px solid var(--color-primary);',
+      '}',
+      '.hero .hero-actions {',
+      '  justify-content: center !important;',
+      '  flex-wrap: wrap;',
+      '}',
+      '.hero .hero-proof-bar {',
+      '  justify-content: center !important;',
+      '  flex-wrap: wrap;',
+      '}',
+      '.hero .hero-testimonial { margin-left: auto !important; margin-right: auto !important; }',
+
+      /* --- 3) Tighter, breathable stacked CTAs ---
+         The stacked CTAs were 64px tall with only 20px horizontal
+         padding, which crowded the rounded edges when sub-titles
+         got long. We trim the height a touch and add real horizontal
+         breathing room. */
+      '.hero .hero-actions .btn-stacked {',
+      '  min-height: 56px;',
+      '  padding: 10px 28px;',
+      '  border-radius: 16px;',
+      '  max-width: 320px;',
+      '}',
+      '.hero .hero-actions .btn-stacked .cta-title {',
+      '  font-size: var(--text-sm);',
+      '  line-height: 1.2;',
+      '  white-space: nowrap;',
+      '}',
+      '.hero .hero-actions .btn-stacked .cta-sub {',
+      '  font-size: 11.5px;',
+      '  line-height: 1.25;',
+      '  margin-top: 2px;',
+      '  white-space: nowrap;',
+      '  letter-spacing: 0.005em;',
+      '}',
+      '@media (max-width: 600px) {',
+      '  .hero .hero-actions .btn-stacked { max-width: 100%; padding: 12px 22px; }',
+      '  .hero .hero-actions .btn-stacked .cta-title { white-space: normal; }',
+      '  .hero .hero-actions .btn-stacked .cta-sub { white-space: normal; }',
+      '}',
+
+      /* --- 4) Brand-teal accents on the build area ---
+         Soft tinted backdrop so the two columns visibly sit on a
+         branded surface instead of plain white. */
+      '#builder .app-shell {',
+      '  background:',
+      '    radial-gradient(80% 60% at 0% 0%, color-mix(in srgb, var(--color-primary) 7%, transparent), transparent 70%),',
+      '    radial-gradient(70% 50% at 100% 0%, color-mix(in srgb, var(--color-primary-hover) 6%, transparent), transparent 70%),',
+      '    transparent;',
+      '  padding: var(--space-4);',
+      '  border-radius: var(--radius-xl);',
+      '}',
+
+      /* Thin teal top accent on each column, plus a darker title color
+         so the eye locks onto the brand colour pair (light teal for
+         eyebrow + dark teal for title). */
+      '#pmg-col-text > #pmg-col-text-header,',
+      '#pmg-col-image {',
+      '  border-top: 4px solid var(--color-primary) !important;',
+      '}',
+      '#pmg-col-text-header .pmg-col-text-title,',
+      '#pmg-col-image .pmg-col-image-title {',
+      '  color: var(--color-primary-hover) !important;',
+      '}',
+
+      /* The inner panels (#builder-panel + #result-panel) keep their
+         own white background, but get a faint teal-tinted border so
+         they harmonise with the column accent. */
+      '#pmg-col-text > #builder-panel,',
+      '#pmg-col-text > #result-panel {',
+      '  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border, transparent)) !important;',
+      '}',
+
+      /* Need Ideas section: give it a touch of brand colour too so
+         the cards no longer float on raw white. */
+      '#use-cases {',
+      '  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 4%, transparent), transparent 65%);',
+      '}',
+      '#use-cases .popular-use-card {',
+      '  border-color: color-mix(in srgb, var(--color-primary) 14%, var(--color-border)) !important;',
+      '}'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  /* --- Shorten the image CTA sub copy added by T28 ---
+     T28 set this to "Generate Here With DALL·E Or Export" which
+     was crowding the pill. We tighten it to a punchier line. */
+  function tightenImageCtaCopy() {
+    var imgCTA = document.getElementById('hero-image-cta');
+    if (!imgCTA) return;
+    var sub = imgCTA.querySelector('.cta-sub');
+    if (sub && sub.textContent !== 'DALL·E Or Any AI Tool') {
+      sub.textContent = 'DALL·E Or Any AI Tool';
+    }
+    /* Also tighten the text CTA's sub if T28's copy lingers. */
+    var textCTA = document.getElementById('hero-build-cta');
+    if (textCTA) {
+      var tsub = textCTA.querySelector('.cta-sub');
+      if (tsub && tsub.textContent !== 'Free · Works In Seconds') {
+        tsub.textContent = 'Free · Works In Seconds';
+      }
+    }
+  }
+
+  /* --- Aria-hide the removed CTA so screen readers + keyboard
+     users skip it cleanly (display:none already pulls it out of the
+     tab order; this is belt-and-suspenders). --- */
+  function hideExamplesCTA() {
+    var btn = document.getElementById('hero-usecases-cta');
+    if (!btn) return;
+    btn.setAttribute('aria-hidden', 'true');
+    btn.setAttribute('tabindex', '-1');
+  }
+
+  /* --- Wire photo prompt cards to route into the image column ---
+     The site's existing applyPopularUseCard() (index.html:4340)
+     drops the goal text into #goal and scrolls to #builder, which
+     is great for text prompts. Photo cards should ALSO scroll the
+     user to #builder-image (right column) and seed the Photography
+     Suite via .pmg-photo-surprise so they see immediate visual
+     progress.
+  
+     We don't replace applyPopularUseCard — we just listen on capture
+     for clicks on photo cards, let the existing handler run, then
+     finish the photo-specific routing on a short timeout (after the
+     existing scrollIntoView + focus has settled). */
+  function wirePhotoCards() {
+    if (document.body.getAttribute('data-pmg-t29-photo') === '1') return;
+    document.body.setAttribute('data-pmg-t29-photo', '1');
+    document.addEventListener('click', function (ev) {
+      var t = ev.target;
+      if (!t || !t.closest) return;
+      var card = t.closest('.popular-use-card[data-pmg-photo="1"]');
+      if (!card) return;
+      /* Wait long enough for applyPopularUseCard's smooth scroll +
+         focus to fire (450ms in the existing handler), then
+         override-scroll into the image column and seed the suite. */
+      window.setTimeout(function () {
+        var imgAnchor = document.getElementById('builder-image') ||
+                        document.getElementById('pmg-col-image');
+        if (imgAnchor) {
+          try { imgAnchor.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+        }
+        /* Seed the Photography Suite picks so the user sees a
+           working starting set, then can tweak. */
+        window.setTimeout(function () {
+          var surprise = document.querySelector('.pmg-photo-surprise');
+          if (surprise) {
+            try { surprise.click(); } catch (e) {}
+          }
+        }, 320);
+      }, 520);
+    }, true /* capture, so we run alongside the existing handler */);
+  }
+
+  function init() {
+    injectStyles();
+    tightenImageCtaCopy();
+    hideExamplesCTA();
+    wirePhotoCards();
+    /* T28 builds the hero image CTA + the column headers async, so
+       run the lightweight passes again on a short cadence until they
+       exist (no MutationObserver needed — these are one-shot text
+       and aria tweaks). */
+    var tries = 0;
+    var iv = setInterval(function () {
+      tries++;
+      tightenImageCtaCopy();
+      hideExamplesCTA();
+      if (tries >= 30) clearInterval(iv);
+    }, 400);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
