@@ -8495,3 +8495,249 @@
     init();
   }
 })();
+
+/* =====================================================================
+ * T34 — Image Column Flow: Next Button, Surprise Promoted, Copy CTA,
+ *       Camera Icon, Hide Clear Picks
+ * ---------------------------------------------------------------------
+ * User feedback after T33 shipped:
+ *   1. After typing into the image-side inline panel ("Describe Your
+ *      Image"), there\'s no obvious next step — needs a "Next" button
+ *      that takes them to the Photography Suite.
+ *   2. After picking the last group (Color Palette), the user needs a
+ *      clearly-prompted finish action — "Send To Image Generator" OR
+ *      "Copy Prompt" — so they know what to do once their picks are in.
+ *   3. The "Surprise Me" button is buried at the bottom of the suite;
+ *      it should live at the TOP as a "need ideas?" prompt, not as a
+ *      tail-end action button.
+ *   4. The "Clear Picks" button at the bottom is unclear — what does
+ *      it do? Hide it (it\'s rarely used and adds confusion).
+ *   5. The Step 3 Image Generator section heading shows a 🖼️ picture-
+ *      frame emoji — replace with 📷 camera so it reads as photo-gen.
+ *
+ * Hard rules honored:
+ *   - No backend / API / DB / payment / secret changes.
+ *   - No renamed IDs, classes, or JS variables.
+ *   - We MOVE the existing .pmg-photo-surprise node (so its T23 click
+ *     handler keeps firing). Hiding .pmg-photo-clear is via CSS.
+ *   - All new logic lives in pmg-ux.js (this file).
+ *   - Idempotent via window.__pmgT34Init.
+ *   - CSS uses CSS variables and color-mix only.
+ * ===================================================================== */
+(function pmgT34ImageColumnFlow() {
+  if (window.__pmgT34Init) return;
+  window.__pmgT34Init = true;
+
+  var STYLE_ID = 'pmg-t34-imageflow-style';
+  var INLINE_NEXT_ID = 'pmg-t34-inline-image-next';
+  var SURPRISE_TOP_ID = 'pmg-t34-surprise-top-row';
+  var COPY_BTN_ID = 'pmg-t34-copy-prompt-btn';
+  var SUITE_ID = 'pmg-photo-suite';
+  var IMG_GEN_TITLE_ID = 'pmg-image-generator-section-title';
+  var INLINE_IMAGE_PANEL_ID = 'pmg-inline-typing-image';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* Image inline-panel "Next" CTA */
+      '#' + INLINE_NEXT_ID + ' {',
+      '  display: inline-flex; align-items: center; gap: 6px;',
+      '  padding: 10px 22px; min-height: 44px;',
+      '  background: var(--color-primary);',
+      '  color: var(--pmg-on-primary, #fff);',
+      '  border: 0; border-radius: var(--radius-full, 999px);',
+      '  font-weight: 700; font-size: var(--text-sm, 14px); cursor: pointer;',
+      '  box-shadow: 0 2px 6px color-mix(in srgb, var(--color-primary) 25%, transparent);',
+      '  transition: transform 120ms ease, filter 180ms ease;',
+      '  margin-left: auto;',
+      '}',
+      '#' + INLINE_NEXT_ID + ':hover { transform: translateY(-1px); filter: brightness(1.05); }',
+      '#' + INLINE_NEXT_ID + ':disabled { opacity: 0.55; cursor: not-allowed; transform: none; }',
+      '#' + INLINE_IMAGE_PANEL_ID + ' .pmg-inline-foot {',
+      '  flex-wrap: wrap; gap: 12px;',
+      '}',
+
+      /* Top-of-suite Surprise prompt row */
+      '#' + SURPRISE_TOP_ID + ' {',
+      '  display: flex; align-items: center; gap: var(--space-3, 12px);',
+      '  padding: var(--space-3, 12px) var(--space-4, 16px);',
+      '  margin-bottom: var(--space-3, 12px);',
+      '  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface-2, #f7f7f8));',
+      '  border: 1px dashed color-mix(in srgb, var(--color-primary) 32%, var(--color-border, #e3e3e7));',
+      '  border-radius: var(--radius-md, 10px);',
+      '  flex-wrap: wrap;',
+      '}',
+      '#' + SURPRISE_TOP_ID + ' .pmg-t34-surprise-text {',
+      '  flex: 1 1 240px; font-size: var(--text-sm, 14px);',
+      '  color: var(--color-text-muted, #666); line-height: 1.45;',
+      '}',
+      '#' + SURPRISE_TOP_ID + ' .pmg-t34-surprise-text strong {',
+      '  display: block; font-size: var(--text-base, 15px); margin-bottom: 2px;',
+      '  color: var(--color-text, #111); font-weight: 700;',
+      '}',
+      '#' + SURPRISE_TOP_ID + ' .pmg-photo-surprise {',
+      '  margin-left: auto;',
+      '  background: var(--color-primary) !important;',
+      '  color: var(--pmg-on-primary, #fff) !important;',
+      '  border-color: var(--color-primary) !important;',
+      '  font-weight: 700;',
+      '}',
+      '#' + SURPRISE_TOP_ID + ' .pmg-photo-surprise:hover {',
+      '  filter: brightness(1.05);',
+      '  color: var(--pmg-on-primary, #fff) !important;',
+      '}',
+
+      /* Hide the Clear Picks button entirely (DOM preserved). */
+      '#' + SUITE_ID + ' .pmg-photo-actions .pmg-photo-clear { display: none !important; }',
+
+      /* Beef up the Send To Image Generator button \'s helper line so the
+         user sees this as the obvious finish action. */
+      '#pmg-t34-finish-helper {',
+      '  font-size: var(--text-xs, 12px); color: var(--color-text-muted, #666);',
+      '  margin: var(--space-2, 8px) 0 0; text-align: center;',
+      '  flex: 1 0 100%;',
+      '}',
+
+      /* Copy Prompt secondary CTA — sits next to Send To Image Generator. */
+      '#' + COPY_BTN_ID + ' {',
+      '  flex: 0 1 auto; min-height: 52px; padding: 12px 22px;',
+      '  font-size: var(--text-sm, 14px); font-weight: 700;',
+      '  border-radius: var(--radius-full, 999px);',
+      '  background: var(--color-surface, #fff);',
+      '  color: var(--color-primary);',
+      '  border: 2px solid var(--color-primary); cursor: pointer;',
+      '  display: inline-flex; align-items: center; justify-content: center; gap: 6px;',
+      '  transition: background 160ms ease, color 160ms ease, transform 120ms ease;',
+      '}',
+      '#' + COPY_BTN_ID + ':hover {',
+      '  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface, #fff));',
+      '  transform: translateY(-1px);',
+      '}',
+      '#' + COPY_BTN_ID + ':disabled {',
+      '  opacity: 0.55; cursor: not-allowed; transform: none;',
+      '}',
+      '@media (max-width: 600px) {',
+      '  #' + COPY_BTN_ID + ' { width: 100%; }',
+      '}',
+
+      /* Pulse to draw eye when scrolling to suite */
+      '@keyframes pmgT34Pulse {',
+      '  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 50%, transparent); }',
+      '  60% { box-shadow: 0 0 0 14px transparent; }',
+      '  100% { box-shadow: 0 0 0 0 transparent; }',
+      '}',
+      '.pmg-t34-pulse {',
+      '  animation: pmgT34Pulse 1100ms ease-out 2;',
+      '  border-radius: var(--radius-md, 10px);',
+      '}'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  /* (1) Inject "Next: Photography Suite →" into the image inline panel. */
+  function addInlineNextBtn() {
+    var panel = document.getElementById(INLINE_IMAGE_PANEL_ID);
+    if (!panel) return false;
+    if (document.getElementById(INLINE_NEXT_ID)) return true;
+    var foot = panel.querySelector('.pmg-inline-foot');
+    if (!foot) return false;
+    var nextBtn = document.createElement('button');
+    nextBtn.id = INLINE_NEXT_ID;
+    nextBtn.type = 'button';
+    nextBtn.innerHTML = 'Next: Photography Suite <span aria-hidden="true">→</span>';
+    nextBtn.addEventListener('click', function () {
+      var suite = document.getElementById(SUITE_ID);
+      if (suite) {
+        try { suite.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+        suite.classList.add('pmg-t34-pulse');
+        setTimeout(function () { suite.classList.remove('pmg-t34-pulse'); }, 2400);
+      }
+    });
+    foot.appendChild(nextBtn);
+    return true;
+  }
+
+  /* (2) Move the .pmg-photo-surprise node from bottom .pmg-photo-actions
+     up to a new prominent "Need Ideas?" host row at top of suite. */
+  function moveSurpriseToTop() {
+    var suite = document.getElementById(SUITE_ID);
+    if (!suite) return false;
+    if (document.getElementById(SURPRISE_TOP_ID)) return true;
+    var surpriseBtn = suite.querySelector('.pmg-photo-actions .pmg-photo-surprise');
+    if (!surpriseBtn) return false;
+
+    var host = document.createElement('div');
+    host.id = SURPRISE_TOP_ID;
+    host.innerHTML =
+      '<div class="pmg-t34-surprise-text">' +
+        '<strong>Need Ideas? Try An Example</strong>' +
+        'We\u2019ll Auto-Fill Each Group With A Random Sample You Can Tweak.' +
+      '</div>';
+
+    var firstGroup = suite.querySelector('.pmg-photo-group');
+    if (firstGroup) suite.insertBefore(host, firstGroup);
+    else suite.insertBefore(host, suite.firstChild);
+
+    /* Move the existing button (preserves T23 click handler). */
+    host.appendChild(surpriseBtn);
+    /* Reset its inner HTML to ensure consistent label after move. */
+    surpriseBtn.innerHTML = '<span aria-hidden="true">\uD83C\uDFB2</span> Surprise Me';
+    return true;
+  }
+
+  /* NOTE: We intentionally do NOT add a "Copy Prompt" button here.
+     An earlier IIFE already adds a "Copy Prompt" button next to the
+     "Generate Image Here" send button, paired with a "What Do You Want
+     To Do?" header — that satisfies the post-Color-Palette finish
+     prompt. Adding another would be a visual duplicate. */
+
+  /* (4) Replace the 🖼️ picture-frame emoji on the Image Generator
+     section title with a 📷 camera, since this section delivers
+     photographic AI image output. */
+  function fixImageGenIcon() {
+    var title = document.getElementById(IMG_GEN_TITLE_ID);
+    if (!title) return false;
+    if (title.dataset.pmgT34IconFixed === '1') return true;
+    var txt = title.textContent || '';
+    if (txt.indexOf('\uD83D\uDCF7') !== -1) {
+      /* Already has 📷 — mark and bail. */
+      title.dataset.pmgT34IconFixed = '1';
+      return true;
+    }
+    /* Replace 🖼 / 🖼️ with 📷. */
+    var newTxt = txt.replace(/\uD83D\uDDBC\uFE0F?/g, '\uD83D\uDCF7');
+    if (newTxt !== txt) {
+      title.textContent = newTxt;
+    }
+    title.dataset.pmgT34IconFixed = '1';
+    return true;
+  }
+
+  function tick() {
+    addInlineNextBtn();
+    moveSurpriseToTop();
+    fixImageGenIcon();
+  }
+
+  function init() {
+    injectStyles();
+    tick();
+    /* Late-mount safety: T23 builds the suite, T31 builds the inline
+       panels, T28 builds the image generator section — all may arrive
+       after this IIFE runs. Watch briefly. */
+    try {
+      var mo = new MutationObserver(tick);
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 60000);
+    } catch (e) { /* ignore */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
