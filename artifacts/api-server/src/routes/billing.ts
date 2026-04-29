@@ -21,6 +21,7 @@ import { Router, type IRouter } from "express";
 import { stripe } from "../lib/stripe-client";
 import { supabaseAdmin } from "../lib/supabase-admin";
 import { requireSupabaseUser, type AuthedRequest } from "../lib/auth";
+import { isPaywallActive } from "../lib/paywall";
 
 const router: IRouter = Router();
 
@@ -105,6 +106,24 @@ router.post(
         ? req.body.tier.toLowerCase()
         : "pro";
     const tier: "pro" | "founding" = rawTier === "founding" ? "founding" : "pro";
+
+    /* T43: During open beta the Pro recurring subscription is NOT yet for
+       sale — only the lifetime Founding tier ($49) is. Block any Pro
+       checkout request until the paywall flips on (June 1, 2026). The
+       frontend already hides Pro CTAs in beta mode, but we enforce here
+       too so the API cannot be used to purchase Pro early via direct
+       calls or stale clients. Founding always passes through. */
+    if (tier === "pro" && !isPaywallActive()) {
+      req.log?.info(
+        { userId: user.id },
+        "blocked pro checkout during open beta",
+      );
+      res.status(403).json({
+        error:
+          "Pro launches June 1, 2026. Founding Member access ($49 lifetime) is available now.",
+      });
+      return;
+    }
 
     const priceId =
       tier === "founding"

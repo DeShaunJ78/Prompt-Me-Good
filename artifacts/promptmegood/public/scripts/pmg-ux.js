@@ -5401,13 +5401,15 @@
 
     section.innerHTML = html.join('\n');
 
-    /* Insert directly after the existing builder app-section. */
+    /* Insert directly after the existing builder app-section. The Photography
+       Suite is only meaningful on pages that actually host the prompt builder
+       (i.e. index.html). On marketing pages like pricing.html / guide.html
+       there is no #builder, so we MUST NOT fall back to appending the suite
+       to <body> — that previously injected a full Photography Suite at the
+       bottom of pricing.html, which confused users and was reported as a bug. */
     var builder = document.getElementById('builder');
-    if (builder && builder.parentNode) {
-      builder.parentNode.insertBefore(section, builder.nextSibling);
-    } else {
-      document.body.appendChild(section);
-    }
+    if (!builder || !builder.parentNode) return;
+    builder.parentNode.insertBefore(section, builder.nextSibling);
 
     wireSuite(section);
   }
@@ -10925,12 +10927,15 @@
       '#' + BANNER_ID + ' button.pmg-t42-close:hover { background: rgba(0,0,0,0.08); }',
       '@media (max-width: 600px) { #' + BANNER_ID + ' { font-size: 13px; padding: 8px 12px; } }',
       '@media print { #' + BANNER_ID + ' { display: none !important; } }',
-      /* Override T41 hide rules during beta — upgrade CTAs stay visible. */
-      'body.pmg-beta-mode.pmg-is-pro .pmg-upgrade-btn[data-pmg-upgrade] {',
+      /* Override T41 hide rules during beta — but ONLY for the Founding-tier
+         button, since Founding ($49 lifetime) is genuinely on sale right now.
+         Pro recurring subscriptions are NOT for sale until June 1, 2026, so
+         every Pro upgrade CTA (the pricing-page "Upgrade To Pro" button and
+         the auto-injected homepage `.pmg-t41-inline-cta` card) must stay
+         hidden during beta. T41's pmg-is-pro hide rule already takes care of
+         that; we simply do not restore them here. */
+      'body.pmg-beta-mode.pmg-is-pro .pmg-upgrade-btn[data-pmg-upgrade][data-pmg-tier="founding"] {',
       '  display: inline-flex !important;',
-      '}',
-      'body.pmg-beta-mode.pmg-is-pro .pmg-t41-inline-cta {',
-      '  display: flex !important;',
       '}'
     ].join('\n');
     var s = document.createElement('style');
