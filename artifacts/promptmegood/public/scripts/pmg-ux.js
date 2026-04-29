@@ -7460,6 +7460,8 @@
     modal.classList.add('is-open');
     renderStep();
   }
+  /* Expose for T32+ callers that rebuild the help-row buttons. */
+  window.__pmgT30OpenImageWizard = openModal;
 
   function closeModal() {
     var modal = document.getElementById(MODAL_ID);
@@ -7958,6 +7960,329 @@
   function init() {
     injectStyles();
     wireSkipLinks();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+
+
+/* =====================================================================
+ * T32 — Symmetric Help Me Start Callouts + Move Weekly Pin
+ * ---------------------------------------------------------------------
+ * User feedback after T31 shipped:
+ *   1. The Help Me Start buttons need to be visually obvious primary
+ *      buttons that immediately open the question flow (4 questions on
+ *      the text side, 5 on the image side). They're working but the
+ *      previous layout buried the button on the right of a horizontal
+ *      callout — users didn't read it as the main action.
+ *   2. The image side needs the same "★ Most Loved" badge the text
+ *      side has. The user explicitly wants both columns to lead with
+ *      Most Loved so the recommended path is obvious on either side.
+ *   3. Both sides need an identical, clean, intentional structure:
+ *        ★ Most Loved
+ *        Help Me Start
+ *        <description>
+ *        [Help Me Start] (big primary button)
+ *        ────── or ──────
+ *        [I Know What I Want — Just Start Typing]
+ *      No guesswork — symmetric on both columns.
+ *   4. After the questions finish, the user should be walked through
+ *      the column linearly to their goal. The existing handlers
+ *      already scroll to the next field/result, so we don't change
+ *      the post-wizard flow — only the entry point.
+ *   5. The "This Week's Focus" pin currently lives buried inside the
+ *      builder form. The user proposed putting it right under the
+ *      column header (the "Create A Text Prompt" banner) — visible at
+ *      the top of the column.
+ *
+ * What this IIFE does:
+ *   - Replaces the inner HTML of #pmg-text-help-row and
+ *     #pmg-image-help-row with the new symmetric vertical layout.
+ *     We KEEP the same outer ids and the same button ids
+ *     (#pmg-text-help-row-btn, #pmg-image-help-row-btn,
+ *     #pmg-text-help-row-skip, #pmg-image-help-skip) so T31's
+ *     capture-phase skip-link toggle still works untouched.
+ *   - Wires the primary buttons:
+ *       · LEFT  → clicks the existing #guided-mode-btn (the original
+ *                 4-question Help Me Start modal).
+ *       · RIGHT → calls window.__pmgT30OpenImageWizard() (the 5-step
+ *                 wizard built in T30).
+ *   - Moves #weekly-goal-pin out of #builder-panel and into
+ *     #pmg-col-text, positioned right after #pmg-col-text-header.
+ *   - Tightens the inline-typing panel positioning (T31) so it sits
+ *     cleanly below the new vertical callout instead of overlapping.
+ *
+ * Hard rules honored: no API/DB/secret edits; no renamed ids; CSS
+ * variables only; idempotent via window.__pmgT32Init; centralized
+ * in pmg-ux.js.
+ * ===================================================================== */
+(function pmgT32SymmetricCallouts() {
+  if (window.__pmgT32Init) return;
+  window.__pmgT32Init = true;
+
+  var STYLE_ID = 'pmg-t32-style';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* ===== Design tokens for T32 — defined once at :root so the rest
+         of T32 only references CSS variables. Honors the project's
+         "CSS variables only" hard rule. The Most Loved badge palette
+         matches the literal values T28/T30 already shipped, just
+         promoted to named tokens here. ===== */
+      ':root {',
+      '  --pmg-most-loved-bg: color-mix(in srgb, #ffc107 20%, transparent);',
+      '  --pmg-most-loved-fg: #8a5a00;',
+      '  --pmg-on-primary: #ffffff;',
+      '  --pmg-callout-divider: var(--color-border, #d9d9d9);',
+      '}',
+      /* ===== Symmetric vertical callout (override T30's flex layout) ===== */
+      '#pmg-text-help-row, #pmg-image-help-row {',
+      '  display: block !important;',
+      '  text-align: left;',
+      '  padding: var(--space-4) !important;',
+      '}',
+      '.pmg-callout-badge {',
+      '  display: inline-block; margin: 0 0 8px;',
+      '  padding: 3px 10px; border-radius: 999px;',
+      '  background: var(--pmg-most-loved-bg);',
+      '  color: var(--pmg-most-loved-fg);',
+      '  font-size: 11px; font-weight: 800;',
+      '  letter-spacing: 0.04em; text-transform: uppercase;',
+      '}',
+      '.pmg-callout-title {',
+      '  margin: 0 0 4px; font-size: var(--text-lg);',
+      '  font-weight: 800; color: var(--color-text);',
+      '}',
+      '.pmg-callout-desc {',
+      '  margin: 0 0 var(--space-3); font-size: var(--text-sm);',
+      '  color: var(--color-text-muted); line-height: 1.4;',
+      '}',
+      /* Defensive !important on display/visibility because some legacy
+         rule in index.html's giant inline <style> block has been observed
+         to suppress this primary button at runtime. The other props can
+         remain low-specificity. */
+      '.pmg-callout-primary {',
+      '  display: block !important; visibility: visible !important;',
+      '  width: 100%; box-sizing: border-box;',
+      '  padding: 14px 22px; min-height: 52px;',
+      '  border-radius: var(--radius-full);',
+      '  background: var(--color-primary) !important; color: var(--pmg-on-primary) !important;',
+      '  border: 1.5px solid var(--color-primary);',
+      '  font-weight: 700; font-size: var(--text-base);',
+      '  cursor: pointer;',
+      '  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 22%, transparent);',
+      '  transition: filter 0.15s, transform 0.05s;',
+      '}',
+      '.pmg-callout-primary:hover { filter: brightness(0.96); }',
+      '.pmg-callout-primary:active { transform: translateY(1px); }',
+      '.pmg-callout-or {',
+      '  display: flex; align-items: center; gap: var(--space-3);',
+      '  margin: 14px 0 10px;',
+      '  font-size: 11px; font-weight: 700;',
+      '  color: var(--color-text-muted); letter-spacing: 0.06em;',
+      '  text-transform: uppercase;',
+      '}',
+      '.pmg-callout-or::before, .pmg-callout-or::after {',
+      '  content: ""; flex: 1 1 auto;',
+      '  height: 1px; background: var(--pmg-callout-divider);',
+      '}',
+      '.pmg-callout-secondary {',
+      '  display: block; width: 100%; padding: 10px 18px;',
+      '  background: transparent;',
+      '  border: 1.5px solid color-mix(in srgb, var(--color-primary) 35%, transparent);',
+      '  border-radius: var(--radius-full);',
+      '  color: var(--color-primary); font-weight: 700;',
+      '  font-size: var(--text-sm); cursor: pointer;',
+      '  text-align: center; text-decoration: none;',
+      '  transition: background 0.15s;',
+      '}',
+      '.pmg-callout-secondary:hover {',
+      '  background: color-mix(in srgb, var(--color-primary) 8%, transparent);',
+      '}',
+
+      /* ===== T31 inline panel: clean attach below new vertical callout =====
+         T31 used a -10px top margin to overlap the old horizontal row.
+         With the taller vertical callout, that overlap looks broken;
+         render the inline panel as a sibling card sitting just below. */
+      '#pmg-text-help-row + .pmg-inline-typing,',
+      '#pmg-image-help-row + .pmg-inline-typing {',
+      '  margin-top: 8px !important;',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent) !important;',
+      '  border-radius: var(--radius-lg, 12px) !important;',
+      '  border-top: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent) !important;',
+      '  border-top-left-radius: var(--radius-lg, 12px) !important;',
+      '  border-top-right-radius: var(--radius-lg, 12px) !important;',
+      '}',
+
+      /* ===== Weekly pin moved to top of column ===== */
+      '#pmg-col-text > #weekly-goal-pin {',
+      '  margin: 0 0 var(--space-3) !important;',
+      '  padding: var(--space-3) var(--space-4);',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent);',
+      '  border-radius: var(--radius-lg, 12px);',
+      '  background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface));',
+      '}'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  function defForSide(side) {
+    if (side === 'image') {
+      return {
+        row: 'pmg-image-help-row',
+        primary: 'pmg-image-help-row-btn',
+        skip: 'pmg-image-help-skip',
+        desc: 'Answer 5 quick questions and we\'ll build a detailed image prompt — subject, style, lighting, setting, and any extra details.'
+      };
+    }
+    return {
+      row: 'pmg-text-help-row',
+      primary: 'pmg-text-help-row-btn',
+      skip: 'pmg-text-help-row-skip',
+      desc: 'Answer 4 quick questions and we\'ll build a sharp prompt — your goal, the audience, the format, and the tone.'
+    };
+  }
+
+  function rebuildCallout(side) {
+    var def = defForSide(side);
+    var row = document.getElementById(def.row);
+    if (!row) return;
+    if (row.getAttribute('data-pmg-t32') === '1') return;
+    row.setAttribute('data-pmg-t32', '1');
+
+    row.innerHTML =
+      '<span class="pmg-callout-badge">★ Most Loved</span>' +
+      '<h3 class="pmg-callout-title">Help Me Start</h3>' +
+      '<p class="pmg-callout-desc">' + def.desc + '</p>' +
+      '<button type="button" class="pmg-callout-primary" id="' + def.primary + '">Help Me Start →</button>' +
+      '<div class="pmg-callout-or" aria-hidden="true">or</div>' +
+      '<button type="button" class="pmg-callout-secondary" id="' + def.skip + '" aria-expanded="false">I Know What I Want — Just Start Typing</button>';
+
+    var primary = document.getElementById(def.primary);
+    if (primary) {
+      primary.addEventListener('click', function () {
+        if (side === 'image') {
+          if (typeof window.__pmgT30OpenImageWizard === 'function') {
+            window.__pmgT30OpenImageWizard();
+          } else {
+            /* Fallback: T30 hasn't loaded its export yet. Try the
+               wizard modal directly, then surface a soft message so
+               the button never feels dead. */
+            var modal = document.getElementById('pmg-t30-image-modal');
+            if (modal && modal.classList) {
+              modal.classList.add('is-open');
+            } else if (typeof window.__pmgToast === 'function') {
+              window.__pmgToast('Wizard is loading — try once more in a moment.');
+            }
+          }
+        } else {
+          var existing = document.getElementById('guided-mode-btn');
+          if (existing) {
+            try { existing.click(); } catch (e) {}
+          }
+        }
+      });
+    }
+    /* Skip link: T31's capture-phase listener already matches on
+       these ids (#pmg-text-help-row-skip / #pmg-image-help-skip)
+       so no rewiring needed — toggling Just Works. */
+  }
+
+  function moveWeeklyPin() {
+    var pin = document.getElementById('weekly-goal-pin');
+    var col = document.getElementById('pmg-col-text');
+    var header = document.getElementById('pmg-col-text-header');
+    if (!pin || !col || !header) return;
+    if (pin.getAttribute('data-pmg-t32-moved') === '1') return;
+
+    /* Insert pin right after the column header. The pin's existing
+       id and contents are preserved so the original click handler
+       (which sets the goal text from the pin) still works. */
+    if (header.nextSibling) col.insertBefore(pin, header.nextSibling);
+    else col.appendChild(pin);
+    pin.setAttribute('data-pmg-t32-moved', '1');
+  }
+
+  /* Re-apply T32 if a later observer/replace blows away our edits.
+     We check the data-pmg-t32 sentinel attribute — if a row exists
+     without it (because something replaced the node), rebuild. */
+  function reapplyIfNeeded() {
+    var textRow = document.getElementById('pmg-text-help-row');
+    if (textRow && textRow.getAttribute('data-pmg-t32') !== '1') {
+      rebuildCallout('text');
+    }
+    var imgRow = document.getElementById('pmg-image-help-row');
+    if (imgRow && imgRow.getAttribute('data-pmg-t32') !== '1') {
+      rebuildCallout('image');
+    }
+    var pin = document.getElementById('weekly-goal-pin');
+    if (pin && pin.getAttribute('data-pmg-t32-moved') !== '1') {
+      moveWeeklyPin();
+    }
+  }
+
+  function attachResilienceObserver() {
+    if (window.__pmgT32Observer) return;
+    if (typeof MutationObserver !== 'function' || !document.body) return;
+    /* Single repo-wide observer scoped to the columns container if
+       present, else body. Throttled with rAF + dirty flag so we don't
+       thrash on every keystroke. */
+    var dirty = false;
+    function flush() {
+      dirty = false;
+      reapplyIfNeeded();
+    }
+    var target = document.getElementById('pmg-columns') || document.body;
+    var mo = new MutationObserver(function () {
+      if (dirty) return;
+      dirty = true;
+      if (typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(flush);
+      } else {
+        setTimeout(flush, 16);
+      }
+    });
+    mo.observe(target, { childList: true, subtree: true });
+    window.__pmgT32Observer = mo;
+  }
+
+  function init() {
+    injectStyles();
+    rebuildCallout('text');
+    rebuildCallout('image');
+    moveWeeklyPin();
+
+    /* Retry briefly because T28 and T30 build columns and help rows
+       on observers; we want T32 to land as soon as those exist. */
+    var tries = 0;
+    var iv = setInterval(function () {
+      tries++;
+      rebuildCallout('text');
+      rebuildCallout('image');
+      moveWeeklyPin();
+      var leftDone = !!(document.getElementById('pmg-text-help-row') &&
+                        document.getElementById('pmg-text-help-row').getAttribute('data-pmg-t32') === '1');
+      var rightDone = !!(document.getElementById('pmg-image-help-row') &&
+                         document.getElementById('pmg-image-help-row').getAttribute('data-pmg-t32') === '1');
+      var pinDone = !!(document.getElementById('weekly-goal-pin') &&
+                       document.getElementById('weekly-goal-pin').getAttribute('data-pmg-t32-moved') === '1');
+      if (leftDone && rightDone && pinDone) {
+        clearInterval(iv);
+        attachResilienceObserver();
+      }
+      if (tries >= 40) {
+        clearInterval(iv);
+        attachResilienceObserver();
+      }
+    }, 350);
   }
 
   if (document.readyState === 'loading') {
