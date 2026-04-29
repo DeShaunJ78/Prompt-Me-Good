@@ -5987,3 +5987,338 @@
     init();
   }
 })();
+
+
+/* =====================================================================
+ * T27 — Unified Photo Flow
+ * ---------------------------------------------------------------------
+ * The user complained that "Photography Suite" and "Create An Image"
+ * were two separate functions when conceptually they are the same
+ * workflow with two different final outcomes:
+ *   1) Build a detailed photo prompt and EXPORT it (copy to use in
+ *      Midjourney / Stable Diffusion / ChatGPT / etc.)
+ *   2) Build a detailed photo prompt and GENERATE the image in-house
+ *      with DALL·E 3.
+ *
+ * What this phase does (no IDs, classes, or JS variables are renamed):
+ *   - Hides the now-redundant "Write Something / Create An Image"
+ *     mode-switch tabs at the top of the builder. The Photography
+ *     Suite below becomes the canonical photo entry point.
+ *   - Hides the standalone "🎨 Generate Image" button (#image-generate-btn)
+ *     that lived in the top builder's actions row — the suite owns this
+ *     action now.
+ *   - Hides the legacy image-mode-only photo widgets that earlier
+ *     phases injected into the top builder (pmg-photo-assistant,
+ *     #pmg-photo-accordion, #pmg-build-image-btn). They duplicate the
+ *     suite. They stay in the DOM and keep their IDs/classes — only
+ *     visually hidden via CSS so anchors and JS don't break.
+ *   - Forces the page out of image-mode at startup so returning
+ *     visitors land in the canonical text-prompt builder.
+ *   - Adds a brand-new "📋 Copy Prompt" outcome button to the
+ *     Photography Suite alongside the existing send button. The
+ *     existing send button keeps its class (.pmg-photo-send) but its
+ *     visible label is reframed to "🎨 Generate Image Here".
+ *   - Adds an outcome label above the action row so the choice is
+ *     obvious: "What Do You Want To Do?" with subcopy.
+ *   - Mirrors the disabled/enabled state of the send button onto the
+ *     copy button (both require at least one pick).
+ * ===================================================================== */
+(function pmgT27UnifyPhotoFlow() {
+  if (window.__pmgT27Init) return;
+  window.__pmgT27Init = true;
+
+  var STYLE_ID = 'pmg-t27-unify-style';
+  var SUITE_ID = 'pmg-photo-suite';
+  var COPY_CLASS = 'pmg-photo-copy';
+  var OUTCOME_LABEL_CLASS = 'pmg-photo-outcome-label';
+  var TOAST_ID = 'pmg-photo-toast';
+
+  var GROUPS_KEYS = ['style', 'camera', 'lighting', 'composition', 'palette'];
+
+  /* ---------------- Style injection ---------------- */
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* Hide the redundant top-of-builder mode toggle and its hint. */
+      '#modeSwitch, .mode-switch { display: none !important; }',
+      '.image-mode-hint { display: none !important; }',
+
+      /* Hide the standalone "Generate Image" button in the top builder
+         actions row — the Photography Suite now owns this action. */
+      '#image-generate-btn { display: none !important; }',
+
+      /* Hide the legacy duplicated photo widgets that earlier phases
+         injected into the top builder when image-mode is active. */
+      'body.image-mode .pmg-photo-assistant,',
+      'body.image-mode #pmg-photo-accordion,',
+      'body.image-mode #pmg-build-image-btn,',
+      'body.image-mode #pmg-build-image-btn.pmg-ready { display: none !important; }',
+
+      /* New "Copy Prompt" outcome button — paired with the existing
+         "Generate Image Here" send button. */
+      '#' + SUITE_ID + ' .' + COPY_CLASS + ' {',
+      '  flex: 1 1 auto; min-height: 52px; padding: 12px 24px;',
+      '  font-size: var(--text-base); font-weight: 700;',
+      '  border-radius: var(--radius-full);',
+      '  background: var(--color-surface); color: var(--color-primary);',
+      '  border: 2px solid var(--color-primary); cursor: pointer;',
+      '  display: inline-flex; align-items: center; justify-content: center; gap: 8px;',
+      '  transition: background 160ms ease, color 160ms ease, transform 120ms ease, filter 180ms ease;',
+      '}',
+      '#' + SUITE_ID + ' .' + COPY_CLASS + ':hover {',
+      '  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));',
+      '  transform: translateY(-1px);',
+      '}',
+      '#' + SUITE_ID + ' .' + COPY_CLASS + ':disabled {',
+      '  opacity: 0.5; cursor: not-allowed; transform: none;',
+      '}',
+      '#' + SUITE_ID + ' .' + COPY_CLASS + '.is-copied {',
+      '  background: var(--color-primary); color: var(--color-text-inverse, #ffffff);',
+      '}',
+
+      /* Outcome label above the actions row. */
+      '#' + SUITE_ID + ' .' + OUTCOME_LABEL_CLASS + ' {',
+      '  display: block; margin: var(--space-4) 0 var(--space-2);',
+      '  font-size: var(--text-sm); font-weight: 700; color: var(--color-text);',
+      '}',
+      '#' + SUITE_ID + ' .' + OUTCOME_LABEL_CLASS + ' .' + OUTCOME_LABEL_CLASS + '-sub {',
+      '  display: block; margin-top: 2px;',
+      '  font-size: var(--text-xs); font-weight: 500; color: var(--color-text-muted);',
+      '}',
+
+      /* Mobile: stack copy button full-width like the existing buttons. */
+      '@media (max-width: 640px) {',
+      '  #' + SUITE_ID + ' .' + COPY_CLASS + ' { width: 100%; }',
+      '}'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  /* ---------------- Helpers ---------------- */
+  function collectPicks() {
+    var picks = {};
+    GROUPS_KEYS.forEach(function (k) { picks[k] = []; });
+    var nodes = document.querySelectorAll('#' + SUITE_ID + ' .pmg-photo-pill.is-active');
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var g = el.getAttribute('data-group');
+      var v = el.getAttribute('data-value');
+      if (g && v && picks[g]) picks[g].push(v);
+    }
+    return picks;
+  }
+
+  function buildPromptText(picks) {
+    var parts = [];
+    if (picks.style && picks.style.length) parts.push(picks.style.join(', ') + ' style');
+    if (picks.camera && picks.camera.length) parts.push('shot on ' + picks.camera.join(' / '));
+    if (picks.lighting && picks.lighting.length) parts.push(picks.lighting.join(', ') + ' lighting');
+    if (picks.composition && picks.composition.length) parts.push(picks.composition.join(', ') + ' composition');
+    if (picks.palette && picks.palette.length) parts.push(picks.palette.join(', ') + ' color palette');
+    return parts.join(', ');
+  }
+
+  function copyToClipboard(text) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text);
+      }
+    } catch (e) { /* fall through */ }
+    return new Promise(function (resolve, reject) {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        if (ok) { resolve(); } else { reject(new Error('execCommand failed')); }
+      } catch (e2) { reject(e2); }
+    });
+  }
+
+  function showToast(msg) {
+    var t = document.getElementById(TOAST_ID);
+    if (!t) {
+      t = document.createElement('div');
+      t.id = TOAST_ID;
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.classList.add('is-visible');
+    clearTimeout(t.__hideTimer);
+    t.__hideTimer = setTimeout(function () {
+      t.classList.remove('is-visible');
+    }, 2400);
+  }
+
+  /* ---------------- Force write mode at startup ---------------- */
+  function forceWriteMode() {
+    try {
+      document.body.classList.remove('image-mode');
+      var writeBtn = document.getElementById('writeModeBtn');
+      var imgBtn = document.getElementById('imageModeBtn');
+      if (writeBtn) writeBtn.classList.add('active');
+      if (imgBtn) imgBtn.classList.remove('active');
+      if (typeof window.setMode === 'function') {
+        try { window.setMode('write'); } catch (e) { /* no-op */ }
+      }
+    } catch (e) { /* no-op */ }
+  }
+
+  /* ---------------- Capture user-typed subject ----------------
+   * T23's sendToImageGenerator overwrites #goal.value with the
+   * already-composed prompt. Programmatic .value assignment does NOT
+   * fire the 'input' event, so this listener only captures genuine
+   * user keystrokes. We use this snapshot as the subject when copying
+   * a prompt — that way "Generate Here" then "Copy Prompt" doesn't
+   * recursively compound the prompt suffix. */
+  function captureSubjectSource() {
+    var goal = document.getElementById('goal');
+    if (!goal || goal.getAttribute('data-pmg-subject-bound') === '1') return;
+    /* Seed with the current value (whatever the user typed before T27 init). */
+    if (goal.value) {
+      try { goal.dataset.pmgSubject = goal.value.trim(); } catch (e) { /* no-op */ }
+    }
+    goal.addEventListener('input', function () {
+      try { goal.dataset.pmgSubject = (goal.value || '').trim(); } catch (e) { /* no-op */ }
+    });
+    goal.setAttribute('data-pmg-subject-bound', '1');
+  }
+
+  function readSubject() {
+    var goal = document.getElementById('goal');
+    if (!goal) return '';
+    var snapped = '';
+    try { snapped = (goal.dataset && goal.dataset.pmgSubject) ? goal.dataset.pmgSubject : ''; } catch (e) {}
+    snapped = (snapped || '').trim();
+    if (snapped) return snapped;
+    return (goal.value || '').trim();
+  }
+
+  /* ---------------- Reframe the suite once it exists ---------------- */
+  function reframeSuite() {
+    var suite = document.getElementById(SUITE_ID);
+    if (!suite) return false;
+    if (suite.getAttribute('data-pmg-t27') === '1') return true;
+
+    var helper = suite.querySelector('.pmg-stack-helper');
+    if (helper) {
+      helper.textContent =
+        'Pick A Vibe In Each Group. When You\'re Ready, Either Copy The Prompt To Use In Another AI Tool — Or Generate The Image Right Here With DALL·E 3.';
+    }
+
+    var actions = suite.querySelector('.pmg-photo-actions');
+    var sendBtn = suite.querySelector('.pmg-photo-send');
+    if (!actions || !sendBtn) return false;
+
+    /* Reframe send button label so its outcome is unmistakable. The
+       class name (.pmg-photo-send) is unchanged so its T23 click
+       handler keeps firing. */
+    sendBtn.innerHTML =
+      '<span aria-hidden="true">\uD83C\uDFA8</span><span>Generate Image Here</span>';
+    sendBtn.setAttribute('aria-label', 'Generate The Image Right Here Using DALL·E 3');
+    sendBtn.setAttribute('title', 'Generate The Image Right Now Using DALL·E 3');
+
+    /* New "Copy Prompt" outcome button. */
+    var copyBtn = document.createElement('button');
+    copyBtn.type = 'button';
+    copyBtn.className = COPY_CLASS;
+    copyBtn.innerHTML =
+      '<span aria-hidden="true">\uD83D\uDCCB</span><span>Copy Prompt</span>';
+    copyBtn.setAttribute('aria-label', 'Copy The Photo Prompt To Your Clipboard');
+    copyBtn.setAttribute('title',
+      'Copy The Built Prompt To Use In Midjourney, Stable Diffusion, ChatGPT, Or Any Other AI Tool');
+    copyBtn.disabled = sendBtn.disabled;
+
+    actions.insertBefore(copyBtn, sendBtn);
+
+    /* Outcome label above the action row. */
+    var label = document.createElement('span');
+    label.className = OUTCOME_LABEL_CLASS;
+    label.innerHTML =
+      'What Do You Want To Do?' +
+      '<span class="' + OUTCOME_LABEL_CLASS + '-sub">' +
+      'Copy The Prompt For Another AI Tool — Or Generate The Image Here.' +
+      '</span>';
+    actions.parentNode.insertBefore(label, actions);
+
+    /* Wire copy button. Subject comes from readSubject() (the
+       user-typed snapshot) so clicking Generate first then Copy
+       doesn't recursively compound the prompt. */
+    copyBtn.addEventListener('click', function () {
+      var picks = collectPicks();
+      var photoText = buildPromptText(picks);
+      if (!photoText) {
+        showToast('Pick At Least One Option First.');
+        return;
+      }
+      var subject = readSubject() || 'A Striking Photograph';
+      var finalPrompt = subject + ' — ' + photoText + '.';
+
+      copyToClipboard(finalPrompt).then(function () {
+        showToast('\u2713 Prompt Copied — Paste Into Any AI Tool.');
+        copyBtn.classList.add('is-copied');
+        var origHTML = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<span aria-hidden="true">\u2713</span><span>Copied!</span>';
+        setTimeout(function () {
+          copyBtn.classList.remove('is-copied');
+          copyBtn.innerHTML = origHTML;
+        }, 1800);
+      }).catch(function () {
+        showToast('Could Not Copy — Try Again.');
+      });
+    });
+
+    /* Mirror disabled state from send → copy. T23's refreshSummary
+       toggles the disabled attribute when picks change. T26 throttles
+       the observer's callbacks. We disconnect on pagehide so the
+       observer doesn't linger past navigation. */
+    try {
+      var mirrorObs = new MutationObserver(function () {
+        copyBtn.disabled = sendBtn.disabled;
+      });
+      mirrorObs.observe(sendBtn, { attributes: true, attributeFilter: ['disabled'] });
+      var teardown = function () {
+        try { mirrorObs.disconnect(); } catch (e) { /* no-op */ }
+      };
+      window.addEventListener('pagehide', teardown, { once: true });
+      window.addEventListener('beforeunload', teardown, { once: true });
+    } catch (e) { /* ignore */ }
+
+    suite.setAttribute('data-pmg-t27', '1');
+    return true;
+  }
+
+  /* ---------------- Init ---------------- */
+  function initT27() {
+    injectStyles();
+    forceWriteMode();
+    captureSubjectSource();
+    if (reframeSuite()) return;
+
+    /* Suite not built yet — wait for T23 to inject it. */
+    try {
+      var mo = new MutationObserver(function () {
+        if (reframeSuite()) {
+          try { mo.disconnect(); } catch (e) { /* no-op */ }
+        }
+      });
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 60000);
+    } catch (e) { /* ignore */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initT27);
+  } else {
+    initT27();
+  }
+})();
