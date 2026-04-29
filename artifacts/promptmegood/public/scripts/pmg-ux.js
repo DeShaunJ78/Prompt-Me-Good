@@ -8867,3 +8867,82 @@
     init();
   }
 })();
+
+/* =====================================================================
+ * T36 — Unify Image Generator Footer Meta Lines
+ * ---------------------------------------------------------------------
+ * User feedback after T35 deployed: the three helper lines that sit
+ * beneath the Image Generator action row were stylistically
+ * inconsistent and hard to scan as a group:
+ *   1. "Use As Reference Copies The Image URL So You Can Paste It..."
+ *      (#pmg-t35-use-as-ref-desc — italic, centered, muted)
+ *   2. "Download Will Activate Once Your Image Is Ready."
+ *      (.pmg-t15-image-hint — left-aligned, default body color)
+ *   3. "Created With DALL·E 3 · Free During Early Access"
+ *      (#imageResultSection .run-section-meta — small, muted)
+ * The user wants them centered, uniformed, and intentional — to read
+ * as one cohesive footer block matching the rest of the site's calm,
+ * refined typography.
+ *
+ * Approach: inject a single stylesheet that applies the same centered,
+ * 12px, muted, comfortably-spaced treatment to all three selectors.
+ * Drop italic on the T35 line so the block reads as deliberate body
+ * copy, not an aside. Tighten vertical rhythm so the three lines feel
+ * like one paragraph stack, not three orphans. CSS variables only;
+ * no DOM moves, no class renames, no layout reflow of the buttons.
+ * Idempotent via window.__pmgT36Init.
+ * ===================================================================== */
+(function pmgT36UnifyImageMeta() {
+  if (window.__pmgT36Init) return;
+  window.__pmgT36Init = true;
+
+  var STYLE_ID = 'pmg-t36-style';
+  if (document.getElementById(STYLE_ID)) return;
+
+  var css = [
+    /* Shared treatment for the three footer lines under the image
+       generator action row. Use a common selector chain so a single
+       rule defines tone, weight, size, color, alignment, and rhythm. */
+    '#imageResultSection #pmg-t35-use-as-ref-desc,',
+    '#imageResultSection .pmg-t15-image-hint,',
+    '#imageResultSection .run-section-meta {',
+    '  margin: 10px auto 0 !important;',
+    '  padding: 0 var(--space-3, 12px) !important;',
+    '  max-width: 52ch;',
+    '  font-size: var(--text-xs, 12px) !important;',
+    '  line-height: 1.55 !important;',
+    '  color: var(--color-text-muted, #5f6b75) !important;',
+    '  text-align: center !important;',
+    '  font-style: normal !important;',
+    '  font-weight: 400 !important;',
+    '  letter-spacing: 0.005em;',
+    '}',
+
+    /* The Use-As-Reference description is the most descriptive of the
+       three; give it a touch more breathing room above so it visually
+       anchors the block. */
+    '#imageResultSection #pmg-t35-use-as-ref-desc {',
+    '  margin-top: 14px !important;',
+    '}',
+
+    /* The trailing "Created With" line is the quietest — render it a
+       half-step lighter and a hair smaller so the eye lands on it
+       last, like a fine-print signature. */
+    '#imageResultSection .run-section-meta {',
+    '  margin-top: 6px !important;',
+    '  font-size: 11.5px !important;',
+    '  opacity: 0.85;',
+    '}',
+
+    /* The middle "Download Will Activate" hint sits between the two
+       other lines — keep it tight to the description above it. */
+    '#imageResultSection .pmg-t15-image-hint {',
+    '  margin-top: 6px !important;',
+    '}'
+  ].join('\n');
+
+  var s = document.createElement('style');
+  s.id = STYLE_ID;
+  s.textContent = css;
+  document.head.appendChild(s);
+})();
