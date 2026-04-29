@@ -7720,3 +7720,249 @@
     init();
   }
 })();
+
+
+/* =====================================================================
+ * T31 — Inline Typing Panels (Per-Side, Collapsible, Stays Put)
+ * ---------------------------------------------------------------------
+ * User feedback after T30 shipped:
+ *   1. "When I click 'I Know What I Want — Just Start Typing' on the
+ *       PHOTO side, it teleports me over to the TEXT side." That's
+ *       because both T30 skip-links called focusGoalTextarea(), which
+ *       targets the single #goal textarea that lives inside the LEFT
+ *       column. Architecturally PromptMeGood uses one #goal field for
+ *       both text AND image prompts, but the user expects to STAY on
+ *       the image column when they click an image-side action.
+ *   2. "Once I click the link, a text field opens and there's no way
+ *       to fold it back up." The skip link is a one-way action — it
+ *       scrolls the user to the field but they have no toggle to undo
+ *       or hide it. The user wants every disclosure on the page to be
+ *       symmetrically collapsible: open it / close it.
+ *
+ * What this IIFE does:
+ *   - Builds an inline "typing panel" directly UNDER each Help Me Start
+ *     callout (one per column). Each panel has its own labelled
+ *     textarea + a hint + a "Hide Text Field ↑" close button.
+ *   - The skip link becomes a TOGGLE: first click opens that side's
+ *     panel and focuses its textarea; second click (or the close
+ *     button) collapses it. The link text flips to "Hide Text Field ↑"
+ *     while open and back to the original copy when collapsed.
+ *   - Each inline textarea is two-way bound to the existing #goal
+ *     textarea — anything the user types in either side's inline
+ *     panel is mirrored to #goal (so Fix My Prompt, Generate Image,
+ *     and the rest of the existing pipeline keep working unchanged),
+ *     and updates from elsewhere flow back into any open panels that
+ *     aren't currently focused (cursor never jumps).
+ *   - We intercept the T30 click handlers via capture-phase +
+ *     stopImmediatePropagation so the old "scroll to #goal" behavior
+ *     is replaced cleanly without ripping the T30 wiring out.
+ *
+ * Hard rules honored:
+ *   - No backend / API / DB / payment / secret changes.
+ *   - No renamed IDs or classes — we ADD new ids
+ *     (#pmg-inline-typing-text, #pmg-inline-typing-image) and reuse
+ *     T30's skip-link ids (#pmg-text-help-row-skip,
+ *     #pmg-image-help-skip) as toggles.
+ *   - All logic stays in pmg-ux.js.
+ *   - Idempotent via window.__pmgT31Init.
+ * ===================================================================== */
+(function pmgT31InlineTypingPanels() {
+  if (window.__pmgT31Init) return;
+  window.__pmgT31Init = true;
+
+  var STYLE_ID = 'pmg-t31-inline-style';
+  var SKIP_TEXT = 'I Know What I Want — Just Start Typing →';
+  var SKIP_HIDE = 'Hide Text Field ↑';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* Inline panel sits flush under the help row. We use negative
+         top margin + flat top corners so it visually attaches to the
+         help row, suggesting "this opened from above". */
+      '.pmg-inline-typing {',
+      '  display: none;',
+      '  margin: -10px 0 var(--space-3) 0;',
+      '  padding: var(--space-3) var(--space-4) var(--space-3);',
+      '  background: color-mix(in srgb, var(--color-primary) 4%, var(--color-surface));',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent);',
+      '  border-top: none;',
+      '  border-bottom-left-radius: var(--radius-lg, 12px);',
+      '  border-bottom-right-radius: var(--radius-lg, 12px);',
+      '}',
+      '.pmg-inline-typing.is-open { display: block; }',
+      '.pmg-inline-typing > label {',
+      '  display: block; font-size: var(--text-sm); font-weight: 700;',
+      '  color: var(--color-text); margin: 0 0 6px;',
+      '}',
+      '.pmg-inline-typing textarea {',
+      '  width: 100%; padding: 12px 14px; border-radius: 10px;',
+      '  border: 1.5px solid var(--color-border, #ddd);',
+      '  font: inherit; resize: vertical; min-height: 84px;',
+      '  box-sizing: border-box; background: var(--color-surface);',
+      '}',
+      '.pmg-inline-typing textarea:focus {',
+      '  outline: none; border-color: var(--color-primary);',
+      '  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 22%, transparent);',
+      '}',
+      '.pmg-inline-typing .pmg-inline-foot {',
+      '  display: flex; justify-content: space-between; align-items: center;',
+      '  gap: var(--space-3); margin-top: 8px; flex-wrap: wrap;',
+      '}',
+      '.pmg-inline-typing .pmg-inline-hint {',
+      '  font-size: 12px; color: var(--color-text-muted);',
+      '  flex: 1 1 220px;',
+      '}',
+      '.pmg-inline-typing .pmg-inline-close {',
+      '  background: none; border: none; padding: 4px 0;',
+      '  color: var(--color-text-muted); font-size: 12.5px;',
+      '  font-weight: 600; cursor: pointer;',
+      '  text-decoration: underline; text-underline-offset: 3px;',
+      '}',
+      '.pmg-inline-typing .pmg-inline-close:hover { color: var(--color-text); }'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  /* Map each side -> the corresponding help row id + skip-button id. */
+  function ids(side) {
+    if (side === 'image') {
+      return {
+        helpRow: 'pmg-image-help-row',
+        skipBtn: 'pmg-image-help-skip',
+        panel: 'pmg-inline-typing-image',
+        label: 'Describe Your Image',
+        hint: 'Type your subject and any details — e.g. "A confident woman in her 30s, smiling, business attire."',
+        foot: 'Synced With The Goal Field — Tap Generate Image Or Use The Photography Suite Below When Ready.'
+      };
+    }
+    return {
+      helpRow: 'pmg-text-help-row',
+      skipBtn: 'pmg-text-help-row-skip',
+      panel: 'pmg-inline-typing-text',
+      label: 'Describe What You Want',
+      hint: 'Type your goal in plain words. We\'ll polish it when you tap Fix My Prompt.',
+      foot: 'Synced With The Goal Field — Tap Fix My Prompt Below When Ready.'
+    };
+  }
+
+  function getOrBuildPanel(side) {
+    var def = ids(side);
+    var existing = document.getElementById(def.panel);
+    if (existing) return existing;
+
+    var helpRow = document.getElementById(def.helpRow);
+    if (!helpRow) return null;
+
+    var panel = document.createElement('div');
+    panel.id = def.panel;
+    panel.className = 'pmg-inline-typing';
+    panel.setAttribute('data-side', side);
+    panel.innerHTML =
+      '<label for="' + def.panel + '-input">' + def.label + '</label>' +
+      '<textarea id="' + def.panel + '-input" rows="3" placeholder="' + def.hint + '"></textarea>' +
+      '<div class="pmg-inline-foot">' +
+        '<span class="pmg-inline-hint">' + def.foot + '</span>' +
+        '<button type="button" class="pmg-inline-close" aria-label="Hide text field">Hide Text Field ↑</button>' +
+      '</div>';
+
+    /* Insert directly after the help row so it visually attaches. */
+    if (helpRow.nextSibling) helpRow.parentNode.insertBefore(panel, helpRow.nextSibling);
+    else helpRow.parentNode.appendChild(panel);
+
+    /* Two-way bind to #goal: typing here updates #goal (and dispatches
+       input so any other listeners — char counters, validators, the
+       T28 image flow — react). Updates to #goal from elsewhere flow
+       back here, but only when this textarea isn't actively focused
+       (so the cursor never jumps mid-type). */
+    var ta = panel.querySelector('textarea');
+    var goal = document.getElementById('goal');
+    if (goal && ta) {
+      ta.value = goal.value || '';
+      ta.addEventListener('input', function () {
+        if (goal.value !== ta.value) {
+          goal.value = ta.value;
+          goal.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      });
+      goal.addEventListener('input', function () {
+        if (document.activeElement !== ta && ta.value !== goal.value) {
+          ta.value = goal.value;
+        }
+      });
+    }
+
+    /* Close button collapses the panel. */
+    panel.querySelector('.pmg-inline-close').addEventListener('click', function () {
+      collapsePanel(side);
+    });
+
+    return panel;
+  }
+
+  function expandPanel(side) {
+    var panel = getOrBuildPanel(side);
+    if (!panel) return;
+    panel.classList.add('is-open');
+    var skip = document.getElementById(ids(side).skipBtn);
+    if (skip) {
+      skip.textContent = SKIP_HIDE;
+      skip.setAttribute('aria-expanded', 'true');
+    }
+    var ta = panel.querySelector('textarea');
+    if (ta) {
+      try { panel.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+      setTimeout(function () {
+        try { ta.focus({ preventScroll: true }); } catch (e) { ta.focus(); }
+      }, 260);
+    }
+  }
+
+  function collapsePanel(side) {
+    var panel = document.getElementById(ids(side).panel);
+    if (panel) panel.classList.remove('is-open');
+    var skip = document.getElementById(ids(side).skipBtn);
+    if (skip) {
+      skip.textContent = SKIP_TEXT;
+      skip.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  function togglePanel(side) {
+    var panel = document.getElementById(ids(side).panel);
+    if (panel && panel.classList.contains('is-open')) collapsePanel(side);
+    else expandPanel(side);
+  }
+
+  /* Capture-phase intercept of the T30 skip-link clicks. We stop the
+     original "scroll-to-#goal" handler from running and toggle our
+     own per-side inline panel instead. Using stopImmediatePropagation
+     guarantees no other delegated listener picks the click up. */
+  function wireSkipLinks() {
+    if (document.body.getAttribute('data-pmg-t31-skip') === '1') return;
+    document.body.setAttribute('data-pmg-t31-skip', '1');
+    document.addEventListener('click', function (ev) {
+      if (!ev.target || !ev.target.closest) return;
+      var t = ev.target.closest('#pmg-text-help-row-skip, #pmg-image-help-skip');
+      if (!t) return;
+      ev.stopImmediatePropagation();
+      ev.preventDefault();
+      var side = t.id === 'pmg-image-help-skip' ? 'image' : 'text';
+      togglePanel(side);
+    }, true);
+  }
+
+  function init() {
+    injectStyles();
+    wireSkipLinks();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
