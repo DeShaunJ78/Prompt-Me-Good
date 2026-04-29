@@ -6322,3 +6322,515 @@
     initT27();
   }
 })();
+
+
+/* =====================================================================
+ * T28 — Two-Column Build Area (Text Prompt | Image Prompt)
+ * ---------------------------------------------------------------------
+ * The user's vision: keep the existing fast-to-reach build area but
+ * split it into two equal columns operating linearly downward —
+ *
+ *   LEFT  COLUMN: "Create A Text Prompt"
+ *     Help Me Start → Goal → Fix My Prompt → Result → Run With AI
+ *     Outcomes: run in-house with AI OR copy/export the prompt.
+ *
+ *   RIGHT COLUMN: "Create An Image Prompt"
+ *     Help Me Start → Before/After Examples (trust) → Photography
+ *     Suite (pickers) → Copy Prompt / Generate Image Here → Image Result
+ *     Outcomes: generate the image in-house with DALL·E OR copy the
+ *     built prompt for use in any other AI tool.
+ *
+ * Plus: hero CTAs reframed so the two top buttons explicitly route to
+ * "Create A Text Prompt" and "Create An Image Prompt".
+ *
+ * Implementation rules honored:
+ *   - .app-shell already has display:grid 1fr 1fr (collapsed to 1fr on
+ *     mobile via existing media query). We only need to insert a new
+ *     SIBLING into .app-shell to fill the empty right column — no
+ *     CSS reorder, no flex order tricks.
+ *   - All existing IDs/classes are preserved. We MOVE elements via JS
+ *     (event listeners survive moves), never rename.
+ *   - T23 keeps a body MutationObserver that re-creates the photo
+ *     suite + image generator section ONLY if they're missing. As long
+ *     as we don't remove them from the DOM, T23 won't fight us.
+ *   - All new logic lives here in pmg-ux.js. Idempotent via
+ *     window.__pmgT28Init.
+ * ===================================================================== */
+(function pmgT28TwoColumnBuild() {
+  if (window.__pmgT28Init) return;
+  window.__pmgT28Init = true;
+
+  var STYLE_ID = 'pmg-t28-twocol-style';
+  var COL_TEXT_ID = 'pmg-col-text';
+  var COL_IMAGE_ID = 'pmg-col-image';
+  var TEXT_ANCHOR_ID = 'builder-text';
+  var IMAGE_ANCHOR_ID = 'builder-image';
+  var TEXT_HELP_ID = 'pmg-text-help-row';
+  var IMAGE_HELP_ID = 'pmg-image-help-row';
+  var IMAGE_BEFORE_AFTER_ID = 'pmg-image-before-after';
+  var HERO_IMAGE_CTA_ID = 'hero-image-cta';
+  var TEXT_HEADER_ID = 'pmg-col-text-header';
+
+  /* ---------------- Styles ---------------- */
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* The .app-shell grid is already 1fr 1fr on desktop. We
+         re-parent the existing #builder-panel + #result-panel into a
+         single #pmg-col-text wrapper so the LEFT column holds the
+         entire text-prompt workflow (input on top, output below), and
+         the RIGHT column (#pmg-col-image) holds the image-prompt
+         workflow. Both top-aligned. */
+      '.app-shell { align-items: start; }',
+
+      /* LEFT column wrapper: vertical stack of the existing panels. */
+      '#' + COL_TEXT_ID + ' {',
+      '  display: flex; flex-direction: column; gap: var(--space-4);',
+      '  min-width: 0;',
+      '}',
+      /* The two existing panels keep their own .panel chrome; we just
+         make sure they stretch to the column width. */
+      '#' + COL_TEXT_ID + ' > #builder-panel,',
+      '#' + COL_TEXT_ID + ' > #result-panel { width: 100%; margin: 0; }',
+
+      /* LEFT column header — pairs visually with #pmg-col-image header
+         so the user reads "Create A Text Prompt" on the left and
+         "Create An Image Prompt" on the right at the same Y. */
+      '#' + TEXT_HEADER_ID + ' {',
+      '  background: var(--color-surface);',
+      '  border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);',
+      '  border-radius: var(--radius-xl);',
+      '  box-shadow: var(--shadow-md);',
+      '  padding: var(--space-5);',
+      '}',
+      '#' + TEXT_HEADER_ID + ' .pmg-col-text-eyebrow {',
+      '  display: inline-block;',
+      '  font-size: var(--text-xs); font-weight: 700;',
+      '  letter-spacing: 0.04em; text-transform: uppercase;',
+      '  color: var(--color-primary); margin-bottom: 6px;',
+      '}',
+      '#' + TEXT_HEADER_ID + ' .pmg-col-text-title {',
+      '  font-size: var(--text-xl, 22px); font-weight: 800;',
+      '  margin: 0 0 6px; line-height: 1.25; color: var(--color-text);',
+      '}',
+      '#' + TEXT_HEADER_ID + ' .pmg-col-text-sub {',
+      '  margin: 0; color: var(--color-text-muted); font-size: var(--text-sm);',
+      '}',
+
+      /* Right column container — visually mirrors .panel so the two
+         columns feel paired. */
+      '#' + COL_IMAGE_ID + ' {',
+      '  background: var(--color-surface);',
+      '  border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);',
+      '  border-radius: var(--radius-xl);',
+      '  box-shadow: var(--shadow-md);',
+      '  overflow: hidden;',
+      '  padding: var(--space-5);',
+      '  display: block;',
+      '}',
+      '#' + COL_IMAGE_ID + ' > * + * { margin-top: var(--space-4); }',
+
+      /* Strip the wrapping app-section/container chrome from the moved
+         photo suite + image generator so they sit cleanly inside our
+         right-column card without their own outer padding. */
+      '#' + COL_IMAGE_ID + ' .app-section {',
+      '  padding: 0; margin: 0;',
+      '}',
+      '#' + COL_IMAGE_ID + ' .app-section > .container {',
+      '  padding: 0; max-width: 100%;',
+      '}',
+      '#' + COL_IMAGE_ID + ' .pmg-stack-card {',
+      '  border: 1px solid var(--color-border, color-mix(in srgb, var(--color-text) 10%, transparent));',
+      '  border-radius: var(--radius-lg, 12px);',
+      '  background: var(--color-surface);',
+      '  padding: var(--space-4);',
+      '}',
+
+      /* Right-column header (mirrors the left column "workspace-header" feel). */
+      '#' + COL_IMAGE_ID + ' .pmg-col-image-header {',
+      '  border-bottom: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);',
+      '  padding-bottom: var(--space-4);',
+      '  margin-bottom: var(--space-4);',
+      '}',
+      '#' + COL_IMAGE_ID + ' .pmg-col-image-eyebrow {',
+      '  display: inline-block;',
+      '  font-size: var(--text-xs);',
+      '  font-weight: 700;',
+      '  letter-spacing: 0.04em;',
+      '  text-transform: uppercase;',
+      '  color: var(--color-primary);',
+      '  margin-bottom: 6px;',
+      '}',
+      '#' + COL_IMAGE_ID + ' .pmg-col-image-title {',
+      '  font-size: var(--text-xl, 22px);',
+      '  font-weight: 800;',
+      '  margin: 0 0 6px; line-height: 1.25;',
+      '  color: var(--color-text);',
+      '}',
+      '#' + COL_IMAGE_ID + ' .pmg-col-image-sub {',
+      '  margin: 0; color: var(--color-text-muted);',
+      '  font-size: var(--text-sm);',
+      '}',
+
+      /* Help-Me-Start row in image column — mirrors #guided-cta-row. */
+      '#' + IMAGE_HELP_ID + ' {',
+      '  display: flex; align-items: center; gap: var(--space-3);',
+      '  padding: var(--space-3) var(--space-4);',
+      '  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent);',
+      '  border-radius: var(--radius-lg, 12px);',
+      '}',
+      '#' + IMAGE_HELP_ID + ' .pmg-image-help-text {',
+      '  flex: 1 1 auto;',
+      '}',
+      '#' + IMAGE_HELP_ID + ' .pmg-image-help-text strong {',
+      '  display: block; font-size: var(--text-base); font-weight: 800; color: var(--color-text);',
+      '}',
+      '#' + IMAGE_HELP_ID + ' .pmg-image-help-text span {',
+      '  display: block; font-size: var(--text-sm); color: var(--color-text-muted); margin-top: 2px;',
+      '}',
+      '#' + IMAGE_HELP_ID + ' .pmg-image-help-btn {',
+      '  flex: 0 0 auto;',
+      '  padding: 10px 18px; min-height: 44px;',
+      '  border-radius: var(--radius-full);',
+      '  background: var(--color-primary); color: var(--color-text-inverse, #fff);',
+      '  border: 1.5px solid var(--color-primary);',
+      '  font-weight: 700; cursor: pointer;',
+      '}',
+      '#' + IMAGE_HELP_ID + ' .pmg-image-help-btn:hover { filter: brightness(0.96); }',
+
+      /* Before/After cards (mirror .std-row pattern). */
+      '#' + IMAGE_BEFORE_AFTER_ID + ' .pmg-ba-head {',
+      '  font-size: var(--text-sm); font-weight: 800; color: var(--color-text);',
+      '  margin: 0 0 var(--space-2);',
+      '}',
+      '#' + IMAGE_BEFORE_AFTER_ID + ' .pmg-ba-sub {',
+      '  font-size: var(--text-xs); color: var(--color-text-muted); margin: 0 0 var(--space-3);',
+      '}',
+      '#' + IMAGE_BEFORE_AFTER_ID + ' .pmg-ba-row {',
+      '  display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);',
+      '}',
+      '#' + IMAGE_BEFORE_AFTER_ID + ' .pmg-ba-cell {',
+      '  position: relative;',
+      '  border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);',
+      '  border-radius: var(--radius-lg, 12px);',
+      '  padding: var(--space-3);',
+      '  background: var(--color-surface);',
+      '}',
+      '#' + IMAGE_BEFORE_AFTER_ID + ' .pmg-ba-cell.is-after {',
+      '  border-color: color-mix(in srgb, var(--color-primary) 35%, transparent);',
+      '  background: color-mix(in srgb, var(--color-primary) 4%, var(--color-surface));',
+      '}',
+      '#' + IMAGE_BEFORE_AFTER_ID + ' .pmg-ba-label {',
+      '  display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: 0.06em;',
+      '  text-transform: uppercase; padding: 2px 8px; border-radius: 999px;',
+      '  background: color-mix(in srgb, var(--color-text) 10%, transparent);',
+      '  color: var(--color-text); margin-bottom: 8px;',
+      '}',
+      '#' + IMAGE_BEFORE_AFTER_ID + ' .pmg-ba-cell.is-after .pmg-ba-label {',
+      '  background: var(--color-primary); color: var(--color-text-inverse, #fff);',
+      '}',
+      '#' + IMAGE_BEFORE_AFTER_ID + ' .pmg-ba-thumb {',
+      '  width: 100%; aspect-ratio: 1 / 1; border-radius: var(--radius-md, 8px);',
+      '  display: flex; align-items: center; justify-content: center;',
+      '  background: linear-gradient(135deg, color-mix(in srgb, var(--color-text) 6%, transparent), color-mix(in srgb, var(--color-text) 12%, transparent));',
+      '  color: color-mix(in srgb, var(--color-text) 35%, transparent);',
+      '  font-size: 36px; margin-bottom: 8px; overflow: hidden;',
+      '}',
+      '#' + IMAGE_BEFORE_AFTER_ID + ' .pmg-ba-cell.is-after .pmg-ba-thumb {',
+      '  background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 14%, var(--color-surface)), color-mix(in srgb, var(--color-primary) 28%, var(--color-surface)));',
+      '  color: var(--color-primary);',
+      '}',
+      '#' + IMAGE_BEFORE_AFTER_ID + ' .pmg-ba-prompt {',
+      '  font-size: var(--text-xs); color: var(--color-text);',
+      '  margin: 0; line-height: 1.45;',
+      '}',
+      '#' + IMAGE_BEFORE_AFTER_ID + ' .pmg-ba-cell.is-after .pmg-ba-prompt {',
+      '  color: var(--color-text);',
+      '}',
+
+      /* Hero image CTA — mirrors the existing primary CTA but secondary-tinted. */
+      '#' + HERO_IMAGE_CTA_ID + ' .cta-title { font-weight: 800; }',
+
+      /* Mobile: each column gets full width via existing .app-shell media
+         rule. Keep paddings sane and stack the help row neatly. */
+      '@media (max-width: 900px) {',
+      '  #' + COL_IMAGE_ID + ' { padding: var(--space-4); }',
+      '  #' + IMAGE_HELP_ID + ' { flex-direction: column; align-items: stretch; text-align: left; }',
+      '  #' + IMAGE_HELP_ID + ' .pmg-image-help-btn { width: 100%; }',
+      '  #' + IMAGE_BEFORE_AFTER_ID + ' .pmg-ba-row { grid-template-columns: 1fr; }',
+      '}'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  /* ---------------- Wrap existing #builder-panel + #result-panel ----------------
+   *
+   * The current .app-shell has TWO direct children: #builder-panel
+   * (the input form) and #result-panel ("Your Fixed Prompt" output).
+   * Both are part of the TEXT-prompt workflow. The user wants the
+   * entire text workflow stacked vertically in the LEFT column so the
+   * right column can hold the image-prompt workflow.
+   *
+   * We create #pmg-col-text in #builder-panel's slot, then move both
+   * panels inside it (preserving their order and all event listeners).
+   * No IDs are renamed and no event listeners are touched.
+   */
+  function wrapTextColumn() {
+    if (document.getElementById(COL_TEXT_ID)) return document.getElementById(COL_TEXT_ID);
+    var appShell = document.querySelector('#builder .app-shell');
+    var builderPanel = document.getElementById('builder-panel');
+    var resultPanel = document.getElementById('result-panel');
+    if (!appShell || !builderPanel || !resultPanel) return null;
+    /* Defensive: only wrap if both panels are still direct children of
+       app-shell (i.e. nobody else has moved them). */
+    if (builderPanel.parentNode !== appShell || resultPanel.parentNode !== appShell) return null;
+
+    var wrap = document.createElement('div');
+    wrap.id = COL_TEXT_ID;
+
+    /* Anchor target so the hero CTA can deep-link to the text column. */
+    var anchor = document.createElement('span');
+    anchor.id = TEXT_ANCHOR_ID;
+    anchor.style.cssText = 'display:block;height:0;scroll-margin-top:96px;';
+    wrap.appendChild(anchor);
+
+    /* Header card — pairs with #pmg-col-image's header. */
+    var header = document.createElement('header');
+    header.id = TEXT_HEADER_ID;
+    header.innerHTML =
+      '<span class="pmg-col-text-eyebrow">Workspace</span>' +
+      '<h2 class="pmg-col-text-title">Create A Text Prompt</h2>' +
+      '<p class="pmg-col-text-sub">Describe What You Want — We\'ll Build A Sharp Prompt You Can Run With AI Right Here Or Copy Anywhere.</p>';
+    wrap.appendChild(header);
+
+    /* Insert wrapper where #builder-panel was, then move both panels in. */
+    appShell.insertBefore(wrap, builderPanel);
+    wrap.appendChild(builderPanel);
+    wrap.appendChild(resultPanel);
+    return wrap;
+  }
+
+  /* ---------------- Build right column scaffolding ---------------- */
+  function buildImageColumn() {
+    if (document.getElementById(COL_IMAGE_ID)) return document.getElementById(COL_IMAGE_ID);
+    var appShell = document.querySelector('#builder .app-shell');
+    var textCol = document.getElementById(COL_TEXT_ID);
+    /* Need the text column wrapper to be in place first, so the image
+       column lands as the SECOND grid child. */
+    if (!appShell || !textCol) return null;
+
+    var col = document.createElement('aside');
+    col.id = COL_IMAGE_ID;
+    col.setAttribute('aria-labelledby', COL_IMAGE_ID + '-title');
+
+    /* Anchor target so the hero CTA can deep-link to this column. */
+    var anchor = document.createElement('span');
+    anchor.id = IMAGE_ANCHOR_ID;
+    anchor.style.cssText = 'display:block;height:0;scroll-margin-top:96px;';
+    col.appendChild(anchor);
+
+    /* Header. */
+    var header = document.createElement('header');
+    header.className = 'pmg-col-image-header';
+    header.innerHTML =
+      '<span class="pmg-col-image-eyebrow">Workspace</span>' +
+      '<h2 id="' + COL_IMAGE_ID + '-title" class="pmg-col-image-title">Create An Image Prompt</h2>' +
+      '<p class="pmg-col-image-sub">Build A Detailed Photo Prompt — Then Generate The Image Here With DALL·E Or Copy It For Any Other AI Tool. Photography Suite Included As A Bonus Refinement.</p>';
+    col.appendChild(header);
+
+    /* Help Me Start row (mirrors text column's #guided-cta-row). */
+    var helpRow = document.createElement('div');
+    helpRow.id = IMAGE_HELP_ID;
+    helpRow.innerHTML =
+      '<div class="pmg-image-help-text">' +
+        '<strong>Help Me Start</strong>' +
+        '<span>Not Sure What To Pick? We\'ll Walk You Through The Photography Suite Step By Step.</span>' +
+      '</div>' +
+      '<button type="button" class="pmg-image-help-btn" id="' + IMAGE_HELP_ID + '-btn">Help Me Start</button>';
+    col.appendChild(helpRow);
+
+    /* Wire help button: scroll to the suite, then auto-roll Surprise
+       Me so the user gets a working starting set of picks they can
+       tweak. (Idempotent — Surprise Me is the existing T23 button.) */
+    helpRow.querySelector('#' + IMAGE_HELP_ID + '-btn').addEventListener('click', function () {
+      var suite = document.getElementById('pmg-photo-suite');
+      if (suite) {
+        try { suite.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+      }
+      setTimeout(function () {
+        var surprise = document.querySelector('.pmg-photo-surprise');
+        if (surprise) surprise.click();
+        var goal = document.getElementById('goal');
+        if (goal && !goal.value.trim()) {
+          goal.focus();
+          showImageHint('Type Your Subject Above (e.g. "A Red Panda Playing Chess"), Then Hit Copy Prompt Or Generate Image Here.');
+        }
+      }, 380);
+    });
+
+    /* Before/After examples block. */
+    var ba = document.createElement('div');
+    ba.id = IMAGE_BEFORE_AFTER_ID;
+    ba.innerHTML =
+      '<p class="pmg-ba-head">See What A Detailed Photo Prompt Can Do</p>' +
+      '<p class="pmg-ba-sub">Same Idea. One Vague Ask. One PromptMeGood Photo Prompt. Big Difference.</p>' +
+      '<div class="pmg-ba-row">' +
+        '<div class="pmg-ba-cell is-before">' +
+          '<span class="pmg-ba-label">Before</span>' +
+          '<div class="pmg-ba-thumb" aria-hidden="true">📷</div>' +
+          '<p class="pmg-ba-prompt">"A Cat."</p>' +
+        '</div>' +
+        '<div class="pmg-ba-cell is-after">' +
+          '<span class="pmg-ba-label">After</span>' +
+          '<div class="pmg-ba-thumb" aria-hidden="true">✨</div>' +
+          '<p class="pmg-ba-prompt">"A Sleek Black Cat Lounging On A Sunlit Window Sill — Cinematic Style, Shot On 50mm, Soft Golden Hour Lighting, Centered Composition, Warm Amber Color Palette."</p>' +
+        '</div>' +
+      '</div>';
+    col.appendChild(ba);
+
+    /* Insert as the right-side sibling of #builder-panel. The .app-shell
+       grid (already 1fr 1fr) places it in column 2 automatically. */
+    appShell.appendChild(col);
+    return col;
+  }
+
+  function showImageHint(msg) {
+    /* Reuse the existing pmg-photo-toast (T23 styled, T27 used). */
+    var t = document.getElementById('pmg-photo-toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'pmg-photo-toast';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.classList.add('is-visible');
+    clearTimeout(t.__hideTimer);
+    t.__hideTimer = setTimeout(function () { t.classList.remove('is-visible'); }, 3200);
+  }
+
+  /* ---------------- Move suite + generator into the column ---------------- */
+  function relocateImageStack(col) {
+    if (!col) return false;
+    /* Both targets are built by T23; their existence is guaranteed
+       once T23's init runs. We move ONLY if they exist AND aren't
+       already inside the column. */
+    var moved = false;
+    var photoSection = document.getElementById('photo-suite-section');
+    if (photoSection && photoSection.parentNode !== col) {
+      col.appendChild(photoSection);
+      moved = true;
+    }
+    var imgGen = document.getElementById('pmg-image-generator-section');
+    if (imgGen && imgGen.parentNode !== col) {
+      col.appendChild(imgGen);
+      moved = true;
+    }
+    return moved;
+  }
+
+  /* ---------------- Hero CTAs ---------------- */
+  function reframeHeroCTAs() {
+    var heroActions = document.querySelector('.hero .hero-actions');
+    if (!heroActions) return;
+    if (heroActions.getAttribute('data-pmg-t28') === '1') return;
+
+    var textCTA = document.getElementById('hero-build-cta');
+    if (textCTA) {
+      var t = textCTA.querySelector('.cta-title');
+      var s = textCTA.querySelector('.cta-sub');
+      if (t) t.textContent = 'Create A Text Prompt';
+      if (s) s.textContent = 'Free · No Signup · Works In Seconds';
+    }
+
+    /* Avoid inserting the image CTA twice. */
+    if (!document.getElementById(HERO_IMAGE_CTA_ID)) {
+      var imgCTA = document.createElement('a');
+      imgCTA.id = HERO_IMAGE_CTA_ID;
+      imgCTA.className = 'btn btn-primary btn-stacked';
+      imgCTA.href = '#' + IMAGE_ANCHOR_ID;
+      imgCTA.style.cssText =
+        'background: var(--color-surface); color: var(--color-primary); border: 2px solid var(--color-primary);';
+      imgCTA.innerHTML =
+        '<span class="cta-title">Create An Image Prompt</span>' +
+        '<span class="cta-sub">Generate Here With DALL·E Or Export</span>';
+
+      /* Insert immediately after the text CTA so it sits side-by-side. */
+      if (textCTA && textCTA.nextSibling) {
+        heroActions.insertBefore(imgCTA, textCTA.nextSibling);
+      } else if (textCTA) {
+        heroActions.appendChild(imgCTA);
+      } else {
+        heroActions.insertBefore(imgCTA, heroActions.firstChild);
+      }
+    }
+
+    /* Reframe the second/examples CTA so the copy reflects both columns. */
+    var examplesCTA = document.getElementById('hero-usecases-cta');
+    if (examplesCTA) {
+      var et = examplesCTA.querySelector('.cta-title');
+      var es = examplesCTA.querySelector('.cta-sub');
+      if (et) et.textContent = 'See Real Examples';
+      if (es) es.textContent = 'Text Prompts And Image Prompts';
+    }
+
+    heroActions.setAttribute('data-pmg-t28', '1');
+  }
+
+  /* ---------------- Init ---------------- */
+  var attempts = 0;
+  function tryWire() {
+    attempts++;
+    injectStyles();
+    reframeHeroCTAs();
+    /* 1) Wrap the existing #builder-panel + #result-panel into the
+          left "Create A Text Prompt" column. */
+    wrapTextColumn();
+    /* 2) Build the right "Create An Image Prompt" column. */
+    var col = buildImageColumn();
+    /* 3) Move the existing photo suite + image generator into it as
+          they become available (T23 mounts them async). */
+    relocateImageStack(col);
+    /* Done when both T23 targets are inside the right column. */
+    var photoSection = document.getElementById('photo-suite-section');
+    var imgGen = document.getElementById('pmg-image-generator-section');
+    if (col && photoSection && imgGen &&
+        photoSection.parentNode === col && imgGen.parentNode === col) {
+      return true;
+    }
+    return false;
+  }
+
+  function init() {
+    if (tryWire()) return;
+    /* T23 may not have built #photo-suite-section yet — retry on body
+       mutations until both targets are present. T26 throttles us to
+       one delivery per frame. Hard cap at 120s to match T23's own
+       late-mount guard window (T23 has setTimeout(..., 120000) at
+       line ~5625) so a late suite mount can't miss relocation. */
+    try {
+      var mo = new MutationObserver(function () {
+        if (tryWire()) {
+          try { mo.disconnect(); } catch (e) { /* no-op */ }
+        }
+      });
+      mo.observe(document.body, { childList: true, subtree: true });
+      var teardown = function () { try { mo.disconnect(); } catch (e) {} };
+      setTimeout(teardown, 120000);
+      /* Belt-and-suspenders: a final reconciliation pass shortly
+         before the observer is torn down, in case mutation delivery
+         was sparse or coalesced away the relevant batch. */
+      setTimeout(function () { tryWire(); }, 90000);
+      window.addEventListener('pagehide', teardown, { once: true });
+    } catch (e) { /* ignore */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
