@@ -1,0 +1,84 @@
+Set Up Stripe Payments For PromptMeGood Using Stripe Checkout Subscriptions.
+
+Create a checkpoint first.
+
+Use Supabase Auth as the user identity system.
+Use Stripe as the payment processor.
+Use Supabase profiles table to store plan/subscription status.
+
+Do not change AI provider logic, payment secrets, backend API routes unrelated to payments, database logic unrelated to subscriptions, or existing frontend IDs unless necessary.
+
+Required Secrets:
+STRIPE_SECRET_KEY
+STRIPE_WEBHOOK_SECRET
+STRIPE_PRICE_ID
+SUPABASE_URL
+SUPABASE_SERVICE_ROLE_KEY
+
+Add backend routes:
+1. POST /create-checkout-session
+- Require logged-in user.
+- Create or reuse Stripe customer.
+- Create Stripe Checkout Session in subscription mode.
+- Use STRIPE_PRICE_ID.
+- Add user_id to metadata.
+- Return checkout URL.
+
+2. POST /stripe-webhook
+- Verify Stripe signature using STRIPE_WEBHOOK_SECRET.
+- Handle checkout.session.completed.
+- Handle customer.subscription.created.
+- Handle customer.subscription.updated.
+- Handle customer.subscription.deleted.
+- Update Supabase profiles table:
+  plan
+  stripe_customer_id
+  stripe_subscription_id
+  subscription_status
+  current_period_end
+
+Add Supabase SQL:
+profiles table with:
+- user_id
+- email
+- plan
+- stripe_customer_id
+- stripe_subscription_id
+- subscription_status
+- current_period_end
+- created_at
+
+Frontend:
+Add Upgrade To Pro button near Pricing and Pro-locked features.
+Button text must be Title Case:
+Upgrade To Pro
+
+When clicked:
+- If user is not signed in, show Sign In To Upgrade.
+- If signed in, call /create-checkout-session.
+- Redirect to Stripe Checkout URL.
+
+After checkout success:
+- Show Payment Confirmed. Pro Access Will Update Automatically.
+- Do not unlock Pro only from frontend success URL.
+- Webhook must be source of truth.
+
+QA:
+- Homepage loads.
+- Pricing page loads.
+- Upgrade To Pro button appears.
+- Signed-out user is prompted to sign in.
+- Signed-in user is redirected to Stripe Checkout.
+- Webhook verifies signature.
+- Successful subscription updates Supabase profile to pro.
+- Canceled subscription removes Pro access.
+- No Stripe secret keys appear in frontend code.
+- No console-breaking errors.
+
+Report:
+1. Files changed.
+2. Routes added.
+3. Supabase SQL added.
+4. Stripe events handled.
+5. How Pro access is checked.
+6. QA result.
