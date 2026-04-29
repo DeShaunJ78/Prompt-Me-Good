@@ -8946,3 +8946,350 @@
   s.textContent = css;
   document.head.appendChild(s);
 })();
+
+/* =====================================================================
+ * T37 — Photography Suite: Hide Dated Foot Copy, Collapse Style,
+ *       Add "Not Sure?" Descriptions Panel Per Group
+ * ---------------------------------------------------------------------
+ * User feedback after T36:
+ *   1. The inline image-typing panel still shows
+ *      "Synced With The Goal Field — Tap Generate Image Or Use The
+ *      Photography Suite Below When Ready." — there is no longer a
+ *      goal field, so this copy is dated and confusing. Hide it
+ *      (image side only — the text side wasn't called out).
+ *   2. In the Photography Suite, the Style group stays open all the
+ *      time while every other group collapses. Make Style behave
+ *      like the rest: collapsed by default, click to expand.
+ *   3. Inside each of the 5 group bodies (Style, Camera & Lens,
+ *      Lighting & Mood, Composition, Color Palette) the user wants
+ *      a small helper line + "click here" link that opens an inline
+ *      panel describing what each pill in that group actually means
+ *      (e.g. "Don't Know What These Styles Mean? Click Here →"). The
+ *      panel is INLINE, not a modal — it expands inside the same
+ *      group body and can be hidden again.
+ *
+ * Approach (no rule violations):
+ *   - One new IIFE pmgT37SuiteHelpers, idempotent via window.__pmgT37Init.
+ *   - Inject a single stylesheet (CSS variables only).
+ *   - Hide the inline image foot with `display: none !important;`.
+ *   - On suite-build settle, force every .pmg-photo-group (including
+ *     the first one, Style) into is-collapsed state and sync
+ *     aria-expanded — overrides T24's "keep first open" rule.
+ *   - For each group, append a footer row inside .pmg-photo-group-body
+ *     with: a tiny italic helper sentence + a "See Descriptions →"
+ *     button. Clicking the button toggles a sibling panel containing
+ *     a definition list of every pill in that group with a concise,
+ *     plain-English description. The panel is built lazily on first
+ *     open. Use closest-based delegation on document so newly-built
+ *     suites also work without re-binding.
+ *   - All new IDs/classes use a `pmg-t37-` prefix to avoid colliding
+ *     with anything T23 generated. Existing IDs/classes are NOT
+ *     renamed. No DOM moves of pills. No layout reflow.
+ *
+ * Hard rules honored: no backend / API / DB / secret changes; CSS
+ * variables only; numbered IIFE in pmg-ux.js; idempotent.
+ * ===================================================================== */
+(function pmgT37SuiteHelpers() {
+  if (window.__pmgT37Init) return;
+  window.__pmgT37Init = true;
+
+  var STYLE_ID = 'pmg-t37-style';
+  var GUARD_ATTR = 'data-pmg-t37';
+  var COLLAPSE_GUARD = 'data-pmg-t37-collapsed';
+
+  /* ----- Concise descriptions for every pill in every group. ----- */
+  var DESCRIPTIONS = {
+    style: {
+      'Cinematic': 'Movie-like wide framing with rich shadows and color grading.',
+      'Portrait': 'Sharp subject focus with a softly blurred background.',
+      'Documentary': 'Candid, real-moment look — no posing or staging.',
+      'Editorial': 'Magazine-cover polish — stylized, narrative, high-fashion energy.',
+      'Street Photography': 'Unscripted urban scenes with natural light and texture.',
+      'Fashion': 'Bold styling, confident posing, runway-ready lighting.',
+      'Landscape': 'Sweeping outdoor scenery with depth and atmosphere.',
+      'Surreal': 'Dreamlike, impossible imagery that bends reality.',
+      'Vintage': 'Retro film tones, soft grain, and nostalgic styling.',
+      'Hyperrealistic': 'Crisp, photo-real detail that almost looks too sharp.',
+      'Black & White': 'Monochrome tones emphasizing form, contrast, and mood.',
+      'Polaroid': 'Instant-camera look with a soft frame and faded color.'
+    },
+    camera: {
+      '85mm Portrait': 'Flattering compression for headshots and tight portraits.',
+      '35mm Wide': 'Balanced wide angle — great for environmental shots.',
+      '50mm Standard': 'Natural, eye-level perspective close to human vision.',
+      'Macro': 'Extreme close-up showing fine detail and texture.',
+      'Telephoto': 'Long zoom that compresses space and isolates the subject.',
+      'Fisheye': 'Ultra-wide, curved-edge look with playful distortion.',
+      'DSLR': 'Crisp, high-fidelity digital camera quality.',
+      'Mirrorless': 'Modern compact-camera look — clean and detail-rich.',
+      'Film Grain': 'Subtle analog texture and softer color response.',
+      'Drone Aerial': 'Top-down or sweeping aerial perspective.',
+      'GoPro Action': 'Wide, immersive POV with action-camera vibe.',
+      'iPhone Snap': 'Casual, true-to-life smartphone-photo realism.'
+    },
+    lighting: {
+      'Golden Hour': 'Warm, low-angle sunlight just after sunrise or before sunset.',
+      'Blue Hour': 'Cool twilight tones just before sunrise or after sunset.',
+      'Studio Softbox': 'Even, diffused studio lighting with soft shadows.',
+      'Backlit': 'Light behind the subject creating glow and silhouette.',
+      'Natural Window Light': 'Soft daylight from a window — gentle and flattering.',
+      'Dramatic Shadows': 'High-contrast lighting with deep, defined shadows.',
+      'Neon Glow': 'Saturated neon color washes — nightlife / cyberpunk vibe.',
+      'Candle Lit': 'Warm, flickering, intimate low-light glow.',
+      'Overcast Diffused': 'Soft, even cloud-cover light with no harsh shadows.',
+      'Moonlit': 'Cool, low-key night lighting with a silvery cast.',
+      'Harsh Noon': 'Bright, top-down midday sun with strong shadows.',
+      'Cinematic Low-Key': 'Movie-style mostly-dark frame with selective light.'
+    },
+    composition: {
+      'Rule Of Thirds': 'Subject placed off-center on a 3×3 grid for balance.',
+      'Centered': 'Subject squarely in the middle for a bold, simple frame.',
+      'Symmetrical': 'Mirrored layout — both sides match for calm balance.',
+      'Close-Up': 'Tight crop focused on a face or single detail.',
+      'Wide Shot': 'Pulled-back framing showing subject and surroundings.',
+      "Bird's-Eye View": 'Looking straight down from above.',
+      "Worm's-Eye View": 'Looking up from a low angle for a heroic feel.',
+      'Dutch Angle': 'Tilted horizon to create unease or energy.',
+      'Leading Lines': 'Lines in the scene guide the eye toward the subject.',
+      'Negative Space': 'Lots of empty area around the subject for breathing room.',
+      'Frame Within A Frame': 'A doorway, window, or arch surrounds the subject.'
+    },
+    palette: {
+      'Warm Tones': 'Reds, oranges, yellows — cozy and inviting.',
+      'Cool Blues': 'Blues and teals — calm, modern, slightly cool.',
+      'Monochrome': 'A single color in many shades — quiet and unified.',
+      'Pastel Soft': 'Light, muted, candy-like colors — gentle and airy.',
+      'High Contrast': 'Bold lights vs. darks — punchy and graphic.',
+      'Muted Earth': 'Browns, ochres, sages — grounded and natural.',
+      'Neon Saturated': 'Vivid electric colors — bold and modern.',
+      'Sepia': 'Warm brown-toned, vintage-photograph feel.',
+      'Teal & Orange': 'Hollywood color grade — teal shadows, orange highlights.',
+      'Forest Greens': 'Deep greens with woodland warmth.',
+      'Sunset Reds': 'Rich reds and golds — dusk-like warmth.'
+    }
+  };
+
+  /* Group-specific helper sentence shown above the "See Descriptions" link. */
+  var GROUP_HELP = {
+    style: 'Not Sure Which Style Fits? See What Each One Means.',
+    camera: 'Not Sure Which Camera Or Lens To Pick? See What Each One Does.',
+    lighting: 'Not Sure Which Light Or Mood Fits? See What Each One Means.',
+    composition: 'Not Sure How To Frame It? See What Each Composition Means.',
+    palette: 'Not Sure Which Palette Fits? See What Each Color Mood Means.'
+  };
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* (1) Hide the dated foot copy in the inline image typing panel. */
+      '#pmg-inline-typing-image .pmg-inline-foot { display: none !important; }',
+
+      /* (2) Helper row that sits at the bottom of each group body. */
+      '.pmg-t37-helper-row {',
+      '  margin: 10px 4px 2px;',
+      '  display: flex; flex-direction: column; align-items: center;',
+      '  gap: 4px; text-align: center;',
+      '}',
+      '.pmg-t37-helper-text {',
+      '  font-size: var(--text-xs, 12px); color: var(--color-text-muted, #5f6b75);',
+      '  font-style: italic; line-height: 1.4;',
+      '}',
+      '.pmg-t37-help-toggle {',
+      '  appearance: none; background: transparent; border: 0; padding: 2px 6px;',
+      '  font: inherit; font-size: var(--text-xs, 12px); font-weight: 600;',
+      '  color: var(--color-primary, #0f6e6a); cursor: pointer;',
+      '  border-radius: var(--radius-sm, 6px);',
+      '  text-decoration: underline; text-underline-offset: 3px;',
+      '  text-decoration-thickness: 1px;',
+      '}',
+      '.pmg-t37-help-toggle:hover { color: var(--color-primary-hover, #0a5552); }',
+      '.pmg-t37-help-toggle:focus-visible { outline: 2px solid var(--color-primary, #0f6e6a); outline-offset: 2px; }',
+
+      /* (3) Inline definitions panel that expands inside the group body. */
+      '.pmg-t37-defs-panel {',
+      '  margin: 10px 0 4px; padding: 12px 14px;',
+      '  background: color-mix(in srgb, var(--color-primary, #0f6e6a) 5%, var(--color-surface, #fff));',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary, #0f6e6a) 18%, var(--color-border, #e5e7eb));',
+      '  border-radius: var(--radius-md, 10px);',
+      '}',
+      '.pmg-t37-defs-panel[hidden] { display: none !important; }',
+      '.pmg-t37-defs-list { margin: 0; padding: 0; }',
+      '.pmg-t37-defs-list dt {',
+      '  margin: 0 0 2px; font-size: var(--text-sm, 13px); font-weight: 700;',
+      '  color: var(--color-text, #1f2937);',
+      '}',
+      '.pmg-t37-defs-list dd {',
+      '  margin: 0 0 10px; font-size: var(--text-sm, 13px); line-height: 1.5;',
+      '  color: var(--color-text-muted, #5f6b75);',
+      '}',
+      '.pmg-t37-defs-list dd:last-child { margin-bottom: 0; }',
+      '.pmg-t37-defs-foot {',
+      '  margin-top: 10px; text-align: right;',
+      '}',
+      '.pmg-t37-defs-foot button {',
+      '  appearance: none; background: transparent; border: 0; padding: 2px 6px;',
+      '  font: inherit; font-size: var(--text-xs, 12px); font-weight: 600;',
+      '  color: var(--color-text-muted, #5f6b75); cursor: pointer;',
+      '  text-decoration: underline; text-underline-offset: 3px;',
+      '}'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  function escapeHTML(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function buildDefsPanel(groupId) {
+    var defs = DESCRIPTIONS[groupId];
+    if (!defs) return null;
+    var panel = document.createElement('div');
+    panel.className = 'pmg-t37-defs-panel';
+    panel.hidden = true;
+    var html = ['<dl class="pmg-t37-defs-list">'];
+    Object.keys(defs).forEach(function (k) {
+      html.push('<dt>' + escapeHTML(k) + '</dt>');
+      html.push('<dd>' + escapeHTML(defs[k]) + '</dd>');
+    });
+    html.push('</dl>');
+    html.push('<div class="pmg-t37-defs-foot">');
+    html.push('<button type="button" class="pmg-t37-defs-hide">Hide Descriptions</button>');
+    html.push('</div>');
+    panel.innerHTML = html.join('');
+    return panel;
+  }
+
+  /* Force every group (including Style) into collapsed state. Idempotent
+     per-group via COLLAPSE_GUARD. We only collapse on the first pass —
+     after that, the user's manual expand/collapse must stick. */
+  function collapseAllGroupsOnce() {
+    var groups = document.querySelectorAll('#pmg-photo-suite .pmg-photo-group');
+    if (!groups.length) return false;
+    var did = false;
+    groups.forEach(function (g) {
+      if (g.getAttribute(COLLAPSE_GUARD) === '1') return;
+      g.setAttribute(COLLAPSE_GUARD, '1');
+      if (!g.classList.contains('is-collapsed')) {
+        g.classList.add('is-collapsed');
+        var head = g.querySelector('.pmg-photo-group-head');
+        if (head) head.setAttribute('aria-expanded', 'false');
+      }
+      did = true;
+    });
+    return did;
+  }
+
+  function decorateGroups() {
+    var groups = document.querySelectorAll('#pmg-photo-suite .pmg-photo-group');
+    if (!groups.length) return false;
+    var did = false;
+    groups.forEach(function (g) {
+      if (g.getAttribute(GUARD_ATTR) === '1') return;
+      var groupId = g.getAttribute('data-group');
+      if (!groupId || !DESCRIPTIONS[groupId]) return;
+      var body = g.querySelector('.pmg-photo-group-body');
+      if (!body) return;
+      g.setAttribute(GUARD_ATTR, '1');
+
+      var row = document.createElement('div');
+      row.className = 'pmg-t37-helper-row';
+      var msg = document.createElement('span');
+      msg.className = 'pmg-t37-helper-text';
+      msg.textContent = GROUP_HELP[groupId] || 'Not Sure What These Mean? See A Brief Description Of Each.';
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'pmg-t37-help-toggle';
+      btn.setAttribute('data-pmg-t37-group', groupId);
+      btn.setAttribute('aria-expanded', 'false');
+      btn.textContent = 'See Descriptions →';
+      row.appendChild(msg);
+      row.appendChild(btn);
+      body.appendChild(row);
+      did = true;
+    });
+    return did;
+  }
+
+  /* Document-level click delegation so we don't have to re-bind when
+     groups get rebuilt. Capture phase so the photo-suite handlers
+     (T23 + T35) don't intercept first. */
+  function wireDelegation() {
+    if (document.body.getAttribute('data-pmg-t37-wired') === '1') return;
+    document.body.setAttribute('data-pmg-t37-wired', '1');
+    document.addEventListener('click', function (ev) {
+      if (!ev.target || !ev.target.closest) return;
+
+      var hideBtn = ev.target.closest('.pmg-t37-defs-hide');
+      if (hideBtn) {
+        ev.stopImmediatePropagation();
+        ev.preventDefault();
+        var panel = hideBtn.closest('.pmg-t37-defs-panel');
+        if (panel) panel.hidden = true;
+        var openBtn = panel && panel.parentNode &&
+          panel.parentNode.querySelector('.pmg-t37-help-toggle');
+        if (openBtn) {
+          openBtn.setAttribute('aria-expanded', 'false');
+          openBtn.textContent = 'See Descriptions →';
+        }
+        return;
+      }
+
+      var toggle = ev.target.closest('.pmg-t37-help-toggle');
+      if (!toggle) return;
+      ev.stopImmediatePropagation();
+      ev.preventDefault();
+      var groupId = toggle.getAttribute('data-pmg-t37-group');
+      var bodyEl = toggle.closest('.pmg-photo-group-body');
+      if (!bodyEl || !groupId) return;
+      var existing = bodyEl.querySelector('.pmg-t37-defs-panel');
+      if (!existing) {
+        existing = buildDefsPanel(groupId);
+        if (!existing) return;
+        /* Insert BEFORE the helper row so it reads top-to-bottom:
+           pills → defs → "Hide Descriptions" → helper row. */
+        var helperRow = toggle.closest('.pmg-t37-helper-row');
+        if (helperRow) bodyEl.insertBefore(existing, helperRow);
+        else bodyEl.appendChild(existing);
+      }
+      var willOpen = existing.hidden;
+      existing.hidden = !willOpen;
+      toggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      toggle.textContent = willOpen ? 'Hide Descriptions ▴' : 'See Descriptions →';
+    }, true);
+  }
+
+  function tick() {
+    collapseAllGroupsOnce();
+    decorateGroups();
+  }
+
+  function init() {
+    injectStyles();
+    wireDelegation();
+    tick();
+    /* The suite is built async by T23 — keep retrying briefly so we
+       catch the late mount. Bounded so we don't run forever. */
+    var tries = 0;
+    var iv = setInterval(function () {
+      tries++;
+      tick();
+      if (tries >= 40) clearInterval(iv);
+    }, 250);
+    try {
+      var mo = new MutationObserver(tick);
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 60000);
+    } catch (e) { /* ignore */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
