@@ -8291,3 +8291,207 @@
     init();
   }
 })();
+
+/* =====================================================================
+ * T33 — Column Cleanup, Wider Layout, Real Cat Before/After Move
+ * ---------------------------------------------------------------------
+ * User feedback after T32 shipped:
+ *   1. The LEFT workspace card still shows the redundant subtitle
+ *      "Create, refine, and run your prompts here." right under the
+ *      symmetric Help Me Start callouts. Eliminate it (the column
+ *      already has its own title via T28's #pmg-col-text-header).
+ *   2. The orphan "(1 Of 1 Free Today)" daily-hint chip floats with
+ *      no visible button beside it — eliminate it.
+ *   3. The original goal label + #goal textarea + helper duplicate the
+ *      T31 inline panel that opens when "Just Start Typing" is clicked.
+ *      Hide the duplicate visually, keep #goal in DOM (T31 binds to it).
+ *   4. The OLD #guided-cta-row (the inline "Help Me Start" row deeper
+ *      in the form) duplicates the T32 callout at top of column.
+ *   5. The weekly-goal-pin (T32 moved it into the column) is still
+ *      showing — eliminate entirely per follow-up request.
+ *   6. The before/after image example block on the RIGHT column uses
+ *      📷 / ✨ emoji thumbs and feels disconnected. MOVE the entire
+ *      block UP into the existing #see-the-difference section
+ *      alongside the 3 text before/after rows, with REAL cat photos
+ *      (same cat in both, before = phone snapshot, after = cinematic).
+ *   7. Both columns feel narrow — bump #builder .container.app-shell
+ *      max-width so each column gets more breathing room.
+ *   8. The Photography Suite pill chips look cramped — increase row
+ *      gap and tighten padding so they read as "tags", not "buttons".
+ *
+ * Hard rules honored:
+ *   - No backend / API / DB / payment / secret changes.
+ *   - No renamed IDs/classes/JS variables.
+ *   - Hide / move / collapse — no destructive deletion of source HTML.
+ *     (We DO move the T28 ba block via DOM, but its source tag is
+ *     created by T28 in JS — we relocate the live node, we don't
+ *     touch index.html.)
+ *   - All new logic is in this file (pmg-ux.js).
+ *   - Idempotent via window.__pmgT33Init.
+ *   - CSS uses CSS variables and color-mix only.
+ *   - Anchors keep working — #builder, #see-the-difference unchanged.
+ * ===================================================================== */
+(function pmgT33Cleanup() {
+  if (window.__pmgT33Init) return;
+  window.__pmgT33Init = true;
+
+  var STYLE_ID = 'pmg-t33-cleanup-style';
+  var BA_ID = 'pmg-image-before-after';
+  var STD_ROW_ID = 'pmg-t33-image-std-row';
+  var CAT_BEFORE = 'images/pmg-cat-before.png';
+  var CAT_AFTER = 'images/pmg-cat-after.png';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* (1) Eliminate redundant workspace-header (eyebrow + sub).
+         T28's #pmg-col-text-header already shows "WORKSPACE" + title. */
+      '#workspace-header { display: none !important; }',
+
+      /* (2) Eliminate orphan "(N Of N Free Today)" daily-hint chips.
+         pmg-pro.js injects these next to gated buttons; the user reads
+         them as orphan free-today text. They\'re non-essential UX. */
+      '.pmg-daily-hint { display: none !important; }',
+
+      /* (3) Hide the redundant goal label + #goal textarea + helper.
+         T31\'s inline panel (opened by "Just Start Typing") provides
+         the visible textarea path; T31 two-way binds to #goal so the
+         element must remain in the DOM — we only hide it visually. */
+      '#prompt-form > .field.field-primary { display: none !important; }',
+
+      /* Hide the T24 "Recommended for the best results — guided in
+         under a minute." microcopy (now redundant with T32 callout). */
+      '#pmg-hms-helper { display: none !important; }',
+
+      /* (4) Hide the OLD inline #guided-cta-row that lives lower in
+         the LEFT panel — T32\'s symmetric callout at top of column
+         replaces it. The button #guided-mode-btn stays in the DOM
+         (T30 click()s it programmatically). */
+      '#guided-cta-row { display: none !important; }',
+
+      /* Also hide the older T?? "build-cta-guidance" line if it
+         escapes its hidden attr after a re-render. */
+      '.build-cta-guidance { display: none !important; }',
+
+      /* (5) Eliminate the weekly-goal-pin entirely. */
+      '#weekly-goal-pin { display: none !important; }',
+
+      /* (6) Hide the in-column #pmg-image-before-after; we move it
+         into #see-the-difference via JS below. */
+      '#' + BA_ID + ' { display: none !important; }',
+
+      /* (7) Wider columns. The .container has a global 1100px cap
+         (set with !important in index.html). Override only for the
+         #builder app-shell so other sections remain at 1100px. */
+      '#builder > .container.app-shell {',
+      '  width: min(calc(100% - 2rem), 1340px) !important;',
+      '  max-width: 1340px !important;',
+      '}',
+      '@media (max-width: 900px) {',
+      '  #builder > .container.app-shell {',
+      '    width: min(calc(100% - 1rem), 1340px) !important;',
+      '  }',
+      '}',
+
+      /* (8) Photography Suite pills — looser layout so they read as
+         tags, not crowded buttons. Increase group-body gap and tighten
+         pill padding, plus a touch more vertical rhythm. */
+      '#pmg-photo-suite .pmg-photo-group-body {',
+      '  gap: 10px !important;',
+      '  padding: 4px 16px 16px !important;',
+      '}',
+      '#pmg-photo-suite .pmg-photo-pill {',
+      '  padding: 6px 12px !important;',
+      '  font-size: 13px !important;',
+      '  line-height: 1.3 !important;',
+      '  font-weight: 500 !important;',
+      '}',
+      '#pmg-photo-suite .pmg-photo-pill.is-active::before {',
+      '  margin-right: 2px;',
+      '}',
+
+      /* New std-row variant for the moved cat before/after — stacks
+         the image above the prompt text and label inside each cell. */
+      '#' + STD_ROW_ID + ' .pmg-t33-cat-img {',
+      '  display: block; width: 100%; height: auto;',
+      '  border-radius: var(--radius-md, 10px);',
+      '  margin: 6px 0 10px;',
+      '  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);',
+      '}',
+      '#' + STD_ROW_ID + ' .std-cell { display: flex; flex-direction: column; }',
+      '#' + STD_ROW_ID + ' .std-cell-text { margin-top: auto; }'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  /* ------------ Move T28 image before/after into #see-the-difference ------------ */
+  function moveImageBAToSTD() {
+    if (document.getElementById(STD_ROW_ID)) return true;
+    var grid = document.querySelector('#see-the-difference .std-grid');
+    if (!grid) return false;
+
+    var beforePrompt = '\u201CA Cat.\u201D';
+    var afterPrompt =
+      '\u201CA Fluffy Gray-And-White Tabby Cat With Bright Green Eyes, ' +
+      'Sitting On A Wooden Window Sill \u2014 Cinematic Style, Shot On 85mm, ' +
+      'Soft Golden Hour Lighting Through The Window, Shallow Depth Of Field, ' +
+      'Magazine-Quality Composition, Warm Color Palette.\u201D';
+
+    var row = document.createElement('div');
+    row.className = 'std-row';
+    row.id = STD_ROW_ID;
+    row.setAttribute('data-pmg-t33-image-row', '1');
+    row.innerHTML =
+      '<div class="std-cell std-before">' +
+        '<span class="std-cell-label">Before</span>' +
+        '<img class="pmg-t33-cat-img" src="' + CAT_BEFORE + '" ' +
+          'alt="Plain phone snapshot of a fluffy gray and white tabby cat on a window sill" ' +
+          'loading="lazy" width="640" height="480" />' +
+        '<p class="std-cell-text">' + beforePrompt + '</p>' +
+      '</div>' +
+      '<div class="std-cell std-after">' +
+        '<span class="std-cell-label">After</span>' +
+        '<img class="pmg-t33-cat-img" src="' + CAT_AFTER + '" ' +
+          'alt="Cinematic golden-hour portrait of the same fluffy gray and white tabby cat on the same window sill" ' +
+          'loading="lazy" width="640" height="480" />' +
+        '<p class="std-cell-text">' + afterPrompt + '</p>' +
+      '</div>';
+
+    grid.appendChild(row);
+
+    /* If the original T28 ba node exists, leave it in DOM but keep it
+       hidden via CSS (already covered above). Marking it for trace. */
+    var orig = document.getElementById(BA_ID);
+    if (orig) orig.setAttribute('data-pmg-t33-moved', '1');
+    return true;
+  }
+
+  /* ----------------------------- Tick ----------------------------- */
+  function tick() {
+    moveImageBAToSTD();
+  }
+
+  function init() {
+    injectStyles();
+    tick();
+    /* Late-mount safety: T28 builds #pmg-image-before-after after its
+       own init runs; STD section is in static HTML so it\'s always
+       present, but the BA may arrive late. Watch briefly. */
+    try {
+      var mo = new MutationObserver(function () {
+        if (!document.getElementById(STD_ROW_ID)) tick();
+      });
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 60000);
+    } catch (e) { /* ignore */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

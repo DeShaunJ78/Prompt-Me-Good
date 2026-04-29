@@ -1,5 +1,16 @@
 uploads = []
-generated = []
+
+[[generated]]
+id = "Nz-IAMa9Z0VmyJ9_FnJSN"
+uri = "file://artifacts/promptmegood/public/images/pmg-cat-before.png"
+type = "image"
+title = "cat snapshot before"
+
+[[generated]]
+id = "kB3QL_9Xy-YH-RQt4hgpy"
+uri = "file://artifacts/promptmegood/public/images/pmg-cat-after.png"
+type = "image"
+title = "cat cinematic after"
 
 [[outputs]]
 id = "wW4j9q7eO6c6lsff0hhJS"
