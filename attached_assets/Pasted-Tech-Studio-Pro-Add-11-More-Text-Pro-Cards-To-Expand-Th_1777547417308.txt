@@ -1,0 +1,186 @@
+Tech Studio Pro — Add 11 More Text Pro Cards To Expand The Existing 9 Into A Full Set Of 20
+
+Project:
+PromptMeGood.com
+
+Target Area:
+Tech Studio Pro
+Text Transformation Cards
+This is for text only.
+
+Goal:
+Keep the existing 9 cards exactly as they are.
+Add 11 more PRO text cards so the full set becomes 20 total.
+Match the same visual style, card size, numbering style, spacing, hover/selected states, and PRO badge style already used by the current cards.
+
+Existing Cards Already Present:
+1. Speed Upgrade
+2. Analyze The Weak Spots
+3. Turn It Into Money
+4. Find The Hook
+5. Multiply Into Content
+6. Remix The Voice
+7. Make It Record-Ready
+8. Translate For An Audience
+9. Expand The Idea
+
+Add These New Cards:
+10. Simplify The Message
+Description:
+Make this clearer, easier to follow, and easier to understand.
+
+11. Add Emotional Weight
+Description:
+Increase the feeling, tension, heart, or urgency.
+
+12. Make It More Persuasive
+Description:
+Strengthen the conviction, influence, and selling power.
+
+13. Tighten The Structure
+Description:
+Improve the order, flow, and overall organization.
+
+14. Pull Out The Story
+Description:
+Turn this into a stronger narrative with a clearer arc.
+
+15. Strengthen The Close
+Description:
+Build a stronger ending, payoff, or call to action.
+
+16. Add Proof And Examples
+Description:
+Support this with examples, specifics, or stronger evidence.
+
+17. Challenge The Idea
+Description:
+Stress-test this for weak logic, gaps, and shaky assumptions.
+
+18. Create Variations
+Description:
+Generate multiple fresh versions or alternative angles.
+
+19. Make It More Original
+Description:
+Reduce cliché and sharpen the uniqueness.
+
+20. Add Your Own Twist
+Description:
+Apply a custom instruction from the user to reshape the text.
+
+Functional Requirements:
+1. Preserve the existing 9 cards exactly as-is.
+2. Add cards 10–20 directly after the current 9.
+3. All new cards must display a PRO badge.
+4. All card titles must use Title Case.
+5. Keep the same visual design language as the current cards.
+6. Each card should run a distinct text transformation on the user’s source text.
+7. These cards should only appear in the text workflow for Tech Studio Pro.
+8. Do not break any current functionality.
+
+Important Extra Upgrade:
+Add an optional manual append field that works with all 20 cards.
+
+New UI Element:
+Label:
+Add A Custom Twist (Optional)
+
+Placeholder:
+Example: Make It Darker, More Direct, And Geared Toward Young Adults
+
+Behavior:
+- When the user selects any of the 20 transformation cards, they can optionally type an extra instruction into this field.
+- The system should combine:
+  1. the card’s built-in transformation behavior
+  2. the user’s custom appended instruction
+- If the field is blank, just run the card normally.
+- If the user selects Card 20 “Add Your Own Twist,” this field becomes the primary instruction driver.
+- For Card 20, if the custom field is blank, show a friendly validation message:
+  “Add A Custom Instruction To Use This Option.”
+
+Transformation Logic For The New Cards:
+10. Simplify The Message
+Backend Intent:
+Rewrite the text to make it clearer, simpler, and easier to understand without losing the main meaning.
+
+11. Add Emotional Weight
+Backend Intent:
+Rewrite the text to heighten emotion, emotional tension, resonance, and impact while keeping it natural.
+
+12. Make It More Persuasive
+Backend Intent:
+Rewrite the text to be more convincing, compelling, and influential, with stronger reasoning or appeal.
+
+13. Tighten The Structure
+Backend Intent:
+Reorganize and refine the text so it flows better, feels tighter, and reads in a more polished order.
+
+14. Pull Out The Story
+Backend Intent:
+Rewrite or reshape the text into a stronger narrative with a clearer beginning, middle, and end when appropriate.
+
+15. Strengthen The Close
+Backend Intent:
+Improve the ending so it lands harder, closes stronger, or includes a better final takeaway or CTA.
+
+16. Add Proof And Examples
+Backend Intent:
+Rewrite or expand the text with stronger examples, evidence, supporting points, or concrete specifics.
+
+17. Challenge The Idea
+Backend Intent:
+Analyze the text critically, expose weak spots, identify assumptions, and suggest improvements or counterpoints.
+
+18. Create Variations
+Backend Intent:
+Generate 3 to 5 distinct versions of the text with different angles, flavors, or approaches.
+
+19. Make It More Original
+Backend Intent:
+Reduce generic phrasing, remove cliché language, and make the text feel fresher, more distinctive, and less predictable.
+
+20. Add Your Own Twist
+Backend Intent:
+Use the user’s custom instruction as the main transformation rule and apply it directly to the text.
+
+UI / UX Requirements:
+- Keep numbering visible on the left just like the current cards.
+- Keep the short descriptions underneath each title.
+- Match existing spacing and card hierarchy.
+- Keep mobile responsiveness clean.
+- Do not let the new cards visually crowd the area.
+- If needed, preserve the current layout and allow vertical scrolling naturally.
+- The custom append field should sit below the card list or directly below the selected card area in a clean, minimal way.
+
+Suggested Microcopy:
+Field Label:
+Add A Custom Twist (Optional)
+
+Helper Text:
+Refine Any Card With Your Own Instruction
+
+Validation For Card 20:
+Add A Custom Instruction To Use This Option
+
+Optional CTA Button If Needed:
+Apply Transformation
+
+Output Behavior:
+- Return the transformed text in the same output area already used by the current system.
+- Preserve any current output formatting conventions.
+- If “Create Variations” is selected, clearly label each variation:
+  Variation 1
+  Variation 2
+  Variation 3
+  etc.
+
+Do Not:
+- Do not remove or rename the existing 9 cards.
+- Do not change current logic for the original cards unless necessary for compatibility.
+- Do not create a different card style.
+- Do not make these image tools.
+- Do not overcomplicate the UI.
+
+Final Deliverable:
+Implement cards 10–20 and the optional manual append field so Tech Studio Pro has a complete 20-card text transformation system with a clean user-controlled customization layer.
