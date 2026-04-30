@@ -2156,47 +2156,9 @@
       text-align: center;
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    body.has-uc-confirm-toast .toast { top: calc(210px + env(safe-area-inset-top, 0px)); }
     /* Spec #1: when the daily nudge banner is visible, slide the toast down so it doesn't stack on top of it. */
     body.has-nudge-banner .toast { top: calc(160px + env(safe-area-inset-top, 0px)); }
-    body.has-nudge-banner.has-uc-confirm-toast .toast { top: calc(260px + env(safe-area-inset-top, 0px)); }
     [data-theme="dark"] .toast { background: #0c4f48; border-color: #5ba8b0; color: #E6F7F5; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4); }
-
-    .uc-confirm-toast {
-      position: fixed;
-      top: calc(120px + env(safe-area-inset-top, 0px));
-      left: 50%;
-      transform: translateX(-50%) translateY(-12px);
-      z-index: 10000;
-      width: min(620px, calc(100% - 32px));
-      display: flex; align-items: center; gap: var(--space-3);
-      padding: 18px 22px;
-      background: #DAF1EE;
-      border: 2px solid #0f766e;
-      color: #0c3f3a;
-      border-radius: 16px;
-      box-shadow: 0 16px 36px rgba(15, 118, 110, 0.28);
-      opacity: 0; pointer-events: none;
-      transition: opacity 240ms ease, transform 240ms ease;
-      font-size: var(--text-md); line-height: 1.55;
-    }
-    .uc-confirm-toast[hidden] { display: none; }
-    .uc-confirm-toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
-    [data-theme="dark"] .uc-confirm-toast { background: #0c4f48; border-color: #7fc0c6; color: #E6F7F5; box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5); }
-    .uc-confirm-toast-icon { flex: 0 0 auto; font-size: var(--text-lg); line-height: 1; }
-    .uc-confirm-toast-text { flex: 1 1 auto; min-width: 0; font-weight: 500; }
-    .uc-confirm-toast-btn {
-      flex: 0 0 auto;
-      background: #0f766e; color: #fff; border: 0;
-      padding: 10px 20px; border-radius: var(--radius-full);
-      font-size: var(--text-sm); font-weight: 600; cursor: pointer;
-      min-height: 40px;
-      transition: background 150ms ease, transform 150ms ease;
-    }
-    .uc-confirm-toast-btn:hover, .uc-confirm-toast-btn:focus-visible { background: #0c5e57; outline: none; }
-    .uc-confirm-toast-btn:active { transform: scale(0.96); }
-    [data-theme="dark"] .uc-confirm-toast-btn { background: #5ba8b0; color: #0c2f2c; }
-    [data-theme="dark"] .uc-confirm-toast-btn:hover, [data-theme="dark"] .uc-confirm-toast-btn:focus-visible { background: #7fc0c6; }
 
     .post-tour-banner {
       position: fixed;
@@ -2247,12 +2209,6 @@
         top: calc(110px + env(safe-area-inset-top, 0px));
         padding: 10px 14px; gap: 10px; font-size: 13px; border-radius: 12px;
       }
-      .uc-confirm-toast {
-        top: calc(140px + env(safe-area-inset-top, 0px));
-        padding: 14px 16px; gap: 10px; font-size: 14px; line-height: 1.5; border-radius: 14px;
-      }
-      .uc-confirm-toast-btn { padding: 9px 16px; font-size: 13px; min-height: 38px; }
-      body.has-uc-confirm-toast .toast { top: calc(230px + env(safe-area-inset-top, 0px)); }
     }
 
     @media (max-width: 920px) {
@@ -3923,12 +3879,6 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite">Copied to clipboard.</div>
 
-  <div class="uc-confirm-toast" id="uc-confirm-toast" role="status" aria-live="polite" hidden>
-    <span class="uc-confirm-toast-icon" aria-hidden="true">✨</span>
-    <span class="uc-confirm-toast-text">Your starting idea was added. Review the options below, then tap Fix My Prompt.</span>
-    <button type="button" class="uc-confirm-toast-btn" id="uc-confirm-toast-dismiss" aria-label="Dismiss confirmation">Got It</button>
-  </div>
-
   <div class="post-tour-banner" id="post-tour-banner" role="status" aria-live="polite" hidden>
     <span class="post-tour-banner-icon" aria-hidden="true">🎉</span>
     <span class="post-tour-banner-text">You&rsquo;re ready. Build a prompt below, or jump into Transform Text Pro from the top nav &mdash; then have fun prompting with PromptMeGood.</span>
@@ -4132,8 +4082,6 @@
       if (moneyModeEl) {
         moneyModeEl.addEventListener('change', function () { moneyModeUserTouched = true; });
       }
-      // The popular-use-card click wiring + applyPopularUseCard helper were
-      // removed when the Examples / use-cases section was deleted in T12.
 
       // Inline guidance dismiss + auto-hide on generate
       (function setupPostUseCaseGuidance() {
@@ -4456,39 +4404,6 @@ Context:
       }
       // Expose so IIFEs declared after the main app IIFE (e.g. share, tooltip) can call it.
       window.showToast = showToast;
-
-      (function setupUseCaseConfirmToast() {
-        const el = document.getElementById('uc-confirm-toast');
-        if (!el) return;
-        const dismissBtn = document.getElementById('uc-confirm-toast-dismiss');
-        let showTimeoutId = null;
-        let hideTimeoutId = null;
-
-        function hide() {
-          window.clearTimeout(showTimeoutId);
-          showTimeoutId = null;
-          el.classList.remove('is-visible');
-          document.body.classList.remove('has-uc-confirm-toast');
-          window.clearTimeout(hideTimeoutId);
-          hideTimeoutId = window.setTimeout(function () {
-            if (!el.classList.contains('is-visible')) el.hidden = true;
-          }, 260);
-        }
-
-        window.showUseCaseConfirmToast = function () {
-          window.clearTimeout(hideTimeoutId);
-          hideTimeoutId = null;
-          el.hidden = false;
-          // Force reflow so the transition runs from hidden -> visible state
-          void el.offsetWidth;
-          el.classList.add('is-visible');
-          document.body.classList.add('has-uc-confirm-toast');
-          window.clearTimeout(showTimeoutId);
-          showTimeoutId = window.setTimeout(hide, 7500);
-        };
-
-        if (dismissBtn) dismissBtn.addEventListener('click', hide);
-      })();
 
       const SAVE_TIP_DISMISSED_KEY = 'promptmegood:saveTipDismissed:v1';
       const SAVE_TIP_COUNT_KEY = 'promptmegood:saveTipCount:v1';

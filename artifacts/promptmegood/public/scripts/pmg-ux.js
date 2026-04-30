@@ -639,12 +639,6 @@
     refresh();
   }
 
-  /* ---------- existing helpers ---------- */
-  function injectUsecasesScrollHint() {
-    /* Use-cases section was removed; this helper is a no-op. */
-    return;
-  }
-
   function setupStickyCollapse() {
     return;
     var bar = document.getElementById('mobile-sticky-bar');
@@ -748,7 +742,6 @@
     if (window[INIT_FLAG]) return;
     window[INIT_FLAG] = true;
     injectStyles();
-    injectUsecasesScrollHint();
     setupModalOnceFlag();
     setupNudgeSuppression();
     setupExpandedSearch();
@@ -2313,14 +2306,6 @@
   }
 
   /* ===================================================================
-   * FIX 1: hero secondary CTA — add hero-text-link class (text-only)
-   * =================================================================== */
-  function polishHeroSecondaryCta() {
-    /* The hero "See Real Examples" CTA was removed; no-op. */
-    return;
-  }
-
-  /* ===================================================================
    * FIX 4: move Help Me Start (#guided-mode-btn) below Fix My Prompt
    *
    * T44: replaced. The new two-column workspace (T28+) already injects a
@@ -3092,7 +3077,6 @@
    * =================================================================== */
   function init() {
     injectStyles();
-    polishHeroSecondaryCta();
     reorderHelpMeStart();
     addExpertModeRow();
     decorateGenerateButton();
@@ -3454,16 +3438,6 @@
     } catch (e) { /* swallow */ }
   }
 
-  function fixRealExamplesCta() {
-    /* The hero "Real Examples, Real Results" CTA was removed; no-op. */
-    return;
-  }
-
-  function moveNeedIdeasUnderCarousel() {
-    /* The use-cases carousel was removed; no-op. */
-    return;
-  }
-
   function surfaceImageResultPanel() {
     var section = document.getElementById('imageResultSection');
     var dl = document.getElementById('imageDownloadBtn');
@@ -3599,8 +3573,6 @@
     document.body.classList.add('pmg-t15-applied');
     strengthenGoalLabel();
     watchGoalLabel();
-    fixRealExamplesCta();
-    moveNeedIdeasUnderCarousel();
     surfaceImageResultPanel();
     watchImageDownload();
     runConsolidationPass();
@@ -4068,9 +4040,6 @@
  *   - T17.2: Inject step-progress dots at the top of the dialog so users
  *     see "this is multi-step" before they start typing. Synced via
  *     MutationObserver on the [hidden] attribute of each step div.
- *   - T17.3: Replace the solid border on #hero-usecases-cta with a soft
- *     1px tinted border + pulsing accent-color glow. Honors
- *     prefers-reduced-motion.
  * ===================================================================== */
 (function pmgT17GuidedAndGlow() {
   'use strict';
@@ -4548,11 +4517,6 @@
  *   - #upload-field                    standalone "Add A File Or Image" box
  *   - #what-next                       legacy "What Next?" sidebar aside
  *   - #pmg-what-next-block             redundant "What Would You Like To Do?" box
- *
- * KEPT (per user) but visually compacted:
- *   - .popular-uses cards              shrunk so they take ~60% of the
- *                                       footprint without losing the
- *                                       social-proof / starter value.
  *
  * Hero now spans the full content width since the right column is empty.
  * ===================================================================== */
@@ -6730,24 +6694,16 @@
  *     dark-teal brand identity the rest of the site uses.
  *   - "Hero needs to be centered for a more uniform look" — the hero
  *     left column was left-aligned, making the page feel lopsided.
- *   - "I don't see any photo prompts in the Need Ideas section" — the
- *     six use-case cards were all text-prompt scenarios.
- *   - "We can pretty much eliminate the See Real Examples button" —
- *     the third hero CTA we added during T28 (#hero-usecases-cta)
- *     duplicates what the Need Ideas grid already does.
  *
  * What this IIFE does (in order):
- *   1. Hide #hero-usecases-cta entirely (CSS + remove from tab order
- *      via aria-hidden, keep node alive so other scripts that do
- *      getElementById on it don't crash).
- *   2. Center the hero left column: text-align center, flex column
+ *   1. Center the hero left column: text-align center, flex column
  *      align-items center, hero-actions justified center, subtext
  *      box gets margin auto so it sits in the middle.
- *   3. Tighten the stacked CTAs: reduce min-height, increase
+ *   2. Tighten the stacked CTAs: reduce min-height, increase
  *      horizontal padding so long sub-titles never crowd the pill
  *      edge, allow sub-title to wrap on a single tight line, shorten
  *      the image-CTA sub copy to "DALL·E Or Any AI Tool" (cleaner).
- *   4. Add brand-teal accents:
+ *   3. Add brand-teal accents:
  *        - thin teal top border on each build column (#pmg-col-text +
  *          #pmg-col-image),
  *        - subtle teal radial-gradient backdrop on the .app-shell so
@@ -6755,11 +6711,6 @@
  *          white,
  *        - dark-teal column titles (var(--color-primary)),
  *        - hero subtext box gets a slightly stronger teal wash.
- *   5. Wire photo prompt cards (data-pmg-photo="1") so clicking them
- *      drops the goal text into #goal AND scrolls to #builder-image
- *      AND auto-clicks .pmg-photo-surprise to seed the Photography
- *      Suite — instead of the default behaviour which scrolls to the
- *      text builder.
  *
  * Hard rules honored: no backend/API/DB changes; no renamed IDs or
  * classes; CSS variables + color-mix only; idempotent via
@@ -6893,33 +6844,9 @@
     }
   }
 
-  /* The hero "See Real Examples" CTA was removed entirely; this is a no-op. */
-  function hideExamplesCTA() {
-    return;
-  }
-
-  /* --- Wire photo prompt cards to route into the image column ---
-     The site's existing applyPopularUseCard() (index.html:4340)
-     drops the goal text into #goal and scrolls to #builder, which
-     is great for text prompts. Photo cards should ALSO scroll the
-     user to #builder-image (right column) and seed the Photography
-     Suite via .pmg-photo-surprise so they see immediate visual
-     progress.
-  
-     We don't replace applyPopularUseCard — we just listen on capture
-     for clicks on photo cards, let the existing handler run, then
-     finish the photo-specific routing on a short timeout (after the
-     existing scrollIntoView + focus has settled). */
-  function wirePhotoCards() {
-    /* The .popular-use-card cards were removed; no-op. */
-    return;
-  }
-
   function init() {
     injectStyles();
     tightenImageCtaCopy();
-    hideExamplesCTA();
-    wirePhotoCards();
     /* T28 builds the hero image CTA + the column headers async, so
        run the lightweight passes again on a short cadence until they
        exist (no MutationObserver needed — these are one-shot text
@@ -6928,7 +6855,6 @@
     var iv = setInterval(function () {
       tries++;
       tightenImageCtaCopy();
-      hideExamplesCTA();
       if (tries >= 30) clearInterval(iv);
     }, 400);
   }
@@ -11220,11 +11146,6 @@
  *    refines/edits don't overwrite it. The snapshot resets on Clear
  *    Prompt and on every new Fix My Prompt submit so the next cycle
  *    captures fresh.
- *  - Use case cards: existing handler scrolls to #builder and shows
- *    a long generic toast. We override window.showUseCaseConfirmToast
- *    to display "Use Case Loaded — Continue Below" and add a delayed
- *    listener that scrolls to the textarea specifically so the user
- *    can tell exactly where the loaded text went.
  *
  * Rolling back: delete this entire IIFE. No HTML edits were made.
  * ===================================================================== */
@@ -11461,22 +11382,6 @@
     return true;
   }
 
-  function wireUseCaseCards() {
-    if (window.__pmgT46UseCaseToastWrapped) return;
-    window.__pmgT46UseCaseToastWrapped = true;
-    var prevConfirm = window.showUseCaseConfirmToast;
-    window.showUseCaseConfirmToast = function () {
-      if (typeof window.showToast === 'function') {
-        window.showToast('Use Case Loaded — Continue Below');
-      } else if (typeof prevConfirm === 'function') {
-        prevConfirm();
-      }
-    };
-
-    /* T46: .popular-use-card click handler removed — the use-case cards
-       no longer exist on the page. */
-  }
-
   function wireSubmitReset() {
     var form = document.getElementById('prompt-form');
     if (!form || form.__t46SubmitHooked) return;
@@ -11508,7 +11413,6 @@
   function build() {
     var ok1 = buildExportButton();
     var ok2 = relocateActions();
-    wireUseCaseCards();
     wireSubmitReset();
     wireClearReset();
     wireResultObserver();
