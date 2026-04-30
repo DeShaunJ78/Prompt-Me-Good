@@ -11132,13 +11132,22 @@
       '@media (max-width: 760px) {',
       '  #' + WRAPPER_ID + ' { padding: 0 var(--space-3); margin-bottom: var(--space-4); }',
       '}',
-      /* Hide the legacy orphan elements left over from T3's earlier
-         cleanup of "No Signup. Free." sub-label and the duplicate
-         Help Me Start button reorderHelpMeStart used to inject under
-         Fix My Prompt. The yellow "Most Loved" pill
-         (#pmg-help-me-start-btn) is intentionally NOT touched here. */
+      /* Hide the legacy orphan elements that used to render under
+         "Fix My Prompt": the "No Signup. Free." sub-label, the
+         duplicate outlined "Help Me Start" (#guided-mode-btn) that
+         old T15 reorderHelpMeStart() moved next to #generateBtn, the
+         T16 "Recommended For Best Results" pill row that paired with
+         it, and the T17 pair wrapper. The yellow "Most Loved" pill
+         (#pmg-help-me-start-btn) is intentionally NOT touched here.
+         Selectors use [id] to add a touch of specificity so we beat
+         any legacy `display: inline-flex !important` left in earlier
+         IIFE styles (e.g. T15.2 #guided-mode-btn :important rules). */
       '#pmg-generate-sublabel[id],',
-      '#pmg-help-me-start-helper[id] { display: none !important; }'
+      '#pmg-help-me-start-helper[id],',
+      '#guided-mode-btn[id],',
+      '#guided-cta-row[id],',
+      '#pmg-help-me-start-recommend-row[id],',
+      '#pmg-helpstart-pair-row[id] { display: none !important; }'
     ].join('\n');
     document.head.appendChild(s);
   }
