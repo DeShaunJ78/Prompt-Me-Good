@@ -334,6 +334,30 @@
     [data-theme="dark"][data-accent="gold"] { --color-primary: #fcd34d; --color-primary-hover: #fde68a; --color-primary-highlight: #78350f; }
     [data-accent="slate"] { --color-primary: #475569; --color-primary-hover: #334155; --color-primary-highlight: #e2e8f0; }
     [data-theme="dark"][data-accent="slate"] { --color-primary: #cbd5e1; --color-primary-hover: #e2e8f0; --color-primary-highlight: #1e293b; }
+
+    /* =========================================================
+       Global reduce-motion safety net (Task #21).
+
+       Mirrors the rule shipped with the main app in index.html so
+       this standalone page also honours the OS "reduce motion"
+       preference. Collapses every CSS transition and @keyframes
+       animation (looping ones included) to an instant change while
+       preserving the resulting visual state — focus rings, hover
+       tints, and color/opacity changes still appear, just without
+       motion. The !important duration override also beats any
+       inline `style.transition = ...` set from JavaScript.
+       The scroll-behavior override is repeated here to neutralise
+       any stray `scroll-behavior: smooth` declarations elsewhere. */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-delay: 0ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        transition-delay: 0ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
   </style>
 
 
