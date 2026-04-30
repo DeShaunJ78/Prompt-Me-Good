@@ -11275,9 +11275,43 @@
     return true;
   }
 
+  /* The original applyWeeklyGoal() handler in index.html (line 7163)
+     sets #goal.value and scrollIntoViews it, but on the home page the
+     #goal textarea is HIDDEN by default behind the T31 "Help Me Start"
+     callout — the user has to click "I Know What I Want — Just Start
+     Typing" (id #pmg-text-help-row-skip) before the .field.field-primary
+     wrapper becomes visible. Without that reveal, the pin click fills
+     the value into an invisible textarea and scrollIntoView has nothing
+     to scroll to. We listen in CAPTURE phase so the skip button runs
+     BEFORE applyWeeklyGoal — by the time applyWeeklyGoal scrolls, the
+     textarea is visible and gets the focus + scroll correctly. */
+  function wireRevealOnPinClick() {
+    if (window.__pmgT44PinRevealHooked) return;
+    window.__pmgT44PinRevealHooked = true;
+    document.addEventListener('click', function (e) {
+      var t = e.target;
+      if (!t || !t.closest) return;
+      var cta = t.closest('#weekly-goal-cta');
+      if (!cta) return;
+      /* The skip button is a TOGGLE — clicking it when the inline
+         typing panel is already open would COLLAPSE the panel. So
+         only click it when the panel is closed. If the panel is
+         already open, applyWeeklyGoal() runs alone and the existing
+         visible textarea receives the value + scroll + focus. */
+      var panel = document.getElementById('pmg-inline-typing-text');
+      var alreadyOpen = !!(panel && panel.classList.contains('is-open'));
+      if (alreadyOpen) return;
+      var skip = document.getElementById('pmg-text-help-row-skip');
+      if (skip && skip.offsetParent !== null) {
+        try { skip.click(); } catch (_) {}
+      }
+    }, true);
+  }
+
   function init() {
     injectStyles();
     promote();
+    wireRevealOnPinClick();
 
     /* Retry for the full window even if promote() succeeded early —
        the duplicate Help Me Start cleanup needs to keep firing because
@@ -11290,6 +11324,366 @@
       promote();
       if (tries >= 30) clearInterval(iv);
     }, 400);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+
+/* =====================================================================
+ * T46 — Builder flow rewrite (April 2026)
+ * ---------------------------------------------------------------------
+ * The builder used to put the green "Fix My Prompt" button directly
+ * under the "Describe What You Want" textarea, with "More Control"
+ * collapsed below it. Users complained the flow felt backwards: they
+ * tapped "Fix My Prompt" before they ever saw what populated the
+ * "Your Fixed Prompt" output box on the right side of the layout.
+ *
+ * This IIFE rewires the builder into a strictly linear flow:
+ *
+ *   [ Describe What You Want textarea ]
+ *   [ Export To Fix My Prompt ] (NEW — copies idea into output box)
+ *   [ Your Fixed Prompt output box ]
+ *   [ Restore Original ] (NEW — only visible once an original exists)
+ *   [ Fix My Prompt ] (MOVED here from under the textarea)
+ *   [ More Control collapsible ] (MOVED with Fix My Prompt)
+ *   [ Refine / Copy / Export / Run With AI ] (untouched)
+ *
+ * Implementation notes:
+ *  - We MOVE existing nodes (#generateBtn, #settingsPanel) rather
+ *    than cloning so all live event listeners (form submit, tour
+ *    bindings, settings change handlers, expert-mode hooks) stay
+ *    intact. The relocated #generateBtn keeps `type=submit` and
+ *    we add `form="prompt-form"` so HTML5 form-association still
+ *    fires the same submit handler the inline scripts in
+ *    index.html attach at runtime.
+ *  - "Export To Fix My Prompt" is intentionally NOT a generate-prompt
+ *    action. It just copies the textarea text into #resultBox so the
+ *    user can SEE their starting idea in the fixed-prompt slot before
+ *    refining. Generation still happens via the moved Fix My Prompt
+ *    button (and goes through the existing AI/local pipeline).
+ *  - "Restore Original" snapshots the FIRST non-placeholder content
+ *    that lands in #resultBox during a generation cycle. Subsequent
+ *    refines/edits don't overwrite it. The snapshot resets on Clear
+ *    Prompt and on every new Fix My Prompt submit so the next cycle
+ *    captures fresh.
+ *  - Use case cards: existing handler scrolls to #builder and shows
+ *    a long generic toast. We override window.showUseCaseConfirmToast
+ *    to display "Use Case Loaded — Continue Below" and add a delayed
+ *    listener that scrolls to the textarea specifically so the user
+ *    can tell exactly where the loaded text went.
+ *
+ * Rolling back: delete this entire IIFE. No HTML edits were made.
+ * ===================================================================== */
+(function pmgT46BuilderRewrite() {
+  'use strict';
+  var STYLE_ID = 'pmg-t46-builder-rewrite-styles';
+  var EXPORT_ROW_ID = 'pmg-export-to-fix-row';
+  var EXPORT_BTN_ID = 'pmg-export-to-fix-btn';
+  var RESULT_BLOCK_ID = 'pmg-result-actions-block';
+  var RESULT_ROW_ID = 'pmg-result-actions-row';
+  var RESTORE_BTN_ID = 'pmg-restore-original-btn';
+  var PLACEHOLDER = 'Your fixed prompt will appear here.';
+
+  /* In-closure state. originalFixedPrompt holds the FIRST snapshot of
+     the result box for the current generation cycle, or null if there
+     is no captured snapshot to restore to. */
+  var originalFixedPrompt = null;
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = [
+      '#' + EXPORT_ROW_ID + ' {',
+      '  margin-top: 12px;',
+      '  display: flex;',
+      '  flex-direction: column;',
+      '  gap: 6px;',
+      '}',
+      '#' + EXPORT_BTN_ID + ' {',
+      '  width: 100%;',
+      '  min-height: 52px;',
+      '  font-weight: 700;',
+      '  font-size: 15px;',
+      '}',
+      '#' + EXPORT_ROW_ID + ' .pmg-export-to-fix-helper {',
+      '  margin: 0;',
+      '  font-size: 12px;',
+      '  color: var(--color-text-muted);',
+      '  text-align: center;',
+      '  line-height: 1.4;',
+      '}',
+      'body.image-mode #' + EXPORT_ROW_ID + ',',
+      'body.pmg-image-reordered #' + EXPORT_ROW_ID + ' {',
+      '  display: none !important;',
+      '}',
+      '#' + RESULT_BLOCK_ID + ' {',
+      '  margin-top: 14px;',
+      '  display: flex;',
+      '  flex-direction: column;',
+      '  gap: 12px;',
+      '}',
+      '#' + RESULT_ROW_ID + ' {',
+      '  display: flex;',
+      '  flex-wrap: wrap;',
+      '  align-items: stretch;',
+      '  gap: 10px;',
+      '}',
+      '#' + RESULT_ROW_ID + ' #generateBtn {',
+      '  flex: 1 1 220px;',
+      '  min-height: 52px;',
+      '  font-weight: 700;',
+      '  font-size: 15px;',
+      '}',
+      '#' + RESTORE_BTN_ID + ' {',
+      '  display: none;',
+      '  flex: 0 0 auto;',
+      '  min-height: 52px;',
+      '  align-items: center;',
+      '  justify-content: center;',
+      '  gap: 6px;',
+      '}',
+      '#' + RESTORE_BTN_ID + '.is-available {',
+      '  display: inline-flex;',
+      '}',
+      '@media (max-width: 640px) {',
+      '  #' + RESULT_ROW_ID + ' {',
+      '    flex-direction: column;',
+      '  }',
+      '  #' + RESULT_ROW_ID + ' #generateBtn,',
+      '  #' + RESULT_ROW_ID + ' #' + RESTORE_BTN_ID + '.is-available {',
+      '    width: 100%;',
+      '    flex: 1 1 auto;',
+      '  }',
+      '}',
+      '#' + RESULT_BLOCK_ID + ' #settingsPanel {',
+      '  margin-top: 0 !important;',
+      '}'
+    ].join('\n');
+    document.head.appendChild(s);
+  }
+
+  function captureOriginalIfNeeded() {
+    if (originalFixedPrompt !== null) return;
+    var box = document.getElementById('resultBox');
+    if (!box) return;
+    var text = (box.textContent || '').trim();
+    if (!text || text === PLACEHOLDER) return;
+    if (text === 'Generating your prompt…') return;
+    if (text.indexOf('Add a clear goal first') === 0) return;
+    originalFixedPrompt = box.textContent;
+    var btn = document.getElementById(RESTORE_BTN_ID);
+    if (btn) btn.classList.add('is-available');
+  }
+
+  function resetOriginal() {
+    originalFixedPrompt = null;
+    var btn = document.getElementById(RESTORE_BTN_ID);
+    if (btn) btn.classList.remove('is-available');
+  }
+
+  function restoreOriginal() {
+    if (originalFixedPrompt === null) return;
+    var box = document.getElementById('resultBox');
+    if (!box) return;
+    box.textContent = originalFixedPrompt;
+    if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
+    var indicator = document.getElementById('result-edit-indicator');
+    if (indicator) indicator.hidden = true;
+    if (typeof window.showToast === 'function') {
+      window.showToast('Restored your original prompt.');
+    }
+  }
+
+  function exportToFix() {
+    var goalEl = document.getElementById('goal');
+    var box = document.getElementById('resultBox');
+    if (!goalEl || !box) return;
+    var goal = (goalEl.value || '').trim();
+    if (!goal) {
+      if (typeof window.showToast === 'function') {
+        window.showToast('Type your idea above first, then export it to the fixed-prompt area.');
+      }
+      try { goalEl.focus({ preventScroll: true }); } catch (e) { goalEl.focus(); }
+      return;
+    }
+    if (goal.length > 500) {
+      if (typeof window.showToast === 'function') {
+        window.showToast('Your idea is too long. Please keep it under 500 characters.');
+      }
+      try { goalEl.focus({ preventScroll: true }); } catch (e) { goalEl.focus(); }
+      return;
+    }
+    resetOriginal();
+    box.textContent = goal;
+    if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
+    var indicator = document.getElementById('result-edit-indicator');
+    if (indicator) indicator.hidden = true;
+    var panel = document.getElementById('result-panel');
+    if (panel) panel.classList.add('has-result');
+    originalFixedPrompt = goal;
+    var restoreBtn = document.getElementById(RESTORE_BTN_ID);
+    if (restoreBtn) restoreBtn.classList.add('is-available');
+    if (panel) {
+      try { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      catch (e) { panel.scrollIntoView(); }
+    }
+    if (typeof window.showToast === 'function') {
+      window.showToast('Exported to Your Fixed Prompt — review or refine it below.');
+    }
+  }
+
+  function buildExportButton() {
+    if (document.getElementById(EXPORT_BTN_ID)) return true;
+    var primaryField = document.querySelector('#prompt-form .field.field-primary');
+    if (!primaryField) return false;
+    var row = document.createElement('div');
+    row.id = EXPORT_ROW_ID;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = EXPORT_BTN_ID;
+    btn.className = 'btn btn-primary';
+    btn.textContent = 'Export To Fix My Prompt';
+    var helper = document.createElement('p');
+    helper.className = 'pmg-export-to-fix-helper';
+    helper.textContent = 'Loads your idea into Your Fixed Prompt below — then refine or run it.';
+    row.appendChild(btn);
+    row.appendChild(helper);
+    primaryField.appendChild(row);
+    btn.addEventListener('click', exportToFix);
+    return true;
+  }
+
+  function relocateActions() {
+    if (document.getElementById(RESULT_BLOCK_ID)) return true;
+    var generateBtn = document.getElementById('generateBtn');
+    var settingsPanel = document.getElementById('settingsPanel');
+    var resultWrap = document.querySelector('#result-panel .result-wrap');
+    var improveBlock = document.getElementById('improve-block');
+    if (!generateBtn || !settingsPanel || !resultWrap || !improveBlock) return false;
+    if (improveBlock.parentNode !== resultWrap) return false;
+
+    /* Strip the legacy tour-step-generate id off the OLD container so
+       we can re-attach it to the new btn-row wrapper. */
+    var oldRow = generateBtn.parentNode;
+    if (oldRow && oldRow.id === 'tour-step-generate') {
+      oldRow.removeAttribute('id');
+    }
+
+    var block = document.createElement('div');
+    block.id = RESULT_BLOCK_ID;
+
+    var btnRow = document.createElement('div');
+    btnRow.id = RESULT_ROW_ID;
+    /* Tour highlights look up #tour-step-generate. Apply that id to
+       the new btn-row wrapper so the highlight ring lands on the
+       right element after the relocation. We use a separate data attr
+       since we can\'t have two ids on one element. */
+    btnRow.setAttribute('data-pmg-tour-id', 'tour-step-generate');
+
+    /* Restore Original sits FIRST per the spec\'s required order. */
+    var restoreBtn = document.createElement('button');
+    restoreBtn.type = 'button';
+    restoreBtn.id = RESTORE_BTN_ID;
+    restoreBtn.className = 'btn btn-secondary';
+    restoreBtn.title = 'Bring back the first version of your fixed prompt';
+    restoreBtn.innerHTML = '<span aria-hidden="true">↺</span> Restore Original';
+    restoreBtn.addEventListener('click', restoreOriginal);
+    btnRow.appendChild(restoreBtn);
+
+    /* Move the actual #generateBtn node — preserves all existing
+       listeners. Add form-association so it can still submit
+       #prompt-form from outside the form element. */
+    generateBtn.setAttribute('form', 'prompt-form');
+    btnRow.appendChild(generateBtn);
+
+    block.appendChild(btnRow);
+    /* Move More Control directly under Fix My Prompt. */
+    block.appendChild(settingsPanel);
+
+    /* Insert between the result box (and its edit-row) and the
+       improve-block. */
+    resultWrap.insertBefore(block, improveBlock);
+    return true;
+  }
+
+  function wireUseCaseCards() {
+    if (window.__pmgT46UseCaseToastWrapped) return;
+    window.__pmgT46UseCaseToastWrapped = true;
+    var prevConfirm = window.showUseCaseConfirmToast;
+    window.showUseCaseConfirmToast = function () {
+      if (typeof window.showToast === 'function') {
+        window.showToast('Use Case Loaded — Continue Below');
+      } else if (typeof prevConfirm === 'function') {
+        prevConfirm();
+      }
+    };
+
+    document.addEventListener('click', function (e) {
+      var card = e.target && e.target.closest && e.target.closest('.popular-use-card');
+      if (!card) return;
+      window.setTimeout(function () {
+        var goalEl = document.getElementById('goal');
+        if (!goalEl) return;
+        try { goalEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+        catch (err) { goalEl.scrollIntoView(); }
+        window.setTimeout(function () {
+          try { goalEl.focus({ preventScroll: true }); } catch (err) { goalEl.focus(); }
+        }, 350);
+      }, 80);
+    }, true);
+  }
+
+  function wireSubmitReset() {
+    var form = document.getElementById('prompt-form');
+    if (!form || form.__t46SubmitHooked) return;
+    form.__t46SubmitHooked = true;
+    form.addEventListener('submit', function () {
+      resetOriginal();
+    }, true);
+  }
+
+  function wireClearReset() {
+    var btn = document.getElementById('clear-prompt-btn');
+    if (!btn || btn.__t46ClearHooked) return;
+    btn.__t46ClearHooked = true;
+    btn.addEventListener('click', function () {
+      resetOriginal();
+    });
+  }
+
+  function wireResultObserver() {
+    var box = document.getElementById('resultBox');
+    if (!box || box.__t46Observed) return;
+    box.__t46Observed = true;
+    var obs = new MutationObserver(function () {
+      captureOriginalIfNeeded();
+    });
+    obs.observe(box, { childList: true, characterData: true, subtree: true });
+  }
+
+  function build() {
+    var ok1 = buildExportButton();
+    var ok2 = relocateActions();
+    wireUseCaseCards();
+    wireSubmitReset();
+    wireClearReset();
+    wireResultObserver();
+    return ok1 && ok2;
+  }
+
+  function init() {
+    injectStyles();
+    if (build()) return;
+    var tries = 0;
+    var iv = setInterval(function () {
+      tries++;
+      if (build() || tries >= 30) clearInterval(iv);
+    }, 300);
   }
 
   if (document.readyState === 'loading') {
