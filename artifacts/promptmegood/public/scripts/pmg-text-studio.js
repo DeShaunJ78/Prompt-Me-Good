@@ -792,7 +792,12 @@
       '  box-shadow: 0 8px 22px color-mix(in srgb, var(--color-primary) 30%, transparent);',
       '  outline: none;',
       '}',
-      '.pmg-ts-action:disabled,',
+      /* Disabled = greyed out + not-allowed cursor (NOT pinwheel, which
+         falsely implies the button is working on something). The
+         pinwheel/wait cursor is reserved exclusively for the
+         .is-loading state below, when an actual transformation is
+         in flight. */
+      '.pmg-ts-action:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }',
       '.pmg-ts-action.is-loading { opacity: 0.7; cursor: wait; transform: none; }',
       '.pmg-ts-action.is-loading::before {',
       '  content: "";',
@@ -1477,8 +1482,19 @@
     var btn = document.getElementById('pmg-ts-action');
     if (!btn) return;
     var mode = modeById(state.selectedMode) || MODES[0];
+    /* If a transformation is currently in flight, leave the button's
+       disabled state and label exactly as runTransformation set them
+       (disabled + .is-loading + mode.loadingMsg). Refreshing during a
+       run would otherwise re-enable the button and overwrite the
+       loading text — confusing the user and weakening the a11y signal. */
+    if (inFlight) return;
     btn.textContent = mode.button;
-    btn.disabled = !state.text || !state.text.trim();
+    /* Do NOT disable when the textarea is empty. A disabled green
+       button reads as "stuck loading" to most users — they hover,
+       see the not-allowed cursor, and assume the button is broken.
+       Instead, leave it enabled and let runTransformation surface a
+       clear "Drop in some text first." status message when clicked. */
+    btn.disabled = false;
   }
 
   function refreshLockIcons() {
@@ -1550,11 +1566,18 @@
 
     var prompt = buildPromptFor(mode, text);
 
+    /* Wrap the AI call in try/catch so a synchronous throw (e.g. AI
+       client misconfigured, prompt too long) can't strand inFlight=true
+       and leave the green button frozen with a wait cursor forever. */
     var run;
-    if (typeof ai.generateRaw === 'function') {
-      run = ai.generateRaw(prompt);
-    } else {
-      run = ai.generateStructured({ prompt: prompt, extraDetails: '' });
+    try {
+      if (typeof ai.generateRaw === 'function') {
+        run = ai.generateRaw(prompt);
+      } else {
+        run = ai.generateStructured({ prompt: prompt, extraDetails: '' });
+      }
+    } catch (syncErr) {
+      run = Promise.reject(syncErr);
     }
 
     Promise.resolve(run).then(function (raw) {
