@@ -12222,23 +12222,19 @@
   }
 })();
 
-/* T13 — Site-wide close affordances.
-   Every modal, overlay, dropdown, <details> panel, toast, and the mobile
-   nav drawer must be closable via at least one of: × button, ESC,
-   backdrop click, or selection. This block patches the containers that
-   were missing one or more of those affordances. */
-(function pmgT13Close() {
-  if (window.__pmgT13CloseSweep) return;
-  window.__pmgT13CloseSweep = true;
+(function pmgCloseAffordances() {
+  if (window.__pmgCloseAffordances) return;
+  window.__pmgCloseAffordances = true;
 
   function injectStyles() {
-    if (document.getElementById('pmg-t13-close-styles')) return;
+    if (document.getElementById('pmg-close-affordance-styles')) return;
     var css =
       '.pmg-x-btn{position:absolute;top:10px;right:12px;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:0;border-radius:8px;color:var(--color-text-muted,#666);font-size:24px;line-height:1;cursor:pointer;padding:0;z-index:5}' +
-      '.pmg-x-btn:hover,.pmg-x-btn:focus-visible{color:var(--color-text,#111);background:rgba(0,0,0,0.06);outline:none}' +
-      '[data-theme="dark"] .pmg-x-btn:hover,[data-theme="dark"] .pmg-x-btn:focus-visible{background:rgba(255,255,255,0.10)}' +
-      '.expert-warning-dialog,.guided-dialog,.compare-modal,.bk-modal,.ob-tooltip{position:relative}' +
-      '.ob-tooltip .pmg-x-btn{top:6px;right:8px;width:28px;height:28px;font-size:20px;color:var(--color-text-muted,#666)}' +
+      '.pmg-x-btn:hover,.pmg-x-btn:focus-visible{color:var(--color-text,#111);background:rgba(0,0,0,.06);outline:none}' +
+      '[data-theme="dark"] .pmg-x-btn:hover,[data-theme="dark"] .pmg-x-btn:focus-visible{background:rgba(255,255,255,.10)}' +
+      '[data-pmg-modal]{position:relative}' +
+      '[data-pmg-modal] > .pmg-modal-body{position:relative}' +
+      '.ob-tooltip .pmg-x-btn{top:6px;right:8px;width:28px;height:28px;font-size:20px}' +
       '.toast{padding-right:36px}' +
       '.toast .pmg-toast-x{position:absolute;top:6px;right:8px;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:0;color:inherit;opacity:.75;font-size:18px;line-height:1;cursor:pointer;border-radius:6px;padding:0}' +
       '.toast .pmg-toast-x:hover,.toast .pmg-toast-x:focus-visible{opacity:1;background:rgba(0,0,0,.08);outline:none}' +
@@ -12250,10 +12246,10 @@
       '.pmg-mobile-nav-x{display:none;position:absolute;top:8px;right:10px;width:36px;height:36px;align-items:center;justify-content:center;background:transparent;border:0;border-radius:8px;color:var(--color-text-muted,#555);font-size:26px;line-height:1;cursor:pointer;padding:0}' +
       '.pmg-mobile-nav-x:hover,.pmg-mobile-nav-x:focus-visible{color:var(--color-text,#111);background:rgba(0,0,0,.06);outline:none}' +
       '@media (max-width:900px){.top-actions.is-open{position:relative;padding-top:48px}.top-actions.is-open .pmg-mobile-nav-x{display:inline-flex}}';
-    var style = document.createElement('style');
-    style.id = 'pmg-t13-close-styles';
-    style.appendChild(document.createTextNode(css));
-    (document.head || document.documentElement).appendChild(style);
+    var s = document.createElement('style');
+    s.id = 'pmg-close-affordance-styles';
+    s.appendChild(document.createTextNode(css));
+    (document.head || document.documentElement).appendChild(s);
   }
 
   function makeXButton(label, onClick) {
@@ -12270,79 +12266,58 @@
     return b;
   }
 
-  /* Close any registered container by id. */
-  function closeNativeDialog(dlg) {
-    if (typeof dlg.close === 'function') dlg.close();
-    else dlg.removeAttribute('open');
-  }
-  function closeDivOverlay(ov) {
-    ov.classList.remove('is-open');
-    ov.setAttribute('aria-hidden', 'true');
+  function isOpen(el, kind) {
+    if (kind === 'native-dialog') return el.hasAttribute('open');
+    return el.classList.contains('is-open');
   }
 
-  /* Append × to a native <dialog>'s inner wrapper. */
-  function addXToNativeDialog(dialogId, innerSel, label) {
-    var dlg = document.getElementById(dialogId);
-    if (!dlg || dlg.dataset.pmgT13X === '1') return;
-    var inner = innerSel ? dlg.querySelector(innerSel) : dlg.firstElementChild;
-    if (!inner) return;
-    inner.appendChild(makeXButton(label, function () { closeNativeDialog(dlg); }));
-    dlg.dataset.pmgT13X = '1';
-  }
-
-  /* Backdrop click for native <dialog> (used for guided-mode-dialog
-     which lacked it; expert-warning + legal modals already wire it). */
-  function addBackdropClickToDialog(dialogId) {
-    var dlg = document.getElementById(dialogId);
-    if (!dlg || dlg.dataset.pmgT13Bd === '1') return;
-    dlg.addEventListener('click', function (e) {
-      if (e.target === dlg) closeNativeDialog(dlg);
-    });
-    dlg.dataset.pmgT13Bd = '1';
-  }
-
-  /* Append × to a div overlay. Existing Close text buttons are kept. */
-  function addXToDivOverlay(overlayId, modalSel, label) {
-    var overlay = document.getElementById(overlayId);
-    if (!overlay || overlay.dataset.pmgT13X === '1') return;
-    var modal = overlay.querySelector(modalSel);
-    if (!modal) return;
-    modal.appendChild(makeXButton(label, function () { closeDivOverlay(overlay); }));
-    overlay.dataset.pmgT13X = '1';
-  }
-
-  /* Onboarding tour overlay needs an explicit visible × (it already has
-     a "Skip" link; the × makes the close affordance unambiguous) AND
-     an ESC handler. Backdrop is intentionally NOT wired so a stray
-     click doesn't kill an in-progress tour. */
-  function wireTour() {
-    var ov = document.getElementById('ob-overlay');
-    if (!ov || ov.dataset.pmgT13X === '1') return;
-    var tip = ov.querySelector('.ob-tooltip');
-    if (tip) {
-      tip.appendChild(makeXButton('Close tour', function () {
-        var skip = document.getElementById('ob-skip');
-        if (skip) skip.click();
-        else closeDivOverlay(ov);
-      }));
+  function defaultCloseFor(el, kind) {
+    if (kind === 'native-dialog') {
+      return function () {
+        if (typeof el.close === 'function') el.close();
+        else el.removeAttribute('open');
+      };
     }
-    document.addEventListener('keydown', function (e) {
-      if (e.key !== 'Escape') return;
-      if (!ov.classList.contains('is-open')) return;
-      var skip = document.getElementById('ob-skip');
-      if (skip) skip.click();
-      else closeDivOverlay(ov);
-    });
-    ov.dataset.pmgT13X = '1';
+    return function () {
+      el.classList.remove('is-open');
+      el.setAttribute('aria-hidden', 'true');
+    };
   }
 
-  /* Toast: × dismiss inside the toast element. The toast text is
-     rewritten in-place by showToast() (see index.html), so a small
-     MutationObserver re-attaches the button if it gets removed. The
-     observer is no-op once the button is present, so it cannot loop. */
+  /* Register a closeable container. opts:
+     - kind: 'native-dialog' | 'div-overlay'
+     - innerSel: selector of inner panel that hosts the × button
+     - close: optional explicit close function (e.g. existing closeCompare)
+     - addX: whether to inject an × button (default true)
+     - addBackdrop: whether to wire backdrop click (default false)
+     - addEsc: whether to wire document-level ESC (default false; native
+       dialogs handle ESC themselves via showModal)
+     - label: aria-label for the × button */
+  function register(el, opts) {
+    if (!el || el.dataset.pmgCloseable === '1') return;
+    el.dataset.pmgCloseable = '1';
+    el.setAttribute('data-pmg-modal', opts.kind);
+    var close = opts.close || defaultCloseFor(el, opts.kind);
+
+    if (opts.addX !== false) {
+      var inner = opts.innerSel ? el.querySelector(opts.innerSel) : el.firstElementChild;
+      if (inner) inner.appendChild(makeXButton(opts.label || 'Close', close));
+    }
+    if (opts.addBackdrop) {
+      el.addEventListener('click', function (e) {
+        if (e.target === el) close();
+      });
+    }
+    if (opts.addEsc) {
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && isOpen(el, opts.kind)) close();
+      });
+    }
+  }
+
   function wireToast() {
-    var toast = document.getElementById('toast');
-    if (!toast || toast.dataset.pmgT13X === '1') return;
+    var t = document.getElementById('toast');
+    if (!t || t.dataset.pmgCloseable === '1') return;
     var x = document.createElement('button');
     x.type = 'button';
     x.className = 'pmg-toast-x';
@@ -12351,37 +12326,32 @@
     x.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      toast.classList.remove('show');
+      t.classList.remove('show');
     });
-    toast.appendChild(x);
-    toast.dataset.pmgT13X = '1';
-    var mo = new MutationObserver(function () {
-      if (!toast.contains(x)) toast.appendChild(x);
-    });
-    mo.observe(toast, { childList: true });
+    t.appendChild(x);
+    t.dataset.pmgCloseable = '1';
+    /* showToast() rewrites #toast text in place — re-attach if removed. */
+    new MutationObserver(function () {
+      if (!t.contains(x)) t.appendChild(x);
+    }).observe(t, { childList: true });
   }
 
-  /* Global search results dropdown: ESC closes it (click-outside
-     already worked). */
   function wireGlobalSearchEsc() {
     var input = document.getElementById('global-search-input');
     var results = document.getElementById('global-search-results');
-    if (!input || !results || results.dataset.pmgT13Esc === '1') return;
+    if (!input || !results || results.dataset.pmgCloseable === '1') return;
     document.addEventListener('keydown', function (e) {
-      if (e.key !== 'Escape') return;
-      if (!results.classList.contains('is-open')) return;
+      if (e.key !== 'Escape' || !results.classList.contains('is-open')) return;
       results.classList.remove('is-open');
       if (document.activeElement === input) input.blur();
     });
-    results.dataset.pmgT13Esc = '1';
+    results.dataset.pmgCloseable = '1';
   }
 
-  /* Mobile nav drawer: × inside the drawer (the hamburger toggle stays
-     as the open control). */
   function wireMobileNavClose() {
     var panel = document.getElementById('top-actions');
     var toggle = document.getElementById('nav-toggle');
-    if (!panel || !toggle || panel.dataset.pmgT13X === '1') return;
+    if (!panel || !toggle || panel.dataset.pmgCloseable === '1') return;
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'pmg-mobile-nav-x';
@@ -12396,20 +12366,16 @@
       toggle.focus({ preventScroll: true });
     });
     panel.insertBefore(btn, panel.firstChild);
-    panel.dataset.pmgT13X = '1';
+    panel.dataset.pmgCloseable = '1';
   }
 
-  /* Long <details> panels get a Collapse button at the bottom of their
-     body that closes the panel and brings the <summary> back into view
-     (respecting prefers-reduced-motion). */
   function addCollapseToDetails(id, summarySelector) {
     var el = document.getElementById(id);
-    if (!el || el.dataset.pmgT13Collapse === '1') return;
+    if (!el || el.dataset.pmgCollapseable === '1') return;
     var body = null;
     for (var i = 0; i < el.children.length; i++) {
-      var c = el.children[i];
-      if (c.tagName.toLowerCase() === 'summary') continue;
-      body = c;
+      if (el.children[i].tagName.toLowerCase() === 'summary') continue;
+      body = el.children[i];
       break;
     }
     if (!body) return;
@@ -12426,37 +12392,71 @@
       el.open = false;
       var summary = el.querySelector(summarySelector || 'summary');
       if (!summary) return;
-      var prefersReduced = window.matchMedia &&
+      var reduce = window.matchMedia &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      summary.scrollIntoView({
-        behavior: prefersReduced ? 'auto' : 'smooth',
-        block: 'start'
-      });
+      summary.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
       summary.focus({ preventScroll: true });
     });
     row.appendChild(btn);
     body.appendChild(row);
-    el.dataset.pmgT13Collapse = '1';
+    el.dataset.pmgCollapseable = '1';
+  }
+
+  /* Adopt a container that already has a working close handler — clicking
+     the × dispatches a click on the existing close button so the existing
+     state-cleanup logic (e.g. clearing compareCtx) is preserved. */
+  function adoptByExistingButton(elId, innerSel, existingBtnId, label) {
+    var el = document.getElementById(elId);
+    var btn = document.getElementById(existingBtnId);
+    if (!el || !btn) return;
+    register(el, {
+      kind: 'div-overlay',
+      innerSel: innerSel,
+      label: label,
+      close: function () { btn.click(); }
+    });
   }
 
   function init() {
     injectStyles();
 
-    /* Native <dialog>s — × top-right. ESC is native to showModal(). */
-    addXToNativeDialog('expert-warning-dialog', '.expert-warning-dialog-inner', 'Close');
-    addXToNativeDialog('guided-mode-dialog', '.guided-form', 'Close');
-    addBackdropClickToDialog('guided-mode-dialog');
+    /* Native <dialog>s — ESC is native via showModal. */
+    register(document.getElementById('expert-warning-dialog'), {
+      kind: 'native-dialog',
+      innerSel: '.expert-warning-dialog-inner',
+      label: 'Close'
+    });
+    register(document.getElementById('guided-mode-dialog'), {
+      kind: 'native-dialog',
+      innerSel: '.guided-form',
+      label: 'Close',
+      addBackdrop: true
+    });
 
-    /* Div overlays — × top-right. ESC + backdrop already wired. */
-    addXToDivOverlay('compare-overlay', '.compare-modal', 'Close compare view');
-    addXToDivOverlay('bk-overlay', '.bk-modal', 'Close backup view');
+    /* Div overlays — delegate to their existing close handlers. */
+    adoptByExistingButton('compare-overlay', '.compare-modal', 'compare-close', 'Close compare view');
+    adoptByExistingButton('bk-overlay', '.bk-modal', 'bk-close', 'Close backup view');
 
-    wireTour();
+    /* Onboarding tour — visible × inside the tooltip, plus ESC. */
+    var tour = document.getElementById('ob-overlay');
+    if (tour) {
+      register(tour, {
+        kind: 'div-overlay',
+        innerSel: '.ob-tooltip',
+        label: 'Close tour',
+        addEsc: true,
+        close: function () {
+          var skip = document.getElementById('ob-skip');
+          if (skip) skip.click();
+          else defaultCloseFor(tour, 'div-overlay')();
+        }
+      });
+    }
+
     wireToast();
     wireGlobalSearchEsc();
     wireMobileNavClose();
 
-    /* Long <details> panels get Collapse buttons. */
     addCollapseToDetails('settingsPanel', '.settings-panel-summary');
     addCollapseToDetails('advanced-options', '.advanced-options-summary');
     addCollapseToDetails('quick-start-card', '.quick-start-summary');
@@ -12467,6 +12467,5 @@
   } else {
     init();
   }
-  /* Safety re-run for late-mounted nodes; all sub-functions are idempotent. */
   setTimeout(init, 600);
 })();
