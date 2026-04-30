@@ -603,85 +603,15 @@
     var s = document.createElement('style');
     s.id = STYLE_ID;
     s.textContent = [
-      /* === Tab bar === */
-      '.pmg-ts-tabs {',
-      '  display: flex;',
-      '  gap: 8px;',
-      '  margin: 0 0 var(--space-4);',
-      '  padding: 6px;',
-      '  border-radius: var(--radius-lg);',
-      '  background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface));',
-      '  border: 1px solid color-mix(in srgb, var(--color-primary) 15%, var(--color-border));',
-      '}',
-      '.pmg-ts-tab {',
-      '  flex: 1 1 50%;',
-      '  display: inline-flex;',
-      '  align-items: center;',
-      '  justify-content: center;',
-      '  gap: 8px;',
-      '  padding: 10px 14px;',
-      '  border-radius: var(--radius-md);',
-      '  background: transparent;',
-      '  border: 1px solid transparent;',
-      '  color: var(--color-text);',
-      '  font: inherit;',
-      '  font-weight: 600;',
-      '  cursor: pointer;',
-      '  transition: background var(--transition-interactive),',
-      '              color var(--transition-interactive),',
-      '              border-color var(--transition-interactive);',
-      '}',
-      '.pmg-ts-tab:hover { background: color-mix(in srgb, var(--color-primary) 8%, transparent); }',
-      '.pmg-ts-tab.is-active {',
-      '  background: var(--color-surface);',
-      '  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));',
-      '  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 14%, transparent);',
-      '  color: var(--color-text);',
-      '}',
-      '.pmg-ts-tab:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 28%, transparent); }',
-      '.pmg-ts-tab-pro {',
-      '  display: inline-flex;',
-      '  align-items: center;',
-      '  padding: 1px 6px;',
-      '  border-radius: 999px;',
-      '  background: var(--color-primary);',
-      '  color: var(--color-on-primary, #fff);',
-      '  font-size: 10px;',
-      '  font-weight: 700;',
-      '  letter-spacing: 0.06em;',
-      '  text-transform: uppercase;',
-      '}',
-
-      /* === Active-tab visibility — when Transform Text is on, hide
-            everything that belongs to the Build A Prompt flow. === */
-      'body.pmg-ts-active #prompt-form,',
-      'body.pmg-ts-active #weekly-goal-pin,',
-      'body.pmg-ts-active #guided-cta-row,',
-      'body.pmg-ts-active #build-cta-guidance,',
-      'body.pmg-ts-active .examples-block,',
-      'body.pmg-ts-active #pmg-text-help-row,',
-      'body.pmg-ts-active #demo-helper,',
-      'body.pmg-ts-active #post-uc-guidance,',
-      'body.pmg-ts-active #result-panel { display: none !important; }',
-      'body.pmg-ts-active .app-shell,',
-      'body.pmg-ts-active .builder-grid,',
-      'body.pmg-ts-active .builder-layout,',
-      'body.pmg-ts-active .builder-shell,',
-      'body.pmg-ts-active .builder-main-grid {',
-      '  grid-template-columns: 1fr !important;',
-      '  max-width: 920px !important;',
-      '  margin-inline: auto !important;',
-      '}',
-      '#pmg-ts-panel { display: none; }',
-      'body.pmg-ts-active #pmg-ts-panel { display: flex; }',
-
-      /* Slot scrolled-to targets just below the sticky topbar so the
-         active tab indicator and first row of content remain visible
-         after smooth-scroll. Topbar height is ~60–72px depending on
-         viewport; 88px leaves a small visual buffer. */
-      '#pmg-ts-tabs, #pmg-ts-panel { scroll-margin-top: 88px; }',
+      /* Wrapper section that the top-nav "Transform Text Pro" link
+         anchors to. Slot the scroll target just below the sticky
+         topbar (~60–72px tall) so the studio header lands in view
+         after the anchor jump. */
+      '#transform-studio { scroll-margin-top: 88px; margin-top: var(--space-8); }',
+      '#pmg-ts-panel { scroll-margin-top: 88px; display: flex; }',
       '@media (max-width: 640px) {',
-      '  #pmg-ts-tabs, #pmg-ts-panel { scroll-margin-top: 76px; }',
+      '  #transform-studio, #pmg-ts-panel { scroll-margin-top: 76px; }',
+      '  #transform-studio { margin-top: var(--space-5); }',
       '}',
 
       /* === The panel === */
@@ -1263,52 +1193,12 @@
       '  .pmg-ts-input-card,',
       '  .pmg-ts-section-card { padding: var(--space-3) var(--space-4); }',
       '  .pmg-ts-mode-card { padding: 12px 14px; }',
-      '  .pmg-ts-tab { padding: 9px 10px; font-size: var(--text-sm); }',
       /* Collapse the 2-column grid back to a single column on small
          screens so each card has full width to read. */
       '  .pmg-ts-modes { grid-template-columns: 1fr; }',
       '}'
     ].join('\n');
     document.head.appendChild(s);
-  }
-
-  /* ------------------------------------------------------------------
-   * Tab UI — built once, mounted at the top of .form-wrap
-   * ------------------------------------------------------------------ */
-  var TABS_ID = 'pmg-ts-tabs';
-
-  function buildTabs() {
-    var existing = document.getElementById(TABS_ID);
-    if (existing) return existing;
-    var nav = document.createElement('div');
-    nav.id = TABS_ID;
-    nav.className = 'pmg-ts-tabs';
-    nav.setAttribute('role', 'tablist');
-    nav.setAttribute('aria-label', 'Prompt builder mode');
-
-    var tabBuild = document.createElement('button');
-    tabBuild.type = 'button';
-    tabBuild.className = 'pmg-ts-tab';
-    tabBuild.dataset.tab = 'build';
-    tabBuild.setAttribute('role', 'tab');
-    tabBuild.setAttribute('aria-controls', 'prompt-form');
-    tabBuild.textContent = 'Build A Prompt';
-
-    var tabXform = document.createElement('button');
-    tabXform.type = 'button';
-    tabXform.className = 'pmg-ts-tab';
-    tabXform.dataset.tab = 'transform';
-    tabXform.setAttribute('role', 'tab');
-    tabXform.setAttribute('aria-controls', 'pmg-ts-panel');
-    tabXform.innerHTML = 'Transform Text <span class="pmg-ts-tab-pro" aria-label="Pro feature">Pro</span>';
-
-    [tabBuild, tabXform].forEach(function (t) {
-      t.addEventListener('click', function () { setActiveTab(t.dataset.tab, { scroll: true }); });
-    });
-
-    nav.appendChild(tabBuild);
-    nav.appendChild(tabXform);
-    return nav;
   }
 
   /* Pick a scroll behavior that respects the user's OS-level
@@ -1330,44 +1220,6 @@
     try {
       el.scrollIntoView({ behavior: behavior, block: 'start' });
     } catch (_) {}
-  }
-
-  function setActiveTab(which, opts) {
-    if (which !== 'build' && which !== 'transform') which = 'build';
-    var shouldScroll = !!(opts && opts.scroll);
-    state.activeTab = which;
-    saveState(state);
-    var nav = document.getElementById(TABS_ID);
-    if (nav) {
-      Array.prototype.forEach.call(nav.querySelectorAll('.pmg-ts-tab'), function (t) {
-        var active = t.dataset.tab === which;
-        t.classList.toggle('is-active', active);
-        t.setAttribute('aria-selected', String(active));
-        t.tabIndex = active ? 0 : -1;
-      });
-    }
-    if (which === 'transform') {
-      document.body.classList.add('pmg-ts-active');
-      /* Smooth-scroll the panel into view on user-initiated switch
-         (mobile especially). Skip when called from mount() to avoid
-         hijacking the user's initial scroll position. */
-      if (shouldScroll) {
-        scrollElementIntoView(document.getElementById('pmg-ts-panel'));
-      }
-    } else {
-      document.body.classList.remove('pmg-ts-active');
-      /* Mirror the transform branch: when the user clicks "Build A
-         Prompt" we must scroll the tab nav (and the form right below
-         it) back into view. Without this, users who clicked Transform
-         Text and got smooth-scrolled down to the panel will click
-         "Build A Prompt", the form will re-appear far above their
-         viewport, and they will conclude the button is broken.
-         Also gated on shouldScroll so initial mount() does not auto-
-         scroll the page on every load. */
-      if (shouldScroll) {
-        scrollElementIntoView(document.getElementById(TABS_ID));
-      }
-    }
   }
 
   /* ------------------------------------------------------------------
@@ -2553,35 +2405,53 @@
   }
 
   /* ------------------------------------------------------------------
-   * Mount: insert tabs and panel into .form-wrap. Retry until both
-   * are present (form-wrap is usually there at first paint, but this
-   * survives any initialization order weirdness).
+   * Mount: insert the studio panel into .form-wrap, wrapped in a
+   * `<section id="transform-studio">` so the top-nav "Transform Text
+   * Pro" link can anchor-jump straight to it. Retry until form-wrap
+   * is present (it usually is at first paint, but this survives any
+   * initialization order weirdness).
    * ------------------------------------------------------------------ */
+  var WRAPPER_ID = 'transform-studio';
+
   function mount() {
-    if (document.getElementById(PANEL_ID) && document.getElementById(TABS_ID)) return true;
+    if (document.getElementById(PANEL_ID)) return true;
     var formWrap = document.querySelector('.form-wrap');
     var form = document.getElementById('prompt-form');
     if (!formWrap || !form) return false;
 
-    var tabs = buildTabs();
-    if (!document.getElementById(TABS_ID)) {
-      formWrap.insertBefore(tabs, formWrap.firstChild);
-    }
-
     var panel = buildPanel();
     if (!document.getElementById(PANEL_ID)) {
-      /* Place AFTER the form so the DOM order is logical even when
-         the panel is hidden. CSS handles the show/hide via body class. */
-      if (form.parentNode) form.parentNode.appendChild(panel);
+      /* Wrap the panel in an anchored section so #transform-studio
+         is a stable scroll target even if the panel itself ever gets
+         re-mounted. Place AFTER the form so the prompt builder
+         remains the first thing the user sees. */
+      var wrapper = document.getElementById(WRAPPER_ID);
+      if (!wrapper) {
+        wrapper = document.createElement('section');
+        wrapper.id = WRAPPER_ID;
+        wrapper.setAttribute('aria-label', 'Transform Text Pro');
+        if (form.parentNode) form.parentNode.appendChild(wrapper);
+      }
+      wrapper.appendChild(panel);
     }
 
     /* Reflect current state into the just-mounted DOM. */
-    setActiveTab(state.activeTab || 'build');
     selectMode(state.selectedMode || MODES[0].id);
     updateCharCount();
     refreshActionButton();
     refreshLockIcons();
     renderOutput();
+
+    /* If the user landed on the page with #transform-studio in the
+       URL (e.g. from another page or a shared link), scroll the
+       panel into view now that it actually exists. The browser's
+       initial anchor jump fired before mount() ran, so it missed. */
+    try {
+      if (location.hash === '#' + WRAPPER_ID || location.hash === '#' + PANEL_ID) {
+        scrollElementIntoView(document.getElementById(WRAPPER_ID));
+      }
+    } catch (_) {}
+
     return true;
   }
 
