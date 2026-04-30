@@ -1880,6 +1880,18 @@
       saveState(state);
       renderOutput();
       setStatus('');
+      /* T19: emit a small completion event so external integrations
+         (e.g. the linear-flow chip row) can react without polling DOM
+         state. Additive only — no transform logic changes. */
+      try {
+        document.dispatchEvent(new CustomEvent('pmg-ts:transform-complete', {
+          detail: {
+            modeId: mode.id,
+            sections: sections,
+            firstSectionBody: (sections && sections[0] && sections[0].body) ? sections[0].body : ''
+          }
+        }));
+      } catch (_) {}
       /* Smooth-scroll the output into view. */
       try {
         var out = document.getElementById('pmg-ts-output');
@@ -1892,6 +1904,11 @@
       } else {
         setStatus('Transformation failed: ' + msg, true);
       }
+      try {
+        document.dispatchEvent(new CustomEvent('pmg-ts:transform-error', {
+          detail: { modeId: mode.id, message: msg }
+        }));
+      } catch (_) {}
     }).then(function () {
       inFlight = false;
       if (btn) {
