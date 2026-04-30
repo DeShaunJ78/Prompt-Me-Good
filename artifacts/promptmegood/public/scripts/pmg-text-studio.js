@@ -1311,6 +1311,27 @@
     return nav;
   }
 
+  /* Pick a scroll behavior that respects the user's OS-level
+     "reduce motion" accessibility preference. Users with that
+     setting enabled (vestibular disorders, migraine triggers,
+     motion sensitivity) get an instant jump instead of a smooth
+     animated scroll. */
+  function prefersReducedMotion() {
+    try {
+      return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function scrollElementIntoView(el) {
+    if (!el || !el.scrollIntoView) return;
+    var behavior = prefersReducedMotion() ? 'auto' : 'smooth';
+    try {
+      el.scrollIntoView({ behavior: behavior, block: 'start' });
+    } catch (_) {}
+  }
+
   function setActiveTab(which, opts) {
     if (which !== 'build' && which !== 'transform') which = 'build';
     var shouldScroll = !!(opts && opts.scroll);
@@ -1331,10 +1352,7 @@
          (mobile especially). Skip when called from mount() to avoid
          hijacking the user's initial scroll position. */
       if (shouldScroll) {
-        try {
-          var p = document.getElementById('pmg-ts-panel');
-          if (p && p.scrollIntoView) p.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } catch (_) {}
+        scrollElementIntoView(document.getElementById('pmg-ts-panel'));
       }
     } else {
       document.body.classList.remove('pmg-ts-active');
@@ -1347,10 +1365,7 @@
          Also gated on shouldScroll so initial mount() does not auto-
          scroll the page on every load. */
       if (shouldScroll) {
-        try {
-          var navEl = document.getElementById(TABS_ID);
-          if (navEl && navEl.scrollIntoView) navEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } catch (_) {}
+        scrollElementIntoView(document.getElementById(TABS_ID));
       }
     }
   }
