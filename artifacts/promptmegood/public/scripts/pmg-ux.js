@@ -4544,8 +4544,12 @@
       '.pmg-help-me-start-helper { display: none !important; }',
       '.pmg-expert-mode-row { display: none !important; }',
 
-      /* ===== Standalone file upload — gone (paperclip lands in Phase B). ===== */
-      '#upload-field { display: none !important; }',
+      /* ===== Standalone file upload — kept hidden ONLY in Photography
+              Suite (image mode). Task #18 restored the upload box inline
+              in Create A Text Prompt; image mode has its own paperclip
+              describe-image control (T39), so the standalone box stays
+              hidden there. ===== */
+      'body.image-mode #upload-field { display: none !important; }',
 
       /* ===== Redundant post-result blocks — gone. ===== */
       '#what-next { display: none !important; }',

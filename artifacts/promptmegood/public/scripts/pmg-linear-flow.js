@@ -47,14 +47,147 @@
       '}',
       'body:not(.image-mode) #prompt-form > * { order: 9; }',
       'body:not(.image-mode) #prompt-form > .field.field-primary { order: 1; }',
-      'body:not(.image-mode) #prompt-form > #pmg-help-me-start-btn { order: 2; }',
-      'body:not(.image-mode) #prompt-form > #pmg-hms-helper { order: 3; }',
-      'body:not(.image-mode) #prompt-form > #upload-field { order: 4; }',
+      /* Task #18: restored upload sits BETWEEN Fix My Prompt (which is
+         the last child of .field.field-primary) and Help Me Start, so the
+         linear column reads:
+           Goal Label → Goal Textarea → Fix My Prompt → Add A File Or
+           Image (Optional) → Help Me Start → More Control. */
+      'body:not(.image-mode) #prompt-form > #upload-field { order: 2; }',
+      'body:not(.image-mode) #prompt-form > #pmg-help-me-start-btn { order: 3; }',
+      'body:not(.image-mode) #prompt-form > #pmg-hms-helper { order: 4; }',
       'body:not(.image-mode) #prompt-form > #post-uc-guidance { order: 5; }',
       'body:not(.image-mode) #prompt-form > #settingsPanel { order: 6; }',
       /* T46 leaves #tour-step-generate empty after moving #generateBtn
          out — push it to the bottom so it can't add a gap above Goal. */
       'body:not(.image-mode) #prompt-form > #tour-step-generate { order: 8; }',
+
+      /* ---------------- Task #18: tighten #upload-field visuals ----------------
+         The premium-polish CSS (index.html) applies generous padding and a
+         dashed teal background to #upload-field. That reads as "huge
+         dropzone" and dominates the column. Below, scoped strictly to text
+         mode, we shrink padding, cap the box height (compact), guarantee
+         no horizontal overflow, truncate long filenames, and ensure the
+         preview row stays inside the column at narrow widths. */
+      'body:not(.image-mode) #upload-field {',
+      '  padding: 12px 14px !important;',
+      '  margin-top: 4px;',
+      '  border-radius: 12px;',
+      '  max-width: 100%;',
+      '  min-width: 0;',
+      '  box-sizing: border-box;',
+      '  overflow: hidden;',
+      '}',
+      'body:not(.image-mode) #upload-field .upload-label {',
+      '  font-size: 13px;',
+      '  font-weight: 600;',
+      '  margin: 0 0 2px;',
+      '  color: var(--color-text-muted, #5f6b75);',
+      '  text-transform: none;',
+      '  letter-spacing: 0;',
+      '}',
+      'body:not(.image-mode) #upload-field .upload-helper {',
+      '  font-size: 12px;',
+      '  margin: 0 0 8px;',
+      '  color: var(--color-text-muted, #5f6b75);',
+      '}',
+      'body:not(.image-mode) #upload-field .upload-controls {',
+      '  gap: 8px;',
+      '  align-items: center;',
+      '}',
+      'body:not(.image-mode) #upload-field .upload-btn {',
+      '  padding: 8px 14px;',
+      '  font-size: 13px;',
+      '  font-weight: 600;',
+      '  min-height: 36px;',
+      '}',
+      'body:not(.image-mode) #upload-field .upload-hint {',
+      '  font-size: 12px;',
+      '  min-width: 0;',
+      '  overflow: hidden;',
+      '  text-overflow: ellipsis;',
+      '  white-space: nowrap;',
+      '}',
+      'body:not(.image-mode) #upload-field .upload-preview {',
+      '  margin-top: 8px;',
+      '  padding: 8px 10px;',
+      '  max-width: 100%;',
+      '  min-width: 0;',
+      '  box-sizing: border-box;',
+      '  overflow: hidden;',
+      '}',
+      /* Image preview thumbnail — slightly smaller for the compact box. */
+      'body:not(.image-mode) #upload-field .upload-preview-img {',
+      '  width: 44px;',
+      '  height: 44px;',
+      '  border-radius: 8px;',
+      '  flex-shrink: 0;',
+      '}',
+      /* Filename truncation safety. */
+      'body:not(.image-mode) #upload-field .upload-preview-name {',
+      '  font-size: 13px;',
+      '  font-weight: 600;',
+      '  min-width: 0;',
+      '  max-width: 100%;',
+      '  overflow: hidden;',
+      '  text-overflow: ellipsis;',
+      '  white-space: nowrap;',
+      '  display: block;',
+      '}',
+      'body:not(.image-mode) #upload-field .upload-preview-size {',
+      '  font-size: 11px;',
+      '}',
+      /* Analyze CTA — keep prominent but not towering. */
+      'body:not(.image-mode) #upload-field .upload-analyze-btn {',
+      '  margin-top: 10px;',
+      '  padding: 10px 16px;',
+      '  font-size: 14px;',
+      '  min-height: 40px;',
+      '}',
+      /* ---------- No-image fallback row ----------
+         When #upload-preview-img is hidden (PDF or load error) the
+         premium-polish grid still reserves the 56px image column,
+         leaving a visible empty gap. Re-collapse the grid to a clean
+         2-column "icon · text · remove" layout and render a neutral
+         file glyph in place of the broken-image icon.
+         The .pmg-no-img class is applied by the analyze IIFE in
+         index.html when the file is non-image or the preview <img>
+         emits an `error` event. */
+      'body:not(.image-mode) #upload-field .upload-preview.pmg-no-img {',
+      '  grid-template-columns: 28px minmax(0, 1fr) auto;',
+      '}',
+      'body:not(.image-mode) #upload-field .upload-preview.pmg-no-img::before {',
+      '  content: "📄";',
+      '  width: 28px;',
+      '  height: 28px;',
+      '  border-radius: 6px;',
+      '  background:',
+      '    linear-gradient(180deg,',
+      '      color-mix(in srgb, var(--color-primary, #0f6e6a) 14%, var(--color-surface, #fff)),',
+      '      color-mix(in srgb, var(--color-primary, #0f6e6a) 6%, var(--color-surface, #fff))',
+      '    );',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary, #0f6e6a) 28%, transparent);',
+      '  display: inline-flex;',
+      '  align-items: center;',
+      '  justify-content: center;',
+      '  flex-shrink: 0;',
+      '  color: var(--color-primary, #0f6e6a);',
+      '  font-size: 14px;',
+      '  line-height: 1;',
+      '  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;',
+      '}',
+      /* Tighten the existing image-preview grid too: when the img is
+         visible, drop the column width from 56px → 44px to match the
+         smaller thumb above. */
+      'body:not(.image-mode) #upload-field .upload-preview:not(.pmg-no-img) {',
+      '  grid-template-columns: 44px minmax(0, 1fr) auto;',
+      '  gap: 10px;',
+      '}',
+      /* Defense against a rogue `src=""` ever rendering: also hide any',
+         broken state via image-rendering / belt-and-braces. */
+      'body:not(.image-mode) #upload-field .upload-preview-img:not([src]),',
+      'body:not(.image-mode) #upload-field .upload-preview-img[src=""] {',
+      '  display: none !important;',
+      '}',
 
       /* Hide pre-generation noise (kbd hint, early-access note). */
       'body:not(.pmg-has-result) #builder .result-wrap > p:has(kbd) { display: none !important; }',

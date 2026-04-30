@@ -3258,8 +3258,8 @@
               </div>
 
               <div class="field upload-field" id="upload-field">
-                <label for="analyze-file" class="upload-label">Upload A File Or Image For Smarter Results</label>
-                <p class="helper upload-helper">Add A File Or Image (Optional)</p>
+                <label for="analyze-file" class="upload-label">Add A File Or Image (Optional)</label>
+                <p class="helper upload-helper">Upload A File Or Image For Smarter Results</p>
                 <div class="upload-controls">
                   <input type="file" id="analyze-file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" class="upload-input" />
                   <label for="analyze-file" class="btn btn-secondary upload-btn" id="upload-btn-label">Choose File</label>
@@ -9211,6 +9211,14 @@ Context:
     statusEl.textContent = msg;
     statusEl.classList.toggle('error', !!isError);
   }
+  /* Task #18: helper that toggles the no-image fallback class on the
+     preview row. When the row is in this state the CSS in
+     pmg-linear-flow.js collapses the empty image column and renders a
+     clean document glyph in its place — no broken-image icon. */
+  function setNoImage(state){
+    if (!preview) return;
+    preview.classList.toggle('pmg-no-img', !!state);
+  }
   function clearFile(){
     input.value = '';
     if (currentObjectUrl){ URL.revokeObjectURL(currentObjectUrl); currentObjectUrl = null; }
@@ -9221,9 +9229,21 @@ Context:
     if (analyzeBtn) analyzeBtn.hidden = true;
     if (hint) hint.textContent = 'Drop A File Here Or Click To Browse';
     if (btnLabel) btnLabel.textContent = 'Choose File';
+    setNoImage(false);
     setStatus('');
   }
   if (removeBtn) removeBtn.addEventListener('click', clearFile);
+
+  /* Task #18: if the preview <img> ever fails to decode (corrupt image,
+     unsupported subtype, etc.) fall back cleanly to the icon row instead
+     of showing the browser's default broken-image glyph. */
+  if (previewImg) {
+    previewImg.addEventListener('error', function(){
+      previewImg.hidden = true;
+      previewImg.removeAttribute('src');
+      setNoImage(true);
+    });
+  }
 
   input.addEventListener('change', function(){
     var file = input.files && input.files[0];
@@ -9249,8 +9269,10 @@ Context:
       if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
       currentObjectUrl = URL.createObjectURL(file);
       if (previewImg){ previewImg.src = currentObjectUrl; previewImg.hidden = false; }
+      setNoImage(false);
     } else {
       if (previewImg){ previewImg.hidden = true; previewImg.removeAttribute('src'); }
+      setNoImage(true);
     }
   });
 
@@ -9337,7 +9359,7 @@ Context:
   <script src="/scripts/pmg-pro.js?v=4" defer></script>
   <script src="/scripts/pmg-money-mode-pro.js?v=1" defer></script>
   <script src="/scripts/pmg-text-studio.js?v=11-no-tabs-no-examples" defer></script>
-  <script src="/scripts/pmg-linear-flow.js?v=1" defer></script>
+  <script src="/scripts/pmg-linear-flow.js?v=2-task18" defer></script>
 
 <script id="pmg-premium-polish-js">
 document.addEventListener("DOMContentLoaded", function () {
