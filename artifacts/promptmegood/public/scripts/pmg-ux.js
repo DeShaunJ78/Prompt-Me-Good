@@ -11161,26 +11161,55 @@
       /* T45: stop the global topbar nav buttons ("Start Here",
          "How It Works", "Examples", "Pricing", "Replay Tour",
          "Expert Mode") from wrapping their text onto two lines on
-         narrow desktop widths (~900–1100px). Keeping them on a
+         narrow desktop widths (~900–1180px). Keeping them on a
          single line is purely a polish call: stacked text inside
-         pill buttons looked tacky. We tighten padding a touch and
-         drop a hair off the font so the row still fits on a 1024px
-         viewport without needing to collapse to the mobile burger. */
+         pill buttons looked tacky.
+         IMPORTANT: the "Expert Mode" and "Replay Tour" buttons in
+         the topbar are JS-injected with ids #pmg-nav-expert-link
+         (built as `<button><span>⚙</span><span>Expert Mode</span></button>`)
+         and #pmg-replay-tour-menu-link respectively — NOT
+         #expert-mode-btn / #replay-tour-btn (those are the
+         in-builder / footer dups). For Expert Mode we also have to
+         apply nowrap to the inner spans so the text "Expert Mode"
+         in the second span stays on one line.
+         The media-query starts at 861px so it does NOT also tighten
+         padding/font inside the open mobile burger menu (which
+         appears at <=860px per .nav-toggle's collapse breakpoint). */
       '.topbar .ghost-link,',
       '.topbar .theme-toggle,',
-      '.topbar #expert-mode-btn,',
-      '.topbar [data-pmg-expert-toggle],',
-      '.topbar #replay-tour-btn { white-space: nowrap !important; }',
-      '@media (min-width: 760px) and (max-width: 1180px) {',
+      '.topbar #pmg-nav-expert-link,',
+      '.topbar #pmg-nav-expert-link span,',
+      '.topbar #pmg-replay-tour-menu-link { white-space: nowrap !important; }',
+      '@media (min-width: 861px) and (max-width: 1180px) {',
       '  .topbar .ghost-link,',
       '  .topbar .theme-toggle,',
-      '  .topbar #expert-mode-btn,',
-      '  .topbar [data-pmg-expert-toggle],',
-      '  .topbar #replay-tour-btn {',
+      '  .topbar #pmg-nav-expert-link,',
+      '  .topbar #pmg-replay-tour-menu-link {',
       '    padding: 0 12px !important;',
       '    font-size: 13px !important;',
       '  }',
       '  .topbar-inner { gap: 8px !important; }',
+      '}',
+      /* T45: kill the dark-teal "ghost" artifact in the upper-left
+         the user reported. Root cause: the sticky .topbar has
+         `background: color-mix(--color-bg 84%, transparent)` plus
+         `backdrop-filter: blur(14px)` — i.e. a frosted-glass bar.
+         When the page scrolls, dark-teal elements (the rounded top
+         of the .builder-intro-speech bubble, the teal "Create A
+         Text Prompt" pill button) pass BEHIND that 16% translucent
+         glass and their blurred silhouette bleeds through as a
+         small dark-teal arc/curve near the top of the viewport.
+         Once those elements scroll fully past the topbar zone the
+         silhouette disappears — exactly matching the "shows at top,
+         vanishes as I scroll down" report. We make the topbar fully
+         opaque (drop the backdrop blur too — it has nothing to blur
+         once we're opaque) so nothing behind it can show through.
+         Use a stronger selector so we beat the inline <style>
+         rules in index.html that defined the original translucency. */
+      'header.topbar[class] {',
+      '  background: var(--color-bg) !important;',
+      '  backdrop-filter: none !important;',
+      '  -webkit-backdrop-filter: none !important;',
       '}'
     ].join('\n');
     document.head.appendChild(s);
