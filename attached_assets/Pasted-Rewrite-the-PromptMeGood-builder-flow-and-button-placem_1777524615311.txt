@@ -1,0 +1,102 @@
+Rewrite the PromptMeGood builder flow and button placement.
+
+Do not change backend logic, AI generation logic, Stripe, Supabase, auth, API routes, or existing feature behavior. This is front-end layout, wording, and UX flow cleanup only.
+
+GOAL:
+The page should guide the user naturally:
+
+1. User types what they want.
+2. User sends that rough text into the repair process.
+3. The repaired/fixed prompt appears in “Your Fixed Prompt.”
+4. Then the user can refine that fixed prompt.
+5. Then the user can export it, copy it, or run it in-house.
+
+CURRENT ISSUE:
+The “Fix My Prompt” button is being treated like it belongs directly under the original prompt text area. That is not the intended flow.
+
+NEW REQUIRED FLOW:
+
+[Describe What You Want Text Area]
+[Send To Repair Button]
+[Your Fixed Prompt Output Box]
+[Fix My Prompt Button]
+[More Control Collapsible Menu]
+[Refine Your Prompt Options]
+[Export / Copy / Run With AI Options]
+
+1. Add A Button Under The Original Text Area
+
+Directly beneath the “Describe What You Want” text area on the “Create A Text Prompt” side, add a new primary button.
+
+Button label options — choose the best one that fits the site tone:
+- “Send To The Repair Station”
+- “Repair My Rough Prompt”
+- “Send My Prompt For Repair”
+- “Start The Prompt Repair”
+- “Clean This Up”
+
+Preferred label:
+“Send To The Repair Station”
+
+This button should visually tell the user:
+“Your rough idea is being sent into the system to get improved.”
+
+It should be full-width or aligned cleanly with the text area.
+
+2. Move “Fix My Prompt” Under The Output Box
+
+The green “Fix My Prompt” button should sit directly beneath the “Your Fixed Prompt” output box, not beneath the original input box.
+
+Reason:
+The user needs to see what populates in the “Your Fixed Prompt” box first. Then they can click “Fix My Prompt” to improve/refine/repair that generated result further.
+
+Required order:
+
+Original text input:
+[Describe What You Want]
+[Send To The Repair Station]
+
+Output area:
+[Your Fixed Prompt]
+[Fix My Prompt]
+[More Control]
+
+Then:
+[Refine Your Prompt]
+
+3. Remove The Empty Leftover Box
+
+Remove any empty card/container that only exists because the button and “More Control” menu used to live there.
+
+There should be no blank box sitting between sections.
+
+4. Keep “More Control” Under “Fix My Prompt”
+
+The “More Control” collapsible should stay directly beneath the green “Fix My Prompt” button.
+
+This makes the advanced options feel connected to fixing/refining the prompt.
+
+5. Preserve Functionality
+
+Do not break:
+- Prompt generation
+- Refinement buttons
+- Copy/export options
+- Run With AI
+- In-house processing
+- Saved history
+- Expert Mode
+- Mobile layout
+- Desktop layout
+
+6. Final Visual Flow Should Feel Like This
+
+User writes rough idea.
+User sends it to repair.
+PromptMeGood creates the fixed prompt.
+User sees the fixed prompt.
+User clicks Fix My Prompt or uses More Control.
+User refines while moving down the page.
+User exports, copies, or runs it in-house.
+
+Make the UX feel intentional, clean, and premium.
