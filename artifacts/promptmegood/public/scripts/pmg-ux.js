@@ -12022,27 +12022,31 @@
     document.head.appendChild(s);
   }
 
-  /* ----- 1. Reorder the form children so More Control comes BEFORE
-            the action row + tip block. -------------------------------- */
+  /* ----- 1. Reorder the form children so the linear flow is preserved
+            and More Control sits OUTSIDE the linear path.
+            Per follow-up user feedback the collapsed "More Control" bar
+            sitting between Upload and Generate read as an "empty box"
+            in the middle of the linear flow. The fix: keep More Control
+            available, but move it to the END of the form so the linear
+            top-to-bottom path is Goal → Upload → Generate, with the
+            optional advanced controls reachable below. -------------- */
   function reorderForm() {
     var form = document.getElementById('prompt-form');
     if (!form) return false;
     var settingsPanel = document.getElementById('settingsPanel');
-    var actionsRow = form.querySelector('.actions-row');
-    var postUc = document.getElementById('post-uc-guidance');
-    if (!settingsPanel || !actionsRow) return false;
+    if (!settingsPanel) return false;
 
-    /* If we have already moved settingsPanel above actionsRow, bail. */
-    if (settingsPanel.dataset.pmgT49Moved === '1') return true;
+    /* If we have already moved settingsPanel to be the last child of
+       the form, bail. */
+    if (settingsPanel.dataset.pmgT49MovedLast === '1' &&
+        form.lastElementChild === settingsPanel) return true;
 
-    /* Move post-UC guidance, then settingsPanel, to sit immediately
-       before the actions row. Order of inserts so the final stacking is:
-       ...upload field → post-UC guidance → settingsPanel → actions row. */
-    if (postUc && postUc.parentNode === form) {
-      form.insertBefore(postUc, actionsRow);
-    }
-    form.insertBefore(settingsPanel, actionsRow);
-    settingsPanel.dataset.pmgT49Moved = '1';
+    /* Append settingsPanel as the last form child so it sits AFTER
+       the action row + tip block, out of the linear input flow. */
+    form.appendChild(settingsPanel);
+    settingsPanel.dataset.pmgT49MovedLast = '1';
+    /* Make sure it starts collapsed — no surprise expanded panel. */
+    if (settingsPanel.open) settingsPanel.open = false;
     return true;
   }
 
@@ -12134,4 +12138,165 @@
   } else {
     init();
   }
+})();
+
+/* =====================================================================
+ * T50 — Two follow-up fixes from user audit:
+ *
+ *   (A) Marketing-section toggle coloring is INCONSISTENT.
+ *       The `.pmg-marketing-section:not(.pmg-mkt-collapsed) .pmg-mkt-toggle-btn`
+ *       rule (defined in T25) paints expanded toggle bars with a green/teal
+ *       primary tint, while the collapsed ones stay white. Result: of the
+ *       four marketing accordion bars (Examples, Guide, Reviews, Compare),
+ *       the ones T47 force-opens (Examples + Compare) read green and the
+ *       collapsed ones (Guide + Reviews) read white. Visually it looks
+ *       broken.
+ *       Fix: override the expanded-state background/border/color back to
+ *       the same neutral surface used for the collapsed state, so all
+ *       four toggle bars match regardless of their expand state. The
+ *       chevron rotation still indicates open vs. closed.
+ *
+ *   (B) Restore the global search as a compact magnifying-glass icon
+ *       instead of removing it. T48 hid the entire .global-search column
+ *       on desktop because the wide 3-row stack was crowding the brand.
+ *       The user wants the search BACK as a clickable icon that expands
+ *       on focus. Implementation:
+ *         - Remove the T48 `display:none` for .global-search on desktop.
+ *         - Compress the column to a 44x44 circular icon-only button by
+ *           hiding the label/helper/results in the collapsed state and
+ *           shrinking the input to a transparent overlay.
+ *         - On :focus-within (or when the user clicks the icon) expand
+ *           to a 280px-wide search field that slides out to the LEFT
+ *           (so it never crashes into the brand on the right).
+ *         - The magnifying-glass icon is injected via a ::before pseudo
+ *           on the collapsed input, so no HTML changes are required.
+ * ===================================================================== */
+(function pmgT50TopbarAndAccordionFixes() {
+  var STYLE_ID = 'pmg-t50-fixes-styles';
+  if (document.getElementById(STYLE_ID)) return;
+  var s = document.createElement('style');
+  s.id = STYLE_ID;
+  s.textContent = [
+    /* -----------------------------------------------------------------
+     * (A) Uniform background for marketing accordion toggle bars
+     *     regardless of expand state. Higher specificity than T25 by
+     *     using attribute selectors on the class.
+     * ----------------------------------------------------------------- */
+    '.pmg-marketing-section[class]:not(.pmg-mkt-collapsed) .pmg-mkt-toggle-btn[class] {',
+    '  background: var(--color-surface) !important;',
+    '  border-color: var(--color-border) !important;',
+    '  color: var(--color-text) !important;',
+    '}',
+    /* Hover/focus may still gently tint, mirroring the collapsed-state
+       hover so the four bars feel like one consistent control. */
+    '.pmg-marketing-section[class]:not(.pmg-mkt-collapsed) .pmg-mkt-toggle-btn[class]:hover,',
+    '.pmg-marketing-section[class]:not(.pmg-mkt-collapsed) .pmg-mkt-toggle-btn[class]:focus-visible {',
+    '  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface)) !important;',
+    '  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border)) !important;',
+    '  color: var(--color-primary) !important;',
+    '}',
+    /* The chevron icon stays primary-colored when expanded so the user
+       still has a clear visual cue for state. */
+    '.pmg-marketing-section[class]:not(.pmg-mkt-collapsed) .pmg-mkt-toggle-icon[class] {',
+    '  color: var(--color-primary) !important;',
+    '}',
+
+    /* -----------------------------------------------------------------
+     * (B) Magnifying-glass collapsed search bar on desktop
+     *     Reverses the T48 display:none on .global-search for >=861px.
+     * ----------------------------------------------------------------- */
+    '@media (min-width: 861px) {',
+    '  .topbar .global-search[class] {',
+    '    display: block !important;',
+    '    position: relative !important;',
+    '    flex: 0 0 44px !important;',
+    '    max-width: none !important;',
+    '    width: 44px !important;',
+    '    height: 44px !important;',
+    '    margin: 0 var(--space-2) 0 0 !important;',
+    '    overflow: visible !important;',
+    '  }',
+    /*   Hide the label, helper, and results dropdown in the collapsed
+         state. They reappear on focus-within (rule below). */
+    '  .topbar .global-search[class] .global-search-label,',
+    '  .topbar .global-search[class] .global-search-helper {',
+    '    display: none !important;',
+    '  }',
+    '  .topbar .global-search[class] .global-results {',
+    '    position: absolute !important;',
+    '    top: 100% !important;',
+    '    right: 0 !important;',
+    '    left: auto !important;',
+    '    width: 320px !important;',
+    '    max-width: 90vw !important;',
+    '    z-index: 30 !important;',
+    '  }',
+    /*   Style the input so collapsed it looks like a circular icon
+         button. The icon is rendered via ::before on the wrapper. */
+    '  .topbar .global-search[class] input {',
+    '    width: 44px !important;',
+    '    height: 44px !important;',
+    '    min-height: 44px !important;',
+    '    padding: 0 0 0 44px !important;',
+    '    border-radius: 50% !important;',
+    '    background: var(--color-surface) !important;',
+    '    border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent) !important;',
+    '    color: transparent !important;',
+    '    cursor: pointer !important;',
+    '    transition: width 220ms ease, border-radius 220ms ease, padding 220ms ease, background 220ms ease, color 220ms ease !important;',
+    '  }',
+    '  .topbar .global-search[class] input::placeholder {',
+    '    color: transparent !important;',
+    '  }',
+    /*   Magnifying glass icon overlay (purely decorative — clicking
+         the input still focuses it). */
+    '  .topbar .global-search[class]::before {',
+    '    content: "" !important;',
+    '    position: absolute !important;',
+    '    top: 50% !important;',
+    '    left: 50% !important;',
+    '    width: 22px !important;',
+    '    height: 22px !important;',
+    '    margin: -11px 0 0 -11px !important;',
+    '    background-image: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23128383\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><circle cx=\'11\' cy=\'11\' r=\'7\'/><line x1=\'21\' y1=\'21\' x2=\'16.65\' y2=\'16.65\'/></svg>") !important;',
+    '    background-repeat: no-repeat !important;',
+    '    background-position: center !important;',
+    '    background-size: 22px 22px !important;',
+    '    pointer-events: none !important;',
+    '    transition: opacity 180ms ease !important;',
+    '    z-index: 1 !important;',
+    '  }',
+    /*   Expanded state: when the input is focused (or hovered while
+         interacting), grow to a real search field positioned to the
+         LEFT so it never overlaps the brand. */
+    '  .topbar .global-search[class]:focus-within {',
+    '    width: 44px !important;',  /* keep the layout slot small */
+    '  }',
+    '  .topbar .global-search[class]:focus-within input {',
+    '    position: absolute !important;',
+    '    top: 0 !important;',
+    '    right: 0 !important;',
+    '    width: 320px !important;',
+    '    max-width: 60vw !important;',
+    '    padding: 10px 14px 10px 40px !important;',
+    '    border-radius: var(--radius-md) !important;',
+    '    background: var(--color-surface) !important;',
+    '    color: var(--color-text) !important;',
+    '    cursor: text !important;',
+    '    box-shadow: 0 4px 18px color-mix(in srgb, var(--color-text) 15%, transparent) !important;',
+    '    z-index: 25 !important;',
+    '  }',
+    '  .topbar .global-search[class]:focus-within input::placeholder {',
+    '    color: var(--color-text-muted) !important;',
+    '  }',
+    /*   Move the icon inside the expanded input to the left edge. */
+    '  .topbar .global-search[class]:focus-within::before {',
+    '    left: auto !important;',
+    '    right: 290px !important;',
+    '    margin-left: 0 !important;',
+    '    z-index: 26 !important;',
+    '  }',
+    '}'
+  ].join('\n');
+  document.head.appendChild(s);
 })();
