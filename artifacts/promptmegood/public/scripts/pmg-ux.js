@@ -11928,3 +11928,210 @@
     init();
   }
 })();
+
+/* =====================================================================
+ * T49 — Linear flow audit + fix for the Create A Text Prompt column
+ *
+ * Audit (current order, top to bottom):
+ *   1. Auto Optimize toggle
+ *   2. Your Goal textarea  ← user types here
+ *   3. Upload A File
+ *   4. Post-UC guidance message
+ *   5. Action row: [Fix My Prompt] [🎨 Generate Image] [Use Demo Values] [🎲 Dice]
+ *   6. Tip block
+ *   7. <details id="settingsPanel"> "More Control"  ← settings hidden BELOW
+ *        the Generate button. User has to scroll past Generate, expand,
+ *        configure, then scroll back up. Linear flow is broken.
+ *      Inside More Control:
+ *        - Category, Tone, Output format, Personality, Max Length, Language
+ *        - "Extra details" textarea (#details)
+ *        - "What Should AI Avoid?" textarea
+ *        - Power Ups
+ *
+ * The Help Me Start guided modal silently writes audience+outcome answers
+ * into #details (the Extra Details textarea inside the collapsed
+ * settingsPanel). The user can't find their text — it's hidden inside a
+ * collapsed accordion below the Generate button.
+ *
+ * Fix:
+ *   1. REORDER the form so More Control sits BEFORE the action row. The
+ *      flow becomes: Goal → Upload → More Control (optional) → Generate.
+ *      That is the linear, top-to-bottom path the user asked for.
+ *   2. REMOVE the "🎨 Generate Image" button from the text-prompt action
+ *      row. There is a dedicated Create An Image Prompt column for image
+ *      work — the cross-column button just clutters the text flow.
+ *   3. AUTO-OPEN the More Control panel (and flash a one-line notice)
+ *      whenever something writes into #details or "rules or limits". That
+ *      surfaces the routed text instead of leaving it stranded inside a
+ *      collapsed accordion.
+ *
+ * Pure DOM reordering + a small mutation observer on #details. No HTML
+ * edits, no other JS edits.
+ * ===================================================================== */
+(function pmgT49TextPromptLinearFlow() {
+  var STYLE_ID = 'pmg-t49-text-flow-styles';
+  if (!document.getElementById(STYLE_ID)) {
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = [
+      /* Hide the orphan image-generate button inside the text column. */
+      '#prompt-form #image-generate-btn,',
+      '#prompt-form .actions-row #image-generate-btn {',
+      '  display: none !important;',
+      '}',
+      /* Visual cue: when More Control was force-opened by a routed
+         write, briefly highlight the summary so the user notices. */
+      '#settingsPanel.pmg-t49-flash > summary {',
+      '  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface)) !important;',
+      '  border-color: color-mix(in srgb, var(--color-primary) 60%, var(--color-border)) !important;',
+      '  transition: background .25s ease, border-color .25s ease;',
+      '}',
+      /* Inline notice banner that appears at the top of the opened
+         settingsPanel telling the user where their answers went. */
+      '#pmg-t49-routed-notice {',
+      '  margin: 0 0 12px 0;',
+      '  padding: 10px 14px;',
+      '  border-radius: 12px;',
+      '  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 40%, var(--color-border));',
+      '  color: var(--color-text);',
+      '  font-size: 14px;',
+      '  line-height: 1.4;',
+      '  display: flex;',
+      '  align-items: center;',
+      '  gap: 10px;',
+      '}',
+      '#pmg-t49-routed-notice .pmg-t49-routed-icon {',
+      '  flex: 0 0 auto;',
+      '  font-size: 18px;',
+      '}',
+      '#pmg-t49-routed-notice .pmg-t49-routed-text {',
+      '  flex: 1 1 auto;',
+      '}',
+      '#pmg-t49-routed-notice .pmg-t49-routed-close {',
+      '  flex: 0 0 auto;',
+      '  background: transparent;',
+      '  border: 0;',
+      '  cursor: pointer;',
+      '  font-size: 18px;',
+      '  color: var(--color-text);',
+      '  opacity: .6;',
+      '}',
+      '#pmg-t49-routed-notice .pmg-t49-routed-close:hover { opacity: 1; }'
+    ].join('\n');
+    document.head.appendChild(s);
+  }
+
+  /* ----- 1. Reorder the form children so More Control comes BEFORE
+            the action row + tip block. -------------------------------- */
+  function reorderForm() {
+    var form = document.getElementById('prompt-form');
+    if (!form) return false;
+    var settingsPanel = document.getElementById('settingsPanel');
+    var actionsRow = form.querySelector('.actions-row');
+    var postUc = document.getElementById('post-uc-guidance');
+    if (!settingsPanel || !actionsRow) return false;
+
+    /* If we have already moved settingsPanel above actionsRow, bail. */
+    if (settingsPanel.dataset.pmgT49Moved === '1') return true;
+
+    /* Move post-UC guidance, then settingsPanel, to sit immediately
+       before the actions row. Order of inserts so the final stacking is:
+       ...upload field → post-UC guidance → settingsPanel → actions row. */
+    if (postUc && postUc.parentNode === form) {
+      form.insertBefore(postUc, actionsRow);
+    }
+    form.insertBefore(settingsPanel, actionsRow);
+    settingsPanel.dataset.pmgT49Moved = '1';
+    return true;
+  }
+
+  /* ----- 2. Auto-open More Control when something writes to #details
+            or #rules-or-limits, and show a one-line notice explaining
+            where the text went. ------------------------------------- */
+  function showRoutedNotice(targetLabel) {
+    var settingsPanel = document.getElementById('settingsPanel');
+    if (!settingsPanel) return;
+    /* Open the panel + flash the summary. */
+    if (!settingsPanel.open) settingsPanel.open = true;
+    settingsPanel.classList.add('pmg-t49-flash');
+    setTimeout(function () { settingsPanel.classList.remove('pmg-t49-flash'); }, 1800);
+
+    /* Insert a one-time notice banner at the top of the settings grid. */
+    var existing = document.getElementById('pmg-t49-routed-notice');
+    if (existing) existing.remove();
+    var grid = settingsPanel.querySelector('.settings-grid') || settingsPanel;
+    var notice = document.createElement('div');
+    notice.id = 'pmg-t49-routed-notice';
+    notice.setAttribute('role', 'status');
+    notice.setAttribute('aria-live', 'polite');
+    notice.innerHTML =
+      '<span class="pmg-t49-routed-icon" aria-hidden="true">📍</span>' +
+      '<span class="pmg-t49-routed-text">Your answers were added to <strong>' +
+        targetLabel +
+      '</strong> below. Edit them here or just tap <strong>Fix My Prompt</strong>.</span>' +
+      '<button type="button" class="pmg-t49-routed-close" aria-label="Dismiss notice">×</button>';
+    grid.insertBefore(notice, grid.firstChild);
+    notice.querySelector('.pmg-t49-routed-close').addEventListener('click', function () {
+      notice.remove();
+    });
+    /* Auto-dismiss after 12s. */
+    setTimeout(function () {
+      if (notice && notice.parentNode) notice.remove();
+    }, 12000);
+
+    /* Scroll the panel into view so the user actually sees the notice. */
+    try { settingsPanel.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+  }
+
+  function watchHiddenWrites() {
+    var details = document.getElementById('details');
+    var rules = document.getElementById('rules or limits');
+    if (!details && !rules) return;
+
+    /* We can't reliably hook .value setters across browsers without
+       breaking other code, so we poll. Cheap (every 600ms) and stops
+       once we've seen the field populated and shown the notice. */
+    var lastDetails = details ? details.value : '';
+    var lastRules = rules ? rules.value : '';
+    var noticeShown = false;
+    var iv = setInterval(function () {
+      if (noticeShown) { clearInterval(iv); return; }
+      var dNow = details ? details.value : '';
+      var rNow = rules ? rules.value : '';
+      var detailsChanged = details && dNow && dNow !== lastDetails &&
+        document.activeElement !== details;
+      var rulesChanged = rules && rNow && rNow !== lastRules &&
+        document.activeElement !== rules;
+      if (detailsChanged || rulesChanged) {
+        var label = detailsChanged ? 'Extra Details' : 'What Should AI Avoid';
+        showRoutedNotice(label);
+        noticeShown = true;
+        clearInterval(iv);
+      }
+      lastDetails = dNow;
+      lastRules = rNow;
+    }, 600);
+    /* Give up after 5 minutes so we don't poll forever. */
+    setTimeout(function () { clearInterval(iv); }, 5 * 60 * 1000);
+  }
+
+  function init() {
+    var ok = reorderForm();
+    if (!ok) {
+      /* Form not in DOM yet — retry until the builder section mounts. */
+      var tries = 0;
+      var retry = setInterval(function () {
+        tries += 1;
+        if (reorderForm() || tries > 40) clearInterval(retry);
+      }, 250);
+    }
+    watchHiddenWrites();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
