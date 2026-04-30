@@ -12221,3 +12221,268 @@
     init();
   }
 })();
+
+/* ====================================================================
+ * T13 — Close-affordance sweep (× / ESC / backdrop / Collapse).
+ *
+ * Site-wide policy: every modal, overlay, dropdown, <details> panel,
+ * toast, and mobile menu must be closable through at least one of:
+ *   - a visible × (or Close / Cancel / Got It / Collapse) control
+ *   - the ESC key
+ *   - clicking the backdrop (where appropriate)
+ *
+ * This IIFE patches the small set of containers that were missing one
+ * or more of those affordances. It does NOT duplicate handlers that
+ * already exist (it checks for prior wiring via a data attribute).
+ * ==================================================================== */
+(function pmgT13CloseAffordanceSweep() {
+  if (window.__pmgT13CloseSweep) return;
+  window.__pmgT13CloseSweep = true;
+
+  function injectStyles() {
+    if (document.getElementById('pmg-t13-close-styles')) return;
+    var css = [
+      '.pmg-x-btn{position:absolute;top:10px;right:12px;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:0;border-radius:8px;color:var(--color-text-muted,#666);font-size:24px;line-height:1;cursor:pointer;padding:0;z-index:5;}',
+      '.pmg-x-btn:hover,.pmg-x-btn:focus-visible{color:var(--color-text,#111);background:rgba(0,0,0,0.06);outline:none;}',
+      '[data-theme="dark"] .pmg-x-btn:hover,[data-theme="dark"] .pmg-x-btn:focus-visible{background:rgba(255,255,255,0.10);}',
+      '.expert-warning-dialog,.guided-dialog,.compare-modal,.bk-modal{position:relative;}',
+      '.toast{padding-right:36px!important;}',
+      '.toast .pmg-toast-x{position:absolute;top:6px;right:8px;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:0;color:inherit;opacity:0.75;font-size:18px;line-height:1;cursor:pointer;border-radius:6px;padding:0;pointer-events:auto;}',
+      '.toast .pmg-toast-x:hover,.toast .pmg-toast-x:focus-visible{opacity:1;background:rgba(0,0,0,0.08);outline:none;}',
+      '[data-theme="dark"] .toast .pmg-toast-x:hover,[data-theme="dark"] .toast .pmg-toast-x:focus-visible{background:rgba(255,255,255,0.15);}',
+      '.pmg-collapse-row{display:flex;justify-content:flex-end;margin:14px 0 4px;}',
+      '.pmg-collapse-btn{appearance:none;background:transparent;border:1px solid var(--color-border,rgba(0,0,0,0.12));color:var(--color-text-muted,#555);font-size:12px;font-weight:600;letter-spacing:.02em;padding:6px 12px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}',
+      '.pmg-collapse-btn:hover,.pmg-collapse-btn:focus-visible{color:var(--color-text,#111);border-color:var(--color-text-muted,#777);outline:none;}',
+      '.pmg-collapse-btn::before{content:"▴";font-size:10px;line-height:1;}',
+      '.pmg-mobile-nav-x{display:none;position:absolute;top:8px;right:10px;width:36px;height:36px;align-items:center;justify-content:center;background:transparent;border:0;border-radius:8px;color:var(--color-text-muted,#555);font-size:26px;line-height:1;cursor:pointer;padding:0;}',
+      '@media (max-width:900px){.top-actions.is-open{position:relative;}.top-actions.is-open .pmg-mobile-nav-x{display:inline-flex;}.top-actions.is-open{padding-top:48px!important;}}',
+      '.pmg-mobile-nav-x:hover,.pmg-mobile-nav-x:focus-visible{color:var(--color-text,#111);background:rgba(0,0,0,0.06);outline:none;}'
+    ].join('');
+    var style = document.createElement('style');
+    style.id = 'pmg-t13-close-styles';
+    style.appendChild(document.createTextNode(css));
+    (document.head || document.documentElement).appendChild(style);
+  }
+
+  function makeXButton(label, onClick) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'pmg-x-btn';
+    b.setAttribute('aria-label', label || 'Close');
+    b.innerHTML = '&times;';
+    b.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      try { onClick(e); } catch (_) {}
+    });
+    return b;
+  }
+
+  /* ---------- Native <dialog> elements: add × top-right ---------- */
+  function addXToNativeDialog(dialogId, innerSel, label) {
+    var dlg = document.getElementById(dialogId);
+    if (!dlg || dlg.dataset.pmgT13X === '1') return;
+    var inner = innerSel ? dlg.querySelector(innerSel) : dlg.firstElementChild;
+    if (!inner) inner = dlg;
+    inner.style.position = inner.style.position || 'relative';
+    var btn = makeXButton(label, function () {
+      try { dlg.close(); } catch (_) { dlg.removeAttribute('open'); }
+    });
+    inner.appendChild(btn);
+    dlg.dataset.pmgT13X = '1';
+  }
+
+  /* Backdrop click for native <dialog> (only if not already wired). */
+  function addBackdropClickToDialog(dialogId) {
+    var dlg = document.getElementById(dialogId);
+    if (!dlg || dlg.dataset.pmgT13Bd === '1') return;
+    dlg.addEventListener('click', function (e) {
+      if (e.target === dlg) {
+        try { dlg.close(); } catch (_) { dlg.removeAttribute('open'); }
+      }
+    });
+    dlg.dataset.pmgT13Bd = '1';
+  }
+
+  /* ---------- Div-overlay modals (compare, bk, ob): add × ---------- */
+  function addXToDivOverlay(overlayId, modalSel, label, closeFn) {
+    var overlay = document.getElementById(overlayId);
+    if (!overlay || overlay.dataset.pmgT13X === '1') return;
+    var modal = modalSel ? overlay.querySelector(modalSel) : overlay.firstElementChild;
+    if (!modal) return;
+    modal.style.position = modal.style.position || 'relative';
+    var btn = makeXButton(label, function () {
+      if (typeof closeFn === 'function') { closeFn(); return; }
+      overlay.classList.remove('is-open');
+      overlay.setAttribute('aria-hidden', 'true');
+    });
+    modal.appendChild(btn);
+    overlay.dataset.pmgT13X = '1';
+  }
+
+  /* ---------- Tour (#ob-overlay): ESC closes the tour ---------- */
+  function wireTourEsc() {
+    var ov = document.getElementById('ob-overlay');
+    if (!ov || ov.dataset.pmgT13Esc === '1') return;
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      if (!ov.classList.contains('is-open')) return;
+      var skip = document.getElementById('ob-skip');
+      if (skip) { try { skip.click(); return; } catch (_) {} }
+      ov.classList.remove('is-open');
+      ov.setAttribute('aria-hidden', 'true');
+    });
+    ov.dataset.pmgT13Esc = '1';
+  }
+
+  /* ---------- Toast: inject × dismiss ---------- */
+  function wireToastClose() {
+    var toast = document.getElementById('toast');
+    if (!toast || toast.dataset.pmgT13X === '1') return;
+    toast.style.position = 'fixed'; // already fixed in CSS, keep layout
+    var x = document.createElement('button');
+    x.type = 'button';
+    x.className = 'pmg-toast-x';
+    x.setAttribute('aria-label', 'Dismiss notification');
+    x.innerHTML = '&times;';
+    x.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      toast.classList.remove('show');
+    });
+    toast.appendChild(x);
+    toast.dataset.pmgT13X = '1';
+
+    /* Re-append × if showToast() rewrites textContent. Observe toast text
+       changes and re-insert the button when it disappears. */
+    var mo = new MutationObserver(function () {
+      if (!toast.contains(x)) toast.appendChild(x);
+    });
+    mo.observe(toast, { childList: true, characterData: true, subtree: true });
+  }
+
+  /* ---------- Global search results: ESC closes dropdown ---------- */
+  function wireGlobalSearchEsc() {
+    var input = document.getElementById('global-search-input');
+    var results = document.getElementById('global-search-results');
+    if (!input || !results || input.dataset.pmgT13Esc === '1') return;
+    function handler(e) {
+      if (e.key !== 'Escape') return;
+      if (!results.classList.contains('is-open')) return;
+      results.classList.remove('is-open');
+      try { input.blur(); } catch (_) {}
+    }
+    input.addEventListener('keydown', handler);
+    /* Also listen at document level so ESC works even if focus has shifted. */
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && results.classList.contains('is-open')) {
+        results.classList.remove('is-open');
+      }
+    });
+    input.dataset.pmgT13Esc = '1';
+  }
+
+  /* ---------- Mobile nav: × button inside #top-actions ---------- */
+  function wireMobileNavClose() {
+    var panel = document.getElementById('top-actions');
+    var toggle = document.getElementById('nav-toggle');
+    if (!panel || !toggle || panel.dataset.pmgT13X === '1') return;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pmg-mobile-nav-x';
+    btn.setAttribute('aria-label', 'Close menu');
+    btn.innerHTML = '&times;';
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      panel.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-label', 'Open menu');
+      try { toggle.focus({ preventScroll: true }); } catch (_) {}
+    });
+    panel.insertBefore(btn, panel.firstChild);
+    panel.dataset.pmgT13X = '1';
+  }
+
+  /* ---------- <details> panels: Collapse button at bottom ---------- */
+  function addCollapseToDetails(id, summarySelector) {
+    var el = document.getElementById(id);
+    if (!el || el.dataset.pmgT13Collapse === '1') return;
+    /* Find the body element that wraps the details body content (skip the summary). */
+    var body = null;
+    var children = el.children;
+    for (var i = 0; i < children.length; i++) {
+      var c = children[i];
+      if (c.tagName && c.tagName.toLowerCase() === 'summary') continue;
+      body = c;
+      break;
+    }
+    if (!body) return;
+    /* Avoid duplicating across nested details: only add to direct body. */
+    var row = document.createElement('div');
+    row.className = 'pmg-collapse-row';
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pmg-collapse-btn';
+    btn.textContent = 'Collapse';
+    btn.setAttribute('aria-controls', id);
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      el.open = false;
+      var summary = el.querySelector(summarySelector || 'summary');
+      if (summary && typeof summary.scrollIntoView === 'function') {
+        var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        try {
+          summary.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'start' });
+        } catch (_) { summary.scrollIntoView(); }
+        try { summary.focus({ preventScroll: true }); } catch (_) {}
+      }
+    });
+    row.appendChild(btn);
+    body.appendChild(row);
+    el.dataset.pmgT13Collapse = '1';
+  }
+
+  function init() {
+    injectStyles();
+
+    /* Native <dialog>s — × top-right. ESC + showModal handles ESC natively. */
+    addXToNativeDialog('expert-warning-dialog', '.expert-warning-dialog-inner', 'Close');
+    addXToNativeDialog('guided-mode-dialog', '.guided-form', 'Close');
+    /* Backdrop click for guided dialog (expert-warning + legal already wired). */
+    addBackdropClickToDialog('guided-mode-dialog');
+
+    /* Div overlays — × top-right (in addition to existing Close buttons). */
+    addXToDivOverlay('compare-overlay', '.compare-modal', 'Close compare view',
+      function () {
+        var ov = document.getElementById('compare-overlay');
+        ov.classList.remove('is-open');
+        ov.setAttribute('aria-hidden', 'true');
+      });
+    addXToDivOverlay('bk-overlay', '.bk-modal', 'Close backup view',
+      function () {
+        var ov = document.getElementById('bk-overlay');
+        ov.classList.remove('is-open');
+        ov.setAttribute('aria-hidden', 'true');
+      });
+
+    wireTourEsc();
+    wireToastClose();
+    wireGlobalSearchEsc();
+    wireMobileNavClose();
+
+    /* Collapse buttons inside expandable panels. */
+    addCollapseToDetails('settingsPanel', '.settings-panel-summary');
+    addCollapseToDetails('advanced-options', '.advanced-options-summary');
+    addCollapseToDetails('quick-start-card', '.quick-start-summary');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+  /* Re-run shortly after to catch elements injected by other deferred scripts. */
+  setTimeout(init, 600);
+})();

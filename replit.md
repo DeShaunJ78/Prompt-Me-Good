@@ -44,6 +44,19 @@ PromptMeGood is a static HTML AI prompt builder (`index.html`) using vanilla Jav
 -   **Top Bar Navigation:** Ensured single-line display of nav buttons at narrow desktop widths.
 -   **Accessibility:** Fully opaque topbar to prevent visual artifacts.
 
+### Universal close affordances (T13)
+
+Every modal, overlay, `<details>` panel, toast, and the mobile nav can be closed via at least one of: × button, ESC, backdrop click, or selection. The `pmgT13CloseAffordanceSweep` IIFE in `pmg-ux.js` injects:
+
+- × top-right on `expert-warning-dialog`, `guided-mode-dialog`, `compare-overlay`, `bk-overlay`
+- Backdrop-click close for `guided-mode-dialog` (others already had it)
+- ESC handler for the onboarding tour (`#ob-overlay`, routes through `#ob-skip`) and the global search results dropdown (`#global-search-results`)
+- × dismiss inside every `.toast` (re-attached automatically when `showToast()` rewrites text content)
+- × inside the mobile nav drawer (`#top-actions`)
+- "Collapse" button at the bottom of `#settingsPanel`, `#advanced-options`, and `#quick-start-card` that closes the `<details>` and smooth-scrolls to its `<summary>` (respecting `prefers-reduced-motion`)
+
+All wiring is idempotent (`dataset.pmgT13X / pmgT13Esc / pmgT13Bd / pmgT13Collapse` markers).
+
 ### Key Features and Technical Implementations
 
 -   **Prompt Builder:** Dynamic form for goal, category, skill level, tone, output format, language, personality, details, guardrails, and max response length, including "Boost Toggles."
