@@ -2032,19 +2032,14 @@
     });
   }
 
-  /* ===== FIX 5: Add "No Signup. Free." sub-label under Fix My Prompt ===== */
+  /* ===== FIX 5: Add "No Signup. Free." sub-label under Fix My Prompt =====
+   * T44: disabled. The "No Signup. Free." text was an orphan visual under the
+   * Fix My Prompt button per the redesigned two-column workspace. The hero
+   * proof bar already conveys "No Signup Needed". Also defensively remove the
+   * element if a previous session injected it. */
   function addGenerateSubLabel() {
-    if (!once('generateSublabel')) return;
-    var btn = document.getElementById('generateBtn');
-    if (!btn) return;
-    if (document.getElementById('pmg-generate-sublabel')) return;
-    var p = document.createElement('p');
-    p.id = 'pmg-generate-sublabel';
-    p.className = 'pmg-generate-sublabel';
-    p.textContent = 'No Signup. Free.';
-    if (btn.parentNode) {
-      btn.parentNode.insertBefore(p, btn.nextSibling);
-    }
+    var existing = document.getElementById('pmg-generate-sublabel');
+    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
   }
 
   /* ===== FIX 5 / FIX 3: Help Me Start — replace verbose blurb with concise helper text ===== */
@@ -2366,41 +2361,34 @@
 
   /* ===================================================================
    * FIX 4: move Help Me Start (#guided-mode-btn) below Fix My Prompt
-   * Also drop the boxed helper and add a plain helper line below it.
+   *
+   * T44: replaced. The new two-column workspace (T28+) already injects a
+   * primary "Help Me Start" callout at the TOP of the Create A Text Prompt
+   * column (#pmg-text-help-row → #pmg-text-help-row-btn), and that button
+   * proxies to #guided-mode-btn for us. Stacking another Help Me Start
+   * BELOW Fix My Prompt is a duplicate. We now hide the original
+   * #guided-cta-row entirely and remove any helper paragraph this function
+   * may have injected in a previous session.
    * =================================================================== */
   function reorderHelpMeStart() {
     if (!once('reorderHelpMeStart')) return;
+    /* Remove any helper paragraph this function injected previously. */
+    var helperLine = document.getElementById('pmg-help-me-start-helper');
+    if (helperLine && helperLine.parentNode) helperLine.parentNode.removeChild(helperLine);
+
+    /* Hide the original Help Me Start CTA row that lives above the form. */
+    var ctaRow = document.getElementById('guided-cta-row');
+    if (ctaRow) ctaRow.style.display = 'none';
+
+    /* The original #guided-mode-btn is still wired and is still clicked
+     * programmatically by the new top-of-column primary button. Keep it
+     * in the DOM but visually hidden so it can't show up next to
+     * Fix My Prompt as a duplicate CTA. */
     var help = document.getElementById('guided-mode-btn');
-    var generate = document.getElementById('generateBtn');
-    if (!help || !generate) return;
-
-    var ctaRow = help.closest('#guided-cta-row, .guided-cta-row');
-
-    /* Strip wrapping CTA row decorations so the button is clean */
-    if (ctaRow) {
-      var strong = ctaRow.querySelector('.guided-cta-text strong, .guided-cta-text h3, .guided-cta-text');
-      if (strong) strong.style.display = 'none';
-      var badge = ctaRow.querySelector('.guided-cta-recommended-badge, .recommended-badge');
-      if (badge) badge.style.display = 'none';
-    }
-
-    /* Move help button to live as a sibling immediately after #generateBtn */
-    if (generate.parentNode && help !== generate.nextElementSibling) {
-      generate.parentNode.insertBefore(help, generate.nextSibling);
-    }
-
-    /* Inline helper below the button (not in a box) */
-    if (!document.getElementById('pmg-help-me-start-helper')) {
-      var p = document.createElement('p');
-      p.id = 'pmg-help-me-start-helper';
-      p.className = 'pmg-help-me-start-helper';
-      p.textContent = 'Answer 4 quick questions and we\'ll fill everything in for you.';
-      if (help.parentNode) help.parentNode.insertBefore(p, help.nextSibling);
-    }
-
-    /* Clean any empty CTA row leftover */
-    if (ctaRow && !ctaRow.querySelector('button, a.btn')) {
-      ctaRow.style.display = 'none';
+    if (help) {
+      help.style.display = 'none';
+      help.setAttribute('aria-hidden', 'true');
+      help.setAttribute('tabindex', '-1');
     }
   }
 
@@ -11079,4 +11067,171 @@
       try { console.warn('[pmg-t42] fetch failed, revoking any stale beta unlock:', err); } catch (_) {}
       failSafeRevoke();
     });
+})();
+
+/* ====================================================================
+ * T44 — Promote "This Week's Focus" pin
+ *
+ * Problem:
+ *   #weekly-goal-pin currently lives inside .form-wrap with the
+ *   `pmg-post-gen` class, which is hidden by:
+ *     - body.pmg-pre-gen .pmg-post-gen { display: none !important; }
+ *     - #weekly-goal-pin { display: none !important; }  (index.html)
+ *   Net effect: the pin is invisible until the user has already
+ *   generated a prompt, so first-time visitors never see it. Users
+ *   reported it as "the button does nothing".
+ *
+ * Fix:
+ *   Move #weekly-goal-pin OUT of .form-wrap and into #builder, placed
+ *   ABOVE the .app-shell (i.e. above the two-column workspace).
+ *   That puts it directly between the Save Your Best Prompts panel
+ *   (which is inserted right before #builder by the account skill)
+ *   and the two side-by-side "Create A Text Prompt" / "Create An
+ *   Image Prompt" columns. We strip pmg-post-gen, add a new marker
+ *   class so we can override the existing hide rules with higher
+ *   specificity, and let the existing index.html handler keep working
+ *   (we only move the DOM node — the click listener stays attached).
+ * ==================================================================== */
+(function pmgT44PromoteWeeklyPin() {
+  var STYLE_ID = 'pmg-t44-weekly-pin-styles';
+  var PROMOTED_CLASS = 'pmg-weekly-pin-promoted';
+  var WRAPPER_ID = 'pmg-weekly-pin-wrap';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = [
+      /* Wrapper centers the pin between the two columns and matches
+         the inner container width used by the rest of #builder. */
+      '#' + WRAPPER_ID + ' {',
+      '  max-width: 720px;',
+      '  margin: 0 auto var(--space-5);',
+      '  padding: 0 var(--space-4);',
+      '}',
+      /* Override the global hide rules. Specificity: (1, 1, 0) for
+         the bare pin selector and (1, 2, 0) when scoped under the
+         wrapper — both beat #weekly-goal-pin (1, 0, 0). */
+      '#weekly-goal-pin.' + PROMOTED_CLASS + ' { display: block !important; }',
+      'body.pmg-pre-gen #weekly-goal-pin.' + PROMOTED_CLASS + ' { display: block !important; }',
+      'body:not(.pmg-has-result) #weekly-goal-pin.' + PROMOTED_CLASS + ' { display: block !important; }',
+      /* Keep image-mode behavior: pin is text-prompt focused. */
+      'body.image-mode #weekly-goal-pin.' + PROMOTED_CLASS + ' { display: none !important; }',
+      /* Visual lift so it reads as its own card, not part of the form. */
+      '#weekly-goal-pin.' + PROMOTED_CLASS + ' {',
+      '  margin: 0;',
+      '  padding: var(--space-4) var(--space-5);',
+      '  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));',
+      '  border: 1px dashed color-mix(in srgb, var(--color-primary) 45%, transparent);',
+      '  border-radius: var(--radius-lg);',
+      '  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-primary) 10%, transparent);',
+      '}',
+      '#weekly-goal-pin.' + PROMOTED_CLASS + ' .weekly-goal-pin-cta {',
+      '  background: var(--color-surface);',
+      '}',
+      '@media (max-width: 760px) {',
+      '  #' + WRAPPER_ID + ' { padding: 0 var(--space-3); margin-bottom: var(--space-4); }',
+      '}',
+      /* Hide the duplicate Help Me Start CTAs that the user reported as
+         confusing. The new top-of-column "Help Me Start" callout
+         (#pmg-text-help-row-btn) already covers this CTA. We must use
+         CSS with !important here because T24 sets
+         `display: inline-flex !important` on #pmg-help-me-start-btn,
+         which would otherwise win over an inline style. */
+      /* Specificity must beat T24, which uses
+         `#pmg-help-me-start-btn.pmg-help-me-start-btn` (0,2,1) with
+         !important. We use the same selector to tie, then add an
+         attribute selector to win the tie at 0,3,1. */
+      '#pmg-help-me-start-btn.pmg-help-me-start-btn[id] { display: none !important; }',
+      '#pmg-hms-helper[id],',
+      '#pmg-generate-sublabel[id],',
+      '#pmg-help-me-start-helper[id] { display: none !important; }'
+    ].join('\n');
+    document.head.appendChild(s);
+  }
+
+  /* Mark the duplicate Help Me Start CTAs as hidden for AT (the CSS
+   * above handles the visual hide). Idempotent — safe to call
+   * repeatedly as other IIFEs late-mount these elements. */
+  function hideDuplicateHelpCTAs() {
+    var ids = [
+      'pmg-help-me-start-btn',
+      'pmg-hms-helper',
+      'pmg-generate-sublabel',
+      'pmg-help-me-start-helper'
+    ];
+    ids.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.setAttribute('aria-hidden', 'true');
+      el.setAttribute('tabindex', '-1');
+    });
+  }
+
+  function promote() {
+    /* Always run dup cleanup — these elements are injected at varying
+       times by other IIFEs and we want them hidden as soon as they
+       appear, even on retries when the pin itself is already promoted. */
+    hideDuplicateHelpCTAs();
+
+    var pin = document.getElementById('weekly-goal-pin');
+    var builder = document.getElementById('builder');
+    if (!pin || !builder) return false;
+
+    /* Already promoted? */
+    if (pin.classList.contains(PROMOTED_CLASS) && pin.parentNode && pin.parentNode.id === WRAPPER_ID) {
+      return true;
+    }
+
+    /* Strip the visibility-gating class so the existing CSS hide
+       rules no longer apply to this element. */
+    pin.classList.remove('pmg-post-gen');
+    pin.classList.add(PROMOTED_CLASS);
+
+    /* Build (or reuse) a wrapper inside #builder, placed before
+       .app-shell so the pin sits ABOVE the two columns. */
+    var wrap = document.getElementById(WRAPPER_ID);
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.id = WRAPPER_ID;
+      var appShell = builder.querySelector('.app-shell');
+      if (appShell) {
+        builder.insertBefore(wrap, appShell);
+      } else {
+        builder.insertBefore(wrap, builder.firstChild);
+      }
+    }
+
+    /* Move the existing pin node into the wrapper. The element
+       reference is preserved, so the click listener attached in
+       index.html (weeklyGoalCta.addEventListener('click', applyWeeklyGoal))
+       remains live. */
+    if (pin.parentNode !== wrap) {
+      wrap.appendChild(pin);
+    }
+    return true;
+  }
+
+  function init() {
+    injectStyles();
+    promote();
+
+    /* Retry for the full window even if promote() succeeded early —
+       the duplicate Help Me Start cleanup needs to keep firing because
+       the T24 yellow pill (#pmg-help-me-start-btn) and its helper
+       (#pmg-hms-helper) are mounted by a separate IIFE that races with
+       this one. Cap at 30 attempts (~12s) so we never spin forever. */
+    var tries = 0;
+    var iv = setInterval(function () {
+      tries++;
+      promote();
+      if (tries >= 30) clearInterval(iv);
+    }, 400);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
