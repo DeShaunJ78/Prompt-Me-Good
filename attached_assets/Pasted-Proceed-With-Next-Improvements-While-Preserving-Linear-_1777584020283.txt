@@ -1,0 +1,258 @@
+Proceed With Next Improvements While Preserving Linear Flow And No-Break Rule.
+
+Create a checkpoint first.
+
+This is a careful UX continuation, not a redesign.
+
+Do not change:
+- Backend/API logic
+- AI provider logic
+- Stripe/payment logic
+- Supabase/auth logic
+- Image generation logic
+- Photography suite behavior
+- Existing function names
+- Existing element IDs unless absolutely required
+
+Preserve all existing features.
+
+━━━━━━━━━━━━━━━━━━━━
+CORE RULE
+━━━━━━━━━━━━━━━━━━━━
+
+The Create A Text Prompt flow must remain linear:
+
+Your Goal
+→ Fix My Prompt
+→ Your Fixed Prompt
+→ Improve Your Prompt (Optional)
+→ Run With AI / Copy Prompt / Refine Prompt
+→ AI Response
+→ Final Actions
+
+No breaks.
+No duplicate tools.
+No competing CTAs.
+No disconnected sections.
+No new feature that is 70% similar to something already present.
+
+━━━━━━━━━━━━━━━━━━━━
+TASK 1: RESTORE OPTIONAL FILE UPLOAD CAREFULLY
+━━━━━━━━━━━━━━━━━━━━
+
+Bring back the existing file/image upload for Create A Text Prompt.
+
+Do not create a new upload tool if one already exists.
+
+If an upload component already exists:
+- Move or reveal the existing component.
+- Do not duplicate it.
+
+Placement:
+Prefer directly below Fix My Prompt unless this creates too much distance from the goal textarea.
+Acceptable order:
+
+Your Goal
+Textarea
+Fix My Prompt
+Add A File Or Image (Optional)
+Help Me Start
+More Control
+
+Alternative acceptable order if better for flow:
+
+Your Goal
+Textarea
+Add A File Or Image (Optional)
+Fix My Prompt
+Help Me Start
+More Control
+
+But never place upload above Your Goal.
+
+Label:
+Add A File Or Image (Optional)
+
+Helper Text:
+Upload A File Or Image For Smarter Results
+
+Behavior:
+- Must remain optional.
+- Must not visually dominate.
+- Must not push Fix My Prompt too far down.
+- Must not interrupt the primary path.
+- Should be collapsed or compact by default if it takes too much vertical space.
+
+UI Requirements:
+- Compact height.
+- No oversized drop zone.
+- No horizontal overflow.
+- Long filenames truncate cleanly.
+- Preview should not break layout.
+- Remove broken image icon states.
+- Preserve upload functionality.
+
+Do Not:
+- Create a new upload section.
+- Add duplicate upload buttons.
+- Place upload above the goal input.
+- Let upload sit between generated prompt and result actions.
+
+━━━━━━━━━━━━━━━━━━━━
+TASK 2: IMPROVE “IMPROVE YOUR PROMPT (OPTIONAL)” GUIDANCE
+━━━━━━━━━━━━━━━━━━━━
+
+Upgrade the existing Improve Your Prompt (Optional) panel after first generation.
+
+Do not create a new Text Studio section.
+Do not duplicate Text Studio Pro.
+Do not add another transformation system.
+
+Default State:
+Collapsed.
+
+Collapsed Copy:
+Want To Make This Even Better?
+
+Collapsed Button:
+Improve This Prompt
+
+Expanded State:
+Add lightweight guidance above the existing transformation tools:
+
+Make This Prompt:
+
+Buttons/Pills:
+More Specific
+More Persuasive
+More Detailed
+Beginner Friendly
+Professional Tone
+
+Behavior:
+- These buttons must trigger existing transformation/refinement logic if available.
+- Do not create a new backend route.
+- Do not create a separate result panel.
+- Update the existing generated prompt in place.
+- Keep the user in the same visual flow.
+- Do not jump the page away from the prompt/result area.
+
+After Any Improvement:
+Show the updated prompt immediately.
+
+Keep these actions adjacent and visible:
+Run With AI
+Copy Prompt
+Refine Prompt
+
+The experience should feel:
+“Oh wow, I can improve this right here.”
+Not:
+“I entered a separate tool.”
+
+━━━━━━━━━━━━━━━━━━━━
+TITLE CASE POLICY
+━━━━━━━━━━━━━━━━━━━━
+
+Apply Title Case to:
+- Buttons
+- Labels
+- Section Titles
+- Card Titles
+- Pills
+- Chips
+- Short Helper Text Attached To Controls
+- Placeholders
+- Status Labels
+- Confirmation Messages Tied To Actions
+
+Required Text:
+Add A File Or Image (Optional)
+Upload A File Or Image For Smarter Results
+Want To Make This Even Better?
+Improve This Prompt
+Make This Prompt
+More Specific
+More Persuasive
+More Detailed
+Beginner Friendly
+Professional Tone
+Run With AI
+Copy Prompt
+Refine Prompt
+
+Do not force Title Case on long body paragraphs, Privacy Policy, Terms, or natural error messages.
+
+━━━━━━━━━━━━━━━━━━━━
+BUTTON PROXIMITY POLICY
+━━━━━━━━━━━━━━━━━━━━
+
+Every action must be adjacent to the thing it controls.
+
+Required adjacency:
+- Goal textarea near Fix My Prompt
+- Upload near goal/prompt flow, not result actions
+- Improve This Prompt near Your Fixed Prompt
+- Run With AI / Copy Prompt / Refine Prompt near generated prompt
+- AI Response actions near AI Response
+- Image actions near generated image
+
+Move or hide any banner, dashboard, pricing note, keyboard shortcut hint, saved prompt block, or promo that interrupts those relationships.
+
+━━━━━━━━━━━━━━━━━━━━
+70% SIMILARITY RULE
+━━━━━━━━━━━━━━━━━━━━
+
+Before adding anything new, audit existing UI.
+
+Do not add anything 70% similar to an existing feature.
+
+If upload already exists, reveal or move it.
+If Text Studio tools already exist, fold them into Improve Your Prompt.
+If refinement tools already exist, use them.
+If prompt quality tools already exist, do not create another scorecard.
+If Help Me Start exists, do not create another helper wizard.
+
+Improve existing features instead of duplicating them.
+
+━━━━━━━━━━━━━━━━━━━━
+QA REQUIRED
+━━━━━━━━━━━━━━━━━━━━
+
+After changes, test:
+
+1. Homepage loads.
+2. No fatal console errors.
+3. Create A Text Prompt remains linear.
+4. Goal textarea is visible by default.
+5. Fix My Prompt remains close to the textarea.
+6. Upload appears but does not disrupt flow.
+7. Upload does not duplicate.
+8. Long filenames do not break layout.
+9. Improve Your Prompt (Optional) is collapsed by default.
+10. Improve This Prompt expands the existing tools.
+11. More Specific / More Persuasive / More Detailed / Beginner Friendly / Professional Tone work using existing logic or safely map to existing refine behavior.
+12. Updated prompt appears in the existing prompt area.
+13. Run With AI / Copy Prompt / Refine Prompt stay adjacent to the prompt.
+14. Mobile layout is clean and linear.
+15. Desktop layout is clean and guided.
+16. Photography suite still works exactly as before.
+17. Upload still works.
+18. Stripe/Supabase/Auth routes still work.
+19. No new duplicate or 70% similar tools were added.
+
+━━━━━━━━━━━━━━━━━━━━
+REPORT BACK
+━━━━━━━━━━━━━━━━━━━━
+
+Report:
+1. Files changed.
+2. Upload placement decision.
+3. Whether upload was moved, revealed, or compacted.
+4. Improve panel enhancements.
+5. How the improvement buttons map to existing logic.
+6. Any duplicate tools avoided.
+7. Any conflicts resolved.
+8. Desktop QA result.
+9. Mobile QA result.
+10. Remaining risks or decisions.

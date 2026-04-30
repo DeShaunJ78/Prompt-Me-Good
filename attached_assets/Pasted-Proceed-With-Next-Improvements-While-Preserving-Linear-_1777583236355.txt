@@ -1,0 +1,121 @@
+Proceed With Next Improvements While Preserving Linear Flow And No-Break Rule.
+
+Create a checkpoint first.
+
+━━━━━━━━━━━━━━━━━━━━
+TASK 1: Restore Optional File Upload (Carefully)
+━━━━━━━━━━━━━━━━━━━━
+
+Bring back the file/image upload for Create A Text Prompt.
+
+Requirements:
+1. Placement:
+   Directly below the goal textarea OR directly below Fix My Prompt.
+
+2. Label:
+   Add A File Or Image (Optional)
+
+3. Helper Text:
+   Upload A File Or Image For Smarter Results
+
+4. Behavior:
+   - Must not interrupt the main flow.
+   - Must not push Fix My Prompt too far down.
+   - Must not dominate visually.
+   - Must remain optional and collapsible if needed.
+
+5. UI:
+   - Compact height (not oversized dropzone)
+   - No horizontal overflow
+   - Long filenames should truncate cleanly
+   - Preview should not break layout
+
+6. Do NOT:
+   - Create a new section
+   - Add duplicate upload tools
+   - Place it above the goal input
+
+━━━━━━━━━━━━━━━━━━━━
+TASK 2: Improve “Improve Your Prompt” Guidance
+━━━━━━━━━━━━━━━━━━━━
+
+Enhance the Improve Your Prompt (Optional) panel AFTER first generation.
+
+Do NOT create a new tool or duplicate features.
+
+Upgrade the existing panel.
+
+Requirements:
+
+1. Default State:
+   Collapsed
+
+2. Collapsed Copy:
+   Want To Make This Even Better?
+
+   Button:
+   Improve This Prompt
+
+3. Expanded State:
+   Add lightweight guidance above existing tools:
+
+   Make This Prompt:
+   [ More Specific ]
+   [ More Persuasive ]
+   [ More Detailed ]
+   [ Beginner Friendly ]
+   [ Professional Tone ]
+
+4. Behavior:
+   - These buttons should trigger existing transformation logic (no new backend)
+   - Must update the existing prompt in place
+   - Must keep user in the same flow (no jumping sections)
+
+5. After Click:
+   - Show updated prompt immediately
+   - Keep actions visible:
+     Run With AI
+     Copy Prompt
+     Refine Prompt
+
+6. Do NOT:
+   - Create a new result panel
+   - Create a separate Text Studio section
+   - Duplicate transformation tools already present
+
+━━━━━━━━━━━━━━━━━━━━
+GLOBAL RULES
+━━━━━━━━━━━━━━━━━━━━
+
+- Maintain strict linear flow (no breaks)
+- Preserve all features
+- Do not add anything 70% similar
+- Maintain Title Case policy
+- Maintain button proximity rule
+- Do not break image/photography suite
+- Do not break backend/API/AI/payment logic
+
+━━━━━━━━━━━━━━━━━━━━
+QA REQUIRED
+━━━━━━━━━━━━━━━━━━━━
+
+Verify:
+
+1. Goal → Fix My Prompt → Result → Improve → Actions → AI Response is uninterrupted
+2. Upload appears but does not disrupt flow
+3. Improve panel feels like a natural next step, not a separate tool
+4. Prompt updates in place
+5. No duplicate tools added
+6. Mobile layout remains clean and linear
+7. Desktop layout remains guided
+8. No console errors
+
+━━━━━━━━━━━━━━━━━━━━
+REPORT BACK
+━━━━━━━━━━━━━━━━━━━━
+
+1. Files changed
+2. Upload placement decision
+3. Improve panel enhancements
+4. Any conflicts resolved
+5. QA results
