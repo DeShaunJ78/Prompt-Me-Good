@@ -1,0 +1,42 @@
+Before adding any new feature, audit the existing site deeply.
+
+Do not add duplicate features, duplicate cards, duplicate buttons, duplicate modes, duplicate helper text, or anything that is 70% similar to an existing feature.
+
+If a requested idea already exists or is mostly already implemented, improve the existing version instead of creating a new one.
+
+Definition:
+70% similar means the same user intent, same workflow, same CTA, same output type, or same feature purpose even if the wording/design is different.
+
+Examples:
+- If Money Mode already creates income ideas, do not add another income idea generator.
+- If What Next already exists, improve its actions instead of adding a second What Next section.
+- If Prompt Strength already exists, upgrade it instead of adding a new scorecard elsewhere.
+- If Best Prompts or Quick Start Ideas already exist, improve them instead of adding a new prompt library.
+- If Help Me Start exists, do not add another guide/start wizard.
+- If More Control or Expert Mode exists, consolidate instead of adding another advanced settings entry.
+
+Primary Rule:
+Improve, consolidate, clarify, reposition, or progressively reveal existing features before adding new UI.
+
+Required Process:
+1. Create a checkpoint.
+2. Audit existing UI and code first.
+3. List any existing feature that is similar to the requested enhancement.
+4. If similarity is 70% or higher, modify the existing feature only.
+5. Do not create a new section/card/button/modal unless no existing feature serves that purpose.
+6. Preserve all backend/API/AI/payment logic.
+7. Preserve all existing IDs and JS functions unless absolutely necessary.
+8. Apply strict Title Case policy.
+9. Apply button proximity policy:
+   Input → Action → Result → Next Action.
+10. QA desktop and mobile.
+
+Goal:
+Make PromptMeGood feel more powerful and polished by reducing friction, improving current features, and avoiding duplicate clutter.
+
+Report Back:
+1. Existing similar features found.
+2. What was improved instead of duplicated.
+3. What was hidden, moved, or consolidated.
+4. Any new UI added and why it was not 70% similar.
+5. QA results.
