@@ -1294,7 +1294,7 @@
     tabXform.innerHTML = 'Transform Text <span class="pmg-ts-tab-pro" aria-label="Pro feature">Pro</span>';
 
     [tabBuild, tabXform].forEach(function (t) {
-      t.addEventListener('click', function () { setActiveTab(t.dataset.tab); });
+      t.addEventListener('click', function () { setActiveTab(t.dataset.tab, { scroll: true }); });
     });
 
     nav.appendChild(tabBuild);
@@ -1302,8 +1302,9 @@
     return nav;
   }
 
-  function setActiveTab(which) {
+  function setActiveTab(which, opts) {
     if (which !== 'build' && which !== 'transform') which = 'build';
+    var shouldScroll = !!(opts && opts.scroll);
     state.activeTab = which;
     saveState(state);
     var nav = document.getElementById(TABS_ID);
@@ -1317,13 +1318,31 @@
     }
     if (which === 'transform') {
       document.body.classList.add('pmg-ts-active');
-      /* Smooth-scroll the panel into view on switch (mobile especially). */
-      try {
-        var p = document.getElementById('pmg-ts-panel');
-        if (p && p.scrollIntoView) p.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } catch (_) {}
+      /* Smooth-scroll the panel into view on user-initiated switch
+         (mobile especially). Skip when called from mount() to avoid
+         hijacking the user's initial scroll position. */
+      if (shouldScroll) {
+        try {
+          var p = document.getElementById('pmg-ts-panel');
+          if (p && p.scrollIntoView) p.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (_) {}
+      }
     } else {
       document.body.classList.remove('pmg-ts-active');
+      /* Mirror the transform branch: when the user clicks "Build A
+         Prompt" we must scroll the tab nav (and the form right below
+         it) back into view. Without this, users who clicked Transform
+         Text and got smooth-scrolled down to the panel will click
+         "Build A Prompt", the form will re-appear far above their
+         viewport, and they will conclude the button is broken.
+         Also gated on shouldScroll so initial mount() does not auto-
+         scroll the page on every load. */
+      if (shouldScroll) {
+        try {
+          var navEl = document.getElementById(TABS_ID);
+          if (navEl && navEl.scrollIntoView) navEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (_) {}
+      }
     }
   }
 
