@@ -66,14 +66,24 @@
     catch (e) { return false; }
   }
 
-  function pmgUnlockPro() {
+  function pmgUnlockPro(opts) {
+    /* opts.silent === true skips the toast. Used by T42 (beta-mode
+       auto-unlock) so the green pill at the bottom of the page does
+       not pop on every reload — beta is already communicated by the
+       persistent banner at the top of the page. The toast still fires
+       on real user-initiated unlocks (Stripe webhook return, manual
+       unlock buttons). */
+    var silent = !!(opts && opts.silent);
     try {
+      var wasAlreadyPro = localStorage.getItem(PRO_KEY) === 'true';
       localStorage.setItem(PRO_KEY, 'true');
       document.body.classList.add('pmg-is-pro');
       document.querySelectorAll('.pmg-pro-feature').forEach(function (el) {
         el.classList.remove('pmg-locked');
       });
-      showProUnlockedToast();
+      /* Suppress toast when silent OR when Pro state didn't actually
+         change (avoids stacking on every periodic re-check). */
+      if (!silent && !wasAlreadyPro) showProUnlockedToast();
     } catch (e) {}
   }
 

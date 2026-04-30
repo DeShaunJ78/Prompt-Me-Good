@@ -10993,7 +10993,10 @@
     try {
       document.body.classList.add('pmg-beta-mode');
       if (typeof window.pmgUnlockPro === 'function') {
-        window.pmgUnlockPro();
+        /* silent: true — beta is already announced by the persistent
+           top banner. No need to fire the green Pro Unlocked toast on
+           every page load. */
+        window.pmgUnlockPro({ silent: true });
       } else {
         document.body.classList.add('pmg-is-pro');
         try { localStorage.setItem(PRO_KEY, 'true'); } catch (_) {}
@@ -12299,4 +12302,187 @@
     '}'
   ].join('\n');
   document.head.appendChild(s);
+})();
+
+/* =====================================================================
+ * T51 — De-orphan the "More Control" panel
+ *
+ * User feedback: even after T49 moved the collapsed <details id="settingsPanel">
+ * to the very bottom of the form, the bare summary bar still reads as a
+ * "lonesome box" because nothing else sits at that height in the column.
+ *
+ * Fix: stop rendering the standalone summary bar entirely. Instead,
+ *   1. Inject an inline "⚙ More Control" toggle chip directly into the
+ *      .actions-row, right next to "Fix My Prompt". The chip mirrors the
+ *      panel's open state (aria-expanded) and toggling it opens/closes
+ *      the panel.
+ *   2. Hide the native <summary> via CSS so the lonesome bar disappears
+ *      from the form regardless of whether the panel is open or closed.
+ *   3. When the panel is closed, hide the entire panel container so the
+ *      bottom of the form ends cleanly at the Tip block. When the panel
+ *      is open, only the body content shows underneath — no orphan bar.
+ *
+ * The auto-open / flash / routed-notice flows from T49 still work because
+ * they call settingsPanel.open = true; we just observe that state and
+ * keep the inline chip in sync.
+ *
+ * Pure additive — no HTML edits, no removal of existing IDs/classes.
+ * ===================================================================== */
+(function pmgT51DeOrphanMoreControl() {
+  if (window.__pmgT51Init) return;
+  window.__pmgT51Init = true;
+
+  var STYLE_ID = 'pmg-t51-more-control-styles';
+  var CHIP_ID  = 'pmg-t51-more-control-chip';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* Hide the native <summary> bar of the settingsPanel — the inline
+         chip in the action row replaces it as the sole open/close UI. */
+      '#prompt-form #settingsPanel > summary {',
+      '  display: none !important;',
+      '}',
+      /* When the panel is closed, hide the whole container so the bottom
+         of the form has no orphan bar. */
+      '#prompt-form #settingsPanel:not([open]) {',
+      '  display: none !important;',
+      '}',
+      /* When the panel is open, give it a bit of breathing room above
+         and a subtle frame so the body content does not look loose. */
+      '#prompt-form #settingsPanel[open] {',
+      '  margin-top: 12px;',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 30%, var(--color-border));',
+      '  border-radius: var(--radius-lg, 14px);',
+      '  background: color-mix(in srgb, var(--color-primary) 4%, var(--color-surface));',
+      '  padding: 14px;',
+      '  animation: pmg-t51-fade-in 220ms ease;',
+      '}',
+      '@keyframes pmg-t51-fade-in {',
+      '  from { opacity: 0; transform: translateY(-4px); }',
+      '  to   { opacity: 1; transform: none; }',
+      '}',
+      /* Inline chip styling — neutral until active. */
+      '#' + CHIP_ID + ' {',
+      '  display: inline-flex;',
+      '  align-items: center;',
+      '  gap: 6px;',
+      '  padding: 8px 14px;',
+      '  border-radius: 999px;',
+      '  border: 1px solid var(--color-border);',
+      '  background: var(--color-surface);',
+      '  color: var(--color-text);',
+      '  font-size: 14px;',
+      '  font-weight: 600;',
+      '  line-height: 1;',
+      '  cursor: pointer;',
+      '  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;',
+      '}',
+      '#' + CHIP_ID + ':hover {',
+      '  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));',
+      '  border-color: color-mix(in srgb, var(--color-primary) 40%, var(--color-border));',
+      '  color: var(--color-primary);',
+      '}',
+      '#' + CHIP_ID + '[aria-expanded="true"] {',
+      '  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));',
+      '  border-color: color-mix(in srgb, var(--color-primary) 55%, var(--color-border));',
+      '  color: var(--color-primary);',
+      '}',
+      '#' + CHIP_ID + ' .pmg-t51-chip-caret {',
+      '  display: inline-block;',
+      '  transition: transform 180ms ease;',
+      '  font-size: 11px;',
+      '  opacity: .8;',
+      '}',
+      '#' + CHIP_ID + '[aria-expanded="true"] .pmg-t51-chip-caret {',
+      '  transform: rotate(180deg);',
+      '}',
+      /* Mobile: chip still fits inline since the actions-row stacks. */
+      '@media (max-width: 640px) {',
+      '  #' + CHIP_ID + ' { width: 100%; justify-content: center; }',
+      '}'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  function findActionsRow() {
+    /* Prefer the actions-row that contains #generateBtn (the text-prompt
+       column) over any other actions-row on the page. */
+    var gen = document.getElementById('generateBtn');
+    if (gen) {
+      var row = gen.closest('.actions-row');
+      if (row) return row;
+    }
+    var form = document.getElementById('prompt-form');
+    if (form) return form.querySelector('.actions-row');
+    return null;
+  }
+
+  function injectChip() {
+    if (document.getElementById(CHIP_ID)) return true;
+    var row = findActionsRow();
+    var panel = document.getElementById('settingsPanel');
+    if (!row || !panel) return false;
+    var chip = document.createElement('button');
+    chip.type = 'button';
+    chip.id = CHIP_ID;
+    chip.className = 'btn btn-clear';
+    chip.setAttribute('aria-controls', 'settingsPanel');
+    chip.setAttribute('aria-expanded', panel.open ? 'true' : 'false');
+    chip.innerHTML =
+      '<span aria-hidden="true">⚙</span>' +
+      '<span class="pmg-t51-chip-label">More Control</span>' +
+      '<span class="pmg-t51-chip-caret" aria-hidden="true">▾</span>';
+    chip.addEventListener('click', function () {
+      var p = document.getElementById('settingsPanel');
+      if (!p) return;
+      p.open = !p.open;
+      chip.setAttribute('aria-expanded', p.open ? 'true' : 'false');
+      if (p.open) {
+        try { p.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
+      }
+    });
+    /* Insert chip right AFTER the primary "Fix My Prompt" button so the
+       proximity rule (Input → Action → adjacent options) holds. */
+    var gen = document.getElementById('generateBtn');
+    if (gen && gen.parentNode === row) {
+      if (gen.nextSibling) row.insertBefore(chip, gen.nextSibling);
+      else row.appendChild(chip);
+    } else {
+      row.appendChild(chip);
+    }
+    /* Move the panel to sit RIGHT AFTER the action row so when it opens
+       the body appears in the natural flow (under the action bar, not at
+       the very bottom of the form past the tip block). */
+    if (row.nextSibling !== panel) {
+      row.parentNode.insertBefore(panel, row.nextSibling);
+    }
+    /* Keep chip aria-expanded in sync if the panel is opened by code
+       elsewhere (e.g. T49's auto-open for routed writes). */
+    var mo = new MutationObserver(function () {
+      chip.setAttribute('aria-expanded', panel.open ? 'true' : 'false');
+    });
+    mo.observe(panel, { attributes: true, attributeFilter: ['open'] });
+    return true;
+  }
+
+  function init() {
+    injectStyles();
+    if (injectChip()) return;
+    /* The form may mount slightly after DCL on slow connections — retry. */
+    var tries = 0;
+    var iv = setInterval(function () {
+      tries += 1;
+      if (injectChip() || tries > 40) clearInterval(iv);
+    }, 250);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
