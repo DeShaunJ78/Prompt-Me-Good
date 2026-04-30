@@ -11132,31 +11132,22 @@
       '@media (max-width: 760px) {',
       '  #' + WRAPPER_ID + ' { padding: 0 var(--space-3); margin-bottom: var(--space-4); }',
       '}',
-      /* Hide the duplicate Help Me Start CTAs that the user reported as
-         confusing. The new top-of-column "Help Me Start" callout
-         (#pmg-text-help-row-btn) already covers this CTA. We must use
-         CSS with !important here because T24 sets
-         `display: inline-flex !important` on #pmg-help-me-start-btn,
-         which would otherwise win over an inline style. */
-      /* Specificity must beat T24, which uses
-         `#pmg-help-me-start-btn.pmg-help-me-start-btn` (0,2,1) with
-         !important. We use the same selector to tie, then add an
-         attribute selector to win the tie at 0,3,1. */
-      '#pmg-help-me-start-btn.pmg-help-me-start-btn[id] { display: none !important; }',
-      '#pmg-hms-helper[id],',
+      /* Hide the legacy orphan elements left over from T3's earlier
+         cleanup of "No Signup. Free." sub-label and the duplicate
+         Help Me Start button reorderHelpMeStart used to inject under
+         Fix My Prompt. The yellow "Most Loved" pill
+         (#pmg-help-me-start-btn) is intentionally NOT touched here. */
       '#pmg-generate-sublabel[id],',
       '#pmg-help-me-start-helper[id] { display: none !important; }'
     ].join('\n');
     document.head.appendChild(s);
   }
 
-  /* Mark the duplicate Help Me Start CTAs as hidden for AT (the CSS
-   * above handles the visual hide). Idempotent — safe to call
-   * repeatedly as other IIFEs late-mount these elements. */
+  /* Mark the legacy orphan elements as hidden for AT (the CSS above
+   * handles the visual hide). Idempotent — safe to call repeatedly
+   * as other IIFEs late-mount these elements. */
   function hideDuplicateHelpCTAs() {
     var ids = [
-      'pmg-help-me-start-btn',
-      'pmg-hms-helper',
       'pmg-generate-sublabel',
       'pmg-help-me-start-helper'
     ];
