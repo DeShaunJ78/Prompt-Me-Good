@@ -143,6 +143,20 @@
       '  font-size: 14px;',
       '  min-height: 40px;',
       '}',
+      /* ---------- Task #20: drag-and-drop dropzone affordance ----------
+         The drop IIFE in index.html toggles .pmg-dragover on #upload-field
+         while a file is being dragged over it. Scoped strictly to text
+         mode so Photography Suite is never affected. The smooth transition
+         lives on the base #upload-field selector so leaving the zone
+         animates back as well as entering it. */
+      'body:not(.image-mode) #upload-field {',
+      '  transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;',
+      '}',
+      'body:not(.image-mode) #upload-field.pmg-dragover {',
+      '  background: color-mix(in srgb, var(--color-primary, #0f6e6a) 14%, var(--color-surface, #fff)) !important;',
+      '  border-color: color-mix(in srgb, var(--color-primary, #0f6e6a) 60%, transparent) !important;',
+      '  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #0f6e6a) 22%, transparent);',
+      '}',
       /* ---------- No-image fallback row ----------
          When #upload-preview-img is hidden (PDF or load error) the
          premium-polish grid still reserves the 56px image column,

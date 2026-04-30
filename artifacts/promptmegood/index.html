@@ -9289,14 +9289,18 @@ Context:
   input.addEventListener('change', function(){
     var file = input.files && input.files[0];
     if (!file) { clearFile(); return; }
+    /* Task #20: clearFile() ends with setStatus(''), so the error
+       message must be set AFTER clearFile() to survive. (This also
+       fixes a latent bug for the click-to-browse path on mobile, where
+       the file picker can return non-accept-matching files.) */
     if (ALLOWED.indexOf(file.type) === -1) {
-      setStatus('Unsupported file type. Use PDF, JPG, or PNG.', true);
       clearFile();
+      setStatus('Unsupported file type. Use PDF, JPG, or PNG.', true);
       return;
     }
     if (file.size > MAX_BYTES) {
-      setStatus('File too large. Maximum is 10MB.', true);
       clearFile();
+      setStatus('File too large. Maximum is 10MB.', true);
       return;
     }
     setStatus('');
@@ -9316,6 +9320,87 @@ Context:
       setNoImage(true);
     }
   });
+
+  /* ===== Task #20: drag-and-drop onto the upload box =====
+     The helper hint already promises "Drop A File Here Or Click To
+     Browse", but only click-to-browse was wired up. Below we add the
+     drag-and-drop affordance on #upload-field. Dropped files are
+     assigned to the same #analyze-file input via a DataTransfer so the
+     existing change handler above runs unchanged (validation, preview,
+     analyze button, status, etc.). The dropzone visual highlight is
+     toggled with the .pmg-dragover class — its CSS lives in
+     pmg-linear-flow.js and is scoped to body:not(.image-mode) so the
+     affordance never appears in Photography Suite. Keyboard /
+     screen-reader users continue to use the click-to-browse path; this
+     handler is purely additive. */
+  (function setupDropzone(){
+    var dropEl = document.getElementById('upload-field');
+    if (!dropEl) return;
+    /* Feature-detect DataTransfer constructor — Safari < 14.1 and a
+       handful of mobile browsers can't programmatically build a
+       FileList. If unsupported, we silently skip drag-and-drop and
+       leave the existing click-to-browse path as the only entry. */
+    var canAssignFiles = (function(){
+      try { var dt = new DataTransfer(); return !!dt && 'items' in dt; }
+      catch(e){ return false; }
+    })();
+    if (!canAssignFiles) return;
+
+    function isTextMode(){
+      return !document.body.classList.contains('image-mode');
+    }
+    function eventHasFiles(e){
+      var dt = e.dataTransfer;
+      if (!dt || !dt.types) return false;
+      for (var i = 0; i < dt.types.length; i++) {
+        if (dt.types[i] === 'Files') return true;
+      }
+      return false;
+    }
+    function setDragActive(active){
+      dropEl.classList.toggle('pmg-dragover', !!active);
+    }
+    ['dragenter','dragover'].forEach(function(evt){
+      dropEl.addEventListener(evt, function(e){
+        if (!isTextMode() || !eventHasFiles(e)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.dataTransfer) {
+          try { e.dataTransfer.dropEffect = 'copy'; } catch(_){}
+        }
+        setDragActive(true);
+      });
+    });
+    dropEl.addEventListener('dragleave', function(e){
+      /* Children of the dropzone fire dragleave whenever the cursor
+         crosses between them; only clear the highlight when leaving
+         the dropzone itself. */
+      if (e.relatedTarget && dropEl.contains(e.relatedTarget)) return;
+      setDragActive(false);
+    });
+    dropEl.addEventListener('dragend', function(){
+      setDragActive(false);
+    });
+    dropEl.addEventListener('drop', function(e){
+      if (!isTextMode() || !eventHasFiles(e)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setDragActive(false);
+      var files = e.dataTransfer && e.dataTransfer.files;
+      if (!files || !files.length) return;
+      try {
+        var dt = new DataTransfer();
+        dt.items.add(files[0]);
+        input.files = dt.files;
+      } catch(err){
+        setStatus('Could not read dropped file. Click Choose File instead.', true);
+        return;
+      }
+      /* Reuse the existing change handler so validation, preview, and
+         the Analyze button all run identically to click-to-browse. */
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  })();
 
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, function(c){
