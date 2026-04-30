@@ -659,6 +659,49 @@
       opacity: 0.4; cursor: not-allowed;
     }
     .actions-row .btn-clear { min-height: 36px; padding: 6px 14px; }
+
+    /* ===== Destructive button =====
+       Visually distinct from neutral .btn-secondary so destructive actions
+       (Clear Prompt, Clear All History, Delete, Archive) read as DANGEROUS
+       at a glance. Uses a muted red border and red text — never a solid red
+       fill, so it doesn't compete with primary-action buttons for visual
+       weight. Hover and focus deepen the red so the danger reading is
+       reinforced. Dark mode uses a softer red-200 for contrast. */
+    .btn.btn-destructive,
+    button.btn-destructive {
+      background: transparent !important;
+      color: #b91c1c !important;
+      border: 1.5px solid color-mix(in srgb, #b91c1c 38%, transparent) !important;
+      box-shadow: none !important;
+    }
+    .btn.btn-destructive:hover,
+    button.btn-destructive:hover {
+      background: color-mix(in srgb, #b91c1c 10%, transparent) !important;
+      border-color: color-mix(in srgb, #b91c1c 65%, transparent) !important;
+      color: #991b1b !important;
+    }
+    .btn.btn-destructive:focus-visible,
+    button.btn-destructive:focus-visible {
+      outline: 2px solid #b91c1c !important;
+      outline-offset: 2px !important;
+      background: color-mix(in srgb, #b91c1c 8%, transparent) !important;
+    }
+    [data-theme="dark"] .btn.btn-destructive,
+    [data-theme="dark"] button.btn-destructive {
+      color: #fca5a5 !important;
+      border-color: color-mix(in srgb, #fca5a5 38%, transparent) !important;
+    }
+    [data-theme="dark"] .btn.btn-destructive:hover,
+    [data-theme="dark"] button.btn-destructive:hover {
+      background: color-mix(in srgb, #fca5a5 10%, transparent) !important;
+      border-color: color-mix(in srgb, #fca5a5 60%, transparent) !important;
+      color: #fecaca !important;
+    }
+    [data-theme="dark"] .btn.btn-destructive:focus-visible,
+    [data-theme="dark"] button.btn-destructive:focus-visible {
+      outline-color: #fca5a5 !important;
+      background: color-mix(in srgb, #fca5a5 10%, transparent) !important;
+    }
     @media (max-width: 600px) {
       .field-label-row { flex-wrap: wrap; row-gap: 4px; }
       .actions-row .btn-clear { width: 100%; }
@@ -3541,7 +3584,7 @@
               <button class="btn btn-primary" type="button" id="copy-btn">Copy Prompt</button>
               <button class="btn btn-secondary" type="button" id="share-btn" hidden>Copy Shareable Link</button>
               <button class="btn btn-secondary" type="button" id="print-btn" title="Print or save as PDF">Print / Save PDF</button>
-              <button class="btn btn-secondary btn-clear" type="button" id="clear-prompt-btn" aria-label="Clear generated prompt">Clear Prompt</button>
+              <button class="btn btn-secondary btn-clear btn-destructive" type="button" id="clear-prompt-btn" aria-label="Clear generated prompt">Clear Prompt</button>
             </div>
 
             <!-- RUN WITH AI — hidden until a prompt is generated -->
@@ -3676,7 +3719,7 @@
                 <button class="btn btn-secondary" type="button" id="import-history">Import</button>
                 <button class="btn btn-secondary" type="button" id="open-backup">🔑 Backup / Restore</button>
                 <button class="btn btn-secondary" type="button" id="collapse-all-history">Collapse All</button>
-                <button class="btn btn-secondary" type="button" id="clear-history">Clear All History</button>
+                <button class="btn btn-secondary btn-destructive" type="button" id="clear-history">Clear All History</button>
                 <input type="file" id="import-history-file" accept="application/json,.json" style="display:none" />
               </div>
             </div>
@@ -4824,7 +4867,7 @@ Context:
           const isPicked = compareSelectMode && compareSelections.indexOf(item.id) !== -1;
           const isExpanded = expandedHistoryIds.has(item.id);
           const collapsedClass = isExpanded ? '' : ' is-collapsed';
-          const toggleLabel = isExpanded ? 'Hide actions' : 'More actions';
+          const toggleLabel = isExpanded ? 'Hide actions ▴' : 'More actions ▾';
           return '<div class="history-item' + (item.favorite ? ' is-favorite' : '') + (item.archived ? ' is-archived' : '') + (isPicked ? ' is-compare-selected' : '') + collapsedClass + '" data-id="' + escapeHtml(item.id) + '"' + dragAttr + '>' +
             '<div class="history-item-head">' +
               '<span class="history-item-goal">' + handleHtml + escapeHtml(item.nickname || item.data.goal || 'Untitled prompt') + (item.nickname ? ' <span style="color: var(--color-text-muted); font-weight: 400;">&middot; ' + escapeHtml(item.data.goal || '') + '</span>' : '') + '</span>' +
@@ -4853,8 +4896,8 @@ Context:
               '<button class="btn btn-secondary" type="button" data-history-action="tags">Edit Tags</button>' +
               '<button class="btn btn-secondary" type="button" data-history-action="note">' + (item.note ? 'Edit Note' : 'Add Note') + '</button>' +
               (item.note ? '<button class="btn btn-secondary" type="button" data-history-action="pin-note">' + (loadPinnedNote().id === item.id ? 'Unpin Note' : 'Pin Note') + '</button>' : '') +
-              '<button class="btn btn-secondary" type="button" data-history-action="archive">' + (item.archived ? 'Unarchive' : 'Archive') + '</button>' +
-              '<button class="btn btn-secondary" type="button" data-history-action="delete">Delete</button>' +
+              '<button class="btn btn-secondary' + (item.archived ? '' : ' btn-destructive') + '" type="button" data-history-action="archive">' + (item.archived ? 'Unarchive' : 'Archive') + '</button>' +
+              '<button class="btn btn-secondary btn-destructive" type="button" data-history-action="delete">Delete</button>' +
             '</div>' +
           '</div>';
         }).join('');
