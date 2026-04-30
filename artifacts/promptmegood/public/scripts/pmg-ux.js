@@ -11137,8 +11137,7 @@
          duplicate outlined "Help Me Start" (#guided-mode-btn) that
          old T15 reorderHelpMeStart() moved next to #generateBtn, the
          T16 "Recommended For Best Results" pill row that paired with
-         it, and the T17 pair wrapper. The yellow "Most Loved" pill
-         (#pmg-help-me-start-btn) is intentionally NOT touched here.
+         it, and the T17 pair wrapper.
          Selectors use [id] to add a touch of specificity so we beat
          any legacy `display: inline-flex !important` left in earlier
          IIFE styles (e.g. T15.2 #guided-mode-btn :important rules). */
@@ -11147,7 +11146,42 @@
       '#guided-mode-btn[id],',
       '#guided-cta-row[id],',
       '#pmg-help-me-start-recommend-row[id],',
-      '#pmg-helpstart-pair-row[id] { display: none !important; }'
+      '#pmg-helpstart-pair-row[id] { display: none !important; }',
+      /* T45: user removed the yellow "★ MOST LOVED" Help Me Start
+         pill (#pmg-help-me-start-btn) above "Fix My Prompt" — it
+         duplicates the much larger Help Me Start callout at the top
+         of the same column. Also hide the Quick Start Ideas chip
+         block (.examples-block with chips "Make money online fast",
+         "Find a winning dropshipping product", "Go viral on TikTok",
+         "Fix a business problem") that renders under More Control —
+         the same ideas already exist in the use-cases carousel and
+         the Need Ideas dice button on the image side. */
+      '#pmg-help-me-start-btn[id],',
+      '.examples-block[aria-label="Example prompts"] { display: none !important; }',
+      /* T45: stop the global topbar nav buttons ("Start Here",
+         "How It Works", "Examples", "Pricing", "Replay Tour",
+         "Expert Mode") from wrapping their text onto two lines on
+         narrow desktop widths (~900–1100px). Keeping them on a
+         single line is purely a polish call: stacked text inside
+         pill buttons looked tacky. We tighten padding a touch and
+         drop a hair off the font so the row still fits on a 1024px
+         viewport without needing to collapse to the mobile burger. */
+      '.topbar .ghost-link,',
+      '.topbar .theme-toggle,',
+      '.topbar #expert-mode-btn,',
+      '.topbar [data-pmg-expert-toggle],',
+      '.topbar #replay-tour-btn { white-space: nowrap !important; }',
+      '@media (min-width: 760px) and (max-width: 1180px) {',
+      '  .topbar .ghost-link,',
+      '  .topbar .theme-toggle,',
+      '  .topbar #expert-mode-btn,',
+      '  .topbar [data-pmg-expert-toggle],',
+      '  .topbar #replay-tour-btn {',
+      '    padding: 0 12px !important;',
+      '    font-size: 13px !important;',
+      '  }',
+      '  .topbar-inner { gap: 8px !important; }',
+      '}'
     ].join('\n');
     document.head.appendChild(s);
   }
