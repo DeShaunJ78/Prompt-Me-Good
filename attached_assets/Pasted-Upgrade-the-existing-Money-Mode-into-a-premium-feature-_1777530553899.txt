@@ -1,0 +1,240 @@
+Upgrade the existing “Money Mode” into a premium feature called “Money Mode Pro” inside the Prompt Builder.
+
+IMPORTANT:
+- This is NOT a full rebuild of the builder.
+- This is an enhancement layer on top of the existing Money Mode system.
+- All new capabilities must live under the PAID subscription tier: “Money Mode Pro.”
+- Existing free “Money Mode” should remain but be limited.
+
+Do NOT break:
+- Prompt generation
+- Fix My Prompt flow
+- Expert Mode
+- Saved history
+- Supabase, Stripe, auth, API routes
+- Mobile + desktop responsiveness
+
+--------------------------------------------------
+CORE GOAL
+--------------------------------------------------
+
+Position Money Mode Pro as:
+
+“The system that helps your prompts perform — not just sound good.”
+
+Free users improve prompts.
+Money Mode Pro users optimize for attention, conversions, and revenue.
+
+--------------------------------------------------
+1. RENAME + TIER STRUCTURE
+--------------------------------------------------
+
+Current:
+Money Mode (free/basic)
+
+New structure:
+
+Money Mode (Free)
+- Basic improvements only
+- Limited toggles (clarity, minor enhancement)
+
+Money Mode Pro (Paid)
+- Full performance optimization system
+- Advanced controls (everything below)
+
+Add subtle “Pro” badges on locked features.
+
+--------------------------------------------------
+2. MONEY MODE PRO PANEL
+--------------------------------------------------
+
+Inside the builder, create or upgrade the Money Mode section into:
+
+Title:
+Money Mode Pro
+
+Subtext:
+“Optimize your prompt for attention, conversions, and real-world results.”
+
+Add a small tooltip (collapsed by default):
+
+“This helps your prompt perform — stronger hooks, clearer messaging, better engagement, and conversion-focused structure.”
+
+--------------------------------------------------
+3. INTENT SELECTOR (REQUIRED - CORE FEATURE)
+--------------------------------------------------
+
+Add dropdown:
+
+“What’s the goal of this prompt?”
+
+Options:
+- Get Views
+- Grow Audience
+- Sell A Product
+- Promote A Service
+- Increase Engagement
+- Educate
+- Entertain
+
+This selection must influence prompt structure behind the scenes.
+
+--------------------------------------------------
+4. STRATEGIC TOGGLES (PRO ONLY)
+--------------------------------------------------
+
+Add these toggles under Money Mode Pro:
+
+[ ] Add Strong Hook 
+“Start with something attention-grabbing”
+
+[ ] Improve Monetization Angle 
+“Focus on revenue, offers, and outcomes”
+
+[ ] Add Clear Call-To-Action 
+“Guide the audience to take action”
+
+[ ] Increase Persuasion 
+“Make it more convincing and benefit-driven”
+
+[ ] Make It More Viral 
+“Improve shareability and emotional pull”
+
+[ ] Simplify & Clarify 
+“Remove fluff and improve clarity”
+
+--------------------------------------------------
+5. PLATFORM OPTIMIZATION
+--------------------------------------------------
+
+Dropdown:
+
+“Optimize for platform”
+
+Options:
+- TikTok
+- Instagram
+- YouTube
+- X (Twitter)
+- Email
+- Sales Page
+
+This affects tone, length, and structure behind the scenes.
+
+--------------------------------------------------
+6. OUTPUT STYLE CONTROL
+--------------------------------------------------
+
+Dropdown:
+
+“How should it come out?”
+
+Options:
+- Short & Punchy
+- Story-Based
+- High Energy
+- Professional
+- Conversational
+- Aggressive Sales
+- Educational
+
+--------------------------------------------------
+7. QUICK PRESET MODES (HIGH IMPACT)
+--------------------------------------------------
+
+Add 3 quick buttons at top of Money Mode Pro:
+
+[ Go Viral ]
+[ Sell Something ]
+[ Grow Audience ]
+
+Behavior:
+
+Go Viral:
+- Hook ON
+- Viral ON
+- Platform = TikTok
+- Style = High Energy
+
+Sell Something:
+- Monetization ON
+- CTA ON
+- Persuasion ON
+- Style = Aggressive Sales
+
+Grow Audience:
+- Hook ON
+- Clarity ON
+- CTA ON
+- Style = Conversational
+
+--------------------------------------------------
+8. SMART PROMPT AUGMENTATION (HIDDEN)
+--------------------------------------------------
+
+When Money Mode Pro is enabled:
+
+Automatically enhance prompts behind the scenes with instructions like:
+
+- Include a strong hook
+- Add a clear CTA
+- Focus on benefits and outcomes
+- Align with selected goal
+- Optimize for selected platform
+
+Do NOT expose this raw logic to the user.
+
+--------------------------------------------------
+9. LIVE FEEDBACK LINE
+--------------------------------------------------
+
+Under the builder, show:
+
+“Optimized for: [Goal] + [Platform] + [Hook / CTA / Persuasion]”
+
+This confirms the system is working.
+
+--------------------------------------------------
+10. FREE VS PRO BEHAVIOR
+--------------------------------------------------
+
+Free Money Mode:
+- Limited toggles (basic clarity only)
+- No intent selector
+- No presets
+- No platform optimization
+
+Money Mode Pro:
+- Full access to all controls
+- Presets enabled
+- Intent + platform + style all active
+
+Locked interactions:
+- Show “Pro” badge
+- Trigger upgrade modal when clicked
+
+--------------------------------------------------
+11. UPGRADE MODAL COPY
+--------------------------------------------------
+
+Title:
+Unlock Money Mode Pro
+
+Body:
+“Free mode improves your prompts.
+Money Mode Pro helps them perform — with hooks, strategy, persuasion, and conversion-focused structure.”
+
+Buttons:
+Primary: Upgrade To Money Mode Pro 
+Secondary: Continue With Free Mode
+
+--------------------------------------------------
+FINAL EXPERIENCE
+--------------------------------------------------
+
+Money Mode Pro should feel like:
+
+“A performance engine that turns my prompt into something that can actually win — attention, engagement, or revenue.”
+
+Not just:
+“extra settings.”
