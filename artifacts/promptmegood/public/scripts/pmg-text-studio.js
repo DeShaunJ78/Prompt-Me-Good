@@ -675,6 +675,15 @@
       '#pmg-ts-panel { display: none; }',
       'body.pmg-ts-active #pmg-ts-panel { display: flex; }',
 
+      /* Slot scrolled-to targets just below the sticky topbar so the
+         active tab indicator and first row of content remain visible
+         after smooth-scroll. Topbar height is ~60–72px depending on
+         viewport; 88px leaves a small visual buffer. */
+      '#pmg-ts-tabs, #pmg-ts-panel { scroll-margin-top: 88px; }',
+      '@media (max-width: 640px) {',
+      '  #pmg-ts-tabs, #pmg-ts-panel { scroll-margin-top: 76px; }',
+      '}',
+
       /* === The panel === */
       '#pmg-ts-panel {',
       '  flex-direction: column;',
