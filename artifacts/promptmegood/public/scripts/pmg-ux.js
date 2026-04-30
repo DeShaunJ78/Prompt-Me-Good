@@ -11692,3 +11692,84 @@
     init();
   }
 })();
+
+/* =====================================================================
+ * T47 — Always reveal marketing sections (use cases, see-the-difference,
+ * how-it-works, why-prompts-fail, early-feedback)
+ *
+ * Background:
+ *   The five marketing sections between the hero and #builder are
+ *   tagged `.desktop-below-fold .pmg-marketing-section`. Older CSS
+ *   hides them on desktop until the v4 reveal logic adds `.revealed`
+ *   when the user scrolls past the bottom of #builder.
+ *
+ *   After T44 promoted the weekly-goal-pin INTO #builder and T46
+ *   relocated the Fix My Prompt + More Control panels into the right
+ *   column, #builder is significantly taller. The scroll-based reveal
+ *   trigger (builder.bottom < viewportHeight * 0.5) rarely fires now
+ *   because users hit the footer before scrolling that far. Net effect
+ *   for the user: the use-case cards and the See The Difference
+ *   examples appeared "removed" — they were still in the DOM but never
+ *   un-hidden.
+ *
+ * Fix:
+ *   Force-reveal them on every page load. They were always meant to
+ *   be visible content; the lazy reveal was a polish optimization
+ *   that no longer pays off after the layout changes.
+ * ===================================================================== */
+(function pmgT47AlwaysRevealMarketingSections() {
+  var STYLE_ID = 'pmg-t47-always-reveal-styles';
+  if (!document.getElementById(STYLE_ID)) {
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = [
+      /* Beat the older `.desktop-below-fold { display: none !important; }`
+         and `@media (min-width: 920px) { .pmg-marketing-section { display:
+         none !important; } }` rules with the same !important + extra
+         specificity via attribute selector. */
+      '.desktop-below-fold[class] { display: block !important; }',
+      '@media (min-width: 920px) {',
+      '  .pmg-marketing-section[class] { display: block !important; }',
+      '}'
+    ].join('\n');
+    document.head.appendChild(s);
+  }
+
+  function reveal() {
+    var ids = ['use-cases', 'why-prompts-fail', 'how-it-works', 'early-feedback', 'see-the-difference'];
+    ids.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.classList.add('revealed');
+      el.classList.add('pmg-marketing-section');
+    });
+    /* T47.2 — also force-expand the two sections the user actually
+       wants to see on initial load: the use-case cards and the See
+       The Difference before/after examples. T25 (the collapse-with-
+       labels IIFE) adds .pmg-mkt-collapsed by default to every
+       .pmg-marketing-section. Strip it from these two so the cards
+       render expanded. The other three sections (why-prompts-fail,
+       how-it-works, early-feedback) stay collapsed-with-label so the
+       page does not become absurdly long. */
+    var expandIds = ['use-cases', 'see-the-difference'];
+    expandIds.forEach(function (id) {
+      var sec = document.getElementById(id);
+      if (!sec) return;
+      sec.classList.remove('pmg-mkt-collapsed');
+      var btn = sec.querySelector('.pmg-mkt-toggle-btn');
+      if (btn) btn.setAttribute('aria-expanded', 'true');
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', reveal);
+  } else {
+    reveal();
+  }
+  /* Re-run a few times because aliasMarketingSections() (FIX 4 in the
+     v5 init block earlier in this file) tags the elements on its own
+     schedule. Idempotent — safe to run repeatedly. */
+  setTimeout(reveal, 500);
+  setTimeout(reveal, 1500);
+  setTimeout(reveal, 4000);
+})();
