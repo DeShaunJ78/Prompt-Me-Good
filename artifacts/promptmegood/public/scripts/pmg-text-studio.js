@@ -1109,12 +1109,36 @@
     var uploadBtn = document.createElement('label');
     uploadBtn.className = 'pmg-ts-upload-btn';
     uploadBtn.htmlFor = 'pmg-ts-file';
-    uploadBtn.innerHTML = '<span aria-hidden="true">📄</span> Upload .txt File';
+    uploadBtn.innerHTML = '<span aria-hidden="true">📄</span> Upload File';
+    uploadBtn.title = 'Upload a text file: .txt, .md, .rtf, .csv, .json, .html, .log, .srt, .vtt, .xml, .yaml, and more';
 
     var fileInput = document.createElement('input');
     fileInput.id = 'pmg-ts-file';
     fileInput.type = 'file';
-    fileInput.accept = '.txt,text/plain,.md,text/markdown';
+    /* Accept a broad set of TEXT-based formats. We read everything as
+       UTF-8 text via FileReader.readAsText, then sanity-check the
+       result so binary formats (PDF, DOCX, images) can't dump
+       gibberish into the textarea. */
+    fileInput.accept = [
+      '.txt', 'text/plain',
+      '.md', '.markdown', 'text/markdown',
+      '.rtf', 'application/rtf', 'text/rtf',
+      '.csv', 'text/csv',
+      '.tsv', 'text/tab-separated-values',
+      '.json', 'application/json',
+      '.html', '.htm', 'text/html',
+      '.xml', 'application/xml', 'text/xml',
+      '.yaml', '.yml', 'application/x-yaml',
+      '.log',
+      '.srt', '.vtt', 'text/vtt',
+      '.tex',
+      '.css', 'text/css',
+      '.js', 'text/javascript', 'application/javascript',
+      '.ts',
+      '.py', 'text/x-python',
+      '.sql',
+      '.ini', '.conf', '.env'
+    ].join(',');
     fileInput.style.display = 'none';
     fileInput.addEventListener('change', handleFileUpload);
 
@@ -1246,21 +1270,159 @@
   }
 
   /* ------------------------------------------------------------------
-   * File upload handler — only accepts text-like files
+   * File upload handler
+   * Accepts a wide range of TEXT-based formats (txt, md, rtf, csv,
+   * tsv, json, html, xml, yaml, log, srt/vtt, source code, etc).
+   * Reads as UTF-8 text, sanity-checks for binary content, and gently
+   * rejects binary formats (PDF / DOCX / images) with a hint to use
+   * the existing PDF analyzer or paste manually.
    * ------------------------------------------------------------------ */
+  var MAX_FILE_BYTES = 1024 * 1024;        /* 1 MB cap on uploads. */
+  var BINARY_EXTS = /\.(pdf|docx?|xlsx?|pptx?|odt|ods|odp|pages|numbers|key|jpe?g|png|gif|webp|bmp|tiff?|svg|mp3|mp4|mov|avi|webm|wav|ogg|zip|rar|7z|gz|tar|exe|dmg|bin)$/i;
+
+  /* RTF stripper: removes control words, groups, and unicode escapes
+     so we get plain text out of a .rtf file. Not a full RTF parser —
+     handles the common cases produced by TextEdit / Word "Save As RTF". */
+  function stripRtf(rtf) {
+    if (!rtf) return '';
+    var s = String(rtf);
+    /* Drop common RTF metadata groups (font/color/style tables, info,
+       embedded pictures, etc.) entirely — they only contain machine
+       data and would leak font names / hex colors into the output.
+       We do this with a balanced-brace walker so nested groups are
+       handled correctly. */
+    var META = /\\(fonttbl|colortbl|stylesheet|info|generator|pict|object|datastore|themedata|colorschememapping|latentstyles|listtable|listoverridetable|rsidtbl|filetbl|revtbl|xmlnstbl)\b/i;
+    var out = '';
+    var i = 0;
+    while (i < s.length) {
+      var ch = s.charAt(i);
+      if (ch === '{') {
+        /* Find matching close brace for this group. */
+        var depth = 1;
+        var start = i;
+        var j = i + 1;
+        while (j < s.length && depth > 0) {
+          var cj = s.charAt(j);
+          if (cj === '\\' && j + 1 < s.length) { j += 2; continue; }
+          if (cj === '{') depth++;
+          else if (cj === '}') depth--;
+          j++;
+        }
+        var group = s.substring(start, j);
+        /* Drop the group if it's an ignorable destination (\*\xxx)
+           or matches a known metadata group within the first ~120 chars. */
+        var head = group.substring(0, 120);
+        if (/^\{\\\*/.test(head) || META.test(head)) {
+          /* skip */
+        } else {
+          out += group;
+        }
+        i = j;
+        continue;
+      }
+      out += ch;
+      i++;
+    }
+    s = out;
+    s = s.replace(/\\par[d]?\b/g, '\n');
+    s = s.replace(/\\line\b/g, '\n');
+    s = s.replace(/\\tab\b/g, '\t');
+    s = s.replace(/\\'([0-9a-fA-F]{2})/g, function (_, hex) {
+      try { return String.fromCharCode(parseInt(hex, 16)); } catch (_) { return ''; }
+    });
+    s = s.replace(/\\u(-?\d+)\??/g, function (_, code) {
+      try {
+        var n = parseInt(code, 10);
+        if (n < 0) n += 65536;
+        return String.fromCharCode(n);
+      } catch (_) { return ''; }
+    });
+    s = s.replace(/\\[a-zA-Z]+-?\d* ?/g, '');     /* control words */
+    s = s.replace(/\\[*]?[\\{}]/g, '');           /* escaped specials */
+    s = s.replace(/[{}]/g, '');                    /* group braces */
+    s = s.replace(/\r/g, '');
+    s = s.replace(/\n{3,}/g, '\n\n');
+    return s.trim();
+  }
+
+  /* Heuristic: a string is "probably binary" if more than ~5% of its
+     first 4 KB is null bytes or other non-text control characters. */
+  function looksBinary(text) {
+    if (!text) return false;
+    var sample = text.slice(0, 4096);
+    if (sample.indexOf('\u0000') !== -1) return true;
+    var ctrl = 0;
+    for (var i = 0; i < sample.length; i++) {
+      var c = sample.charCodeAt(i);
+      /* Allow tab (9), LF (10), CR (13), and >=32 printable. */
+      if (c === 9 || c === 10 || c === 13) continue;
+      if (c < 32) ctrl++;
+      if (c === 0xFFFD) ctrl++;                  /* replacement char */
+    }
+    return (ctrl / Math.max(sample.length, 1)) > 0.05;
+  }
+
+  function prettyBytes(n) {
+    if (n < 1024) return n + ' B';
+    if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+    return (n / (1024 * 1024)).toFixed(2) + ' MB';
+  }
+
   function handleFileUpload(e) {
     var input = e.target;
     var file = input.files && input.files[0];
     if (!file) return;
-    /* 256 KB cap on .txt to keep things sane. */
-    if (file.size > 256 * 1024) {
-      setStatus('That file is too big — keep it under 256 KB.', true);
+
+    var name = file.name || 'file';
+    var lower = name.toLowerCase();
+
+    /* Reject obvious binary formats up-front with a friendly hint. */
+    if (BINARY_EXTS.test(lower)) {
+      setStatus(
+        'That format is not supported here — Text Studio Pro reads text files. ' +
+        'For PDFs and images, use the file analyzer in Build A Prompt instead, ' +
+        'or paste the text directly.',
+        true
+      );
       input.value = '';
       return;
     }
+
+    if (file.size > MAX_FILE_BYTES) {
+      setStatus('That file is too big (' + prettyBytes(file.size) + ') — keep it under 1 MB.', true);
+      input.value = '';
+      return;
+    }
+    if (file.size === 0) {
+      setStatus('That file is empty.', true);
+      input.value = '';
+      return;
+    }
+
     var reader = new FileReader();
     reader.onload = function () {
-      var text = String(reader.result || '').slice(0, MAX_TEXT_CHARS);
+      var raw = String(reader.result || '');
+
+      /* RTF gets stripped to plain text. */
+      var isRtf = /\.rtf$/i.test(lower) || /^application\/rtf|^text\/rtf/i.test(file.type || '');
+      var text = isRtf ? stripRtf(raw) : raw;
+
+      /* Binary safety net — even after RTF stripping, if the bytes
+         look binary we bail out rather than dump gibberish. */
+      if (looksBinary(text)) {
+        setStatus(
+          'That file looks binary, not text. Try a .txt, .md, .csv, .json, .html, .rtf, ' +
+          '.srt or other plain-text format — or paste the text directly.',
+          true
+        );
+        input.value = '';
+        return;
+      }
+
+      /* Truncate to our character cap and load. */
+      var truncated = text.length > MAX_TEXT_CHARS;
+      text = text.slice(0, MAX_TEXT_CHARS);
+
       var ta = document.getElementById('pmg-ts-textarea');
       if (ta) {
         ta.value = text;
@@ -1270,7 +1432,11 @@
         updateCharCount();
         refreshActionButton();
         ta.focus();
-        setStatus('Loaded "' + file.name + '" — ' + text.length + ' characters.', false);
+        var msg = 'Loaded "' + name + '" (' + prettyBytes(file.size) + ') — ' +
+                  text.length + ' characters' +
+                  (isRtf ? ' (RTF formatting stripped)' : '') +
+                  (truncated ? ' — trimmed to ' + MAX_TEXT_CHARS + ' chars to keep things fast' : '') + '.';
+        setStatus(msg, false);
       }
       input.value = '';
     };
@@ -1278,6 +1444,8 @@
       setStatus('Could not read that file.', true);
       input.value = '';
     };
+    /* readAsText defaults to UTF-8 which covers the vast majority of
+       text files we'll see. */
     reader.readAsText(file);
   }
 
