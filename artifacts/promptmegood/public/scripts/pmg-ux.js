@@ -444,20 +444,6 @@
       '  .hero-actions #hero-build-cta { padding: 16px 28px; box-shadow: 0 10px 24px color-mix(in srgb, var(--color-primary) 30%, transparent); }',
       '  .hero-actions #hero-build-cta .cta-title { font-size: 17px; letter-spacing: 0.01em; }',
       '  .hero-actions #hero-build-cta .cta-sub { font-size: 13px; }',
-      '  .hero-actions #hero-usecases-cta { padding: 12px 22px; background: transparent; border: 1.5px solid color-mix(in srgb, var(--color-text) 22%, transparent); }',
-      '}',
-
-      /* Fix 2 — mobile use-cases reorder + scroll hint */
-      '@media (max-width: 600px) {',
-      '  .popular-uses-head-row { flex-direction: column; align-items: stretch; gap: 10px; text-align: center; }',
-      '  .popular-uses-head-row h2 { order: 1; }',
-      '  .popular-uses-head-row .usecases-dice-btn { order: 2; align-self: center; }',
-      '  .popular-uses-head > p { display: none; }',
-      '  .use-cases-helper-tip { display: none !important; }',
-      '  #' + SCROLL_HINT_ID + ' { display: block; text-align: center; font-size: 12px; font-weight: 600; color: color-mix(in srgb, var(--color-text) 65%, transparent); margin: 6px 0 10px; letter-spacing: 0.02em; }',
-      '}',
-      '@media (min-width: 601px) {',
-      '  #' + SCROLL_HINT_ID + ' { display: none; }',
       '}',
 
       /* Fix 3 — mobile sticky bar collapsed tab */
@@ -655,17 +641,8 @@
 
   /* ---------- existing helpers ---------- */
   function injectUsecasesScrollHint() {
-    if (document.getElementById(SCROLL_HINT_ID)) return;
-    var section = document.getElementById('use-cases');
-    if (!section) return;
-    var head = section.querySelector('.popular-uses-head');
-    var grid = section.querySelector('.popular-uses-grid');
-    if (!head || !grid) return;
-    var hint = document.createElement('p');
-    hint.id = SCROLL_HINT_ID;
-    hint.setAttribute('aria-hidden', 'true');
-    hint.textContent = 'Scroll Left Or Right To See More \u2192';
-    head.parentNode.insertBefore(hint, grid);
+    /* Use-cases section was removed; this helper is a no-op. */
+    return;
   }
 
   function setupStickyCollapse() {
@@ -1588,10 +1565,8 @@
 
   function setupQuickStartGate() {
     var card = document.getElementById('quick-start-card');
-    var examplesBlock = document.querySelector('.examples-block');
     var targets = [];
     if (card) targets.push(card);
-    if (examplesBlock) targets.push(examplesBlock);
     if (!targets.length) return;
     function update() {
       var gen = readHasGenerated();
@@ -1711,7 +1686,7 @@
   }
 
   function setupAnchorRevealOverride() {
-    var hiddenIds = ['use-cases', 'why-prompts-fail', 'how-it-works', 'early-feedback', 'see-the-difference'];
+    var hiddenIds = ['why-prompts-fail', 'how-it-works', 'early-feedback', 'see-the-difference'];
     function maybeRevealForHash(hash) {
       if (!hash) return;
       var id = hash.replace(/^#/, '');
@@ -1939,8 +1914,6 @@
         '[role="button"]',
         'a.btn',
         'a[href]',
-        '.popular-use-card',
-        '.example-chip',
         '.mode-switch-btn',
         '.accent-swatch',
         'summary',
@@ -1970,7 +1943,7 @@
       document.addEventListener('click', function (ev) {
         var t = ev.target;
         if (!t || !t.closest) return;
-        var clickable = t.closest('button, a[href], a.btn, [role="button"], .popular-use-card, .mode-switch-btn, .accent-swatch, .pmg-wn-card, summary, .pill, .badge');
+        var clickable = t.closest('button, a[href], a.btn, [role="button"], .mode-switch-btn, .accent-swatch, .pmg-wn-card, summary, .pill, .badge');
         if (!clickable) return;
         if (clickable.matches && clickable.matches(TEXT_INPUT_SELECTOR)) return;
         var forAttr = clickable.getAttribute && clickable.getAttribute('for');
@@ -2024,7 +1997,7 @@
      * the v4 above-the-fold reveal logic is now the single canonical
      * "show me" trigger — no separate `.pmg-revealed` / `.pmg-shown`
      * mirrors are needed. */
-    var ids = ['use-cases', 'why-prompts-fail', 'how-it-works', 'early-feedback', 'see-the-difference'];
+    var ids = ['why-prompts-fail', 'how-it-works', 'early-feedback', 'see-the-difference'];
     ids.forEach(function (id) {
       var el = document.getElementById(id);
       if (!el) return;
@@ -2343,20 +2316,8 @@
    * FIX 1: hero secondary CTA — add hero-text-link class (text-only)
    * =================================================================== */
   function polishHeroSecondaryCta() {
-    if (!once('heroSecondaryCta')) return;
-    var a = document.getElementById('hero-usecases-cta');
-    if (!a) return;
-    a.classList.add('hero-text-link');
-    /* Ensure visible label is concise */
-    var titleEl = a.querySelector('.cta-title');
-    if (titleEl) {
-      titleEl.textContent = 'Or See Real Examples →';
-    } else if (!a.querySelector('.cta-sub')) {
-      var current = (a.textContent || '').trim();
-      if (!/Real Examples/i.test(current)) {
-        a.textContent = 'Or See Real Examples →';
-      }
-    }
+    /* The hero "See Real Examples" CTA was removed; no-op. */
+    return;
   }
 
   /* ===================================================================
@@ -2679,8 +2640,8 @@
     var sels = [
       'button', 'a.btn', '[role="button"]',
       '.btn-secondary', '.btn-ghost', '.accent-swatch',
-      '.popular-use-card', '.mode-switch-btn', '.pmg-photo-pill',
-      '.suggestion-chip', '.use-case-chip', '.pmg-pill',
+      '.mode-switch-btn', '.pmg-photo-pill',
+      '.suggestion-chip', '.pmg-pill',
       '.history-btn', '.template-btn', 'summary',
       '.refine-buttons button', '.refine-buttons .btn',
       '.open-in-btn', '.pmg-action-btn'
@@ -3327,9 +3288,6 @@
       'body.pmg-t15-applied .workspace-header-eyebrow { display: none !important; }',
       'body.pmg-t15-applied .workspace-header { padding-bottom: var(--space-2) !important; }',
       '',
-      '/* ===== T15.6 Need Ideas under carousel — handled in JS via DOM move ===== */',
-      '.pmg-need-ideas-wrap { display: flex; justify-content: center; margin-top: var(--space-4, 16px); }',
-      '.pmg-need-ideas-wrap .usecases-dice-btn { margin: 0; }',
       '',
       '/* ===== T15.7 Photo accordion — collapsible category sections ===== */',
       '.pmg-photo-q-header { all: unset; display: flex; align-items: center; justify-content: space-between; width: 100%; cursor: pointer; padding: 4px 0 8px; font-size: 13px; font-weight: 700; color: var(--color-text); box-sizing: border-box; user-select: none; }',
@@ -3497,37 +3455,13 @@
   }
 
   function fixRealExamplesCta() {
-    var cta = document.getElementById('hero-usecases-cta');
-    if (!cta) return;
-    var spans = cta.querySelectorAll('span');
-    Array.prototype.forEach.call(spans, function (s) {
-      var t = (s.textContent || '').trim();
-      if (/^Real Examples,?\s*Real Results$/i.test(t)) {
-        s.textContent = 'See How It Works';
-      }
-    });
+    /* The hero "Real Examples, Real Results" CTA was removed; no-op. */
+    return;
   }
 
   function moveNeedIdeasUnderCarousel() {
-    var btn = document.getElementById('usecases-dice-btn');
-    var section = document.getElementById('use-cases');
-    if (!btn || !section) return;
-    if (btn.dataset.pmgT15Moved === '1') return;
-    var grid = section.querySelector('.popular-uses-grid');
-    if (!grid || !grid.parentNode) return;
-    var wrap = document.createElement('div');
-    wrap.className = 'pmg-need-ideas-wrap';
-    grid.parentNode.insertBefore(wrap, grid.nextSibling);
-    wrap.appendChild(btn);
-    btn.dataset.pmgT15Moved = '1';
-    var headRow = section.querySelector('.popular-uses-head-row');
-    if (headRow && headRow.parentNode) {
-      var heading = headRow.querySelector('h2');
-      if (heading) {
-        headRow.parentNode.insertBefore(heading, headRow);
-        if (!headRow.querySelector('button, a')) headRow.classList.add('pmg-t15-hide-dup');
-      }
-    }
+    /* The use-cases carousel was removed; no-op. */
+    return;
   }
 
   function surfaceImageResultPanel() {
@@ -4169,25 +4103,7 @@
       '.' + DOTS_CLASS + ' .pmg-t17-dot.is-done { background: var(--pmg-t17-dot-done); }',
       '.' + DOTS_CLASS + ' .pmg-t17-dot.is-current { background: var(--color-primary); transform: scale(1.35); }',
 
-      /* T17.3 — Subtle pulsing glow on the hero secondary CTA */
-      '#hero-usecases-cta {',
-      '  border: 1px solid var(--pmg-t17-border-soft) !important;',
-      '  box-shadow: 0 0 0 0 var(--pmg-t17-glow-soft), 0 6px 18px var(--pmg-t17-glow-soft) !important;',
-      '  animation: pmgT17Glow 3.2s ease-in-out infinite;',
-      '}',
-      '#hero-usecases-cta:hover, #hero-usecases-cta:focus-visible {',
-      '  animation: none;',
-      '  background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface)) !important;',
-      '  border-color: var(--pmg-t17-border-hover) !important;',
-      '  box-shadow: 0 0 0 5px var(--pmg-t17-glow-ring), 0 8px 22px var(--pmg-t17-glow-mid) !important;',
-      '}',
-      '@keyframes pmgT17Glow {',
-      '  0%, 100% { box-shadow: 0 0 0 0 var(--pmg-t17-glow-soft), 0 4px 14px var(--pmg-t17-glow-soft); }',
-      '  50%      { box-shadow: 0 0 0 6px var(--pmg-t17-glow-ring), 0 8px 22px var(--pmg-t17-glow-mid); }',
-      '}',
-      '@media (prefers-reduced-motion: reduce) {',
-      '  #hero-usecases-cta { animation: none !important; }',
-      '}'
+      ''
     ].join('\n');
     var style = document.createElement('style');
     style.id = STYLE_ID;
@@ -4670,20 +4586,6 @@
       /* ===== Redundant post-result blocks — gone. ===== */
       '#what-next { display: none !important; }',
       '#pmg-what-next-block { display: none !important; }',
-
-      /* ===== Examples grid: kept but shrunk. ===== */
-      '.popular-uses-grid {',
-      '  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;',
-      '  gap: var(--space-3) !important;',
-      '}',
-      '.popular-use-card {',
-      '  padding: var(--space-3) var(--space-4) !important;',
-      '  font-size: var(--text-sm) !important;',
-      '}',
-      '.popular-use-card-title { font-size: var(--text-base) !important; line-height: 1.3 !important; }',
-      '.popular-use-card-desc { font-size: var(--text-xs) !important; line-height: 1.4 !important; margin-top: 4px !important; }',
-      '.popular-use-card-cta { font-size: var(--text-xs) !important; }',
-      '.popular-use-card-pill { font-size: 9px !important; padding: 1px 6px !important; }',
 
       /* ===== Top nav gets a small Expert Mode text link (replacement
               for the killed in-builder pill). ===== */
@@ -5863,7 +5765,6 @@
 
   /* Friendly label per section id. Keep short — appears as the row label. */
   var LABELS = {
-    'use-cases':        { prefix: 'Examples',  label: 'Choose A Use Case To Get Started' },
     'why-prompts-fail': { prefix: 'Insight',   label: 'Why Most AI Prompts Fail' },
     'how-it-works':     { prefix: 'Guide',     label: 'How It Works' },
     'early-feedback':   { prefix: 'Reviews',   label: 'Real People. First Tries. Real Results.' },
@@ -6758,15 +6659,6 @@
       }
     }
 
-    /* Reframe the second/examples CTA so the copy reflects both columns. */
-    var examplesCTA = document.getElementById('hero-usecases-cta');
-    if (examplesCTA) {
-      var et = examplesCTA.querySelector('.cta-title');
-      var es = examplesCTA.querySelector('.cta-sub');
-      if (et) et.textContent = 'See Real Examples';
-      if (es) es.textContent = 'Text Prompts And Image Prompts';
-    }
-
     heroActions.setAttribute('data-pmg-t28', '1');
   }
 
@@ -6882,9 +6774,6 @@
   function injectStyles() {
     if (document.getElementById(STYLE_ID)) return;
     var css = [
-      /* --- 1) Hide the third hero CTA we added in T28 --- */
-      '#hero-usecases-cta { display: none !important; }',
-
       /* --- 2) Center the hero left column for a uniform look ---
          The left column is the first child of .hero-grid and holds
          the heading + subtext + CTAs + proof bar + testimonial. We
@@ -6976,14 +6865,7 @@
       '  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--color-border, transparent)) !important;',
       '}',
 
-      /* Need Ideas section: give it a touch of brand colour too so
-         the cards no longer float on raw white. */
-      '#use-cases {',
-      '  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 4%, transparent), transparent 65%);',
-      '}',
-      '#use-cases .popular-use-card {',
-      '  border-color: color-mix(in srgb, var(--color-primary) 14%, var(--color-border)) !important;',
-      '}'
+      ''
     ].join('\n');
     var s = document.createElement('style');
     s.id = STYLE_ID;
@@ -7011,14 +6893,9 @@
     }
   }
 
-  /* --- Aria-hide the removed CTA so screen readers + keyboard
-     users skip it cleanly (display:none already pulls it out of the
-     tab order; this is belt-and-suspenders). --- */
+  /* The hero "See Real Examples" CTA was removed entirely; this is a no-op. */
   function hideExamplesCTA() {
-    var btn = document.getElementById('hero-usecases-cta');
-    if (!btn) return;
-    btn.setAttribute('aria-hidden', 'true');
-    btn.setAttribute('tabindex', '-1');
+    return;
   }
 
   /* --- Wire photo prompt cards to route into the image column ---
@@ -7034,32 +6911,8 @@
      finish the photo-specific routing on a short timeout (after the
      existing scrollIntoView + focus has settled). */
   function wirePhotoCards() {
-    if (document.body.getAttribute('data-pmg-t29-photo') === '1') return;
-    document.body.setAttribute('data-pmg-t29-photo', '1');
-    document.addEventListener('click', function (ev) {
-      var t = ev.target;
-      if (!t || !t.closest) return;
-      var card = t.closest('.popular-use-card[data-pmg-photo="1"]');
-      if (!card) return;
-      /* Wait long enough for applyPopularUseCard's smooth scroll +
-         focus to fire (450ms in the existing handler), then
-         override-scroll into the image column and seed the suite. */
-      window.setTimeout(function () {
-        var imgAnchor = document.getElementById('builder-image') ||
-                        document.getElementById('pmg-col-image');
-        if (imgAnchor) {
-          try { imgAnchor.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
-        }
-        /* Seed the Photography Suite picks so the user sees a
-           working starting set, then can tweak. */
-        window.setTimeout(function () {
-          var surprise = document.querySelector('.pmg-photo-surprise');
-          if (surprise) {
-            try { surprise.click(); } catch (e) {}
-          }
-        }, 320);
-      }, 520);
-    }, true /* capture, so we run alongside the existing handler */);
+    /* The .popular-use-card cards were removed; no-op. */
+    return;
   }
 
   function init() {
@@ -11153,14 +11006,8 @@
       /* T45: user removed the yellow "★ MOST LOVED" Help Me Start
          pill (#pmg-help-me-start-btn) above "Fix My Prompt" — it
          duplicates the much larger Help Me Start callout at the top
-         of the same column. Also hide the Quick Start Ideas chip
-         block (.examples-block with chips "Make money online fast",
-         "Find a winning dropshipping product", "Go viral on TikTok",
-         "Fix a business problem") that renders under More Control —
-         the same ideas already exist in the use-cases carousel and
-         the Need Ideas dice button on the image side. */
-      '#pmg-help-me-start-btn[id],',
-      '.examples-block[aria-label="Example prompts"] { display: none !important; }',
+         of the same column. */
+      '#pmg-help-me-start-btn[id] { display: none !important; }',
       /* T45: stop the global topbar nav buttons ("Start Here",
          "How It Works", "Examples", "Pricing", "Replay Tour",
          "Expert Mode") from wrapping their text onto two lines on
@@ -11626,19 +11473,8 @@
       }
     };
 
-    document.addEventListener('click', function (e) {
-      var card = e.target && e.target.closest && e.target.closest('.popular-use-card');
-      if (!card) return;
-      window.setTimeout(function () {
-        var goalEl = document.getElementById('goal');
-        if (!goalEl) return;
-        try { goalEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-        catch (err) { goalEl.scrollIntoView(); }
-        window.setTimeout(function () {
-          try { goalEl.focus({ preventScroll: true }); } catch (err) { goalEl.focus(); }
-        }, 350);
-      }, 80);
-    }, true);
+    /* T46: .popular-use-card click handler removed — the use-case cards
+       no longer exist on the page. */
   }
 
   function wireSubmitReset() {
@@ -11739,22 +11575,17 @@
   }
 
   function reveal() {
-    var ids = ['use-cases', 'why-prompts-fail', 'how-it-works', 'early-feedback', 'see-the-difference'];
+    var ids = ['why-prompts-fail', 'how-it-works', 'early-feedback', 'see-the-difference'];
     ids.forEach(function (id) {
       var el = document.getElementById(id);
       if (!el) return;
       el.classList.add('revealed');
       el.classList.add('pmg-marketing-section');
     });
-    /* T47.2 — also force-expand the two sections the user actually
-       wants to see on initial load: the use-case cards and the See
-       The Difference before/after examples. T25 (the collapse-with-
-       labels IIFE) adds .pmg-mkt-collapsed by default to every
-       .pmg-marketing-section. Strip it from these two so the cards
-       render expanded. The other three sections (why-prompts-fail,
-       how-it-works, early-feedback) stay collapsed-with-label so the
+    /* T47.2 — force-expand the See The Difference before/after examples
+       on initial load. Other sections stay collapsed-with-label so the
        page does not become absurdly long. */
-    var expandIds = ['use-cases', 'see-the-difference'];
+    var expandIds = ['see-the-difference'];
     expandIds.forEach(function (id) {
       var sec = document.getElementById(id);
       if (!sec) return;

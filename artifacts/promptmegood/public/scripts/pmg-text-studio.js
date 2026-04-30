@@ -302,7 +302,6 @@
    * State
    * ------------------------------------------------------------------ */
   var DEFAULT_STATE = {
-    activeTab: 'build',     /* 'build' | 'transform' */
     text: '',
     originalText: '',
     selectedMode: 'speed_upgrade',
@@ -318,14 +317,6 @@
       var p = JSON.parse(raw);
       var out = clone(DEFAULT_STATE);
       if (p && typeof p === 'object') {
-        /* IMPORTANT: do NOT restore activeTab across page loads. Always
-           default to "build" so users land on the main prompt builder
-           (their primary surface). Persisting "transform" caused
-           reports of "Create A Text Prompt" and "Build A Prompt"
-           appearing broken — they were hidden because Transform Text
-           was still active from a previous visit. The user's text
-           and selected mode still persist, so re-selecting the
-           Transform Text tab restores their working draft. */
         if (typeof p.text === 'string') out.text = p.text.slice(0, MAX_TEXT_CHARS);
         if (typeof p.originalText === 'string') out.originalText = p.originalText.slice(0, MAX_TEXT_CHARS);
         if (typeof p.selectedMode === 'string' && modeById(p.selectedMode)) out.selectedMode = p.selectedMode;
