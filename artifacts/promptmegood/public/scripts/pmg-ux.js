@@ -12232,8 +12232,6 @@
       '.pmg-x-btn{position:absolute;top:10px;right:12px;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:0;border-radius:8px;color:var(--color-text-muted,#666);font-size:24px;line-height:1;cursor:pointer;padding:0;z-index:5}' +
       '.pmg-x-btn:hover,.pmg-x-btn:focus-visible{color:var(--color-text,#111);background:rgba(0,0,0,.06);outline:none}' +
       '[data-theme="dark"] .pmg-x-btn:hover,[data-theme="dark"] .pmg-x-btn:focus-visible{background:rgba(255,255,255,.10)}' +
-      '[data-pmg-modal]{position:relative}' +
-      '[data-pmg-modal] > .pmg-modal-body{position:relative}' +
       '.ob-tooltip .pmg-x-btn{top:6px;right:8px;width:28px;height:28px;font-size:20px}' +
       '.toast{padding-right:36px}' +
       '.toast .pmg-toast-x{position:absolute;top:6px;right:8px;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:0;color:inherit;opacity:.75;font-size:18px;line-height:1;cursor:pointer;border-radius:6px;padding:0}' +
@@ -12301,7 +12299,13 @@
 
     if (opts.addX !== false) {
       var inner = opts.innerSel ? el.querySelector(opts.innerSel) : el.firstElementChild;
-      if (inner) inner.appendChild(makeXButton(opts.label || 'Close', close));
+      if (inner) {
+        /* Anchor the absolutely-positioned × on the inner panel only;
+           never alter the outer overlay/dialog's positioning. */
+        var cs = window.getComputedStyle(inner);
+        if (cs.position === 'static') inner.style.position = 'relative';
+        inner.appendChild(makeXButton(opts.label || 'Close', close));
+      }
     }
     if (opts.addBackdrop) {
       el.addEventListener('click', function (e) {
@@ -12424,7 +12428,8 @@
     register(document.getElementById('expert-warning-dialog'), {
       kind: 'native-dialog',
       innerSel: '.expert-warning-dialog-inner',
-      label: 'Close'
+      label: 'Close',
+      addBackdrop: true
     });
     register(document.getElementById('guided-mode-dialog'), {
       kind: 'native-dialog',
