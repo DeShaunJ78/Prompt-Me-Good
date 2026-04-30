@@ -1,33 +1,8 @@
-/* ============================================================
- * pmg-linear-flow.js — T50 Linear Flow Restoration
- * Spec: Build The Linear UI Layout For Create A Text Prompt
- *
- * Goal: make the Create A Text Prompt column flow top-to-bottom
- * with no break:
- *
- *   1.  Create A Text Prompt (header)
- *   2.  Your Goal (label)
- *   3.  Goal Textarea (visible by default)
- *   4.  Fix My Prompt (primary)
- *   5.  Help Me Start (secondary, single)
- *   6.  More Control (collapsed, single)
- *   7.  Your Fixed Prompt
- *   8.  Improve Your Prompt (Optional) — folded Text Studio Pro
- *   9.  Run With AI / Copy Prompt / Refine Prompt
- *   10. AI Response
- *   11. Final Actions
- *
- * Approach: additive. We do not edit existing function names,
- * element IDs, or static markup. Pure overlay of CSS overrides
- * and a few DOM moves to fold Text Studio Pro into the result.
- *
- * Constraints honored:
- *   - No backend / API / AI / Stripe / Supabase / image-gen logic changes.
- *   - Photography Suite (image-mode) untouched — every override is
- *     scoped with body:not(.image-mode) where it could collide.
- *   - 70% similarity rule: we re-use existing #pmg-help-me-start-btn
- *     instead of creating a new Help Me Start.
- * ============================================================ */
+/* pmg-linear-flow.js — Task #15: linear top-to-bottom Create A Text
+ * Prompt column. Additive overlay; all visual rules scoped with
+ * body:not(.image-mode) to keep Photography Suite untouched. See
+ * .local/tasks/task-15.md "## Approved Order" for the section list.
+ */
 (function () {
   'use strict';
 
@@ -40,26 +15,19 @@
     var s = document.createElement('style');
     s.id = 'pmg-linear-flow-styles';
     s.textContent = [
-      /* (1) Show Goal textarea by default in text mode. The earlier
-         T31 system hid it behind an "I Know What I Want" gate; for
-         the linear flow the goal must be the first input the user
-         sees. Image-mode keeps its own behavior. */
+      /* Show Goal textarea by default; T31 had it gated behind an
+         "I Know What I Want" toggle. Image-mode keeps its own gate. */
       'body:not(.image-mode) #prompt-form > .field.field-primary {',
       '  display: block !important;',
       '}',
 
-      /* (2) Hide the gating callout #pmg-text-help-row at the top
-         of the column. Help Me Start is now a single secondary
-         button below Fix My Prompt (already wired by setupHelpMeStartButton). */
+      /* Hide the top gating callout — Help Me Start is now the single
+         secondary button below Fix My Prompt. */
       'body:not(.image-mode) #pmg-text-help-row { display: none !important; }',
 
-      /* (2b) The earlier T45 fix hid #pmg-help-me-start-btn because it
-         duplicated the (now hidden) top callout. With the callout gone,
-         this button becomes the SINGLE secondary "Help Me Start" entry
-         point sitting below Fix My Prompt. Re-show it here. We must beat
-         BOTH the T45 selector (#pmg-help-me-start-btn[id]) and the T15.2
-         body.pmg-t15-help-ok rule, so use the same specificity + !important
-         and rely on source order (this stylesheet loads last). */
+      /* Re-show #pmg-help-me-start-btn (T45 hid it as a duplicate of
+         the now-removed top callout). Same specificity as T45 selector
+         + !important; this stylesheet loads last so source order wins. */
       'body:not(.image-mode) #pmg-help-me-start-btn[id] {',
       '  display: inline-flex !important;',
       '  width: auto;',
@@ -70,13 +38,9 @@
       '  display: inline-flex !important;',
       '}',
 
-      /* (2c) Force visual order with flexbox `order`. Multiple other
-         scripts (T46, T24, polish, FIX 4) move children of #prompt-form
-         on different schedules, and a JS race can leave help-me-start at
-         the top of the form (above the Goal label). Switching the form
-         to a flex column with explicit order values guarantees the
-         visual order regardless of DOM order. Only applied in TEXT mode
-         so we do not disturb Photography Suite. */
+      /* Force visual order via flex `order` so we are not at the mercy
+         of T46/T24/polish/FIX-4 race conditions reordering #prompt-form
+         children. Text-mode only. */
       'body:not(.image-mode) #prompt-form {',
       '  display: flex !important;',
       '  flex-direction: column !important;',
@@ -88,28 +52,22 @@
       'body:not(.image-mode) #prompt-form > #upload-field { order: 4; }',
       'body:not(.image-mode) #prompt-form > #post-uc-guidance { order: 5; }',
       'body:not(.image-mode) #prompt-form > #settingsPanel { order: 6; }',
-      /* tour-step-generate is the now-empty actions row left behind
-         by T46 — push it last so it never inserts a gap above the
-         goal field. */
+      /* T46 leaves #tour-step-generate empty after moving #generateBtn
+         out — push it to the bottom so it can't add a gap above Goal. */
       'body:not(.image-mode) #prompt-form > #tour-step-generate { order: 8; }',
 
-      /* (3) Hide the keyboard-shortcut hint and the early-access
-         note until first generation — pure pre-gen noise. */
+      /* Hide pre-generation noise (kbd hint, early-access note). */
       'body:not(.pmg-has-result) #builder .result-wrap > p:has(kbd) { display: none !important; }',
       'body:not(.pmg-has-result) #builder .early-access-note { display: none !important; }',
 
-      /* (4) Hide #transform-studio entirely until first generation.
-         After first generation it shows up COLLAPSED inside the
-         "Improve Your Prompt (Optional)" details below. */
+      /* Hide Text Studio Pro until first generation; afterward it
+         appears collapsed inside #pmg-improve-collapsible. */
       'body:not(.pmg-has-result) #pmg-improve-collapsible { display: none !important; }',
-      /* (4b) When studio has been folded into the collapsible, suppress
-         any stray un-wrapped #transform-studio that may briefly mount
-         outside the collapsible during init. */
       'body:not(.pmg-has-result) #transform-studio:not(#pmg-improve-collapsible #transform-studio) {',
       '  display: none !important;',
       '}',
 
-      /* (5) Style the new collapsible "Improve Your Prompt (Optional)". */
+      /* "Improve Your Prompt (Optional)" collapsible chrome. */
       '#pmg-improve-collapsible {',
       '  border: 1px solid var(--color-border, #d9d9d9);',
       '  border-radius: 14px;',
@@ -161,9 +119,7 @@
       '#pmg-improve-collapsible > .pmg-improve-body { padding: 0; }',
       '#pmg-improve-collapsible #transform-studio { padding: 0; margin: 0; display: block !important; }',
 
-      /* (6) When folded into the collapsible, the studio panel does',
-         not need its own outer card chrome; reset margin so it sits
-         flush. */
+      /* Folded studio sits flush — no double card chrome. */
       '#pmg-improve-collapsible #pmg-ts-panel { margin: 0; border-radius: 0 0 14px 14px; }',
       ''
     ].join('\n');
@@ -270,64 +226,48 @@
   /* ---------------- Boot ---------------- */
   function init() {
     injectStyles();
-    /* Try once now, then poll briefly because pmg-text-studio.js
-       mounts on its own schedule. */
-    if (wrapAndMoveStudio()) return;
+    positionHelpMeStart();
+    wrapAndMoveStudio();
+
+    /* pmg-text-studio.js mounts #transform-studio on its own schedule;
+       poll briefly until it shows up. */
     var tries = 0;
     var iv = setInterval(function () {
       tries++;
       positionHelpMeStart();
       if (wrapAndMoveStudio() || tries > 60) clearInterval(iv);
     }, 200);
-    /* And try positioning right away in case help-me-start was already
-       inserted before this script ran. */
-    positionHelpMeStart();
-    setTimeout(positionHelpMeStart, 500);
-    setTimeout(positionHelpMeStart, 1500);
-    setTimeout(positionHelpMeStart, 3000);
 
-    /* Watch the form for any structural change and reposition.
-       Multiple other scripts (T46, T24, polish, FIX 4) inject and move
-       things into the form on different schedules — a MutationObserver
-       is the safest way to keep Help Me Start anchored to the right spot. */
-    try {
-      var formObserver = new MutationObserver(function () {
-        var btn = document.getElementById('pmg-help-me-start-btn');
-        var primary = document.querySelector('#prompt-form > .field.field-primary');
-        if (!btn || !primary) return;
-        if (btn.previousElementSibling !== primary) {
-          /* Reset the flag so positionHelpMeStart will move it. */
-          btn.dataset.pmgLinearPositioned = '';
-          positionHelpMeStart();
-        }
-      });
-      var attachFormObs = function () {
-        var f = document.getElementById('prompt-form');
-        if (f) {
-          formObserver.observe(f, { childList: true, subtree: false });
-        } else {
-          setTimeout(attachFormObs, 400);
-        }
-      };
-      attachFormObs();
-    } catch (_) {}
+    /* Watch #prompt-form so help-me-start stays anchored to the right
+       spot if other scripts re-insert children. */
+    var formObserver = new MutationObserver(function () {
+      var btn = document.getElementById('pmg-help-me-start-btn');
+      var primary = document.querySelector('#prompt-form > .field.field-primary');
+      if (!btn || !primary || btn.previousElementSibling === primary) return;
+      btn.dataset.pmgLinearPositioned = '';
+      positionHelpMeStart();
+    });
+    var attachFormObs = function () {
+      var f = document.getElementById('prompt-form');
+      if (f) {
+        formObserver.observe(f, { childList: true, subtree: false });
+      } else {
+        setTimeout(attachFormObs, 400);
+      }
+    };
+    attachFormObs();
 
-    /* Also re-apply title case if the studio header ever re-renders. */
-    var titleObserver;
-    try {
-      titleObserver = new MutationObserver(function () {
-        applyTitleCaseLabels();
-      });
-      var attach = function () {
-        var t = document.getElementById('pmg-ts-title');
-        if (t) {
-          titleObserver.observe(t, { childList: true, characterData: true, subtree: true });
-        } else {
-          setTimeout(attach, 400);
-        }
-      };
-      attach();
-    } catch (_) {}
+    /* Re-apply Title Case if the studio header re-renders. */
+    var titleObserver = new MutationObserver(applyTitleCaseLabels);
+    var attach = function () {
+      var t = document.getElementById('pmg-ts-title');
+      if (t) {
+        titleObserver.observe(t, { childList: true, characterData: true, subtree: true });
+      } else {
+        setTimeout(attach, 400);
+      }
+    };
+    attach();
   }
 
   if (document.readyState === 'loading') {

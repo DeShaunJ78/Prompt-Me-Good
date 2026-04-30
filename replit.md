@@ -33,6 +33,7 @@ PromptMeGood is a static HTML AI prompt builder (`index.html`) using vanilla Jav
 -   **Color Scheme:** CSS variables for theming with a default teal palette.
 -   **Responsive Design:** Adapts layout for mobile and desktop.
 -   **Form Layout:** Specific placement for "Generate" button and collapsible settings panel.
+-   **Create A Text Prompt — Linear Column Flow (T15, 2026-04-30):** The text prompt column now flows strictly top-to-bottom: (1) Workspace header "Create A Text Prompt", (2) Goal label "What Do You Want AI To Help You With?", (3) Goal textarea (visible by default — no gating callout), (4) Primary "Export To Fix My Prompt" CTA, (5) Secondary "💡 Help Me Start (Answer 4 Quick Questions)" with the "★ Most Loved" badge, (6) Collapsed "⚙ More Control ▾" pill, (7) "Your Fixed Prompt" result panel, (8) Collapsed "Improve Your Prompt (Optional)" panel folding the Text Studio Pro under summary "Want To Make This Even Better?". Implemented as an additive overlay in `artifacts/promptmegood/public/scripts/pmg-linear-flow.js` so existing IDs, function names, and image-mode behavior remain untouched.
 -   **User Guidance:** Onboarding, modals, toasts, and "Expert Mode" for advanced users.
 -   **Theme Accent:** Footer-based picker with 5 swatches, persisted in `localStorage`.
 -   **Canonical Domain & SEO:** `https://www.promptmegood.com` with comprehensive meta-tags for SEO.
