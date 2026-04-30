@@ -948,6 +948,115 @@
       '}',
       '#pmg-ts-toast-host.is-visible { opacity: 1; transform: translate(-50%, 0); }',
 
+      /* ============ Vault modal (T-Vault) ============
+         Browse + search + auto-categorise the user's existing prompt
+         history (localStorage[promptmegood:history:v1]) and pull a
+         selected prompt into the Text Studio Pro textarea. Reuses
+         the same design tokens as the rest of pmg-ts so it feels
+         native, not bolted-on. */
+      '.pmg-ts-vault-btn {',
+      '  display: inline-flex; align-items: center; gap: 6px;',
+      '  padding: 8px 14px; border-radius: var(--radius-md);',
+      '  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 35%, var(--color-border));',
+      '  color: var(--color-primary); cursor: pointer; font: inherit;',
+      '  font-size: var(--text-sm); font-weight: 600;',
+      '  transition: background var(--transition-interactive), border-color var(--transition-interactive);',
+      '}',
+      '.pmg-ts-vault-btn:hover,',
+      '.pmg-ts-vault-btn:focus-visible {',
+      '  background: color-mix(in srgb, var(--color-primary) 18%, var(--color-surface));',
+      '  outline: none;',
+      '}',
+      '#pmg-ts-vault-overlay {',
+      '  position: fixed; inset: 0; z-index: 10000;',
+      '  background: rgba(15, 23, 42, 0.55);',
+      '  display: flex; align-items: center; justify-content: center;',
+      '  padding: 16px; opacity: 0; pointer-events: none;',
+      '  transition: opacity 0.18s ease;',
+      '}',
+      '#pmg-ts-vault-overlay.is-visible { opacity: 1; pointer-events: auto; }',
+      '.pmg-ts-vault-modal {',
+      '  width: min(820px, 100%); max-height: 88vh;',
+      '  display: flex; flex-direction: column;',
+      '  background: var(--color-surface);',
+      '  border: 1px solid var(--color-border);',
+      '  border-radius: var(--radius-lg, 12px);',
+      '  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.35);',
+      '  overflow: hidden;',
+      '}',
+      '.pmg-ts-vault-head {',
+      '  display: flex; align-items: center; justify-content: space-between;',
+      '  gap: 12px; padding: 14px 18px;',
+      '  border-bottom: 1px solid var(--color-border);',
+      '  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));',
+      '}',
+      '.pmg-ts-vault-title { margin: 0; font-size: var(--text-md); font-weight: 700; color: var(--color-text); }',
+      '.pmg-ts-vault-close {',
+      '  background: transparent; border: none; cursor: pointer;',
+      '  font: inherit; font-size: 22px; line-height: 1; padding: 4px 8px;',
+      '  color: var(--color-text-muted); border-radius: var(--radius-sm, 6px);',
+      '}',
+      '.pmg-ts-vault-close:hover,',
+      '.pmg-ts-vault-close:focus-visible { color: var(--color-text); background: color-mix(in srgb, var(--color-text) 8%, transparent); outline: none; }',
+      '.pmg-ts-vault-controls { padding: 12px 18px; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid var(--color-border); }',
+      '.pmg-ts-vault-search {',
+      '  width: 100%; padding: 10px 12px;',
+      '  border: 1px solid var(--color-border); border-radius: var(--radius-md);',
+      '  background: var(--color-bg); color: var(--color-text);',
+      '  font: inherit; font-size: var(--text-md);',
+      '}',
+      '.pmg-ts-vault-search:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 22%, transparent); }',
+      '.pmg-ts-vault-cats { display: flex; flex-wrap: wrap; gap: 6px; }',
+      '.pmg-ts-vault-cat {',
+      '  padding: 6px 12px; border-radius: 999px; cursor: pointer; font: inherit;',
+      '  font-size: var(--text-sm); font-weight: 600;',
+      '  background: color-mix(in srgb, var(--color-text) 6%, transparent);',
+      '  border: 1px solid transparent; color: var(--color-text);',
+      '  transition: background var(--transition-interactive), border-color var(--transition-interactive);',
+      '}',
+      '.pmg-ts-vault-cat:hover { background: color-mix(in srgb, var(--color-primary) 12%, transparent); }',
+      '.pmg-ts-vault-cat.is-active {',
+      '  background: var(--color-primary); color: var(--color-on-primary, #fff);',
+      '  border-color: var(--color-primary);',
+      '}',
+      '.pmg-ts-vault-list { flex: 1; overflow-y: auto; padding: 8px 18px 18px; display: flex; flex-direction: column; gap: 14px; }',
+      '.pmg-ts-vault-group { display: flex; flex-direction: column; gap: 6px; }',
+      '.pmg-ts-vault-group-head {',
+      '  margin: 6px 0 2px; font-size: var(--text-sm); font-weight: 700;',
+      '  color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.04em;',
+      '}',
+      '.pmg-ts-vault-item {',
+      '  width: 100%; text-align: left; cursor: pointer; font: inherit;',
+      '  display: flex; flex-direction: column; gap: 6px;',
+      '  padding: 12px 14px; border-radius: var(--radius-md);',
+      '  background: var(--color-bg); color: var(--color-text);',
+      '  border: 1px solid var(--color-border);',
+      '  transition: border-color var(--transition-interactive), box-shadow var(--transition-interactive), transform var(--transition-interactive);',
+      '}',
+      '.pmg-ts-vault-item:hover,',
+      '.pmg-ts-vault-item:focus-visible {',
+      '  border-color: var(--color-primary); outline: none;',
+      '  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-primary) 18%, transparent);',
+      '  transform: translateY(-1px);',
+      '}',
+      '.pmg-ts-vault-item-title { font-weight: 700; font-size: var(--text-md); }',
+      '.pmg-ts-vault-item-snippet { font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.45; }',
+      '.pmg-ts-vault-item-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 12px; color: var(--color-text-muted); }',
+      '.pmg-ts-vault-item-pill {',
+      '  padding: 2px 8px; border-radius: 999px; font-weight: 600;',
+      '  background: color-mix(in srgb, var(--color-primary) 14%, transparent);',
+      '  color: var(--color-primary);',
+      '}',
+      '.pmg-ts-vault-empty {',
+      '  text-align: center; padding: 30px 18px; color: var(--color-text-muted);',
+      '  font-size: var(--text-sm);',
+      '}',
+      '@media (max-width: 540px) {',
+      '  .pmg-ts-vault-modal { max-height: 94vh; }',
+      '  .pmg-ts-vault-head, .pmg-ts-vault-controls, .pmg-ts-vault-list { padding-left: 12px; padding-right: 12px; }',
+      '}',
+
       /* Mobile tightening */
       '@media (max-width: 540px) {',
       '  .pmg-ts-header,',
@@ -1170,8 +1279,20 @@
       ta.focus();
     });
 
+    /* "From My Vault" — opens the prompt-history vault modal so the
+       user can search, browse-by-category, and pull a prior prompt
+       into the textarea for transformation. Uses the EXISTING
+       localStorage history (no duplicate storage). */
+    var vaultBtn = document.createElement('button');
+    vaultBtn.type = 'button';
+    vaultBtn.className = 'pmg-ts-vault-btn';
+    vaultBtn.innerHTML = '<span aria-hidden="true">📚</span> From My Vault';
+    vaultBtn.title = 'Browse your saved prompt history and pull one in to transform';
+    vaultBtn.addEventListener('click', function () { openVaultModal(); });
+
     leftBtns.appendChild(uploadBtn);
     leftBtns.appendChild(fileInput);
+    leftBtns.appendChild(vaultBtn);
     leftBtns.appendChild(clearBtn);
 
     var charCount = document.createElement('span');
@@ -1730,6 +1851,384 @@
         done();
       } catch (_) { fail(); }
     }
+  }
+
+  /* ------------------------------------------------------------------
+   * VAULT MODAL — pulls prompts from the existing localStorage history
+   * (key 'promptmegood:history:v1'), auto-categorises them with simple
+   * keyword heuristics so the user can browse a long list without
+   * scrolling forever, and inserts the chosen prompt straight into
+   * the Text Studio Pro textarea.
+   *
+   * AUDIT NOTE (per user's strict ground rules): we explicitly DO NOT
+   * duplicate the existing global #global-search history search in
+   * pmg-ux.js — that one searches the WHOLE app surface. This vault
+   * modal is scoped to Text Studio Pro and ends with a one-click
+   * "insert into textarea" action, which the global search does not
+   * do. No storage duplication: read-only access to the existing key.
+   * ------------------------------------------------------------------ */
+  var VAULT_HISTORY_KEY = 'promptmegood:history:v1';
+  var VAULT_OVERLAY_ID  = 'pmg-ts-vault-overlay';
+
+  /* Categories are derived purely client-side from the prompt's text
+     so users get useful grouping even before AI categorisation lands.
+     Order matters: first match wins. Platform/medium-specific buckets
+     (Email, Social, Video, Image, Code, Story, Music) come BEFORE
+     generic intent buckets (Marketing, Education, Business) so a
+     "YouTube script with a CTA" lands in Video, not Marketing.
+     "script" is intentionally NOT a Code keyword and "interview" is
+     intentionally NOT a Video keyword to avoid false positives. */
+  var VAULT_CATEGORIES = [
+    { id: 'email',     label: 'Email',         re: /\b(email|newsletter|subject\s*line|inbox|cold\s*outreach|outreach|drip|sequence)\b/i },
+    { id: 'social',    label: 'Social',        re: /\b(tweet|twitter|x\s*post|instagram|insta|tiktok|reel|reels|caption|hashtag|linkedin|threads|social\s*post)\b/i },
+    { id: 'video',     label: 'Video',         re: /\b(video|youtube|shorts|youtube\s*short|reel\s*script|podcast|vlog|b[\s\-]?roll)\b/i },
+    { id: 'image',     label: 'Image',         re: /\b(image|photo|photograph|picture|dall[\s\-]?e|midjourney|stable\s*diffusion|sdxl|illustration|render|portrait|landscape\s*photo)\b/i },
+    { id: 'code',      label: 'Code',          re: /\b(code|function|api|debug|programming|javascript|typescript|python|react|html|css|sql|node\.?js|backend|frontend|component|refactor)\b/i },
+    { id: 'story',     label: 'Story',         re: /\b(story|character|chapter|novel|fiction|narrative|plot|scene|dialogue|screenplay|script\s*for)\b/i },
+    { id: 'music',     label: 'Music',         re: /\b(song|lyric|verse|chorus|melody|music|hook|bridge|rap|bars|beat)\b/i },
+    { id: 'marketing', label: 'Marketing',     re: /\b(marketing|copy|sales|cta|landing|ad\s|advert|advertising|campaign|brand|funnel|conversion|headline|tagline|slogan)\b/i },
+    { id: 'education', label: 'Education',     re: /\b(teach|tutor|lesson|study|explain|course|curriculum|learn|student|class|homework|essay)\b/i },
+    { id: 'business',  label: 'Business',      re: /\b(business|startup|pitch|investor|founder|strategy|plan|proposal|memo|report)\b/i }
+  ];
+
+  function vaultLoadHistory() {
+    try {
+      var raw = localStorage.getItem(VAULT_HISTORY_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /* Build a single haystack string per item so categorise + search
+     both look at the same surface (goal + details + nickname + tags
+     + the prompt body). */
+  function vaultHaystack(item) {
+    var d = (item && item.data) || {};
+    var tagsStr = (item && Array.isArray(item.tags)) ? item.tags.join(' ') : '';
+    return [
+      item && item.nickname,
+      d.goal,
+      d.details,
+      d.tone,
+      d.audience,
+      d.format,
+      tagsStr,
+      item && item.prompt
+    ].filter(Boolean).join('\n');
+  }
+
+  function vaultCategorise(item) {
+    var hay = vaultHaystack(item);
+    for (var i = 0; i < VAULT_CATEGORIES.length; i++) {
+      if (VAULT_CATEGORIES[i].re.test(hay)) return VAULT_CATEGORIES[i];
+    }
+    return { id: 'other', label: 'Other', re: null };
+  }
+
+  /* Pick a sensible title for an item — explicit nickname, then the
+     stored goal, then the first non-empty line of the prompt body. */
+  function vaultTitleFor(item) {
+    if (item && item.nickname && item.nickname.trim()) return item.nickname.trim();
+    var goal = item && item.data && item.data.goal;
+    if (goal && goal.trim()) return goal.trim();
+    var prompt = (item && item.prompt) || '';
+    var firstLine = prompt.split('\n').find(function (l) { return l.trim().length > 0; });
+    return (firstLine || 'Untitled prompt').slice(0, 80);
+  }
+
+  function vaultSnippet(item, max) {
+    var p = (item && item.prompt) || '';
+    p = p.replace(/\s+/g, ' ').trim();
+    if (p.length <= max) return p;
+    return p.slice(0, max - 1) + '…';
+  }
+
+  function vaultFmtTime(ts) {
+    try {
+      if (!ts) return '';
+      return new Date(ts).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch (_) { return ''; }
+  }
+
+  function vaultEscape(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  /* The actual modal. Singleton — re-opening just shows the existing
+     overlay. State (search query, active category) lives on the
+     overlay element via a small JS object so it survives re-renders. */
+  var vaultState = { query: '', activeCat: 'all', lastFocus: null };
+
+  function openVaultModal() {
+    var overlay = document.getElementById(VAULT_OVERLAY_ID);
+    if (!overlay) overlay = vaultBuildOverlay();
+    /* Remember which element opened the modal so we can return focus
+       there on close — important for keyboard users. */
+    vaultState.lastFocus = (document.activeElement && document.activeElement.focus) ? document.activeElement : null;
+    /* Reset to a clean default each open so the user is not surprised
+       by lingering filters from a previous session. */
+    vaultState.query = '';
+    vaultState.activeCat = 'all';
+    var search = overlay.querySelector('.pmg-ts-vault-search');
+    if (search) search.value = '';
+    vaultRender(overlay);
+    /* Make the overlay reachable by AT and keyboard. */
+    overlay.removeAttribute('inert');
+    overlay.removeAttribute('aria-hidden');
+    /* Kick the transition by toggling on next frame. */
+    requestAnimationFrame(function () { overlay.classList.add('is-visible'); });
+    /* Focus the search box for fast typing. */
+    setTimeout(function () { if (search) search.focus(); }, 30);
+  }
+
+  function closeVaultModal() {
+    var overlay = document.getElementById(VAULT_OVERLAY_ID);
+    if (!overlay) return;
+    overlay.classList.remove('is-visible');
+    /* Hide from AT + keyboard while invisible so users can't tab into
+       offscreen controls (the overlay stays in the DOM so re-opening
+       is cheap). 'inert' is widely supported on modern browsers; the
+       aria-hidden fallback covers older ones. */
+    overlay.setAttribute('aria-hidden', 'true');
+    try { overlay.setAttribute('inert', ''); } catch (_) {}
+    /* Restore focus to the element that opened the modal. */
+    if (vaultState.lastFocus && typeof vaultState.lastFocus.focus === 'function') {
+      try { vaultState.lastFocus.focus(); } catch (_) {}
+    }
+  }
+
+  function vaultBuildOverlay() {
+    var overlay = document.createElement('div');
+    overlay.id = VAULT_OVERLAY_ID;
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Pull a prompt from your vault');
+
+    var modal = document.createElement('div');
+    modal.className = 'pmg-ts-vault-modal';
+
+    /* Header */
+    var head = document.createElement('div');
+    head.className = 'pmg-ts-vault-head';
+    var title = document.createElement('h2');
+    title.className = 'pmg-ts-vault-title';
+    title.textContent = '📚 Pull A Prompt From Your Vault';
+    var closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'pmg-ts-vault-close';
+    closeBtn.setAttribute('aria-label', 'Close vault');
+    closeBtn.innerHTML = '×';
+    closeBtn.addEventListener('click', closeVaultModal);
+    head.appendChild(title);
+    head.appendChild(closeBtn);
+
+    /* Controls */
+    var controls = document.createElement('div');
+    controls.className = 'pmg-ts-vault-controls';
+    var search = document.createElement('input');
+    search.type = 'search';
+    search.className = 'pmg-ts-vault-search';
+    search.placeholder = 'Search your prompts by keyword, goal, or tag…';
+    search.setAttribute('aria-label', 'Search prompts');
+    search.addEventListener('input', function () {
+      vaultState.query = search.value || '';
+      vaultRender(overlay);
+    });
+    var cats = document.createElement('div');
+    cats.className = 'pmg-ts-vault-cats';
+    controls.appendChild(search);
+    controls.appendChild(cats);
+
+    /* List */
+    var list = document.createElement('div');
+    list.className = 'pmg-ts-vault-list';
+
+    modal.appendChild(head);
+    modal.appendChild(controls);
+    modal.appendChild(list);
+    overlay.appendChild(modal);
+
+    /* Backdrop click closes — but ignore clicks inside the modal. */
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) closeVaultModal();
+    });
+    /* ESC closes (delegated on document, only active while open). */
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay.classList.contains('is-visible')) {
+        closeVaultModal();
+      }
+    });
+
+    document.body.appendChild(overlay);
+    return overlay;
+  }
+
+  function vaultRender(overlay) {
+    var items = vaultLoadHistory();
+    /* Drop archived items so the vault stays focused on usable
+       prompts. The user can still see archived ones in the main
+       History section. */
+    items = items.filter(function (i) { return !i.archived; });
+
+    /* Annotate every item with a category once. */
+    var annotated = items.map(function (i) {
+      return { item: i, cat: vaultCategorise(i) };
+    });
+
+    /* Build category counts (always include "All"). */
+    var counts = { all: annotated.length };
+    annotated.forEach(function (e) { counts[e.cat.id] = (counts[e.cat.id] || 0) + 1; });
+
+    /* Render category chips. */
+    var catsEl = overlay.querySelector('.pmg-ts-vault-cats');
+    catsEl.innerHTML = '';
+    var allChip = vaultBuildCatChip('all', 'All', counts.all);
+    catsEl.appendChild(allChip);
+    /* Only show category chips that actually have items. */
+    VAULT_CATEGORIES.concat([{ id: 'other', label: 'Other' }]).forEach(function (c) {
+      if (!counts[c.id]) return;
+      catsEl.appendChild(vaultBuildCatChip(c.id, c.label, counts[c.id]));
+    });
+
+    /* Apply search + active category filters. */
+    var q = (vaultState.query || '').trim().toLowerCase();
+    var filtered = annotated.filter(function (e) {
+      if (vaultState.activeCat !== 'all' && e.cat.id !== vaultState.activeCat) return false;
+      if (!q) return true;
+      var hay = vaultHaystack(e.item).toLowerCase();
+      return hay.indexOf(q) !== -1;
+    });
+
+    /* Group by category for display. */
+    var byCat = {};
+    filtered.forEach(function (e) {
+      var k = e.cat.id;
+      if (!byCat[k]) byCat[k] = { label: e.cat.label, items: [] };
+      byCat[k].items.push(e);
+    });
+
+    var listEl = overlay.querySelector('.pmg-ts-vault-list');
+    listEl.innerHTML = '';
+
+    if (annotated.length === 0) {
+      var empty = document.createElement('div');
+      empty.className = 'pmg-ts-vault-empty';
+      empty.textContent = 'Your vault is empty. Generate a prompt first to fill it.';
+      listEl.appendChild(empty);
+      return;
+    }
+    if (filtered.length === 0) {
+      var none = document.createElement('div');
+      none.className = 'pmg-ts-vault-empty';
+      none.textContent = 'No prompts match that search. Try a different word or category.';
+      listEl.appendChild(none);
+      return;
+    }
+
+    /* Render groups in the order the categories appear in
+       VAULT_CATEGORIES (then "other" last) so the layout is stable. */
+    var orderedCatIds = VAULT_CATEGORIES.map(function (c) { return c.id; }).concat(['other']);
+    orderedCatIds.forEach(function (catId) {
+      var g = byCat[catId];
+      if (!g) return;
+      var groupEl = document.createElement('div');
+      groupEl.className = 'pmg-ts-vault-group';
+      /* Hide the group header when only one category is showing
+         (e.g. user filtered to "Email") — it would be redundant. */
+      if (vaultState.activeCat === 'all') {
+        var head = document.createElement('div');
+        head.className = 'pmg-ts-vault-group-head';
+        head.textContent = g.label + ' · ' + g.items.length;
+        groupEl.appendChild(head);
+      }
+      g.items.forEach(function (entry) {
+        groupEl.appendChild(vaultBuildItem(entry, overlay));
+      });
+      listEl.appendChild(groupEl);
+    });
+  }
+
+  function vaultBuildCatChip(id, label, count) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pmg-ts-vault-cat' + (vaultState.activeCat === id ? ' is-active' : '');
+    btn.textContent = label + ' (' + count + ')';
+    btn.setAttribute('aria-pressed', String(vaultState.activeCat === id));
+    btn.addEventListener('click', function () {
+      vaultState.activeCat = id;
+      var overlay = document.getElementById(VAULT_OVERLAY_ID);
+      if (overlay) vaultRender(overlay);
+    });
+    return btn;
+  }
+
+  function vaultBuildItem(entry, overlay) {
+    var item = entry.item;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pmg-ts-vault-item';
+    btn.setAttribute('aria-label', 'Insert this prompt into Text Studio Pro: ' + vaultTitleFor(item));
+
+    var titleEl = document.createElement('div');
+    titleEl.className = 'pmg-ts-vault-item-title';
+    titleEl.textContent = vaultTitleFor(item);
+
+    var snip = document.createElement('div');
+    snip.className = 'pmg-ts-vault-item-snippet';
+    snip.textContent = vaultSnippet(item, 180);
+
+    var meta = document.createElement('div');
+    meta.className = 'pmg-ts-vault-item-meta';
+    var pill = document.createElement('span');
+    pill.className = 'pmg-ts-vault-item-pill';
+    pill.textContent = entry.cat.label;
+    meta.appendChild(pill);
+    var when = vaultFmtTime(item.savedAt || item.createdAt || item.lastUsedAt);
+    if (when) {
+      var t = document.createElement('span');
+      t.textContent = when;
+      meta.appendChild(t);
+    }
+
+    btn.appendChild(titleEl);
+    btn.appendChild(snip);
+    btn.appendChild(meta);
+
+    btn.addEventListener('click', function () {
+      vaultInsertIntoTextStudio(item);
+      closeVaultModal();
+    });
+
+    return btn;
+  }
+
+  /* Insert the chosen prompt into the Text Studio Pro textarea, save
+     the state, refresh derived UI (char count, action button), and
+     scroll the textarea into view so it's obvious what just happened. */
+  function vaultInsertIntoTextStudio(item) {
+    var ta = document.getElementById('pmg-ts-textarea');
+    var text = (item && item.prompt) || '';
+    if (!text) return;
+    /* Cap to MAX_TEXT_CHARS so we respect the same input limit the
+       paste/typing path enforces. */
+    text = text.slice(0, MAX_TEXT_CHARS);
+    state.text = text;
+    state.originalText = text;
+    state.lastOutput = null;
+    saveState(state);
+    if (ta) {
+      ta.value = text;
+      ta.focus();
+      try { ta.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+    }
+    updateCharCount();
+    refreshActionButton();
+    renderOutput();
   }
 
   /* ------------------------------------------------------------------
