@@ -2962,6 +2962,47 @@
     .top-actions .search, .site-search, #site-search, .search-bar { display: none !important; }
     .guided-modal, .guided-wizard, .tour-card { touch-action: pan-y; }
   }
+
+  /* =========================================================
+     Global reduce-motion safety net (Task #11).
+
+     Task #10 covered animated scrolling through window.PMG_A11Y.
+     This rule extends that contract to every other piece of motion
+     on the page. Categories audited and neutralized here:
+       1. CSS transitions (hover/focus tints, panel open/close,
+          button presses, menu/modal reveals, the manual-toggle
+          collapse, the photo-suite overlays, etc.).
+       2. CSS @keyframes animations (smartAssistFadeIn, demoGlowPulse,
+          panelHighlight, pulseFlash, weeklyNewPulse, builderGlowPulse,
+          tourCardIn, advOpenFade, expertPulse, resultHighlight,
+          fadeSlideIn, pmgFadeIn / pmgFade, guidedCtaPulse, the
+          imgSpin loading spinner, etc.).
+       3. JS-driven inline transitions — e.g. the photo-mode toast in
+          pmg-ux.js sets `style.transition = 'opacity 0.4s'` directly.
+          The !important duration override below beats inline styles
+          in the cascade so those still collapse to an instant change.
+       4. Looping animations (spinners, glow pulses, weekly-new pulse).
+          Forcing `animation-iteration-count: 1` makes them play at
+          most one ~instant frame instead of looping forever.
+
+     Visual feedback (focus rings, color/background changes, opacity
+     changes) is preserved — only the *duration* of the change is
+     collapsed, so users with vestibular sensitivity still see the
+     state change, just without the motion.
+
+     The scroll-behavior override is repeated here so any stray
+     `scroll-behavior: smooth` declarations elsewhere on the page are
+     also neutralized when reduce-motion is set. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-delay: 0ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      transition-delay: 0ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 </style>
   <script>
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
