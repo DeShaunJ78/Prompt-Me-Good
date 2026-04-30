@@ -71,3 +71,21 @@ id = "VvgS4b6z4dO6aAj2x_jsY"
 uri = "file://screenshots/parallel-final.jpg"
 type = "image"
 title = "Right-aligned pill + Use Demo Values parallel with Help Me Start"
+
+[[outputs]]
+id = "-dWFl2Jz1CSB_VduGtwXD"
+uri = "file://screenshots/col-top.jpg"
+type = "image"
+title = "Column top: Workspace header + Help Me Start"
+
+[[outputs]]
+id = "9bKibPavTgH0pLbaqiJtP"
+uri = "file://screenshots/col-build-inputs.jpg"
+type = "image"
+title = "Column middle: More Control pill + Text Studio Pro + 20 transformations"
+
+[[outputs]]
+id = "_oS34Scp0Be-ayaB4hjM_"
+uri = "file://screenshots/col-result.jpg"
+type = "image"
+title = "Column bottom: Upgrade This Text + Your Fixed Prompt placeholder"
