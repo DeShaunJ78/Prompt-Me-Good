@@ -1883,7 +1883,7 @@
       /* Smooth-scroll the output into view. */
       try {
         var out = document.getElementById('pmg-ts-output');
-        if (out && out.scrollIntoView) out.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (out && out.scrollIntoView) out.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
       } catch (_) {}
     }).catch(function (err) {
       var msg = (err && err.message) ? err.message : 'Something went wrong — please try again.';
@@ -2388,7 +2388,7 @@
     if (ta) {
       ta.value = text;
       ta.focus();
-      try { ta.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+      try { ta.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'center' }); } catch (_) {}
     }
     updateCharCount();
     refreshActionButton();

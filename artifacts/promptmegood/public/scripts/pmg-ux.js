@@ -594,7 +594,7 @@
       resultsEl.classList.remove('is-open');
       input.value = '';
       var builder = document.getElementById('builder');
-      if (builder && builder.scrollIntoView) builder.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (builder && builder.scrollIntoView) builder.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
       var openBtnId = (kind === 'From History') ? 'history-open-btn' : 'templates-open-btn';
       var openBtn = document.getElementById(openBtnId);
       if (openBtn) try { openBtn.click(); } catch (e3) {}
@@ -1435,7 +1435,7 @@
     }));
     rows.appendChild(makeRow('✏️', 'Refine It', 'Make it stronger before you run it', function () {
       var ib = document.getElementById('improve-block');
-      if (ib) ib.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (ib) ib.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
     }));
 
     block.appendChild(title);
@@ -1688,7 +1688,7 @@
       var el = document.getElementById(id);
       if (el) {
         requestAnimationFrame(function () {
-          try { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { el.scrollIntoView(); }
+          try { el.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' }); } catch (e) { el.scrollIntoView(); }
         });
       }
     }
@@ -1716,7 +1716,7 @@
       if (btn.dataset.pmgScrollGuard === '1') return;
       btn.dataset.pmgScrollGuard = '1';
       btn.addEventListener('click', function () {
-        try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { window.scrollTo(0, 0); }
+        try { window.scrollTo({ top: 0, behavior: window.PMG_A11Y.scrollBehavior() }); } catch (e) { window.scrollTo(0, 0); }
       }, { capture: true });
     });
   }
@@ -2536,7 +2536,7 @@
         click: function () {
           var fi = document.getElementById('fine-tune-input');
           if (fi) {
-            try { fi.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+            try { fi.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'center' }); } catch (e) {}
             setTimeout(function () { try { fi.focus(); } catch (e2) {} }, 400);
           }
         }
@@ -2607,7 +2607,7 @@
       if (visible && isRealPrompt()) {
         revealed = true;
         rp.classList.add('pmg-result-revealed');
-        try { rp.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+        try { rp.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' }); } catch (e) {}
         /* one-shot — never re-grab focus on later mutations (stream updates etc) */
         mo.disconnect();
       }
@@ -3012,7 +3012,7 @@
 
       /* Scroll to image generate button */
       var ig = document.getElementById('image-generate-btn');
-      if (ig) { try { ig.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {} }
+      if (ig) { try { ig.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'center' }); } catch (e) {} }
     });
 
     /* Insertion point: replace image-mode-hint behavior so accordion follows it */
@@ -3061,7 +3061,7 @@
           if (hasImg && !revealed && !section.hidden) {
             revealed = true;
             section.classList.add('pmg-revealed');
-            try { section.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+            try { section.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' }); } catch (e) {}
           }
           mo.disconnect();
           if (current === mo) current = null;
@@ -4831,7 +4831,7 @@
     addBtn('Refine It', '✏️', false, function () {
       var t = document.getElementById('fine-tune-input');
       if (t) {
-        try { t.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+        try { t.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'center' }); } catch (e) {}
         try { t.focus({ preventScroll: true }); } catch (e) { try { t.focus(); } catch (e2) {} }
       }
     });
@@ -5372,7 +5372,7 @@
     setTimeout(function () {
       var target = document.getElementById(IMG_GEN_HOST_ID) || document.getElementById('imageResultSection');
       if (target) {
-        try { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+        try { target.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' }); } catch (e) {}
       }
     }, 200);
 
@@ -5773,7 +5773,7 @@
       btn.setAttribute('aria-expanded', nowCollapsed ? 'false' : 'true');
       if (!nowCollapsed) {
         /* Smoothly bring the expanded content into view. */
-        try { section.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+        try { section.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' }); } catch (e) {}
       }
     });
 
@@ -6514,7 +6514,7 @@
     helpRow.querySelector('#' + IMAGE_HELP_ID + '-btn').addEventListener('click', function () {
       var suite = document.getElementById('pmg-photo-suite');
       if (suite) {
-        try { suite.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+        try { suite.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' }); } catch (e) {}
       }
       setTimeout(function () {
         var surprise = document.querySelector('.pmg-photo-surprise');
@@ -7344,7 +7344,7 @@
     setTimeout(function () {
       var img = document.getElementById('builder-image') || document.getElementById('pmg-col-image');
       if (img) {
-        try { img.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+        try { img.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' }); } catch (e) {}
       }
       showToast('Your Image Prompt Is Ready! Refine It Below Or Tap Generate.');
     }, 200);
@@ -7407,7 +7407,7 @@
   function focusGoalTextarea() {
     var goal = document.getElementById('goal');
     if (!goal) return;
-    try { goal.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+    try { goal.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'center' }); } catch (e) {}
     setTimeout(function () {
       try { goal.focus({ preventScroll: true }); } catch (e) { goal.focus(); }
     }, 350);
@@ -7457,7 +7457,7 @@
           ? document.getElementById('pmg-image-help-row')
           : document.getElementById(TEXT_HELP_ID);
         if (!helpRow) return;
-        try { helpRow.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+        try { helpRow.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'center' }); } catch (e) {}
         helpRow.style.boxShadow = '0 0 0 4px color-mix(in srgb, var(--color-primary) 35%, transparent)';
         setTimeout(function () { helpRow.style.boxShadow = ''; }, 1400);
       }, 600);
@@ -7685,7 +7685,7 @@
     }
     var ta = panel.querySelector('textarea');
     if (ta) {
-      try { panel.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+      try { panel.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'center' }); } catch (e) {}
       setTimeout(function () {
         try { ta.focus({ preventScroll: true }); } catch (e) { ta.focus(); }
       }, 260);
@@ -8420,7 +8420,7 @@
     nextBtn.addEventListener('click', function () {
       var suite = document.getElementById(SUITE_ID);
       if (suite) {
-        try { suite.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+        try { suite.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' }); } catch (e) {}
         suite.classList.add('pmg-t34-pulse');
         setTimeout(function () { suite.classList.remove('pmg-t34-pulse'); }, 2400);
       }
@@ -9528,7 +9528,7 @@
       var section = document.getElementById('pmg-account');
       if (!section) return;
       section.setAttribute('data-open', 'true');
-      try { section.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+      try { section.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'center' }); } catch (_) {}
       var emailInput = document.getElementById('pmg-account-email');
       if (emailInput) { try { emailInput.focus({ preventScroll: true }); } catch (_) {} }
     },
@@ -10038,7 +10038,7 @@
       goal.dispatchEvent(new Event('input', { bubbles: true }));
       goal.dispatchEvent(new Event('change', { bubbles: true }));
     } catch (e) { /* ignore */ }
-    try { goal.focus(); goal.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+    try { goal.focus(); goal.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'center' }); } catch (e) {}
     setStatus('Loaded Into The Builder — Edit And Re-Run As Needed.', 'success');
   }
 
@@ -11300,7 +11300,7 @@
     var restoreBtn = document.getElementById(RESTORE_BTN_ID);
     if (restoreBtn) restoreBtn.classList.add('is-available');
     if (panel) {
-      try { panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      try { panel.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' }); }
       catch (e) { panel.scrollIntoView(); }
     }
     if (typeof window.showToast === 'function') {
@@ -11823,7 +11823,7 @@
     }, 12000);
 
     /* Scroll the panel into view so the user actually sees the notice. */
-    try { settingsPanel.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+    try { settingsPanel.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'center' }); } catch (e) {}
   }
 
   function watchHiddenWrites() {
@@ -12177,7 +12177,7 @@
       p.open = !p.open;
       chip.setAttribute('aria-expanded', p.open ? 'true' : 'false');
       if (p.open) {
-        try { p.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
+        try { p.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'nearest' }); } catch (_) {}
       }
     });
     /* Insert chip right AFTER the primary "Fix My Prompt" button so the

@@ -40,6 +40,29 @@
         history.replaceState(null, '', window.location.pathname + window.location.search);
       } catch (e) { /* no-op */ }
     })();
+    /* Reduce-motion-aware scroll helper. Defined here in <head> so it
+       is available to every inline script and every deferred external
+       script that follows. Returns 'auto' for users with the OS
+       "reduce motion" setting on (vestibular disorders, migraine
+       triggers, motion sensitivity) and 'smooth' otherwise.
+
+       All on-page animated scrolls (scrollIntoView, window.scrollTo)
+       should pass `behavior: window.PMG_A11Y.scrollBehavior()` instead
+       of a hard-coded 'smooth' so they collapse to an instant jump
+       when the user has asked the OS for reduced motion. */
+    window.PMG_A11Y = window.PMG_A11Y || (function () {
+      function prefersReducedMotion() {
+        try {
+          return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        } catch (_) {
+          return false;
+        }
+      }
+      function scrollBehavior() {
+        return prefersReducedMotion() ? 'auto' : 'smooth';
+      }
+      return { prefersReducedMotion: prefersReducedMotion, scrollBehavior: scrollBehavior };
+    })();
   </script>
   <title>PromptMeGood — AI Prompt Builder, Photography Suite & Image Generator</title>
   <meta name="description" content="Free AI prompt builder, photography suite, and image generator in one tool. Write powerful prompts for ChatGPT, Claude, Perplexity, and Gemini, then generate stunning images with DALL·E 3 — no signup required." />
@@ -4678,7 +4701,7 @@ Context:
         const tag = btn.dataset.tagInsight;
         historyTagFilter = historyTagFilter === tag ? '' : tag;
         renderHistory();
-        document.getElementById('history').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById('history').scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
       });
 
       function bumpUse(id) {
@@ -4905,7 +4928,7 @@ Context:
         if (window.__pmgStrengthScore && typeof window.__pmgStrengthScore.render === 'function') {
           window.__pmgStrengthScore.render(item.data, item.prompt);
         }
-        document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById('builder').scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
         showToast('Restored from history.');
       }
 
@@ -4917,7 +4940,7 @@ Context:
           const tag = btn.dataset.tagValue || '';
           historyTagFilter = historyTagFilter === tag ? '' : tag;
           renderHistory();
-          document.getElementById('history').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.getElementById('history').scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
           return;
         }
         const wrap = btn.closest('.history-item');
@@ -4972,7 +4995,7 @@ Context:
           saveUserTemplates(list);
           renderTemplates();
           showToast('Saved as template: ' + trimmed);
-          document.getElementById('templates').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.getElementById('templates').scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
         } else if (action === 'duplicate') {
           const baseName = item.nickname || item.data.goal || 'Untitled prompt';
           const copy = {
@@ -5591,7 +5614,7 @@ Context:
           heroLink.addEventListener('click', function () {
             const builder = document.getElementById('builder');
             if (builder && typeof builder.scrollIntoView === 'function') {
-              builder.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              builder.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
             }
             // Pulse the toggle to draw attention
             window.setTimeout(function () {
@@ -5848,7 +5871,7 @@ Context:
           }
           const goalEl = document.getElementById('goal');
           if (goalEl && typeof goalEl.scrollIntoView === 'function') {
-            goalEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            goalEl.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'center' });
             try { goalEl.focus({ preventScroll: true }); } catch (e) { goalEl.focus(); }
           }
         });
@@ -6221,7 +6244,7 @@ Context:
         if (window.__pmgStrengthScore && typeof window.__pmgStrengthScore.render === 'function') {
           window.__pmgStrengthScore.render(data, prompt);
         }
-        document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById('builder').scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
         showToast('Loaded template: ' + t.title);
       }
 
@@ -6393,7 +6416,7 @@ Context:
       function scrollToResult() {
         if (!resultPanel) return;
         try {
-          resultPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          resultPanel.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
         } catch (e) {
           resultPanel.scrollIntoView();
         }
@@ -6636,7 +6659,7 @@ Context:
           window.__pmgSmartSystems.recompute(false);
         }
         markWeeklyGoalViewed();
-        try { goalEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+        try { goalEl.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'center' }); } catch (e) {}
         try { goalEl.focus({ preventScroll: true }); } catch (e) { goalEl.focus(); }
         if (typeof showToast === 'function') {
           showToast("Nice — you're using this week's focus.");
@@ -6756,7 +6779,7 @@ Context:
         if (action === 'weeklyFocus' && typeof applyWeeklyGoal === 'function') {
           applyWeeklyGoal();
         } else {
-          document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.getElementById('builder').scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
           document.getElementById('goal').focus();
         }
       });
@@ -6906,7 +6929,7 @@ Context:
           // Stage the render: hide highlight + tooltip during scroll so we never
           // animate position and scroll at the same time (the source of mobile chop).
           obOverlay.classList.add('is-transitioning');
-          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          target.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'center' });
           window.setTimeout(function () { obPositionStep(attempts + 1); }, isMobile ? 360 : 400);
           return;
         }
@@ -7070,7 +7093,7 @@ Context:
         if (!banner) return;
         // Smooth-scroll to the very top of the page.
         try {
-          window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+          window.scrollTo({ top: 0, left: 0, behavior: window.PMG_A11Y.scrollBehavior() });
         } catch (e) {
           window.scrollTo(0, 0);
         }
@@ -7173,7 +7196,7 @@ Context:
           if (typeof pmgMarkVisited === 'function') pmgMarkVisited();
           const goalEl = document.getElementById('goal');
           if (goalEl) {
-            goalEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            goalEl.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'center' });
             window.setTimeout(function () {
               try { goalEl.focus({ preventScroll: true }); } catch (e) { goalEl.focus(); }
             }, 450);
@@ -7626,7 +7649,7 @@ Context:
         setPromptText(prompt);
         addToHistory(data, prompt);
         if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
-        document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById('builder').scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
         showToast('Random Prompt generated.');
       });
 
@@ -7642,7 +7665,7 @@ Context:
           const guidedRow = document.getElementById('guided-cta-row');
           const guidance = document.getElementById('build-cta-guidance');
           if (builderSection) {
-            builderSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            builderSection.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
           }
           if (builderPanel) {
             builderPanel.classList.remove('builder-glow', 'is-fading');
@@ -7873,7 +7896,7 @@ Context:
           window.__pmgStrengthScore.render(compareCtx.data, compareCtx.original);
         }
         closeCompare();
-        document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById('builder').scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
         showToast('Using original.');
       });
       compareUseRemix.addEventListener('click', function () {
@@ -7884,7 +7907,7 @@ Context:
           window.__pmgStrengthScore.render(compareCtx.data, compareCtx.remix);
         }
         closeCompare();
-        document.getElementById('builder').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById('builder').scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
         showToast('Using remix and saved to history.');
       });
       compareSaveRemix.addEventListener('click', function () {
@@ -7924,7 +7947,7 @@ Context:
 
       function flashTarget(el) {
         if (!el) return;
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'center' });
         el.classList.remove('is-flash-target');
         void el.offsetWidth;
         el.classList.add('is-flash-target');
@@ -8245,7 +8268,7 @@ Context:
             window.setTimeout(function () {
               const builder = document.getElementById('builder');
               if (builder && typeof builder.scrollIntoView === 'function') {
-                builder.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                builder.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
               }
               if (typeof showToast === 'function') showToast('Loaded shared prompt — review and Generate.');
             }, 150);
@@ -9032,12 +9055,12 @@ Context:
       if(dl)dl.style.display='none';
       if(btn){btn.disabled=true;btn.innerHTML='⏳ Generating…'}
       if(again)again.disabled=true;
-      setTimeout(function(){if(sec)sec.scrollIntoView({behavior:'smooth',block:'center'})},100);
+      setTimeout(function(){if(sec)sec.scrollIntoView({behavior:window.PMG_A11Y.scrollBehavior(),block:'center'})},100);
       try{
         var res=await fetch('/api/image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt})});
         var data=await res.json();
         if(!res.ok||!data.url){if(wrap)wrap.innerHTML='<div class="image-generating-state"><span>⚠️ '+(data.error||'Failed. Try again.')+'</span></div>';return}
-        if(wrap){wrap.innerHTML='';var img=document.createElement('img');img.src=data.url;img.alt='AI generated image';img.onload=function(){if(sec)sec.scrollIntoView({behavior:'smooth',block:'center'})};wrap.appendChild(img)}
+        if(wrap){wrap.innerHTML='';var img=document.createElement('img');img.src=data.url;img.alt='AI generated image';img.onload=function(){if(sec)sec.scrollIntoView({behavior:window.PMG_A11Y.scrollBehavior(),block:'center'})};wrap.appendChild(img)}
         if(dl){dl.href=data.url;dl.style.display='inline-flex'}
       }catch(e){if(wrap)wrap.innerHTML='<div class="image-generating-state"><span>⚠️ Network error. Try again.</span></div>'}
       finally{if(btn){btn.disabled=false;btn.innerHTML='🎨 Generate Image'}if(again)again.disabled=false}
@@ -9090,12 +9113,12 @@ Context:
     if(wrap)wrap.innerHTML='<div style="text-align:center;padding:2rem"><div class="image-spinner"></div><p style="color:var(--color-text-muted);font-size:.9rem">Creating with DALL·E 3…<br><small>About 10 seconds</small></p></div>';
     if(dl)dl.style.display='none';
     if(btn){btn.disabled=true;btn.innerHTML='⏳ Generating…'}
-    setTimeout(function(){if(sec)sec.scrollIntoView({behavior:'smooth',block:'center'})},150);
+    setTimeout(function(){if(sec)sec.scrollIntoView({behavior:window.PMG_A11Y.scrollBehavior(),block:'center'})},150);
     try{
       var res=await fetch('/api/image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:desc})});
       var data=await res.json();
       if(!res.ok||!data.url){if(wrap)wrap.innerHTML='<div style="padding:2rem;text-align:center;color:var(--color-text-muted)">⚠️ '+(data.error||'Failed. Try again.')+'</div>';return}
-      if(wrap){wrap.innerHTML='';var img=document.createElement('img');img.src=data.url;img.alt='AI generated image';img.onload=function(){if(sec)sec.scrollIntoView({behavior:'smooth',block:'center'})};wrap.appendChild(img)}
+      if(wrap){wrap.innerHTML='';var img=document.createElement('img');img.src=data.url;img.alt='AI generated image';img.onload=function(){if(sec)sec.scrollIntoView({behavior:window.PMG_A11Y.scrollBehavior(),block:'center'})};wrap.appendChild(img)}
       if(dl){dl.href=data.url;dl.style.display='inline-flex'}
     }catch(e){if(wrap)wrap.innerHTML='<div style="padding:2rem;text-align:center;color:var(--color-text-muted)">⚠️ Network error. Try again.</div>'}
     finally{if(btn){btn.disabled=false;btn.innerHTML='🎨 Generate Image'}}
@@ -9189,7 +9212,7 @@ Context:
     if (section) section.hidden = false;
     if (output) {
       output.innerHTML = '<div class="ai-response-content">' + escapeHtml(text).replace(/\n/g,'<br>') + '</div>';
-      try { output.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e){}
+      try { output.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'center' }); } catch(e){}
     } else if (typeof window.showToast === 'function') {
       window.showToast('Analysis ready (no output container found).');
     }

@@ -175,7 +175,7 @@
         try { goal.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
       }
       if (builder && builder.scrollIntoView) {
-        builder.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        builder.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
       }
       window.setTimeout(function () {
         if (goal && typeof goal.focus === 'function') {
