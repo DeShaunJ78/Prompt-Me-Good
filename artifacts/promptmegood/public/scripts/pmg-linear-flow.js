@@ -408,6 +408,12 @@
       setChipStatus(chipBtn, 'Try Again', 3000);
       return;
     }
+    /* If the studio is already running a manual transform, don't pile
+       on — let the user finish or wait. */
+    if (actionBtn.classList.contains('is-loading')) {
+      setChipStatus(chipBtn, 'Studio Busy', 2400);
+      return;
+    }
 
     chipInFlight = true;
     activeChip = chipBtn;

@@ -1820,13 +1820,45 @@
    * Run the transformation against the AI
    * ------------------------------------------------------------------ */
   var inFlight = false;
+  /* T19: helper that surfaces an early-return failure both via the
+     existing inline status pill AND via the `pmg-ts:transform-error`
+     CustomEvent, so external integrations (chip row in pmg-linear-flow.js)
+     can re-enable their UI immediately instead of waiting on the 90s
+     safety timeout. Additive only — no transform behavior change. */
+  function emitTransformError(modeIdForEvent, message) {
+    setStatus(message, true);
+    try {
+      document.dispatchEvent(new CustomEvent('pmg-ts:transform-error', {
+        detail: { modeId: modeIdForEvent || '', message: message }
+      }));
+    } catch (_) {}
+  }
   function runTransformation() {
-    if (inFlight) return;
-    var mode = modeById(state.selectedMode) || MODES[0];
-    if (mode.pro && !isPro()) { openUpgradeModal(); return; }
+    var requestedMode = modeById(state.selectedMode) || MODES[0];
+    if (inFlight) {
+      try {
+        document.dispatchEvent(new CustomEvent('pmg-ts:transform-error', {
+          detail: {
+            modeId: requestedMode ? requestedMode.id : '',
+            message: 'Already running another transform — try again in a moment.'
+          }
+        }));
+      } catch (_) {}
+      return;
+    }
+    var mode = requestedMode;
+    if (mode.pro && !isPro()) {
+      openUpgradeModal();
+      try {
+        document.dispatchEvent(new CustomEvent('pmg-ts:transform-error', {
+          detail: { modeId: mode.id, message: 'Pro upgrade required.' }
+        }));
+      } catch (_) {}
+      return;
+    }
     var text = (state.text || '').trim();
     if (!text) {
-      setStatus('Drop in some text first.', true);
+      emitTransformError(mode.id, 'Drop in some text first.');
       return;
     }
     var twist = (state.customTwist || '').trim();
@@ -1834,7 +1866,7 @@
        field IS the transformation. Surface a friendly inline message
        and focus the input rather than firing an empty AI call. */
     if (mode.requiresTwist && !twist) {
-      setStatus('Add A Custom Instruction To Use This Option.', true);
+      emitTransformError(mode.id, 'Add A Custom Instruction To Use This Option.');
       var twistInput = document.getElementById('pmg-ts-twist-input');
       if (twistInput) {
         twistInput.setAttribute('aria-invalid', 'true');
@@ -1845,7 +1877,7 @@
 
     var ai = window.__pmgAI;
     if (!ai || (typeof ai.generateRaw !== 'function' && typeof ai.generateStructured !== 'function')) {
-      setStatus('AI is still warming up — try again in a moment.', true);
+      emitTransformError(mode.id, 'AI is still warming up — try again in a moment.');
       return;
     }
 
