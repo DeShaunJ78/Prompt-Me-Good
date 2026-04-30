@@ -1488,6 +1488,15 @@
        run would otherwise re-enable the button and overwrite the
        loading text — confusing the user and weakening the a11y signal. */
     if (inFlight) return;
+    /* SELF-HEAL: if a previous transformation somehow stranded the
+       .is-loading class without resetting the label (e.g. the user
+       typed in the textarea mid-run under the OLD code path, which
+       called refreshActionButton and overwrote the loading text but
+       left the spinner spinning forever), clear it here. With
+       inFlight=false the button must NEVER show the loading state. */
+    if (btn.classList.contains('is-loading')) {
+      btn.classList.remove('is-loading');
+    }
     btn.textContent = mode.button;
     /* Do NOT disable when the textarea is empty. A disabled green
        button reads as "stuck loading" to most users — they hover,
