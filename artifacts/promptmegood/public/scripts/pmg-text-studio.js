@@ -1225,7 +1225,7 @@
     var panel = document.createElement('section');
     panel.id = PANEL_ID;
     panel.setAttribute('aria-labelledby', 'pmg-ts-title');
-    panel.setAttribute('role', 'tabpanel');
+    panel.setAttribute('role', 'region');
 
     /* --- Header --- */
     var header = document.createElement('header');
