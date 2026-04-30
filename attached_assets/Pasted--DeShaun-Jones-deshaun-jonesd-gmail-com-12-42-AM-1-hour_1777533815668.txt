@@ -1,0 +1,254 @@
+
+DeShaun Jones <deshaun.jonesd@gmail.com>
+12:42 AM (1 hour ago)
+to me
+
+Full rebuild of the Text Upload feature into “Money Mode Pro” with guided UX, transformation modes, and tucked-away instructions.
+
+Do not break:
+- Existing prompt builder
+- Fix My Prompt system
+- Expert Mode
+- Saved history
+- Supabase, Stripe, auth, API routes
+- Mobile + desktop responsiveness
+
+This is a front-end UX + structured output + feature-layer upgrade.
+
+--------------------------------------------------
+CORE GOAL
+--------------------------------------------------
+
+Turn text upload into a premium transformation engine.
+
+User should feel:
+“Whatever I drop in here… this will make it better, sharper, or profitable.”
+
+--------------------------------------------------
+SECTION 1: HEADER + POSITIONING
+--------------------------------------------------
+
+Title:
+Money Mode Pro
+
+Subtitle:
+Upload anything — lyrics, captions, emails, ideas, notes, scripts — and turn it into something powerful.
+
+Add a subtle helper toggle (top right or under title):
+“What Is This?” (collapsible)
+
+When opened, show:
+
+“This is your transformation engine.
+Drop in rough text. Choose what you want it to become.
+We’ll help you fix it, remix it, analyze it, or turn it into something you can actually use — content, hooks, offers, or structured output.”
+
+Keep this collapsed by default.
+
+--------------------------------------------------
+SECTION 2: INPUT AREA
+--------------------------------------------------
+
+Label:
+Drop Your Raw Text Here
+
+Textarea (editable at all times)
+
+Helper text (small, subtle):
+“Messy is fine. That’s the point.”
+
+Support:
+- Paste text
+- Upload .txt files
+- Keep uploaded text visible + editable
+
+--------------------------------------------------
+SECTION 3: TRANSFORMATION MODES
+--------------------------------------------------
+
+Label:
+What Do You Want This To Become?
+
+Display:
+- Grid (desktop)
+- Horizontal scroll cards (mobile)
+
+Each card has:
+- Title
+- Short 1-line description
+- Optional “Pro” badge
+
+Modes:
+
+FREE:
+1. Speed Upgrade 
+“Make this cleaner, sharper, better instantly”
+
+2. Analyze The Weak Spots 
+“Find what’s working and what’s not”
+
+PRO (Money Mode Pro):
+3. Turn It Into Money 
+“Find ways this can make money”
+
+4. Find The Hook 
+“Pull out the strongest opening or chorus”
+
+5. Multiply Into Content 
+“Turn this into posts, scripts, and content pieces”
+
+6. Remix The Voice 
+“Rewrite this in different tones and styles”
+
+7. Make It Record-Ready 
+“Structure lyrics for delivery and performance”
+
+8. Translate For An Audience 
+“Adapt this for a specific audience”
+
+9. Expand The Idea 
+“Turn this into a full piece”
+
+10. Compare Texts 
+(Only visible when 2 inputs exist)
+
+--------------------------------------------------
+SECTION 4: DYNAMIC ACTION BUTTON
+--------------------------------------------------
+
+Button sits under selected mode.
+
+Label changes based on mode:
+
+Speed Upgrade → Upgrade This Text 
+Analyze → Analyze This Text 
+Turn It Into Money → Find The Money Angle 
+Find The Hook → Find My Hook 
+Multiply → Multiply This Content 
+Remix → Remix This 
+Record-Ready → Make It Record-Ready 
+Translate → Translate This 
+Expand → Expand This Idea 
+Compare → Compare These Texts 
+
+--------------------------------------------------
+SECTION 5: STRUCTURED OUTPUT
+--------------------------------------------------
+
+Do NOT return one blob.
+
+Each mode must return structured sections.
+
+Examples:
+
+TURN INTO MONEY:
+- Opportunity Summary
+- Target Audience
+- Offer Ideas
+- Content Angles
+- Monetization Paths
+- Next Best Move
+
+FIND THE HOOK:
+- Strongest Hook
+- 5 Hook Variations
+- Why It Works
+- Best Platform Fit
+
+ANALYZE:
+- What Works
+- What Feels Weak
+- What’s Confusing
+- What To Cut
+- What To Improve
+
+MULTIPLY CONTENT:
+- TikTok Script
+- Instagram Caption
+- X Post
+- Email Angle
+- Hook Line
+- CTA
+
+RECORD READY:
+- Song Structure
+- Chorus Options
+- Cadence Notes
+- Delivery Suggestions
+- Lines To Tighten
+
+--------------------------------------------------
+SECTION 6: OUTPUT CONTROLS
+--------------------------------------------------
+
+Under output:
+
+Buttons:
+- Copy
+- Save This Version
+- Remix Again
+- Restore Original
+
+Restore Original:
+Returns to first uploaded/pasted version.
+
+--------------------------------------------------
+SECTION 7: LOCKED FEATURES (PRO)
+--------------------------------------------------
+
+Locked cards show:
+- “Pro” badge
+- Slight blur or dim
+
+On click → open modal:
+
+Title:
+Unlock Money Mode Pro
+
+Body:
+Free users improve prompts.
+Money Mode Pro turns raw text into content, hooks, structured output, and monetizable ideas.
+
+Buttons:
+Primary: Unlock Money Mode Pro 
+Secondary: Continue With Free Tools
+
+--------------------------------------------------
+SECTION 8: UX FLOW (CRITICAL)
+--------------------------------------------------
+
+User flow must feel linear:
+
+Upload / Paste Text 
+↓ 
+Pick Transformation 
+↓ 
+Click Action Button 
+↓ 
+See Structured Output 
+↓ 
+Copy / Save / Remix / Restore 
+
+No confusion. No dead space. No hidden behavior.
+
+--------------------------------------------------
+SECTION 9: MICRO-UX DETAILS
+--------------------------------------------------
+
+- Always show where text goes
+- Never silently update without visual feedback
+- Add subtle loading indicator: “Transforming Your Text…”
+- Smooth scroll to output after action
+- Maintain spacing (no cramped UI)
+- Ensure mobile usability is clean
+
+--------------------------------------------------
+FINAL EXPERIENCE
+--------------------------------------------------
+
+This should feel like:
+
+“A control panel for turning raw thoughts into usable, valuable output.”
+
+Not a tool.
+A system.
