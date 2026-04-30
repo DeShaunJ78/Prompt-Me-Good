@@ -11773,3 +11773,158 @@
   setTimeout(reveal, 1500);
   setTimeout(reveal, 4000);
 })();
+
+/* =====================================================================
+ * T48 — Topbar repair: hide overlapping search bar + give the dark-mode
+ * toggle real width so the moon/sun icon is actually visible.
+ *
+ * User feedback (April 2026):
+ *   1. The "PromptMeGood" logo text is overlapping with the global
+ *      search box. The search column (label + input + helper text) is
+ *      a 3-row flex stack that visually crowds the brand on desktop
+ *      and at 1280px the rendered layout looks crunched and broken.
+ *   2. The dark-mode toggle in .top-actions renders as a tiny empty
+ *      box because:
+ *        - .theme-toggle-label is `display:none` on desktop
+ *        - the SVG (moon icon) is 20x20 with no padding around it,
+ *          so the button reads as an unclickable sliver
+ *      The user asked to "stretch it out so we can see the moon or
+ *      the sun inside of it."
+ *
+ * Fix:
+ *   - Hide the in-topbar global-search column on desktop. The search
+ *     functionality is still accessible inside the burger nav on
+ *     mobile (it is still the third flex child there). We only hide
+ *     it on >=861px screens where the topbar is the wide horizontal
+ *     row.
+ *   - Force the dark-mode button to a comfortable square (48x48 by
+ *     default, with a 22px icon centered). The label stays hidden so
+ *     the existing icon-only design is preserved, but the button is
+ *     now clearly clickable and the moon/sun is plainly visible.
+ *     We also flip the icon between a moon and a sun based on the
+ *     current `data-theme` attribute on <html> so the user can tell
+ *     which mode they would switch to.
+ *
+ * No HTML or other JS edits — purely additive CSS + a small theme
+ * observer.
+ * ===================================================================== */
+(function pmgT48TopbarRepair() {
+  var STYLE_ID = 'pmg-t48-topbar-repair-styles';
+  if (!document.getElementById(STYLE_ID)) {
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = [
+      /* 1) Hide the global search column on desktop — it crowds the
+            brand and the icon-only theme toggle and the visual
+            collision is what reads as "everything is crunched". */
+      '@media (min-width: 861px) {',
+      '  .topbar .global-search { display: none !important; }',
+      '}',
+      /* 2) Give the brand breathing room so the logo + name read
+            cleanly. flex-shrink:0 stops it from being squeezed by
+            the 7-item top-actions row. */
+      '.topbar .brand[class] {',
+      '  flex: 0 0 auto !important;',
+      '  white-space: nowrap !important;',
+      '}',
+      /* 3) Make the dark-mode button a real square the user can see
+            and tap. Override the older padding rules with a fixed
+            44x44 footprint and a properly sized icon. */
+      '.topbar .theme-toggle[class] {',
+      '  width: 44px !important;',
+      '  min-width: 44px !important;',
+      '  height: 44px !important;',
+      '  padding: 0 !important;',
+      '  display: inline-flex !important;',
+      '  align-items: center !important;',
+      '  justify-content: center !important;',
+      '  border-radius: 50% !important;',
+      '}',
+      '.topbar .theme-toggle[class] svg {',
+      '  width: 22px !important;',
+      '  height: 22px !important;',
+      '  display: block !important;',
+      '  color: var(--color-primary) !important;',
+      '  stroke: var(--color-primary) !important;',
+      '  fill: none !important;',
+      '}',
+      /* Hide the inline text label inside the button. We still expose
+         the textual label via aria-label on the button element so
+         screen readers continue to announce it. */
+      '.topbar .theme-toggle[class] .theme-toggle-label,',
+      '.topbar .theme-toggle[class] .pmg-theme-toggle-label {',
+      '  display: none !important;',
+      '}',
+      /* Visible focus ring + hover state so the button reads as
+         interactive. */
+      '.topbar .theme-toggle[class]:hover {',
+      '  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface)) !important;',
+      '  border-color: color-mix(in srgb, var(--color-primary) 50%, var(--color-border)) !important;',
+      '}',
+      '.topbar .theme-toggle[class]:focus-visible {',
+      '  outline: 2px solid var(--color-primary) !important;',
+      '  outline-offset: 2px !important;',
+      '}'
+    ].join('\n');
+    document.head.appendChild(s);
+  }
+
+  var MOON_PATH = 'M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z';
+  var SUN_MARKUP = [
+    '<circle cx="12" cy="12" r="4.5"></circle>',
+    '<line x1="12" y1="2" x2="12" y2="4"></line>',
+    '<line x1="12" y1="20" x2="12" y2="22"></line>',
+    '<line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>',
+    '<line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>',
+    '<line x1="2" y1="12" x2="4" y2="12"></line>',
+    '<line x1="20" y1="12" x2="22" y2="12"></line>',
+    '<line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>',
+    '<line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>'
+  ].join('');
+
+  /* Swap the SVG content based on the current theme so the icon
+     visibly tells the user what they would switch INTO. Page loaded
+     in dark mode shows a sun (click to go light). Page loaded in
+     light mode shows the existing moon (click to go dark). */
+  function syncIcon() {
+    var btn = document.querySelector('.topbar .theme-toggle');
+    if (!btn) return;
+    var svg = btn.querySelector('svg');
+    if (!svg) return;
+    var theme = document.documentElement.getAttribute('data-theme') || 'light';
+    if (theme === 'dark') {
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.setAttribute('stroke-linecap', 'round');
+      svg.innerHTML = SUN_MARKUP;
+      btn.setAttribute('aria-label', 'Switch to light mode');
+      btn.setAttribute('title', 'Switch to light mode');
+    } else {
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.innerHTML = '<path d="' + MOON_PATH + '"></path>';
+      btn.setAttribute('aria-label', 'Switch to dark mode');
+      btn.setAttribute('title', 'Switch to dark mode');
+    }
+  }
+
+  function init() {
+    syncIcon();
+    /* Observe data-theme on <html> so the icon flips the moment the
+       user toggles dark mode (the original toggle handler in
+       index.html sets data-theme on <html> + persists to storage). */
+    try {
+      var mo = new MutationObserver(syncIcon);
+      mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    } catch (e) { /* ignore */ }
+    /* Re-sync a few times because the topbar buttons can be
+       JS-injected late by other IIFEs that may rebuild the toggle. */
+    setTimeout(syncIcon, 500);
+    setTimeout(syncIcon, 1500);
+    setTimeout(syncIcon, 4000);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
