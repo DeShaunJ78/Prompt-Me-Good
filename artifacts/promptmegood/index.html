@@ -1381,7 +1381,17 @@
     .compare-banner.is-active { display: flex; }
     .global-search { position: relative; flex: 1 1 240px; max-width: 360px; margin: 0 var(--space-3); display: flex; flex-direction: column; gap: 3px; }
     .global-search-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-muted); line-height: 1; }
-    .global-search input { width: 100%; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); font-size: 14px; }
+    /* Static fallback affordance: if pmg-ux.js fails to load and apply
+       its iconized magnifying-glass override, the input still shows a
+       small ▾ chevron via background-image. When pmg-ux loads, its
+       higher-specificity `background: var(--color-surface) !important`
+       shorthand resets this background-image to none — graceful
+       degradation either way. */
+    .global-search input { width: 100%; padding: 8px 30px 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text); font-size: 14px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2367655f' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center; background-size: 14px 14px;
+    }
+    .global-search input:not(:placeholder-shown) { background-image: none; padding-right: 12px; }
     .global-search input:focus { outline: 2px solid var(--color-primary); outline-offset: 1px; }
     .global-search-helper { font-size: 11px; color: var(--color-text-faint); line-height: 1.2; margin-top: 1px; }
     .global-results { position: absolute; top: calc(100% + 6px); left: 0; right: 0; max-height: 360px; overflow: auto; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: 0 12px 32px rgba(0,0,0,0.18); z-index: 100; display: none; }
