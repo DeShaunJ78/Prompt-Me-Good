@@ -3300,7 +3300,7 @@
 
               <div class="field upload-field" id="upload-field">
                 <label for="analyze-file" class="upload-label">Add A File Or Image (Optional)</label>
-                <p class="helper upload-helper">Upload A File Or Image For Smarter Results</p>
+                <p class="helper upload-helper">Upload A File Or Image For Smarter Results <span class="upload-paste-hint">(or paste a screenshot)</span></p>
                 <div class="upload-controls">
                   <input type="file" id="analyze-file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" class="upload-input" />
                   <label for="analyze-file" class="btn btn-secondary upload-btn" id="upload-btn-label">Choose File</label>
@@ -9402,6 +9402,89 @@ Context:
     });
   })();
 
+  /* ===== Task #22: paste-from-clipboard onto the upload box =====
+     Click-to-browse and drag-and-drop already feed the same
+     #analyze-file input. This handler adds a third entry: pressing
+     Ctrl/Cmd+V anywhere on the page while the Create A Text Prompt
+     builder is visible attaches a clipboard image (PNG/JPG) to the
+     same input via DataTransfer, then dispatches `change` so the
+     existing validation, preview, and Analyze flow runs unchanged.
+     - Scoped to text mode (body:not(.image-mode)) so Photography
+       Suite is never affected.
+     - Non-image clipboard payloads (text, html, etc.) are ignored
+       silently — preventDefault is only called when an image is
+       actually attached, so paste-into-textarea behavior is intact.
+     - Feature-detects DataTransfer like the dropzone above; if the
+       browser can't construct a FileList programmatically we silently
+       skip and leave click-to-browse / drag-and-drop as the only
+       entries. */
+  (function setupClipboardPaste(){
+    var canAssignFiles = (function(){
+      try { var dt = new DataTransfer(); return !!dt && 'items' in dt; }
+      catch(e){ return false; }
+    })();
+    if (!canAssignFiles) return;
+
+    function isTextMode(){
+      return !document.body.classList.contains('image-mode');
+    }
+
+    document.addEventListener('paste', function(e){
+      if (!isTextMode()) return;
+      var cd = e.clipboardData;
+      if (!cd) return;
+      /* Find the first image/png|jpeg item. Items is widely
+         supported; fall back to cd.files if a browser only exposes
+         the file list. */
+      var file = null;
+      var items = cd.items;
+      if (items && items.length) {
+        for (var i = 0; i < items.length; i++) {
+          var it = items[i];
+          if (it && it.kind === 'file' && it.type && /^image\/(png|jpe?g)$/i.test(it.type)) {
+            file = it.getAsFile();
+            if (file) break;
+          }
+        }
+      }
+      if (!file && cd.files && cd.files.length) {
+        for (var j = 0; j < cd.files.length; j++) {
+          var f = cd.files[j];
+          if (f && f.type && /^image\/(png|jpe?g)$/i.test(f.type)) {
+            file = f; break;
+          }
+        }
+      }
+      if (!file) return; /* not an image — leave the paste alone */
+
+      /* Pasted screenshots are usually anonymous "image.png". Give
+         them a friendly, unique filename so the preview row reads
+         well. */
+      try {
+        var bareName = !file.name || /^image\.(png|jpe?g)$/i.test(file.name);
+        if (bareName) {
+          var ext = file.type === 'image/jpeg' ? 'jpg' : 'png';
+          var stamp = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+          file = new File([file], 'pasted-screenshot-' + stamp + '.' + ext, { type: file.type });
+        }
+      } catch(_){ /* File constructor unsupported — keep original */ }
+
+      try {
+        var dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+      } catch(err){
+        setStatus('Could not attach pasted image. Use Choose File instead.', true);
+        return;
+      }
+      /* Only block the default paste once we've actually consumed an
+         image — this keeps text pastes into the goal textarea
+         working normally. */
+      e.preventDefault();
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  })();
+
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, function(c){
       return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
@@ -9514,7 +9597,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (uploadLabel) uploadLabel.textContent = "Add A File Or Image (Optional)";
 
   const uploadHelper = document.querySelector(".upload-helper");
-  if (uploadHelper) uploadHelper.textContent = "Upload A File Or Image For Smarter Results";
+  if (uploadHelper) uploadHelper.innerHTML = 'Upload A File Or Image For Smarter Results <span class="upload-paste-hint">(or paste a screenshot)</span>';
 
   const uploadHint = document.getElementById("upload-hint");
   if (uploadHint) uploadHint.textContent = "Drop A File Here Or Click To Browse";

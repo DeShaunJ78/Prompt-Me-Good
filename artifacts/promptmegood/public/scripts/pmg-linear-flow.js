@@ -157,6 +157,19 @@
       '  border-color: color-mix(in srgb, var(--color-primary, #0f6e6a) 60%, transparent) !important;',
       '  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #0f6e6a) 22%, transparent);',
       '}',
+      /* ---------- Task #22: paste-from-clipboard hint ----------
+         The HTML upload-helper now ends with a small inline span
+         advertising "(or paste a screenshot)". Scope it to text mode
+         and tone it down so the helper reads as a single calm line
+         rather than two equally-weighted phrases. */
+      'body:not(.image-mode) #upload-field .upload-paste-hint {',
+      '  margin-left: 4px;',
+      '  font-size: 11px;',
+      '  font-style: italic;',
+      '  color: var(--color-text-muted, #5f6b75);',
+      '  opacity: 0.85;',
+      '  white-space: nowrap;',
+      '}',
       /* ---------- No-image fallback row ----------
          When #upload-preview-img is hidden (PDF or load error) the
          premium-polish grid still reserves the 56px image column,
