@@ -4918,7 +4918,7 @@ Context:
           const isPicked = compareSelectMode && compareSelections.indexOf(item.id) !== -1;
           const isExpanded = expandedHistoryIds.has(item.id);
           const collapsedClass = isExpanded ? '' : ' is-collapsed';
-          const toggleLabel = isExpanded ? 'Hide actions ▴' : 'More actions ▾';
+          const toggleLabel = isExpanded ? 'Hide actions <span aria-hidden="true">▴</span>' : 'More actions <span aria-hidden="true">▾</span>';
           return '<div class="history-item' + (item.favorite ? ' is-favorite' : '') + (item.archived ? ' is-archived' : '') + (isPicked ? ' is-compare-selected' : '') + collapsedClass + '" data-id="' + escapeHtml(item.id) + '"' + dragAttr + '>' +
             '<div class="history-item-head">' +
               '<span class="history-item-goal">' + handleHtml + escapeHtml(item.nickname || item.data.goal || 'Untitled prompt') + (item.nickname ? ' <span style="color: var(--color-text-muted); font-weight: 400;">&middot; ' + escapeHtml(item.data.goal || '') + '</span>' : '') + '</span>' +
