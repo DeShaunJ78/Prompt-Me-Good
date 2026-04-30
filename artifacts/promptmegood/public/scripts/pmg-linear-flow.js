@@ -67,8 +67,8 @@
       '  display: none !important;',
       '}',
 
-      /* "Improve Your Prompt (Optional)" collapsible chrome. */
-      '#pmg-improve-collapsible {',
+      /* "Improve Your Prompt (Optional)" collapsible chrome (text mode). */
+      'body:not(.image-mode) #pmg-improve-collapsible {',
       '  border: 1px solid var(--color-border, #d9d9d9);',
       '  border-radius: 14px;',
       '  background: var(--color-surface, #fff);',
@@ -139,6 +139,9 @@
 
   /* ---------------- Wrap & move Text Studio Pro ---------------- */
   function wrapAndMoveStudio() {
+    /* Text mode only — Photography Suite has its own panels and must
+       not have its DOM rearranged by this overlay. */
+    if (document.body && document.body.classList.contains('image-mode')) return false;
     var studio = document.getElementById('transform-studio');
     var resultPanel = document.getElementById('result-panel');
     if (!studio || !resultPanel) return false;
@@ -204,6 +207,8 @@
    * for Help Me Start is: AS THE NEXT SIBLING OF .field.field-primary.
    */
   function positionHelpMeStart() {
+    /* Text mode only — image mode hides Help Me Start anyway. */
+    if (document.body && document.body.classList.contains('image-mode')) return false;
     var btn = document.getElementById('pmg-help-me-start-btn');
     var primaryField = document.querySelector('#prompt-form > .field.field-primary');
     if (!btn || !primaryField) return false;
