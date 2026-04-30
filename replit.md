@@ -46,7 +46,7 @@ PromptMeGood is a static HTML AI prompt builder (`index.html`) using vanilla Jav
 
 ### Universal close affordances (T13)
 
-Every modal, overlay, `<details>` panel, toast, and the mobile nav can be closed via at least one of: × button, ESC, backdrop click, or selection. The `pmgT13CloseAffordanceSweep` IIFE in `pmg-ux.js` injects:
+Every modal, overlay, `<details>` panel, toast, and the mobile nav can be closed via at least one of: × button, ESC, backdrop click, or selection. The `pmgT13Close` IIFE in `pmg-ux.js` injects:
 
 - × top-right on `expert-warning-dialog`, `guided-mode-dialog`, `compare-overlay`, `bk-overlay`
 - Backdrop-click close for `guided-mode-dialog` (others already had it)
