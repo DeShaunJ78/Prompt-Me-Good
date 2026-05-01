@@ -447,6 +447,19 @@
     return function () { return !!document.querySelector(selector); };
   }
 
+  /* Stricter than existsSel: requires the element to actually be
+     rendered (display, visibility, geometry) AND not disabled.
+     Use this for any command whose run() will fail silently if
+     the underlying button isn't on screen — covers mode-scoped
+     actions (image-only, write-only) and ensures listed commands
+     are reliably executable when chosen. */
+  function renderedSel(selector) {
+    return function () {
+      var el = document.querySelector(selector);
+      return !!(el && isRendered(el));
+    };
+  }
+
   /* Static command catalog. Order within a group is meaningful:
      items render top-to-bottom in a group when no search query
      is active. Score-driven ordering takes over once the user
@@ -459,13 +472,13 @@
         subtitle: 'Build a text prompt for any AI',
         keywords: ['write', 'text', 'mode', 'builder', 'prompt'],
         run: actSetMode('write'),
-        visible: existsSel('#writeModeBtn') },
+        visible: renderedSel('#writeModeBtn') },
       { id: 'mode-image', group: 'Modes', icon: '🎨',
         title: 'Switch To Image Mode',
         subtitle: 'Generate an AI image from a prompt',
         keywords: ['image', 'photo', 'picture', 'mode', 'generate', 'dalle'],
         run: actSetMode('image'),
-        visible: existsSel('#imageModeBtn') },
+        visible: renderedSel('#imageModeBtn') },
 
       /* Actions */
       { id: 'action-fix', group: 'Actions', icon: '✨',
@@ -473,46 +486,43 @@
         subtitle: 'Run the prompt builder on your draft',
         keywords: ['fix', 'generate', 'prompt', 'build', 'run'],
         run: actClick('#generateBtn'),
-        visible: existsSel('#generateBtn') },
+        visible: renderedSel('#generateBtn') },
       { id: 'action-image-generate', group: 'Actions', icon: '🎨',
         title: 'Generate Image',
         subtitle: 'Create an image with the current settings',
         keywords: ['image', 'generate', 'dalle', 'photo', 'create'],
         run: actClick('#image-generate-btn'),
-        visible: function () {
-          var el = document.getElementById('image-generate-btn');
-          return !!(el && isRendered(el));
-        } },
+        visible: renderedSel('#image-generate-btn') },
       { id: 'action-improve', group: 'Actions', icon: '🪄',
         title: 'Improve With AI',
         subtitle: 'Polish your prompt with AI suggestions',
         keywords: ['improve', 'ai', 'polish', 'refine', 'tone'],
         run: actClick('#improve-with-ai-btn'),
-        visible: existsSel('#improve-with-ai-btn') },
+        visible: renderedSel('#improve-with-ai-btn') },
       { id: 'action-remix-detailed', group: 'Actions', icon: '📝',
         title: 'Make It More Detailed',
         subtitle: 'Add depth and specifics to the result',
         keywords: ['detailed', 'detail', 'longer', 'verbose', 'expand', 'remix'],
         run: actClick('[data-remix="detailed"]'),
-        visible: existsSel('[data-remix="detailed"]') },
+        visible: renderedSel('[data-remix="detailed"]') },
       { id: 'action-remix-bold', group: 'Actions', icon: '🔥',
         title: 'Make It More Bold & Direct',
         subtitle: 'Sharpen the tone and trim hedging',
         keywords: ['bold', 'direct', 'aggressive', 'sharp', 'remix'],
         run: actClick('[data-remix="bold-direct"]'),
-        visible: existsSel('[data-remix="bold-direct"]') },
+        visible: renderedSel('[data-remix="bold-direct"]') },
       { id: 'action-remix-beginner', group: 'Actions', icon: '🌱',
         title: 'Make It Beginner Friendly',
         subtitle: 'Simplify the language and structure',
         keywords: ['beginner', 'simple', 'easy', 'friendly', 'remix'],
         run: actClick('[data-remix="beginner"]'),
-        visible: existsSel('[data-remix="beginner"]') },
+        visible: renderedSel('[data-remix="beginner"]') },
       { id: 'action-surprise-photo', group: 'Actions', icon: '🎲',
         title: 'Surprise Me (Photo Suite)',
         subtitle: 'Roll a random photo combo',
         keywords: ['surprise', 'random', 'photo', 'roll', 'shuffle'],
         run: actClick('.pmg-photo-surprise'),
-        visible: existsSel('.pmg-photo-surprise') },
+        visible: renderedSel('.pmg-photo-surprise') },
       { id: 'action-surprise-text', group: 'Actions', icon: '🎲',
         title: 'Surprise Me (Text Builder)',
         subtitle: 'Get a random prompt idea',
@@ -576,42 +586,45 @@
           return !!(el && isRendered(el));
         } },
 
-      /* Preset Groups */
+      /* Preset Groups — gated on the actual `<div data-group="…">`
+         being rendered (not just present in the DOM tree), so that
+         while the Photo Suite is collapsed or hidden in write mode
+         these don't appear. */
       { id: 'group-style', group: 'Preset Groups', icon: '🎨',
         title: 'Style Group',
         subtitle: 'Cinematic, Portrait, Editorial, ...',
         keywords: ['style', 'cinematic', 'portrait', 'editorial', 'documentary',
                    'fashion', 'landscape', 'vintage', 'preset', 'group'],
         run: actScrollToGroup('style'),
-        visible: existsSel('#pmg-photo-suite .pmg-photo-group[data-group="style"]') },
+        visible: renderedSel('#pmg-photo-suite .pmg-photo-group[data-group="style"]') },
       { id: 'group-camera', group: 'Preset Groups', icon: '📷',
         title: 'Camera & Lens Group',
         subtitle: '85mm Portrait, 35mm Wide, Macro, ...',
         keywords: ['camera', 'lens', '85mm', '35mm', 'macro', 'telephoto',
                    'fisheye', 'dslr', 'preset', 'group'],
         run: actScrollToGroup('camera'),
-        visible: existsSel('#pmg-photo-suite .pmg-photo-group[data-group="camera"]') },
+        visible: renderedSel('#pmg-photo-suite .pmg-photo-group[data-group="camera"]') },
       { id: 'group-lighting', group: 'Preset Groups', icon: '💡',
         title: 'Lighting & Mood Group',
         subtitle: 'Golden Hour, Studio Softbox, Neon Glow, ...',
         keywords: ['lighting', 'mood', 'golden', 'hour', 'studio', 'neon',
                    'shadows', 'softbox', 'preset', 'group'],
         run: actScrollToGroup('lighting'),
-        visible: existsSel('#pmg-photo-suite .pmg-photo-group[data-group="lighting"]') },
+        visible: renderedSel('#pmg-photo-suite .pmg-photo-group[data-group="lighting"]') },
       { id: 'group-composition', group: 'Preset Groups', icon: '🖼️',
         title: 'Composition Group',
         subtitle: 'Rule Of Thirds, Centered, Wide Shot, ...',
         keywords: ['composition', 'thirds', 'centered', 'symmetrical',
                    'wide', 'closeup', 'preset', 'group'],
         run: actScrollToGroup('composition'),
-        visible: existsSel('#pmg-photo-suite .pmg-photo-group[data-group="composition"]') },
+        visible: renderedSel('#pmg-photo-suite .pmg-photo-group[data-group="composition"]') },
       { id: 'group-palette', group: 'Preset Groups', icon: '🎨',
         title: 'Color Palette Group',
         subtitle: 'Warm Tones, Cool Blues, Monochrome, ...',
         keywords: ['palette', 'color', 'warm', 'cool', 'monochrome',
                    'pastel', 'sepia', 'preset', 'group'],
         run: actScrollToGroup('palette'),
-        visible: existsSel('#pmg-photo-suite .pmg-photo-group[data-group="palette"]') }
+        visible: renderedSel('#pmg-photo-suite .pmg-photo-group[data-group="palette"]') }
     ];
   }
 
