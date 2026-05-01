@@ -7,7 +7,7 @@ import { openai } from "../lib/openai-client";
 import { logger } from "../lib/logger";
 import { clampString, sanitizeGoal } from "../middlewares/sanitize";
 import { generateLimiter, runLimiter, rateLimit, imageLimiter } from "../middlewares/rateLimit";
-import { chargeCost, generateCostCheck, runCostCheck, imageCheck, chargeImage } from "../middlewares/costGuard";
+import { chargeCost, generateCostCheck, runCostCheck, imageCheck, imageCheckMulti, chargeImage } from "../middlewares/costGuard";
 
 const router: IRouter = Router();
 
@@ -467,8 +467,19 @@ router.post("/image", imageLimiter, async (req: Request, res: Response) => {
   }
   const description = descRaw.trim().slice(0, 1000);
 
-  // Check image daily cost budget
-  if (!imageCheck()) {
+  // Task #52: caller may request 1–4 images in a single call so the frontend
+  // can render a "Generate variations" 2x2 grid without burning extra
+  // imageLimiter slots (still 1 HTTP call). We charge image budget n times
+  // and only succeed if all n fit within the daily cap.
+  let n = 1;
+  const rawN = req.body?.n;
+  if (typeof rawN === "number" && Number.isFinite(rawN)) {
+    n = Math.min(4, Math.max(1, Math.floor(rawN)));
+  }
+
+  // Check daily cost budget for ALL n images up-front so a request for n=4
+  // can't slip through when only 1 image worth of budget remains.
+  if (!imageCheckMulti(n)) {
     res.status(429).json({
       success: false,
       ok: false,
@@ -490,19 +501,25 @@ router.post("/image", imageLimiter, async (req: Request, res: Response) => {
 
     const enhancedPrompt = enhancedPromptResult.choices[0]?.message?.content?.trim() ?? description;
 
-    // Step 2: Generate the image with gpt-image-1 (Replit AI Integrations
-    // proxy supports gpt-image-1, not dall-e-3). Returns base64 — we wrap it
-    // as a data URL so the frontend can render it without a separate fetch.
+    // Step 2: Generate the image(s) with gpt-image-1. Variants use "low"
+    // quality so the 4-up grid renders fast and stays cheap; single-image
+    // generation keeps the existing "medium" quality so the headline path
+    // is unchanged.
     const imageResult = await openai.images.generate({
       model: "gpt-image-1",
       prompt: enhancedPrompt,
-      n: 1,
+      n,
       size: "1024x1024",
-      quality: "medium",
+      quality: n > 1 ? "low" : "medium",
     });
 
-    const b64 = imageResult.data?.[0]?.b64_json;
-    if (!b64) {
+    const items = Array.isArray(imageResult.data) ? imageResult.data : [];
+    const urls: string[] = [];
+    for (const item of items) {
+      const b64 = item?.b64_json;
+      if (b64) urls.push(`data:image/png;base64,${b64}`);
+    }
+    if (urls.length === 0) {
       res.status(502).json({
         success: false,
         ok: false,
@@ -510,16 +527,16 @@ router.post("/image", imageLimiter, async (req: Request, res: Response) => {
       });
       return;
     }
-    const imageUrl = `data:image/png;base64,${b64}`;
 
-    // Charge cost only after successful generation
-    chargeImage();
+    // Charge cost once per successfully-returned image
+    for (let i = 0; i < urls.length; i++) chargeImage();
     bumpRunCount();
 
     res.json({
       success: true,
       ok: true,
-      url: imageUrl,
+      url: urls[0],
+      urls,
       enhancedPrompt,
     });
 

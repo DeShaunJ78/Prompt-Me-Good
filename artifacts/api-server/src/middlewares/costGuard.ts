@@ -76,9 +76,15 @@ function costForEndpoint(endpoint: "generate" | "run" | "image"): number {
 
 // Separate image cost guard using the same daily window but a lower ceiling
 export function imageCheck(): boolean {
+  return imageCheckMulti(1);
+}
+
+// Task #52: validate the budget for n images at once so a single n>1 request
+// can't slip through when only one image worth of budget remains.
+export function imageCheckMulti(n: number): boolean {
   rollDayIfNeeded();
-  const wouldSpend = costState.spent + COST_PER_IMAGE;
-  // Block if either the overall daily limit OR the image-specific limit is hit
+  const count = Math.max(1, Math.floor(n));
+  const wouldSpend = costState.spent + COST_PER_IMAGE * count;
   return wouldSpend <= DAILY_COST_LIMIT_USD;
 }
 
