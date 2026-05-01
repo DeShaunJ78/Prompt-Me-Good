@@ -387,6 +387,15 @@
     window.addEventListener('touchmove', move, { passive: false });
     window.addEventListener('mouseup', end);
     window.addEventListener('touchend', end);
+    /* Stash a teardown fn on the element so closeSlider can detach the
+       window-attached listeners and prevent leak/accumulation across
+       repeated open/close cycles. */
+    el.__pmgImgxSliderTeardown = function () {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('touchmove', move);
+      window.removeEventListener('mouseup', end);
+      window.removeEventListener('touchend', end);
+    };
     var knob = el.querySelector('.pmg-imgx-cmp-knob');
     if (knob) {
       knob.addEventListener('keydown', function (ev) {
@@ -440,7 +449,14 @@
     if (!wrap) return;
     var slider = wrap.querySelector('.pmg-imgx-cmp');
     var stash = wrap.querySelector('.pmg-imgx-cmp-stash');
-    if (slider) slider.remove();
+    if (slider) {
+      /* Detach window-attached drag listeners before removing the element
+         so they don't accumulate across repeated open/close cycles. */
+      if (typeof slider.__pmgImgxSliderTeardown === 'function') {
+        try { slider.__pmgImgxSliderTeardown(); } catch (_) {}
+      }
+      slider.remove();
+    }
     if (stash) {
       while (stash.firstChild) wrap.appendChild(stash.firstChild);
       stash.remove();
@@ -548,10 +564,16 @@
       );
       actionsBtns.forEach(function (b) { b.disabled = true; });
 
-      /* Capture about-to-be-overwritten image URL as previous. */
+      /* Capture about-to-be-overwritten image URL as previous — but only
+         if it represents an explicit current full-size image, NOT a
+         thumbnail inside the variations grid (which would otherwise pick
+         up variant #1 as a misleading compare baseline). */
       var wrap = $('imageResultWrap');
-      var existing = wrap && wrap.querySelector('img');
-      var preRunSrc = existing && existing.src ? existing.src : null;
+      var hasGrid = !!(wrap && wrap.querySelector('.pmg-imgx-grid'));
+      var directImg = wrap && wrap.firstElementChild && wrap.firstElementChild.tagName === 'IMG'
+        ? wrap.firstElementChild
+        : null;
+      var preRunSrc = !hasGrid && directImg && directImg.src ? directImg.src : null;
       if (preRunSrc) state.previousImageUrl = preRunSrc;
 
       /* Close any open slider — about to regenerate. */
