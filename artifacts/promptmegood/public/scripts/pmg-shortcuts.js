@@ -224,12 +224,20 @@
      the user's platform (⌘ on macOS, Ctrl elsewhere). */
   var IS_MAC = /Mac|iPhone|iPad|iPod/i.test(navigator.platform || '');
   var CMDK_KEYS = IS_MAC ? ['⌘', 'K'] : ['Ctrl', 'K'];
+  /* Task #55: undo / redo across both modes. The render order picks
+     the platform-correct chord — ⌘Z / ⇧⌘Z on macOS, Ctrl+Z / Ctrl+Y
+     elsewhere — to match what the user actually presses on their
+     keyboard. */
+  var UNDO_KEYS = IS_MAC ? ['⌘', 'Z'] : ['Ctrl', 'Z'];
+  var REDO_KEYS = IS_MAC ? ['⇧', '⌘', 'Z'] : ['Ctrl', 'Y'];
 
   var GROUPS = [
     { title: 'Global', rows: [
       { keys: CMDK_KEYS, label: 'Open Command Palette (Primary Entry Point)' },
       { keys: ['?'],   label: 'Open This Shortcuts Panel' },
       { keys: ['/'],   label: 'Open Search' },
+      { keys: UNDO_KEYS, label: 'Undo Last Change' },
+      { keys: REDO_KEYS, label: 'Redo' },
       { keys: ['Esc'], label: 'Close Or Cancel' }
     ] },
     { title: 'Builder', rows: [
