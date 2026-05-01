@@ -437,10 +437,50 @@
     return false;
   }
 
+  /* Detect non-dialog menus/popovers that are currently open.
+     We only treat `aria-expanded="true"` as blocking when the
+     element is a true popup TRIGGER (it has `aria-haspopup` set
+     to a popup-like value). Plain disclosure widgets (accordions,
+     collapsible help panels) also use `aria-expanded` but are not
+     focus-blocking, so we ignore those — otherwise S/R would
+     never fire on this page (the marketing toggle and photo Q&A
+     headers are always expanded by default). Also flags common
+     open-menu / open-dropdown class patterns just in case. */
+  function isMenuOrPopoverOpen() {
+    try {
+      var expanded = document.querySelectorAll('[aria-expanded="true"][aria-haspopup]');
+      for (var i = 0; i < expanded.length; i++) {
+        var el = expanded[i];
+        if (el.closest && el.closest('#' + PANEL_ID)) continue;
+        var hp = (el.getAttribute('aria-haspopup') || '').toLowerCase();
+        /* Per ARIA 1.2: "true" is equivalent to "menu". Treat any
+           popup-style value as blocking. Skip "false" (just in
+           case it appears) and unknown strings. */
+        if (hp === 'true' || hp === 'menu' || hp === 'listbox' ||
+            hp === 'tree' || hp === 'grid' || hp === 'dialog') {
+          return true;
+        }
+      }
+      var openish = document.querySelectorAll(
+        '[role="menu"].is-open, [role="menu"].open, [role="listbox"].is-open, ' +
+        '.pmg-menu.is-open, .pmg-dropdown.is-open, .pmg-popover.is-open, ' +
+        '.pmg-suggestions.is-open'
+      );
+      for (var j = 0; j < openish.length; j++) {
+        var n = openish[j];
+        if (n.id === BACKDROP_ID) continue;
+        if (n.closest && n.closest('#' + PANEL_ID)) continue;
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
   function shortcutSafe(e) {
     if (e.metaKey || e.ctrlKey || e.altKey) return false;
     if (isTypingTarget(e.target)) return false;
     if (isAnyOverlayOpen()) return false;
+    if (isMenuOrPopoverOpen()) return false;
     return true;
   }
 
