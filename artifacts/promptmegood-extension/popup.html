@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Send to PromptMeGood</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header class="pmg-pop-header">
+    <img class="pmg-pop-logo" src="icons/icon-48.png" alt="" width="36" height="36" />
+    <div>
+      <h1>Send to PromptMeGood</h1>
+      <p class="pmg-pop-sub">Right-click any text or image, then choose <strong>Send to PromptMeGood</strong>.</p>
+    </div>
+  </header>
+
+  <section class="pmg-pop-section">
+    <h2>How it works</h2>
+    <ul class="pmg-pop-list">
+      <li><strong>Text:</strong> select words on any page, right-click, choose <em>Send to PromptMeGood</em>. The web app opens in Text mode with your selection prefilled.</li>
+      <li><strong>Images:</strong> right-click an image and choose <em>Send image to PromptMeGood</em>. The web app opens in Image mode with the image URL ready to use as a starting point.</li>
+    </ul>
+  </section>
+
+  <section class="pmg-pop-section">
+    <h2>Where to send</h2>
+    <p class="pmg-pop-help">
+      Defaults to the live site. Point at your dev preview when testing locally
+      (for example a <code>.replit.dev</code> URL).
+    </p>
+    <form id="pmg-pop-form" class="pmg-pop-form" autocomplete="off">
+      <label for="pmg-pop-base">PromptMeGood URL</label>
+      <input id="pmg-pop-base" type="url" inputmode="url" spellcheck="false"
+             placeholder="https://www.promptmegood.com/" required />
+      <div class="pmg-pop-actions">
+        <button type="submit" class="pmg-pop-btn pmg-pop-btn-primary">Save</button>
+        <button type="button" id="pmg-pop-reset" class="pmg-pop-btn">Reset</button>
+      </div>
+      <p id="pmg-pop-status" class="pmg-pop-status" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <footer class="pmg-pop-footer">
+    <span>v0.1.0 — Manifest V3</span>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>
