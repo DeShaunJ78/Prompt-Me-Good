@@ -4874,10 +4874,6 @@ Context:
           if (window.__pmgHistoryStates && typeof window.__pmgHistoryStates.showWriteError === 'function') {
             window.__pmgHistoryStates.showWriteError(msg);
           }
-          if (!saveHistory.__toastShown && typeof window.showToast === 'function') {
-            saveHistory.__toastShown = true;
-            try { window.showToast(isQuota ? 'Out of room \u2014 prompts won\u2019t save on this device.' : 'This browser is blocking saved prompts. Copy anything important.'); } catch (_) {}
-          }
         }
       }
 
