@@ -4987,6 +4987,44 @@
     }
   ];
 
+  /* ---------------- Task #25: Quick-Style presets per group ----------------
+   * Curated one-click presets for Style, Lighting & Mood, and Composition.
+   * Each preset is a label + a fixed list of pill values that already exist
+   * in that group's `pills` array above. Clicking a preset clears that
+   * group's existing picks and applies the preset's values; other groups
+   * are untouched. Surprise Me continues to work as before — it still
+   * randomizes across all groups.
+   * ----------------------------------------------------------------------- */
+  var PRESETS = {
+    style: {
+      title: 'Quick Styles',
+      items: [
+        { label: 'Cinematic',    values: ['Cinematic'] },
+        { label: 'Editorial',    values: ['Editorial', 'Fashion'] },
+        { label: 'Vintage Film', values: ['Vintage', 'Polaroid'] },
+        { label: 'Minimalist',   values: ['Black & White'] }
+      ]
+    },
+    lighting: {
+      title: 'Quick Lighting',
+      items: [
+        { label: 'Golden Hour',    values: ['Golden Hour', 'Natural Window Light'] },
+        { label: 'Studio Softbox', values: ['Studio Softbox'] },
+        { label: 'Moody Low Key',  values: ['Cinematic Low-Key', 'Dramatic Shadows'] },
+        { label: 'Overcast',       values: ['Overcast Diffused'] }
+      ]
+    },
+    composition: {
+      title: 'Quick Compositions',
+      items: [
+        { label: 'Rule Of Thirds',     values: ['Rule Of Thirds'] },
+        { label: 'Centered Symmetry',  values: ['Centered', 'Symmetrical'] },
+        { label: 'Leading Lines',      values: ['Leading Lines', 'Negative Space'] },
+        { label: 'Wide Establishing',  values: ['Wide Shot', 'Bird\'s-Eye View'] }
+      ]
+    }
+  };
+
   /* ------------------------ Style injection ------------------------- */
   function injectStyles() {
     if (document.getElementById(STYLE_ID)) return;
@@ -5092,15 +5130,41 @@
       '}',
       '#' + SUITE_ID + ' .pmg-photo-send:hover { transform: translateY(-1px); filter: brightness(1.05); }',
       '#' + SUITE_ID + ' .pmg-photo-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }',
-      '#' + SUITE_ID + ' .pmg-photo-surprise, #' + SUITE_ID + ' .pmg-photo-clear {',
+      '#' + SUITE_ID + ' .pmg-photo-surprise, #' + SUITE_ID + ' .pmg-photo-clear, #' + SUITE_ID + ' .pmg-photo-preset {',
       '  padding: 10px 18px; font-size: var(--text-sm); font-weight: 600;',
       '  background: var(--color-surface); color: var(--color-text);',
       '  border: 1.5px solid var(--color-border); border-radius: var(--radius-full); cursor: pointer;',
       '  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;',
       '}',
-      '#' + SUITE_ID + ' .pmg-photo-surprise:hover { border-color: var(--color-primary); color: var(--color-primary); }',
+      '#' + SUITE_ID + ' .pmg-photo-surprise:hover, #' + SUITE_ID + ' .pmg-photo-preset:hover { border-color: var(--color-primary); color: var(--color-primary); }',
       '#' + SUITE_ID + ' .pmg-photo-clear { background: transparent; border-style: dashed; color: var(--color-text-muted); }',
       '#' + SUITE_ID + ' .pmg-photo-clear:hover { color: #d04848; border-color: #d04848; }',
+
+      /* Task #25: Quick-Style preset rows. Sits at the top of the
+         affected group bodies (Style, Lighting & Mood, Composition).
+         flex-basis: 100% forces it onto its own row inside the
+         flex-wrap pill grid so the preset buttons never get crammed
+         in alongside pills, and pills always start on a fresh row
+         below — preventing horizontal overflow on mobile. */
+      '#' + SUITE_ID + ' .pmg-photo-presets {',
+      '  flex: 0 0 100%; max-width: 100%;',
+      '  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;',
+      '  padding-bottom: 10px; margin-bottom: 4px;',
+      '  border-bottom: 1px dashed color-mix(in srgb, var(--color-primary) 22%, var(--color-border));',
+      '}',
+      '#' + SUITE_ID + ' .pmg-photo-presets-label {',
+      '  font-size: 13px; font-weight: 700;',
+      '  color: var(--color-text-muted);',
+      '  margin-right: 4px;',
+      '}',
+      '#' + SUITE_ID + ' .pmg-photo-preset:hover { transform: translateY(-1px); }',
+      '#' + SUITE_ID + ' .pmg-photo-preset.is-active {',
+      '  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));',
+      '  border-color: var(--color-primary); color: var(--color-primary);',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  #' + SUITE_ID + ' .pmg-photo-preset:hover { transform: none; }',
+      '}',
 
       /* Image Generator host: override the global image-mode hide rule. */
       '#' + IMG_GEN_HOST_ID + ' { display: block !important; }',
@@ -5194,6 +5258,25 @@
       }
     });
 
+    /* Task #25: highlight the active Quick-Style preset (if the group's
+       current pick set exactly matches one preset's values). Idempotent:
+       if no preset matches, all preset buttons are left un-highlighted. */
+    Object.keys(PRESETS).forEach(function (groupId) {
+      var groupPicks = (picks[groupId] || []).slice().sort();
+      var items = PRESETS[groupId].items || [];
+      items.forEach(function (it, idx) {
+        var btn = document.querySelector(
+          '#' + SUITE_ID + ' .pmg-photo-preset' +
+          '[data-group="' + groupId + '"][data-preset-index="' + idx + '"]'
+        );
+        if (!btn) return;
+        var presetVals = (it.values || []).slice().sort();
+        var match = groupPicks.length === presetVals.length &&
+          groupPicks.every(function (v, i) { return v === presetVals[i]; });
+        btn.classList.toggle('is-active', match);
+      });
+    });
+
     /* Enable / disable Send button. */
     var sendBtn = document.querySelector('#' + SUITE_ID + ' .pmg-photo-send');
     var hasAny = Object.keys(picks).some(function (k) { return picks[k].length > 0; });
@@ -5241,6 +5324,23 @@
       html.push('    <span class="pmg-photo-group-chevron" aria-hidden="true">▾</span>');
       html.push('  </button>');
       html.push('  <div class="pmg-photo-group-body">');
+      /* Task #25: render Quick-Style preset row at top of body for
+         Style, Lighting & Mood, and Composition groups. */
+      var preset = PRESETS[g.id];
+      if (preset && preset.items && preset.items.length) {
+        html.push('    <div class="pmg-photo-presets" role="group" aria-label="' + escapeHtml(preset.title) + '">');
+        html.push('      <span class="pmg-photo-presets-label">' + escapeHtml(preset.title) + ':</span>');
+        preset.items.forEach(function (it, idx) {
+          html.push(
+            '      <button type="button" class="pmg-photo-preset" ' +
+              'data-group="' + g.id + '" data-preset-index="' + idx + '" ' +
+              'aria-label="Apply ' + escapeHtml(it.label) + ' preset">' +
+              escapeHtml(it.label) +
+            '</button>'
+          );
+        });
+        html.push('    </div>');
+      }
       g.pills.forEach(function (p) {
         html.push('    <button type="button" class="pmg-photo-pill" data-group="' + g.id + '" data-value="' + escapeHtml(p) + '">' + escapeHtml(p) + '</button>');
       });
@@ -5288,6 +5388,18 @@
         refreshSummary();
       });
     });
+    /* Task #25: Quick-Style preset clicks. Clears the group's existing
+       picks, then activates only the pills listed in the preset. Other
+       groups are untouched. Same downstream wiring as Surprise Me:
+       toggles .is-active classes and calls refreshSummary(), which
+       updates the count badges, summary line, and Send button state. */
+    root.querySelectorAll('.pmg-photo-preset').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var groupId = b.getAttribute('data-group');
+        var idx = parseInt(b.getAttribute('data-preset-index'), 10);
+        applyPreset(groupId, idx);
+      });
+    });
     /* Send. */
     var sendBtn = root.querySelector('.pmg-photo-send');
     if (sendBtn) sendBtn.addEventListener('click', sendToImageGenerator);
@@ -5305,6 +5417,35 @@
     document.querySelectorAll('#' + SUITE_ID + ' .pmg-photo-pill.is-active').forEach(function (p) {
       p.classList.remove('is-active');
     });
+    refreshSummary();
+  }
+
+  /* Task #25: apply a Quick-Style preset to a single group. Clears that
+     group's currently-active pills, then activates exactly the pills
+     named in the preset. Other groups are left untouched. Calls
+     refreshSummary() so the live summary, count badges, Send button,
+     and active-preset highlight all stay in sync. */
+  function applyPreset(groupId, idx) {
+    var preset = PRESETS[groupId];
+    if (!preset || !preset.items || !preset.items[idx]) return;
+    var item = preset.items[idx];
+
+    /* Clear only this group's active pills — other groups untouched. */
+    document.querySelectorAll(
+      '#' + SUITE_ID + ' .pmg-photo-pill[data-group="' + groupId + '"].is-active'
+    ).forEach(function (p) {
+      p.classList.remove('is-active');
+    });
+
+    /* Activate the preset's pill values within this group. */
+    (item.values || []).forEach(function (val) {
+      var sel = '#' + SUITE_ID + ' .pmg-photo-pill' +
+        '[data-group="' + groupId + '"]' +
+        '[data-value="' + cssEscape(val) + '"]';
+      var el = document.querySelector(sel);
+      if (el) el.classList.add('is-active');
+    });
+
     refreshSummary();
   }
 
