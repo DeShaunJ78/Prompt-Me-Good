@@ -215,8 +215,19 @@
   }
 
   /* -------- Shortcut catalog (rendered into the panel) -------- */
+  /* The "⌘K" / "Ctrl+K" command palette is the primary entry
+     point for moving around the app — every other shortcut on
+     this list is also reachable from inside the palette by
+     name. We surface it at the top of the Global section so
+     keyboard-first users discover it before the page-specific
+     letter shortcuts. The exact rendered key label adapts to
+     the user's platform (⌘ on macOS, Ctrl elsewhere). */
+  var IS_MAC = /Mac|iPhone|iPad|iPod/i.test(navigator.platform || '');
+  var CMDK_KEYS = IS_MAC ? ['⌘', 'K'] : ['Ctrl', 'K'];
+
   var GROUPS = [
     { title: 'Global', rows: [
+      { keys: CMDK_KEYS, label: 'Open Command Palette (Primary Entry Point)' },
       { keys: ['?'],   label: 'Open This Shortcuts Panel' },
       { keys: ['/'],   label: 'Open Search' },
       { keys: ['Esc'], label: 'Close Or Cancel' }
