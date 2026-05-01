@@ -157,6 +157,24 @@
       '  border-color: color-mix(in srgb, var(--color-primary, #0f6e6a) 60%, transparent) !important;',
       '  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #0f6e6a) 22%, transparent);',
       '}',
+      /* Task #23: while a file is being dragged over the dropzone,
+         emphasize the helper hint so the verbal label visibly
+         changes alongside the border/fill swap. The hint text is
+         swapped to "Drop To Attach" by the dropzone JS in
+         index.html. */
+      'body:not(.image-mode) #upload-field.pmg-dragover .upload-hint {',
+      '  font-weight: 700;',
+      '  color: var(--color-primary, #0f6e6a);',
+      '}',
+      /* Task #23: reduce-motion override — users with the OS
+         "reduce motion" setting on get an instant state swap rather
+         than the 140ms fade. Matches PMG_A11Y conventions used
+         elsewhere on the page. */
+      '@media (prefers-reduced-motion: reduce) {',
+      '  body:not(.image-mode) #upload-field {',
+      '    transition: none !important;',
+      '  }',
+      '}',
       /* ---------- Task #22: paste-from-clipboard hint ----------
          The HTML upload-helper now ends with a small inline span
          advertising "(or paste a screenshot)". Scope it to text mode

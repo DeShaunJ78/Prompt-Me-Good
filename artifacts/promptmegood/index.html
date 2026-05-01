@@ -3312,7 +3312,7 @@
                     <span class="upload-preview-name file-name" id="upload-preview-name" title=""></span>
                     <span class="upload-preview-size" id="upload-preview-size"></span>
                   </div>
-                  <button type="button" class="btn-clear upload-remove-btn" id="upload-remove-btn" aria-label="Remove file">Remove</button>
+                  <button type="button" class="btn-clear upload-remove-btn" id="upload-remove-btn" aria-label="Remove File">Remove File</button>
                 </div>
                 <button type="button" class="btn btn-primary upload-analyze-btn" id="upload-analyze-btn" hidden>Analyze My File</button>
                 <p class="upload-status" id="upload-status" role="status" aria-live="polite" hidden></p>
@@ -9237,8 +9237,14 @@ Context:
   var btnLabel = document.getElementById('upload-btn-label');
 
   var ALLOWED = ['application/pdf','image/jpeg','image/png'];
+  /* Task #23: single source of truth for the size limit. Used by every
+     attach path (click, drop, paste). Update here only. */
   var MAX_BYTES = 10 * 1024 * 1024;
+  var MAX_LABEL = '10MB';
   var currentObjectUrl = null;
+  /* Task #23: track the most recent valid attachment so an oversized or
+     unsupported follow-up selection does not nuke the previous file. */
+  var lastValidFile = null;
 
   function fmtBytes(n){
     if (n < 1024) return n + ' B';
@@ -9272,6 +9278,7 @@ Context:
     if (btnLabel) btnLabel.textContent = 'Choose File';
     setNoImage(false);
     setStatus('');
+    lastValidFile = null;
   }
   if (removeBtn) removeBtn.addEventListener('click', clearFile);
 
@@ -9286,23 +9293,56 @@ Context:
     });
   }
 
+  /* Task #23: when validation fails, restore the previous valid file
+     onto the input (if any) so the user keeps their last-good
+     attachment. Returns true if a previous file was restored. */
+  function restorePreviousAttachment(){
+    if (!lastValidFile) {
+      input.value = '';
+      return false;
+    }
+    try {
+      var dt = new DataTransfer();
+      dt.items.add(lastValidFile);
+      input.files = dt.files;
+      return true;
+    } catch(_) {
+      input.value = '';
+      return false;
+    }
+  }
+
   input.addEventListener('change', function(){
     var file = input.files && input.files[0];
-    if (!file) { clearFile(); return; }
-    /* Task #20: clearFile() ends with setStatus(''), so the error
-       message must be set AFTER clearFile() to survive. (This also
-       fixes a latent bug for the click-to-browse path on mobile, where
-       the file picker can return non-accept-matching files.) */
+    /* User cancelled the picker — preserve previous selection. */
+    if (!file) {
+      if (!lastValidFile) clearFile();
+      return;
+    }
+    /* Task #23: validate BEFORE wiping the existing preview. If the
+       new file is rejected (wrong type or oversized), the previous
+       valid attachment must remain visible and attached. */
     if (ALLOWED.indexOf(file.type) === -1) {
-      clearFile();
-      setStatus('Unsupported file type. Use PDF, JPG, or PNG.', true);
+      var hadPrev = restorePreviousAttachment();
+      setStatus(
+        hadPrev
+          ? 'Unsupported file type. Use PDF, JPG, or PNG. Your previous file is still attached.'
+          : 'Unsupported file type. Use PDF, JPG, or PNG.',
+        true
+      );
       return;
     }
     if (file.size > MAX_BYTES) {
-      clearFile();
-      setStatus('File too large. Maximum is 10MB.', true);
+      var hadPrev2 = restorePreviousAttachment();
+      var sizeMsg = 'File is too large (' + fmtBytes(file.size) + '). Maximum size is ' + MAX_LABEL + '.';
+      setStatus(
+        hadPrev2 ? sizeMsg + ' Your previous file is still attached.' : sizeMsg,
+        true
+      );
       return;
     }
+    /* Valid file — replace state. */
+    lastValidFile = file;
     setStatus('');
     if (hint) hint.textContent = '';
     if (btnLabel) btnLabel.textContent = 'Change File';
@@ -9357,8 +9397,24 @@ Context:
       }
       return false;
     }
+    /* Task #23: track the hint text we should restore when the
+       drag-over state ends. We snapshot whatever was in the hint at
+       the moment the drag began so a previously-attached file's empty
+       hint, or any future hint copy, restores correctly. */
+    var savedHintText = null;
     function setDragActive(active){
+      var wasActive = dropEl.classList.contains('pmg-dragover');
       dropEl.classList.toggle('pmg-dragover', !!active);
+      if (!hint) return;
+      if (active && !wasActive) {
+        savedHintText = hint.textContent;
+        hint.textContent = 'Drop To Attach';
+      } else if (!active && wasActive) {
+        if (savedHintText !== null) {
+          hint.textContent = savedHintText;
+          savedHintText = null;
+        }
+      }
     }
     ['dragenter','dragover'].forEach(function(evt){
       dropEl.addEventListener(evt, function(e){
@@ -9379,6 +9435,17 @@ Context:
       setDragActive(false);
     });
     dropEl.addEventListener('dragend', function(){
+      setDragActive(false);
+    });
+    /* Task #23: belt-and-braces — if the drag ends ANYWHERE outside
+       the dropzone (drop on another element, Esc to cancel, drag exits
+       the window), the highlight must clear. dragleave on dropEl already
+       handles the common case, but window-level listeners catch edge
+       cases like drops outside the page or on iframes. */
+    window.addEventListener('dragend', function(){ setDragActive(false); });
+    window.addEventListener('drop', function(e){
+      /* Don't preempt our own dropEl drop handler. */
+      if (e.target && dropEl.contains(e.target)) return;
       setDragActive(false);
     });
     dropEl.addEventListener('drop', function(e){
