@@ -76,7 +76,7 @@ test.describe("Surprise Me dial + handoff @ mobile-360", () => {
       hasRollPicks: true,
       hasTextToImage: true,
       hasImageToText: true,
-      version: "task57-1",
+      version: "task57-2",
     });
   });
 

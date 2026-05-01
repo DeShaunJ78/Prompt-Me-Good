@@ -54,7 +54,7 @@
     if (localStorage.getItem('pmg_disable') === '1') return;
   } catch (_) {}
 
-  var SCRIPT_VERSION = 'task57-1';
+  var SCRIPT_VERSION = 'task57-2';
 
   /* ----- Constants shared with pmg-ux.js (intentionally
      duplicated — never mutated, only read/written so the same
@@ -526,40 +526,20 @@
     return true;
   }
 
-  /* Re-render the Recent row using the same template + selectors
-     pmg-ux.js uses. We only touch innerHTML; the row's delegated
-     click listener (registered by pmg-ux.js wireSuite) keeps
-     firing on the new buttons since delegation matches by class
-     not by node identity. */
+  /* Delegate Recent row rendering to pmg-ux.js so all entry shapes
+     (raw / preset / legacy bare array) keep rendering correctly.
+     pmg-ux exposes window.__pmgPhotoRefreshRecent. If it isn't
+     available yet (race during early boot), retry briefly. */
   function rerenderRecentRow() {
-    var row = $id('pmg-photo-recent');
-    if (!row) return;
-    var combos = loadRecent();
-    if (!combos.length) {
-      row.hidden = true;
-      row.innerHTML = '';
-      return;
-    }
-    var html = ['<span class="pmg-photo-recent-label">Recent:</span>'];
-    combos.forEach(function (combo, i) {
-      var label = (combo && combo.kind === 'raw' && typeof combo.label === 'string')
-        ? combo.label
-        : '';
-      if (!label) return;
-      html.push(
-        '<button type="button" class="pmg-photo-recent-btn" ' +
-          'data-recent-index="' + i + '" ' +
-          'aria-label="Re-apply ' + escHtml(label) + '">' +
-          escHtml(label) +
-        '</button>'
-      );
-    });
-    html.push(
-      '<button type="button" class="pmg-photo-recent-clear" ' +
-        'aria-label="Clear recent presets">Clear</button>'
-    );
-    row.innerHTML = html.join('');
-    row.hidden = false;
+    var fn = window.__pmgPhotoRefreshRecent;
+    if (typeof fn === 'function') { try { fn(); } catch (_) {} return; }
+    var tries = 0;
+    var iv = setInterval(function () {
+      tries++;
+      var f = window.__pmgPhotoRefreshRecent;
+      if (typeof f === 'function') { clearInterval(iv); try { f(); } catch (_) {} }
+      else if (tries > 20) { clearInterval(iv); }
+    }, 50);
   }
 
   /* -------- Photo Surprise click intercept --------
@@ -691,11 +671,7 @@
     var mm = $id('moneyMode'); if (mm) mm.checked = Math.random() < 0.4;
   }
   function textDiceWild() {
-    /* Wild draws from the spicier goal set + biases toward
-       more dramatic personalities (viral / bold / creative /
-       luxury) so the resulting prompt feels notably distinct
-       from the safe defaults. */
-    var categories    = ['content', 'personal', 'creative' === 'creative' ? 'other' : 'other', 'career', 'business'];
+    var categories    = ['content', 'personal', 'other', 'career', 'business'];
     var skills        = ['advanced', 'advanced', 'intermediate'];
     var tones         = ['bold-direct', 'expert', 'bold-direct'];
     var formats       = ['step-by-step', 'detailed breakdown'];
@@ -912,36 +888,34 @@
       showToast('Add some Photography Suite pills first, then try again.');
       return;
     }
-    /* Switch to text mode. */
     if (typeof window.setMode === 'function') {
       try { window.setMode('write'); } catch (_) {}
     }
-    /* Pre-seed text fields. We don't blast away an in-progress
-       goal — only overwrite if it's empty or holds the placeholder
-       text. */
+    /* Pre-seed deterministically: this is an explicit user action
+       (click on "Write A Prompt About This"), so overwrite the
+       relevant builder fields and the goal. Dispatch input/change
+       events so any listeners (autosave, builder state, etc.) pick
+       up the new values. */
     var goalEl = $id('goal');
     if (goalEl) {
-      var cur = (goalEl.value || '').trim();
-      if (!cur) {
-        var pillNames = (seed.activePills || []).join(', ');
-        goalEl.value =
-          'Write about ' + seed.topic +
-          (pillNames ? ' featuring ' + pillNames : '') +
-          ' — give me a vivid, well-structured piece I can build on.';
-      }
+      var pillNames = (seed.activePills || []).join(', ');
+      goalEl.value =
+        'Write about ' + seed.topic +
+        (pillNames ? ' featuring ' + pillNames : '') +
+        ' — give me a vivid, well-structured piece I can build on.';
+      try { goalEl.dispatchEvent(new Event('input',  { bubbles: true })); } catch (_) {}
+      try { goalEl.dispatchEvent(new Event('change', { bubbles: true })); } catch (_) {}
     }
-    /* Set tone/category/personality unobtrusively — only when
-       the field is at its default value. */
-    function setIfDefault(id, defaultVal, newVal) {
+    function setField(id, newVal) {
       var el = $id(id);
-      if (!el) return;
-      if (!el.value || el.value === defaultVal || el.value === '') {
-        el.value = newVal;
-      }
+      if (!el || newVal == null) return;
+      el.value = newVal;
+      try { el.dispatchEvent(new Event('input',  { bubbles: true })); } catch (_) {}
+      try { el.dispatchEvent(new Event('change', { bubbles: true })); } catch (_) {}
     }
-    setIfDefault('tone',        'professional', seed.tone);
-    setIfDefault('category',    'business',     seed.category);
-    setIfDefault('personality', 'none',         seed.personality);
+    setField('tone',        seed.tone);
+    setField('category',    seed.category);
+    setField('personality', seed.personality);
 
     /* Scroll to builder. */
     var builder = $id('builder');

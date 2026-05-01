@@ -6307,6 +6307,12 @@
     row.querySelectorAll('.pmg-photo-recent-btn').forEach(wirePreviewHover);
   }
 
+  /* Task #57: expose renderRecentRow so pmg-handoff.js can refresh
+     the row after writing a Surprise roll directly to localStorage,
+     instead of duplicating the template (which previously dropped
+     non-raw entries). */
+  try { window.__pmgPhotoRefreshRecent = renderRecentRow; } catch (_) {}
+
   /* ---------------- Task #35: User-saved (My Combos) -------------------
    * Power users often build their own favorite combinations that don't
    * match any curated preset. The Save This Combo button captures the
