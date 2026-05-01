@@ -40,26 +40,89 @@
 
       /* Force visual order via flex `order` so we are not at the mercy
          of T46/T24/polish/FIX-4 race conditions reordering #prompt-form
-         children. Text-mode only. */
+         children. Text-mode only.
+         T39 (Refocus): desired column flow is
+           eyebrow + headline (injected above by pmg-text-flow-v2.js)
+           → Goal textarea          (order 1)
+           → Prompt Tuning          (order 2, #settingsPanel)
+           → primary action row     (order 3, #tour-step-generate)
+           → upload file            (order 4, secondary)
+           → Help Me Start          (order 5)
+           → Help Me Start helper   (order 6)
+           → post-UC guidance       (order 7)
+           → everything else        (order 9, catch-all)         */
       'body:not(.image-mode) #prompt-form {',
       '  display: flex !important;',
       '  flex-direction: column !important;',
       '}',
       'body:not(.image-mode) #prompt-form > * { order: 9; }',
       'body:not(.image-mode) #prompt-form > .field.field-primary { order: 1; }',
-      /* Task #18: restored upload sits BETWEEN Fix My Prompt (which is
-         the last child of .field.field-primary) and Help Me Start, so the
-         linear column reads:
-           Goal Label → Goal Textarea → Fix My Prompt → Add A File Or
-           Image (Optional) → Help Me Start → More Control. */
-      'body:not(.image-mode) #prompt-form > #upload-field { order: 2; }',
-      'body:not(.image-mode) #prompt-form > #pmg-help-me-start-btn { order: 3; }',
-      'body:not(.image-mode) #prompt-form > #pmg-hms-helper { order: 4; }',
-      'body:not(.image-mode) #prompt-form > #post-uc-guidance { order: 5; }',
-      'body:not(.image-mode) #prompt-form > #settingsPanel { order: 6; }',
-      /* T46 leaves #tour-step-generate empty after moving #generateBtn
-         out — push it to the bottom so it can't add a gap above Goal. */
-      'body:not(.image-mode) #prompt-form > #tour-step-generate { order: 8; }',
+      'body:not(.image-mode) #prompt-form > #settingsPanel { order: 2; }',
+      'body:not(.image-mode) #prompt-form > #tour-step-generate { order: 3; }',
+      'body:not(.image-mode) #prompt-form > #upload-field { order: 4; }',
+      'body:not(.image-mode) #prompt-form > #pmg-help-me-start-btn { order: 5; }',
+      'body:not(.image-mode) #prompt-form > #pmg-hms-helper { order: 6; }',
+      'body:not(.image-mode) #prompt-form > #post-uc-guidance { order: 7; }',
+
+      /* ---- Action row parity with Photography Suite ----
+         Make #tour-step-generate look and behave like the Photo Suite's
+         `.pmg-photo-actions` row: the primary button is prominent and
+         full-width on mobile, secondary buttons are ghost-style and
+         compact. Scoped to text mode so image mode is untouched. */
+      'body:not(.image-mode) #tour-step-generate {',
+      '  display: flex;',
+      '  flex-wrap: wrap;',
+      '  gap: var(--space-2, 8px);',
+      '  margin-top: var(--space-3, 12px);',
+      '  align-items: center;',
+      '}',
+      'body:not(.image-mode) #generateBtn {',
+      '  flex: 1 1 auto;',
+      '  min-height: 52px;',
+      '  font-size: var(--text-base, 15px);',
+      '  font-weight: 700;',
+      '  border-radius: var(--radius-full, 999px);',
+      '  background: linear-gradient(135deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 60%, #6c63ff));',
+      '  color: #fff;',
+      '  border: 0;',
+      '  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 25%, transparent);',
+      '  transition: transform 120ms ease, filter 180ms ease;',
+      '}',
+      'body:not(.image-mode) #generateBtn:hover { transform: translateY(-1px); filter: brightness(1.05); }',
+      'body:not(.image-mode) #generateBtn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }',
+      'body:not(.image-mode) #tour-step-generate #random-prompt,',
+      'body:not(.image-mode) #tour-step-generate #fill-demo {',
+      '  padding: 10px 18px;',
+      '  font-size: var(--text-sm, 14px);',
+      '  font-weight: 600;',
+      '  background: var(--color-surface, #fff);',
+      '  color: var(--color-text, #1d2a32);',
+      '  border: 1.5px solid var(--color-border, #d0d9e0);',
+      '  border-radius: var(--radius-full, 999px);',
+      '  cursor: pointer;',
+      '  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;',
+      '}',
+      'body:not(.image-mode) #tour-step-generate #random-prompt:hover,',
+      'body:not(.image-mode) #tour-step-generate #fill-demo:hover {',
+      '  border-color: var(--color-primary);',
+      '  color: var(--color-primary);',
+      '}',
+      '@media (max-width: 640px) {',
+      '  body:not(.image-mode) #tour-step-generate {',
+      '    flex-direction: column;',
+      '  }',
+      '  body:not(.image-mode) #generateBtn {',
+      '    width: 100%;',
+      '  }',
+      '  body:not(.image-mode) #tour-step-generate #random-prompt,',
+      '  body:not(.image-mode) #tour-step-generate #fill-demo {',
+      '    width: 100%;',
+      '  }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  body:not(.image-mode) #generateBtn { transition: none; }',
+      '  body:not(.image-mode) #generateBtn:hover { transform: none; }',
+      '}',
 
       /* ---------------- Task #18: tighten #upload-field visuals ----------------
          The premium-polish CSS (index.html) applies generous padding and a
@@ -249,22 +312,17 @@
    * The wrapper, chip row, and event listeners that lived here are
    * gone; the column now ends with the primary action card. */
 
-  /* ---------------- Position Help Me Start below Fix My Prompt ----------------
-   * The Most Loved "Help Me Start (Answer 4 Quick Questions)" button
+  /* ---------------- Position Help Me Start ----------------
+   * The "Help Me Start (Answer 4 Quick Questions)" button
    * (#pmg-help-me-start-btn) is created by setupHelpMeStartButton in
-   * pmg-ux.js and inserted relative to the original #generateBtn. But
-   * T46 later moves #generateBtn out of the form into the result-wrap,
-   * and the polish script reorders the form, so #pmg-help-me-start-btn
-   * frequently ends up in the wrong place — most often visible at the
-   * top of the column ABOVE the Goal field.
+   * pmg-ux.js. Its visual order is controlled by the flex `order: 5`
+   * rule above (after the action row at order:3 and upload at order:4).
+   * We still move it in the DOM to sit right after .field.field-primary
+   * so that tab-order and non-flex fallback rendering are correct.
    *
-   * Per spec the linear order is:
-   *   ... → Goal Textarea → Fix My Prompt → Help Me Start → More Control
-   *
-   * Inside the form #generateBtn is replaced by the T46 export-to-fix
-   * button (#pmg-export-to-fix-btn) inside #pmg-export-to-fix-row, which
-   * sits at the END of .field.field-primary. So the correct position
-   * for Help Me Start is: AS THE NEXT SIBLING OF .field.field-primary.
+   * T39 column order (text mode):
+   *   Goal textarea (1) → Prompt Tuning (2) → Fix My Prompt row (3)
+   *   → Upload (4) → Help Me Start (5) → HMS helper (6)
    */
   function positionHelpMeStart() {
     /* Text mode only — image mode hides Help Me Start anyway. */

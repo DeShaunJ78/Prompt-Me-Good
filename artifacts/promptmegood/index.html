@@ -9807,10 +9807,12 @@ document.addEventListener("DOMContentLoaded", function () {
   const guidance = document.getElementById("post-uc-guidance");
   const settings = document.getElementById("settingsPanel");
 
-  if (form && primary && actions) primary.insertAdjacentElement("afterend", actions);
+  /* T39 (Refocus): linear DOM order now matches visual order:
+     Goal textarea → Prompt Tuning → Fix My Prompt row → Upload → Guidance */
+  if (form && primary && settings) primary.insertAdjacentElement("afterend", settings);
+  if (settings && actions) settings.insertAdjacentElement("afterend", actions);
   if (actions && upload) actions.insertAdjacentElement("afterend", upload);
   if (upload && guidance) upload.insertAdjacentElement("afterend", guidance);
-  if (guidance && settings) guidance.insertAdjacentElement("afterend", settings);
 
   const gen = document.getElementById("generateBtn");
   if (gen) gen.textContent = "Fix My Prompt";

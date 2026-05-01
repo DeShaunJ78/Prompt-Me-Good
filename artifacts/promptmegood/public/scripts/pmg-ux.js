@@ -12264,23 +12264,11 @@
   }
 
   function buildExportButton() {
-    if (document.getElementById(EXPORT_BTN_ID)) return true;
-    var primaryField = document.querySelector('#prompt-form .field.field-primary');
-    if (!primaryField) return false;
-    var row = document.createElement('div');
-    row.id = EXPORT_ROW_ID;
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.id = EXPORT_BTN_ID;
-    btn.className = 'btn btn-primary';
-    btn.textContent = 'Export To Fix My Prompt';
-    var helper = document.createElement('p');
-    helper.className = 'pmg-export-to-fix-helper';
-    helper.textContent = 'Loads your idea into Your Fixed Prompt below — then refine or run it.';
-    row.appendChild(btn);
-    row.appendChild(helper);
-    primaryField.appendChild(row);
-    btn.addEventListener('click', exportToFix);
+    /* T39 (Refocus): the new column order is Goal → Prompt Tuning → Fix My Prompt.
+       #generateBtn stays in the form at order:3, so the intermediate "Export To Fix
+       My Prompt" button is no longer needed. We skip building it to avoid having two
+       primary-looking buttons in quick succession. The exportToFix() helper is kept
+       in scope so nothing else breaks if it's referenced externally. */
     return true;
   }
 
