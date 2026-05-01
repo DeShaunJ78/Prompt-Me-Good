@@ -912,12 +912,10 @@
     .strength-score ul { margin: 8px 0 0 1.1rem; padding: 0; font-size: var(--text-xs); color: var(--color-text-muted); }
     .strength-score li + li { margin-top: 2px; }
 
-    .settings-panel { margin: var(--space-3) 0; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 0 var(--space-4); background: var(--color-surface); }
-    .settings-panel > summary { list-style: none; cursor: pointer; font-size: var(--text-sm); font-weight: 600; color: var(--color-text-muted); padding: var(--space-3) 0; user-select: none; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
-    .settings-panel > summary::-webkit-details-marker { display: none; }
-    .settings-panel[open] > summary { color: var(--color-primary); border-bottom: 1px solid var(--color-border); margin-bottom: var(--space-3); }
-    .settings-panel-summary-chevron { display: inline-block; transition: transform 0.2s ease; }
-    .settings-panel[open] .settings-panel-summary-chevron { transform: rotate(180deg); }
+    /* #settingsPanel was a <details> "More Control" collapsible.
+       It is now a always-visible <section class="pmg-stack-card">
+       (Prompt Tuning) that mirrors the Photography Suite chrome. */
+    .settings-panel { margin: var(--space-3) 0; }
     .settings-panel .settings-grid { padding-bottom: var(--space-3); }
 
     .quality-row { display: flex; flex-direction: column; gap: var(--space-2); margin: 0 0 var(--space-3); }
@@ -3052,7 +3050,6 @@
       <div class="top-actions" id="top-actions">
         <a class="ghost-link" href="#builder">Start Here</a>
         <a class="ghost-link" href="#how-it-works">How It Works</a>
-        <a class="ghost-link" href="#transform-studio" data-pmg-transform-link>Transform Text Pro</a>
         <a class="ghost-link" href="./pricing.html">Pricing</a>
         <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -3359,26 +3356,24 @@
               </p>
               <p class="demo-helper" hidden style="display:none">Not Sure Where To Start? <button type="button" class="link-btn demo-helper-link" id="demo-helper-link">See It In Action</button> <button type="button" class="guidance-show-link" id="guidance-show-link" data-action="show-tips">Show Tips</button></p>
 
-              <details id="settingsPanel" class="settings-panel">
-                <summary class="settings-panel-summary">
-                  <span class="settings-panel-summary-text">More Control</span>
-                  <span class="settings-panel-summary-chevron" aria-hidden="true">▾</span>
-                </summary>
+              <section id="settingsPanel" class="settings-panel pmg-prompt-tuning pmg-stack-card" aria-labelledby="settingsPanel-title">
+                <div class="pmg-stack-card-head">
+                  <span class="pmg-eyebrow">Step 1.5</span>
+                  <h2 id="settingsPanel-title">🎛️ Prompt Tuning</h2>
+                </div>
+                <p class="pmg-stack-helper">Shape Tone, Detail, And Structure Before You Generate.</p>
                 <div class="settings-grid">
                   <div class="auto-optimize-row" id="auto-optimize-row-inside-settings">
                     <div class="auto-opt-text">
                       <strong>Auto Optimize <span style="color: var(--color-primary); font-weight: 600;">(Recommended)</span></strong>
-                      <span>Suggests the best category, tone, format, and length based on your goal.</span>
+                      <span>Suggests The Best Category, Tone, Format, And Length Based On Your Goal.</span>
                     </div>
                     <label class="switch" aria-label="Toggle Auto Optimize (mirror)">
                       <input type="checkbox" id="auto-optimize-toggle-mirror" checked />
                       <span class="slider"></span>
                     </label>
                   </div>
-              <div class="settings-divider" id="tour-step-settings" role="presentation">
-                <h3 class="settings-divider-title">More Control (Optional)</h3>
-                <p class="settings-divider-sub">These settings control tone, detail, and structure of your prompt.</p>
-              </div>
+                  <div id="tour-step-settings" role="presentation"></div>
 
               <div class="field">
                 <label for="category">Category <span class="suggested-badge" id="suggested-category" hidden>Suggested</span></label>
@@ -3546,7 +3541,7 @@
                 </div>
               </details>
                 </div>
-              </details>
+              </section>
               <div class="expert-mode-link-row">
                 <button id="expert-mode-link" type="button" class="expert-mode-link" aria-pressed="false">Switch To Expert Mode &rarr;</button>
               </div>
@@ -4016,7 +4011,7 @@
 
   <div class="post-tour-banner" id="post-tour-banner" role="status" aria-live="polite" hidden>
     <span class="post-tour-banner-icon" aria-hidden="true">🎉</span>
-    <span class="post-tour-banner-text">You&rsquo;re ready. Build a prompt below, or jump into Transform Text Pro from the top nav &mdash; then have fun prompting with PromptMeGood.</span>
+    <span class="post-tour-banner-text">You&rsquo;re ready. Build A Prompt Below And Have Fun Prompting With PromptMeGood.</span>
     <button type="button" class="post-tour-banner-btn" id="post-tour-banner-dismiss" aria-label="Dismiss message">Got It</button>
   </div>
 
@@ -9682,16 +9677,15 @@ Context:
     parsing from blocking on the network round-trip.
   -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-  <script src="/scripts/pmg-ux.js?v=close-affordances-v4" defer></script>
+  <script src="/scripts/pmg-ux.js?v=refocus-1" defer></script>
   <script src="/scripts/post-spec.js" defer></script>
   <script src="/scripts/pmg-image-fix.js" defer></script>
-  <script src="/scripts/pmg-result-states.js?v=1-task29" defer></script>
+  <script src="/scripts/pmg-result-states.js?v=2-refocus" defer></script>
   <script src="/scripts/pmg-pro.js?v=4" defer></script>
   <script src="/scripts/pmg-money-mode-pro.js?v=1" defer></script>
-  <script src="/scripts/pmg-text-studio.js?v=11-no-tabs-no-examples" defer></script>
-  <script src="/scripts/pmg-linear-flow.js?v=2-task18" defer></script>
-  <script src="/scripts/pmg-shortcuts.js?v=7-task27" defer></script>
-  <script src="/scripts/pmg-text-flow-v2.js?v=6" defer></script>
+  <script src="/scripts/pmg-linear-flow.js?v=3-refocus" defer></script>
+  <script src="/scripts/pmg-shortcuts.js?v=8-refocus" defer></script>
+  <script src="/scripts/pmg-text-flow-v2.js?v=7-refocus" defer></script>
 
 <script id="pmg-premium-polish-js">
 document.addEventListener("DOMContentLoaded", function () {

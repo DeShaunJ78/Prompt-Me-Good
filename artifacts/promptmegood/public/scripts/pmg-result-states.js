@@ -2,9 +2,8 @@
  * pmg-result-states.js  (Task #29)
  *
  * Brings the prompt builder's result panel in line with the
- * Image Generator (pmg-image-fix.js) and Transform Studio
- * (pmg-text-studio.js) by giving #resultBox a consistent set of
- * empty / loading / error visuals:
+ * Image Generator (pmg-image-fix.js) by giving #resultBox a
+ * consistent set of empty / loading / error visuals:
  *
  *   1. Empty state  — styled placeholder card on first arrival.
  *   2. Loading state — skeleton lines (reuses the shared

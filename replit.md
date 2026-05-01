@@ -32,11 +32,11 @@ PromptMeGood is a static HTML AI prompt builder (`index.html`) using vanilla Jav
 
 -   **Color Scheme:** CSS variables for theming with a default teal palette.
 -   **Responsive Design:** Adapts layout for mobile and desktop.
--   **Form Layout:** Specific placement for the "Generate" button and a collapsible settings panel.
--   **Text Prompt Builder:** Features a linear column flow for prompt creation, including a goal textarea, export CTA, optional file upload, and a "Help Me Start" guide. The result panel includes empty, loading, and error states.
--   **Text Builder Sibling Flow:** Restructures the "Create A Text Prompt" column to visually align with the Photography Suite using stack-card-style step headers and re-skinned collapsibles.
--   **Keyboard Shortcuts:** A discoverable cheatsheet for global, builder, studio, and photo suite shortcuts, triggered by a floating "?" button.
--   **Prompt Improvement Chips:** A guided chip row ("More Specific," "More Persuasive," etc.) prepended to the "Improve Your Prompt" collapsible, driving existing Text Studio modes.
+-   **Form Layout:** Specific placement for the "Generate" button and an always-visible Prompt Tuning section.
+-   **Text Prompt Builder:** Features a linear column flow for prompt creation: goal textarea → optional file upload → always-visible Prompt Tuning section (Step 1.5) → "Fix My Prompt" action. The result panel includes empty, loading, and error states.
+-   **Prompt Tuning Section:** First-class always-visible `<section id="settingsPanel">` styled with the same stack-card chrome as the Photography Suite Vibe Controls. Houses category, tone, output format, personality, max length, language, extra details, and avoid-list controls.
+-   **Text Builder Sibling Flow:** The "Create A Text Prompt" column visually aligns with the Photography Suite using stack-card-style step headers.
+-   **Keyboard Shortcuts:** A discoverable cheatsheet for global, builder, and photo suite shortcuts, triggered by a floating "?" button.
 -   **User Guidance:** Onboarding flows, modals, toasts, and "Expert Mode."
 -   **Canonical Domain & SEO:** `https://www.promptmegood.com` with comprehensive meta-tags.
 -   **Two-Column Build Area:** Dedicated areas for text and image prompts.
@@ -61,9 +61,7 @@ PromptMeGood is a static HTML AI prompt builder (`index.html`) using vanilla Jav
 -   **Hero Usage Counter:** Displays combined prompt and run counts when exceeding 100.
 -   **Image Upload + Vision Analyze:** Allows uploading images for AI analysis via `/api/analyze` to describe content and fill the prompt textarea.
 -   **Paywall Switch (Open-Beta):** Central helper `isPaywallActive()` controlled by Replit Secrets for beta access and paywall activation.
--   **Text Studio Pro:** Offers an editable textarea, file upload, 20 transformation modes (2 free, 18 Pro), a dynamic action button, and structured output with a "Custom Twist" field.
--   **Text Studio Pro · From My Vault:** Modal for browsing and inserting previously saved prompts from `localStorage`.
--   **More Control:** Advanced settings panel toggle chip.
+-   **Prompt Tuning Panel:** Always-visible advanced settings (category, tone, output format, personality, max length, language, extra details, avoid list) styled to mirror the Photography Suite Vibe Controls. Replaces the legacy collapsible "More Control" chip.
 -   **Supabase Auth + Save Best Prompts:** Magic-link email authentication for users to save and reload prompts and AI outputs.
 -   **Renderer Stability:** `T26 ObserverGuard` monkey-patches `window.MutationObserver` for stability.
 -   **Image Generation UX:** Live progress, success callout, restyled download button, and retry on errors.

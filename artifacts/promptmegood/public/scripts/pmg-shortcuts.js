@@ -10,13 +10,12 @@
  *     `pmg_has_generated` localStorage flag — never removed once
  *     set, so it survives clearHasResult() and reloads.
  *
- *   - Panel groups shortcuts by area: Global, Builder, Studio,
+ *   - Panel groups shortcuts by area: Global, Builder,
  *     Photo Suite. Open via the trigger or by pressing "?"
  *     (Shift + /). Close via the close button, Esc, or by
  *     clicking the dimmed backdrop.
  *
- *   - Adds two new gated shortcuts:
- *       S  Focus The Studio Textarea       (#pmg-ts-textarea)
+ *   - Adds one gated shortcut:
  *       R  Surprise Me                     (.pmg-photo-surprise)
  *     G (Generate) and C (Copy) are EXISTING shortcuts already
  *     wired in index.html (~line 8066) — we only document them in
@@ -225,9 +224,6 @@
     { title: 'Builder', rows: [
       { keys: ['G'], label: 'Generate Or Fix My Prompt' },
       { keys: ['C'], label: 'Copy The Result' }
-    ] },
-    { title: 'Studio', rows: [
-      { keys: ['S'], label: 'Focus The Studio Textarea' }
     ] },
     { title: 'Photo Suite', rows: [
       { keys: ['R'], label: 'Surprise Me With A Random Brief' }
@@ -518,22 +514,6 @@
     try { el.click(); return true; } catch (_) { return false; }
   }
 
-  function doFocusStudio() {
-    var ta = document.getElementById('pmg-ts-textarea');
-    if (!ta) return false;
-    /* If the studio collapsible is closed, open it first so the
-       textarea is visible before we try to focus. */
-    var details = document.getElementById('pmg-improve-collapsible');
-    if (details && !details.open) details.open = true;
-    try {
-      ta.scrollIntoView({ block: 'center', behavior: 'auto' });
-      ta.focus({ preventScroll: true });
-    } catch (_) {
-      try { ta.focus(); } catch (__) {}
-    }
-    return true;
-  }
-
   function doSurpriseMe() {
     /* The Photography Suite renders multiple Surprise Me buttons —
        grab the first visible one. */
@@ -583,12 +563,11 @@
 
     if (!shortcutSafe(e)) return;
 
-    /* Letter shortcuts NEW to this script (S, R). G and C are
+    /* Letter shortcuts NEW to this script (R). G and C are
        intentionally NOT handled here — they are owned by the
        existing inline handler in index.html (~line 8066). The
        cheatsheet documents them so users can discover them. */
     var k = (e.key || '').toLowerCase();
-    if (k === 's') { if (doFocusStudio()) e.preventDefault(); return; }
     if (k === 'r') { if (doSurpriseMe())  e.preventDefault(); return; }
   }
 

@@ -13,10 +13,12 @@
  *      already shipped on the Photography Suite
  *      (.pmg-stack-card-head, .pmg-eyebrow, .pmg-stack-helper).
  *
- *   2. Re-skins the existing <details> collapsibles
- *      (#settingsPanel "More Control", #advanced-options
- *      "Power Ups") to render with the same group-card chrome as
+ *   2. Re-skins the #advanced-options "Power Ups" <details>
+ *      collapsible to render with the same group-card chrome as
  *      the Photo Suite groups (same chevron, same active state).
+ *      The former #settingsPanel "More Control" was promoted to
+ *      a always-visible Prompt Tuning <section class="pmg-stack-card">
+ *      and uses the Photo Suite stack-card chrome directly.
  *
  *   3. Adds an Action Row right after the goal CTA so it visually
  *      mirrors the Photo Suite's `Send · Surprise · Clear` row.
@@ -136,11 +138,11 @@
       '  flex: 1 1 auto;',
       '}',
 
-      /* Re-skin the native <details> blocks (More Control, Power
-         Ups) so they look like Photo Suite group cards. Scoped
-         tight to the two known IDs so we cannot accidentally
-         restyle other <details> on the page. */
-      'body.' + BODY_CLASS + ' #settingsPanel,',
+      /* Re-skin the #advanced-options "Power Ups" <details> block
+         so it matches Photo Suite group-card chrome. The former
+         #settingsPanel "More Control" collapsible was promoted to
+         a always-visible Prompt Tuning <section class="pmg-stack-card">
+         and uses the Photo Suite stack-card chrome directly. */
       'body.' + BODY_CLASS + ' #advanced-options{',
       '  border: 1px solid color-mix(in srgb, var(--color-text, #1d2a32) 10%, transparent);',
       '  border-radius: 14px;',
@@ -149,7 +151,6 @@
       '  margin: 14px 0;',
       '  overflow: hidden;',
       '}',
-      'body.' + BODY_CLASS + ' #settingsPanel > summary,',
       'body.' + BODY_CLASS + ' #advanced-options > summary{',
       '  list-style: none;',
       '  display: flex;',
@@ -165,46 +166,30 @@
       '  border-bottom: 1px solid transparent;',
       '  transition: background-color 160ms ease;',
       '}',
-      'body.' + BODY_CLASS + ' #settingsPanel > summary::-webkit-details-marker,',
       'body.' + BODY_CLASS + ' #advanced-options > summary::-webkit-details-marker{ display: none; }',
-      'body.' + BODY_CLASS + ' #settingsPanel > summary:hover,',
       'body.' + BODY_CLASS + ' #advanced-options > summary:hover{',
       '  background: color-mix(in srgb, var(--color-primary, #0f6e6a) 8%, transparent);',
       '}',
       /* Open state */
-      'body.' + BODY_CLASS + ' #settingsPanel[open] > summary,',
       'body.' + BODY_CLASS + ' #advanced-options[open] > summary{',
       '  border-bottom-color: color-mix(in srgb, var(--color-text, #1d2a32) 8%, transparent);',
       '}',
-      /* Chevron positioning + open-state rotation. The inline CSS
-         in index.html already rotates the chevron via
-         `.settings-panel[open] .settings-panel-summary-chevron`,
-         but we re-assert it with `!important` here because some
-         third-party `.panel/.card/.settings-panel` rules elsewhere
-         in the file land later in the cascade and have caused
-         flaky rotation in automated tests. Forcing the value is
-         safe — it has no side-effect on the closed state. */
-      'body.' + BODY_CLASS + ' #settingsPanel .settings-panel-summary-chevron,',
       'body.' + BODY_CLASS + ' #advanced-options .adv-chevron{',
       '  margin-left: auto;',
       '  font-size: 14px;',
       '  color: var(--color-text-muted, #5f6b75);',
       '  display: inline-block;',
       '}',
-      'body.' + BODY_CLASS + ' #settingsPanel[open] .settings-panel-summary-chevron,',
       'body.' + BODY_CLASS + ' #advanced-options[open] .adv-chevron{',
       '  transform: rotate(180deg) !important;',
       '}',
-      'body.' + BODY_CLASS + ' #settingsPanel > .settings-grid,',
       'body.' + BODY_CLASS + ' #advanced-options > .advanced-options-body{',
       '  padding: 14px 16px 16px;',
       '}',
 
       /* Reduced motion: kill the only transition we own (summary
-         hover background). Chevron transitions are owned by the
-         shipped inline CSS, which already respects rm there. */
+         hover background). */
       '@media (prefers-reduced-motion: reduce){',
-      '  body.' + BODY_CLASS + ' #settingsPanel > summary,',
       '  body.' + BODY_CLASS + ' #advanced-options > summary{',
       '    transition: none;',
       '  }',
