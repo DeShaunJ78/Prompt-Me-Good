@@ -918,6 +918,44 @@
     .settings-panel { margin: var(--space-3) 0; }
     .settings-panel .settings-grid { padding-bottom: var(--space-3); }
 
+    /* Task #44: Prompt Tuning pill pickers — visually mirror the
+       Photography Suite pill style so the text column feels as
+       polished as the photo column. The underlying <select> stays
+       in the DOM (visually hidden) so all existing read/write
+       wiring (suggestions, history restore, demo, share, etc.)
+       continues to work without changes. */
+    .pmg-prompt-tuning .pmg-tune-native { display: none !important; }
+    .pmg-prompt-tuning .pmg-tune-pills {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin: 0;
+    }
+    .pmg-prompt-tuning .pmg-tune-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px;
+      font: inherit; font-size: var(--text-sm); font-weight: 500;
+      background: var(--color-surface); color: var(--color-text);
+      border: 1.5px solid var(--color-border); border-radius: var(--radius-full);
+      cursor: pointer; user-select: none;
+      transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 120ms ease;
+    }
+    .pmg-prompt-tuning .pmg-tune-pill:hover {
+      border-color: color-mix(in srgb, var(--color-primary) 50%, var(--color-border));
+      transform: translateY(-1px);
+    }
+    .pmg-prompt-tuning .pmg-tune-pill:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+    .pmg-prompt-tuning .pmg-tune-pill.is-active {
+      background: var(--color-primary); color: #fff; border-color: var(--color-primary);
+      box-shadow: 0 2px 6px color-mix(in srgb, var(--color-primary) 30%, transparent);
+    }
+    .pmg-prompt-tuning .pmg-tune-pill.is-active::before { content: "✓"; font-weight: 700; }
+    @media (max-width: 600px) {
+      .pmg-prompt-tuning .pmg-tune-pills { gap: 6px; }
+      .pmg-prompt-tuning .pmg-tune-pill { padding: 9px 14px; min-height: 40px; }
+    }
+
     .quality-row { display: flex; flex-direction: column; gap: var(--space-2); margin: 0 0 var(--space-3); }
     .quality-row .btn { align-self: flex-start; }
     .quality-feedback {
@@ -3396,7 +3434,7 @@
 
               <div class="field">
                 <label for="category">Category <span class="suggested-badge" id="suggested-category" hidden>Suggested</span></label>
-                <select id="category" name="category">
+                <select id="category" name="category" class="pmg-tune-native" data-pmg-tune="category">
                   <option value="business">Business</option>
                   <option value="money">Money</option>
                   <option value="content">Content</option>
@@ -3407,35 +3445,39 @@
                   <option value="faith">Faith</option>
                   <option value="other">Other</option>
                 </select>
+                <div class="pmg-tune-pills" data-pmg-tune-target="category" role="group" aria-label="Category"></div>
               </div>
 
               <div class="field">
                 <label for="skillLevel">Your Experience Level</label>
-                <select id="skillLevel" name="skillLevel">
+                <select id="skillLevel" name="skillLevel" class="pmg-tune-native" data-pmg-tune="skillLevel">
                   <option value="beginner">Beginner</option>
                   <option value="intermediate">Intermediate</option>
                   <option value="advanced">Advanced</option>
                 </select>
+                <div class="pmg-tune-pills" data-pmg-tune-target="skillLevel" role="group" aria-label="Your Experience Level"></div>
                 <p class="helper">This tells the AI how advanced or beginner you are so it can adjust the response.</p>
               </div>
 
               <div class="field">
                 <label for="tone">Tone <span class="suggested-badge" id="suggested-tone" hidden>Suggested</span></label>
-                <select id="tone" name="tone">
+                <select id="tone" name="tone" class="pmg-tune-native" data-pmg-tune="tone">
                   <option value="professional">Professional</option>
                   <option value="bold-direct">Bold &amp; Direct</option>
                   <option value="casual">Casual</option>
                   <option value="expert">Expert</option>
                 </select>
+                <div class="pmg-tune-pills" data-pmg-tune-target="tone" role="group" aria-label="Tone"></div>
               </div>
 
               <div class="field">
                 <label for="outputFormat">Output format <span class="suggested-badge" id="suggested-outputFormat" hidden>Suggested</span></label>
-                <select id="outputFormat" name="outputFormat">
+                <select id="outputFormat" name="outputFormat" class="pmg-tune-native" data-pmg-tune="outputFormat">
                   <option value="step-by-step">Step-By-Step</option>
                   <option value="list">List</option>
                   <option value="detailed breakdown">Detailed Breakdown</option>
                 </select>
+                <div class="pmg-tune-pills" data-pmg-tune-target="outputFormat" role="group" aria-label="Output format"></div>
               </div>
 
               <div class="field">
@@ -3456,7 +3498,7 @@
 
               <div class="field">
                 <label for="outputLanguage">Output Language</label>
-                <select id="outputLanguage" name="outputLanguage">
+                <select id="outputLanguage" name="outputLanguage" class="pmg-tune-native" data-pmg-tune="outputLanguage">
                   <option value="english">English</option>
                   <option value="spanish">Spanish</option>
                   <option value="portuguese">Portuguese</option>
@@ -3464,6 +3506,7 @@
                   <option value="french">French</option>
                   <option value="german">German</option>
                 </select>
+                <div class="pmg-tune-pills" data-pmg-tune-target="outputLanguage" role="group" aria-label="Output Language"></div>
                 <p class="helper">Only the AI&rsquo;s response language changes &mdash; the app stays in English.</p>
               </div>
 
@@ -5757,6 +5800,111 @@ Context:
       wireFieldClearBtn('clear-details-btn', 'details');
       wireFieldClearBtn('clear-fine-tune-btn', 'fine-tune-input');
       wireFieldClearBtn('clear-rules or limits-btn', 'rules or limits');
+
+      // ===== Task #44: Prompt Tuning pill pickers =====
+      // Renders tappable pill buttons (mirroring the Photography Suite
+      // pill style) for each tracked <select> in the Prompt Tuning
+      // panel. The native <select> stays in the DOM (visually hidden)
+      // so all existing .value reads/writes — suggestion engine,
+      // history restore, demo loader, share-link encoder, etc. —
+      // continue to work without changes. We also intercept the
+      // value setter on each tracked <select> so programmatic
+      // assignments (which do not fire 'change') still keep the
+      // pill UI in sync.
+      (function setupPromptTuningPills() {
+        var FIELDS = ['category', 'skillLevel', 'tone', 'outputFormat', 'outputLanguage'];
+        var nativeValueDesc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+        if (!nativeValueDesc || !nativeValueDesc.get || !nativeValueDesc.set) return;
+
+        function escapeAttr(s) {
+          return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+        function syncPills(container, value) {
+          var pills = container.querySelectorAll('.pmg-tune-pill');
+          for (var i = 0; i < pills.length; i++) {
+            var btn = pills[i];
+            var active = btn.getAttribute('data-value') === value;
+            btn.classList.toggle('is-active', active);
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+          }
+        }
+
+        FIELDS.forEach(function (id) {
+          var sel = document.getElementById(id);
+          if (!sel) return;
+          var container = document.querySelector('.pmg-tune-pills[data-pmg-tune-target="' + id + '"]');
+          if (!container) return;
+
+          // Build pills from existing <option> children — same labels,
+          // same values, so we never drift from the source list.
+          var html = [];
+          for (var i = 0; i < sel.options.length; i++) {
+            var opt = sel.options[i];
+            var label = (opt.textContent || opt.value || '').trim();
+            html.push(
+              '<button type="button" class="pmg-tune-pill" ' +
+                'data-value="' + escapeAttr(opt.value) + '" ' +
+                'aria-pressed="false">' +
+                escapeAttr(label) +
+              '</button>'
+            );
+          }
+          container.innerHTML = html.join('');
+
+          // Initial paint reflects whatever the select already has selected.
+          syncPills(container, sel.value);
+
+          // Pill click → set value on the native select and dispatch a
+          // 'change' event so listeners (userTouched tracker, etc.)
+          // behave exactly as they would for a real <select> change.
+          container.addEventListener('click', function (ev) {
+            var btn = ev.target.closest && ev.target.closest('.pmg-tune-pill');
+            if (!btn || !container.contains(btn)) return;
+            var newVal = btn.getAttribute('data-value');
+            if (sel.value === newVal) {
+              // Re-affirm UI in case state drifted, but skip event.
+              syncPills(container, sel.value);
+              return;
+            }
+            sel.value = newVal;
+            try {
+              sel.dispatchEvent(new Event('change', { bubbles: true }));
+            } catch (e) {
+              // Fallback for environments without Event constructor.
+              var evt = document.createEvent('HTMLEvents');
+              evt.initEvent('change', true, false);
+              sel.dispatchEvent(evt);
+            }
+          });
+
+          // Keep pills in sync if anyone else dispatches 'change'
+          // (e.g. user keyboard interaction with hidden select via
+          // assistive tech).
+          sel.addEventListener('change', function () {
+            syncPills(container, sel.value);
+          });
+
+          // Intercept programmatic .value = X assignments. Setting
+          // .value on a <select> does NOT fire 'change', so without
+          // this override the pills would drift out of sync after
+          // demo loader, history restore, suggestion application,
+          // random-prompt, etc.
+          try {
+            Object.defineProperty(sel, 'value', {
+              configurable: true,
+              get: function () { return nativeValueDesc.get.call(this); },
+              set: function (v) {
+                nativeValueDesc.set.call(this, v);
+                syncPills(container, nativeValueDesc.get.call(this));
+              }
+            });
+          } catch (e) {
+            // If defineProperty fails for any reason, the pills will
+            // still work for direct user clicks; only programmatic
+            // sync would be lost. Better to no-op than to throw.
+          }
+        });
+      })();
 
       // ===== Smart Suggestions + Auto Optimize + AI Tool Recommender + Strength Score =====
       (function setupSmartSystems() {
