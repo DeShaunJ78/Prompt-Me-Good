@@ -6312,6 +6312,13 @@
      instead of duplicating the template (which previously dropped
      non-raw entries). */
   try { window.__pmgPhotoRefreshRecent = renderRecentRow; } catch (_) {}
+  /* Task #58: expose refreshSummary so pmg-suggestions.js can keep
+     the live summary + count badges + Send button enabled-state in
+     sync after toggling a pill's negative (.is-negative) status,
+     which it does via stopImmediatePropagation in capture phase
+     and therefore bypasses the bubble-phase pill listener that
+     would normally call refreshSummary. */
+  try { window.__pmgPhotoRefreshSummary = refreshSummary; } catch (_) {}
 
   /* ---------------- Task #35: User-saved (My Combos) -------------------
    * Power users often build their own favorite combinations that don't
