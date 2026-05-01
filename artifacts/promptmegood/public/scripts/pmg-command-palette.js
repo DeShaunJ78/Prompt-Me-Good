@@ -563,7 +563,18 @@
         subtitle: 'Open the shortcuts cheatsheet',
         keywords: ['shortcuts', 'keyboard', 'help', 'keys', 'cheatsheet'],
         run: actOpenShortcuts(),
-        visible: existsSel('#pmg-shortcuts-trigger') },
+        visible: function () {
+          /* The cheatsheet trigger may be feature-gated or hidden
+             on small viewports — gate on actual visibility, not
+             just DOM existence, OR on the API surface being live
+             (window.__pmgShortcuts.open) so a programmatic open
+             still works even if the trigger is offscreen. */
+          var hasApi = !!(window.__pmgShortcuts &&
+            typeof window.__pmgShortcuts.open === 'function');
+          if (hasApi) return true;
+          var el = document.getElementById('pmg-shortcuts-trigger');
+          return !!(el && isRendered(el));
+        } },
 
       /* Preset Groups */
       { id: 'group-style', group: 'Preset Groups', icon: '🎨',
@@ -609,7 +620,11 @@
   function buildDynamicCommands() {
     var out = [];
 
-    /* My Combos. */
+    /* My Combos. We only surface entries whose corresponding
+       button is actually rendered in the DOM right now (e.g. the
+       Photo Suite must be mounted and visible — typically image
+       mode). This prevents listing a command whose run() would
+       no-op because the underlying button doesn't exist. */
     var saved = loadSavedCombos();
     saved.forEach(function (combo, i) {
       if (!combo) return;
@@ -622,16 +637,24 @@
         title: name,
         subtitle: 'Apply your saved combo',
         keywords: ['combo', 'saved', 'mine', 'preset'],
-        run: actApplySavedCombo(i)
+        run: actApplySavedCombo(i),
+        visible: (function (idx) {
+          return function () {
+            var btn = document.querySelector(
+              '.pmg-photo-saved-btn[data-saved-index="' + idx + '"]');
+            return !!(btn && isRendered(btn));
+          };
+        })(i)
       });
     });
 
-    /* Recent Combos. We label them by their index since the
-       canonical label lives inside pmg-ux's `comboLabel` helper
-       which we don't have access to from here. The visible
-       button text in the rendered Recent row will be more
-       informative — palette entries fall back to a generic
-       "Recent combo #N" label. */
+    /* Recent Combos. Same gating as My Combos — the matching
+       `.pmg-photo-recent-btn` must be rendered. We label them by
+       their index since the canonical label lives inside pmg-ux's
+       `comboLabel` helper which we don't have access to from
+       here. The visible button text in the rendered Recent row
+       will be more informative — palette entries fall back to a
+       generic "Recent combo #N" label. */
     var recent = loadRecentCombos();
     recent.forEach(function (combo, i) {
       if (!combo) return;
@@ -642,7 +665,14 @@
         title: 'Recent Combo #' + (i + 1),
         subtitle: 'Re-apply a recent photo combo',
         keywords: ['recent', 'combo', 'photo', 'reuse'],
-        run: actApplyRecentCombo(i)
+        run: actApplyRecentCombo(i),
+        visible: (function (idx) {
+          return function () {
+            var btn = document.querySelector(
+              '.pmg-photo-recent-btn[data-recent-index="' + idx + '"]');
+            return !!(btn && isRendered(btn));
+          };
+        })(i)
       });
     });
 
@@ -677,11 +707,13 @@
   }
 
   function buildAllCommands() {
-    var staticCmds = buildStaticCommands().filter(function (c) {
+    function keepVisible(c) {
       try { return typeof c.visible !== 'function' || c.visible(); }
       catch (_) { return false; }
-    });
-    return staticCmds.concat(buildDynamicCommands());
+    }
+    var staticCmds = buildStaticCommands().filter(keepVisible);
+    var dynCmds = buildDynamicCommands().filter(keepVisible);
+    return staticCmds.concat(dynCmds);
   }
 
   /* ---------------------- Fuzzy scoring ----------------------
