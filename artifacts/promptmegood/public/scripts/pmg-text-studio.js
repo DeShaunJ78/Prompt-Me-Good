@@ -1019,6 +1019,83 @@
       '  filter: brightness(1.05);',
       '}',
 
+      /* ---- Task #24: empty / skeleton / error states ----
+         Reuse the .pmg-skeleton-shimmer animation injected by
+         pmg-image-fix.js (loaded earlier) so reduce-motion + the
+         shimmer keyframes stay in one place. If pmg-image-fix.js is
+         not present (e.g. a future page that drops it), we fall back
+         to a static block — still visually a placeholder. */
+      '.pmg-ts-empty {',
+      '  display: flex; flex-direction: column; align-items: center;',
+      '  justify-content: center; gap: 12px; text-align: center;',
+      '  padding: clamp(20px, 4vw, 36px) 18px;',
+      '  background: color-mix(in srgb, var(--color-primary) 4%, var(--color-surface));',
+      '  border: 1.5px dashed color-mix(in srgb, var(--color-primary) 32%, var(--color-border));',
+      '  border-radius: var(--radius-lg);',
+      '  color: var(--color-text-muted);',
+      '}',
+      '.pmg-ts-empty-icon {',
+      '  width: 56px; height: 56px; border-radius: 14px;',
+      '  display: flex; align-items: center; justify-content: center;',
+      '  font-size: 26px; line-height: 1;',
+      '  background: color-mix(in srgb, var(--color-primary) 12%, transparent);',
+      '  color: var(--color-primary);',
+      '  border: 1.5px solid color-mix(in srgb, var(--color-primary) 28%, transparent);',
+      '}',
+      '.pmg-ts-empty-title {',
+      '  margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--color-text);',
+      '}',
+      '.pmg-ts-empty-text {',
+      '  margin: 0; font-size: var(--text-sm); color: var(--color-text-muted);',
+      '  max-width: 52ch; line-height: 1.5;',
+      '}',
+
+      '.pmg-ts-skeleton {',
+      '  display: flex; flex-direction: column; gap: 12px;',
+      '}',
+      '.pmg-ts-skeleton-card {',
+      '  display: flex; flex-direction: column; gap: 10px;',
+      '  padding: var(--space-4) var(--space-5);',
+      '  border-radius: var(--radius-lg);',
+      '  background: var(--color-surface);',
+      '  border: 1px solid var(--color-border);',
+      '}',
+      '.pmg-ts-skeleton-line {',
+      '  height: 12px; border-radius: 6px;',
+      '}',
+      '.pmg-ts-skeleton-line.is-title {',
+      '  height: 14px; width: 38%;',
+      '  background: color-mix(in srgb, var(--color-primary) 18%, var(--color-surface-2));',
+      '}',
+      '.pmg-ts-skeleton-line.is-short { width: 64%; }',
+      '.pmg-ts-skeleton-line.is-mid { width: 88%; }',
+      '.pmg-ts-skeleton-line.is-long { width: 100%; }',
+
+      '.pmg-ts-error {',
+      '  display: flex; flex-direction: column; align-items: center;',
+      '  justify-content: center; gap: 12px; text-align: center;',
+      '  padding: clamp(20px, 4vw, 32px) 18px;',
+      '  background: color-mix(in srgb, #dc2626 8%, var(--color-surface));',
+      '  border: 1.5px dashed color-mix(in srgb, #dc2626 38%, var(--color-border));',
+      '  border-radius: var(--radius-lg);',
+      '}',
+      '.pmg-ts-error-icon { font-size: 30px; line-height: 1; }',
+      '.pmg-ts-error-title {',
+      '  margin: 0; font-size: var(--text-base); font-weight: 700; color: #b91c1c;',
+      '}',
+      '[data-theme="dark"] .pmg-ts-error-title { color: #fca5a5; }',
+      '.pmg-ts-error-text {',
+      '  margin: 0; font-size: var(--text-sm); color: var(--color-text);',
+      '  max-width: 52ch; line-height: 1.5;',
+      '}',
+      '.pmg-ts-error-btn {',
+      '  min-height: 44px; padding: 10px 20px; border-radius: 999px;',
+      '  background: var(--color-primary); color: #fff; font-weight: 700;',
+      '  border: 1.5px solid var(--color-primary); cursor: pointer;',
+      '  display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm);',
+      '}',
+      '.pmg-ts-error-btn:hover { filter: brightness(1.05); }',
+
       /* Bottom toast host (fallback when window.showToast is absent) */
       '#pmg-ts-toast-host {',
       '  position: fixed;',
@@ -1510,7 +1587,9 @@
     var outputWrap = document.createElement('div');
     outputWrap.id = 'pmg-ts-output';
     outputWrap.className = 'pmg-ts-output';
-    outputWrap.hidden = true;
+    /* Task #24: the output area is always present so the empty /
+     * loading / error / result states have a single home. The empty
+     * state is rendered after mount() finishes assembling the panel. */
 
     var toastHost = document.createElement('div');
     toastHost.id = 'pmg-ts-toast-host';
@@ -1888,7 +1967,11 @@
       btn.classList.add('is-loading');
       btn.textContent = mode.loadingMsg;
     }
-    setStatus('Transforming your text…', false);
+    /* Task #24: clear the inline text status — the skeleton inside
+     * the output area now communicates that work is in flight. The
+     * status pill is reserved for short error messages and validation. */
+    setStatus('');
+    renderLoadingState();
 
     var prompt = buildPromptFor(mode, text, twist);
 
@@ -1931,11 +2014,14 @@
       } catch (_) {}
     }).catch(function (err) {
       var msg = (err && err.message) ? err.message : 'Something went wrong — please try again.';
-      if (err && err.code === 'LIMIT') {
-        setStatus(msg, true);
-      } else {
-        setStatus('Transformation failed: ' + msg, true);
-      }
+      /* Task #24: render an inline error banner with a Try Again button
+       * inside the output area instead of pushing the message into the
+       * tiny status pill. Quota / LIMIT errors get a clean message
+       * (no "Transformation failed:" prefix) since they are user-actionable. */
+      var bannerMsg = (err && err.code === 'LIMIT') ? msg : msg;
+      renderErrorState(bannerMsg);
+      /* Status pill stays cleared so it doesn't duplicate the banner. */
+      setStatus('');
       try {
         document.dispatchEvent(new CustomEvent('pmg-ts:transform-error', {
           detail: { modeId: mode.id, message: msg }
@@ -1951,18 +2037,89 @@
   }
 
   /* ------------------------------------------------------------------
-   * Render the output cards + control row
+   * Output state renderers (Task #24)
+   *
+   * The output wrap is always visible. Its content is one of four
+   * states: empty, loading, error, or result. We track which state is
+   * currently rendered with a data-attribute so other helpers can
+   * inspect it without re-parsing the DOM.
+   * ------------------------------------------------------------------ */
+  var OUTPUT_STATE_ATTR = 'data-pmg-ts-state';
+
+  function setOutputWrapVisible(wrap) {
+    if (!wrap) return;
+    if (wrap.hidden) wrap.hidden = false;
+  }
+
+  function renderEmptyState() {
+    var wrap = document.getElementById('pmg-ts-output');
+    if (!wrap) return;
+    setOutputWrapVisible(wrap);
+    wrap.setAttribute(OUTPUT_STATE_ATTR, 'empty');
+    wrap.innerHTML = [
+      '<div class="pmg-ts-empty" role="note">',
+      '  <div class="pmg-ts-empty-icon" aria-hidden="true">✨</div>',
+      '  <p class="pmg-ts-empty-title">Your Transformed Text Will Appear Here</p>',
+      '  <p class="pmg-ts-empty-text">Drop in some text above, choose what you want it to become, then tap the green action button. We will return a structured result with sections you can copy, save, or remix.</p>',
+      '</div>'
+    ].join('');
+  }
+
+  function renderLoadingState() {
+    var wrap = document.getElementById('pmg-ts-output');
+    if (!wrap) return;
+    setOutputWrapVisible(wrap);
+    wrap.setAttribute(OUTPUT_STATE_ATTR, 'loading');
+    /* A skeleton shaped like the eventual section cards: a title bar
+     * plus a few text lines per card. Two cards is enough to hint at
+     * structure without being misleading about how many sections the
+     * AI will return. */
+    var card =
+      '<div class="pmg-ts-skeleton-card" aria-hidden="true">' +
+      '  <span class="pmg-ts-skeleton-line is-title pmg-skeleton-shimmer"></span>' +
+      '  <span class="pmg-ts-skeleton-line is-long pmg-skeleton-shimmer"></span>' +
+      '  <span class="pmg-ts-skeleton-line is-mid pmg-skeleton-shimmer"></span>' +
+      '  <span class="pmg-ts-skeleton-line is-short pmg-skeleton-shimmer"></span>' +
+      '</div>';
+    wrap.innerHTML =
+      '<div class="pmg-ts-skeleton" role="status" aria-label="Transforming your text">' +
+      card + card +
+      '</div>';
+  }
+
+  function renderErrorState(msg) {
+    var wrap = document.getElementById('pmg-ts-output');
+    if (!wrap) return;
+    setOutputWrapVisible(wrap);
+    wrap.setAttribute(OUTPUT_STATE_ATTR, 'error');
+    var safe = escapeHtml(msg || 'Something went wrong while transforming your text.');
+    wrap.innerHTML = [
+      '<div class="pmg-ts-error" role="alert">',
+      '  <div class="pmg-ts-error-icon" aria-hidden="true">⚠️</div>',
+      '  <p class="pmg-ts-error-title">Transformation Failed</p>',
+      '  <p class="pmg-ts-error-text">' + safe + '</p>',
+      '  <button type="button" class="pmg-ts-error-btn" id="pmg-ts-error-retry">↻ Try Again</button>',
+      '</div>'
+    ].join('');
+    var btn = document.getElementById('pmg-ts-error-retry');
+    if (btn) btn.addEventListener('click', function () { runTransformation(); });
+  }
+
+  /* ------------------------------------------------------------------
+   * Render the output cards + control row (success state)
    * ------------------------------------------------------------------ */
   function renderOutput() {
     var wrap = document.getElementById('pmg-ts-output');
     if (!wrap) return;
 
     if (!state.lastOutput || !state.lastOutput.sections.length) {
-      wrap.hidden = true;
-      wrap.innerHTML = '';
+      /* No result yet — fall through to the empty state so the
+       * output area is never just a blank gap. */
+      renderEmptyState();
       return;
     }
-    wrap.hidden = false;
+    setOutputWrapVisible(wrap);
+    wrap.setAttribute(OUTPUT_STATE_ATTR, 'result');
     wrap.innerHTML = '';
 
     var mode = modeById(state.lastOutput.modeId) || { title: 'Result' };

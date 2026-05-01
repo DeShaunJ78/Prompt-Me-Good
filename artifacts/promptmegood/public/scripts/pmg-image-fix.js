@@ -32,6 +32,34 @@
     '#pmg-image-progress .pmg-dot{width:8px;height:8px;border-radius:50%;background:var(--color-primary);animation:pmgImgDot 1s ease-in-out infinite}',
     '@keyframes pmgImgDot{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}',
 
+    /* Shared shimmer used by both Image Generator and Transform Studio
+     * skeletons. Reduce-motion users get a plain static block (no
+     * sweeping highlight) via the prefers-reduced-motion override
+     * further down. */
+    '.pmg-skeleton-shimmer{position:relative;overflow:hidden;background:color-mix(in srgb, var(--color-text) 8%, var(--color-surface-2));border-radius:var(--radius-lg)}',
+    '.pmg-skeleton-shimmer::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg, transparent 25%, color-mix(in srgb, var(--color-text) 6%, transparent) 50%, transparent 75%);background-size:220% 100%;animation:pmgSkeletonSweep 1.4s ease-in-out infinite}',
+    '@keyframes pmgSkeletonSweep{0%{background-position:120% 0}100%{background-position:-120% 0}}',
+    '@media (prefers-reduced-motion: reduce){.pmg-skeleton-shimmer::after{animation:none;background:none}}',
+
+    /* Empty state inside the image result wrap */
+    '.pmg-image-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-3);text-align:center;padding:clamp(var(--space-6),5vw,var(--space-10)) var(--space-5);min-height:240px;color:var(--color-text-muted)}',
+    '.pmg-image-empty-frame{width:clamp(72px,16vw,108px);aspect-ratio:1;border-radius:var(--radius-lg);border:2px dashed color-mix(in srgb, var(--color-primary) 38%, var(--color-border));background:color-mix(in srgb, var(--color-primary) 6%, transparent);display:flex;align-items:center;justify-content:center;font-size:clamp(28px,6vw,42px);color:var(--color-primary)}',
+    '.pmg-image-empty-title{margin:0;font-size:var(--text-base);font-weight:700;color:var(--color-text)}',
+    '.pmg-image-empty-text{margin:0;font-size:var(--text-sm);color:var(--color-text-muted);max-width:42ch;line-height:1.5}',
+
+    /* Skeleton placeholder shaped like the final 1024x1024 image */
+    '.pmg-image-skeleton{width:100%;aspect-ratio:1;min-height:240px;border-radius:var(--radius-lg)}',
+
+    /* Error banner with Try Again */
+    '.pmg-image-error{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-3);text-align:center;padding:clamp(var(--space-6),5vw,var(--space-8)) var(--space-5);min-height:240px;background:color-mix(in srgb, #dc2626 8%, var(--color-surface-2));border:1.5px dashed color-mix(in srgb, #dc2626 38%, var(--color-border));border-radius:var(--radius-lg)}',
+    '.pmg-image-error-icon{font-size:32px;line-height:1}',
+    '.pmg-image-error-title{margin:0;font-size:var(--text-base);font-weight:700;color:#b91c1c}',
+    '[data-theme="dark"] .pmg-image-error-title{color:#fca5a5}',
+    '.pmg-image-error-text{margin:0;font-size:var(--text-sm);color:var(--color-text);max-width:48ch;line-height:1.5}',
+    '.pmg-image-error-btn{min-height:44px;padding:10px 20px;border-radius:999px;background:var(--color-primary);color:#fff;font-weight:700;border:1.5px solid var(--color-primary);cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;font-size:var(--text-sm)}',
+    '.pmg-image-error-btn:hover{filter:brightness(1.05)}',
+
+
     /* Success callout above the download button */
     '#pmg-image-success{display:none;margin:.5rem 0 .75rem;padding:.75rem 1rem;border-radius:12px;background:color-mix(in srgb, #16a34a 12%, var(--color-surface));border:1.5px solid color-mix(in srgb, #16a34a 40%, var(--color-border));color:var(--color-text);font-size:.95rem;font-weight:600;line-height:1.4;text-align:center}',
     '#pmg-image-success.pmg-show{display:block;animation:pmgImgFade .35s ease both}',
@@ -95,11 +123,7 @@
     btn.id = 'pmg-image-retry';
     btn.type = 'button';
     btn.innerHTML = '↻ Try Generating Again';
-    btn.addEventListener('click', function () {
-      hideRetry();
-      var ig = $('image-generate-btn');
-      if (ig) ig.click();
-    });
+    btn.addEventListener('click', triggerRetry);
     var wrap = $('imageResultWrap');
     if (wrap && wrap.parentNode) {
       wrap.parentNode.insertBefore(btn, wrap.nextSibling);
@@ -107,6 +131,133 @@
       section.appendChild(btn);
     }
     return btn;
+  }
+
+  /* ---- New empty / skeleton / error renderers (Task #24) ----
+   * These render INSIDE #imageResultWrap, replacing the legacy
+   * `.image-placeholder`, `.image-generating-state`, and inline error
+   * text. They use a small render flag so the MutationObserver below
+   * does not fight with itself when we write our own markup. */
+  var WRAP_STATE_ATTR = 'data-pmg-state';
+  /* Re-entry guard for the MutationObserver — set true while we are
+   * mutating the wrap ourselves so the observer ignores our own writes. */
+  var renderingOurOwnState = false;
+
+  function setWrapState(wrap, name, html) {
+    if (!wrap) return;
+    renderingOurOwnState = true;
+    wrap.setAttribute(WRAP_STATE_ATTR, name);
+    wrap.innerHTML = html;
+    /* Release the guard on the next frame so any synchronous mutation
+     * records have already been queued and ignored. */
+    setTimeout(function () { renderingOurOwnState = false; }, 0);
+  }
+
+  function emptyStateHtml() {
+    return [
+      '<div class="pmg-image-empty" role="note">',
+      '  <div class="pmg-image-empty-frame" aria-hidden="true">🖼</div>',
+      '  <p class="pmg-image-empty-title">Your Generated Image Will Appear Here</p>',
+      '  <p class="pmg-image-empty-text">Describe the image you want above, then tap Generate Image. We will paint it with DALL·E 3 and drop it into this frame in about 10–25 seconds.</p>',
+      '</div>'
+    ].join('');
+  }
+
+  function skeletonStateHtml() {
+    return '<div class="pmg-image-skeleton pmg-skeleton-shimmer" role="img" aria-label="Loading generated image"></div>';
+  }
+
+  function errorStateHtml(msg) {
+    var safe = String(msg || 'Something went wrong while generating your image.')
+      .replace(/[<>&"]/g, function (c) { return ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' })[c]; });
+    return [
+      '<div class="pmg-image-error" role="alert">',
+      '  <div class="pmg-image-error-icon" aria-hidden="true">⚠️</div>',
+      '  <p class="pmg-image-error-title">Image Generation Failed</p>',
+      '  <p class="pmg-image-error-text">' + safe + '</p>',
+      '  <button type="button" class="pmg-image-error-btn" id="pmg-image-error-retry">↻ Try Again</button>',
+      '</div>'
+    ].join('');
+  }
+
+  function renderEmpty(wrap) {
+    if (!wrap) return;
+    if (wrap.querySelector('img')) return; /* never overwrite a real image */
+    setWrapState(wrap, 'empty', emptyStateHtml());
+  }
+
+  function renderSkeleton(wrap) {
+    if (!wrap) return;
+    setWrapState(wrap, 'loading', skeletonStateHtml());
+  }
+
+  function renderError(wrap, msg) {
+    if (!wrap) return;
+    setWrapState(wrap, 'error', errorStateHtml(msg));
+    var btn = wrap.querySelector('#pmg-image-error-retry');
+    if (btn) btn.addEventListener('click', triggerRetry);
+  }
+
+  function triggerRetry() {
+    hideRetry();
+    var wrap = $('imageResultWrap');
+    if (wrap) renderSkeleton(wrap);
+    var ig = $('image-generate-btn');
+    if (ig) {
+      ig.click();
+      return;
+    }
+    /* Fallback: photo-mode flow (image-generate-btn hidden) — call the
+     * shared image generator directly. */
+    if (typeof window.runImageGeneration === 'function') {
+      try { window.runImageGeneration(); } catch (_) {}
+    } else if (typeof window.generateImage === 'function') {
+      try { window.generateImage(); } catch (_) {}
+    }
+  }
+
+  function isImageMode() {
+    var b = document.body;
+    if (!b) return false;
+    return b.classList.contains('image-mode') || b.classList.contains('photo-mode-active');
+  }
+
+  function showSectionIfImageMode(section) {
+    if (!section) return;
+    if (!isImageMode()) return;
+    if (section.hasAttribute('hidden')) section.removeAttribute('hidden');
+  }
+
+  function maybeShowEmptyState(section, wrap) {
+    if (!section || !wrap) return;
+    if (!isImageMode()) return;
+    if (wrap.querySelector('img')) return;
+    var state = wrap.getAttribute(WRAP_STATE_ATTR);
+    if (state === 'loading' || state === 'error') return;
+    showSectionIfImageMode(section);
+    renderEmpty(wrap);
+  }
+
+  /* Detect the legacy text loading indicator written by the inline
+   * generateImage / runImageGeneration scripts in index.html. */
+  function looksLikeLegacyLoading(wrap) {
+    if (!wrap) return false;
+    if (wrap.querySelector('.image-generating-state')) return true;
+    if (wrap.querySelector('.image-spinner')) return true;
+    return false;
+  }
+
+  /* Detect the legacy inline error text written into the wrap. */
+  function looksLikeLegacyError(wrap) {
+    if (!wrap) return null;
+    if (wrap.querySelector('img')) return null;
+    var state = wrap.getAttribute(WRAP_STATE_ATTR);
+    if (state === 'error') return null;
+    var txt = (wrap.textContent || '').trim();
+    if (!/⚠️|error|failed|too many|try again|denied|network/i.test(txt)) return null;
+    /* Strip leading warning glyph + whitespace for cleaner display. */
+    var cleaned = txt.replace(/^[\s⚠️]+/, '').trim();
+    return cleaned || 'Something went wrong while generating your image.';
   }
 
   function showProgress(section) {
@@ -200,7 +351,22 @@
     gen.dataset.pmgImageFixBound = '1';
     styleDownloadBtn(dl);
 
-    /* Click — show progress + clear stale success/retry */
+    /* If the user is already in image mode at script-load time, surface
+     * the empty state immediately so the result frame is never blank. */
+    maybeShowEmptyState(section, wrap);
+
+    /* Watch the body for image-mode toggling so we can flip the empty
+     * state in / out as the user moves between Write and Image modes. */
+    if ('MutationObserver' in window) {
+      var bodyMo = new MutationObserver(function () {
+        if (isImageMode()) {
+          maybeShowEmptyState(section, wrap);
+        }
+      });
+      bodyMo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    /* Click — show progress + skeleton + clear stale success/retry */
     gen.addEventListener('click', function () {
       hideSuccess();
       hideRetry();
@@ -210,22 +376,35 @@
         dlNow.style.display = 'none';
       }
       showProgress(section);
+      /* Render the skeleton straight away, then again on the next tick
+       * to overwrite the inline `image-generating-state` text loader
+       * that the legacy generateImage / runImageGeneration handlers
+       * synchronously set after this listener runs. */
+      var w = $('imageResultWrap');
+      renderSkeleton(w);
+      setTimeout(function () {
+        var w2 = $('imageResultWrap');
+        if (w2 && !w2.querySelector('img')) renderSkeleton(w2);
+      }, 0);
     }, true);
 
-    /* Watch the wrap for the result <img> or an error message */
+    /* Watch the wrap for the result <img>, the legacy text loader, or
+     * an inline error message — and translate each into our richer
+     * skeleton / error banner. Re-entry guarded so we don't recurse. */
     if (!('MutationObserver' in window)) return;
     var mo = new MutationObserver(function () {
-      var img = wrap.querySelector('img');
-      var txt = (wrap.textContent || '').trim();
-      var looksError = /⚠️|error|failed|too many|try again|denied|network/i.test(txt) && !img;
-
+      if (renderingOurOwnState) return;
+      var w = wrap;
+      var img = w.querySelector('img');
       if (img && img.getAttribute('src')) {
         hideProgress();
         resetGenerateBtnLabel();
+        /* Image present — clear our render-state marker so future
+         * mutations are evaluated freshly. */
+        w.removeAttribute(WRAP_STATE_ATTR);
         var dlEl = $('imageDownloadBtn');
         styleDownloadBtn(dlEl);
         if (dlEl) {
-          /* Make sure download href is set even if the original handler missed it */
           if (!dlEl.getAttribute('href') || dlEl.getAttribute('href') === '') {
             dlEl.setAttribute('href', img.getAttribute('src'));
           }
@@ -233,10 +412,23 @@
           dlEl.style.display = 'inline-flex';
         }
         showSuccess(section);
-      } else if (looksError) {
+        return;
+      }
+      var errMsg = looksLikeLegacyError(w);
+      if (errMsg) {
         hideProgress();
         resetGenerateBtnLabel();
-        showRetry(section, 'Try Generating Again');
+        renderError(w, errMsg);
+        return;
+      }
+      if (looksLikeLegacyLoading(w)) {
+        renderSkeleton(w);
+        return;
+      }
+      /* Pre-generation placeholder text — replace with empty state. */
+      var state = w.getAttribute(WRAP_STATE_ATTR);
+      if (!state && w.querySelector('.image-placeholder')) {
+        renderEmpty(w);
       }
     });
     mo.observe(wrap, { childList: true, subtree: true, characterData: true });
