@@ -4,8 +4,11 @@
  * Discoverable Keyboard Shortcuts cheatsheet panel.
  *
  *   - Floating "?" trigger button at bottom-left of the viewport.
- *     Hidden until `body.pmg-has-generated` is set (first
- *     successful generation), then visible across reloads.
+ *     Hidden until the user has completed at least one successful
+ *     generation. Visibility is owned by a dedicated body class
+ *     `pmg-shortcuts-unlocked` that we manage from the
+ *     `pmg_has_generated` localStorage flag — never removed once
+ *     set, so it survives clearHasResult() and reloads.
  *
  *   - Panel groups shortcuts by area: Global, Builder, Studio,
  *     Photo Suite. Open via the trigger or by pressing "?"
@@ -84,7 +87,13 @@
       '  box-shadow: 0 4px 14px rgba(0,0,0,0.12);',
       '  transition: background-color 160ms ease, transform 120ms ease;',
       '}',
-      'body.pmg-has-generated #' + TRIGGER_ID + '{ display: inline-flex; }',
+      /* Visibility is owned by the dedicated `pmg-shortcuts-unlocked`
+         body class managed in this script. We deliberately do NOT key
+         off `pmg-has-generated` because pmg-ux.js's clearHasResult()
+         removes that class on prompt reset, which would hide an entry
+         point the user has already discovered. Once unlocked, stays
+         unlocked for the session/profile (localStorage-backed). */
+      'body.pmg-shortcuts-unlocked #' + TRIGGER_ID + '{ display: inline-flex; }',
       '#' + TRIGGER_ID + ':hover{',
       '  background: color-mix(in srgb, var(--color-primary, #0f6e6a) 8%, var(--color-surface, #fff));',
       '}',
@@ -155,8 +164,10 @@
       '  margin: 14px 0 0;',
       '}',
       '#' + PANEL_ID + ' .pmg-shortcuts-group-title{',
-      '  font-size: 12px; font-weight: 700; letter-spacing: 0.06em;',
-      '  text-transform: uppercase;',
+      '  font-size: 12px; font-weight: 700; letter-spacing: 0.04em;',
+      /* No text-transform — group titles ("Global", "Builder", etc.)
+         are written in Title Case in the source and must render
+         exactly as-is (Title Case acceptance criterion). */
       '  color: var(--color-text-muted, #5f6b75);',
       '  margin: 0 0 8px;',
       '}',
@@ -541,30 +552,53 @@
     if (k === 'r') { if (doSurpriseMe())  e.preventDefault(); return; }
   }
 
-  /* -------- Visibility gate: trigger only after first generation.
-     `body.pmg-has-generated` is already toggled by pmg-ux.js
-     based on the same localStorage key, so the CSS handles the
-     visibility transition automatically. We just make sure the
-     class is applied on first script load too in case the user
-     loads the page after having generated previously and the
-     page-script race leaves it unset for a tick. -------- */
-  function applyVisibility() {
+  /* -------- Trigger visibility (sticky after first generation).
+     We own a dedicated body class `pmg-shortcuts-unlocked` whose
+     truth is `localStorage.pmg_has_generated`. We do NOT rely on
+     `body.pmg-has-generated` because pmg-ux.js's clearHasResult()
+     removes that on prompt reset, which would hide a discovered
+     entry point. Once unlocked, stays unlocked. -------- */
+  var UNLOCKED_CLASS = 'pmg-shortcuts-unlocked';
+
+  function isFlagSet() {
     try {
-      if (localStorage.getItem(HAS_GEN_KEY) === '1' || localStorage.getItem(HAS_GEN_KEY) === 'true') {
-        if (document.body) document.body.classList.add('pmg-has-generated');
-      }
-    } catch (_) {}
+      var v = localStorage.getItem(HAS_GEN_KEY);
+      return v === '1' || v === 'true';
+    } catch (_) { return false; }
   }
 
-  /* Listen for cross-tab updates so the trigger appears mid-session
-     when generation flips the flag. Same-tab updates are picked up
-     because pmg-ux.js sets the body class itself, which our CSS
-     keys off. */
+  function applyVisibility() {
+    if (!document.body) return;
+    if (isFlagSet() || document.body.classList.contains('pmg-has-generated')) {
+      document.body.classList.add(UNLOCKED_CLASS);
+    }
+  }
+
+  /* Watch for the moment generation first happens. pmg-ux.js
+     toggles `body.pmg-has-generated` synchronously when a result
+     arrives, so observing body class mutations lets us flip our
+     own sticky class without coupling to its lifecycle. We never
+     remove UNLOCKED_CLASS — only add. */
   function listenForFlagFlip() {
     try {
+      /* Cross-tab storage updates */
       window.addEventListener('storage', function (ev) {
         if (ev && ev.key === HAS_GEN_KEY) applyVisibility();
       });
+    } catch (_) {}
+    try {
+      /* Same-tab: watch body for the pmg-has-generated class
+         appearing, then mark sticky-unlocked. */
+      if (document.body && typeof MutationObserver === 'function') {
+        var mo = new MutationObserver(function () {
+          if (document.body.classList.contains(UNLOCKED_CLASS)) {
+            mo.disconnect();
+            return;
+          }
+          applyVisibility();
+        });
+        mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+      }
     } catch (_) {}
   }
 
