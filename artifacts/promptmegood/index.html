@@ -4857,7 +4857,28 @@ Context:
       }
 
       function saveHistory(items) {
-        try { localStorage.setItem(HISTORY_KEY, JSON.stringify(items)); } catch (e) {}
+        try {
+          localStorage.setItem(HISTORY_KEY, JSON.stringify(items));
+          if (window.__pmgHistoryStates && typeof window.__pmgHistoryStates.hideWriteError === 'function') {
+            window.__pmgHistoryStates.hideWriteError();
+          }
+        } catch (e) {
+          var isQuota = !!(e && (
+            e.name === 'QuotaExceededError' ||
+            e.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+            (typeof e.code === 'number' && (e.code === 22 || e.code === 1014))
+          ));
+          var msg = isQuota
+            ? 'Your browser is out of room for saved prompts on this device. Try clearing some old saves, or copy anything important before you leave \u2014 new saves won\u2019t persist on refresh.'
+            : 'Your browser isn\u2019t letting us save prompts on this device (private mode or site data is blocked). Copy anything important before you leave \u2014 it won\u2019t be in your vault on refresh.';
+          if (window.__pmgHistoryStates && typeof window.__pmgHistoryStates.showWriteError === 'function') {
+            window.__pmgHistoryStates.showWriteError(msg);
+          }
+          if (!saveHistory.__toastShown && typeof window.showToast === 'function') {
+            saveHistory.__toastShown = true;
+            try { window.showToast(isQuota ? 'Out of room \u2014 prompts won\u2019t save on this device.' : 'This browser is blocking saved prompts. Copy anything important.'); } catch (_) {}
+          }
+        }
       }
 
       function escapeHtml(str) {
@@ -9791,7 +9812,7 @@ Context:
   <script src="/scripts/post-spec.js" defer></script>
   <script src="/scripts/pmg-image-fix.js?v=img-progress-2" defer></script>
   <script src="/scripts/pmg-result-states.js?v=2-refocus" defer></script>
-  <script src="/scripts/pmg-history-states.js?v=2-task41" defer></script>
+  <script src="/scripts/pmg-history-states.js?v=3-task42" defer></script>
   <script src="/scripts/pmg-pro.js?v=4" defer></script>
   <script src="/scripts/pmg-money-mode-pro.js?v=1" defer></script>
   <script src="/scripts/pmg-linear-flow.js?v=3-refocus" defer></script>

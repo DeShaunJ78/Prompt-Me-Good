@@ -76,7 +76,22 @@
     '.pmg-history-error-text{margin:0;font-size:var(--text-sm);color:var(--color-text);max-width:48ch;line-height:1.5}',
     '.pmg-history-error-actions{display:flex;gap:var(--space-2);flex-wrap:wrap;justify-content:center;margin-top:var(--space-1)}',
     '.pmg-history-error-btn{min-height:44px;padding:10px 20px;border-radius:999px;background:#dc2626;color:#fff;font-weight:700;border:1.5px solid #dc2626;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;font-size:var(--text-sm)}',
-    '.pmg-history-error-btn:hover{filter:brightness(1.05)}'
+    '.pmg-history-error-btn:hover{filter:brightness(1.05)}',
+
+    /* Inline write-blocked warning banner — same color family as
+     * .pmg-history-error-card but slim, dismissible, and meant to
+     * sit ABOVE the existing list (we never destroy the list). */
+    '.pmg-history-write-warning{display:flex;align-items:flex-start;gap:var(--space-3);padding:12px 14px;margin:0 0 var(--space-3);background:color-mix(in srgb, #dc2626 8%, var(--color-surface-2));border:1.5px solid color-mix(in srgb, #dc2626 38%, var(--color-border));border-radius:var(--radius-lg);color:var(--color-text);font-size:var(--text-sm);line-height:1.45;animation:pmg-write-warn-in .22s ease-out both}',
+    '@keyframes pmg-write-warn-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}',
+    '@media (prefers-reduced-motion: reduce){.pmg-history-write-warning{animation:none}}',
+    '.pmg-history-write-warning-icon{flex:0 0 auto;font-size:18px;line-height:1.2;margin-top:1px}',
+    '.pmg-history-write-warning-body{flex:1 1 auto;min-width:0}',
+    '.pmg-history-write-warning-title{margin:0 0 2px;font-size:var(--text-sm);font-weight:700;color:#b91c1c}',
+    '[data-theme="dark"] .pmg-history-write-warning-title{color:#fca5a5}',
+    '.pmg-history-write-warning-text{margin:0;font-size:13px;color:var(--color-text);overflow-wrap:anywhere}',
+    '.pmg-history-write-warning-dismiss{flex:0 0 auto;align-self:flex-start;background:transparent;border:0;color:var(--color-text-muted);font-size:18px;line-height:1;padding:4px 6px;cursor:pointer;border-radius:6px;min-width:32px;min-height:32px;display:inline-flex;align-items:center;justify-content:center}',
+    '.pmg-history-write-warning-dismiss:hover{background:color-mix(in srgb, #dc2626 12%, transparent);color:#b91c1c}',
+    '.pmg-history-write-warning-dismiss:focus-visible{outline:2px solid #dc2626;outline-offset:2px}'
   ].join(''));
 
   function escapeHtml(str) {
@@ -143,6 +158,54 @@
     );
   }
 
+  var WRITE_WARNING_ID = 'pmg-history-write-warning';
+
+  function findHistoryAnchor() {
+    return document.getElementById('history-list');
+  }
+
+  function ensureWriteWarningEl(message) {
+    var existing = document.getElementById(WRITE_WARNING_ID);
+    if (existing) {
+      var textEl = existing.querySelector('.pmg-history-write-warning-text');
+      if (textEl && message) textEl.textContent = message;
+      existing.hidden = false;
+      return existing;
+    }
+    var anchor = findHistoryAnchor();
+    if (!anchor || !anchor.parentNode) return null;
+    var banner = document.createElement('div');
+    banner.id = WRITE_WARNING_ID;
+    banner.className = 'pmg-history-write-warning';
+    banner.setAttribute('role', 'status');
+    banner.setAttribute('aria-live', 'polite');
+    banner.innerHTML =
+      '<span class="pmg-history-write-warning-icon" aria-hidden="true">⚠️</span>' +
+      '<div class="pmg-history-write-warning-body">' +
+        '<p class="pmg-history-write-warning-title">Saving to this browser is blocked</p>' +
+        '<p class="pmg-history-write-warning-text">' + escapeHtml(message || '') + '</p>' +
+      '</div>' +
+      '<button type="button" class="pmg-history-write-warning-dismiss" aria-label="Dismiss this warning">×</button>';
+    var btn = banner.querySelector('.pmg-history-write-warning-dismiss');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        hideWriteError();
+      });
+    }
+    anchor.parentNode.insertBefore(banner, anchor);
+    return banner;
+  }
+
+  function showWriteError(message) {
+    var msg = message || "Your browser isn\u2019t letting us save prompts on this device. Copy anything important before you leave \u2014 it won\u2019t be in your vault on refresh.";
+    return ensureWriteWarningEl(msg);
+  }
+
+  function hideWriteError() {
+    var el = document.getElementById(WRITE_WARNING_ID);
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+  }
+
   window.__pmgHistoryStates = {
     renderEmpty: function (el, opts) {
       if (!el) return;
@@ -156,6 +219,8 @@
       if (!el) return;
       el.innerHTML = errorMarkup();
     },
+    showWriteError: showWriteError,
+    hideWriteError: hideWriteError,
     emptyMarkup: emptyMarkup,
     skeletonMarkup: skeletonMarkup,
     errorMarkup: errorMarkup
