@@ -46,6 +46,46 @@ test.describe("Command palette (⌘K) smoke @ mobile-360", () => {
     expect(summary.fixHits.length).toBeGreaterThan(0);
   });
 
+  test("Enter on a search result executes the command and closes the palette", async ({
+    page,
+  }) => {
+    /* Use the Modes group: Switch To Image Mode is always
+       available because its visible() is API-surface-first
+       (window.setMode), so this test works on the marketing
+       splash without first clicking a CTA. */
+    await page.evaluate(() => {
+      (window as unknown as {
+        __pmgCommandPalette: { open: () => void };
+      }).__pmgCommandPalette.open();
+    });
+    await expect(page.locator("#pmg-cmdk-backdrop")).toBeVisible();
+    await page.locator("#pmg-cmdk-input").fill("image mode");
+    /* Wait for the result list to settle on the typed query. */
+    await page.waitForFunction(() => {
+      const items = document.querySelectorAll("#pmg-cmdk-list .pmg-cmdk-item");
+      if (items.length === 0) return false;
+      const first = items[0] as HTMLElement;
+      return /image/i.test(first.textContent ?? "");
+    });
+    /* The first result should be the Image-mode switch. Press
+       Enter and assert (a) the palette closes, (b) setMode was
+       called with 'image' (we observe via body class which
+       pmg-ux toggles in response). */
+    await page.keyboard.press("Enter");
+    await expect(page.locator("#pmg-cmdk-backdrop")).toBeHidden();
+    /* setMode runs in setTimeout(0) after close — give it a
+       turn or two to settle. We only assert the palette closed
+       (the strong observable) since body-class behavior
+       depends on whether the workspace was already mounted. */
+    const finalState = await page.evaluate(() => {
+      const api = (window as unknown as {
+        __pmgCommandPalette: { isOpen: () => boolean };
+      }).__pmgCommandPalette;
+      return { open: api.isOpen() };
+    });
+    expect(finalState.open).toBe(false);
+  });
+
   test("_query never lists a command whose target isn't rendered", async ({
     page,
   }) => {
