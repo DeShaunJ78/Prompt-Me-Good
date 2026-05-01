@@ -4541,6 +4541,15 @@ Context:
       // Expose so IIFEs declared after the main app IIFE (e.g. share, tooltip) can call it.
       window.showToast = showToast;
 
+      // T48 Text Builder live feedback: pmg-text-feedback.js needs to mirror the
+      // assembled prompt and read the same form values the submit handler reads,
+      // so it doesn't drift from what "Fix My Prompt" actually sends. Expose the
+      // exact same builders the form uses — never duplicate the assembly logic.
+      window.__pmgText = {
+        getFormData: getFormData,
+        generatePrompt: generatePrompt
+      };
+
       const SAVE_TIP_DISMISSED_KEY = 'promptmegood:saveTipDismissed:v1';
       const SAVE_TIP_COUNT_KEY = 'promptmegood:saveTipCount:v1';
       const SAVE_TIP_LIFETIME_LIMIT = 4;
@@ -9814,6 +9823,7 @@ Context:
   <script src="/scripts/pmg-linear-flow.js?v=3-refocus" defer></script>
   <script src="/scripts/pmg-shortcuts.js?v=8-refocus" defer></script>
   <script src="/scripts/pmg-text-flow-v2.js?v=7-refocus" defer></script>
+  <script src="/scripts/pmg-text-feedback.js?v=task48-4" defer></script>
 
 <script id="pmg-premium-polish-js">
 document.addEventListener("DOMContentLoaded", function () {
