@@ -165,6 +165,15 @@ test.describe("Global undo stack @ mobile-360", () => {
     await page.locator("#pmg-test-pill").click();
     await expect(page.locator("#pmg-test-pill.is-active")).toBeVisible();
 
+    /* Wait for the capture-phase listener's setTimeout(0) snapshot/diff
+       to land its entry on the stack. Without this wait the pill
+       click may race the undo call. */
+    await page.waitForFunction(
+      () => (window as unknown as Win).__pmgUndo!.getStack().length >= 1,
+      undefined,
+      { timeout: 2000 },
+    );
+
     /* Undo should remove .is-active. */
     await page.evaluate(() => (window as unknown as Win).__pmgUndo!.undo());
     await expect(page.locator("#pmg-test-pill.is-active")).toHaveCount(0);
