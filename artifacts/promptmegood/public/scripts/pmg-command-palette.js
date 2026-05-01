@@ -1122,6 +1122,10 @@
     if ((e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey) {
       var k = (e.key || '').toLowerCase();
       if (k === 'k') {
+        /* Ignore key-repeat: holding ⌘/Ctrl+K shouldn't rapidly
+           toggle the palette open/close. Only the initial press
+           registers; releasing and pressing again is required. */
+        if (e.repeat) { e.preventDefault(); return; }
         e.preventDefault();
         e.stopPropagation();
         togglePalette();
