@@ -7,22 +7,23 @@
  * Palette) so users can recognise presets at a glance instead
  * of guessing from text labels.
  *
- * Thumbnails are inline SVGs — zero network requests, instantly
- * available, no decoding stalls, and they re-style cleanly in
- * dark mode and reduce-motion contexts.
+ * Thumbnails are static SVG files served from
+ * /images/presets/<group>-<slug>.svg. Each <img> uses native
+ * loading="lazy" and decoding="async" so the browser defers the
+ * fetch until the preset scrolls near the viewport.
  *
  * Lazy-load strategy:
  *   • Module is loaded with `defer` so it never blocks parsing.
  *   • A MutationObserver waits for the photo suite to mount
  *     (pmg-ux.js renders it asynchronously after init).
- *   • An IntersectionObserver injects each thumbnail only when
- *     its preset button scrolls into view, so off-screen presets
- *     never render their SVG.
+ *   • Each <img> uses native loading="lazy" — no per-image JS
+ *     observer needed, the browser handles deferral.
  *
  * Accessibility:
- *   • Thumbnails are decorative (aria-hidden="true"). The button
- *     label already announces the preset name to AT.
- *   • aria-label and visible text are unchanged.
+ *   • Each <img> has descriptive alt text (e.g. "Cinematic style
+ *     thumbnail: dark widescreen frame with lens flare") so a
+ *     screen-reader user gets the same visual hint as a sighted
+ *     one. The button's existing aria-label is unchanged.
  *
  * Strict additive: never replaces the button text, never alters
  * click handlers, never blocks interactions. If anything inside
@@ -49,204 +50,83 @@
   var SUITE_ID    = 'pmg-photo-suite';
   var THUMB_ATTR  = 'data-pmg-thumb';
   var DONE_VALUE  = '1';
+  var BASE_PATH   = '/images/presets/';
 
   /* ---------------------------------------------------------------
-   * Thumbnail SVG library — keyed by [group][presetIndex] to match
+   * Thumbnail manifest — keyed by [group][presetIndex] to match
    * the PRESETS map in pmg-ux.js. Order MUST stay in sync with that
    * file's preset order; if a preset is added or reordered there,
-   * add a matching thumbnail here. Falls back to a generic dot if
-   * a preset has no entry.
+   * add a matching manifest entry here AND a matching SVG file
+   * under public/images/presets/. Falls back to a generic dot if a
+   * preset has no entry.
    * --------------------------------------------------------------- */
   var THUMBS = {
     style: [
-      /* Cinematic — letterbox + lens flare highlight */
-      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-        + '<rect width="24" height="24" rx="4" fill="#1a1a1a"/>'
-        + '<rect y="3.5" width="24" height="3" fill="#000"/>'
-        + '<rect y="17.5" width="24" height="3" fill="#000"/>'
-        + '<circle cx="16" cy="12" r="2.2" fill="#fff" opacity="0.9"/>'
-        + '<circle cx="16" cy="12" r="4.5" fill="none" stroke="#fff" stroke-width="0.5" opacity="0.35"/>'
-        + '<circle cx="9" cy="14" r="1" fill="#ff9a3a" opacity="0.7"/>'
-      + '</svg>',
-      /* Editorial — clean type stack on bright surface */
-      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-        + '<rect width="24" height="24" rx="4" fill="#fafaf7"/>'
-        + '<rect x="5" y="6" width="14" height="1.6" rx="0.4" fill="#1a1a1a"/>'
-        + '<rect x="5" y="10" width="11" height="0.9" rx="0.3" fill="#888"/>'
-        + '<rect x="5" y="13" width="13" height="0.9" rx="0.3" fill="#888"/>'
-        + '<rect x="5" y="16" width="8"  height="0.9" rx="0.3" fill="#888"/>'
-      + '</svg>',
-      /* Vintage Film — sepia gradient + grain */
-      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-        + '<defs><linearGradient id="pmgVt1" x1="0" y1="0" x2="1" y2="1">'
-        +   '<stop offset="0" stop-color="#c89567"/><stop offset="1" stop-color="#7a4a2a"/>'
-        + '</linearGradient></defs>'
-        + '<rect width="24" height="24" rx="4" fill="url(#pmgVt1)"/>'
-        + '<circle cx="6"  cy="8"  r="0.7" fill="#fff" opacity="0.45"/>'
-        + '<circle cx="14" cy="6"  r="0.5" fill="#fff" opacity="0.35"/>'
-        + '<circle cx="18" cy="13" r="0.8" fill="#fff" opacity="0.4"/>'
-        + '<circle cx="9"  cy="17" r="0.5" fill="#000" opacity="0.3"/>'
-        + '<circle cx="16" cy="19" r="0.6" fill="#000" opacity="0.3"/>'
-      + '</svg>',
-      /* Minimalist — single dot on negative space */
-      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-        + '<rect width="24" height="24" rx="4" fill="#f4f3ef"/>'
-        + '<circle cx="12" cy="12" r="2.4" fill="#222"/>'
-      + '</svg>'
+      { file: 'style-cinematic.svg',
+        alt:  'Cinematic style thumbnail: dark widescreen frame with letterbox bars and a lens flare highlight.' },
+      { file: 'style-editorial.svg',
+        alt:  'Editorial style thumbnail: clean light surface with stacked headline and body text bars.' },
+      { file: 'style-vintage-film.svg',
+        alt:  'Vintage Film style thumbnail: warm sepia gradient with film grain speckles.' },
+      { file: 'style-minimalist.svg',
+        alt:  'Minimalist style thumbnail: a single small dark dot centred on a calm off-white field.' }
     ],
 
     camera: [
-      /* Portrait Lens — sharp center subject + bokeh */
-      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-        + '<rect width="24" height="24" rx="4" fill="#262633"/>'
-        + '<circle cx="6"  cy="6"  r="2.6" fill="#fff" opacity="0.22"/>'
-        + '<circle cx="18" cy="7"  r="2.1" fill="#fff" opacity="0.3"/>'
-        + '<circle cx="5"  cy="18" r="2.3" fill="#fff" opacity="0.22"/>'
-        + '<circle cx="19" cy="18" r="2"   fill="#fff" opacity="0.3"/>'
-        + '<circle cx="12" cy="12" r="3.2" fill="#fff"/>'
-      + '</svg>',
-      /* Wide Landscape — sky + mountains + sun */
-      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-        + '<defs><linearGradient id="pmgWL1" x1="0" y1="0" x2="0" y2="1">'
-        +   '<stop offset="0" stop-color="#9ec8e8"/><stop offset="1" stop-color="#dde6e3"/>'
-        + '</linearGradient></defs>'
-        + '<rect width="24" height="24" rx="4" fill="url(#pmgWL1)"/>'
-        + '<circle cx="18" cy="8" r="2.2" fill="#ffd56b"/>'
-        + '<polygon points="2,18 8,11 13,17 18,12 22,18 22,22 2,22" fill="#5a7864"/>'
-      + '</svg>',
-      /* Macro Detail — concentric circles (extreme close-up feel) */
-      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-        + '<rect width="24" height="24" rx="4" fill="#243a26"/>'
-        + '<circle cx="12" cy="12" r="9" fill="none" stroke="#7fc18a" stroke-width="0.8" opacity="0.5"/>'
-        + '<circle cx="12" cy="12" r="6" fill="none" stroke="#7fc18a" stroke-width="1"   opacity="0.7"/>'
-        + '<circle cx="12" cy="12" r="3" fill="#7fc18a"/>'
-      + '</svg>',
-      /* Telephoto Action — motion-blur diagonals */
-      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-        + '<rect width="24" height="24" rx="4" fill="#1a1a1a"/>'
-        + '<line x1="2" y1="6"  x2="22" y2="10" stroke="#ff6b3d" stroke-width="2"   opacity="0.65"/>'
-        + '<line x1="2" y1="12" x2="22" y2="16" stroke="#fff"    stroke-width="2.2" opacity="0.9"/>'
-        + '<line x1="2" y1="18" x2="22" y2="22" stroke="#ff6b3d" stroke-width="1.6" opacity="0.45"/>'
-      + '</svg>'
+      { file: 'camera-portrait-lens.svg',
+        alt:  'Portrait Lens thumbnail: a sharp central subject surrounded by soft out-of-focus bokeh circles.' },
+      { file: 'camera-wide-landscape.svg',
+        alt:  'Wide Landscape thumbnail: blue sky with a low sun above a wide range of green mountain peaks.' },
+      { file: 'camera-macro-detail.svg',
+        alt:  'Macro Detail thumbnail: tight concentric green rings suggesting an extreme close-up.' },
+      { file: 'camera-telephoto-action.svg',
+        alt:  'Telephoto Action thumbnail: orange and white motion-blur streaks racing across a dark frame.' }
     ],
 
     lighting: [
-      /* Golden Hour — warm sky gradient + low sun */
-      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-        + '<defs><linearGradient id="pmgGH1" x1="0" y1="0" x2="0" y2="1">'
-        +   '<stop offset="0" stop-color="#ffb24a"/>'
-        +   '<stop offset="0.55" stop-color="#ff7a3d"/>'
-        +   '<stop offset="1" stop-color="#5a3a4a"/>'
-        + '</linearGradient></defs>'
-        + '<rect width="24" height="24" rx="4" fill="url(#pmgGH1)"/>'
-        + '<circle cx="12" cy="14.5" r="3" fill="#ffe8b0" opacity="0.95"/>'
-      + '</svg>',
-      /* Studio Softbox — bright soft circle */
-      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-        + '<defs><radialGradient id="pmgSB1" cx="0.5" cy="0.4" r="0.6">'
-        +   '<stop offset="0" stop-color="#fff"/>'
-        +   '<stop offset="0.6" stop-color="#e8e8e8"/>'
-        +   '<stop offset="1" stop-color="#999"/>'
-        + '</radialGradient></defs>'
-        + '<rect width="24" height="24" rx="4" fill="url(#pmgSB1)"/>'
-      + '</svg>',
-      /* Moody Low Key — dark with thin light slash */
-      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-        + '<rect width="24" height="24" rx="4" fill="#0e0e10"/>'
-        + '<polygon points="9.5,2 14,2 11.5,22 7,22" fill="#e0c8a0" opacity="0.55"/>'
-      + '</svg>',
-      /* Overcast — flat gray sky with diffused clouds */
-      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-        + '<defs><linearGradient id="pmgOC1" x1="0" y1="0" x2="0" y2="1">'
-        +   '<stop offset="0" stop-color="#cfd2d6"/><stop offset="1" stop-color="#a8acb1"/>'
-        + '</linearGradient></defs>'
-        + '<rect width="24" height="24" rx="4" fill="url(#pmgOC1)"/>'
-        + '<ellipse cx="9"  cy="11" rx="5"   ry="2.2" fill="#e8eaec" opacity="0.85"/>'
-        + '<ellipse cx="16" cy="14" rx="4.5" ry="2"   fill="#e0e2e5" opacity="0.85"/>'
-      + '</svg>'
+      { file: 'lighting-golden-hour.svg',
+        alt:  'Golden Hour lighting thumbnail: warm amber-to-magenta sky with a low glowing sun.' },
+      { file: 'lighting-studio-softbox.svg',
+        alt:  'Studio Softbox lighting thumbnail: soft white-to-grey radial glow on a neutral background.' },
+      { file: 'lighting-moody-low-key.svg',
+        alt:  'Moody Low Key lighting thumbnail: near-black frame split by a single warm slash of light.' },
+      { file: 'lighting-overcast.svg',
+        alt:  'Overcast lighting thumbnail: flat grey sky with two soft diffused cloud forms.' }
     ],
 
     composition: [
-      /* Rule Of Thirds — 3x3 grid + intersection dot */
-      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-        + '<rect width="24" height="24" rx="4" fill="#f7f6f2"/>'
-        + '<line x1="8"  y1="2" x2="8"  y2="22" stroke="#999" stroke-width="0.8"/>'
-        + '<line x1="16" y1="2" x2="16" y2="22" stroke="#999" stroke-width="0.8"/>'
-        + '<line x1="2" y1="8"  x2="22" y2="8"  stroke="#999" stroke-width="0.8"/>'
-        + '<line x1="2" y1="16" x2="22" y2="16" stroke="#999" stroke-width="0.8"/>'
-        + '<circle cx="16" cy="8" r="1.7" fill="#01696f"/>'
-      + '</svg>',
-      /* Centered Symmetry — mirrored triangles around center axis */
-      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-        + '<rect width="24" height="24" rx="4" fill="#f0e9e2"/>'
-        + '<line x1="12" y1="2" x2="12" y2="22" stroke="#01696f" stroke-width="0.7" stroke-dasharray="2 1.5"/>'
-        + '<polygon points="6,17 12,7 12,17" fill="#5a4a3a" opacity="0.85"/>'
-        + '<polygon points="18,17 12,7 12,17" fill="#5a4a3a" opacity="0.85"/>'
-      + '</svg>',
-      /* Leading Lines — converging perspective */
-      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-        + '<rect width="24" height="24" rx="4" fill="#e8e4d8"/>'
-        + '<polygon points="2,22 12,10 22,22" fill="#5a7864" opacity="0.4"/>'
-        + '<line x1="2"  y1="22" x2="12" y2="10" stroke="#222" stroke-width="0.7"/>'
-        + '<line x1="22" y1="22" x2="12" y2="10" stroke="#222" stroke-width="0.7"/>'
-        + '<line x1="6"  y1="22" x2="12" y2="13" stroke="#222" stroke-width="0.4" opacity="0.6"/>'
-        + '<line x1="18" y1="22" x2="12" y2="13" stroke="#222" stroke-width="0.4" opacity="0.6"/>'
-      + '</svg>',
-      /* Wide Establishing — sky + horizon + ground */
-      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-        + '<defs><linearGradient id="pmgWE1" x1="0" y1="0" x2="0" y2="1">'
-        +   '<stop offset="0" stop-color="#a8c5d8"/>'
-        +   '<stop offset="0.55" stop-color="#dde6e3"/>'
-        +   '<stop offset="0.55" stop-color="#5a7864"/>'
-        +   '<stop offset="1" stop-color="#3a4a3e"/>'
-        + '</linearGradient></defs>'
-        + '<rect width="24" height="24" rx="4" fill="url(#pmgWE1)"/>'
-      + '</svg>'
+      { file: 'composition-rule-of-thirds.svg',
+        alt:  'Rule Of Thirds composition thumbnail: a 3 by 3 grid with a teal dot on the upper-right intersection.' },
+      { file: 'composition-centered-symmetry.svg',
+        alt:  'Centered Symmetry composition thumbnail: a vertical centre axis with mirrored triangle shapes either side.' },
+      { file: 'composition-leading-lines.svg',
+        alt:  'Leading Lines composition thumbnail: two converging perspective lines drawing the eye to a central vanishing point.' },
+      { file: 'composition-wide-establishing.svg',
+        alt:  'Wide Establishing composition thumbnail: a panoramic field showing sky, horizon and ground bands.' }
     ],
 
     palette: [
-      /* Warm Sunset */
-      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-        + '<rect width="24" height="24" rx="4" fill="#fff"/>'
-        + '<rect x="2"  y="3" width="6" height="18" fill="#ffc24a"/>'
-        + '<rect x="9"  y="3" width="6" height="18" fill="#ff7a3d"/>'
-        + '<rect x="16" y="3" width="6" height="18" fill="#c8364a"/>'
-      + '</svg>',
-      /* Cool Blue */
-      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-        + '<rect width="24" height="24" rx="4" fill="#fff"/>'
-        + '<rect x="2"  y="3" width="6" height="18" fill="#9ed1e8"/>'
-        + '<rect x="9"  y="3" width="6" height="18" fill="#3b82c6"/>'
-        + '<rect x="16" y="3" width="6" height="18" fill="#1e3a8a"/>'
-      + '</svg>',
-      /* Earthy Neutrals */
-      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-        + '<rect width="24" height="24" rx="4" fill="#fff"/>'
-        + '<rect x="2"  y="3" width="6" height="18" fill="#d8c39a"/>'
-        + '<rect x="9"  y="3" width="6" height="18" fill="#9a7855"/>'
-        + '<rect x="16" y="3" width="6" height="18" fill="#5a7864"/>'
-      + '</svg>',
-      /* High Contrast Bold */
-      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-        + '<rect width="24" height="24" rx="4" fill="#fff"/>'
-        + '<rect x="2"  y="3" width="6" height="18" fill="#000"/>'
-        + '<rect x="9"  y="3" width="6" height="18" fill="#fff" stroke="#ddd" stroke-width="0.5"/>'
-        + '<rect x="16" y="3" width="6" height="18" fill="#e21a3a"/>'
-      + '</svg>'
+      { file: 'palette-warm-sunset.svg',
+        alt:  'Warm Sunset palette thumbnail: three vertical swatches in yellow, orange and crimson red.' },
+      { file: 'palette-cool-blue.svg',
+        alt:  'Cool Blue palette thumbnail: three vertical swatches from light cyan through mid blue to deep navy.' },
+      { file: 'palette-earthy-neutrals.svg',
+        alt:  'Earthy Neutrals palette thumbnail: three vertical swatches in tan, warm brown and forest green.' },
+      { file: 'palette-high-contrast-bold.svg',
+        alt:  'High Contrast Bold palette thumbnail: three vertical swatches in pure black, white and a bold red.' }
     ]
   };
 
-  /* Generic fallback for any preset that doesn't have a curated SVG. */
-  var FALLBACK_SVG =
-    '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
-      + '<rect width="24" height="24" rx="4" fill="#e0ddd6"/>'
-      + '<circle cx="12" cy="12" r="3" fill="#888"/>'
-    + '</svg>';
+  /* Generic fallback used when a preset has no manifest entry. */
+  var FALLBACK = {
+    file: '',
+    alt:  'Preset thumbnail.'
+  };
 
-  function svgFor(group, idx) {
+  function thumbFor(group, idx) {
     var arr = THUMBS[group];
     if (arr && arr[idx]) return arr[idx];
-    return FALLBACK_SVG;
+    return FALLBACK;
   }
 
   /* ---------------------------------------------------------------
@@ -263,13 +143,17 @@
       '#' + SUITE_ID + ' .pmg-preset-thumb {',
       '  flex: 0 0 auto;',
       '  width: 18px; height: 18px;',
-      '  display: inline-flex; align-items: center; justify-content: center;',
+      '  display: inline-block;',
       '  border-radius: 5px; overflow: hidden;',
       '  background: transparent;',
       '  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-text) 12%, transparent);',
       '  transition: transform 160ms ease, box-shadow 160ms ease;',
+      '  vertical-align: middle;',
       '}',
-      '#' + SUITE_ID + ' .pmg-preset-thumb svg { width: 100%; height: 100%; display: block; }',
+      '#' + SUITE_ID + ' .pmg-preset-thumb img {',
+      '  width: 100%; height: 100%; display: block;',
+      '  object-fit: cover;',
+      '}',
       '#' + SUITE_ID + ' .pmg-photo-preset:hover .pmg-preset-thumb {',
       '  transform: scale(1.08);',
       '  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 50%, transparent);',
@@ -317,44 +201,39 @@
       btn.setAttribute(THUMB_ATTR, DONE_VALUE);
       return;
     }
-    var span = document.createElement('span');
-    span.className = 'pmg-preset-thumb';
-    span.setAttribute('aria-hidden', 'true');
-    span.innerHTML = svgFor(group, idx);
+    var meta = thumbFor(group, idx);
+    if (!meta.file) {
+      /* No file mapped — skip silently rather than render a broken
+         <img>. Still mark done so we don\'t loop. */
+      btn.setAttribute(THUMB_ATTR, DONE_VALUE);
+      return;
+    }
+    var wrap = document.createElement('span');
+    wrap.className = 'pmg-preset-thumb';
+    var img = document.createElement('img');
+    img.src    = BASE_PATH + meta.file;
+    img.alt    = meta.alt;
+    img.width  = 18;
+    img.height = 18;
+    img.loading  = 'lazy';
+    img.decoding = 'async';
+    /* Defensive: if the SVG ever 404s we don\'t want a broken-image
+       glyph cluttering the pill. Hide the wrapper instead. */
+    img.addEventListener('error', function () {
+      wrap.style.display = 'none';
+    });
+    wrap.appendChild(img);
     /* Insert at the very start of the button so the existing label
        text follows it naturally. */
-    btn.insertBefore(span, btn.firstChild);
+    btn.insertBefore(wrap, btn.firstChild);
     btn.setAttribute(THUMB_ATTR, DONE_VALUE);
-  }
-
-  /* ---------------------------------------------------------------
-   * Lazy loader — IntersectionObserver injects each thumb only when
-   * its preset button enters the viewport. Falls back to immediate
-   * injection when IO is unavailable (very old browsers).
-   * --------------------------------------------------------------- */
-  var io = null;
-  function ensureIO() {
-    if (io || typeof IntersectionObserver !== 'function') return;
-    io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          injectThumb(entry.target);
-          io.unobserve(entry.target);
-        }
-      });
-    }, { rootMargin: '120px 0px' });
   }
 
   function processButtons(root) {
     if (!root || !root.querySelectorAll) return;
     var buttons = root.querySelectorAll('.pmg-photo-preset');
     if (!buttons.length) return;
-    ensureIO();
-    buttons.forEach(function (btn) {
-      if (btn.getAttribute(THUMB_ATTR) === DONE_VALUE) return;
-      if (io) io.observe(btn);
-      else injectThumb(btn); /* Fallback for ancient browsers */
-    });
+    buttons.forEach(injectThumb);
   }
 
   /* ---------------------------------------------------------------
@@ -391,8 +270,7 @@
           var n = added[j];
           if (n.nodeType !== 1) continue;
           if (n.classList && n.classList.contains('pmg-photo-preset')) {
-            if (io) io.observe(n);
-            else injectThumb(n);
+            injectThumb(n);
           } else if (n.querySelectorAll) {
             processButtons(n);
           }

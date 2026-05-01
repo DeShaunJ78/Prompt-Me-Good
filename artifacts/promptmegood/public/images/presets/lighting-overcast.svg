@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfd2d6"/><stop offset="1" stop-color="#a8acb1"/></linearGradient></defs><rect width="24" height="24" rx="4" fill="url(#g)"/><ellipse cx="9"  cy="11" rx="5"   ry="2.2" fill="#e8eaec" opacity="0.85"/><ellipse cx="16" cy="14" rx="4.5" ry="2"   fill="#e0e2e5" opacity="0.85"/></svg>
