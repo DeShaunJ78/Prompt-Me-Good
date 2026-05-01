@@ -472,13 +472,25 @@
         subtitle: 'Build a text prompt for any AI',
         keywords: ['write', 'text', 'mode', 'builder', 'prompt'],
         run: actSetMode('write'),
-        visible: renderedSel('#writeModeBtn') },
+        /* Always available when the API surface exists. Even on
+           the marketing splash before the workspace is mounted,
+           setMode() expands the workspace and selects the mode —
+           the palette is a first-class entry point. */
+        visible: function () {
+          if (typeof window.setMode === 'function') return true;
+          var el = document.getElementById('writeModeBtn');
+          return !!(el && isRendered(el));
+        } },
       { id: 'mode-image', group: 'Modes', icon: '🎨',
         title: 'Switch To Image Mode',
         subtitle: 'Generate an AI image from a prompt',
         keywords: ['image', 'photo', 'picture', 'mode', 'generate', 'dalle'],
         run: actSetMode('image'),
-        visible: renderedSel('#imageModeBtn') },
+        visible: function () {
+          if (typeof window.setMode === 'function') return true;
+          var el = document.getElementById('imageModeBtn');
+          return !!(el && isRendered(el));
+        } },
 
       /* Actions */
       { id: 'action-fix', group: 'Actions', icon: '✨',
