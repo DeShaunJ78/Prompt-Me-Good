@@ -24,6 +24,38 @@ test.describe("Command palette (⌘K) smoke @ mobile-360", () => {
     await expect(page.locator("#pmg-cmdk-backdrop")).toBeHidden();
   });
 
+  test("both modifier variants (Meta+K and Control+K) open the palette", async ({
+    page,
+  }) => {
+    /* Smoke-test the underlying `keydown` handler with both
+       modifier paths via synthetic events so we get cross-
+       platform coverage in a single CI run regardless of the
+       host OS Playwright is running on. */
+    const dispatchHotkey = async (modifier: "meta" | "ctrl") => {
+      return page.evaluate((mod) => {
+        const evt = new KeyboardEvent("keydown", {
+          key: "k",
+          code: "KeyK",
+          metaKey: mod === "meta",
+          ctrlKey: mod === "ctrl",
+          bubbles: true,
+          cancelable: true,
+        });
+        document.dispatchEvent(evt);
+      }, modifier);
+    };
+    /* Meta+K path. */
+    await dispatchHotkey("meta");
+    await expect(page.locator("#pmg-cmdk-backdrop")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.locator("#pmg-cmdk-backdrop")).toBeHidden();
+    /* Control+K path. */
+    await dispatchHotkey("ctrl");
+    await expect(page.locator("#pmg-cmdk-backdrop")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.locator("#pmg-cmdk-backdrop")).toBeHidden();
+  });
+
   test("public test surface exposes a sane command catalog", async ({ page }) => {
     const summary = await page.evaluate(() => {
       const api = (window as unknown as {
