@@ -413,6 +413,31 @@
   }
 
   /* ---------------------- Mode switching ---------------------- */
+  function currentMode() {
+    /* Body class `image-mode` => image, otherwise treat as write
+       (the default and the marketing-splash baseline state). */
+    try {
+      if (document.body && document.body.classList.contains('image-mode')) {
+        return 'image';
+      }
+    } catch (_) {}
+    return 'write';
+  }
+
+  function ensureMode(mode) {
+    /* Returns true if we're already in `mode` (caller can run the
+       inner action immediately), or kicks off a mode switch and
+       returns false (caller should defer the inner action). */
+    if (currentMode() === mode) return true;
+    var id = mode === 'image' ? 'imageModeBtn' : 'writeModeBtn';
+    var el = document.getElementById(id);
+    if (el) { try { el.click(); return false; } catch (_) {} }
+    if (typeof window.setMode === 'function') {
+      try { window.setMode(mode); } catch (_) {}
+    }
+    return false;
+  }
+
   function actSetMode(mode) {
     return function () {
       var id = mode === 'image' ? 'imageModeBtn' : 'writeModeBtn';
@@ -423,6 +448,37 @@
         try { window.setMode(mode); return true; } catch (_) {}
       }
       return false;
+    };
+  }
+
+  /* Wrap an action so it can run from ANY mode: if the caller is
+     not currently in `mode`, switch first, wait for the workspace
+     to render, then invoke the inner action with retries. This is
+     what makes mode-scoped commands (e.g. image-only preset groups
+     or write-only Improve With AI) globally discoverable from the
+     palette per the task spec ("both modes" / "all five preset
+     groups"). The inner action is the same `run` function the
+     command would have used directly — no behavior changes when
+     already in the right mode. */
+  function actInMode(mode, innerRun) {
+    return function () {
+      if (ensureMode(mode)) {
+        try { return innerRun() === true; } catch (_) { return false; }
+      }
+      /* Mode switch was kicked off — defer the inner action through
+         a few rAF/timeout retries so the destination UI has time to
+         mount. We bail after ~480ms total (6 attempts × 80ms) so a
+         missing target doesn't loop forever. */
+      var attempts = 0;
+      function step() {
+        attempts++;
+        var ok = false;
+        try { ok = innerRun() === true; } catch (_) {}
+        if (ok) return;
+        if (attempts < 6) setTimeout(step, 80);
+      }
+      setTimeout(step, 80);
+      return true; /* dispatched */
     };
   }
 
@@ -460,6 +516,21 @@
     };
   }
 
+  /* Available "from any mode": the command is discoverable in the
+     palette as long as either (a) the target is currently rendered
+     or (b) the global setMode() API exists so we can switch modes
+     and execute it via actInMode(). This satisfies the task's
+     "across both modes / all preset groups" wording — users can
+     find an Image-mode preset group while in Write mode and
+     activating it just switches modes first. */
+  function availableInMode(selector) {
+    return function () {
+      if (typeof window.setMode === 'function') return true;
+      var el = document.querySelector(selector);
+      return !!(el && isRendered(el));
+    };
+  }
+
   /* Static command catalog. Order within a group is meaningful:
      items render top-to-bottom in a group when no search query
      is active. Score-driven ordering takes over once the user
@@ -492,67 +563,65 @@
           return !!(el && isRendered(el));
         } },
 
-      /* Actions */
+      /* Actions — mode-scoped commands are wrapped in actInMode()
+         so users can discover and trigger them from any mode. The
+         palette switches modes first if needed (no-op when already
+         in the right one), then dispatches the inner action with a
+         short retry window for the destination UI to mount. */
       { id: 'action-fix', group: 'Actions', icon: '✨',
         title: 'Fix My Prompt',
         subtitle: 'Run the prompt builder on your draft',
         keywords: ['fix', 'generate', 'prompt', 'build', 'run'],
-        run: actClick('#generateBtn'),
-        visible: renderedSel('#generateBtn') },
+        run: actInMode('write', actClick('#generateBtn')),
+        visible: availableInMode('#generateBtn') },
       { id: 'action-image-generate', group: 'Actions', icon: '🎨',
         title: 'Generate Image',
         subtitle: 'Create an image with the current settings',
         keywords: ['image', 'generate', 'dalle', 'photo', 'create'],
-        run: actClick('#image-generate-btn'),
-        visible: renderedSel('#image-generate-btn') },
+        run: actInMode('image', actClick('#image-generate-btn')),
+        visible: availableInMode('#image-generate-btn') },
       { id: 'action-improve', group: 'Actions', icon: '🪄',
         title: 'Improve With AI',
         subtitle: 'Polish your prompt with AI suggestions',
         keywords: ['improve', 'ai', 'polish', 'refine', 'tone'],
-        run: actClick('#improve-with-ai-btn'),
-        visible: renderedSel('#improve-with-ai-btn') },
+        run: actInMode('write', actClick('#improve-with-ai-btn')),
+        visible: availableInMode('#improve-with-ai-btn') },
       { id: 'action-remix-detailed', group: 'Actions', icon: '📝',
         title: 'Make It More Detailed',
         subtitle: 'Add depth and specifics to the result',
         keywords: ['detailed', 'detail', 'longer', 'verbose', 'expand', 'remix'],
-        run: actClick('[data-remix="detailed"]'),
-        visible: renderedSel('[data-remix="detailed"]') },
+        run: actInMode('write', actClick('[data-remix="detailed"]')),
+        visible: availableInMode('[data-remix="detailed"]') },
       { id: 'action-remix-bold', group: 'Actions', icon: '🔥',
         title: 'Make It More Bold & Direct',
         subtitle: 'Sharpen the tone and trim hedging',
         keywords: ['bold', 'direct', 'aggressive', 'sharp', 'remix'],
-        run: actClick('[data-remix="bold-direct"]'),
-        visible: renderedSel('[data-remix="bold-direct"]') },
+        run: actInMode('write', actClick('[data-remix="bold-direct"]')),
+        visible: availableInMode('[data-remix="bold-direct"]') },
       { id: 'action-remix-beginner', group: 'Actions', icon: '🌱',
         title: 'Make It Beginner Friendly',
         subtitle: 'Simplify the language and structure',
         keywords: ['beginner', 'simple', 'easy', 'friendly', 'remix'],
-        run: actClick('[data-remix="beginner"]'),
-        visible: renderedSel('[data-remix="beginner"]') },
+        run: actInMode('write', actClick('[data-remix="beginner"]')),
+        visible: availableInMode('[data-remix="beginner"]') },
       { id: 'action-surprise-photo', group: 'Actions', icon: '🎲',
         title: 'Surprise Me (Photo Suite)',
         subtitle: 'Roll a random photo combo',
         keywords: ['surprise', 'random', 'photo', 'roll', 'shuffle'],
-        run: actClick('.pmg-photo-surprise'),
-        visible: renderedSel('.pmg-photo-surprise') },
+        run: actInMode('image', actClick('.pmg-photo-surprise')),
+        visible: availableInMode('.pmg-photo-surprise') },
       { id: 'action-surprise-text', group: 'Actions', icon: '🎲',
         title: 'Surprise Me (Text Builder)',
         subtitle: 'Get a random prompt idea',
         keywords: ['surprise', 'random', 'idea', 'text', 'roll', 'dice'],
-        run: actClick('#random-prompt'),
-        visible: function () {
-          var el = document.getElementById('random-prompt');
-          return !!(el && isRendered(el));
-        } },
+        run: actInMode('write', actClick('#random-prompt')),
+        visible: availableInMode('#random-prompt') },
       { id: 'action-save-combo', group: 'Actions', icon: '💾',
         title: 'Save This Combo',
         subtitle: 'Save the current photo selection as a named combo',
         keywords: ['save', 'combo', 'preset', 'photo'],
-        run: actClick('.pmg-photo-save-combo'),
-        visible: function () {
-          var el = document.querySelector('.pmg-photo-save-combo');
-          return !!(el && !el.disabled && isRendered(el));
-        } },
+        run: actInMode('image', actClick('.pmg-photo-save-combo')),
+        visible: availableInMode('.pmg-photo-save-combo') },
       { id: 'action-copy', group: 'Actions', icon: '📋',
         title: 'Copy Result',
         subtitle: 'Copy the generated prompt to clipboard',
@@ -598,45 +667,45 @@
           return !!(el && isRendered(el));
         } },
 
-      /* Preset Groups — gated on the actual `<div data-group="…">`
-         being rendered (not just present in the DOM tree), so that
-         while the Photo Suite is collapsed or hidden in write mode
-         these don't appear. */
+      /* Preset Groups — discoverable from any mode per the task
+         spec. Selecting a group from Write mode triggers a switch
+         to Image mode first, then scrolls/expands the destination
+         group via the inner action. */
       { id: 'group-style', group: 'Preset Groups', icon: '🎨',
         title: 'Style Group',
         subtitle: 'Cinematic, Portrait, Editorial, ...',
         keywords: ['style', 'cinematic', 'portrait', 'editorial', 'documentary',
                    'fashion', 'landscape', 'vintage', 'preset', 'group'],
-        run: actScrollToGroup('style'),
-        visible: renderedSel('#pmg-photo-suite .pmg-photo-group[data-group="style"]') },
+        run: actInMode('image', actScrollToGroup('style')),
+        visible: availableInMode('#pmg-photo-suite .pmg-photo-group[data-group="style"]') },
       { id: 'group-camera', group: 'Preset Groups', icon: '📷',
         title: 'Camera & Lens Group',
         subtitle: '85mm Portrait, 35mm Wide, Macro, ...',
         keywords: ['camera', 'lens', '85mm', '35mm', 'macro', 'telephoto',
                    'fisheye', 'dslr', 'preset', 'group'],
-        run: actScrollToGroup('camera'),
-        visible: renderedSel('#pmg-photo-suite .pmg-photo-group[data-group="camera"]') },
+        run: actInMode('image', actScrollToGroup('camera')),
+        visible: availableInMode('#pmg-photo-suite .pmg-photo-group[data-group="camera"]') },
       { id: 'group-lighting', group: 'Preset Groups', icon: '💡',
         title: 'Lighting & Mood Group',
         subtitle: 'Golden Hour, Studio Softbox, Neon Glow, ...',
         keywords: ['lighting', 'mood', 'golden', 'hour', 'studio', 'neon',
                    'shadows', 'softbox', 'preset', 'group'],
-        run: actScrollToGroup('lighting'),
-        visible: renderedSel('#pmg-photo-suite .pmg-photo-group[data-group="lighting"]') },
+        run: actInMode('image', actScrollToGroup('lighting')),
+        visible: availableInMode('#pmg-photo-suite .pmg-photo-group[data-group="lighting"]') },
       { id: 'group-composition', group: 'Preset Groups', icon: '🖼️',
         title: 'Composition Group',
         subtitle: 'Rule Of Thirds, Centered, Wide Shot, ...',
         keywords: ['composition', 'thirds', 'centered', 'symmetrical',
                    'wide', 'closeup', 'preset', 'group'],
-        run: actScrollToGroup('composition'),
-        visible: renderedSel('#pmg-photo-suite .pmg-photo-group[data-group="composition"]') },
+        run: actInMode('image', actScrollToGroup('composition')),
+        visible: availableInMode('#pmg-photo-suite .pmg-photo-group[data-group="composition"]') },
       { id: 'group-palette', group: 'Preset Groups', icon: '🎨',
         title: 'Color Palette Group',
         subtitle: 'Warm Tones, Cool Blues, Monochrome, ...',
         keywords: ['palette', 'color', 'warm', 'cool', 'monochrome',
                    'pastel', 'sepia', 'preset', 'group'],
-        run: actScrollToGroup('palette'),
-        visible: renderedSel('#pmg-photo-suite .pmg-photo-group[data-group="palette"]') }
+        run: actInMode('image', actScrollToGroup('palette')),
+        visible: availableInMode('#pmg-photo-suite .pmg-photo-group[data-group="palette"]') }
     ];
   }
 
@@ -645,11 +714,13 @@
   function buildDynamicCommands() {
     var out = [];
 
-    /* My Combos. We only surface entries whose corresponding
-       button is actually rendered in the DOM right now (e.g. the
-       Photo Suite must be mounted and visible — typically image
-       mode). This prevents listing a command whose run() would
-       no-op because the underlying button doesn't exist. */
+    /* My Combos. Discoverable from any mode — the run() wrapper
+       switches to image mode first (where the Photo Suite lives)
+       and retries clicking the matching `.pmg-photo-saved-btn`
+       through the actInMode() retry window. The visibility
+       predicate keeps the entry listed as long as either (a) the
+       button is currently rendered, or (b) we have a setMode API
+       to switch into image mode. */
     var saved = loadSavedCombos();
     saved.forEach(function (combo, i) {
       if (!combo) return;
@@ -662,9 +733,10 @@
         title: name,
         subtitle: 'Apply your saved combo',
         keywords: ['combo', 'saved', 'mine', 'preset'],
-        run: actApplySavedCombo(i),
+        run: actInMode('image', actApplySavedCombo(i)),
         visible: (function (idx) {
           return function () {
+            if (typeof window.setMode === 'function') return true;
             var btn = document.querySelector(
               '.pmg-photo-saved-btn[data-saved-index="' + idx + '"]');
             return !!(btn && isRendered(btn));
@@ -673,13 +745,9 @@
       });
     });
 
-    /* Recent Combos. Same gating as My Combos — the matching
-       `.pmg-photo-recent-btn` must be rendered. We label them by
-       their index since the canonical label lives inside pmg-ux's
-       `comboLabel` helper which we don't have access to from
-       here. The visible button text in the rendered Recent row
-       will be more informative — palette entries fall back to a
-       generic "Recent combo #N" label. */
+    /* Recent Combos. Same cross-mode availability as My Combos —
+       discoverable globally, executed in image mode after a
+       short retry window. */
     var recent = loadRecentCombos();
     recent.forEach(function (combo, i) {
       if (!combo) return;
@@ -690,9 +758,10 @@
         title: 'Recent Combo #' + (i + 1),
         subtitle: 'Re-apply a recent photo combo',
         keywords: ['recent', 'combo', 'photo', 'reuse'],
-        run: actApplyRecentCombo(i),
+        run: actInMode('image', actApplyRecentCombo(i)),
         visible: (function (idx) {
           return function () {
+            if (typeof window.setMode === 'function') return true;
             var btn = document.querySelector(
               '.pmg-photo-recent-btn[data-recent-index="' + idx + '"]');
             return !!(btn && isRendered(btn));

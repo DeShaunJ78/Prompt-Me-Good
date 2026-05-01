@@ -165,9 +165,57 @@ test.describe("Command palette (⌘K) smoke @ mobile-360", () => {
     await expect(page.locator("#pmg-cmdk-backdrop")).toBeHidden();
   });
 
-  test("_query never lists a command whose target isn't rendered", async ({
+  test("cross-mode commands are discoverable from the marketing splash (write-mode baseline)", async ({
     page,
   }) => {
+    /* Per the task spec, the palette must surface "all five preset
+       groups, both modes, and registered actions" from anywhere.
+       On the marketing splash (write-mode baseline), the Image
+       Suite isn't yet rendered, but the cross-mode wrapper means
+       Image-mode entries should still be listed and executable
+       (they switch modes first, then run). */
+    const summary = await page.evaluate(() => {
+      const api = (window as unknown as {
+        __pmgCommandPalette: {
+          _getCommands: () => Array<{ id: string }>;
+        };
+      }).__pmgCommandPalette;
+      const ids = new Set(api._getCommands().map((c) => c.id));
+      return {
+        hasImageGenerate: ids.has("action-image-generate"),
+        hasPhotoSurprise: ids.has("action-surprise-photo"),
+        hasSaveCombo: ids.has("action-save-combo"),
+        groupIds: [
+          "group-style",
+          "group-camera",
+          "group-lighting",
+          "group-composition",
+          "group-palette",
+        ].filter((id) => ids.has(id)),
+        hasWriteFix: ids.has("action-fix"),
+        hasImproveWithAi: ids.has("action-improve"),
+      };
+    });
+    /* All 5 preset groups must be discoverable cross-mode. */
+    expect(summary.groupIds).toHaveLength(5);
+    /* Image-mode actions must be discoverable from write-mode
+       baseline. */
+    expect(summary.hasImageGenerate).toBe(true);
+    expect(summary.hasPhotoSurprise).toBe(true);
+    expect(summary.hasSaveCombo).toBe(true);
+    /* Write-mode actions must remain discoverable. */
+    expect(summary.hasWriteFix).toBe(true);
+    expect(summary.hasImproveWithAi).toBe(true);
+  });
+
+  test("catalog has a sane minimum size and no duplicate ids", async ({
+    page,
+  }) => {
+    /* Sanity invariants on the catalog snapshot returned by the
+       public test surface: at least 15 entries (modes + actions +
+       5 preset groups + cheatsheet at minimum) and no duplicate
+       ids (which would break aria-activedescendant uniqueness and
+       confuse the keyboard navigation index). */
     const result = await page.evaluate(() => {
       const api = (window as unknown as {
         __pmgCommandPalette: {
@@ -175,34 +223,13 @@ test.describe("Command palette (⌘K) smoke @ mobile-360", () => {
         };
       }).__pmgCommandPalette;
       const cmds = api._getCommands();
-      const offenders: string[] = [];
-      const probe: Record<string, string> = {
-        "action-fix": "#generateBtn",
-        "action-image-generate": "#image-generate-btn",
-        "action-improve": "#improve-with-ai-btn",
-        "action-surprise-photo": ".pmg-photo-surprise",
-        "action-surprise-text": "#random-prompt",
-        "group-style": '#pmg-photo-suite .pmg-photo-group[data-group="style"]',
-      };
-      for (const c of cmds) {
-        const sel = probe[c.id];
-        if (!sel) continue;
-        const el = document.querySelector(sel) as HTMLElement | null;
-        if (!el) {
-          offenders.push(c.id + " (no node)");
-          continue;
-        }
-        const cs = window.getComputedStyle(el);
-        const hidden =
-          !!el.hidden ||
-          cs.display === "none" ||
-          cs.visibility === "hidden" ||
-          (el.getBoundingClientRect().width === 0 &&
-            el.getBoundingClientRect().height === 0);
-        if (hidden) offenders.push(c.id + " (hidden but listed)");
-      }
-      return { offenders };
+      const ids = cmds.map((c) => c.id);
+      const uniq = new Set(ids);
+      const dupes = ids.filter((id, i) => ids.indexOf(id) !== i);
+      return { total: cmds.length, unique: uniq.size, dupes };
     });
-    expect(result.offenders).toEqual([]);
+    expect(result.total).toBeGreaterThanOrEqual(15);
+    expect(result.unique).toBe(result.total);
+    expect(result.dupes).toEqual([]);
   });
 });
