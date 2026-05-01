@@ -4792,7 +4792,19 @@ Context:
           return (b.count - a.count) || (b.reuses - a.reuses);
         }).slice(0, 8);
         if (rows.length === 0) {
-          wrap.innerHTML = '<div class="tag-insights-head"><h3>Tag Insights</h3></div><div class="tag-empty">Tag your prompts (via Edit tags) to see which themes you lean on most.</div>';
+          /* Task #41: use the shared .pmg-history-empty-card (compact
+             variant) so this surface matches the prompt builder result
+             panel and the saved prompt history vault. Falls back to the
+             old plain text if pmg-history-states.js has not loaded. */
+          var tagEmptyMarkup = (window.__pmgHistoryStates && window.__pmgHistoryStates.emptyMarkup)
+            ? window.__pmgHistoryStates.emptyMarkup({
+                icon: '🏷️',
+                title: 'No Tagged Prompts Yet',
+                text: 'Tap Edit Tags on any saved prompt to see which themes you lean on most.',
+                extraClass: 'is-compact'
+              })
+            : '<div class="tag-empty">Tag your prompts (via Edit tags) to see which themes you lean on most.</div>';
+          wrap.innerHTML = '<div class="tag-insights-head"><h3>Tag Insights</h3></div>' + tagEmptyMarkup;
           return;
         }
         const maxCount = rows[0].count || 1;
@@ -8232,7 +8244,23 @@ Context:
 
       function renderGlobalResults(results) {
         if (!results.length) {
-          globalSearchResults.innerHTML = '<div class="global-empty">No matches found — try different keywords.</div>';
+          /* Task #41: render the shared "no matches" empty card
+             (compact variant) so the global search dropdown matches
+             the saved prompt vault and the prompt builder result
+             panel. The query is escaped by emptyMarkup itself. */
+          var rawQuery = (globalSearchInput && globalSearchInput.value || '').trim();
+          var noMatchText = rawQuery
+            ? 'No saves, templates, or tags match "' + rawQuery + '". Try a shorter or different keyword.'
+            : 'No matches yet — try a different keyword.';
+          var globalEmptyMarkup = (window.__pmgHistoryStates && window.__pmgHistoryStates.emptyMarkup)
+            ? window.__pmgHistoryStates.emptyMarkup({
+                variant: 'no-matches',
+                title: 'No Matches Found',
+                text: noMatchText,
+                extraClass: 'is-compact'
+              })
+            : '<div class="global-empty">No matches found — try different keywords.</div>';
+          globalSearchResults.innerHTML = globalEmptyMarkup;
           globalSearchResults.classList.add('is-open');
           return;
         }
@@ -9759,11 +9787,11 @@ Context:
     parsing from blocking on the network round-trip.
   -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-  <script src="/scripts/pmg-ux.js?v=refocus-1" defer></script>
+  <script src="/scripts/pmg-ux.js?v=task41-1" defer></script>
   <script src="/scripts/post-spec.js" defer></script>
   <script src="/scripts/pmg-image-fix.js" defer></script>
   <script src="/scripts/pmg-result-states.js?v=2-refocus" defer></script>
-  <script src="/scripts/pmg-history-states.js?v=1" defer></script>
+  <script src="/scripts/pmg-history-states.js?v=2-task41" defer></script>
   <script src="/scripts/pmg-pro.js?v=4" defer></script>
   <script src="/scripts/pmg-money-mode-pro.js?v=1" defer></script>
   <script src="/scripts/pmg-linear-flow.js?v=3-refocus" defer></script>

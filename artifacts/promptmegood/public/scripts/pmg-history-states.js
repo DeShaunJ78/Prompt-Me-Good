@@ -46,6 +46,13 @@
 
     /* "No matches" variant — softer, search-flavored. */
     '.pmg-history-empty-card.is-no-matches{background:var(--color-surface-2);border-style:dashed;border-color:var(--color-border)}',
+    /* Compact variant — for tighter contexts (Tag Insights aside,
+     * global search dropdown popover). Same chrome, smaller padding
+     * + icon, no enforced min-height so the card fits naturally. */
+    '.pmg-history-empty-card.is-compact{min-height:0;padding:var(--space-4) var(--space-3);gap:10px}',
+    '.pmg-history-empty-card.is-compact .pmg-history-empty-icon{width:clamp(40px,9vw,52px);font-size:clamp(20px,3.5vw,24px);border-radius:var(--radius-md)}',
+    '.pmg-history-empty-card.is-compact .pmg-history-empty-title{font-size:var(--text-sm)}',
+    '.pmg-history-empty-card.is-compact .pmg-history-empty-text{font-size:12px;overflow-wrap:anywhere}',
 
     /* Loading skeleton — 3 stacked card placeholders that
      * roughly match a real history item (title row + preview
@@ -92,6 +99,8 @@
       title = opts.title || 'No saved prompts yet';
       text = opts.text || 'Generate a prompt above and tap Save to start your vault. Your last 25 saves stay on this device.';
     }
+    if (opts.icon) icon = opts.icon;
+    if (opts.extraClass) extra += ' ' + opts.extraClass;
     return (
       '<div class="pmg-history-empty-card' + extra + '" role="note">' +
         '<div class="pmg-history-empty-icon" aria-hidden="true">' + icon + '</div>' +

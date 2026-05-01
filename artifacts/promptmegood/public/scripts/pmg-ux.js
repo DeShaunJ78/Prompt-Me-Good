@@ -545,7 +545,23 @@
       }
       var matches = buildExpandedResults(q);
       if (matches.length === 0) {
-        resultsEl.innerHTML = '<div class="pmg-search-empty">No matches in your saved prompts or history yet. Generate a prompt and it will show up here.</div>';
+        /* Task #41: render the shared .pmg-history-empty-card so this
+           dropdown matches the saved prompt vault and the prompt
+           builder result panel. Falls back to the legacy plain-text
+           bar if pmg-history-states.js has not loaded yet. */
+        var rawQuery = (input.value || '').trim();
+        var noMatchText = rawQuery
+          ? 'No saves, templates, or tags match "' + rawQuery + '". Try a shorter or different keyword.'
+          : 'No matches yet — try a different keyword.';
+        var emptyHtml = (window.__pmgHistoryStates && window.__pmgHistoryStates.emptyMarkup)
+          ? window.__pmgHistoryStates.emptyMarkup({
+              variant: 'no-matches',
+              title: 'No Matches Found',
+              text: noMatchText,
+              extraClass: 'is-compact'
+            })
+          : '<div class="pmg-search-empty">No matches in your saved prompts or history yet. Generate a prompt and it will show up here.</div>';
+        resultsEl.innerHTML = emptyHtml;
         resultsEl.classList.add('is-open');
         return;
       }
