@@ -196,9 +196,20 @@
       return;
     }
 
-    /* No prefill: copy + open + toast. */
+    /* No prefill: open the tab SYNCHRONOUSLY first (still inside
+       the user-gesture stack, so popup blockers leave it alone),
+       then run the async clipboard write. If the clipboard write
+       loses its user-gesture context (some browsers), the worst
+       case is the user just sees the destination opened with a
+       fallback toast — they never get a blocked popup. */
+    var win = null;
+    try { win = window.open(dest.url, '_blank', 'noopener'); } catch (_) {}
     copyText(text).then(function (ok) {
-      try { window.open(dest.url, '_blank', 'noopener'); } catch (_) {}
+      if (!win) {
+        /* Popup blocker swallowed it — try once more (some
+           blockers allow the second open after a clipboard ack). */
+        try { window.open(dest.url, '_blank', 'noopener'); } catch (_) {}
+      }
       if (ok) {
         toast('Copied — paste it into ' + dest.label + ' (Ctrl/Cmd+V).');
       } else {
