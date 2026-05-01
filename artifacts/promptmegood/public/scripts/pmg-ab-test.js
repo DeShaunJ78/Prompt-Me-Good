@@ -11,11 +11,13 @@
  *                   replaces the prompt in #resultBox so the
  *                   next save captures it.
  *   2. Why this   — once at least 2 wins are recorded (any
- *      worked       combination of A/B winners + favorited
- *                   saves), surface a small inline callout
- *                   below the actions row that lists the 2-3
- *                   pills/factors that distinguish wins from
- *                   misses.
+ *      worked       combination of A/B winners + saves, with
+ *                   favorites weighted higher), surface a
+ *                   small inline callout below the actions
+ *                   row that lists the 2-3 pills/factors and
+ *                   the words the user actually added in
+ *                   their A/B edits that distinguish wins
+ *                   from misses (archived saves + A/B losers).
  *   3. Auto-tag   — when a new prompt lands in the saved
  *      on save     history, suggest tags based on prompt
  *                   content + active form pills. The user
@@ -397,10 +399,18 @@
         var winner = e.target.id === 'pmg-ab-win-a' ? 'a' : 'b';
         var aText = taA.value.trim();
         var bText = taB.value.trim();
+        var winText = winner === 'a' ? aText : bText;
+        var losText = winner === 'a' ? bText : aText;
         recordWin({
-          winnerText: winner === 'a' ? aText : bText,
-          loserText:  winner === 'a' ? bText : aText,
-          form: getFormData()
+          winnerText: winText,
+          loserText:  losText,
+          form: getFormData(),
+          /* Persist the explicit A→B (or B→A) word diff so the
+             "Why this worked" callout can highlight the actual
+             edits the user picked, not just frequency lift across
+             pools. The diff is symmetric here because A and B
+             share form data — pill deltas would always be empty. */
+          diff: diffWords(winText, losText)
         });
         /* Replace the prompt in #resultBox with the winner so the
            next Save / Send To uses the winning copy. */
@@ -419,10 +429,27 @@
       ts: Date.now(),
       winner: String(record.winnerText || '').slice(0, 4000),
       loser:  String(record.loserText  || '').slice(0, 4000),
-      form:   record.form || {}
+      form:   record.form || {},
+      /* Persisted edit delta — see Branch click handler. */
+      diff:   record.diff  || { added: [], removed: [] }
     });
     /* Cap at 50 records to keep storage bounded. */
     writeJSON(REC_KEY, list.slice(0, 50));
+  }
+
+  /* Word-level diff between winner and loser text. Tokens are
+     normalized via the existing tokenize() (4+ chars, no stops)
+     so we surface meaningful edits, not punctuation noise. The
+     differentiator scorer uses these to add a per-record bonus
+     beyond the pool-frequency lift. */
+  function diffWords(winText, losText) {
+    var w = {}, l = {};
+    tokenize(winText).forEach(function (t) { w[t] = 1; });
+    tokenize(losText).forEach(function (t) { l[t] = 1; });
+    var added = [], removed = [];
+    Object.keys(w).forEach(function (t) { if (!l[t]) added.push(t); });
+    Object.keys(l).forEach(function (t) { if (!w[t]) removed.push(t); });
+    return { added: added.slice(0, 25), removed: removed.slice(0, 25) };
   }
 
   /* =============================================================
@@ -461,10 +488,12 @@
     return p;
   }
 
-  /* Pull the "winners" pool: A/B winners + favorited history items.
-     "Losers" pool: A/B losers + non-favorited, non-archived items.
-     The differentiators are tokens/pills that appear disproportionately
-     in winners. */
+  /* Pull the "winners" pool: every explicit positive signal —
+     A/B winners AND every saved (non-archived) history item,
+     because the spec treats Save itself as a "this was good"
+     marker. Favorited saves are pushed twice to weight them
+     higher than a plain save. "Losers" pool: A/B losers and
+     archived saves only — never plain non-favorited saves. */
   function buildPools() {
     var recs = readJSON(REC_KEY, []);
     var hist = readJSON(HIST_KEY, []);
@@ -478,8 +507,11 @@
     });
     hist.forEach(function (h) {
       var entry = { text: h.prompt || '', form: h.data || {} };
+      if (h.archived) { losers.push(entry); return; }
+      winners.push(entry);
+      /* Favorites count twice — a stronger positive signal than
+         a plain save. */
       if (h.favorite) winners.push(entry);
-      else if (!h.archived) losers.push(entry);
     });
     return { winners: winners, losers: losers };
   }
@@ -504,20 +536,44 @@
     var wPil = freqMap(winners, function (i) { return pillsFromForm(i.form); });
     var lPil = freqMap(losers,  function (i) { return pillsFromForm(i.form); });
 
+    /* Per-record edit-diff bonus: tokens the user actually
+       *added* to a winning A/B variant carry stronger evidence
+       than mere frequency. We tally how many distinct A/B
+       records added each token, normalized by total records,
+       and fold that into the lift score. */
+    var recs = readJSON(REC_KEY, []);
+    var addedCount = {};
+    var recCount = 0;
+    if (Array.isArray(recs)) {
+      recs.forEach(function (r) {
+        if (!r || !r.diff || !Array.isArray(r.diff.added)) return;
+        recCount++;
+        var seen = {};
+        r.diff.added.forEach(function (t) {
+          if (seen[t]) return;
+          seen[t] = 1;
+          addedCount[t] = (addedCount[t] || 0) + 1;
+        });
+      });
+    }
+    var R = Math.max(recCount, 1);
+
     var W = winners.length, L = Math.max(losers.length, 1);
-    function score(tok, wMap, lMap) {
+    function score(tok, wMap, lMap, isWord) {
       var wRate = (wMap[tok] || 0) / W;
       var lRate = (lMap[tok] || 0) / L;
       /* Require >=2 wins to mention a token, and a clear lift. */
       if ((wMap[tok] || 0) < 2) return 0;
-      return wRate - lRate;
+      var lift = wRate - lRate;
+      if (isWord) lift += 0.5 * ((addedCount[tok] || 0) / R);
+      return lift;
     }
 
     var pillCands = Object.keys(wPil).map(function (k) {
-      return { kind: 'pill', label: humanizePill(k), key: k, lift: score(k, wPil, lPil) };
+      return { kind: 'pill', label: humanizePill(k), key: k, lift: score(k, wPil, lPil, false) };
     });
     var wordCands = Object.keys(wTok).map(function (k) {
-      return { kind: 'word', label: '"' + k + '"', key: k, lift: score(k, wTok, lTok) };
+      return { kind: 'word', label: '"' + k + '"', key: k, lift: score(k, wTok, lTok, true) };
     });
     return pillCands.concat(wordCands)
       .filter(function (c) { return c.lift > 0.05; })
