@@ -4940,6 +4940,10 @@
   var SUMMARY_ID = 'pmg-photo-summary';
   var IMG_GEN_HOST_ID = 'pmg-image-generator-section';
   var TOAST_ID = 'pmg-photo-toast';
+  /* Task #31: recently-used preset combos. */
+  var RECENT_ROW_ID = 'pmg-photo-recent';
+  var RECENT_KEY = 'pmg.photo.recentPresets';
+  var RECENT_MAX = 5;
 
   /* ---------------- Catalog of pill options per group --------------- */
   var GROUPS = [
@@ -5187,6 +5191,52 @@
       '  #' + SUITE_ID + ' .pmg-photo-preset:hover { transform: none; }',
       '}',
 
+      /* Task #31: Recently-used preset combos row. Sits between the
+         helper text and the first photo group so users can re-pick a
+         favorite combo with a single tap. Hidden until at least one
+         preset combo has been recorded. */
+      '#' + RECENT_ROW_ID + ' {',
+      '  margin-bottom: var(--space-3);',
+      '  padding: 10px 14px;',
+      '  background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface-2));',
+      '  border: 1px dashed color-mix(in srgb, var(--color-primary) 22%, var(--color-border));',
+      '  border-radius: var(--radius-md);',
+      '  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;',
+      '}',
+      '#' + RECENT_ROW_ID + '[hidden] { display: none; }',
+      '.pmg-photo-recent-label {',
+      '  font-size: 13px; font-weight: 700;',
+      '  color: var(--color-text-muted);',
+      '  margin-right: 4px;',
+      '}',
+      '.pmg-photo-recent-btn {',
+      '  padding: 7px 12px; font-size: 13px; font-weight: 600;',
+      '  background: var(--color-surface); color: var(--color-text);',
+      '  border: 1.5px solid var(--color-border); border-radius: var(--radius-full);',
+      '  cursor: pointer; max-width: 100%;',
+      '  white-space: normal; text-align: left; line-height: 1.3;',
+      '  transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 120ms ease;',
+      '}',
+      '.pmg-photo-recent-btn:hover, .pmg-photo-recent-btn:focus-visible {',
+      '  border-color: var(--color-primary); color: var(--color-primary);',
+      '  transform: translateY(-1px); outline: none;',
+      '}',
+      '.pmg-photo-recent-clear {',
+      '  margin-left: auto; background: transparent; border: 0;',
+      '  padding: 4px 8px; font-size: 12px; color: var(--color-text-muted);',
+      '  cursor: pointer; text-decoration: underline;',
+      '}',
+      '.pmg-photo-recent-clear:hover, .pmg-photo-recent-clear:focus-visible {',
+      '  color: #d04848; outline: none;',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .pmg-photo-recent-btn:hover { transform: none; }',
+      '}',
+      '@media (max-width: 640px) {',
+      '  #' + RECENT_ROW_ID + ' { padding: 8px 10px; }',
+      '  .pmg-photo-recent-clear { margin-left: 0; }',
+      '}',
+
       /* Image Generator host: override the global image-mode hide rule. */
       '#' + IMG_GEN_HOST_ID + ' { display: block !important; }',
       '#' + IMG_GEN_HOST_ID + ' .image-result-section,',
@@ -5334,7 +5384,11 @@
       '      <span class="pmg-eyebrow">Step 2</span>',
       '      <h2 id="' + SUITE_ID + '-title">📸 Photography Suite</h2>',
       '    </div>',
-      '    <p class="pmg-stack-helper">Pick a vibe in each group. We\'ll build the perfect photo prompt and send it straight to the image generator — no copy and paste needed.</p>'
+      '    <p class="pmg-stack-helper">Pick a vibe in each group. We\'ll build the perfect photo prompt and send it straight to the image generator — no copy and paste needed.</p>',
+      /* Task #31: empty container for the recently-used preset combos
+         row. renderRecentRow() will hydrate or hide it based on
+         localStorage state. */
+      '    <div id="' + RECENT_ROW_ID + '" hidden></div>'
     ];
 
     GROUPS.forEach(function (g) {
@@ -5431,7 +5485,25 @@
     var clear = root.querySelector('.pmg-photo-clear');
     if (clear) clear.addEventListener('click', clearAllPicks);
 
+    /* Task #31: delegate clicks within the Recent row. The row is
+       re-rendered (innerHTML replaced) every time a combo is recorded
+       or cleared, so per-button listeners would be lost — delegation
+       on the stable container avoids that. */
+    var recentRow = root.querySelector('#' + RECENT_ROW_ID);
+    if (recentRow) {
+      recentRow.addEventListener('click', function (ev) {
+        var clearBtn = ev.target.closest('.pmg-photo-recent-clear');
+        if (clearBtn) { clearRecentCombos(); return; }
+        var btn = ev.target.closest('.pmg-photo-recent-btn');
+        if (!btn) return;
+        var i = parseInt(btn.getAttribute('data-recent-index'), 10);
+        var combos = loadRecentCombos();
+        if (combos[i]) applyCombo(combos[i]);
+      });
+    }
+
     refreshSummary();
+    renderRecentRow();
   }
 
   function clearAllPicks() {
@@ -5445,7 +5517,9 @@
      group's currently-active pills, then activates exactly the pills
      named in the preset. Other groups are left untouched. Calls
      refreshSummary() so the live summary, count badges, Send button,
-     and active-preset highlight all stay in sync. */
+     and active-preset highlight all stay in sync. Also schedules a
+     debounced save of the resulting preset combo for Task #31's
+     Recent row. */
   function applyPreset(groupId, idx) {
     var preset = PRESETS[groupId];
     if (!preset || !preset.items || !preset.items[idx]) return;
@@ -5468,6 +5542,186 @@
     });
 
     refreshSummary();
+    scheduleRecordCombo();
+  }
+
+  /* ---------------- Task #31: Recently-used preset combos ---------------
+   * After any preset is applied, derive the current "preset combo" — the
+   * set of groups whose active pills exactly match one of that group's
+   * presets — and persist the most recent ones in localStorage. The
+   * Recent row above the photo groups lets users re-apply a favorite
+   * combo with a single tap.
+   * --------------------------------------------------------------------- */
+
+  /* Compute the current preset combo from active pills. Returns an
+     ordered array of { group, idx } entries (one per group that exactly
+     matches a preset). Group order follows GROUPS so combo identity is
+     stable regardless of click sequence. */
+  function getActivePresetCombo() {
+    var picks = getSelections();
+    var combo = [];
+    GROUPS.forEach(function (g) {
+      var preset = PRESETS[g.id];
+      if (!preset || !preset.items) return;
+      var groupPicks = (picks[g.id] || []).slice().sort();
+      if (!groupPicks.length) return;
+      for (var i = 0; i < preset.items.length; i++) {
+        var vals = (preset.items[i].values || []).slice().sort();
+        if (vals.length === groupPicks.length &&
+            vals.every(function (v, j) { return v === groupPicks[j]; })) {
+          combo.push({ group: g.id, idx: i });
+          break;
+        }
+      }
+    });
+    return combo;
+  }
+
+  /* Stable string identity for a combo, used for dedupe. */
+  function comboKey(combo) {
+    return combo.map(function (e) { return e.group + ':' + e.idx; }).join('|');
+  }
+
+  /* Human-readable label for a combo, e.g. "Cinematic + Golden Hour + Rule Of Thirds". */
+  function comboLabel(combo) {
+    var parts = combo.map(function (e) {
+      var p = PRESETS[e.group];
+      var item = p && p.items && p.items[e.idx];
+      return item ? item.label : '';
+    }).filter(Boolean);
+    return parts.join(' + ');
+  }
+
+  function loadRecentCombos() {
+    try {
+      var raw = localStorage.getItem(RECENT_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      /* Validate entries: must be arrays of {group, idx} where the preset
+         still exists. Stale entries (e.g. preset removed in a later
+         release) are silently dropped. */
+      var out = [];
+      parsed.forEach(function (combo) {
+        if (!Array.isArray(combo) || !combo.length) return;
+        var clean = [];
+        for (var i = 0; i < combo.length; i++) {
+          var e = combo[i];
+          if (!e || typeof e.group !== 'string' || typeof e.idx !== 'number') return;
+          var p = PRESETS[e.group];
+          if (!p || !p.items || !p.items[e.idx]) return;
+          clean.push({ group: e.group, idx: e.idx });
+        }
+        if (clean.length) out.push(clean);
+      });
+      return out.slice(0, RECENT_MAX);
+    } catch (e) { return []; }
+  }
+
+  function saveRecentCombos(combos) {
+    try {
+      localStorage.setItem(RECENT_KEY, JSON.stringify(combos.slice(0, RECENT_MAX)));
+    } catch (e) {}
+  }
+
+  /* Record the current combo at most once per debounce window. Build-up
+     sequences (e.g. tap Cinematic → tap Golden Hour → tap Rule Of Thirds)
+     collapse to a single saved combo containing the final state. A
+     pagehide listener (registered once in init) flushes any pending
+     timer so a user who applies a preset and immediately reloads or
+     navigates away still has the latest combo persisted. */
+  var _recordTimer = null;
+  function scheduleRecordCombo() {
+    if (_recordTimer) clearTimeout(_recordTimer);
+    _recordTimer = setTimeout(function () {
+      _recordTimer = null;
+      recordCurrentCombo();
+    }, 1500);
+  }
+
+  function flushPendingRecord() {
+    if (!_recordTimer) return;
+    clearTimeout(_recordTimer);
+    _recordTimer = null;
+    try { recordCurrentCombo(); } catch (e) {}
+  }
+
+  /* True when `big` contains every (group, idx) entry in `small` and has
+     strictly more entries — i.e. `small` is a strict subset of `big`. */
+  function isStrictSuperset(big, small) {
+    if (!small.length || small.length >= big.length) return false;
+    return small.every(function (e) {
+      return big.some(function (b) {
+        return b.group === e.group && b.idx === e.idx;
+      });
+    });
+  }
+
+  function recordCurrentCombo() {
+    var combo = getActivePresetCombo();
+    if (!combo.length) return;
+    var key = comboKey(combo);
+    var existing = loadRecentCombos();
+    var startIdx = 0;
+    /* If the user is "building up" a combo from the previously-saved
+       one (same entries plus more), replace the previous entry instead
+       of pushing a new one. Avoids cluttering Recent with intermediate
+       states like {Cinematic} → {Cinematic+Golden Hour}. */
+    if (existing.length && isStrictSuperset(combo, existing[0])) {
+      startIdx = 1;
+    }
+    var filtered = existing.slice(startIdx).filter(function (c) {
+      return comboKey(c) !== key;
+    });
+    filtered.unshift(combo);
+    saveRecentCombos(filtered);
+    renderRecentRow();
+  }
+
+  /* Apply a saved combo: clear all picks first so the result matches the
+     combo exactly (no leftover manual pills lingering from before), then
+     replay each preset. applyPreset will reschedule a record, which is
+     fine — it'll dedupe and bump this combo to the top. */
+  function applyCombo(combo) {
+    if (!Array.isArray(combo) || !combo.length) return;
+    clearAllPicks();
+    combo.forEach(function (e) { applyPreset(e.group, e.idx); });
+    showToast('Recent combo applied!');
+  }
+
+  function clearRecentCombos() {
+    try { localStorage.removeItem(RECENT_KEY); } catch (e) {}
+    renderRecentRow();
+    showToast('Recent presets cleared.');
+  }
+
+  function renderRecentRow() {
+    var row = document.getElementById(RECENT_ROW_ID);
+    if (!row) return;
+    var combos = loadRecentCombos();
+    if (!combos.length) {
+      row.hidden = true;
+      row.innerHTML = '';
+      return;
+    }
+    var html = ['<span class="pmg-photo-recent-label">Recent:</span>'];
+    combos.forEach(function (combo, i) {
+      var label = comboLabel(combo);
+      if (!label) return;
+      html.push(
+        '<button type="button" class="pmg-photo-recent-btn" ' +
+          'data-recent-index="' + i + '" ' +
+          'aria-label="Re-apply ' + escapeHtml(label) + '">' +
+          escapeHtml(label) +
+        '</button>'
+      );
+    });
+    html.push(
+      '<button type="button" class="pmg-photo-recent-clear" ' +
+        'aria-label="Clear recent presets">Clear</button>'
+    );
+    row.innerHTML = html.join('');
+    row.hidden = false;
   }
 
   function surpriseMe() {
@@ -5630,6 +5884,18 @@
     injectStyles();
     buildSuite();
     buildImageGeneratorSection();
+
+    /* Task #31: persist any pending Recent-combo save before the page is
+       hidden / unloaded, so a user who applies a preset and reloads
+       within the 1.5s debounce window doesn't lose the entry. pagehide
+       fires reliably across navigation, tab close, and bfcache; the
+       visibilitychange fallback covers mobile background tab switches. */
+    try {
+      window.addEventListener('pagehide', flushPendingRecord);
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'hidden') flushPendingRecord();
+      });
+    } catch (e) { /* ignore */ }
 
     /* Late-mount safety: a body-level observer keeps trying to (a) build
        the photo suite section, (b) relocate the image generator into our
