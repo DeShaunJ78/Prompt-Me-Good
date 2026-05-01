@@ -423,13 +423,43 @@
   /* ---------------------------------------------------------------
    * Tweak interception (capture-phase, never blocks the click)
    * --------------------------------------------------------------- */
+  /* Per-kind fallback expiry: if a tweak click exits early without
+     mutating #resultBox at all, pendingTweak would otherwise stay
+     armed for TWEAK_TIMEOUT_MS and mislabel the next unrelated
+     mutation. Quick-tweaks and undo are synchronous (text changes
+     within a frame); fine-tune is local-fast; AI improve is
+     network-bound and gets the full window. */
+  var FALLBACK_MS = {
+    'ai-improve': 30000,
+    'fine-tune' : 2500,
+    'undo'      : 1000
+    /* default for [data-remix] kinds: 1000ms */
+  };
+  var pendingTweakTimer = null;
+
+  function clearPendingTweakTimer() {
+    if (pendingTweakTimer) {
+      clearTimeout(pendingTweakTimer);
+      pendingTweakTimer = null;
+    }
+  }
+
   function startPendingTweak(label, kind) {
-    pendingTweak = {
+    clearPendingTweakTimer();
+    var token = {
       label: label,
       kind: kind,
       beforeText: readBox(),
       deadline: Date.now() + TWEAK_TIMEOUT_MS
     };
+    pendingTweak = token;
+    var ms = FALLBACK_MS[kind] || 1000;
+    pendingTweakTimer = setTimeout(function () {
+      pendingTweakTimer = null;
+      /* Only clear if this exact token is still armed — guards against
+         a newer click having replaced it in the meantime. */
+      if (pendingTweak === token) pendingTweak = null;
+    }, ms);
   }
 
   function attachTweakListeners() {
@@ -519,6 +549,7 @@
          for up to 30s and mislabeling the next unrelated change. */
       var pt = pendingTweak;
       pendingTweak = null;
+      clearPendingTweakTimer();
       var fresh = !!(pt && Date.now() < pt.deadline);
       var realTweak = fresh && !isPlaceholder(txt) && txt !== pt.beforeText;
 
