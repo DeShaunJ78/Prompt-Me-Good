@@ -6668,11 +6668,46 @@ Context:
         }
 
         function useLocalFallback() {
+          // Surface a styled error banner with Try Again (Task #29).
+          // The pmg-result-states overlay will catch this event and
+          // show the inline error UI instead of silently swapping in
+          // the local prompt. We still expose the local prompt as a
+          // backup the user can opt into via "Use Backup Prompt".
+          var handledByOverlay = false;
+          try {
+            if (window.__pmgResultStates && typeof window.__pmgResultStates.showError === 'function') {
+              window.__pmgResultStates.showError({ fallbackText: localPrompt });
+              handledByOverlay = true;
+            } else {
+              document.dispatchEvent(new CustomEvent('pmg:builder-error', {
+                detail: { fallbackText: localPrompt }
+              }));
+            }
+          } catch (_) { /* noop */ }
+          if (handledByOverlay) {
+            // Reset the Generate button label so it does not stay
+            // stuck on "Generating…" while the user decides what to do.
+            var gb = document.getElementById('generateBtn');
+            if (gb && gb.dataset && gb.dataset.origLabel) {
+              gb.textContent = gb.dataset.origLabel;
+            }
+            return;
+          }
           if (typeof window.showToast === 'function') {
             window.showToast('AI generation had an issue, so we used the local builder instead.');
           }
           finalize(localPrompt);
         }
+
+        // Exposed so the error banner's "Use Backup Prompt" link
+        // can route through the existing finalize() path (history,
+        // strength score, scroll, etc.) instead of just writing raw
+        // text into #resultBox.
+        window.__pmgUseFallbackPrompt = function (text) {
+          if (text && typeof text === 'string' && text.trim()) {
+            finalize(text);
+          }
+        };
 
         function handleApiError(err) {
           if (err && err.code === 'LIMIT' && typeof window.showToast === 'function') {
@@ -9650,6 +9685,7 @@ Context:
   <script src="/scripts/pmg-ux.js?v=close-affordances-v4" defer></script>
   <script src="/scripts/post-spec.js" defer></script>
   <script src="/scripts/pmg-image-fix.js" defer></script>
+  <script src="/scripts/pmg-result-states.js?v=1-task29" defer></script>
   <script src="/scripts/pmg-pro.js?v=4" defer></script>
   <script src="/scripts/pmg-money-mode-pro.js?v=1" defer></script>
   <script src="/scripts/pmg-text-studio.js?v=11-no-tabs-no-examples" defer></script>
