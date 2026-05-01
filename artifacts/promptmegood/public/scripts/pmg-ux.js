@@ -5676,50 +5676,7 @@
         var idx = parseInt(b.getAttribute('data-preset-index'), 10);
         applyPreset(groupId, idx);
       });
-
-      /* Desktop: hover + keyboard focus reveal the preview. */
-      b.addEventListener('mouseenter', function () {
-        clearTimeout(presetTooltipState.hideTimer);
-        showPresetPreview(b);
-      });
-      b.addEventListener('mouseleave', function () {
-        clearTimeout(presetTooltipState.hideTimer);
-        presetTooltipState.hideTimer = setTimeout(hidePresetPreview, 80);
-      });
-      b.addEventListener('focus', function () {
-        clearTimeout(presetTooltipState.hideTimer);
-        showPresetPreview(b);
-      });
-      b.addEventListener('blur', hidePresetPreview);
-
-      /* Touch: brief long-press (~700ms — closer to the spec's
-         "2-second hold" wording while still feeling responsive)
-         shows the preview and arms suppressClick so the preset is
-         NOT applied. A normal tap still applies the preset because
-         the timer never fires. */
-      b.addEventListener('touchstart', function () {
-        presetTooltipState.suppressClick = false;
-        clearTimeout(presetTooltipState.longPressTimer);
-        presetTooltipState.longPressTimer = setTimeout(function () {
-          presetTooltipState.suppressClick = true;
-          showPresetPreview(b);
-        }, 700);
-      }, { passive: true });
-      var endTouch = function () {
-        clearTimeout(presetTooltipState.longPressTimer);
-        if (presetTooltipState.suppressClick) {
-          /* Keep the preview visible briefly so the user can read it,
-             then fade it out on its own. */
-          clearTimeout(presetTooltipState.hideTimer);
-          presetTooltipState.hideTimer = setTimeout(hidePresetPreview, 1600);
-        }
-      };
-      b.addEventListener('touchend', endTouch);
-      b.addEventListener('touchcancel', endTouch);
-      b.addEventListener('touchmove', function () {
-        /* Drag/scroll cancels the long-press without triggering it. */
-        clearTimeout(presetTooltipState.longPressTimer);
-      }, { passive: true });
+      wirePreviewHover(b);
     });
 
     /* Escape key dismisses the preview (parity with other popovers). */
@@ -5765,6 +5722,16 @@
         if (clearBtn) { clearRecentCombos(); return; }
         var btn = ev.target.closest('.pmg-photo-recent-btn');
         if (!btn) return;
+        /* Task #43: if a touch long-press just opened the preview,
+           swallow this synthetic tap so the user can inspect the combo
+           without accidentally applying it. Mirrors the preset path. */
+        if (presetTooltipState.suppressClick) {
+          presetTooltipState.suppressClick = false;
+          ev.preventDefault();
+          ev.stopPropagation();
+          return;
+        }
+        hidePresetPreview();
         var i = parseInt(btn.getAttribute('data-recent-index'), 10);
         var combos = loadRecentCombos();
         if (combos[i]) applyCombo(combos[i]);
@@ -5838,11 +5805,112 @@
   }
 
   function presetPreviewLabels(btn) {
+    /* Task #43: same tooltip is reused by the Recent Combos row. A
+       recent-combo button replaces selections across multiple groups
+       at once, so the preview groups its pill values per group with a
+       short label prefix (e.g. "Style: Cinematic"). One chip per pill
+       keeps visual styling identical to the preset preview chips. */
+    if (btn.classList && btn.classList.contains('pmg-photo-recent-btn')) {
+      var ri = parseInt(btn.getAttribute('data-recent-index'), 10);
+      if (isNaN(ri)) return [];
+      var combos = loadRecentCombos();
+      var combo = combos[ri];
+      if (!combo) return [];
+      return recentComboPreviewLabels(combo);
+    }
     var groupId = btn.getAttribute('data-group');
     var idx = parseInt(btn.getAttribute('data-preset-index'), 10);
     var preset = PRESETS[groupId];
     if (!preset || !preset.items || !preset.items[idx]) return [];
     return (preset.items[idx].values || []).slice();
+  }
+
+  /* Task #43: build the per-pill labels for a recent-combo preview.
+     Walks the combo, resolves each preset entry (kind='preset') or
+     each raw pick group (kind='raw'), and emits one labeled string
+     per pill in the order the GROUPS catalog defines (so Style
+     always appears before Lighting, etc.). Group label comes from
+     the GROUPS catalog so wording stays in sync with the section
+     headers (e.g. "Lighting & Mood"). */
+  function recentComboPreviewLabels(combo) {
+    var byGroup = {}; /* group id -> [pill, pill, ...] (de-duped) */
+    var seen = {};   /* group id -> { pill: true } */
+    function add(groupId, pill) {
+      if (!groupId || !pill) return;
+      if (!byGroup[groupId]) { byGroup[groupId] = []; seen[groupId] = {}; }
+      if (seen[groupId][pill]) return;
+      seen[groupId][pill] = true;
+      byGroup[groupId].push(pill);
+    }
+    if (combo && combo.kind === 'raw' && combo.picks) {
+      Object.keys(combo.picks).forEach(function (gid) {
+        (combo.picks[gid] || []).forEach(function (v) { add(gid, v); });
+      });
+    } else {
+      var entries = (combo && combo.kind === 'preset' && Array.isArray(combo.entries))
+        ? combo.entries
+        : (Array.isArray(combo) ? combo : []);
+      entries.forEach(function (e) {
+        var p = PRESETS[e && e.group];
+        var item = p && p.items && p.items[e && e.idx];
+        if (!item) return;
+        (item.values || []).forEach(function (v) { add(e.group, v); });
+      });
+    }
+    var out = [];
+    GROUPS.forEach(function (g) {
+      if (!byGroup[g.id]) return;
+      byGroup[g.id].forEach(function (v) {
+        out.push(g.label + ': ' + v);
+      });
+    });
+    return out;
+  }
+
+  /* Task #34 / #43: shared wiring for hover/focus/long-press preview
+     behavior. Used by both Quick-Style preset buttons and Recent
+     Combo buttons so they get identical tooltip behavior. The button
+     must already have data attributes that presetPreviewLabels()
+     understands. */
+  function wirePreviewHover(b) {
+    /* Desktop: hover + keyboard focus reveal the preview. */
+    b.addEventListener('mouseenter', function () {
+      clearTimeout(presetTooltipState.hideTimer);
+      showPresetPreview(b);
+    });
+    b.addEventListener('mouseleave', function () {
+      clearTimeout(presetTooltipState.hideTimer);
+      presetTooltipState.hideTimer = setTimeout(hidePresetPreview, 80);
+    });
+    b.addEventListener('focus', function () {
+      clearTimeout(presetTooltipState.hideTimer);
+      showPresetPreview(b);
+    });
+    b.addEventListener('blur', hidePresetPreview);
+
+    /* Touch: brief long-press (~700ms) shows the preview and arms
+       suppressClick so the action is NOT applied. A normal tap still
+       applies because the timer never fires. */
+    b.addEventListener('touchstart', function () {
+      presetTooltipState.suppressClick = false;
+      clearTimeout(presetTooltipState.longPressTimer);
+      presetTooltipState.longPressTimer = setTimeout(function () {
+        presetTooltipState.suppressClick = true;
+        showPresetPreview(b);
+      }, 700);
+    }, { passive: true });
+    var endTouch = function () {
+      clearTimeout(presetTooltipState.longPressTimer);
+      if (presetTooltipState.suppressClick) {
+        clearTimeout(presetTooltipState.hideTimer);
+        presetTooltipState.hideTimer = setTimeout(hidePresetPreview, 1600);
+      }
+    };
+    b.addEventListener('touchend', endTouch);
+    b.addEventListener('touchcancel', endTouch);
+    b.addEventListener('touchmove', function () {
+      clearTimeout(presetTooltipState.longPressTimer);
+    }, { passive: true });
   }
 
   function showPresetPreview(btn) {
@@ -6233,6 +6301,10 @@
     );
     row.innerHTML = html.join('');
     row.hidden = false;
+    /* Task #43: re-wire hover/focus/long-press preview on each newly
+       rendered combo button. Apply (one-tap) is still handled by the
+       delegated click listener on the row container. */
+    row.querySelectorAll('.pmg-photo-recent-btn').forEach(wirePreviewHover);
   }
 
   /* ---------------- Task #35: User-saved (My Combos) -------------------
