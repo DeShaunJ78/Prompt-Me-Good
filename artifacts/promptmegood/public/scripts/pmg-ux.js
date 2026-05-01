@@ -4987,8 +4987,11 @@
     }
   ];
 
-  /* ---------------- Task #25: Quick-Style presets per group ----------------
-   * Curated one-click presets for Style, Lighting & Mood, and Composition.
+  /* ---------------- Task #25 / #30: Quick-Style presets per group ---------
+   * Curated one-click presets for every Photography Suite group. Task #25
+   * shipped Style, Lighting & Mood, and Composition; Task #30 extended the
+   * same treatment to Camera & Lens (Quick Lenses) and Color Palette
+   * (Quick Palettes) so users can fill every group with one click.
    * Each preset is a label + a fixed list of pill values that already exist
    * in that group's `pills` array above. Clicking a preset clears that
    * group's existing picks and applies the preset's values; other groups
@@ -5021,6 +5024,24 @@
         { label: 'Centered Symmetry',  values: ['Centered', 'Symmetrical'] },
         { label: 'Leading Lines',      values: ['Leading Lines', 'Negative Space'] },
         { label: 'Wide Establishing',  values: ['Wide Shot', 'Bird\'s-Eye View'] }
+      ]
+    },
+    camera: {
+      title: 'Quick Lenses',
+      items: [
+        { label: 'Portrait Lens',     values: ['85mm Portrait', 'DSLR'] },
+        { label: 'Wide Landscape',    values: ['35mm Wide', 'Drone Aerial'] },
+        { label: 'Macro Detail',      values: ['Macro', '50mm Standard'] },
+        { label: 'Telephoto Action',  values: ['Telephoto', 'GoPro Action'] }
+      ]
+    },
+    palette: {
+      title: 'Quick Palettes',
+      items: [
+        { label: 'Warm Sunset',         values: ['Warm Tones', 'Sunset Reds'] },
+        { label: 'Cool Blue',           values: ['Cool Blues', 'Teal & Orange'] },
+        { label: 'Earthy Neutrals',     values: ['Muted Earth', 'Forest Greens'] },
+        { label: 'High Contrast Bold',  values: ['High Contrast', 'Neon Saturated'] }
       ]
     }
   };
