@@ -1675,17 +1675,35 @@
     .compare-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
     .compare-head h3 { margin: 0; }
     .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
-    @media (max-width: 720px) { .compare-grid { grid-template-columns: 1fr; } }
-    .compare-col { display: flex; flex-direction: column; gap: var(--space-2); }
+    .compare-col { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
     .compare-col h4 { margin: 0; font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); }
     .compare-text {
       background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md);
       padding: var(--space-3); white-space: pre-wrap; font-family: var(--font-mono, monospace);
       font-size: var(--text-sm); line-height: 1.5; max-height: 50vh; overflow: auto;
+      overflow-wrap: anywhere; word-break: break-word; max-width: 100%; min-width: 0;
     }
     .compare-col-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
     .compare-col-actions .btn { min-height: 36px; padding: 0 var(--space-3); font-size: var(--text-xs); }
     .compare-foot { display: flex; justify-content: flex-end; }
+    /* Task #26 — Mobile pass: stack the two compared prompts vertically
+       at the small breakpoint and bump every Compare Two control to a
+       44×44px tap target so phones can use the modal one-handed. The
+       overlay and modal padding tighten so a 360px viewport never
+       triggers a horizontal scrollbar. Desktop layout untouched. */
+    @media (max-width: 720px) {
+      .compare-overlay { padding: var(--space-2); }
+      .compare-modal { padding: var(--space-4); gap: var(--space-3); border-radius: var(--radius-md); }
+      .compare-grid { grid-template-columns: 1fr; gap: var(--space-3); }
+      .compare-text { max-height: 38vh; }
+      .compare-col-actions { gap: var(--space-2) var(--space-3); }
+      .compare-col-actions .btn {
+        flex: 1 1 100%;
+        min-height: 44px;
+        padding: 0 var(--space-4);
+        font-size: var(--text-sm);
+      }
+    }
     .bk-overlay {
       position: fixed; inset: 0; z-index: 45; background: color-mix(in srgb, var(--color-bg) 80%, transparent);
       backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: var(--space-4);

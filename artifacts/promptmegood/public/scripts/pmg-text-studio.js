@@ -763,13 +763,16 @@
       '.pmg-ts-charcount.is-near-limit { color: var(--color-warning, #b45309); font-weight: 600; }',
 
       /* Mode list — 2-column grid on desktop, single column on mobile.
-         With 20 cards, a single stack pushes the action button far off
-         the fold. Two columns keeps everything browsable in a glance
-         while preserving the existing card visual. */
+         Task #26 mobile pass: at the small breakpoint (≤640px) the
+         grid collapses to one full-width card per row so cards never
+         shrink below tap-target size and nothing forces horizontal
+         overflow on a 360px viewport. Desktop visual unchanged. */
       '.pmg-ts-modes {',
       '  display: grid;',
       '  grid-template-columns: repeat(2, minmax(0, 1fr));',
       '  gap: 8px;',
+      '  max-width: 100%;',
+      '  min-width: 0;',
       '}',
       '.pmg-ts-mode-card {',
       '  display: flex;',
@@ -832,11 +835,17 @@
       '  align-items: center;',
       '  gap: 6px;',
       '  flex-wrap: wrap;',
+      '  min-width: 0;',
+      '  max-width: 100%;',
+      '  overflow-wrap: anywhere;',
       '}',
       '.pmg-ts-mode-desc {',
       '  font-size: var(--text-sm);',
       '  color: var(--color-text-muted);',
       '  line-height: 1.4;',
+      '  min-width: 0;',
+      '  max-width: 100%;',
+      '  overflow-wrap: anywhere;',
       '}',
       '.pmg-ts-mode-pro {',
       '  display: inline-flex;',
@@ -1255,15 +1264,41 @@
       '  font-weight: 700; font-size: var(--text-xs); letter-spacing: 0.02em;',
       '}',
 
-      /* Mobile tightening */
-      '@media (max-width: 540px) {',
+      /* Mobile tightening — Task #26 expands this block to cover the
+         full small-breakpoint pass: stack Studio mode cards into a
+         single full-width column at ≤640px, ensure every actionable
+         control is at least 44×44px, and prevent any inner element
+         from forcing horizontal overflow on a 360px viewport. */
+      '@media (max-width: 640px) {',
       '  .pmg-ts-header,',
       '  .pmg-ts-input-card,',
       '  .pmg-ts-section-card { padding: var(--space-3) var(--space-4); }',
-      '  .pmg-ts-mode-card { padding: 12px 14px; }',
+      '  .pmg-ts-mode-card { padding: 14px 14px; min-height: 44px; }',
       /* Collapse the 2-column grid back to a single column on small
-         screens so each card has full width to read. */
-      '  .pmg-ts-modes { grid-template-columns: 1fr; }',
+         screens so each card has full width to read and tap. */
+      '  .pmg-ts-modes { grid-template-columns: 1fr; gap: 10px; }',
+      /* Tap-target floor for every Studio button on mobile. */
+      '  .pmg-ts-upload-btn,',
+      '  .pmg-ts-clear-btn,',
+      '  .pmg-ts-output-btn { min-height: 44px; padding: 10px 14px; }',
+      /* "Show tip" link-style toggle — give it a real hit area. */
+      '  .pmg-ts-tip-toggle {',
+      '    min-height: 44px; min-width: 44px;',
+      '    padding: 10px 4px;',
+      '    display: inline-flex; align-items: center;',
+      '  }',
+      /* Defensive overflow caps so long titles, twist text, or
+         pasted content can never widen the panel past the viewport. */
+      '  #pmg-ts-panel,',
+      '  .pmg-ts-section-card,',
+      '  .pmg-ts-output { max-width: 100%; min-width: 0; overflow-wrap: anywhere; }',
+      '  .pmg-ts-section-body,',
+      '  .pmg-ts-section-body p,',
+      '  .pmg-ts-section-body li { overflow-wrap: anywhere; word-break: break-word; }',
+      '  .pmg-ts-section-body code { white-space: pre-wrap; word-break: break-word; }',
+      /* Output controls: keep buttons stacked & full-width below
+         600px so they meet the tap-target floor without crowding. */
+      '  .pmg-ts-output-controls > .pmg-ts-output-btn { width: 100%; }',
       '}'
     ].join('\n');
     document.head.appendChild(s);
