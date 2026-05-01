@@ -53,7 +53,7 @@
     if (localStorage.getItem('pmg_disable') === '1') return;
   } catch (_) {}
 
-  var SCRIPT_VERSION = 'task58-4';
+  var SCRIPT_VERSION = 'task58-5';
 
   var SUITE_ID    = 'pmg-photo-suite';
   var SUMMARY_ID  = 'pmg-photo-summary';
@@ -771,15 +771,30 @@
        runImageGeneration — that's the one the inline onclick on
        the primary button targets. */
     var orig = origRun || origGen;
+    /* Matches a trailing ". Avoid: x, y." clause we may have
+       appended on a previous run. Anchored to end-of-string so we
+       never accidentally strip user-typed text earlier in the
+       prompt. */
+    var AVOID_RE = /\s*\.\s*Avoid:\s*[^.]*\.?\s*$/i;
     var wrapper = function () {
       try {
-        var negs = getNegativePills();
-        if (negs.length) {
-          var goal = document.getElementById('goal');
-          if (goal && goal.value && !/Avoid:\s/i.test(goal.value)) {
+        var goal = document.getElementById('goal');
+        if (goal && typeof goal.value === 'string') {
+          /* ALWAYS strip any prior Avoid clause first so each
+             generation reflects the CURRENT negatives — without
+             this, changing or clearing avoid pills between two
+             runs would silently leak the old list into the new
+             prompt. */
+          var base = goal.value.replace(AVOID_RE, '').replace(/\s+$/, '');
+          var negs = getNegativePills();
+          if (base && negs.length) {
             var values = negs.map(function (p) { return p.value; });
-            var v = goal.value.trim().replace(/[.\s]+$/, '');
-            goal.value = v + '. Avoid: ' + values.join(', ') + '.';
+            var trimmed = base.replace(/[.\s]+$/, '');
+            goal.value = trimmed + '. Avoid: ' + values.join(', ') + '.';
+          } else if (base !== goal.value) {
+            /* No current negatives but stale clause was present —
+               restore the bare prompt. */
+            goal.value = base;
           }
         }
       } catch (_) {}

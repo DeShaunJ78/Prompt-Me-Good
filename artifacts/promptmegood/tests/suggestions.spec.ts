@@ -92,7 +92,7 @@ test.describe("Smart pill suggestions + negative pills @ mobile-360", () => {
       };
     });
     expect(surface).toEqual({
-      version: "task58-4",
+      version: "task58-5",
       hasCompute: true,
       hasGetNegatives: true,
       hasSetAvoiding: true,
@@ -530,6 +530,80 @@ test.describe("Smart pill suggestions + negative pills @ mobile-360", () => {
     });
     expect(goalAfter).toMatch(/Avoid:\s/);
     expect(goalAfter).toContain("Harsh Noon");
+  });
+
+  /* Regression: the original wrapper guarded with
+     `if (!/Avoid:/.test(goal.value)) append`, which made the
+     "Avoid: …" clause sticky — once added, subsequent
+     generations would never refresh it even if the user changed
+     or cleared their negatives between runs. The fix strips any
+     trailing Avoid clause first so each call recomputes from the
+     CURRENT negative pill state. */
+  test("Avoid clause refreshes between generations (no stale leak)", async ({
+    page,
+  }) => {
+    await gotoApp(page);
+    /* Stub network so generation never actually fires. */
+    await page.evaluate(() => {
+      const realFetch = window.fetch;
+      window.fetch = ((input: RequestInfo | URL) => {
+        if (typeof input === "string" && input.indexOf("/api/image") !== -1) {
+          return Promise.resolve(
+            new Response(JSON.stringify({ url: "data:," }), {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            }),
+          );
+        }
+        return realFetch(input);
+      }) as typeof fetch;
+    });
+    /* Run 1: negatives = Harsh Noon. */
+    await setAvoid(page, "lighting", true);
+    await activatePill(page, "Harsh Noon");
+    await page.evaluate(() => {
+      (document.getElementById("goal") as HTMLTextAreaElement).value =
+        "A cosy reading nook";
+    });
+    await page.evaluate(async () => {
+      await ((window as unknown as Win).generateImage as () => Promise<void>)();
+    });
+    let goalAfter = await page.evaluate(
+      () => (document.getElementById("goal") as HTMLTextAreaElement).value,
+    );
+    expect(goalAfter).toContain("Harsh Noon");
+    expect(goalAfter).not.toContain("Neon Glow");
+    /* Run 2: swap negatives — clear Harsh Noon, add Neon Glow. */
+    await page.evaluate(() => {
+      const api = (window as unknown as Win).__pmgSuggestions!;
+      api.clearNegatives();
+    });
+    await activatePill(page, "Neon Glow");
+    await page.evaluate(async () => {
+      await ((window as unknown as Win).generateImage as () => Promise<void>)();
+    });
+    goalAfter = await page.evaluate(
+      () => (document.getElementById("goal") as HTMLTextAreaElement).value,
+    );
+    expect(goalAfter).toContain("Neon Glow");
+    expect(goalAfter).not.toContain("Harsh Noon");
+    /* The prompt itself must survive both rewrites. */
+    expect(goalAfter).toContain("A cosy reading nook");
+    /* Exactly one Avoid clause — never two. */
+    const avoidCount = (goalAfter.match(/Avoid:/g) ?? []).length;
+    expect(avoidCount).toBe(1);
+    /* Run 3: clear all negatives — stale clause must be removed. */
+    await page.evaluate(() => {
+      (window as unknown as Win).__pmgSuggestions!.clearNegatives();
+    });
+    await page.evaluate(async () => {
+      await ((window as unknown as Win).generateImage as () => Promise<void>)();
+    });
+    goalAfter = await page.evaluate(
+      () => (document.getElementById("goal") as HTMLTextAreaElement).value,
+    );
+    expect(goalAfter).not.toContain("Avoid:");
+    expect(goalAfter).toContain("A cosy reading nook");
   });
 
   /* Regression: programmatic .is-active adds (preset / surprise /
