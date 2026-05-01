@@ -4545,9 +4545,110 @@ Context:
       // assembled prompt and read the same form values the submit handler reads,
       // so it doesn't drift from what "Fix My Prompt" actually sends. Expose the
       // exact same builders the form uses — never duplicate the assembly logic.
+      // T49 Fix My Prompt diff: pmg-fix-diff.js needs the same hooks plus
+      // setPromptText so it can re-write the result box when the user toggles
+      // an individual change on or off.
       window.__pmgText = {
         getFormData: getFormData,
-        generatePrompt: generatePrompt
+        generatePrompt: generatePrompt,
+        setPromptText: function (text) { setPromptText(text); },
+        // Structured edits + reassembler for the side-by-side diff. Each edit
+        // is one optional addition the prompt builder makes to the user's raw
+        // goal/details/rules. assemble(acceptedIds) returns the prompt with
+        // ONLY the accepted edits inserted — required scaffold (role + goal)
+        // is always included.
+        buildEdits: function (data) {
+          var roleMap = {
+            beginner: 'patient teacher and practical strategist',
+            intermediate: 'experienced coach, operator, and systems thinker',
+            advanced: 'top 1% expert operator, senior strategist, and execution advisor'
+          };
+          var personalityMap = {
+            none: '',
+            direct: 'Write in a direct, clear, no-fluff style. Get to the point quickly and prioritize practical value.',
+            friendly: 'Write in a warm, natural, conversational tone that feels like a helpful person explaining things clearly.',
+            bold: 'Write with confidence, conviction, and persuasive energy. Make the response strong, clear, and compelling without sounding fake.',
+            professional: 'Write in a polished, organized, business-ready tone with clear sections, strong logic, and practical recommendations.',
+            creative: 'Write with originality, vivid language, and engaging phrasing while staying useful and clear.',
+            faith: 'Write with spiritual seriousness, clarity, and conviction while keeping the response grounded, respectful, and practical.',
+            street: 'Write in a practical, real-world tone with plain language, direct advice, and no unnecessary theory.',
+            luxury: 'Write with a premium, refined, confident tone that feels elegant, polished, and high-value.',
+            viral: 'Write with strong hooks, punchy phrasing, curiosity, emotional pull, and short attention-grabbing lines.'
+          };
+          var personalityLabel = {
+            none: 'None', direct: 'Direct & Straightforward', friendly: 'Friendly & Conversational',
+            bold: 'Bold & Persuasive', professional: 'Professional & Structured',
+            creative: 'Creative & Expressive', faith: 'Faith-Based & Convicting',
+            street: 'Street-Smart & Practical', luxury: 'Luxury Brand Voice', viral: 'Viral Social Media Voice'
+          };
+          var languageLabels = { english: 'English', spanish: 'Spanish', portuguese: 'Portuguese', russian: 'Russian', french: 'French', german: 'German' };
+          var languageKey = data.outputLanguage && languageLabels[data.outputLanguage] ? data.outputLanguage : 'english';
+          var categoryKey = data.category && categoryDirectives.hasOwnProperty(data.category) ? data.category : 'other';
+          var personalityKey = data.personality && personalityMap.hasOwnProperty(data.personality) ? data.personality : 'none';
+          var roleKey = data.skillLevel && roleMap[data.skillLevel] ? data.skillLevel : 'intermediate';
+
+          var originalParts = [];
+          if (data.goal) originalParts.push(data.goal);
+          if (data.details) originalParts.push('\nExtra context:\n' + data.details);
+          if (data['rules or limits']) originalParts.push('\nRules or limits:\n' + data['rules or limits']);
+          var original = originalParts.join('\n').trim();
+
+          // Each edit is { id, label, reason, kind, line }
+          // kind: 'directive' (goes inside the bullet list), 'context' (goes
+          // in bottom Context block), 'block' (a separate trailing block).
+          var edits = [];
+          edits.push({ id: 'role', label: 'Role assignment', reason: 'Anchored expertise level — "Act as a ' + roleMap[roleKey] + '"', kind: 'header', line: 'Act as a ' + roleMap[roleKey] + ' and help me with this goal:' });
+          edits.push({ id: 'clarify', label: 'Clarify objective', reason: 'Asks AI to clarify the real objective behind the goal', kind: 'directive', line: 'Clarify the real objective behind my request.' });
+          edits.push({ id: 'assumptions', label: 'Surface assumptions', reason: 'Catches missing context, risks, and assumptions up front', kind: 'directive', line: 'Point out any missing assumptions, risks, or important details.' });
+          edits.push({ id: 'practical', label: 'Practical answer', reason: 'Demands an answer you can use immediately', kind: 'directive', line: 'Give me a practical answer I can use immediately.' });
+          edits.push({ id: 'category', label: 'Category focus', reason: 'Tied to your "' + categoryLabels[categoryKey] + '" category', kind: 'directive', line: 'Category focus (' + categoryLabels[categoryKey] + '): ' + categoryDirectives[categoryKey] });
+          if (data.tone) edits.push({ id: 'tone', label: 'Tone instruction', reason: 'Added a tone — ' + titleCase(data.tone), kind: 'directive', line: 'Use ' + articleFor(data.tone) + ' ' + titleCase(data.tone) + ' tone.' });
+          if (data.skillLevel) edits.push({ id: 'skill_match', label: 'Audience clarifier', reason: 'Clarified the audience — ' + titleCase(data.skillLevel) + ' user', kind: 'directive', line: 'Keep the response appropriate for ' + articleFor(data.skillLevel) + ' ' + titleCase(data.skillLevel) + ' user.' });
+          if (data.outputFormat) edits.push({ id: 'format', label: 'Output format', reason: 'Locked the output format — ' + titleCase(data.outputFormat), kind: 'directive', line: 'Format the answer as ' + articleFor(data.outputFormat) + ' ' + titleCase(data.outputFormat) + '.' });
+          edits.push({ id: 'no_filler', label: 'Cut filler', reason: 'Removed filler — bans vague advice and generic motivation', kind: 'directive', line: 'Avoid vague advice, filler, or generic motivation.' });
+          edits.push({ id: 'examples', label: 'Concrete examples', reason: 'Asks for examples, templates, checklists, or scripts', kind: 'directive', line: 'Include examples, templates, checklists, or scripts when useful.' });
+          edits.push({ id: 'next_actions', label: 'Top 3 next actions', reason: 'Ends with the top 3 actions to take next', kind: 'directive', line: 'End with the top 3 actions I should take next.' });
+          if (data.maxLength) edits.push({ id: 'max_length', label: 'Length cap', reason: 'Capped response length at ' + data.maxLength + ' words', kind: 'directive', line: 'Keep the response under ' + data.maxLength + ' words.' });
+          if (data['rules or limits']) edits.push({ id: 'rules_or_limits_line', label: 'Respect your rules', reason: 'Respects your rules-or-limits guard rail', kind: 'directive', line: 'Respect these rules or limits — do NOT do any of these: ' + data['rules or limits'] });
+          if (personalityKey !== 'none') edits.push({ id: 'personality', label: 'Personality voice', reason: 'Added personality voice — ' + personalityLabel[personalityKey], kind: 'directive', line: 'Personality: ' + personalityMap[personalityKey] });
+          if (data.moneyMode) edits.push({ id: 'money_mode', label: 'Money Mode', reason: 'Added Money Mode — prioritize practical, results-driven answers', kind: 'directive', line: 'Money Mode: prioritize practical, actionable, and results-driven answers. Focus on outcomes and execution.' });
+          if (data.humanTone) edits.push({ id: 'human_voice', label: 'Human Voice', reason: 'Added Human Voice Mode — natural, varied phrasing', kind: 'directive', line: 'Human Voice Mode: write in a natural, human tone with varied sentence structure. Avoid robotic phrasing, repetitive patterns, and overly stiff wording. Use subtle variation and natural flow to reduce obvious AI-generated patterns.' });
+          if (data.clarityBoost) edits.push({ id: 'clarity_boost', label: 'Clarity Boost', reason: 'Added Clarity Boost — clear sections and defined terms', kind: 'directive', line: 'Clarity Boost Mode: prioritize clarity. Organize the response with clear sections, define unclear terms, call out assumptions, and make each step easy to understand and act on.' });
+          if (data.photoMode) edits.push({ id: 'photo_mode', label: 'Photo Prompt Mode', reason: 'Added Photo Prompt Mode — full visual brief', kind: 'directive', line: 'Photo Prompt Mode: act as a professional photographer and visual director. Create a highly detailed image prompt including:\n  - lighting (studio, natural, cinematic)\n  - camera type and lens (e.g. 85mm, DSLR)\n  - composition and framing\n  - textures and environment\n  - color grading\n  - mood and realism\n  - ultra-detailed, high-resolution output' });
+          if (languageKey !== 'english') edits.push({ id: 'language', label: 'Output language', reason: 'Set the output language — ' + languageLabels[languageKey], kind: 'directive', line: 'Write the final response in ' + languageLabels[languageKey] + '.' });
+          // Context block
+          edits.push({ id: 'ctx_category', label: 'Context: category', reason: 'Pinned the category metadata at the bottom', kind: 'context', line: 'Category: ' + categoryLabels[categoryKey] });
+          if (data.skillLevel) edits.push({ id: 'ctx_experience', label: 'Context: experience', reason: 'Pinned the experience level metadata', kind: 'context', line: 'Experience level: ' + titleCase(data.skillLevel) });
+          if (data.tone) edits.push({ id: 'ctx_tone', label: 'Context: tone', reason: 'Pinned the tone metadata', kind: 'context', line: 'Tone: ' + titleCase(data.tone) });
+          if (data.outputFormat) edits.push({ id: 'ctx_format', label: 'Context: format', reason: 'Pinned the format metadata', kind: 'context', line: 'Output format: ' + titleCase(data.outputFormat) });
+          if (personalityKey !== 'none') edits.push({ id: 'ctx_personality', label: 'Context: personality', reason: 'Pinned the personality metadata — ' + personalityLabel[personalityKey], kind: 'context', line: 'Personality: ' + personalityLabel[personalityKey] });
+          if (data.details) edits.push({ id: 'ctx_details', label: 'Extra context', reason: 'Carried your extra-context notes into the prompt', kind: 'block', line: 'Extra context to respect:\n' + data.details });
+          if (data['rules or limits']) edits.push({ id: 'ctx_rules', label: 'Rules block', reason: 'Carried your rules-or-limits notes into the prompt', kind: 'block', line: 'Things to avoid (rules or limits):\n' + data['rules or limits'] });
+
+          function assemble(acceptedSet) {
+            function on(id) { return acceptedSet.has(id); }
+            var parts = [];
+            // Header
+            if (on('role')) parts.push('Act as a ' + roleMap[roleKey] + ' and help me with this goal:\n\n"' + (data.goal || '') + '"');
+            else parts.push('Help me with this goal:\n\n"' + (data.goal || '') + '"');
+            // Directives
+            var directives = edits.filter(function (e) { return e.kind === 'directive' && on(e.id); });
+            if (directives.length) {
+              parts.push("Here's what I need from you:\n" + directives.map(function (e) { return '- ' + e.line; }).join('\n'));
+            }
+            // Context
+            var ctx = edits.filter(function (e) { return e.kind === 'context' && on(e.id); });
+            if (ctx.length) {
+              parts.push('Context:\n' + ctx.map(function (e) { return '- ' + e.line; }).join('\n'));
+            }
+            // Trailing blocks
+            edits.filter(function (e) { return e.kind === 'block' && on(e.id); }).forEach(function (e) {
+              parts.push(e.line);
+            });
+            return parts.join('\n\n');
+          }
+          return { original: original, edits: edits, assemble: assemble };
+        }
       };
 
       const SAVE_TIP_DISMISSED_KEY = 'promptmegood:saveTipDismissed:v1';
@@ -6680,6 +6781,19 @@ Context:
         function finalize(promptText) {
           setPromptText(promptText);
           addToHistory(data, promptText);
+          // T49 Fix My Prompt diff: announce a successful local-builder run so
+          // pmg-fix-diff.js can render the side-by-side diff. Wrapped in
+          // try/catch + setTimeout so any subscriber bug can never break the
+          // primary "your prompt is ready" UX.
+          try {
+            window.setTimeout(function () {
+              try {
+                document.dispatchEvent(new CustomEvent('pmg:builder-finalized', {
+                  detail: { data: data, promptText: promptText }
+                }));
+              } catch (_) {}
+            }, 0);
+          } catch (_) {}
           if (typeof pmgIncPromptCount === 'function') pmgIncPromptCount();
           const shareBtnEl = document.getElementById('share-btn');
           if (shareBtnEl) shareBtnEl.hidden = false;
@@ -9824,6 +9938,7 @@ Context:
   <script src="/scripts/pmg-shortcuts.js?v=8-refocus" defer></script>
   <script src="/scripts/pmg-text-flow-v2.js?v=7-refocus" defer></script>
   <script src="/scripts/pmg-text-feedback.js?v=task48-5" defer></script>
+  <script src="/scripts/pmg-fix-diff.js?v=task49-2" defer></script>
 
 <script id="pmg-premium-polish-js">
 document.addEventListener("DOMContentLoaded", function () {
