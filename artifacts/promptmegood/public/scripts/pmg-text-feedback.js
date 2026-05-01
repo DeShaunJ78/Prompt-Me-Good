@@ -335,14 +335,14 @@
     if ((data['rules or limits'] || '').trim()) s += 8;
     if (data.maxLength && data.maxLength > 0) s += 8;
     if (data.personality && data.personality !== 'none') s += 8;
-    if (data.category && data.category !== 'other') s += 4;
-    /* Tone/format/skillLevel default to 'professional', 'step-by-step',
-       'beginner' in the markup — only award when the user picked
-       something other than the original DOM defaults. We can't
-       cheaply detect "user actually changed it" so we just check
-       presence; values are always non-empty in the form. */
-    if (data.tone) s += 4;
-    if (data.outputFormat) s += 4;
+    /* Only credit category/tone/format/skill when the user picked
+       something other than the form's first-option defaults
+       (`business`, `professional`, `step-by-step`, `beginner`).
+       Otherwise the meter would read "Specific enough" before the
+       user has even thought about the prompt. */
+    if (data.category && data.category !== 'business') s += 4;
+    if (data.tone && data.tone !== 'professional') s += 4;
+    if (data.outputFormat && data.outputFormat !== 'step-by-step') s += 4;
     if (data.skillLevel && data.skillLevel !== 'beginner') s += 4;
     s -= Math.min(16, vagueCount * 4);
     if (s < 0) s = 0;
