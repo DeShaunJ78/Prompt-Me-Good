@@ -86,6 +86,53 @@ test.describe("Command palette (⌘K) smoke @ mobile-360", () => {
     expect(finalState.open).toBe(false);
   });
 
+  test("ArrowDown moves the active row, then Enter executes the new selection", async ({
+    page,
+  }) => {
+    await page.evaluate(() => {
+      (window as unknown as {
+        __pmgCommandPalette: { open: () => void };
+      }).__pmgCommandPalette.open();
+    });
+    await expect(page.locator("#pmg-cmdk-backdrop")).toBeVisible();
+    /* Empty query so we get the full grouped list — at least
+       2 commands must render so ArrowDown has somewhere to go. */
+    await page.waitForFunction(() => {
+      return document.querySelectorAll("#pmg-cmdk-list .pmg-cmdk-item").length >= 2;
+    });
+    /* Snapshot indices: first selected, then ArrowDown, capture
+       which command id ends up under aria-activedescendant. */
+    const initialActiveId = await page.evaluate(() => {
+      const input = document.getElementById("pmg-cmdk-input");
+      return input ? input.getAttribute("aria-activedescendant") : null;
+    });
+    await page.keyboard.press("ArrowDown");
+    const nextActiveId = await page.evaluate(() => {
+      const input = document.getElementById("pmg-cmdk-input");
+      return input ? input.getAttribute("aria-activedescendant") : null;
+    });
+    expect(nextActiveId).toBeTruthy();
+    expect(nextActiveId).not.toBe(initialActiveId);
+    /* The list uses an `.is-active` class to mark the highlighted
+       row (single-selection invariant). */
+    const activeMatches = await page.evaluate((id) => {
+      const all = document.querySelectorAll(
+        "#pmg-cmdk-list .pmg-cmdk-item.is-active",
+      );
+      return {
+        count: all.length,
+        idMatches: all.length === 1 && (all[0] as HTMLElement).id === id,
+      };
+    }, nextActiveId);
+    expect(activeMatches.count).toBe(1);
+    expect(activeMatches.idMatches).toBe(true);
+    /* Pressing Enter on the second-from-top command must close
+       the palette (we don't observe a side effect — what matters
+       is that Enter dispatched on the *moved* row works). */
+    await page.keyboard.press("Enter");
+    await expect(page.locator("#pmg-cmdk-backdrop")).toBeHidden();
+  });
+
   test("_query never lists a command whose target isn't rendered", async ({
     page,
   }) => {
