@@ -26,11 +26,45 @@
   }
 
   inject([
-    /* Progress timer pill */
-    '#pmg-image-progress{display:none;align-items:center;justify-content:center;gap:.5rem;margin:.75rem auto 0;padding:.5rem .9rem;font-size:.9rem;color:var(--color-text);background:color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));border:1px solid color-mix(in srgb, var(--color-primary) 28%, var(--color-border));border-radius:999px;font-weight:600;width:max-content;max-width:100%}',
-    '#pmg-image-progress.pmg-show{display:inline-flex}',
-    '#pmg-image-progress .pmg-dot{width:8px;height:8px;border-radius:50%;background:var(--color-primary);animation:pmgImgDot 1s ease-in-out infinite}',
-    '@keyframes pmgImgDot{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}',
+    /* ---- Image-generation waiting card (Task: image-progress polish)
+     *
+     * Replaces the original single-line "progress pill" with a richer
+     * card that has:
+     *   - 3 staggered pulsing dots (visual "working")
+     *   - Phased status text that crossfades on phase change
+     *   - Elapsed seconds counter (per-second numeric tick)
+     *   - Asymptotic progress bar (fast at first, slowing) capped at
+     *     ~94% so it never claims completion before the image returns.
+     *
+     * The element keeps id `pmg-image-progress` for backwards compat
+     * with `showProgress` / `hideProgress` and any existing tests.
+     * Reduce-motion users get a static card (no shimmer / no pulse /
+     * no crossfade) — see prefers-reduced-motion overrides further
+     * down. */
+    '#pmg-image-progress{display:none;flex-direction:column;gap:.55rem;margin:.75rem auto 0;padding:.85rem 1rem;font-size:.92rem;color:var(--color-text);background:color-mix(in srgb, var(--color-primary) 9%, var(--color-surface));border:1px solid color-mix(in srgb, var(--color-primary) 28%, var(--color-border));border-radius:14px;width:min(420px,100%);box-sizing:border-box}',
+    '#pmg-image-progress.pmg-show{display:flex;animation:pmgImgCardIn .35s ease both}',
+    '@keyframes pmgImgCardIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}',
+    '#pmg-image-progress .pmg-row{display:flex;align-items:center;gap:.6rem;min-width:0}',
+    '#pmg-image-progress .pmg-dots{display:inline-flex;gap:4px;flex:0 0 auto}',
+    '#pmg-image-progress .pmg-dot{width:7px;height:7px;border-radius:50%;background:var(--color-primary);animation:pmgImgDot 1.1s ease-in-out infinite}',
+    '#pmg-image-progress .pmg-dot:nth-child(2){animation-delay:.18s}',
+    '#pmg-image-progress .pmg-dot:nth-child(3){animation-delay:.36s}',
+    '@keyframes pmgImgDot{0%,100%{opacity:.3;transform:scale(.7)}50%{opacity:1;transform:scale(1.15)}}',
+    /* Phase text with crossfade. Two stacked spans so the next phase
+     * fades in over the previous one without layout jitter. */
+    '#pmg-image-progress .pmg-text-wrap{position:relative;flex:1 1 auto;min-width:0;min-height:1.25em;font-weight:600;line-height:1.25}',
+    '#pmg-image-progress .pmg-text{position:absolute;inset:0;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .28s ease}',
+    '#pmg-image-progress .pmg-text.pmg-out{opacity:0}',
+    '#pmg-image-progress .pmg-text.pmg-in{opacity:1}',
+    '#pmg-image-progress .pmg-elapsed{flex:0 0 auto;font-variant-numeric:tabular-nums;font-weight:700;font-size:.8rem;color:var(--color-text-muted);padding:2px 8px;border-radius:999px;background:color-mix(in srgb, var(--color-primary) 14%, transparent)}',
+    /* Progress bar — uses width transitions for a smooth fill. */
+    '#pmg-image-progress .pmg-bar{position:relative;width:100%;height:6px;border-radius:999px;background:color-mix(in srgb, var(--color-text) 9%, transparent);overflow:hidden}',
+    '#pmg-image-progress .pmg-bar-fill{position:absolute;left:0;top:0;bottom:0;width:0%;border-radius:999px;background:linear-gradient(90deg,var(--color-primary),color-mix(in srgb,var(--color-primary) 70%, #ffffff));transition:width .9s cubic-bezier(.22,.61,.36,1)}',
+    /* Reduce-motion: kill all moving parts. */
+    '@media (prefers-reduced-motion: reduce){#pmg-image-progress.pmg-show{animation:none}#pmg-image-progress .pmg-dot{animation:none;opacity:.7;transform:none}#pmg-image-progress .pmg-text{transition:none}#pmg-image-progress .pmg-bar-fill{transition:none}}',
+    /* Visually-hidden mirror used to politely announce phase changes
+     * to screen readers without spamming them on every second. */
+    '#pmg-image-progress .pmg-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}',
 
     /* Shared shimmer used by both Image Generator and Transform Studio
      * skeletons. Reduce-motion users get a plain static block (no
@@ -87,10 +121,29 @@
     el = document.createElement('div');
     el.id = 'pmg-image-progress';
     el.setAttribute('role', 'status');
-    /* aria-live=off on the live timer text to avoid per-second SR spam.
-     * Milestones are announced via the wrapping status role on initial show. */
+    /* aria-live=off on the entire card. Phase changes are mirrored
+     * to the dedicated `.pmg-sr-only` polite span below so screen
+     * readers hear meaningful milestones (not the per-second timer). */
     el.setAttribute('aria-live', 'off');
-    el.innerHTML = '<span class="pmg-dot" aria-hidden="true"></span><span class="pmg-text" aria-hidden="true">Creating your image — about 10–25 seconds…</span>';
+    /* Two stacked .pmg-text spans: one is the "current" phase, the
+     * other is the "incoming" phase. We toggle pmg-in / pmg-out
+     * classes to crossfade without relayout. */
+    el.innerHTML = [
+      '<div class="pmg-row">',
+      '  <span class="pmg-dots" aria-hidden="true">',
+      '    <span class="pmg-dot"></span>',
+      '    <span class="pmg-dot"></span>',
+      '    <span class="pmg-dot"></span>',
+      '  </span>',
+      '  <span class="pmg-text-wrap" aria-hidden="true">',
+      '    <span class="pmg-text pmg-text-a pmg-in"></span>',
+      '    <span class="pmg-text pmg-text-b pmg-out"></span>',
+      '  </span>',
+      '  <span class="pmg-elapsed" aria-hidden="true">0s</span>',
+      '</div>',
+      '<div class="pmg-bar" aria-hidden="true"><span class="pmg-bar-fill"></span></div>',
+      '<span class="pmg-sr-only" aria-live="polite"></span>'
+    ].join('');
     var wrap = $('imageResultWrap');
     if (wrap && wrap.parentNode) {
       wrap.parentNode.insertBefore(el, wrap);
@@ -260,19 +313,89 @@
     return cleaned || 'Something went wrong while generating your image.';
   }
 
+  /* Phased status messages. Each entry: { until: <seconds threshold>,
+   * text: <copy>}. The phase whose `until` first exceeds elapsed
+   * seconds wins. The last phase has Infinity so it always matches
+   * for very-long generations. We deliberately keep messages short
+   * + concrete so the user feels the system is working through
+   * specific stages, not just spinning. */
+  var IMG_PHASES = [
+    { until: 3,        text: 'Reading your prompt…' },
+    { until: 7,        text: 'Sketching the composition…' },
+    { until: 12,       text: 'Choosing colors and lighting…' },
+    { until: 18,       text: 'Painting the details…' },
+    { until: 25,       text: 'Adding finishing touches…' },
+    { until: 40,       text: 'Almost ready — big images take longer…' },
+    { until: Infinity, text: 'Still working — rich scenes need extra time…' }
+  ];
+
+  /* Asymptotic progress curve. Returns 0..0.94 — never 1.0, because
+   * we only know the image is *actually* done when the API returns.
+   * Profile: ~30% by 5s, ~60% by 15s, ~80% by 25s, ~94% by 60s. */
+  function progressForElapsed(s) {
+    var pct = 1 - Math.exp(-s / 18);   // approaches 1 asymptotically
+    return Math.min(0.94, pct);
+  }
+
+  function phaseForElapsed(s) {
+    for (var i = 0; i < IMG_PHASES.length; i++) {
+      if (s < IMG_PHASES[i].until) return IMG_PHASES[i].text;
+    }
+    return IMG_PHASES[IMG_PHASES.length - 1].text;
+  }
+
+  /* Crossfade the visible phase text. We track which span is the
+   * "active" (visible) one on the element so we don't have to read
+   * computed styles. */
+  function setPhaseText(el, nextText) {
+    var a = el.querySelector('.pmg-text-a');
+    var b = el.querySelector('.pmg-text-b');
+    if (!a || !b) return;
+    var activeIsA = a.classList.contains('pmg-in');
+    var current = activeIsA ? a : b;
+    var incoming = activeIsA ? b : a;
+    if ((current.textContent || '').trim() === nextText) return;
+    incoming.textContent = nextText;
+    /* Force a reflow so the transition reliably triggers when both
+     * spans are toggled in the same frame. */
+    void incoming.offsetWidth;
+    incoming.classList.remove('pmg-out');
+    incoming.classList.add('pmg-in');
+    current.classList.remove('pmg-in');
+    current.classList.add('pmg-out');
+  }
+
   function showProgress(section) {
     var el = ensureProgressEl(section);
     el.classList.add('pmg-show');
-    var textEl = el.querySelector('.pmg-text');
+    var textA = el.querySelector('.pmg-text-a');
+    var elapsedEl = el.querySelector('.pmg-elapsed');
+    var fillEl = el.querySelector('.pmg-bar-fill');
+    var srEl = el.querySelector('.pmg-sr-only');
     var start = Date.now();
+    var lastPhase = '';
+    /* Seed the visible phase span synchronously so the first frame
+     * isn't blank (crossfade only triggers on phase *changes*). */
+    if (textA) textA.textContent = IMG_PHASES[0].text;
+    /* Reset the progress bar to 0 each generation. */
+    if (fillEl) fillEl.style.width = '0%';
+    if (elapsedEl) elapsedEl.textContent = '0s';
+    if (srEl) srEl.textContent = IMG_PHASES[0].text;
+    lastPhase = IMG_PHASES[0].text;
+
     if (window.__pmgImgTimer) clearInterval(window.__pmgImgTimer);
     function tick() {
       var s = Math.floor((Date.now() - start) / 1000);
-      if (textEl) {
-        if (s < 5) textEl.textContent = 'Creating your image — about 10–25 seconds…';
-        else if (s < 12) textEl.textContent = 'Painting the pixels… ' + s + 's';
-        else if (s < 22) textEl.textContent = 'Almost there… ' + s + 's';
-        else textEl.textContent = 'Big detailed images take a moment… ' + s + 's';
+      if (elapsedEl) elapsedEl.textContent = s + 's';
+      var nextPhase = phaseForElapsed(s);
+      if (nextPhase !== lastPhase) {
+        setPhaseText(el, nextPhase);
+        if (srEl) srEl.textContent = nextPhase;
+        lastPhase = nextPhase;
+      }
+      if (fillEl) {
+        var pct = (progressForElapsed(s) * 100).toFixed(1);
+        fillEl.style.width = pct + '%';
       }
     }
     tick();
@@ -281,7 +404,18 @@
 
   function hideProgress() {
     var el = $('pmg-image-progress');
-    if (el) el.classList.remove('pmg-show');
+    if (el) {
+      /* Snap the bar to 100% briefly before hiding so the success
+       * moment feels resolved instead of cut off mid-fill. The
+       * card's CSS transition handles the visual sweep, then the
+       * pmg-show class is removed on a short delay. */
+      var fillEl = el.querySelector('.pmg-bar-fill');
+      if (fillEl) fillEl.style.width = '100%';
+      setTimeout(function () {
+        var still = $('pmg-image-progress');
+        if (still) still.classList.remove('pmg-show');
+      }, 220);
+    }
     if (window.__pmgImgTimer) {
       clearInterval(window.__pmgImgTimer);
       window.__pmgImgTimer = null;
@@ -422,6 +556,16 @@
         return;
       }
       if (looksLikeLegacyLoading(w)) {
+        /* Trigger the waiting card here too — the click-handler path
+         * only fires when #image-generate-btn is clicked, but the real
+         * user flow goes through .pmg-photo-send -> sendToImageGenerator
+         * -> window.generateImage() (a direct call, no DOM click). The
+         * legacy spinner appearing in the wrap is the universal signal
+         * that generation has begun, regardless of entry point. */
+        var pcard = $('pmg-image-progress');
+        if (!pcard || !pcard.classList.contains('pmg-show')) {
+          showProgress(section);
+        }
         renderSkeleton(w);
         return;
       }
