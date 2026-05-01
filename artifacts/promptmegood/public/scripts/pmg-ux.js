@@ -4960,6 +4960,8 @@
   var RECENT_ROW_ID = 'pmg-photo-recent';
   var RECENT_KEY = 'pmg.photo.recentPresets';
   var RECENT_MAX = 5;
+  /* Task #34: shared floating tooltip element id for preset previews. */
+  var PRESET_TOOLTIP_ID = 'pmg-photo-preset-tooltip';
 
   /* ---------------- Catalog of pill options per group --------------- */
   var GROUPS = [
@@ -5205,6 +5207,39 @@
       '}',
       '@media (prefers-reduced-motion: reduce) {',
       '  #' + SUITE_ID + ' .pmg-photo-preset:hover { transform: none; }',
+      '}',
+
+      /* Task #34: floating preview tooltip for Quick-Style presets.
+         Shows the underlying pill values a preset will activate so
+         users can see what they're about to apply (and avoid losing
+         a careful selection by surprise). One shared element is
+         positioned with absolute coordinates relative to the
+         document — keeps DOM noise out of every preset row. */
+      '#' + PRESET_TOOLTIP_ID + ' {',
+      '  position: absolute; top: -9999px; left: -9999px; z-index: 9999;',
+      '  max-width: 280px;',
+      '  background: var(--color-text); color: var(--color-surface);',
+      '  padding: 8px 12px; border-radius: var(--radius-md);',
+      '  font-size: var(--text-xs); line-height: 1.4;',
+      '  box-shadow: 0 4px 14px rgba(0,0,0,0.18);',
+      '  display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center;',
+      '  pointer-events: none; opacity: 0; transform: translateY(2px);',
+      '  transition: opacity 140ms ease, transform 140ms ease;',
+      '}',
+      '#' + PRESET_TOOLTIP_ID + '.is-visible { opacity: 1; transform: translateY(0); }',
+      '#' + PRESET_TOOLTIP_ID + ' .pmg-photo-preset-tooltip-label {',
+      '  font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;',
+      '  font-size: 10px; opacity: 0.75; margin-right: 2px;',
+      '}',
+      '#' + PRESET_TOOLTIP_ID + ' .pmg-photo-preset-tooltip-pill {',
+      '  display: inline-block; padding: 3px 8px;',
+      '  background: color-mix(in srgb, var(--color-surface) 22%, transparent);',
+      '  border: 1px solid color-mix(in srgb, var(--color-surface) 28%, transparent);',
+      '  border-radius: var(--radius-full);',
+      '  font-weight: 600; font-size: 11px; white-space: nowrap;',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  #' + PRESET_TOOLTIP_ID + ' { transition: none; }',
       '}',
 
       /* Task #31: Recently-used preset combos row. Sits between the
@@ -5483,14 +5518,90 @@
        picks, then activates only the pills listed in the preset. Other
        groups are untouched. Same downstream wiring as Surprise Me:
        toggles .is-active classes and calls refreshSummary(), which
-       updates the count badges, summary line, and Send button state. */
+       updates the count badges, summary line, and Send button state.
+
+       Task #34: also wires hover/focus/long-press to show a preview
+       tooltip listing the underlying pill values. On touch devices a
+       brief long-press reveals the preview AND suppresses the tap so
+       the preset isn't accidentally applied. */
     root.querySelectorAll('.pmg-photo-preset').forEach(function (b) {
-      b.addEventListener('click', function () {
+      b.addEventListener('click', function (ev) {
+        /* If a touch long-press just opened the preview, swallow this
+           synthetic click so we don't apply the preset the user was
+           just trying to inspect. */
+        if (presetTooltipState.suppressClick) {
+          presetTooltipState.suppressClick = false;
+          ev.preventDefault();
+          ev.stopPropagation();
+          return;
+        }
+        hidePresetPreview();
         var groupId = b.getAttribute('data-group');
         var idx = parseInt(b.getAttribute('data-preset-index'), 10);
         applyPreset(groupId, idx);
       });
+
+      /* Desktop: hover + keyboard focus reveal the preview. */
+      b.addEventListener('mouseenter', function () {
+        clearTimeout(presetTooltipState.hideTimer);
+        showPresetPreview(b);
+      });
+      b.addEventListener('mouseleave', function () {
+        clearTimeout(presetTooltipState.hideTimer);
+        presetTooltipState.hideTimer = setTimeout(hidePresetPreview, 80);
+      });
+      b.addEventListener('focus', function () {
+        clearTimeout(presetTooltipState.hideTimer);
+        showPresetPreview(b);
+      });
+      b.addEventListener('blur', hidePresetPreview);
+
+      /* Touch: brief long-press (~700ms — closer to the spec's
+         "2-second hold" wording while still feeling responsive)
+         shows the preview and arms suppressClick so the preset is
+         NOT applied. A normal tap still applies the preset because
+         the timer never fires. */
+      b.addEventListener('touchstart', function () {
+        presetTooltipState.suppressClick = false;
+        clearTimeout(presetTooltipState.longPressTimer);
+        presetTooltipState.longPressTimer = setTimeout(function () {
+          presetTooltipState.suppressClick = true;
+          showPresetPreview(b);
+        }, 700);
+      }, { passive: true });
+      var endTouch = function () {
+        clearTimeout(presetTooltipState.longPressTimer);
+        if (presetTooltipState.suppressClick) {
+          /* Keep the preview visible briefly so the user can read it,
+             then fade it out on its own. */
+          clearTimeout(presetTooltipState.hideTimer);
+          presetTooltipState.hideTimer = setTimeout(hidePresetPreview, 1600);
+        }
+      };
+      b.addEventListener('touchend', endTouch);
+      b.addEventListener('touchcancel', endTouch);
+      b.addEventListener('touchmove', function () {
+        /* Drag/scroll cancels the long-press without triggering it. */
+        clearTimeout(presetTooltipState.longPressTimer);
+      }, { passive: true });
     });
+
+    /* Escape key dismisses the preview (parity with other popovers). */
+    if (!root.__pmgPresetTooltipKeyBound) {
+      root.__pmgPresetTooltipKeyBound = true;
+      document.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Escape' && presetTooltipState.currentBtn) {
+          hidePresetPreview();
+        }
+      });
+      /* Hide on scroll/resize so the floating element stays anchored. */
+      window.addEventListener('scroll', function () {
+        if (presetTooltipState.currentBtn) hidePresetPreview();
+      }, { passive: true });
+      window.addEventListener('resize', function () {
+        if (presetTooltipState.currentBtn) hidePresetPreview();
+      });
+    }
     /* Send. */
     var sendBtn = root.querySelector('.pmg-photo-send');
     if (sendBtn) sendBtn.addEventListener('click', sendToImageGenerator);
@@ -5527,6 +5638,94 @@
       p.classList.remove('is-active');
     });
     refreshSummary();
+  }
+
+  /* ---------------- Task #34: preset preview tooltip ----------------
+   * Each Quick-Style / Quick-Lens / Quick-Palette preset replaces its
+   * group's current picks when clicked, which can wipe out a careful
+   * selection. Showing the underlying pill values on hover/focus
+   * (desktop) or after a brief long-press (touch) lets users see what
+   * they're about to apply before committing.
+   *
+   * One shared tooltip element is positioned at document coordinates
+   * relative to the hovered button so we don't have to add a hidden
+   * element to every preset row.
+   * ------------------------------------------------------------------ */
+  var presetTooltipState = {
+    hideTimer: null,
+    longPressTimer: null,
+    suppressClick: false,
+    currentBtn: null
+  };
+
+  function getPresetTooltip() {
+    var t = document.getElementById(PRESET_TOOLTIP_ID);
+    if (!t) {
+      t = document.createElement('div');
+      t.id = PRESET_TOOLTIP_ID;
+      t.setAttribute('role', 'tooltip');
+      t.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(t);
+    }
+    return t;
+  }
+
+  function presetPreviewLabels(btn) {
+    var groupId = btn.getAttribute('data-group');
+    var idx = parseInt(btn.getAttribute('data-preset-index'), 10);
+    var preset = PRESETS[groupId];
+    if (!preset || !preset.items || !preset.items[idx]) return [];
+    return (preset.items[idx].values || []).slice();
+  }
+
+  function showPresetPreview(btn) {
+    var labels = presetPreviewLabels(btn);
+    if (!labels.length) return;
+    var t = getPresetTooltip();
+    t.innerHTML =
+      '<span class="pmg-photo-preset-tooltip-label">Will Apply:</span>' +
+      labels.map(function (v) {
+        return '<span class="pmg-photo-preset-tooltip-pill">' + escapeHtml(v) + '</span>';
+      }).join('');
+
+    /* Make visible first so getBoundingClientRect reports real size. */
+    t.classList.add('is-visible');
+    t.setAttribute('aria-hidden', 'false');
+
+    var rect = btn.getBoundingClientRect();
+    var tRect = t.getBoundingClientRect();
+    var docEl = document.documentElement;
+    var viewportW = docEl.clientWidth;
+    var viewportH = docEl.clientHeight;
+    var top = rect.top + window.pageYOffset - tRect.height - 10;
+    var left = rect.left + window.pageXOffset + (rect.width / 2) - (tRect.width / 2);
+
+    /* Clamp horizontally to viewport with a small gutter. */
+    var minLeft = window.pageXOffset + 8;
+    var maxLeft = window.pageXOffset + viewportW - tRect.width - 8;
+    if (left < minLeft) left = minLeft;
+    if (left > maxLeft) left = maxLeft;
+
+    /* If there's no room above the button, place below instead. */
+    if (rect.top - tRect.height - 10 < 8) {
+      top = rect.bottom + window.pageYOffset + 10;
+    }
+    /* Clamp vertically as a last resort to keep within document. */
+    var maxTop = window.pageYOffset + viewportH - tRect.height - 8;
+    if (top > maxTop) top = maxTop;
+
+    t.style.top = top + 'px';
+    t.style.left = left + 'px';
+    presetTooltipState.currentBtn = btn;
+  }
+
+  function hidePresetPreview() {
+    clearTimeout(presetTooltipState.hideTimer);
+    var t = document.getElementById(PRESET_TOOLTIP_ID);
+    if (!t) return;
+    t.classList.remove('is-visible');
+    t.setAttribute('aria-hidden', 'true');
+    presetTooltipState.currentBtn = null;
   }
 
   /* Task #25: apply a Quick-Style preset to a single group. Clears that
