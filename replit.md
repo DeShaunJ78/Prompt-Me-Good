@@ -65,6 +65,7 @@ PromptMeGood is a static HTML AI prompt builder (`index.html`) using vanilla Jav
 -   **Supabase Auth + Save Best Prompts:** Magic-link email authentication for users to save and reload prompts and AI outputs.
 -   **Renderer Stability:** `T26 ObserverGuard` monkey-patches `window.MutationObserver` for stability.
 -   **Image Generation UX:** Live progress, success callout, restyled download button, and retry on errors.
+-   **Photography Suite Saved Combos (My Combos):** Power users can save the current pill selection across all five Photography Suite groups under a custom name. Saved combos persist in `localStorage` (`pmg.photo.savedCombos`, raw pill values), appear above the auto-tracked Recent row, and can be re-applied with one click or removed with a × button. Save This Combo button sits next to Surprise Me / Clear Picks and is disabled while no pills are active.
 -   **Smart Assist:** Inactivity-driven helper providing guidance.
 
 # External Dependencies

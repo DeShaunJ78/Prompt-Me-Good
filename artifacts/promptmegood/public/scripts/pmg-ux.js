@@ -4962,6 +4962,15 @@
   var RECENT_MAX = 5;
   /* Task #34: shared floating tooltip element id for preset previews. */
   var PRESET_TOOLTIP_ID = 'pmg-photo-preset-tooltip';
+  /* Task #35: user-saved personal combos. Distinct from RECENT (auto /
+     chronological) — these are explicitly named and pinned by the user.
+     Stores raw pill values (not preset indices) so a saved combo can
+     mix preset picks with manual picks and survives any future change
+     to the preset roster. */
+  var SAVED_ROW_ID = 'pmg-photo-saved';
+  var SAVED_KEY = 'pmg.photo.savedCombos';
+  var SAVED_MAX = 20;
+  var SAVED_NAME_MAX = 40;
 
   /* ---------------- Catalog of pill options per group --------------- */
   var GROUPS = [
@@ -5288,6 +5297,82 @@
       '  .pmg-photo-recent-clear { margin-left: 0; }',
       '}',
 
+      /* Task #35: My Combos row — user-saved named combos. Sits ABOVE
+         the Recent row so it gets visual priority (intentionally
+         pinned by the user, not auto-tracked). Uses a slightly
+         warmer accent and solid border so it reads as a personal
+         collection, distinct from the dashed-accent Recent row. */
+      '#' + SAVED_ROW_ID + ' {',
+      '  margin-bottom: var(--space-3);',
+      '  padding: 10px 14px;',
+      '  background: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface-2));',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 28%, var(--color-border));',
+      '  border-radius: var(--radius-md);',
+      '  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;',
+      '}',
+      '#' + SAVED_ROW_ID + '[hidden] { display: none; }',
+      '.pmg-photo-saved-label {',
+      '  font-size: 13px; font-weight: 700;',
+      '  color: var(--color-text-muted);',
+      '  margin-right: 4px;',
+      '}',
+      /* Each saved combo is a chip with a label segment (apply) and
+         a small × delete segment, sharing one rounded-pill border. */
+      '.pmg-photo-saved-chip {',
+      '  display: inline-flex; align-items: stretch;',
+      '  background: var(--color-surface);',
+      '  border: 1.5px solid var(--color-border);',
+      '  border-radius: var(--radius-full);',
+      '  overflow: hidden; max-width: 100%;',
+      '  transition: border-color 160ms ease;',
+      '}',
+      '.pmg-photo-saved-chip:hover, .pmg-photo-saved-chip:focus-within {',
+      '  border-color: var(--color-primary);',
+      '}',
+      '.pmg-photo-saved-btn {',
+      '  padding: 7px 6px 7px 12px; font-size: 13px; font-weight: 600;',
+      '  background: transparent; color: var(--color-text);',
+      '  border: 0; cursor: pointer; max-width: 100%;',
+      '  white-space: normal; text-align: left; line-height: 1.3;',
+      '  transition: color 160ms ease;',
+      '}',
+      '.pmg-photo-saved-btn:hover, .pmg-photo-saved-btn:focus-visible {',
+      '  color: var(--color-primary); outline: none;',
+      '}',
+      '.pmg-photo-saved-delete {',
+      '  padding: 0 10px; font-size: 14px; font-weight: 700;',
+      '  background: transparent; color: var(--color-text-muted);',
+      '  border: 0; border-left: 1px solid var(--color-border);',
+      '  cursor: pointer; line-height: 1;',
+      '  display: inline-flex; align-items: center; justify-content: center;',
+      '  transition: background 140ms ease, color 140ms ease;',
+      '}',
+      '.pmg-photo-saved-delete:hover, .pmg-photo-saved-delete:focus-visible {',
+      '  background: color-mix(in srgb, #d04848 12%, transparent);',
+      '  color: #d04848; outline: none;',
+      '}',
+      /* Save This Combo button — sits next to Surprise Me / Clear in
+         the actions row. Disabled until at least one pill is active. */
+      '#' + SUITE_ID + ' .pmg-photo-save-combo {',
+      '  padding: 10px 18px; font-size: var(--text-sm); font-weight: 600;',
+      '  background: var(--color-surface); color: var(--color-text);',
+      '  border: 1.5px solid var(--color-border); border-radius: var(--radius-full);',
+      '  cursor: pointer;',
+      '  display: inline-flex; align-items: center; gap: 6px;',
+      '  transition: background 160ms ease, border-color 160ms ease, color 160ms ease, opacity 160ms ease;',
+      '}',
+      '#' + SUITE_ID + ' .pmg-photo-save-combo:not(:disabled):hover,',
+      '#' + SUITE_ID + ' .pmg-photo-save-combo:not(:disabled):focus-visible {',
+      '  border-color: var(--color-primary); color: var(--color-primary); outline: none;',
+      '}',
+      '#' + SUITE_ID + ' .pmg-photo-save-combo:disabled {',
+      '  opacity: 0.5; cursor: not-allowed;',
+      '}',
+      '@media (max-width: 640px) {',
+      '  #' + SAVED_ROW_ID + ' { padding: 8px 10px; }',
+      '  #' + SUITE_ID + ' .pmg-photo-save-combo { width: 100%; justify-content: center; }',
+      '}',
+
       /* Image Generator host: override the global image-mode hide rule. */
       '#' + IMG_GEN_HOST_ID + ' { display: block !important; }',
       '#' + IMG_GEN_HOST_ID + ' .image-result-section,',
@@ -5403,6 +5488,10 @@
     var sendBtn = document.querySelector('#' + SUITE_ID + ' .pmg-photo-send');
     var hasAny = Object.keys(picks).some(function (k) { return picks[k].length > 0; });
     if (sendBtn) sendBtn.disabled = !hasAny;
+    /* Task #35: Save This Combo follows the same enabled state — no
+       point saving an empty combo. */
+    var saveBtn = document.querySelector('#' + SUITE_ID + ' .pmg-photo-save-combo');
+    if (saveBtn) saveBtn.disabled = !hasAny;
 
     if (!text) {
       sum.classList.add('is-empty');
@@ -5436,6 +5525,12 @@
       '      <h2 id="' + SUITE_ID + '-title">📸 Photography Suite</h2>',
       '    </div>',
       '    <p class="pmg-stack-helper">Pick a vibe in each group. We\'ll build the perfect photo prompt and send it straight to the image generator — no copy and paste needed.</p>',
+      /* Task #35: empty container for the user-saved (My Combos) row.
+         renderSavedRow() will hydrate or hide it based on
+         localStorage state. Sits ABOVE the Recent row so the
+         intentionally-pinned personal collection has visual priority
+         over the auto-tracked recent history. */
+      '    <div id="' + SAVED_ROW_ID + '" hidden></div>',
       /* Task #31: empty container for the recently-used preset combos
          row. renderRecentRow() will hydrate or hide it based on
          localStorage state. */
@@ -5478,6 +5573,9 @@
     html.push('<div class="pmg-photo-actions">');
     html.push('  <button type="button" class="pmg-photo-send" disabled><span aria-hidden="true">✨</span><span>Send To Image Generator</span></button>');
     html.push('  <button type="button" class="pmg-photo-surprise"><span aria-hidden="true">🎲</span> Surprise Me</button>');
+    /* Task #35: Save This Combo — disabled until at least one pill
+       is active (refreshSummary keeps it in sync). */
+    html.push('  <button type="button" class="pmg-photo-save-combo" disabled aria-label="Save current selection as a named combo"><span aria-hidden="true">💾</span> Save This Combo</button>');
     html.push('  <button type="button" class="pmg-photo-clear">Clear Picks</button>');
     html.push('</div>');
     html.push('  </div>');
@@ -5611,6 +5709,9 @@
     /* Clear. */
     var clear = root.querySelector('.pmg-photo-clear');
     if (clear) clear.addEventListener('click', clearAllPicks);
+    /* Task #35: Save This Combo. */
+    var saveBtn = root.querySelector('.pmg-photo-save-combo');
+    if (saveBtn) saveBtn.addEventListener('click', saveCurrentAsCombo);
 
     /* Task #31: delegate clicks within the Recent row. The row is
        re-rendered (innerHTML replaced) every time a combo is recorded
@@ -5629,8 +5730,30 @@
       });
     }
 
+    /* Task #35: delegate clicks within the My Combos row. Same
+       reasoning as the Recent delegation above — the row is
+       re-rendered on every save/delete. The row contains chips that
+       have two interactive segments (apply + delete), so we look up
+       the closest matching child. */
+    var savedRow = root.querySelector('#' + SAVED_ROW_ID);
+    if (savedRow) {
+      savedRow.addEventListener('click', function (ev) {
+        var del = ev.target.closest('.pmg-photo-saved-delete');
+        if (del) {
+          var di = parseInt(del.getAttribute('data-saved-index'), 10);
+          if (!isNaN(di)) deleteSavedCombo(di);
+          return;
+        }
+        var apply = ev.target.closest('.pmg-photo-saved-btn');
+        if (!apply) return;
+        var ai = parseInt(apply.getAttribute('data-saved-index'), 10);
+        if (!isNaN(ai)) applySavedCombo(ai);
+      });
+    }
+
     refreshSummary();
     renderRecentRow();
+    renderSavedRow();
   }
 
   function clearAllPicks() {
@@ -5935,6 +6058,191 @@
       '<button type="button" class="pmg-photo-recent-clear" ' +
         'aria-label="Clear recent presets">Clear</button>'
     );
+    row.innerHTML = html.join('');
+    row.hidden = false;
+  }
+
+  /* ---------------- Task #35: User-saved (My Combos) -------------------
+   * Power users often build their own favorite combinations that don't
+   * match any curated preset. The Save This Combo button captures the
+   * current selection (raw pill values across all groups), prompts for
+   * a short name, and persists it in localStorage. Saved combos appear
+   * in their own row above the Recent row and can be re-applied with
+   * one click or removed with a small ×.
+   *
+   * Storage shape:
+   *   { name: string, picks: { groupId: [pillValue, ...] } }
+   *
+   * Storing raw pill values (not preset indices) means a saved combo:
+   *   - can mix preset picks with manual picks
+   *   - survives any future change to the curated preset roster
+   *   - is straightforward to validate against the GROUPS catalog
+   * ------------------------------------------------------------------- */
+
+  function loadSavedCombos() {
+    try {
+      var raw = localStorage.getItem(SAVED_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      /* Validate entries:
+         - name: non-empty trimmed string (capped at SAVED_NAME_MAX)
+         - picks: object whose KEYS must be a known GROUPS id (a malformed
+           or hostile gid would otherwise be interpolated straight into a
+           CSS selector inside applySavedCombo and could throw a
+           SyntaxError, leaving the suite in a half-cleared state).
+           Pills are kept verbose-tolerant: invalid pill values are
+           silently dropped on apply via the querySelector-returns-null
+           path, but invalid GROUP keys are dropped here. */
+      var validGroupIds = {};
+      GROUPS.forEach(function (g) { validGroupIds[g.id] = true; });
+      var out = [];
+      parsed.forEach(function (c) {
+        if (!c || typeof c.name !== 'string') return;
+        var name = c.name.trim();
+        if (!name) return;
+        var picks = (c.picks && typeof c.picks === 'object') ? c.picks : {};
+        var clean = {};
+        Object.keys(picks).forEach(function (gid) {
+          if (!validGroupIds[gid]) return;
+          if (!Array.isArray(picks[gid])) return;
+          clean[gid] = picks[gid].filter(function (v) { return typeof v === 'string'; });
+        });
+        out.push({ name: name.slice(0, SAVED_NAME_MAX), picks: clean });
+      });
+      return out.slice(0, SAVED_MAX);
+    } catch (e) { return []; }
+  }
+
+  function saveSavedCombos(combos) {
+    try {
+      localStorage.setItem(SAVED_KEY, JSON.stringify(combos.slice(0, SAVED_MAX)));
+      return true;
+    } catch (e) { return false; }
+  }
+
+  /* Read current selections, prompt for a name, and persist. Idempotent
+     name resolution: if the user picks an existing name (case-insensitive)
+     we ask whether to overwrite — a quiet 'no' aborts without changing
+     anything. */
+  function saveCurrentAsCombo() {
+    var picks = getSelections();
+    var hasAny = Object.keys(picks).some(function (k) { return picks[k].length > 0; });
+    if (!hasAny) {
+      showToast('Pick at least one option first.');
+      return;
+    }
+    /* Suggest a default name from the active preset combo if any (e.g.
+       "Cinematic + Golden Hour"); otherwise just leave it blank. */
+    var suggested = '';
+    try {
+      var combo = getActivePresetCombo();
+      if (combo && combo.length) suggested = comboLabel(combo);
+    } catch (e) {}
+    var raw = window.prompt('Name this combo:', suggested);
+    if (raw === null) return; /* user cancelled */
+    var name = String(raw).trim().slice(0, SAVED_NAME_MAX);
+    if (!name) {
+      showToast('Combo name can\u2019t be empty.');
+      return;
+    }
+    var existing = loadSavedCombos();
+    var lower = name.toLowerCase();
+    var dupeIdx = -1;
+    for (var i = 0; i < existing.length; i++) {
+      if (existing[i].name.toLowerCase() === lower) { dupeIdx = i; break; }
+    }
+    if (dupeIdx !== -1) {
+      var ok = window.confirm('"' + name + '" already exists. Overwrite it?');
+      if (!ok) return;
+      existing.splice(dupeIdx, 1);
+    }
+    existing.unshift({ name: name, picks: picks });
+    var saved = saveSavedCombos(existing);
+    if (!saved) {
+      showToast('Couldn\u2019t save (storage blocked).');
+      return;
+    }
+    renderSavedRow();
+    showToast('Saved as \u201C' + name + '\u201D.');
+  }
+
+  function applySavedCombo(idx) {
+    var combos = loadSavedCombos();
+    var combo = combos[idx];
+    if (!combo) return;
+    /* Clear all picks first so the result matches the saved combo
+       exactly — no leftover manual pills lingering from before. */
+    clearAllPicks();
+    var applied = 0;
+    Object.keys(combo.picks || {}).forEach(function (gid) {
+      /* gid is whitelisted in loadSavedCombos against GROUPS ids, so it
+         is safe to interpolate into a selector. cssEscape on the pill
+         value handles characters like quotes, ampersands, and apostrophes
+         (e.g. "Bird's-Eye View"). The try/catch is a belt-and-suspenders
+         guard so a single malformed entry can never abort the whole
+         apply loop. */
+      (combo.picks[gid] || []).forEach(function (val) {
+        var sel = '#' + SUITE_ID + ' .pmg-photo-pill' +
+          '[data-group="' + gid + '"]' +
+          '[data-value="' + cssEscape(val) + '"]';
+        try {
+          var el = document.querySelector(sel);
+          if (el) { el.classList.add('is-active'); applied++; }
+        } catch (e) { /* skip silently */ }
+      });
+    });
+    refreshSummary();
+    if (applied === 0) {
+      showToast('Combo has no usable picks anymore.');
+    } else {
+      showToast('Combo \u201C' + combo.name + '\u201D applied!');
+    }
+  }
+
+  function deleteSavedCombo(idx) {
+    var combos = loadSavedCombos();
+    var combo = combos[idx];
+    if (!combo) return;
+    combos.splice(idx, 1);
+    var ok = saveSavedCombos(combos);
+    if (!ok) {
+      /* Storage write failed (quota / private mode). Don't lie to the
+         user — the chip is still in localStorage and will reappear on
+         next render. */
+      showToast('Couldn\u2019t remove (storage blocked).');
+      return;
+    }
+    renderSavedRow();
+    showToast('Removed \u201C' + combo.name + '\u201D.');
+  }
+
+  function renderSavedRow() {
+    var row = document.getElementById(SAVED_ROW_ID);
+    if (!row) return;
+    var combos = loadSavedCombos();
+    if (!combos.length) {
+      row.hidden = true;
+      row.innerHTML = '';
+      return;
+    }
+    var html = ['<span class="pmg-photo-saved-label">My Combos:</span>'];
+    combos.forEach(function (combo, i) {
+      var name = combo.name || '';
+      if (!name) return;
+      html.push(
+        '<span class="pmg-photo-saved-chip">' +
+          '<button type="button" class="pmg-photo-saved-btn" ' +
+            'data-saved-index="' + i + '" ' +
+            'aria-label="Apply combo ' + escapeHtml(name) + '">' +
+            escapeHtml(name) +
+          '</button>' +
+          '<button type="button" class="pmg-photo-saved-delete" ' +
+            'data-saved-index="' + i + '" ' +
+            'aria-label="Delete combo ' + escapeHtml(name) + '">\u00d7</button>' +
+        '</span>'
+      );
+    });
     row.innerHTML = html.join('');
     row.hidden = false;
   }
