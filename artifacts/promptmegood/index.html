@@ -1673,6 +1673,19 @@
     .compare-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
     .compare-head h3 { margin: 0; }
     .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+    /* Task #54 Compare Many: when 2-5 prompts are picked, the modal grid
+       switches to fixed-width columns that scroll horizontally on narrow
+       viewports, so the side-by-side comparison stays usable for any N. */
+    .compare-grid.is-many {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(280px, 1fr);
+      grid-template-columns: none;
+      gap: var(--space-4);
+      overflow-x: auto;
+      padding-bottom: var(--space-2);
+    }
+    .compare-grid.is-many .compare-col { min-width: 280px; }
     .compare-col { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
     .compare-col h4 { margin: 0; font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); }
     .compare-text {
@@ -3784,7 +3797,7 @@
               </div>
               <div class="panel-head-actions">
                 <button class="btn btn-secondary" type="button" id="toggle-archived" aria-pressed="false">Show Archived</button>
-                <button class="btn btn-secondary" type="button" id="compare-two" aria-pressed="false">Compare Two</button>
+                <button class="btn btn-secondary" type="button" id="compare-two" aria-pressed="false">Compare</button>
                 <button class="btn btn-secondary" type="button" id="export-history">Export</button>
                 <button class="btn btn-secondary" type="button" id="import-history">Import</button>
                 <button class="btn btn-secondary" type="button" id="open-backup">🔑 Backup / Restore</button>
@@ -3798,15 +3811,20 @@
             <input type="search" id="history-search" placeholder="Search saved prompts by goal or text" aria-label="Search history" style="flex: 1 1 220px;" />
             <label for="history-sort" style="font-size: var(--text-xs); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Sort</label>
             <select id="history-sort" aria-label="Sort history" style="min-height: 36px;">
-              <option value="newest">Newest</option>
+              <option value="favorites-first">Favorites first</option>
+              <option value="newest">Newest (Recent)</option>
+              <option value="oldest">Oldest</option>
               <option value="most-used">Most used</option>
             </select>
             <button class="btn btn-secondary" type="button" id="filter-notes" aria-pressed="false" title="Show only prompts with notes">📝 Notes Only</button>
           </div>
           <div id="history-tag-bar" class="history-tag-bar" aria-label="Filter by tag"></div>
           <div id="compare-banner" class="compare-banner" role="status">
-            <span id="compare-banner-text">Pick two prompts to compare side-by-side.</span>
-            <button class="btn btn-secondary" type="button" id="compare-cancel">Cancel</button>
+            <span id="compare-banner-text">Pick 2–5 prompts to compare side-by-side.</span>
+            <span class="compare-banner-actions" style="display: inline-flex; gap: var(--space-2); flex-wrap: wrap;">
+              <button class="btn btn-primary" type="button" id="compare-launch" disabled>Compare Now</button>
+              <button class="btn btn-secondary" type="button" id="compare-cancel">Cancel</button>
+            </span>
           </div>
           <div id="history-list" class="history-list" aria-live="polite"></div>
         </div>
@@ -4690,11 +4708,47 @@ Context:
       const historySortEl = document.getElementById('history-sort');
       const historyTagBarEl = document.getElementById('history-tag-bar');
       let historyQuery = '';
-      let historyTagFilter = '';
-      let historySort = 'newest';
+      /* Task #54: tag filter is now multi-select. Active filter tags
+         are AND-combined: an item must carry every tag in this Set
+         to pass. The legacy `historyTagFilter` (single string) is
+         kept as a derived getter via `Array.from(historyTagFilters)`
+         only where read-out is needed. */
+      const historyTagFilters = new Set();
+      /* Task #54: persist the user's last sort choice across sessions.
+         Default = 'favorites-first' to preserve the long-standing
+         pre-T54 behavior (favorites pinned to the top). */
+      const VAULT_SORT_KEY = 'promptmegood:vaultSort:v1';
+      const VALID_SORTS = ['favorites-first', 'newest', 'oldest', 'most-used'];
+      function loadVaultSort() {
+        try {
+          const v = localStorage.getItem(VAULT_SORT_KEY);
+          if (v && VALID_SORTS.indexOf(v) !== -1) return v;
+        } catch (e) {}
+        return 'favorites-first';
+      }
+      function saveVaultSort(v) {
+        try { localStorage.setItem(VAULT_SORT_KEY, v); } catch (e) {}
+      }
+      /* Task #54: tag-filter helpers — single source of truth so the
+         tag bar, in-item tag buttons, Tag Insights, and global search
+         results all toggle and clear filters consistently. */
+      function toggleHistoryTagFilter(tag) {
+        if (!tag) { historyTagFilters.clear(); return; }
+        if (historyTagFilters.has(tag)) historyTagFilters.delete(tag);
+        else historyTagFilters.add(tag);
+      }
+      function setHistoryTagFilterSingle(tag) {
+        historyTagFilters.clear();
+        if (tag) historyTagFilters.add(tag);
+      }
+      function clearHistoryTagFilter() { historyTagFilters.clear(); }
+      let historySort = loadVaultSort();
       let showArchived = false;
       let compareSelectMode = false;
       const expandedHistoryIds = new Set();
+      /* Task #54 Compare Many: cap at 5 selections (was 2). */
+      const COMPARE_MAX = 5;
+      const COMPARE_MIN = 2;
       let compareSelections = [];
       let notesOnly = false;
       let historyLoadError = false;
@@ -4935,7 +4989,7 @@ Context:
         const btn = e.target.closest('[data-tag-insight]');
         if (!btn) return;
         const tag = btn.dataset.tagInsight;
-        historyTagFilter = historyTagFilter === tag ? '' : tag;
+        toggleHistoryTagFilter(tag);
         renderHistory();
         document.getElementById('history').scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
       });
@@ -5014,9 +5068,15 @@ Context:
           return;
         }
         historyTagBarEl.style.display = '';
-        const chips = ['<button class="history-tag-chip" type="button" data-tag-filter="" aria-pressed="' + (historyTagFilter === '' ? 'true' : 'false') + '">All</button>']
+        /* Task #54: chips are now multi-toggle. The "All" chip clears
+           every active tag filter; tag chips toggle individually and
+           combine via AND in renderHistory(). aria-pressed reflects
+           membership in the historyTagFilters Set. */
+        const allActive = historyTagFilters.size === 0;
+        const chips = ['<button class="history-tag-chip" type="button" data-tag-filter="" aria-pressed="' + (allActive ? 'true' : 'false') + '">All</button>']
           .concat(tags.map(function (t) {
-            return '<button class="history-tag-chip" type="button" data-tag-filter="' + escapeHtml(t) + '" aria-pressed="' + (historyTagFilter === t ? 'true' : 'false') + '">#' + escapeHtml(t) + '</button>';
+            const on = historyTagFilters.has(t);
+            return '<button class="history-tag-chip" type="button" data-tag-filter="' + escapeHtml(t) + '" aria-pressed="' + (on ? 'true' : 'false') + '">#' + escapeHtml(t) + '</button>';
           }));
         historyTagBarEl.innerHTML = chips.join('');
       }
@@ -5055,10 +5115,18 @@ Context:
         historySearchEl.parentElement.style.display = '';
         renderTagBar(items);
         const q = historyQuery.trim().toLowerCase();
+        const activeTagFilters = Array.from(historyTagFilters);
         const filtered = items.filter(function (i) {
           if (!showArchived && i.archived) return false;
           if (notesOnly && !(i.note && i.note.trim())) return false;
-          if (historyTagFilter && !(i.tags || []).includes(historyTagFilter)) return false;
+          /* Task #54: AND across selected tag filters. An item must
+             carry every active tag to remain in view. */
+          if (activeTagFilters.length) {
+            const itemTags = i.tags || [];
+            for (var k = 0; k < activeTagFilters.length; k++) {
+              if (itemTags.indexOf(activeTagFilters[k]) === -1) return false;
+            }
+          }
           if (!q) return true;
           return (i.nickname || '').toLowerCase().includes(q) ||
             (i.data.goal || '').toLowerCase().includes(q) ||
@@ -5068,10 +5136,14 @@ Context:
             (i.tags || []).some(function (t) { return t.toLowerCase().includes(q); });
         });
         if (filtered.length === 0) {
-          const reasonText = historyTagFilter && q
-            ? 'No prompts match \u201C' + historyQuery + '\u201D in #' + historyTagFilter + '.'
-            : historyTagFilter
-              ? 'No prompts tagged #' + historyTagFilter + '.'
+          /* Task #54: empty-state copy now describes multi-tag filters. */
+          const tagPhrase = activeTagFilters.length
+            ? activeTagFilters.map(function (t) { return '#' + t; }).join(' + ')
+            : '';
+          const reasonText = tagPhrase && q
+            ? 'No prompts match \u201C' + historyQuery + '\u201D in ' + tagPhrase + '.'
+            : tagPhrase
+              ? 'No prompts tagged ' + tagPhrase + '.'
               : 'No saved prompts match \u201C' + historyQuery + '\u201D.';
           if (states && typeof states.renderEmpty === 'function') {
             states.renderEmpty(historyListEl, {
@@ -5084,16 +5156,26 @@ Context:
           }
           return;
         }
+        /* Task #54: 4 sort modes — favorites-first (legacy default;
+           favorites pinned, drag-reorder still works), newest, oldest,
+           most-used. Only favorites-first uses the favOrderMap so the
+           manual drag order persists when that mode is active. */
         const favOrder = items.filter(function (i) { return i.favorite; }).map(function (i) { return i.id; });
         const favOrderMap = {};
         favOrder.forEach(function (id, idx) { favOrderMap[id] = idx; });
         const sorted = filtered.slice().sort(function (a, b) {
-          if (!!b.favorite - !!a.favorite !== 0) return (!!b.favorite) - (!!a.favorite);
-          if (a.favorite && b.favorite) return (favOrderMap[a.id] - favOrderMap[b.id]);
+          if (historySort === 'favorites-first') {
+            if (!!b.favorite - !!a.favorite !== 0) return (!!b.favorite) - (!!a.favorite);
+            if (a.favorite && b.favorite) return (favOrderMap[a.id] - favOrderMap[b.id]);
+            return b.savedAt - a.savedAt;
+          }
+          if (historySort === 'oldest') return a.savedAt - b.savedAt;
           if (historySort === 'most-used') {
             const diff = (b.useCount || 0) - (a.useCount || 0);
             if (diff !== 0) return diff;
+            return b.savedAt - a.savedAt;
           }
+          /* 'newest' (Recent) */
           return b.savedAt - a.savedAt;
         });
         historyListEl.innerHTML = sorted.map(function (item) {
@@ -5224,7 +5306,7 @@ Context:
         const action = btn.dataset.historyAction;
         if (action === 'filter-tag') {
           const tag = btn.dataset.tagValue || '';
-          historyTagFilter = historyTagFilter === tag ? '' : tag;
+          toggleHistoryTagFilter(tag);
           renderHistory();
           document.getElementById('history').scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
           return;
@@ -5315,7 +5397,17 @@ Context:
           const tags = input.split(',').map(function (t) { return t.trim().toLowerCase().replace(/\s+/g, '-'); }).filter(Boolean);
           const unique = Array.from(new Set(tags)).slice(0, 8);
           item.tags = unique;
-          if (historyTagFilter && !unique.includes(historyTagFilter)) historyTagFilter = '';
+          /* Task #54: prune any active tag filters that this item no
+             longer carries. Other items may still hold them, so we
+             only re-validate per-tag against the global tag pool. */
+          if (historyTagFilters.size) {
+            const allTagsAfter = getAllTags(loadHistory().map(function (x) {
+              return x.id === item.id ? Object.assign({}, x, { tags: unique }) : x;
+            }));
+            Array.from(historyTagFilters).forEach(function (t) {
+              if (allTagsAfter.indexOf(t) === -1) historyTagFilters.delete(t);
+            });
+          }
           saveHistory(items);
           renderHistory();
           showToast(unique.length ? 'Tags updated.' : 'Tags cleared.');
@@ -5418,7 +5510,12 @@ Context:
       historyTagBarEl.addEventListener('click', function (event) {
         const chip = event.target.closest('[data-tag-filter]');
         if (!chip) return;
-        historyTagFilter = chip.dataset.tagFilter || '';
+        const tag = chip.dataset.tagFilter || '';
+        /* Task #54: empty value (the "All" chip) clears every active
+           tag filter. Tag chips toggle individually; multiple may be
+           active simultaneously and combine via AND in renderHistory. */
+        if (!tag) clearHistoryTagFilter();
+        else toggleHistoryTagFilter(tag);
         renderHistory();
       });
 
@@ -5448,49 +5545,84 @@ Context:
       const compareBanner = document.getElementById('compare-banner');
       const compareBannerText = document.getElementById('compare-banner-text');
       const compareCancelBtn = document.getElementById('compare-cancel');
+      const compareLaunchBtn = document.getElementById('compare-launch');
+
+      /* Task #54: banner copy + Compare Now enable state both derive
+         from the current selection count, so picking, unpicking, and
+         hitting the cap all stay in sync. */
+      function refreshCompareBanner() {
+        const n = compareSelections.length;
+        if (n === 0) {
+          compareBannerText.textContent = 'Pick 2\u20135 prompts to compare side-by-side.';
+        } else if (n === 1) {
+          compareBannerText.textContent = 'Picked 1 prompt — pick at least 1 more to compare (up to ' + COMPARE_MAX + ').';
+        } else if (n < COMPARE_MAX) {
+          compareBannerText.textContent = 'Picked ' + n + ' prompts — tap Compare Now, or pick up to ' + COMPARE_MAX + '.';
+        } else {
+          compareBannerText.textContent = 'Picked ' + n + ' prompts (max). Tap Compare Now or unpick one to swap.';
+        }
+        if (compareLaunchBtn) {
+          const ready = n >= COMPARE_MIN;
+          compareLaunchBtn.disabled = !ready;
+          compareLaunchBtn.textContent = ready ? 'Compare Now (' + n + ')' : 'Compare Now';
+        }
+      }
 
       function setCompareMode(on) {
         compareSelectMode = on;
         compareSelections = [];
         compareTwoBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
-        compareTwoBtn.textContent = on ? 'Exit Compare' : 'Compare Two';
+        compareTwoBtn.textContent = on ? 'Exit Compare' : 'Compare';
         compareBanner.classList.toggle('is-active', on);
-        if (on) compareBannerText.textContent = 'Pick the first prompt to compare.';
+        if (on) refreshCompareBanner();
         renderHistory();
       }
       compareTwoBtn.addEventListener('click', function () { setCompareMode(!compareSelectMode); });
       compareCancelBtn.addEventListener('click', function () { setCompareMode(false); });
+      if (compareLaunchBtn) {
+        compareLaunchBtn.addEventListener('click', function () {
+          if (compareSelections.length < COMPARE_MIN) return;
+          const items = loadHistory();
+          /* Preserve the order the user picked them so the modal reads
+             left→right in selection order. */
+          const picked = compareSelections
+            .map(function (id) { return items.find(function (x) { return x.id === id; }); })
+            .filter(Boolean);
+          if (picked.length < COMPARE_MIN) {
+            showToast('At least one of your picks went missing — try again.');
+            setCompareMode(false);
+            return;
+          }
+          openCompareMany(picked);
+          setCompareMode(false);
+        });
+      }
 
-      function handleComparePick(item, items) {
+      function handleComparePick(item /*, items */) {
         const idx = compareSelections.indexOf(item.id);
         if (idx !== -1) {
+          /* Unpick. */
           compareSelections.splice(idx, 1);
-          compareBannerText.textContent = compareSelections.length === 0 ? 'Pick the first prompt to compare.' : 'Pick one more prompt to compare.';
+          refreshCompareBanner();
           renderHistory();
+          return;
+        }
+        if (compareSelections.length >= COMPARE_MAX) {
+          showToast('You can compare up to ' + COMPARE_MAX + ' prompts at once. Unpick one to swap.');
           return;
         }
         compareSelections.push(item.id);
-        if (compareSelections.length === 1) {
-          compareBannerText.textContent = 'Pick one more prompt to compare.';
-          renderHistory();
-          return;
-        }
-        const a = items.find(function (x) { return x.id === compareSelections[0]; });
-        const b = items.find(function (x) { return x.id === compareSelections[1]; });
-        if (a && b) {
-          openCompare({
-            data: a.data,
-            original: a.prompt,
-            remix: b.prompt,
-            originalLabel: a.nickname || (a.data.goal || 'Prompt A').slice(0, 50),
-            remixLabel: b.nickname || (b.data.goal || 'Prompt B').slice(0, 50)
-          });
-        }
-        setCompareMode(false);
+        refreshCompareBanner();
+        renderHistory();
       }
 
+      /* Task #54: hydrate the sort <select> with the persisted choice
+         before any first render and persist on every change. */
+      try { historySortEl.value = historySort; } catch (e) {}
       historySortEl.addEventListener('change', function (e) {
-        historySort = e.target.value;
+        const v = e.target.value;
+        historySort = VALID_SORTS.indexOf(v) !== -1 ? v : 'favorites-first';
+        saveVaultSort(historySort);
         renderHistory();
       });
 
@@ -8238,8 +8370,47 @@ Context:
       const compareCloseFoot = document.getElementById('compare-close-foot');
 
       let compareCtx = null;
+      /* Task #54: when openCompareMany runs we keep the legacy two
+         columns in the DOM (just hidden) so the const refs above
+         stay valid, and append N dynamic .compare-col-many siblings.
+         tearDownCompareMany removes them and restores the legacy view. */
+      let compareManyItems = null;
+      const compareGridEl = compareOverlay.querySelector('.compare-grid');
+
+      function compareManyClick(event) {
+        const btn = event.target.closest('[data-cm-action]');
+        if (!btn) return;
+        const col = btn.closest('.compare-col-many');
+        if (!col || !compareManyItems) return;
+        const idx = parseInt(col.dataset.cmIdx, 10);
+        const item = compareManyItems[idx];
+        if (!item) return;
+        if (btn.dataset.cmAction === 'copy') {
+          copyText(item.prompt);
+        } else if (btn.dataset.cmAction === 'use') {
+          setPromptText(item.prompt);
+          if (window.__pmgStrengthScore && typeof window.__pmgStrengthScore.render === 'function') {
+            window.__pmgStrengthScore.render(item.data, item.prompt);
+          }
+          closeCompare();
+          document.getElementById('builder').scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
+          showToast('Using selected prompt.');
+        }
+      }
+
+      function tearDownCompareMany() {
+        if (!compareManyItems) return;
+        Array.from(compareGridEl.querySelectorAll('.compare-col-many')).forEach(function (c) { c.remove(); });
+        Array.from(compareGridEl.children).forEach(function (c) { c.style.display = ''; });
+        compareGridEl.classList.remove('is-many');
+        compareGridEl.removeEventListener('click', compareManyClick);
+        compareManyItems = null;
+      }
 
       function openCompare(ctx) {
+        /* If the modal is being reused after a Compare Many session,
+           collapse it back to the legacy two-column layout first. */
+        tearDownCompareMany();
         compareCtx = ctx;
         compareTitle.textContent = 'Compare prompts';
         compareOriginalLabel.textContent = ctx.originalLabel;
@@ -8249,10 +8420,45 @@ Context:
         compareOverlay.classList.add('is-open');
         compareOverlay.setAttribute('aria-hidden', 'false');
       }
+
+      /* Task #54: render N columns (2-5) for Compare Many. Each item
+         gets a Copy and Use This action; Save-To-History is omitted
+         because every picked prompt is already in the vault. */
+      function openCompareMany(items) {
+        if (!Array.isArray(items) || items.length < 2) return;
+        const capped = items.slice(0, COMPARE_MAX);
+        tearDownCompareMany();
+        compareCtx = null;
+        compareManyItems = capped;
+        compareTitle.textContent = 'Compare ' + capped.length + ' prompts';
+        Array.from(compareGridEl.children).forEach(function (c) { c.style.display = 'none'; });
+        compareGridEl.classList.add('is-many');
+        capped.forEach(function (item, idx) {
+          const rawLabel = item.nickname || (item.data && item.data.goal) || ('Prompt ' + (idx + 1));
+          const label = String(rawLabel).slice(0, 50);
+          const col = document.createElement('div');
+          col.className = 'compare-col compare-col-many';
+          col.dataset.cmIdx = String(idx);
+          col.innerHTML =
+            '<h4>' + escapeHtml(label) + '</h4>' +
+            '<div class="compare-text"></div>' +
+            '<div class="compare-col-actions">' +
+              '<button class="btn btn-secondary" type="button" data-cm-action="copy">Copy</button>' +
+              '<button class="btn btn-primary" type="button" data-cm-action="use">Use This</button>' +
+            '</div>';
+          col.querySelector('.compare-text').textContent = item.prompt || '';
+          compareGridEl.appendChild(col);
+        });
+        compareGridEl.addEventListener('click', compareManyClick);
+        compareOverlay.classList.add('is-open');
+        compareOverlay.setAttribute('aria-hidden', 'false');
+      }
+
       function closeCompare() {
         compareOverlay.classList.remove('is-open');
         compareOverlay.setAttribute('aria-hidden', 'true');
         compareCtx = null;
+        tearDownCompareMany();
       }
       compareClose.addEventListener('click', closeCompare);
       compareCloseFoot.addEventListener('click', closeCompare);
@@ -8438,7 +8644,7 @@ Context:
         globalSearchInput.value = '';
         if (r.target.type === 'history') {
           historyQuery = '';
-          historyTagFilter = '';
+          clearHistoryTagFilter();
           historySearchEl.value = '';
           renderHistory();
           setTimeout(function () {
@@ -8452,7 +8658,10 @@ Context:
             flashTarget(el || document.getElementById('templates'));
           }, 50);
         } else if (r.target.type === 'tag') {
-          historyTagFilter = r.target.value;
+          /* Task #54: from a global-search tag result, jump directly
+             to that single tag (replace existing filters), so the
+             user sees exactly what they clicked. */
+          setHistoryTagFilterSingle(r.target.value);
           renderHistory();
           setTimeout(function () { flashTarget(document.getElementById('history')); }, 50);
         }
