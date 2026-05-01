@@ -54,7 +54,7 @@
     if (localStorage.getItem('pmg_disable') === '1') return;
   } catch (_) {}
 
-  var SCRIPT_VERSION = 'task57-2';
+  var SCRIPT_VERSION = 'task57-3';
 
   /* ----- Constants shared with pmg-ux.js (intentionally
      duplicated — never mutated, only read/written so the same
@@ -708,6 +708,9 @@
       var data = (typeof bridge.getFormData === 'function') ? bridge.getFormData() : {};
       var prompt = bridge.generatePrompt(data);
       if (typeof bridge.setPromptText === 'function') bridge.setPromptText(prompt);
+      /* Preserve the original dice handler's side effect: persist the
+         dice-generated prompt to the Vault history. */
+      if (typeof bridge.addToHistory === 'function') bridge.addToHistory(data, prompt);
       if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();
       var builder = $id('builder');
       if (builder) {
@@ -857,37 +860,32 @@
     btn.hidden = !(dlVisible || hasImg);
   }
 
+  /* Default seed used when no Photo Suite pills are active (e.g. the
+     user generated an image straight from a typed prompt). */
+  var DEFAULT_IMAGE_SEED = { tone: 'casual', category: 'personal', personality: 'friendly', topic: 'the image I just generated' };
+
   function deriveTextSeedFromPills() {
     /* Pick the FIRST active pill we recognize from PILL_TO_TEXT
        (across groups, in GROUPS order so style takes precedence).
-       Returns null if no pills are active. */
+       Always returns a seed: falls back to DEFAULT_IMAGE_SEED so the
+       reverse handoff still works for image-only sessions. */
     var pills = readActivePills();
     var allActive = [];
     GROUPS.forEach(function (g) {
       (pills[g.id] || []).forEach(function (v) { allActive.push(v); });
     });
-    if (!allActive.length) return null;
     var seed = null;
     for (var i = 0; i < allActive.length; i++) {
       var lc = String(allActive[i]).toLowerCase();
       if (PILL_TO_TEXT[lc]) { seed = PILL_TO_TEXT[lc]; break; }
     }
-    if (!seed) {
-      /* Fallback for unmapped pills — use a safe default and
-         describe the topic generically as "the image I just
-         generated". */
-      seed = { tone: 'casual', category: 'personal', personality: 'friendly', topic: 'the image I just generated' };
-    }
+    if (!seed) seed = { tone: DEFAULT_IMAGE_SEED.tone, category: DEFAULT_IMAGE_SEED.category, personality: DEFAULT_IMAGE_SEED.personality, topic: DEFAULT_IMAGE_SEED.topic };
     seed.activePills = allActive.slice(0, 6);
     return seed;
   }
 
   function imageToTextHandoff() {
     var seed = deriveTextSeedFromPills();
-    if (!seed) {
-      showToast('Add some Photography Suite pills first, then try again.');
-      return;
-    }
     if (typeof window.setMode === 'function') {
       try { window.setMode('write'); } catch (_) {}
     }

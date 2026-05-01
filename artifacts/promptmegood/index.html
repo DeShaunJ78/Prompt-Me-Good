@@ -4570,6 +4570,10 @@ Context:
         getFormData: getFormData,
         generatePrompt: generatePrompt,
         setPromptText: function (text) { setPromptText(text); },
+        /* Task #57: pmg-handoff intercepts the dice button and needs
+           to keep the original side effect of saving generated text
+           prompts to the Vault history. */
+        addToHistory: function (data, prompt) { try { addToHistory(data, prompt); } catch (_) {} },
         // Structured edits + reassembler for the side-by-side diff. Each edit
         // is one optional addition the prompt builder makes to the user's raw
         // goal/details/rules. assemble(acceptedIds) returns the prompt with
@@ -10154,7 +10158,7 @@ Context:
   <script src="/scripts/pmg-image-extras.js?v=task52-1" defer></script>
   <script src="/scripts/pmg-command-palette.js?v=task53-6" defer></script>
   <script src="/scripts/pmg-share.js?v=task56-2" defer></script>
-  <script src="/scripts/pmg-handoff.js?v=task57-2" defer></script>
+  <script src="/scripts/pmg-handoff.js?v=task57-3" defer></script>
 
 <script id="pmg-premium-polish-js">
 document.addEventListener("DOMContentLoaded", function () {

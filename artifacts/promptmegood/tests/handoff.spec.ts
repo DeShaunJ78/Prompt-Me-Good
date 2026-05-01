@@ -76,7 +76,7 @@ test.describe("Surprise Me dial + handoff @ mobile-360", () => {
       hasRollPicks: true,
       hasTextToImage: true,
       hasImageToText: true,
-      version: "task57-2",
+      version: "task57-3",
     });
   });
 
@@ -358,6 +358,75 @@ test.describe("Surprise Me dial + handoff @ mobile-360", () => {
     /* Tone field should be set to bold-direct now. */
     const toneVal = await page.locator("#tone").inputValue();
     expect(toneVal).toBe("bold-direct");
+  });
+
+  test("image -> text handoff falls back to default seed when no pills active", async ({
+    page,
+  }) => {
+    await gotoApp(page);
+    /* Ensure no pills are active. */
+    await page.evaluate(() => {
+      document
+        .querySelectorAll("#pmg-photo-suite .pmg-photo-pill.is-active")
+        .forEach((el) => el.classList.remove("is-active"));
+    });
+    /* Seed should still be returned (default), not null. */
+    const seed = await page.evaluate(() =>
+      (window as unknown as Win).__pmgHandoff!._deriveTextSeed(),
+    );
+    expect(seed).not.toBeNull();
+    expect(seed!.tone).toBe("casual");
+    expect(seed!.category).toBe("personal");
+    /* Trigger handoff: should switch to write mode AND pre-seed
+       the goal field with the default topic. */
+    await page.evaluate(() => {
+      const goal = document.getElementById("goal") as HTMLTextAreaElement | null;
+      if (goal) goal.value = "";
+      (window as unknown as Win).__pmgHandoff!.imageToText();
+    });
+    const goalVal = await page.locator("#goal").inputValue();
+    expect(goalVal).toMatch(/the image i just generated/i);
+    /* Body should have lost the image-mode class (we switched to write). */
+    const isImageMode = await page.evaluate(() =>
+      document.body.classList.contains("image-mode"),
+    );
+    expect(isImageMode).toBe(false);
+  });
+
+  test("dice intercept preserves Vault history side effect", async ({
+    page,
+  }) => {
+    await gotoApp(page);
+    /* Snapshot current vault history length. */
+    const before = await page.evaluate(() => {
+      try {
+        const raw = localStorage.getItem("promptmegood:history:v1");
+        if (!raw) return 0;
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed.length : 0;
+      } catch {
+        return 0;
+      }
+    });
+    /* Click the dice button (intercept fires the dial-aware roll +
+       must still call addToHistory). */
+    await page.evaluate(() => {
+      const btn = document.getElementById("random-prompt") as HTMLButtonElement | null;
+      if (btn) btn.click();
+    });
+    /* Allow async setPromptText / addToHistory chain to complete. */
+    await page.waitForTimeout(300);
+    const after = await page.evaluate(() => {
+      try {
+        const raw = localStorage.getItem("promptmegood:history:v1");
+        if (!raw) return 0;
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed.length : 0;
+      } catch {
+        return 0;
+      }
+    });
+    expect(after).toBeGreaterThan(before);
   });
 
   test("idempotent boot guard: loading the script twice does not duplicate", async ({
