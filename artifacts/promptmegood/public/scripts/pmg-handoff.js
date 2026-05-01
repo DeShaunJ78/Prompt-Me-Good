@@ -777,7 +777,14 @@
   function refreshTextToImageBtn() {
     var btn = $id(TEXT_HANDOFF_BTN_ID);
     if (!btn) return;
-    var hasGenerated = !!document.body && document.body.classList.contains('pmg-has-generated');
+    /* Reveal once the result panel has visible content. Either
+       body class signals "a text prompt was generated". We accept
+       both since different code paths set different markers. */
+    var b = document.body;
+    var hasGenerated = !!b && (
+      b.classList.contains('pmg-has-generated') ||
+      b.classList.contains('pmg-has-result')
+    );
     var visible = hasGenerated && !isImageMode();
     btn.hidden = !visible;
   }
@@ -799,12 +806,15 @@
     var tone = ($id('tone') || {}).value || '';
     var cat  = ($id('category') || {}).value || '';
     var per  = ($id('personality') || {}).value || '';
+    /* Merge order: personality (most explicit) first, then tone,
+       then category. Earlier sources win when we cap per-group. */
+    merge(PERSONALITY_BIAS[per]);
     merge(TONE_BIAS[tone]);
     merge(CATEGORY_BIAS[cat]);
-    merge(PERSONALITY_BIAS[per]);
-    /* Cap per-group at 2 to avoid clutter. */
+    /* Cap per-group at 3 to avoid clutter without dropping the
+       most distinctive personality cues. */
     Object.keys(picks).forEach(function (gid) {
-      if (picks[gid].length > 2) picks[gid] = picks[gid].slice(0, 2);
+      if (picks[gid].length > 3) picks[gid] = picks[gid].slice(0, 3);
     });
     return picks;
   }
