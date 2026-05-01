@@ -4587,6 +4587,7 @@ Context:
       const expandedHistoryIds = new Set();
       let compareSelections = [];
       let notesOnly = false;
+      let historyLoadError = false;
 
       const PINNED_NOTE_KEY = 'promptmegood:pinnedNote:v1';
       const pinnedNoteEl = document.getElementById('pinned-note');
@@ -4830,10 +4831,15 @@ Context:
       function loadHistory() {
         try {
           const raw = localStorage.getItem(HISTORY_KEY);
-          if (!raw) return [];
+          if (!raw) { historyLoadError = false; return []; }
           const parsed = JSON.parse(raw);
+          historyLoadError = false;
           return Array.isArray(parsed) ? parsed : [];
         } catch (e) {
+          /* JSON.parse blew up — flag a real error so renderHistory()
+           * can show the styled "couldn't load" banner with a Reset
+           * button instead of silently falling back to "empty". */
+          historyLoadError = true;
           return [];
         }
       }
@@ -4879,8 +4885,28 @@ Context:
       function renderHistory() {
         renderStats();
         const items = loadHistory();
+        const states = window.__pmgHistoryStates;
+        if (historyLoadError) {
+          /* Couldn't parse the saved JSON — show the styled error
+           * banner with a Reset button instead of silently pretending
+           * the vault is empty. Hide the toolbar bits so the user
+           * can't act on history they can't see. */
+          if (states && typeof states.renderError === 'function') {
+            states.renderError(historyListEl);
+          } else {
+            historyListEl.innerHTML = '<div class="history-empty">We couldn\u2019t load your saved prompts. <button type="button" data-pmg-history-reset>Reset History</button></div>';
+          }
+          clearHistoryBtn.style.display = 'none';
+          historySearchEl.parentElement.style.display = 'none';
+          historyTagBarEl.style.display = 'none';
+          return;
+        }
         if (items.length === 0) {
-          historyListEl.innerHTML = '<div class="history-empty">No saved prompts yet. Generate one to start your history.</div>';
+          if (states && typeof states.renderEmpty === 'function') {
+            states.renderEmpty(historyListEl, { variant: 'no-items' });
+          } else {
+            historyListEl.innerHTML = '<div class="history-empty">No saved prompts yet. Generate one to start your history.</div>';
+          }
           clearHistoryBtn.style.display = 'none';
           historySearchEl.parentElement.style.display = 'none';
           historyTagBarEl.style.display = 'none';
@@ -4903,12 +4929,20 @@ Context:
             (i.tags || []).some(function (t) { return t.toLowerCase().includes(q); });
         });
         if (filtered.length === 0) {
-          const reason = historyTagFilter && q
-            ? 'No prompts match "' + escapeHtml(historyQuery) + '" in #' + escapeHtml(historyTagFilter) + '.'
+          const reasonText = historyTagFilter && q
+            ? 'No prompts match \u201C' + historyQuery + '\u201D in #' + historyTagFilter + '.'
             : historyTagFilter
-              ? 'No prompts tagged #' + escapeHtml(historyTagFilter) + '.'
-              : 'No saved prompts match "' + escapeHtml(historyQuery) + '".';
-          historyListEl.innerHTML = '<div class="history-empty">' + reason + '</div>';
+              ? 'No prompts tagged #' + historyTagFilter + '.'
+              : 'No saved prompts match \u201C' + historyQuery + '\u201D.';
+          if (states && typeof states.renderEmpty === 'function') {
+            states.renderEmpty(historyListEl, {
+              variant: 'no-matches',
+              title: 'No matching prompts',
+              text: reasonText
+            });
+          } else {
+            historyListEl.innerHTML = '<div class="history-empty">' + escapeHtml(reasonText) + '</div>';
+          }
           return;
         }
         const favOrder = items.filter(function (i) { return i.favorite; }).map(function (i) { return i.id; });
@@ -5406,6 +5440,22 @@ Context:
         expandedHistoryIds.clear();
         renderHistory();
         showToast('Prompt Vault cleared');
+      });
+
+      /* Reset button inside the styled "couldn't load history" error
+       * banner (rendered by pmg-history-states.js). Delegated so
+       * re-rendered banners keep working. */
+      historyListEl.addEventListener('click', function (ev) {
+        const t = ev.target;
+        if (!t) return;
+        const resetBtn = t.closest && t.closest('[data-pmg-history-reset]');
+        if (!resetBtn) return;
+        ev.preventDefault();
+        try { localStorage.removeItem(HISTORY_KEY); } catch (e) {}
+        historyLoadError = false;
+        expandedHistoryIds.clear();
+        renderHistory();
+        showToast('Prompt Vault reset');
       });
 
       const collapseAllHistoryBtn = document.getElementById('collapse-all-history');
@@ -6210,7 +6260,33 @@ Context:
         reader.readAsText(file);
       });
 
-      renderHistory();
+      /* Show a brief skeleton list during the initial mount so slow
+       * devices get a styled placeholder instead of a flash of blank
+       * panel. The real renderHistory() runs on the next macrotask
+       * (or once pmg-history-states.js has loaded — whichever is
+       * later) and replaces the skeleton. Reduce-motion is honored
+       * by the shared .pmg-skeleton-shimmer rule. */
+      (function initialHistoryRender() {
+        const states = window.__pmgHistoryStates;
+        if (states && typeof states.renderSkeleton === 'function') {
+          states.renderSkeleton(historyListEl);
+          /* Defer just long enough to actually paint the skeleton. */
+          setTimeout(renderHistory, 120);
+        } else if (document.readyState === 'loading') {
+          /* Script hasn't loaded yet — wait for it, then skeleton. */
+          document.addEventListener('DOMContentLoaded', function () {
+            const s = window.__pmgHistoryStates;
+            if (s && typeof s.renderSkeleton === 'function') {
+              s.renderSkeleton(historyListEl);
+              setTimeout(renderHistory, 120);
+            } else {
+              renderHistory();
+            }
+          }, { once: true });
+        } else {
+          renderHistory();
+        }
+      })();
 
       const TEMPLATES = [
         {
@@ -9687,6 +9763,7 @@ Context:
   <script src="/scripts/post-spec.js" defer></script>
   <script src="/scripts/pmg-image-fix.js" defer></script>
   <script src="/scripts/pmg-result-states.js?v=2-refocus" defer></script>
+  <script src="/scripts/pmg-history-states.js?v=1" defer></script>
   <script src="/scripts/pmg-pro.js?v=4" defer></script>
   <script src="/scripts/pmg-money-mode-pro.js?v=1" defer></script>
   <script src="/scripts/pmg-linear-flow.js?v=3-refocus" defer></script>
