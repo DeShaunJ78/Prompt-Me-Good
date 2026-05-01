@@ -4971,6 +4971,10 @@
   var SAVED_KEY = 'pmg.photo.savedCombos';
   var SAVED_MAX = 20;
   var SAVED_NAME_MAX = 40;
+  /* Task #38: cap how many pill values appear in the auto-generated
+     "Surprise: a, b, c, d…" label so a 10-pill surprise still renders
+     as a clean Recent chip. Anything beyond gets a single ellipsis. */
+  var SURPRISE_LABEL_VALUES = 4;
 
   /* ---------------- Catalog of pill options per group --------------- */
   var GROUPS = [
@@ -5368,9 +5372,36 @@
       '#' + SUITE_ID + ' .pmg-photo-save-combo:disabled {',
       '  opacity: 0.5; cursor: not-allowed;',
       '}',
+      /* Task #38: Pin This Surprise — emerald-tinted CTA that stands out
+         briefly while the surprise is fresh. Hidden by default; revealed
+         only after surpriseMe() and re-hidden the moment the user changes
+         a pill, applies a preset, or clears. */
+      '#' + SUITE_ID + ' .pmg-photo-pin-surprise {',
+      '  padding: 10px 18px; font-size: var(--text-sm); font-weight: 700;',
+      '  background: color-mix(in srgb, var(--color-success, #2ea44f) 12%, var(--color-surface));',
+      '  color: var(--color-success, #2ea44f);',
+      '  border: 1.5px solid color-mix(in srgb, var(--color-success, #2ea44f) 50%, transparent);',
+      '  border-radius: var(--radius-full); cursor: pointer;',
+      '  display: inline-flex; align-items: center; gap: 6px;',
+      '  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;',
+      '  animation: pmgPinSurpriseIn 220ms ease-out;',
+      '}',
+      '#' + SUITE_ID + ' .pmg-photo-pin-surprise:hover,',
+      '#' + SUITE_ID + ' .pmg-photo-pin-surprise:focus-visible {',
+      '  background: color-mix(in srgb, var(--color-success, #2ea44f) 22%, var(--color-surface));',
+      '  border-color: var(--color-success, #2ea44f); outline: none;',
+      '}',
+      '@keyframes pmgPinSurpriseIn {',
+      '  from { opacity: 0; transform: translateY(-2px); }',
+      '  to   { opacity: 1; transform: translateY(0); }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  #' + SUITE_ID + ' .pmg-photo-pin-surprise { animation: none; }',
+      '}',
       '@media (max-width: 640px) {',
       '  #' + SAVED_ROW_ID + ' { padding: 8px 10px; }',
       '  #' + SUITE_ID + ' .pmg-photo-save-combo { width: 100%; justify-content: center; }',
+      '  #' + SUITE_ID + ' .pmg-photo-pin-surprise { width: 100%; justify-content: center; }',
       '}',
 
       /* Image Generator host: override the global image-mode hide rule. */
@@ -5573,6 +5604,10 @@
     html.push('<div class="pmg-photo-actions">');
     html.push('  <button type="button" class="pmg-photo-send" disabled><span aria-hidden="true">✨</span><span>Send To Image Generator</span></button>');
     html.push('  <button type="button" class="pmg-photo-surprise"><span aria-hidden="true">🎲</span> Surprise Me</button>');
+    /* Task #38: Pin This Surprise — only revealed for the brief window
+       between Surprise Me and the user diverging from those picks.
+       Saves the random pill set into the Recent row as a raw combo. */
+    html.push('  <button type="button" class="pmg-photo-pin-surprise" hidden aria-label="Pin this surprise to the Recent row"><span aria-hidden="true">📌</span> Pin This Surprise</button>');
     /* Task #35: Save This Combo — disabled until at least one pill
        is active (refreshSummary keeps it in sync). */
     html.push('  <button type="button" class="pmg-photo-save-combo" disabled aria-label="Save current selection as a named combo"><span aria-hidden="true">💾</span> Save This Combo</button>');
@@ -5609,6 +5644,9 @@
     root.querySelectorAll('.pmg-photo-pill').forEach(function (p) {
       p.addEventListener('click', function () {
         p.classList.toggle('is-active');
+        /* Task #38: any manual pill change diverges from the last
+           Surprise Me roll, so retire the Pin offer. */
+        if (_surpriseFresh) setSurpriseFresh(false);
         refreshSummary();
       });
     });
@@ -5706,6 +5744,9 @@
     /* Surprise. */
     var surprise = root.querySelector('.pmg-photo-surprise');
     if (surprise) surprise.addEventListener('click', surpriseMe);
+    /* Task #38: Pin This Surprise. */
+    var pinBtn = root.querySelector('.pmg-photo-pin-surprise');
+    if (pinBtn) pinBtn.addEventListener('click', pinCurrentSurprise);
     /* Clear. */
     var clear = root.querySelector('.pmg-photo-clear');
     if (clear) clear.addEventListener('click', clearAllPicks);
@@ -5760,6 +5801,9 @@
     document.querySelectorAll('#' + SUITE_ID + ' .pmg-photo-pill.is-active').forEach(function (p) {
       p.classList.remove('is-active');
     });
+    /* Task #38: clearing diverges from the surprise. surpriseMe()
+       calls clearAllPicks then re-sets the flag, so this is safe. */
+    if (_surpriseFresh) setSurpriseFresh(false);
     refreshSummary();
   }
 
@@ -5879,6 +5923,10 @@
       if (el) el.classList.add('is-active');
     });
 
+    /* Task #38: applying a preset diverges from the last Surprise Me
+       roll. (applyCombo and applySavedCombo go through clearAllPicks
+       which already handles this; applyPreset does not.) */
+    if (_surpriseFresh) setSurpriseFresh(false);
     refreshSummary();
     scheduleRecordCombo();
   }
@@ -5915,19 +5963,114 @@
     return combo;
   }
 
-  /* Stable string identity for a combo, used for dedupe. */
-  function comboKey(combo) {
-    return combo.map(function (e) { return e.group + ':' + e.idx; }).join('|');
+  /* Resolve a combo (either kind) down to its picks-by-group object.
+     Preset combos look up the current preset values via PRESETS;
+     raw combos already store the values directly. Used as the input
+     to picksFingerprint() so a preset combo and a raw combo that
+     produce the same selection are treated as duplicates. */
+  function comboPicks(combo) {
+    var picks = {};
+    GROUPS.forEach(function (g) { picks[g.id] = []; });
+    if (!combo) return picks;
+    if (combo.kind === 'raw' && combo.picks) {
+      Object.keys(combo.picks).forEach(function (gid) {
+        if (picks[gid] && Array.isArray(combo.picks[gid])) {
+          picks[gid] = combo.picks[gid].slice();
+        }
+      });
+      return picks;
+    }
+    var entries = (combo.kind === 'preset' && Array.isArray(combo.entries))
+      ? combo.entries
+      : (Array.isArray(combo) ? combo : []);
+    entries.forEach(function (e) {
+      var p = PRESETS[e.group];
+      var item = p && p.items && p.items[e.idx];
+      if (item && Array.isArray(item.values)) {
+        picks[e.group] = item.values.slice();
+      }
+    });
+    return picks;
   }
 
-  /* Human-readable label for a combo, e.g. "Cinematic + Golden Hour + Rule Of Thirds". */
+  /* Stable string identity derived from the resolved picks, so two
+     combos that select the exact same pills dedupe regardless of
+     which kind they are. Sorted within each group; group order
+     follows GROUPS so identity is stable across click sequences. */
+  function picksFingerprint(picks) {
+    return GROUPS.map(function (g) {
+      return g.id + ':' + ((picks[g.id] || []).slice().sort().join('|'));
+    }).join('//');
+  }
+
+  function comboKey(combo) {
+    return picksFingerprint(comboPicks(combo));
+  }
+
+  /* Human-readable label for a combo. Preset combos build the label
+     from the matching preset names ("Cinematic + Golden Hour"). Raw
+     combos (Task #38: surprise pins) carry their own pre-baked label. */
   function comboLabel(combo) {
-    var parts = combo.map(function (e) {
+    if (combo && combo.kind === 'raw') {
+      return typeof combo.label === 'string' ? combo.label : '';
+    }
+    var entries = (combo && combo.kind === 'preset' && Array.isArray(combo.entries))
+      ? combo.entries
+      : (Array.isArray(combo) ? combo : []);
+    var parts = entries.map(function (e) {
       var p = PRESETS[e.group];
       var item = p && p.items && p.items[e.idx];
       return item ? item.label : '';
     }).filter(Boolean);
     return parts.join(' + ');
+  }
+
+  /* Validate one parsed combo entry from localStorage. Accepts three
+     shapes for backwards compatibility:
+       1. legacy bare array  [{group,idx},...]   → wrap as preset
+       2. {kind:'preset', entries:[{group,idx},...]}
+       3. {kind:'raw', label, picks:{group:[val,...],...}}
+     Stale entries (preset since removed, pill no longer in catalog)
+     get their bad parts dropped; if nothing remains, the whole entry
+     is rejected so the Recent row stays clean. */
+  function normalizeRecentEntry(combo) {
+    if (Array.isArray(combo)) {
+      var entries = [];
+      for (var i = 0; i < combo.length; i++) {
+        var e = combo[i];
+        if (!e || typeof e.group !== 'string' || typeof e.idx !== 'number') return null;
+        var p = PRESETS[e.group];
+        if (!p || !p.items || !p.items[e.idx]) return null;
+        entries.push({ group: e.group, idx: e.idx });
+      }
+      if (!entries.length) return null;
+      return { kind: 'preset', entries: entries };
+    }
+    if (!combo || typeof combo !== 'object') return null;
+    if (combo.kind === 'preset') {
+      return normalizeRecentEntry(Array.isArray(combo.entries) ? combo.entries : []);
+    }
+    if (combo.kind === 'raw') {
+      var label = typeof combo.label === 'string' ? combo.label.slice(0, 80) : '';
+      if (!label) return null;
+      var pickGroupIds = {};
+      GROUPS.forEach(function (g) { pickGroupIds[g.id] = {}; g.pills.forEach(function (v) { pickGroupIds[g.id][v] = true; }); });
+      var cleanPicks = {};
+      var hasAny = false;
+      var src = combo.picks && typeof combo.picks === 'object' ? combo.picks : {};
+      Object.keys(src).forEach(function (gid) {
+        if (!pickGroupIds[gid]) return; /* group whitelist — avoids selector injection */
+        var arr = Array.isArray(src[gid]) ? src[gid] : [];
+        var clean = [];
+        arr.forEach(function (v) {
+          if (typeof v === 'string' && pickGroupIds[gid][v]) clean.push(v);
+        });
+        if (clean.length) { cleanPicks[gid] = clean; hasAny = true; }
+      });
+      if (!hasAny) return null;
+      return { kind: 'raw', label: label, picks: cleanPicks };
+    }
+    return null;
   }
 
   function loadRecentCombos() {
@@ -5936,21 +6079,10 @@
       if (!raw) return [];
       var parsed = JSON.parse(raw);
       if (!Array.isArray(parsed)) return [];
-      /* Validate entries: must be arrays of {group, idx} where the preset
-         still exists. Stale entries (e.g. preset removed in a later
-         release) are silently dropped. */
       var out = [];
       parsed.forEach(function (combo) {
-        if (!Array.isArray(combo) || !combo.length) return;
-        var clean = [];
-        for (var i = 0; i < combo.length; i++) {
-          var e = combo[i];
-          if (!e || typeof e.group !== 'string' || typeof e.idx !== 'number') return;
-          var p = PRESETS[e.group];
-          if (!p || !p.items || !p.items[e.idx]) return;
-          clean.push({ group: e.group, idx: e.idx });
-        }
-        if (clean.length) out.push(clean);
+        var clean = normalizeRecentEntry(combo);
+        if (clean) out.push(clean);
       });
       return out.slice(0, RECENT_MAX);
     } catch (e) { return []; }
@@ -5985,7 +6117,9 @@
   }
 
   /* True when `big` contains every (group, idx) entry in `small` and has
-     strictly more entries — i.e. `small` is a strict subset of `big`. */
+     strictly more entries — i.e. `small` is a strict subset of `big`.
+     Both inputs are bare {group,idx} arrays as returned by
+     getActivePresetCombo (NOT tagged combo objects). */
   function isStrictSuperset(big, small) {
     if (!small.length || small.length >= big.length) return false;
     return small.every(function (e) {
@@ -5995,17 +6129,31 @@
     });
   }
 
+  /* Helper: extract the bare {group,idx}[] entries from a tagged
+     preset combo, or empty array for raw combos. Used by the
+     superset check below — surprise pins skip the superset
+     "build-up" optimization since they aren't preset-shaped. */
+  function presetEntriesOf(combo) {
+    if (combo && combo.kind === 'preset' && Array.isArray(combo.entries)) {
+      return combo.entries;
+    }
+    return [];
+  }
+
   function recordCurrentCombo() {
-    var combo = getActivePresetCombo();
-    if (!combo.length) return;
+    var entries = getActivePresetCombo();
+    if (!entries.length) return;
+    var combo = { kind: 'preset', entries: entries };
     var key = comboKey(combo);
     var existing = loadRecentCombos();
     var startIdx = 0;
-    /* If the user is "building up" a combo from the previously-saved
-       one (same entries plus more), replace the previous entry instead
-       of pushing a new one. Avoids cluttering Recent with intermediate
-       states like {Cinematic} → {Cinematic+Golden Hour}. */
-    if (existing.length && isStrictSuperset(combo, existing[0])) {
+    /* If the user is "building up" a preset combo from the previously-
+       saved one (same entries plus more), replace the previous entry
+       instead of pushing a new one. Avoids cluttering Recent with
+       intermediate states like {Cinematic} → {Cinematic+Golden Hour}.
+       Only applies when both top entries are preset combos. */
+    var topPrev = presetEntriesOf(existing[0]);
+    if (topPrev.length && isStrictSuperset(entries, topPrev)) {
       startIdx = 1;
     }
     var filtered = existing.slice(startIdx).filter(function (c) {
@@ -6016,14 +6164,39 @@
     renderRecentRow();
   }
 
-  /* Apply a saved combo: clear all picks first so the result matches the
-     combo exactly (no leftover manual pills lingering from before), then
-     replay each preset. applyPreset will reschedule a record, which is
-     fine — it'll dedupe and bump this combo to the top. */
+  /* Apply a Recent combo: clear all picks first so the result matches
+     the combo exactly (no leftover manual pills lingering from
+     before), then either replay each preset (preset combo) or
+     activate raw pill values (Task #38: surprise pin). For preset
+     combos, applyPreset will reschedule a record, which is fine —
+     it'll dedupe and bump this combo to the top. For raw combos
+     we don't reschedule a record because the auto-tracker is
+     preset-only. */
   function applyCombo(combo) {
-    if (!Array.isArray(combo) || !combo.length) return;
+    if (!combo) return;
+    /* Backwards-compat: a stray bare array slipped through normalize? */
+    if (Array.isArray(combo)) combo = { kind: 'preset', entries: combo };
     clearAllPicks();
-    combo.forEach(function (e) { applyPreset(e.group, e.idx); });
+    if (combo.kind === 'raw' && combo.picks) {
+      var applied = 0;
+      Object.keys(combo.picks).forEach(function (gid) {
+        (combo.picks[gid] || []).forEach(function (val) {
+          var sel = '#' + SUITE_ID + ' .pmg-photo-pill' +
+            '[data-group="' + gid + '"]' +
+            '[data-value="' + cssEscape(val) + '"]';
+          try {
+            var el = document.querySelector(sel);
+            if (el) { el.classList.add('is-active'); applied++; }
+          } catch (e) { /* skip silently — gid is whitelisted in load */ }
+        });
+      });
+      refreshSummary();
+      showToast(applied ? 'Surprise re-applied!' : 'Combo has no usable picks anymore.');
+      return;
+    }
+    /* Preset combo. */
+    var entries = presetEntriesOf(combo);
+    entries.forEach(function (e) { applyPreset(e.group, e.idx); });
     showToast('Recent combo applied!');
   }
 
@@ -6247,7 +6420,22 @@
     row.hidden = false;
   }
 
+  /* Task #38: tracks whether the current pill state was produced by the
+     last Surprise Me click and hasn't been touched since. Used to decide
+     whether to show the "Pin This Surprise" CTA — once the user diverges
+     (clicks a pill, applies a preset, clears, applies a saved combo,
+     etc.) the offer disappears. */
+  var _surpriseFresh = false;
+
+  function setSurpriseFresh(active) {
+    _surpriseFresh = !!active;
+    var btn = document.querySelector('#' + SUITE_ID + ' .pmg-photo-pin-surprise');
+    if (btn) btn.hidden = !_surpriseFresh;
+  }
+
   function surpriseMe() {
+    /* clearAllPicks resets the surprise-fresh flag — that's fine, we
+       set it back true at the end so the offer appears for THIS roll. */
     clearAllPicks();
     GROUPS.forEach(function (g) {
       /* Pick 1 or 2 random pills per group. */
@@ -6262,7 +6450,58 @@
       }
     });
     refreshSummary();
-    showToast('Surprise picks applied!');
+    setSurpriseFresh(true);
+    showToast('Surprise picks applied! Pin to keep this look.');
+  }
+
+  /* Task #38: build the auto-generated label for a pinned surprise.
+     "Surprise: <pill1>, <pill2>, ..." — capped at SURPRISE_LABEL_VALUES
+     pill values across groups in GROUPS order, with a single trailing
+     "…" when there are more. Returns null if no pills are active. */
+  function buildSurpriseLabel(picks) {
+    var values = [];
+    GROUPS.forEach(function (g) {
+      (picks[g.id] || []).forEach(function (v) { values.push(v); });
+    });
+    if (!values.length) return null;
+    var shown = values.slice(0, SURPRISE_LABEL_VALUES);
+    var suffix = values.length > SURPRISE_LABEL_VALUES ? ', \u2026' : '';
+    return 'Surprise: ' + shown.join(', ') + suffix;
+  }
+
+  /* Task #38: persist the current pill set (whatever it is) into the
+     Recent row as a raw combo. Called from the Pin This Surprise
+     button. Uses the same RECENT_KEY + RECENT_MAX cap as preset
+     combos, dedupes against existing entries via picksFingerprint
+     (so pinning a surprise that happens to match a Recent preset
+     combo just bumps that entry to the top instead of duplicating). */
+  function pinCurrentSurprise() {
+    /* Defense-in-depth: only honor a click when the current pill state
+       genuinely IS the most-recent Surprise Me roll. Belt-and-
+       suspenders against the button being shown by something other
+       than surpriseMe() — without this, a stale Pin click could
+       persist a user-edited state under a misleading "Surprise:"
+       label. The dismissal hooks (pill click, applyPreset, clear,
+       etc.) already hide the button, so the normal flow stays clean. */
+    if (!_surpriseFresh) return;
+    var picks = getSelections();
+    var label = buildSurpriseLabel(picks);
+    if (!label) { showToast('Pick at least one option first.'); return; }
+    /* Strip empty groups before persisting — keeps storage compact
+       and lines up with how loadRecentCombos validates raw entries. */
+    var cleanPicks = {};
+    Object.keys(picks).forEach(function (gid) {
+      if (picks[gid] && picks[gid].length) cleanPicks[gid] = picks[gid].slice();
+    });
+    var combo = { kind: 'raw', label: label, picks: cleanPicks };
+    var key = comboKey(combo);
+    var existing = loadRecentCombos();
+    var filtered = existing.filter(function (c) { return comboKey(c) !== key; });
+    filtered.unshift(combo);
+    saveRecentCombos(filtered);
+    renderRecentRow();
+    setSurpriseFresh(false);
+    showToast('Surprise pinned to Recent!');
   }
 
   function cssEscape(s) {
@@ -6274,6 +6513,11 @@
     var picks = getSelections();
     var photoText = buildPromptText(picks);
     if (!photoText) { showToast('Pick at least one option first.'); return; }
+
+    /* Task #38: sending consumes the surprise — the user has moved on
+       from "should I keep these picks?" to "render them now". Dismiss
+       the Pin CTA so it doesn't keep nagging across the image flow. */
+    if (_surpriseFresh) setSurpriseFresh(false);
 
     /* Build the final prompt. Use the user's existing builder goal as
        the subject (if present), otherwise a friendly default. */

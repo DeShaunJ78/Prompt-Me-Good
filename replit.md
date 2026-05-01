@@ -66,6 +66,7 @@ PromptMeGood is a static HTML AI prompt builder (`index.html`) using vanilla Jav
 -   **Renderer Stability:** `T26 ObserverGuard` monkey-patches `window.MutationObserver` for stability.
 -   **Image Generation UX:** Live progress, success callout, restyled download button, and retry on errors.
 -   **Photography Suite Saved Combos (My Combos):** Power users can save the current pill selection across all five Photography Suite groups under a custom name. Saved combos persist in `localStorage` (`pmg.photo.savedCombos`, raw pill values), appear above the auto-tracked Recent row, and can be re-applied with one click or removed with a × button. Save This Combo button sits next to Surprise Me / Clear Picks and is disabled while no pills are active.
+-   **Photography Suite Pin Surprise:** After Surprise Me runs, a transient "Pin This Surprise" CTA appears next to Surprise Me. Clicking it persists the random pill set into the same Recent row used by preset combos under an auto-generated label (e.g. "Surprise: Cinematic, 35mm Wide, Golden Hour, Rule Of Thirds…"). The Recent row storage (`pmg.photo.recentPresets`) now uses a tagged shape that supports both preset combos (`{kind:'preset', entries:[{group,idx},...]}`) and raw pill combos (`{kind:'raw', label, picks}`), with backwards compatibility for the legacy bare-array format. The Pin CTA auto-dismisses on any pill change, preset apply, clear, saved-combo apply, or send.
 -   **Smart Assist:** Inactivity-driven helper providing guidance.
 
 # External Dependencies
