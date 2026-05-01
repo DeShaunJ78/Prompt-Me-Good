@@ -290,6 +290,23 @@
       requiresTwist: true,
       sections: ['Twisted Version', 'How Your Instruction Was Applied', 'Notes For Further Tuning'],
       extra: 'The user supplied a custom instruction in the "Add A Custom Twist" field — that instruction IS the primary transformation rule. Apply it directly and faithfully to the user text. In "How Your Instruction Was Applied" explain the moves you made to honor the instruction.'
+    },
+    /* ---- Card 21: Compare Texts ----
+       Special card. Does NOT call the AI. Takes two text inputs (Text A
+       and Text B) and renders a deterministic, word-level diff plus a
+       plain-language summary above it. Selecting this card swaps the
+       single-input area for the two-input layout via CSS. The action
+       button label switches to "Compare Texts" and is wired to a
+       different runner (runComparison) instead of runTransformation. */
+    {
+      id: 'compare',
+      title: 'Compare Texts',
+      desc: 'See how two versions differ side-by-side.',
+      button: 'Compare Texts',
+      loadingMsg: 'Comparing your texts…',
+      pro: true,
+      isCompare: true,
+      sections: ['Difference Summary', 'Side-By-Side Diff']
     }
   ];
 
@@ -306,7 +323,14 @@
     originalText: '',
     selectedMode: 'speed_upgrade',
     customTwist: '',        /* optional refinement appended to any card */
-    lastOutput: null        /* { modeId, sections: [{title, body}] } */
+    lastOutput: null,       /* { modeId, sections: [{title, body}] } */
+    /* Compare Texts (card 21) — kept separate from the single-input
+       state above so switching modes never overwrites the user's two
+       comparison inputs. lastCompare caches the most recent diff so
+       switching back into the mode shows the previous result. */
+    compareTextA: '',
+    compareTextB: '',
+    lastCompare: null       /* { a, b, summary, segments } */
   };
   var MAX_TWIST_CHARS = 500;
 
@@ -323,6 +347,11 @@
         if (typeof p.customTwist === 'string') out.customTwist = p.customTwist.slice(0, MAX_TWIST_CHARS);
         if (p.lastOutput && typeof p.lastOutput === 'object' && Array.isArray(p.lastOutput.sections)) {
           out.lastOutput = p.lastOutput;
+        }
+        if (typeof p.compareTextA === 'string') out.compareTextA = p.compareTextA.slice(0, MAX_TEXT_CHARS);
+        if (typeof p.compareTextB === 'string') out.compareTextB = p.compareTextB.slice(0, MAX_TEXT_CHARS);
+        if (p.lastCompare && typeof p.lastCompare === 'object' && Array.isArray(p.lastCompare.segments)) {
+          out.lastCompare = p.lastCompare;
         }
       }
       return out;
@@ -1264,6 +1293,231 @@
       '  font-weight: 700; font-size: var(--text-xs); letter-spacing: 0.02em;',
       '}',
 
+      /* === Compare Texts (card 21) ===
+         The dual-input card lives alongside the single-input card in
+         the DOM and is hidden by default. Selecting the Compare Texts
+         mode toggles the .pmg-ts-mode-compare body class which hides
+         the single-input card + twist field and reveals the compare
+         card. The layout is two columns side-by-side on desktop,
+         stacked on mobile (no horizontal overflow). */
+      '.pmg-ts-compare-card {',
+      '  display: none;',
+      '  flex-direction: column;',
+      '  gap: 12px;',
+      '  padding: var(--space-4) var(--space-5);',
+      '  border-radius: var(--radius-lg);',
+      '  background: var(--color-surface);',
+      '  border: 1px solid var(--color-border);',
+      '  max-width: 100%;',
+      '  min-width: 0;',
+      '  box-sizing: border-box;',
+      '}',
+      'body.pmg-ts-mode-compare .pmg-ts-input-card,',
+      'body.pmg-ts-mode-compare #pmg-ts-twist { display: none !important; }',
+      'body.pmg-ts-mode-compare .pmg-ts-compare-card { display: flex; }',
+
+      '.pmg-ts-compare-grid {',
+      '  display: grid;',
+      '  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);',
+      '  gap: 12px;',
+      '  align-items: stretch;',
+      '  min-width: 0;',
+      '}',
+      '.pmg-ts-compare-side {',
+      '  display: flex;',
+      '  flex-direction: column;',
+      '  gap: 6px;',
+      '  min-width: 0;',
+      '  background: var(--color-bg);',
+      '  border: 1px solid var(--color-border);',
+      '  border-radius: var(--radius-md);',
+      '  padding: 10px 12px;',
+      '}',
+      '.pmg-ts-compare-side-head {',
+      '  display: flex;',
+      '  align-items: center;',
+      '  justify-content: space-between;',
+      '  gap: 8px;',
+      '  flex-wrap: wrap;',
+      '}',
+      '.pmg-ts-compare-label {',
+      '  font-size: var(--text-sm);',
+      '  font-weight: 700;',
+      '  color: var(--color-text);',
+      '}',
+      '.pmg-ts-compare-actions {',
+      '  display: flex;',
+      '  gap: 6px;',
+      '  flex-wrap: wrap;',
+      '}',
+      '.pmg-ts-compare-side-btn {',
+      '  display: inline-flex;',
+      '  align-items: center;',
+      '  justify-content: center;',
+      '  gap: 4px;',
+      '  min-height: 32px;',
+      '  padding: 4px 10px;',
+      '  border-radius: 8px;',
+      '  background: var(--color-surface);',
+      '  border: 1px solid var(--color-border);',
+      '  color: var(--color-text);',
+      '  font: inherit;',
+      '  font-size: var(--text-xs);',
+      '  font-weight: 600;',
+      '  cursor: pointer;',
+      '  transition: background var(--transition-interactive), border-color var(--transition-interactive);',
+      '}',
+      '.pmg-ts-compare-side-btn:hover,',
+      '.pmg-ts-compare-side-btn:focus-visible {',
+      '  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));',
+      '  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));',
+      '  outline: none;',
+      '}',
+      '.pmg-ts-compare-textarea {',
+      '  width: 100%;',
+      '  min-height: 140px;',
+      '  resize: vertical;',
+      '  padding: 10px 12px;',
+      '  border-radius: var(--radius-md);',
+      '  border: 1px solid var(--color-border);',
+      '  background: var(--color-surface);',
+      '  color: var(--color-text);',
+      '  font: inherit;',
+      '  font-size: var(--text-sm);',
+      '  line-height: 1.55;',
+      '  box-sizing: border-box;',
+      '  transition: border-color var(--transition-interactive), box-shadow var(--transition-interactive);',
+      '}',
+      '.pmg-ts-compare-textarea:focus-visible {',
+      '  outline: none;',
+      '  border-color: var(--color-primary);',
+      '  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 22%, transparent);',
+      '}',
+      '.pmg-ts-compare-meta {',
+      '  font-size: var(--text-xs);',
+      '  color: var(--color-text-muted);',
+      '}',
+      '.pmg-ts-compare-controls {',
+      '  display: flex;',
+      '  gap: 8px;',
+      '  flex-wrap: wrap;',
+      '}',
+      '.pmg-ts-compare-controls .pmg-ts-compare-side-btn { min-height: 36px; }',
+      '.pmg-ts-compare-helper {',
+      '  margin: 0;',
+      '  font-size: var(--text-xs);',
+      '  color: var(--color-text-muted);',
+      '  font-style: italic;',
+      '}',
+
+      /* Compare result rendering */
+      '.pmg-ts-compare-summary-card {',
+      '  display: flex;',
+      '  flex-direction: column;',
+      '  gap: 8px;',
+      '  padding: var(--space-4) var(--space-5);',
+      '  border-radius: var(--radius-lg);',
+      '  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 25%, var(--color-border));',
+      '}',
+      '.pmg-ts-compare-summary-card h4 {',
+      '  margin: 0; font-size: var(--text-md); font-weight: 700; color: var(--color-primary);',
+      '}',
+      '.pmg-ts-compare-summary-text {',
+      '  margin: 0;',
+      '  font-size: var(--text-sm);',
+      '  color: var(--color-text);',
+      '  line-height: 1.55;',
+      '}',
+      '.pmg-ts-compare-summary-stats {',
+      '  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px;',
+      '}',
+      '.pmg-ts-compare-stat {',
+      '  display: inline-flex; align-items: center;',
+      '  padding: 2px 8px; border-radius: 999px;',
+      '  font-size: var(--text-xs); font-weight: 600;',
+      '  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-bg));',
+      '  color: var(--color-text);',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent);',
+      '}',
+
+      '.pmg-ts-diff-card {',
+      '  display: flex;',
+      '  flex-direction: column;',
+      '  gap: 8px;',
+      '  padding: var(--space-4) var(--space-5);',
+      '  border-radius: var(--radius-lg);',
+      '  background: var(--color-surface);',
+      '  border: 1px solid var(--color-border);',
+      '}',
+      '.pmg-ts-diff-card h4 {',
+      '  margin: 0; font-size: var(--text-md); font-weight: 700; color: var(--color-primary);',
+      '}',
+      '.pmg-ts-diff-grid {',
+      '  display: grid;',
+      '  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);',
+      '  gap: 12px;',
+      '  min-width: 0;',
+      '}',
+      '.pmg-ts-diff-pane {',
+      '  min-width: 0;',
+      '  display: flex;',
+      '  flex-direction: column;',
+      '  gap: 4px;',
+      '}',
+      '.pmg-ts-diff-pane-label {',
+      '  font-size: var(--text-xs);',
+      '  font-weight: 700;',
+      '  color: var(--color-text-muted);',
+      '  text-transform: uppercase;',
+      '  letter-spacing: 0.06em;',
+      '}',
+      '.pmg-ts-diff-body {',
+      '  white-space: pre-wrap;',
+      '  word-break: break-word;',
+      '  overflow-wrap: anywhere;',
+      '  background: var(--color-bg);',
+      '  border: 1px solid var(--color-border);',
+      '  border-radius: var(--radius-md);',
+      '  padding: 10px 12px;',
+      '  font-size: var(--text-sm);',
+      '  line-height: 1.55;',
+      '  color: var(--color-text);',
+      '  min-height: 80px;',
+      '  max-height: 60vh;',
+      '  overflow-y: auto;',
+      '}',
+      '.pmg-ts-diff-ins {',
+      '  background: color-mix(in srgb, #16a34a 22%, transparent);',
+      '  color: var(--color-text);',
+      '  border-radius: 3px;',
+      '  padding: 0 2px;',
+      '}',
+      '.pmg-ts-diff-del {',
+      '  background: color-mix(in srgb, #dc2626 22%, transparent);',
+      '  color: var(--color-text);',
+      '  text-decoration: line-through;',
+      '  text-decoration-color: color-mix(in srgb, #dc2626 70%, transparent);',
+      '  border-radius: 3px;',
+      '  padding: 0 2px;',
+      '}',
+      '[data-theme="dark"] .pmg-ts-diff-ins { background: color-mix(in srgb, #16a34a 30%, transparent); }',
+      '[data-theme="dark"] .pmg-ts-diff-del { background: color-mix(in srgb, #dc2626 30%, transparent); }',
+      '.pmg-ts-diff-empty {',
+      '  font-style: italic;',
+      '  color: var(--color-text-muted);',
+      '}',
+
+      /* Compare-mode mobile: stack the dual inputs and the diff panes
+         vertically so nothing forces horizontal overflow on small
+         screens. Also bump tap targets on the per-side buttons. */
+      '@media (max-width: 720px) {',
+      '  .pmg-ts-compare-grid,',
+      '  .pmg-ts-diff-grid { grid-template-columns: 1fr; }',
+      '  .pmg-ts-compare-side-btn { min-height: 44px; padding: 8px 12px; }',
+      '  .pmg-ts-diff-body { max-height: none; }',
+      '}',
+
       /* Mobile tightening — Task #26 expands this block to cover the
          full small-breakpoint pass: stack Studio mode cards into a
          single full-width column at ≤640px, ensure every actionable
@@ -1499,6 +1753,9 @@
     inputCard.appendChild(ta);
     inputCard.appendChild(inputRow);
 
+    /* --- Compare Texts card (hidden unless mode === 'compare') --- */
+    var compareCard = buildCompareCard();
+
     /* --- Mode picker (stacked, one per row) --- */
     var modesLabel = document.createElement('p');
     modesLabel.className = 'pmg-ts-section-label';
@@ -1610,7 +1867,14 @@
     actionBtn.type = 'button';
     actionBtn.id = 'pmg-ts-action';
     actionBtn.className = 'pmg-ts-action';
-    actionBtn.addEventListener('click', runTransformation);
+    actionBtn.addEventListener('click', function () {
+      var mode = modeById(state.selectedMode) || MODES[0];
+      if (mode && mode.isCompare) {
+        runComparison();
+      } else {
+        runTransformation();
+      }
+    });
 
     var statusEl = document.createElement('p');
     statusEl.id = 'pmg-ts-status';
@@ -1634,6 +1898,7 @@
     /* Assemble */
     panel.appendChild(header);
     panel.appendChild(inputCard);
+    if (compareCard) panel.appendChild(compareCard);
     panel.appendChild(modesLabel);
     panel.appendChild(modesWrap);
     panel.appendChild(twistWrap);
@@ -1860,6 +2125,25 @@
            invalid after the user moves on. */
         twistInput.setAttribute('aria-invalid', 'false');
       }
+    }
+    /* Compare mode swap: toggle a body class that flips which input
+       card is shown (single textarea vs dual textareas). When leaving
+       compare mode, restore the normal output (last AI result or
+       empty state); when entering, show the cached diff or the
+       compare-mode empty state. Clear stranded statuses so a stale
+       "Drop in some text first." doesn't carry over. */
+    var isCompare = !!(mode && mode.isCompare);
+    if (document.body) document.body.classList.toggle('pmg-ts-mode-compare', isCompare);
+    setStatus('');
+    if (isCompare) {
+      syncCompareInputs();
+      if (state.lastCompare) {
+        renderCompareResult(state.lastCompare);
+      } else {
+        renderCompareEmptyState();
+      }
+    } else {
+      renderOutput();
     }
     refreshActionButton();
   }
@@ -2137,7 +2421,14 @@
       '</div>'
     ].join('');
     var btn = document.getElementById('pmg-ts-error-retry');
-    if (btn) btn.addEventListener('click', function () { runTransformation(); });
+    if (btn) btn.addEventListener('click', function () {
+      /* Mode-aware retry: when the user is in Compare Texts and
+         got a diff failure (e.g. trimmed-then-aborted LCS pass),
+         the retry must call runComparison(), not the AI runner. */
+      var m = modeById(state.selectedMode) || MODES[0];
+      if (m && m.isCompare) runComparison();
+      else runTransformation();
+    });
   }
 
   /* ------------------------------------------------------------------
@@ -2636,6 +2927,632 @@
     renderOutput();
   }
 
+  /* ==================================================================
+   * Compare Texts (card 21) — deterministic, no AI call
+   *
+   * The whole feature lives in this block so it can be reasoned about
+   * (and removed) as a unit. It exposes:
+   *
+   *   buildCompareCard()        → DOM for the dual-input card.
+   *   syncCompareInputs()       → reflect state.compareTextA/B into DOM.
+   *   runComparison()           → action-button handler for compare mode.
+   *   computeWordDiff(a, b)     → LCS-based word-level diff segments.
+   *   summarizeDiff(a, b, segs) → plain-language summary + stats.
+   *   renderCompareEmptyState() → empty state for the output area.
+   *   renderCompareResult(res)  → side-by-side diff + summary card.
+   *
+   * No new AI calls; no new dependencies; no animations beyond the
+   * existing focus/hover transitions which already respect
+   * prefers-reduced-motion via the global skin tokens.
+   * ================================================================== */
+
+  /* Cap on token count fed into the LCS diff so the O(n*m) algorithm
+     can never freeze the page or balloon memory. 2000 tokens per side
+     → ~4M Uint16 cells (~8 MB) which is safe on mobile. If a side
+     exceeds this, we trim that side and append a "(truncated)" marker
+     so the user knows the diff was capped. */
+  var COMPARE_DIFF_WORD_CAP = 2000;
+
+  function buildCompareCard() {
+    var card = document.createElement('div');
+    card.className = 'pmg-ts-compare-card';
+    card.id = 'pmg-ts-compare-card';
+    card.setAttribute('aria-label', 'Compare Texts Inputs');
+
+    var helper = document.createElement('p');
+    helper.className = 'pmg-ts-compare-helper';
+    helper.textContent = 'Paste or type two versions of a text. We will highlight word-level differences and summarize what changed — no AI call needed.';
+    card.appendChild(helper);
+
+    var grid = document.createElement('div');
+    grid.className = 'pmg-ts-compare-grid';
+
+    grid.appendChild(buildCompareSide('a', 'Text A'));
+    grid.appendChild(buildCompareSide('b', 'Text B'));
+    card.appendChild(grid);
+
+    /* Bottom controls: Swap A ⇄ B + Clear Both. The "Compare Texts"
+       primary action uses the existing main action button. */
+    var controls = document.createElement('div');
+    controls.className = 'pmg-ts-compare-controls';
+
+    var swapBtn = document.createElement('button');
+    swapBtn.type = 'button';
+    swapBtn.className = 'pmg-ts-compare-side-btn';
+    swapBtn.id = 'pmg-ts-compare-swap';
+    swapBtn.innerHTML = '<span aria-hidden="true">⇄</span> Swap A &amp; B';
+    swapBtn.addEventListener('click', swapCompareSides);
+    controls.appendChild(swapBtn);
+
+    var clearBoth = document.createElement('button');
+    clearBoth.type = 'button';
+    clearBoth.className = 'pmg-ts-compare-side-btn';
+    clearBoth.innerHTML = '<span aria-hidden="true">✕</span> Clear Both';
+    clearBoth.addEventListener('click', function () {
+      state.compareTextA = '';
+      state.compareTextB = '';
+      state.lastCompare = null;
+      saveState(state);
+      syncCompareInputs();
+      renderCompareEmptyState();
+      setStatus('');
+    });
+    controls.appendChild(clearBoth);
+
+    card.appendChild(controls);
+    return card;
+  }
+
+  function buildCompareSide(sideKey, label) {
+    var stateKey = sideKey === 'a' ? 'compareTextA' : 'compareTextB';
+    var side = document.createElement('div');
+    side.className = 'pmg-ts-compare-side';
+    side.dataset.side = sideKey;
+
+    var head = document.createElement('div');
+    head.className = 'pmg-ts-compare-side-head';
+
+    var labelEl = document.createElement('label');
+    labelEl.className = 'pmg-ts-compare-label';
+    labelEl.setAttribute('for', 'pmg-ts-compare-' + sideKey);
+    labelEl.textContent = label;
+    head.appendChild(labelEl);
+
+    var actions = document.createElement('div');
+    actions.className = 'pmg-ts-compare-actions';
+
+    var useLastBtn = document.createElement('button');
+    useLastBtn.type = 'button';
+    useLastBtn.className = 'pmg-ts-compare-side-btn';
+    useLastBtn.dataset.side = sideKey;
+    useLastBtn.innerHTML = '<span aria-hidden="true">↩</span> Use Last Result';
+    useLastBtn.title = 'Fill this side with the most recent transformation output.';
+    useLastBtn.addEventListener('click', function () { useLastResultIntoSide(sideKey); });
+    actions.appendChild(useLastBtn);
+
+    var copyBtn = document.createElement('button');
+    copyBtn.type = 'button';
+    copyBtn.className = 'pmg-ts-compare-side-btn';
+    copyBtn.innerHTML = '<span aria-hidden="true">📋</span> Copy';
+    copyBtn.title = 'Copy this side to clipboard.';
+    copyBtn.addEventListener('click', function () {
+      var val = state[stateKey] || '';
+      if (!val) {
+        toast('Nothing to copy on this side yet.');
+        return;
+      }
+      copyTextToClipboard(val);
+    });
+    actions.appendChild(copyBtn);
+
+    var clearBtn = document.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.className = 'pmg-ts-compare-side-btn';
+    clearBtn.innerHTML = '<span aria-hidden="true">✕</span> Clear';
+    clearBtn.title = 'Clear this side.';
+    clearBtn.addEventListener('click', function () {
+      state[stateKey] = '';
+      saveState(state);
+      syncCompareInputs();
+      updateCompareSideMeta(sideKey);
+    });
+    actions.appendChild(clearBtn);
+
+    head.appendChild(actions);
+    side.appendChild(head);
+
+    var ta = document.createElement('textarea');
+    ta.className = 'pmg-ts-compare-textarea';
+    ta.id = 'pmg-ts-compare-' + sideKey;
+    ta.maxLength = MAX_TEXT_CHARS;
+    ta.placeholder = sideKey === 'a'
+      ? 'Paste the original or earlier version here…'
+      : 'Paste the revised or later version here…';
+    ta.setAttribute('aria-label', label);
+    ta.addEventListener('input', function () {
+      state[stateKey] = ta.value.slice(0, MAX_TEXT_CHARS);
+      saveState(state);
+      updateCompareSideMeta(sideKey);
+    });
+    side.appendChild(ta);
+
+    var meta = document.createElement('p');
+    meta.className = 'pmg-ts-compare-meta';
+    meta.id = 'pmg-ts-compare-meta-' + sideKey;
+    side.appendChild(meta);
+
+    return side;
+  }
+
+  function syncCompareInputs() {
+    var taA = document.getElementById('pmg-ts-compare-a');
+    var taB = document.getElementById('pmg-ts-compare-b');
+    if (taA) taA.value = state.compareTextA || '';
+    if (taB) taB.value = state.compareTextB || '';
+    updateCompareSideMeta('a');
+    updateCompareSideMeta('b');
+  }
+
+  function updateCompareSideMeta(sideKey) {
+    var el = document.getElementById('pmg-ts-compare-meta-' + sideKey);
+    if (!el) return;
+    var val = (sideKey === 'a' ? state.compareTextA : state.compareTextB) || '';
+    var chars = val.length;
+    var words = val.trim() ? val.trim().split(/\s+/).length : 0;
+    el.textContent = words + ' word' + (words === 1 ? '' : 's') + ' · ' + chars + ' / ' + MAX_TEXT_CHARS + ' chars';
+  }
+
+  function swapCompareSides() {
+    var a = state.compareTextA || '';
+    var b = state.compareTextB || '';
+    state.compareTextA = b;
+    state.compareTextB = a;
+    /* Also swap the cached comparison so the previous diff still
+       matches the visible inputs. Inverting segments swaps ins/del. */
+    if (state.lastCompare && Array.isArray(state.lastCompare.segments)) {
+      var inverted = state.lastCompare.segments.map(function (seg) {
+        if (seg.type === 'ins') return { type: 'del', text: seg.text };
+        if (seg.type === 'del') return { type: 'ins', text: seg.text };
+        return seg;
+      });
+      state.lastCompare = {
+        a: state.compareTextA,
+        b: state.compareTextB,
+        summary: summarizeDiff(state.compareTextA, state.compareTextB, inverted),
+        segments: inverted
+      };
+    }
+    saveState(state);
+    syncCompareInputs();
+    if (state.lastCompare) {
+      renderCompareResult(state.lastCompare);
+    }
+    toast('Swapped Text A and Text B.');
+  }
+
+  function useLastResultIntoSide(sideKey) {
+    /* "Last Result" = the most recent AI transformation's first
+       section body. If there isn't one, fall back to the user's
+       current single-input text so the button is never a dead end. */
+    var text = '';
+    if (state.lastOutput && Array.isArray(state.lastOutput.sections) && state.lastOutput.sections.length) {
+      text = state.lastOutput.sections[0].body || '';
+    }
+    if (!text) text = state.text || '';
+    if (!text) {
+      setStatus('No Last Result yet — run any other Studio card first.', true);
+      return;
+    }
+    text = String(text).slice(0, MAX_TEXT_CHARS);
+    if (sideKey === 'a') state.compareTextA = text;
+    else state.compareTextB = text;
+    saveState(state);
+    syncCompareInputs();
+    setStatus('');
+    toast('Filled ' + (sideKey === 'a' ? 'Text A' : 'Text B') + ' from your last result.');
+  }
+
+  function runComparison() {
+    /* Pro gate — Compare Texts is a Pro card, mirror the same pattern
+       runTransformation uses for the other Pro modes so the upsell
+       experience is consistent. */
+    if (!isPro()) {
+      try { openUpgradeModal(); } catch (_) {}
+      return;
+    }
+    var a = (state.compareTextA || '').trim();
+    var b = (state.compareTextB || '').trim();
+    if (!a && !b) {
+      setStatus('Paste text into both Text A and Text B, then tap Compare Texts.', true);
+      return;
+    }
+    if (!a || !b) {
+      setStatus('Both sides need text — fill in ' + (a ? 'Text B' : 'Text A') + ' to compare.', true);
+      return;
+    }
+    if (a === b) {
+      var identical = {
+        a: a, b: b,
+        segments: [{ type: 'eq', text: a }],
+        summary: {
+          headline: 'These two texts are identical.',
+          stats: [
+            { label: 'Length Delta', value: '0 chars' },
+            { label: 'Words Added', value: '0' },
+            { label: 'Words Removed', value: '0' }
+          ],
+          notes: []
+        }
+      };
+      state.lastCompare = identical;
+      saveState(state);
+      setStatus('');
+      renderCompareResult(identical);
+      return;
+    }
+    /* Show the loading skeleton briefly so the transition is consistent
+       with the rest of the studio. The diff is synchronous and fast,
+       but using the same skeleton keeps the visual language uniform. */
+    renderLoadingState();
+    setStatus('');
+    /* Defer to the next microtask so the skeleton paints before we
+       block the main thread on the LCS pass. */
+    setTimeout(function () {
+      var segments;
+      try {
+        segments = computeWordDiff(a, b);
+      } catch (err) {
+        try { console.warn('[pmg-text-studio] compare failed:', err); } catch (_) {}
+        renderErrorState('Could not compare these two texts. Try shorter inputs.');
+        return;
+      }
+      var summary = summarizeDiff(a, b, segments);
+      var result = { a: a, b: b, segments: segments, summary: summary };
+      state.lastCompare = result;
+      saveState(state);
+      renderCompareResult(result);
+    }, 16);
+  }
+
+  /* ----- Diff engine: word-level LCS with a simple tokenizer that
+     keeps separator runs (whitespace + punctuation) attached to words
+     so reconstructed text stays readable. We tokenize each side into
+     ["chunk", "chunk", …] where each chunk is a word followed by any
+     trailing whitespace/punctuation; the LCS then aligns chunks
+     across the two sides. Inputs over COMPARE_DIFF_WORD_CAP tokens
+     are trimmed and a "(truncated)" marker is appended.
+  ----- */
+  function tokenizeForDiff(s) {
+    if (!s) return [];
+    /* Match: word characters (letters/digits/underscore + apostrophes),
+       followed by trailing whitespace/punctuation runs. Anything left
+       over (e.g. leading punctuation) becomes its own token. */
+    var re = /[A-Za-z0-9_'’]+[\s.,;:!?\-—–"()\[\]{}]*|[\s.,;:!?\-—–"()\[\]{}]+/g;
+    var out = s.match(re) || [];
+    if (out.length > COMPARE_DIFF_WORD_CAP) {
+      out = out.slice(0, COMPARE_DIFF_WORD_CAP);
+      out.push(' …(truncated)');
+    }
+    return out;
+  }
+
+  function computeWordDiff(a, b) {
+    var aTok = tokenizeForDiff(a);
+    var bTok = tokenizeForDiff(b);
+    var n = aTok.length;
+    var m = bTok.length;
+
+    /* Build LCS length table using Uint16Array for memory. n,m ≤ cap+1.
+       Cell (i,j) = LCS length of aTok[0..i] vs bTok[0..j]. */
+    var w = m + 1;
+    var dp = new Uint16Array((n + 1) * w);
+    var i, j, idx;
+    for (i = 1; i <= n; i++) {
+      var rowBase = i * w;
+      var prevBase = (i - 1) * w;
+      var ai = aTok[i - 1];
+      for (j = 1; j <= m; j++) {
+        idx = rowBase + j;
+        if (ai === bTok[j - 1]) {
+          dp[idx] = dp[prevBase + (j - 1)] + 1;
+        } else {
+          var up = dp[prevBase + j];
+          var left = dp[idx - 1];
+          dp[idx] = up >= left ? up : left;
+        }
+      }
+    }
+
+    /* Backtrack to produce a flat segment list. We coalesce adjacent
+       segments of the same type so the rendered output isn't a stream
+       of one-word spans. */
+    var segs = [];
+    function push(type, text) {
+      if (!text) return;
+      var last = segs[segs.length - 1];
+      if (last && last.type === type) last.text += text;
+      else segs.push({ type: type, text: text });
+    }
+    i = n; j = m;
+    var rev = [];
+    while (i > 0 && j > 0) {
+      if (aTok[i - 1] === bTok[j - 1]) {
+        rev.push({ type: 'eq', text: aTok[i - 1] });
+        i--; j--;
+      } else {
+        var up2 = dp[(i - 1) * w + j];
+        var left2 = dp[i * w + (j - 1)];
+        if (up2 >= left2) {
+          rev.push({ type: 'del', text: aTok[i - 1] });
+          i--;
+        } else {
+          rev.push({ type: 'ins', text: bTok[j - 1] });
+          j--;
+        }
+      }
+    }
+    while (i > 0) { rev.push({ type: 'del', text: aTok[i - 1] }); i--; }
+    while (j > 0) { rev.push({ type: 'ins', text: bTok[j - 1] }); j--; }
+    for (var k = rev.length - 1; k >= 0; k--) push(rev[k].type, rev[k].text);
+    return segs;
+  }
+
+  function summarizeDiff(a, b, segments) {
+    var lenA = a.length;
+    var lenB = b.length;
+    var delta = lenB - lenA;
+    var deltaStr = (delta > 0 ? '+' : '') + delta + ' chars';
+
+    var wordsA = a.trim() ? a.trim().split(/\s+/).length : 0;
+    var wordsB = b.trim() ? b.trim().split(/\s+/).length : 0;
+
+    var addedWords = 0, removedWords = 0;
+    segments.forEach(function (seg) {
+      if (seg.type === 'eq') return;
+      var w = (seg.text.match(/[A-Za-z0-9_'’]+/g) || []).length;
+      if (seg.type === 'ins') addedWords += w;
+      else if (seg.type === 'del') removedWords += w;
+    });
+
+    var paragraphsA = a.split(/\n\s*\n/).filter(function (p) { return p.trim(); }).length;
+    var paragraphsB = b.split(/\n\s*\n/).filter(function (p) { return p.trim(); }).length;
+    var paraDelta = paragraphsB - paragraphsA;
+
+    /* Plain-language headline. Prefer the most informative framing
+       (length, then content churn, then "small edits"). */
+    var headline;
+    var pctChange = wordsA ? Math.round((Math.abs(wordsB - wordsA) / wordsA) * 100) : (wordsB > 0 ? 100 : 0);
+    if (wordsA === 0 && wordsB === 0) {
+      headline = 'Both sides are empty.';
+    } else if (delta > 0 && pctChange >= 15) {
+      headline = 'Text B is noticeably longer — about ' + pctChange + '% more words than Text A.';
+    } else if (delta < 0 && pctChange >= 15) {
+      headline = 'Text B is noticeably shorter — about ' + pctChange + '% fewer words than Text A.';
+    } else if (addedWords + removedWords === 0) {
+      headline = 'No word-level changes detected (only whitespace or punctuation differs).';
+    } else if (addedWords > 0 && removedWords > 0) {
+      headline = 'Similar length, but the wording was reworked: ' + removedWords + ' word' + (removedWords === 1 ? '' : 's') + ' removed and ' + addedWords + ' added.';
+    } else if (addedWords > 0) {
+      headline = 'Text B mostly adds new content (' + addedWords + ' new word' + (addedWords === 1 ? '' : 's') + ').';
+    } else {
+      headline = 'Text B mostly trims content (' + removedWords + ' word' + (removedWords === 1 ? '' : 's') + ' removed).';
+    }
+
+    /* Optional notes: paragraph delta + simple tone hint. The tone
+       hint is intentionally lightweight — it only fires when one
+       side has a clearly higher density of exclamation marks or
+       second-person address than the other. */
+    var notes = [];
+    if (paraDelta !== 0) {
+      notes.push((paraDelta > 0 ? '+' : '') + paraDelta + ' paragraph' + (Math.abs(paraDelta) === 1 ? '' : 's') + ' overall (A: ' + paragraphsA + ' → B: ' + paragraphsB + ').');
+    }
+    var toneA = toneSignal(a);
+    var toneB = toneSignal(b);
+    if (toneA !== toneB) {
+      var nice = { exclaim: 'more energetic / exclamatory', you: 'more direct (more "you/your")', neutral: 'more neutral' };
+      notes.push('Tone hint: Text A reads ' + nice[toneA] + ', Text B reads ' + nice[toneB] + '.');
+    }
+
+    var stats = [
+      { label: 'Length Delta', value: deltaStr },
+      { label: 'Words A → B', value: wordsA + ' → ' + wordsB },
+      { label: 'Words Added', value: String(addedWords) },
+      { label: 'Words Removed', value: String(removedWords) }
+    ];
+    if (paragraphsA || paragraphsB) {
+      stats.push({ label: 'Paragraphs', value: paragraphsA + ' → ' + paragraphsB });
+    }
+    return { headline: headline, stats: stats, notes: notes };
+  }
+
+  function toneSignal(s) {
+    if (!s) return 'neutral';
+    var len = s.length || 1;
+    var exclaims = (s.match(/!/g) || []).length;
+    var youHits = (s.match(/\b(you|your|yours|you're|youre)\b/gi) || []).length;
+    var per1k = function (n) { return (n / len) * 1000; };
+    if (per1k(exclaims) >= 1.5) return 'exclaim';
+    if (per1k(youHits) >= 5) return 'you';
+    return 'neutral';
+  }
+
+  function renderCompareEmptyState() {
+    var wrap = document.getElementById('pmg-ts-output');
+    if (!wrap) return;
+    setOutputWrapVisible(wrap);
+    wrap.setAttribute(OUTPUT_STATE_ATTR, 'empty');
+    wrap.innerHTML = [
+      '<div class="pmg-ts-empty" role="note">',
+      '  <div class="pmg-ts-empty-icon" aria-hidden="true">🔀</div>',
+      '  <p class="pmg-ts-empty-title">Your Side-By-Side Diff Will Appear Here</p>',
+      '  <p class="pmg-ts-empty-text">Drop two versions of a text into Text A and Text B above, then tap Compare Texts. We will highlight added words in green, removed words in red, and write a plain-language summary of what changed.</p>',
+      '</div>'
+    ].join('');
+  }
+
+  function renderCompareResult(result) {
+    var wrap = document.getElementById('pmg-ts-output');
+    if (!wrap || !result) return;
+    setOutputWrapVisible(wrap);
+    wrap.setAttribute(OUTPUT_STATE_ATTR, 'result');
+    wrap.innerHTML = '';
+
+    /* --- Header --- */
+    var head = document.createElement('div');
+    head.className = 'pmg-ts-output-head';
+    var headTitle = document.createElement('h3');
+    headTitle.className = 'pmg-ts-output-title';
+    headTitle.textContent = 'Compare Texts — Output';
+    var headMeta = document.createElement('p');
+    headMeta.className = 'pmg-ts-output-meta';
+    headMeta.textContent = result.summary.stats.length + ' stat' + (result.summary.stats.length === 1 ? '' : 's') + ' · 2 sections';
+    head.appendChild(headTitle);
+    head.appendChild(headMeta);
+    wrap.appendChild(head);
+
+    /* --- Section 1: Difference Summary --- */
+    var sumCard = document.createElement('div');
+    sumCard.className = 'pmg-ts-compare-summary-card';
+    var sumH = document.createElement('h4');
+    sumH.textContent = 'Difference Summary';
+    sumCard.appendChild(sumH);
+    var sumP = document.createElement('p');
+    sumP.className = 'pmg-ts-compare-summary-text';
+    sumP.textContent = result.summary.headline;
+    sumCard.appendChild(sumP);
+    if (result.summary.notes && result.summary.notes.length) {
+      result.summary.notes.forEach(function (n) {
+        var p = document.createElement('p');
+        p.className = 'pmg-ts-compare-summary-text';
+        p.textContent = n;
+        sumCard.appendChild(p);
+      });
+    }
+    var statsRow = document.createElement('div');
+    statsRow.className = 'pmg-ts-compare-summary-stats';
+    result.summary.stats.forEach(function (st) {
+      var pill = document.createElement('span');
+      pill.className = 'pmg-ts-compare-stat';
+      pill.textContent = st.label + ': ' + st.value;
+      statsRow.appendChild(pill);
+    });
+    sumCard.appendChild(statsRow);
+    wrap.appendChild(sumCard);
+
+    /* --- Section 2: Side-By-Side Diff --- */
+    var diffCard = document.createElement('div');
+    diffCard.className = 'pmg-ts-diff-card';
+    var diffH = document.createElement('h4');
+    diffH.textContent = 'Side-By-Side Diff';
+    diffCard.appendChild(diffH);
+
+    var grid = document.createElement('div');
+    grid.className = 'pmg-ts-diff-grid';
+
+    grid.appendChild(buildDiffPane('Text A', renderDiffSideHtml(result.segments, 'a')));
+    grid.appendChild(buildDiffPane('Text B', renderDiffSideHtml(result.segments, 'b')));
+    diffCard.appendChild(grid);
+    wrap.appendChild(diffCard);
+
+    /* --- Controls: Copy Summary, Copy Diff, Clear --- */
+    var controls = document.createElement('div');
+    controls.className = 'pmg-ts-output-controls';
+
+    var copySumBtn = document.createElement('button');
+    copySumBtn.type = 'button';
+    copySumBtn.className = 'pmg-ts-output-btn is-primary';
+    copySumBtn.innerHTML = '<span aria-hidden="true">📋</span> Copy Summary';
+    copySumBtn.addEventListener('click', function () {
+      var lines = [result.summary.headline];
+      (result.summary.notes || []).forEach(function (n) { lines.push(n); });
+      result.summary.stats.forEach(function (st) { lines.push('- ' + st.label + ': ' + st.value); });
+      copyTextToClipboard(lines.join('\n'));
+    });
+    controls.appendChild(copySumBtn);
+
+    var copyDiffBtn = document.createElement('button');
+    copyDiffBtn.type = 'button';
+    copyDiffBtn.className = 'pmg-ts-output-btn';
+    copyDiffBtn.innerHTML = '<span aria-hidden="true">📋</span> Copy Diff (Markdown)';
+    copyDiffBtn.addEventListener('click', function () {
+      var md = result.segments.map(function (seg) {
+        if (seg.type === 'eq') return seg.text;
+        if (seg.type === 'ins') return '{+' + seg.text + '+}';
+        return '[-' + seg.text + '-]';
+      }).join('');
+      copyTextToClipboard(md);
+    });
+    controls.appendChild(copyDiffBtn);
+
+    var clearBtn = document.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.className = 'pmg-ts-output-btn';
+    clearBtn.innerHTML = '<span aria-hidden="true">↩️</span> Clear Comparison';
+    clearBtn.addEventListener('click', function () {
+      state.lastCompare = null;
+      saveState(state);
+      renderCompareEmptyState();
+      toast('Cleared the comparison.');
+    });
+    controls.appendChild(clearBtn);
+
+    wrap.appendChild(controls);
+  }
+
+  function buildDiffPane(label, html) {
+    var pane = document.createElement('div');
+    pane.className = 'pmg-ts-diff-pane';
+    var lab = document.createElement('p');
+    lab.className = 'pmg-ts-diff-pane-label';
+    lab.textContent = label;
+    var body = document.createElement('div');
+    body.className = 'pmg-ts-diff-body';
+    body.innerHTML = html || '<span class="pmg-ts-diff-empty">(empty)</span>';
+    pane.appendChild(lab);
+    pane.appendChild(body);
+    return pane;
+  }
+
+  /* Render one side of the diff. side='a' shows equals + deletions
+     (struck through, red); side='b' shows equals + insertions (green).
+     This mirrors the standard side-by-side diff convention. */
+  function renderDiffSideHtml(segments, side) {
+    var out = [];
+    for (var i = 0; i < segments.length; i++) {
+      var seg = segments[i];
+      var safe = escapeHtml(seg.text);
+      if (seg.type === 'eq') {
+        out.push(safe);
+      } else if (seg.type === 'ins' && side === 'b') {
+        out.push('<span class="pmg-ts-diff-ins">' + safe + '</span>');
+      } else if (seg.type === 'del' && side === 'a') {
+        out.push('<span class="pmg-ts-diff-del">' + safe + '</span>');
+      }
+      /* Insertions are silent on side 'a'; deletions silent on side 'b'. */
+    }
+    return out.join('');
+  }
+
+  function copyTextToClipboard(text) {
+    var done = function () { toast('Copied to clipboard.'); };
+    var fail = function () { toast('Copy failed — long-press to copy manually.'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fail);
+    } else {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        done();
+      } catch (_) { fail(); }
+    }
+  }
+
   /* ------------------------------------------------------------------
    * Mount: insert the studio panel into .form-wrap, wrapped in a
    * `<section id="transform-studio">` so the top-nav "Transform Text
@@ -2667,12 +3584,17 @@
       wrapper.appendChild(panel);
     }
 
-    /* Reflect current state into the just-mounted DOM. */
+    /* Reflect current state into the just-mounted DOM. selectMode()
+       already renders the correct output for the current mode (the
+       compare result + summary when in compare mode, the AI output
+       otherwise), so we must NOT call renderOutput() unconditionally
+       afterwards — doing so would clobber a persisted compare result
+       on reload by re-rendering the standard transform empty/result
+       state in its place. */
     selectMode(state.selectedMode || MODES[0].id);
     updateCharCount();
     refreshActionButton();
     refreshLockIcons();
-    renderOutput();
 
     /* If the user landed on the page with #transform-studio in the
        URL (e.g. from another page or a shared link), scroll the
