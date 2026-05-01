@@ -78,7 +78,7 @@ test.describe("Command palette (⌘K) smoke @ mobile-360", () => {
     expect(summary.fixHits.length).toBeGreaterThan(0);
   });
 
-  test("Enter on a search result executes the command and closes the palette", async ({
+  test("Enter on a search result executes the command, closes the palette, and produces a real side effect", async ({
     page,
   }) => {
     /* Use the Modes group: Switch To Image Mode is always
@@ -99,23 +99,38 @@ test.describe("Command palette (⌘K) smoke @ mobile-360", () => {
       const first = items[0] as HTMLElement;
       return /image/i.test(first.textContent ?? "");
     });
-    /* The first result should be the Image-mode switch. Press
-       Enter and assert (a) the palette closes, (b) setMode was
-       called with 'image' (we observe via body class which
-       pmg-ux toggles in response). */
+    /* Snapshot whether body has the image-mode class BEFORE
+       Enter so we can assert a real toggle (cross-mode side
+       effect) afterwards. */
+    const beforeImageMode = await page.evaluate(() =>
+      document.body.classList.contains("image-mode"),
+    );
     await page.keyboard.press("Enter");
+    /* Palette must close (strong observable). */
     await expect(page.locator("#pmg-cmdk-backdrop")).toBeHidden();
-    /* setMode runs in setTimeout(0) after close — give it a
-       turn or two to settle. We only assert the palette closed
-       (the strong observable) since body-class behavior
-       depends on whether the workspace was already mounted. */
-    const finalState = await page.evaluate(() => {
-      const api = (window as unknown as {
-        __pmgCommandPalette: { isOpen: () => boolean };
-      }).__pmgCommandPalette;
-      return { open: api.isOpen() };
-    });
-    expect(finalState.open).toBe(false);
+    /* setMode runs in setTimeout(0) after close — wait up to
+       a couple seconds for body class to flip. We only assert
+       a STATE CHANGE relative to the pre-Enter snapshot, so
+       this works regardless of which mode the page started in. */
+    await page.waitForFunction(
+      (before) =>
+        document.body.classList.contains("image-mode") !== before,
+      beforeImageMode,
+      { timeout: 2000 },
+    );
+    const afterImageMode = await page.evaluate(() =>
+      document.body.classList.contains("image-mode"),
+    );
+    expect(afterImageMode).not.toBe(beforeImageMode);
+    /* Palette is fully closed too. */
+    const finalOpen = await page.evaluate(() =>
+      (
+        window as unknown as {
+          __pmgCommandPalette: { isOpen: () => boolean };
+        }
+      ).__pmgCommandPalette.isOpen(),
+    );
+    expect(finalOpen).toBe(false);
   });
 
   test("ArrowDown moves the active row, then Enter executes the new selection", async ({
