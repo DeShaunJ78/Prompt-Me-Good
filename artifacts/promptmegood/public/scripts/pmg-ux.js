@@ -9210,7 +9210,7 @@
       '<span class="pmg-callout-slim-icon" aria-hidden="true">✨</span>' +
       '<span class="pmg-callout-slim-prompt">Not Sure Where To Start?</span>' +
       '<button type="button" class="pmg-callout-slim-primary" id="' + def.primary + '">Help Me Start →</button>' +
-      '<button type="button" class="pmg-callout-slim-secondary" id="' + def.skip + '" aria-expanded="false">or just start typing ↓</button>';
+      '<button type="button" class="pmg-callout-slim-secondary" id="' + def.skip + '" aria-expanded="false">Or Just Start Typing ↓</button>';
 
     var primary = document.getElementById(def.primary);
     if (primary) {
@@ -11034,7 +11034,7 @@
       '  <div data-account-state="signed-out">' +
       '    <p class="pmg-account-meta">Sign In To Save Prompts, Sync History, And Unlock Pro Features.</p>' +
       '    <div class="pmg-account-row">' +
-      '      <input type="email" id="' + EMAIL_INPUT_ID + '" placeholder="Enter Email" autocomplete="email" inputmode="email" />' +
+      '      <input type="email" id="' + EMAIL_INPUT_ID + '" placeholder="Email Address" autocomplete="email" inputmode="email" />' +
       '      <button type="button" id="' + SIGNIN_BTN_ID + '" class="pmg-account-btn">Send Login Link</button>' +
       '    </div>' +
       '  </div>' +
@@ -11818,8 +11818,8 @@
        This homepage CTA therefore points at Founding Member and is wired
        via data-pmg-tier="founding". */
     cta.innerHTML =
-      '<span><strong>Want Unlimited?</strong> Founding Member is a one-time $49 for lifetime access — unlimited runs, cloud sync, image analysis, and every future Pro feature.</span>' +
-      '<button type="button" class="btn btn-primary ' + BUTTON_CLASS + '" data-pmg-upgrade data-pmg-tier="founding">Become A Founding Member — $49 Lifetime</button>';
+      '<span><strong>Want Higher Limits?</strong> Founding Member is a one-time $59 for lifetime access to core features — higher Run With AI and image generation usage. Limited to the first 500 buyers. Fair use limits apply.</span>' +
+      '<a class="btn btn-primary ' + BUTTON_CLASS + '" href="./pricing.html#early-access">Join Founding Member Waitlist</a>';
     section.parentNode.insertBefore(cta, section);
     wireButtons();
   }

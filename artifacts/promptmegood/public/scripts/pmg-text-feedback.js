@@ -636,7 +636,7 @@
     /* Live preview pane */
     if (!data.goal) {
       refs.previewText.classList.add('pmg-tff-preview-empty');
-      refs.previewText.textContent = 'Type your goal above and your prompt will appear here.';
+      refs.previewText.textContent = 'Type Your Goal Above And Your Prompt Will Appear Here.';
     } else {
       refs.previewText.classList.remove('pmg-tff-preview-empty');
       refs.previewText.textContent = assembled;

@@ -781,7 +781,7 @@
     bar.innerHTML =
       '<span class="pmg-ab-tagbar-label" aria-hidden="true">🏷️ Auto-tagged:</span>' +
       '<span class="pmg-ab-tagbar-tags"></span>' +
-      '<input type="text" class="pmg-ab-tag-add" placeholder="+ add tag" aria-label="Add another tag (press Enter)" maxlength="24" />' +
+      '<input type="text" class="pmg-ab-tag-add" placeholder="+ Add Tag" aria-label="Add another tag (press Enter)" maxlength="24" />' +
       '<span class="pmg-ab-tagbar-actions">' +
         '<button type="button" class="pmg-ab-tagbar-btn" data-pmg-ab-tagbar="skip">Skip</button>' +
         '<button type="button" class="pmg-ab-tagbar-btn is-primary" data-pmg-ab-tagbar="confirm">Confirm</button>' +

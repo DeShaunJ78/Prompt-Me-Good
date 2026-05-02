@@ -360,9 +360,9 @@
       '<div class="pmg-upgrade-modal" role="dialog" aria-modal="true" aria-labelledby="pmg-upgrade-title">' +
         '<span class="pmg-upgrade-modal-icon" aria-hidden="true">🔒</span>' +
         '<h3 id="pmg-upgrade-title">' + safe + ' Is A Pro Feature</h3>' +
-        '<p>Unlock unlimited access to this feature, plus cloud sync, brand voice profiles, and every future Pro feature. Founding Member is a one-time $49 payment for lifetime access — no monthly bill, no renewal. Pro Monthly ($9/month) launches June 1, 2026.</p>' +
+        '<p>Unlock higher usage on this feature. Founding Member is a one-time $59 payment for lifetime access to core features — limited to the first 500 buyers. Pro Monthly ($19/month) launches June 1, 2026. Fair use limits apply.</p>' +
         '<div class="pmg-upgrade-modal-actions">' +
-          '<button type="button" class="pmg-upgrade-cta pmg-upgrade-btn" data-pmg-upgrade data-pmg-tier="founding">Become A Founding Member — $49 Lifetime</button>' +
+          '<a class="pmg-upgrade-cta pmg-upgrade-btn" href="./pricing.html#early-access">Join Founding Member Waitlist</a>' +
           '<a class="pmg-upgrade-cta-secondary" href="./pricing.html#early-access">Notify Me When Pro Launches</a>' +
           '<button type="button" class="pmg-upgrade-dismiss" id="pmg-upgrade-dismiss-btn">Maybe Later</button>' +
         '</div>' +
@@ -937,9 +937,14 @@
     try { decorateGatedButtons(); } catch (_) {}
     try { refreshDailyHints(); } catch (_) {}
     try { gateMoneyMode(); } catch (_) {}
-    try { addCloudSyncButton(); } catch (_) {}
-    try { addTeamExportButton(); } catch (_) {}
-    try { addBrandVoiceButton(); } catch (_) {}
+    /* Audit fix: Cloud Sync, Team Export, and Brand Voice Profiles
+       are not yet shipped to a publicly demonstrable state. Their
+       button injection is disabled so we do not advertise unshipped
+       features in the UI. Re-enable when the backing functionality
+       is real and verified. */
+    /* try { addCloudSyncButton(); } catch (_) {} */
+    /* try { addTeamExportButton(); } catch (_) {} */
+    /* try { addBrandVoiceButton(); } catch (_) {} */
   }
 
   function init() {
