@@ -14085,3 +14085,54 @@
   }
   setTimeout(init, 600);
 })();
+
+/* =====================================================================
+ * T97 — Most Loved Badge Clearance Fix
+ *
+ * Reported via screenshot: on narrow viewports, the gold "Most Loved"
+ * pill badge on the Help Me Start button (T24, with linear-flow.js
+ * override in text mode) was overlapping the first line of wrapped
+ * button text — the user saw "Help Me Start (Answer 4 Quic" with the
+ * "k" of "Quick" obscured.
+ *
+ * Cause: T24 sets the badge at top:-10px right:14px (height ~22px,
+ * so it dips ~12px INTO the button). linear-flow.js then overrides
+ * it to top:-7px in text mode (worse — dips ~15px into the button).
+ * On a single-line button this is invisible because text is centered,
+ * but when the button label wraps to two lines on narrow widths the
+ * top line of text sits exactly under the badge column.
+ *
+ * Fix (strictly additive, no IDs/classes/handlers changed): lift the
+ * badge so its bottom edge sits AT the button's top edge — no
+ * intrusion regardless of wrap state. Selector specificity bumped via
+ * duplicate class qualifier so it wins over the linear-flow
+ * `:not(.image-mode)` rule by source order tie-break.
+ * ===================================================================== */
+(function pmgT97MostLovedClearance() {
+  if (window.__pmgT97MostLovedClearanceInit) return;
+  window.__pmgT97MostLovedClearanceInit = true;
+
+  var STYLE_ID = 'pmg-t97-most-loved-clearance';
+
+  function apply() {
+    if (document.getElementById(STYLE_ID)) return;
+    if (!document.head) { setTimeout(apply, 50); return; }
+    var css = [
+      'body #pmg-help-me-start-btn.pmg-help-me-start-btn.pmg-help-me-start-btn .pmg-hms-most-loved.pmg-hms-most-loved {',
+      '  top: -22px !important;',
+      '  right: 10px !important;',
+      '}'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', apply, { once: true });
+  } else {
+    apply();
+  }
+  setTimeout(apply, 600);
+})();
