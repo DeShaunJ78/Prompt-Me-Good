@@ -909,22 +909,17 @@
   }
 
   function insertHelpMeStartLink() {
-    var generateBtn = document.getElementById('generateBtn');
-    if (!generateBtn) return;
-    if (document.getElementById('pmg-help-me-start-link')) return;
-    var link = document.createElement('button');
-    link.type = 'button';
-    link.id = 'pmg-help-me-start-link';
-    link.className = 'pmg-help-link';
-    link.textContent = 'Not Sure Where To Start? Let Us Help →';
-    link.addEventListener('click', function () {
-      var guided = document.getElementById('guided-mode-btn');
-      if (guided) guided.click();
-    });
-    var actionsRow = generateBtn.parentNode;
-    if (actionsRow && actionsRow.parentNode) {
-      actionsRow.parentNode.insertBefore(link, actionsRow.nextSibling);
-    }
+    /* Removed: this used to inject a secondary "Not Sure Where To
+       Start? Let Us Help →" link AFTER the Fix My Prompt button. It
+       caused friction — by the time the user reached it they had
+       already scrolled past the goal textarea, the upload field, and
+       the primary action row, and the link essentially asked them to
+       start over from the beginning. The slim Help Me Start callout
+       at the TOP of the column (T32 v2 in pmgT32SymmetricCallouts)
+       already covers this need in the right place. We also clean up
+       any link this function may have inserted in a previous session. */
+    var stale = document.getElementById('pmg-help-me-start-link');
+    if (stale && stale.parentNode) stale.parentNode.removeChild(stale);
   }
 
   function moveRandomPromptIntoSettings() {
@@ -9093,69 +9088,59 @@
       '  --pmg-on-primary: #ffffff;',
       '  --pmg-callout-divider: var(--color-border, #d9d9d9);',
       '}',
-      /* ===== Symmetric vertical callout (override T30's flex layout) ===== */
+      /* ===== T32 v2: SLIM single-row callout =====
+         Earlier T32 stacked Most-Loved badge + h3 + description +
+         full-width primary + "or" divider + full-width skip button
+         vertically. That ~250px block sat between the column header
+         and the goal textarea, forcing the user to scroll past a
+         "start over from the beginning" prompt to reach the actual
+         input. Users reported that as friction.
+         Slim it down to a single compact row that sits just above
+         the form: ✨ "Not sure where to start?"  [Help Me Start]
+         "or just start typing ↓". Keeps the same outer ids and the
+         same primary/skip button ids so T31's capture-phase skip
+         listener and Help Me Start dialog wiring keep working. ===== */
       '#pmg-text-help-row, #pmg-image-help-row {',
-      '  display: block !important;',
+      '  display: flex !important;',
+      '  flex-wrap: wrap;',
+      '  align-items: center;',
+      '  gap: 10px;',
       '  text-align: left;',
-      '  padding: var(--space-4) !important;',
+      '  padding: 8px 12px !important;',
+      '  margin: 0 0 var(--space-2) !important;',
+      '  background: color-mix(in srgb, var(--color-primary) 5%, transparent) !important;',
+      '  border: 1px dashed color-mix(in srgb, var(--color-primary) 28%, transparent) !important;',
+      '  border-radius: var(--radius-md, 8px) !important;',
       '}',
-      '.pmg-callout-badge {',
-      '  display: inline-block; margin: 0 0 8px;',
-      '  padding: 3px 10px; border-radius: 999px;',
-      '  background: var(--pmg-most-loved-bg);',
-      '  color: var(--pmg-most-loved-fg);',
-      '  font-size: 11px; font-weight: 800;',
-      '  letter-spacing: 0.04em; text-transform: uppercase;',
+      '.pmg-callout-slim-icon {',
+      '  font-size: 14px; line-height: 1; flex: 0 0 auto;',
       '}',
-      '.pmg-callout-title {',
-      '  margin: 0 0 4px; font-size: var(--text-lg);',
-      '  font-weight: 800; color: var(--color-text);',
+      '.pmg-callout-slim-prompt {',
+      '  font-size: var(--text-sm); color: var(--color-text-muted);',
+      '  flex: 1 1 auto; min-width: 0; line-height: 1.3;',
       '}',
-      '.pmg-callout-desc {',
-      '  margin: 0 0 var(--space-3); font-size: var(--text-sm);',
-      '  color: var(--color-text-muted); line-height: 1.4;',
-      '}',
-      /* Defensive !important on display/visibility because some legacy
-         rule in index.html's giant inline <style> block has been observed
-         to suppress this primary button at runtime. The other props can
-         remain low-specificity. */
-      '.pmg-callout-primary {',
-      '  display: block !important; visibility: visible !important;',
-      '  width: 100%; box-sizing: border-box;',
-      '  padding: 14px 22px; min-height: 52px;',
+      '.pmg-callout-slim-primary {',
+      '  display: inline-flex !important; align-items: center;',
+      '  padding: 6px 14px; min-height: 34px;',
       '  border-radius: var(--radius-full);',
       '  background: var(--color-primary) !important; color: var(--pmg-on-primary) !important;',
       '  border: 1.5px solid var(--color-primary);',
-      '  font-weight: 700; font-size: var(--text-base);',
-      '  cursor: pointer;',
-      '  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 22%, transparent);',
-      '  transition: filter 0.15s, transform 0.05s;',
+      '  font-weight: 700; font-size: var(--text-sm);',
+      '  cursor: pointer; white-space: nowrap;',
+      '  box-shadow: 0 2px 6px color-mix(in srgb, var(--color-primary) 20%, transparent);',
+      '  transition: filter 0.15s;',
       '}',
-      '.pmg-callout-primary:hover { filter: brightness(0.96); }',
-      '.pmg-callout-primary:active { transform: translateY(1px); }',
-      '.pmg-callout-or {',
-      '  display: flex; align-items: center; gap: var(--space-3);',
-      '  margin: 14px 0 10px;',
-      '  font-size: 11px; font-weight: 700;',
-      '  color: var(--color-text-muted); letter-spacing: 0.06em;',
-      '  text-transform: uppercase;',
+      '.pmg-callout-slim-primary:hover { filter: brightness(0.96); }',
+      '.pmg-callout-slim-secondary {',
+      '  background: none; border: none; padding: 4px 6px;',
+      '  color: var(--color-primary); font-size: 12.5px; font-weight: 600;',
+      '  text-decoration: underline; text-underline-offset: 3px;',
+      '  cursor: pointer; white-space: nowrap;',
       '}',
-      '.pmg-callout-or::before, .pmg-callout-or::after {',
-      '  content: ""; flex: 1 1 auto;',
-      '  height: 1px; background: var(--pmg-callout-divider);',
-      '}',
-      '.pmg-callout-secondary {',
-      '  display: block; width: 100%; padding: 10px 18px;',
-      '  background: transparent;',
-      '  border: 1.5px solid color-mix(in srgb, var(--color-primary) 35%, transparent);',
-      '  border-radius: var(--radius-full);',
-      '  color: var(--color-primary); font-weight: 700;',
-      '  font-size: var(--text-sm); cursor: pointer;',
-      '  text-align: center; text-decoration: none;',
-      '  transition: background 0.15s;',
-      '}',
-      '.pmg-callout-secondary:hover {',
-      '  background: color-mix(in srgb, var(--color-primary) 8%, transparent);',
+      '.pmg-callout-slim-secondary:hover { filter: brightness(0.92); }',
+      '@media (max-width: 600px) {',
+      '  #pmg-text-help-row, #pmg-image-help-row { gap: 6px; }',
+      '  .pmg-callout-slim-prompt { flex: 1 1 100%; }',
       '}',
 
       /* ===== T31 inline panel: clean attach below new vertical callout =====
@@ -9211,16 +9196,21 @@
     if (row.getAttribute('data-pmg-t32') === '1') return;
     row.setAttribute('data-pmg-t32', '1');
 
+    /* Slim layout: subtle helper row that lives just above the goal
+       textarea instead of a full-height "start over" wall. Same outer
+       id, same primary/skip button ids, so dialog wiring + T31 capture-
+       phase skip listener keep working unchanged. The full description
+       (def.desc) moves onto the primary button's title attribute via
+       setAttribute (auto-escaped) so hover users still get the long form. */
     row.innerHTML =
-      '<span class="pmg-callout-badge">★ Most Loved</span>' +
-      '<h3 class="pmg-callout-title">Help Me Start</h3>' +
-      '<p class="pmg-callout-desc">' + def.desc + '</p>' +
-      '<button type="button" class="pmg-callout-primary" id="' + def.primary + '">Help Me Start →</button>' +
-      '<div class="pmg-callout-or" aria-hidden="true">or</div>' +
-      '<button type="button" class="pmg-callout-secondary" id="' + def.skip + '" aria-expanded="false">I Know What I Want — Just Start Typing</button>';
+      '<span class="pmg-callout-slim-icon" aria-hidden="true">✨</span>' +
+      '<span class="pmg-callout-slim-prompt">Not Sure Where To Start?</span>' +
+      '<button type="button" class="pmg-callout-slim-primary" id="' + def.primary + '">Help Me Start →</button>' +
+      '<button type="button" class="pmg-callout-slim-secondary" id="' + def.skip + '" aria-expanded="false">or just start typing ↓</button>';
 
     var primary = document.getElementById(def.primary);
     if (primary) {
+      primary.setAttribute('title', def.desc);
       primary.addEventListener('click', function () {
         if (side === 'image') {
           if (typeof window.__pmgT30OpenImageWizard === 'function') {

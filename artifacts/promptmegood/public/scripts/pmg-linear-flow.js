@@ -41,14 +41,22 @@
       /* Force visual order via flex `order` so we are not at the mercy
          of T46/T24/polish/FIX-4 race conditions reordering #prompt-form
          children. Text-mode only.
-         T39 (Refocus): desired column flow is
+         Refocus v2 (user feedback: "the guided wizard isnt in a good
+         place flow wise. Its way too far down when it should be a subtle
+         options near the text box. its causing friction. Why would a
+         user work through most of the column to start completly over
+         from the beginning?"): move Help Me Start BEFORE the Goal
+         textarea so it reads as a "before you start" optional helper
+         instead of a "now go back and start over" footnote.
+
+         New column flow:
            eyebrow + headline (injected above by pmg-text-flow-v2.js)
+           → Help Me Start          (order 0)  ← moved up from 5
+           → Help Me Start helper   (order 0)  ← moved up from 6 (DOM order keeps it after the btn)
            → Goal textarea          (order 1)
            → Prompt Tuning          (order 2, #settingsPanel)
            → primary action row     (order 3, #tour-step-generate)
            → upload file            (order 4, secondary)
-           → Help Me Start          (order 5)
-           → Help Me Start helper   (order 6)
            → post-UC guidance       (order 7)
            → everything else        (order 9, catch-all)         */
       'body:not(.image-mode) #prompt-form {',
@@ -56,13 +64,47 @@
       '  flex-direction: column !important;',
       '}',
       'body:not(.image-mode) #prompt-form > * { order: 9; }',
+      'body:not(.image-mode) #prompt-form > #pmg-help-me-start-btn { order: 0; }',
+      'body:not(.image-mode) #prompt-form > #pmg-hms-helper { order: 0; }',
       'body:not(.image-mode) #prompt-form > .field.field-primary { order: 1; }',
       'body:not(.image-mode) #prompt-form > #settingsPanel { order: 2; }',
       'body:not(.image-mode) #prompt-form > #tour-step-generate { order: 3; }',
       'body:not(.image-mode) #prompt-form > #upload-field { order: 4; }',
-      'body:not(.image-mode) #prompt-form > #pmg-help-me-start-btn { order: 5; }',
-      'body:not(.image-mode) #prompt-form > #pmg-hms-helper { order: 6; }',
       'body:not(.image-mode) #prompt-form > #post-uc-guidance { order: 7; }',
+
+      /* Slim-at-top override for Help Me Start. T24 paints it as a
+         56px tall full-width pill with a "Most Loved" corner badge —
+         that styling was right when the button sat below Fix My Prompt
+         as a "do this if you got stuck" rescue. At the top of the
+         column, above the Goal textarea, it needs to be a subtle
+         optional helper instead of a competing primary call-to-action,
+         so the textarea remains the obvious focus. */
+      'body:not(.image-mode) #pmg-help-me-start-btn.pmg-help-me-start-btn {',
+      '  min-height: 38px !important;',
+      '  padding: 6px 14px !important;',
+      '  font-size: var(--text-sm, 14px) !important;',
+      '  font-weight: 600 !important;',
+      '  border-radius: var(--radius-full, 999px) !important;',
+      '  margin: 0 0 6px !important;',
+      '  width: auto !important;',
+      '  max-width: 100% !important;',
+      '  align-self: flex-start;',
+      '  box-shadow: 0 1px 3px color-mix(in srgb, var(--color-primary, #0f6e6a) 12%, transparent) !important;',
+      '}',
+      'body:not(.image-mode) #pmg-help-me-start-btn.pmg-help-me-start-btn .pmg-hms-most-loved {',
+      '  top: -7px !important;',
+      '  right: 8px !important;',
+      '  font-size: 9px !important;',
+      '  padding: 2px 6px !important;',
+      '  letter-spacing: 0.04em !important;',
+      '}',
+      'body:not(.image-mode) #pmg-hms-helper {',
+      '  margin: 0 0 12px !important;',
+      '  font-size: 12px !important;',
+      '  text-align: left !important;',
+      '  font-style: normal !important;',
+      '  color: var(--color-text-muted, #5f6b75) !important;',
+      '}',
 
       /* ---- Action row parity with Photography Suite ----
          Make #tour-step-generate look and behave like the Photo Suite's
@@ -315,14 +357,15 @@
   /* ---------------- Position Help Me Start ----------------
    * The "Help Me Start (Answer 4 Quick Questions)" button
    * (#pmg-help-me-start-btn) is created by setupHelpMeStartButton in
-   * pmg-ux.js. Its visual order is controlled by the flex `order: 5`
-   * rule above (after the action row at order:3 and upload at order:4).
-   * We still move it in the DOM to sit right after .field.field-primary
-   * so that tab-order and non-flex fallback rendering are correct.
+   * pmg-ux.js. Its visual order is controlled by the flex `order: 0`
+   * rule above (rendered before .field.field-primary at order:1).
+   * We also move it in the DOM to sit right BEFORE .field.field-primary
+   * so tab-order and non-flex fallback rendering match the visual order
+   * — i.e. Help Me Start, then Goal textarea, then everything else.
    *
-   * T39 column order (text mode):
-   *   Goal textarea (1) → Prompt Tuning (2) → Fix My Prompt row (3)
-   *   → Upload (4) → Help Me Start (5) → HMS helper (6)
+   * Refocus v2 column order (text mode):
+   *   Help Me Start (0) → HMS helper (0) → Goal textarea (1)
+   *   → Prompt Tuning (2) → Fix My Prompt row (3) → Upload (4)
    */
   function positionHelpMeStart() {
     /* Text mode only — image mode hides Help Me Start anyway. */
@@ -330,18 +373,23 @@
     var btn = document.getElementById('pmg-help-me-start-btn');
     var primaryField = document.querySelector('#prompt-form > .field.field-primary');
     if (!btn || !primaryField) return false;
-    if (btn.dataset.pmgLinearPositioned === '1' &&
-        btn.previousElementSibling === primaryField) {
+    var helper = document.getElementById('pmg-hms-helper');
+    /* Already correctly positioned? btn just before primaryField,
+       optionally with helper sandwiched between btn and primaryField. */
+    var expectedNext = helper ? helper : primaryField;
+    if (btn.dataset.pmgLinearPositioned === 'v2' &&
+        btn.nextElementSibling === expectedNext &&
+        (!helper || helper.nextElementSibling === primaryField)) {
       return true;
     }
-    var helper = document.getElementById('pmg-hms-helper');
-    /* Move btn to be the immediate next sibling of field-primary. */
+    /* Move btn to be the immediate previous sibling of field-primary,
+       and helper (if present) right after btn. */
     if (primaryField.parentNode) {
-      primaryField.parentNode.insertBefore(btn, primaryField.nextSibling);
+      primaryField.parentNode.insertBefore(btn, primaryField);
       if (helper && helper.parentNode) {
-        primaryField.parentNode.insertBefore(helper, btn.nextSibling);
+        primaryField.parentNode.insertBefore(helper, primaryField);
       }
-      btn.dataset.pmgLinearPositioned = '1';
+      btn.dataset.pmgLinearPositioned = 'v2';
     }
     return true;
   }
@@ -365,7 +413,17 @@
     var formObserver = new MutationObserver(function () {
       var btn = document.getElementById('pmg-help-me-start-btn');
       var primary = document.querySelector('#prompt-form > .field.field-primary');
-      if (!btn || !primary || btn.previousElementSibling === primary) return;
+      if (!btn || !primary) return;
+      var helper = document.getElementById('pmg-hms-helper');
+      /* Already correctly positioned? Either:
+         - btn -> primary  (helper not present), or
+         - btn -> helper -> primary  (full adjacency chain).
+         Anything else (incl. btn -> helper -> X -> primary) means
+         something inserted between helper and primary, so re-position. */
+      var ok = (helper && helper.parentNode === btn.parentNode)
+        ? (btn.nextElementSibling === helper && helper.nextElementSibling === primary)
+        : (btn.nextElementSibling === primary);
+      if (ok) return;
       btn.dataset.pmgLinearPositioned = '';
       positionHelpMeStart();
     });

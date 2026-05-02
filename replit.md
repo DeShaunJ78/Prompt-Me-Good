@@ -51,6 +51,7 @@ This is a static HTML AI prompt builder (`index.html`) using vanilla JavaScript 
 -   **Cost Protection:** In-memory `INJECTION_BLOCKLIST` and a daily $3 USD cost cap.
 -   **AI Frontend Client:** `window.__pmgAI` provides generate, refine, and image prompt functions with streaming-first fallback. `localStorage` caps apply per month.
 -   **Run With AI (Frontend):** Post-generation panel using `gpt-4o` responses. Streamer is defensive about non-SSE 200 responses (e.g. deploy gaps): it surfaces "AI service is temporarily unavailable" instead of leaving `#aiResponseOutput` empty (which would otherwise pin the box on its CSS `:empty::before` "Waiting for AI response…" placeholder forever).
+-   **Help Me Start (Guided Wizard) Placement:** `pmg-linear-flow.js` mounts `#pmg-help-me-start-btn` as flex `order: 0` inside `#prompt-form`, *above* the Goal textarea (`.field.field-primary`, order 1), and slims the T24 chunky 56px pill to a 38–40px content-width pill (`align-self: flex-start`). DOM order matches visual order via `positionHelpMeStart()` (insertBefore primaryField) so tab focus is correct. This keeps the wizard a subtle helper next to the textbox instead of a competing CTA below all the action cards.
 -   **Hero Usage Counter:** Displays combined prompt and run counts over 100.
 -   **Image Upload + Vision Analyze:** Allows uploading images for AI analysis via `/api/analyze` to describe content and fill the prompt textarea.
 -   **Paywall Switch (Open-Beta):** `isPaywallActive()` controlled by Replit Secrets.
