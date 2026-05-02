@@ -1,0 +1,33 @@
+I audited the Create A Text Prompt column as a full linear product flow, and the main problem is that the live page copy promises a very specific sequence, but the column appears to be breaking somewhere between input capture, generate action, result hydration, and refinement reuse. The adjacent column likely works because its state chain is intact, while this one appears to have a mismatch between what the UI says should happen and the likely event/state wiring underneath.
+
+Expected flow
+The page defines the text-prompt flow in this order: Type Your Goal in the top builder, optionally use Help Me Start, then Tap Fix My Prompt, then Refine The Result, then Run With AI or Copy Prompt. It also states that the generated output should appear in Your Fixed Prompt, that refinements should act on the current prompt, and that Undo should let users reverse a refinement without starting over.
+
+Audit findings
+The label and instructional copy are inconsistent: the hero/search result says Create A Text Prompt, while the walkthrough step says Tap Fix My Prompt, which suggests either an old CTA name or two separate handler paths that may not be pointing to the same function. The page also promises that Help Me Start will fill the builder, the strength pill will update as the user types, and the pinned/fixed prompt area will update after generation, so any one broken binding among input state, CTA click handler, output state, or prompt-refinement state would make this column fail end-to-end while the neighboring column still appears healthy.
+
+Replit ticket
+Send Replit this exact audit scope:
+
+Audit the Create A Text Prompt column only, top to bottom, as a single linear state machine: input field -> strength pill -> Help Me Start autofill -> generate CTA -> fixed prompt render -> input summary render -> refine pills -> undo -> copy -> run with AI -> vault save/restore.
+
+Confirm whether Create A Text Prompt and Fix My Prompt are the same action under two labels, or whether one label points to stale UI while the other points to the actual handler.
+
+Verify the main textarea is a controlled input and that the generate button reads the latest typed value rather than a stale closure, empty string, or previous prompt object.
+
+Verify generation success updates all dependent targets from one canonical source of truth: Your Fixed Prompt, Pinned Note, Your Input Summary, Refine Your Prompt, Copy Prompt, Run With AI, and Prompt Vault.
+
+Verify refine pills mutate the latest generated prompt, not the original raw input, and that Undo restores the prior generated prompt version rather than clearing the state.
+
+Verify Help Me Start writes into the same source state used by manual typing and generation, not a separate preview field.
+
+Verify keyboard shortcuts mentioned on the site, especially G to generate and C to copy, trigger the same handlers as the visible buttons in this column.
+
+Check for duplicate IDs, overlapping z-index layers, disabled pointer events, or mobile-only/desktop-only wrappers that could block clicks in this column while leaving the adjacent column unaffected.
+
+Most likely root causes
+The most likely bug is a split state path: the text area, generate CTA, and refinement/copy actions are not all reading from the same prompt object, even though the product copy says they should operate on one continuous current prompt. A close second is a stale CTA refactor, where the UI still says Create A Text Prompt but the actual business logic is still wired to an older Fix My Prompt action name or selector. A third likely issue is that post-generation rendering is incomplete, so the prompt may be returned but never propagated to the fixed prompt panel, refine controls, and downstream actions.
+
+Acceptance criteria
+The column is fixed only when this exact sequence works every time: user types a goal, strength pill updates, Help Me Start can populate the field, generate produces a structured prompt, the prompt appears in Your Fixed Prompt, refine pills transform that same prompt, Undo restores the previous version, Copy Prompt copies the latest version, Run With AI uses the same latest version, and the result is saved/restorable from the vault. If Replit can prove those actions all read and write to one canonical prompt state, the broken column should behave like the neighboring one that already works.
+
