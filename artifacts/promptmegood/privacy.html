@@ -13,15 +13,15 @@
     })();
   </script>
   <title>Privacy Policy — PromptMeGood</title>
-  <meta name="description" content="How PromptMeGood handles your data. Local-first, no accounts, your prompts and images are never sold or shared with advertisers." />
+  <meta name="description" content="How PromptMeGood handles your data. Local-first by default, optional account for Founding Members and cloud sync, processed payments via Stripe, never sold or used to train AI." />
   <meta property="og:title" content="Privacy Policy — PromptMeGood" />
-  <meta property="og:description" content="Local-first by design. No accounts, no data sales. See exactly what stays on your device and what is sent to AI providers." />
+  <meta property="og:description" content="Local-first by default. Optional account for Founding Members. Payments via Stripe. We never sell your data and never train AI on your inputs." />
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://www.promptmegood.com/privacy.html" />
   <meta property="og:image" content="https://www.promptmegood.com/opengraph.jpg?v=5" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Privacy Policy — PromptMeGood" />
-  <meta name="twitter:description" content="Local-first by design. No accounts, no data sales." />
+  <meta name="twitter:description" content="Local-first. Optional account. Payments via Stripe. No data sales, no AI training on your inputs." />
   <meta name="twitter:image" content="https://www.promptmegood.com/opengraph.jpg?v=5" />
   <link rel="canonical" href="https://www.promptmegood.com/privacy.html" />
   <meta name="robots" content="index,follow" />
@@ -127,25 +127,59 @@
     <div class="container">
       <article class="legal-card">
         <h1>Privacy Policy</h1>
-        <p class="legal-meta">Last updated: April 28, 2026.</p>
-        <p><strong>What stays on your device.</strong> PromptMeGood is a single-page tool that runs primarily in your browser. Your prompt history, templates, favorites, tags, notes, theme preference, Photography Suite picks, and other settings are stored locally on your device using your browser's localStorage. We do not maintain user accounts and we do not keep a permanent copy of your saved prompts on our servers.</p>
-        <p><strong>What gets sent to AI providers.</strong> When you use an AI-powered feature &mdash; including <em>Fix My Prompt</em>, <em>Run With AI</em>, <em>Help Me Start</em>, <em>Need Ideas</em>, <em>Photography Suite &rarr; Send To Image Generator</em>, file analysis, or image generation (DALL·E 3) &mdash; your submitted text, photo-suite selections, and any uploaded content are sent securely over HTTPS to our AI service providers (such as OpenAI) to process your request. Files, prompts, photo briefs, and generated images are not permanently stored on our servers beyond what is required to fulfill your request and return the result to you. AI providers may retain inputs and outputs in accordance with their own privacy policies.</p>
-        <p><strong>What we never do.</strong> We do not sell your data. We do not share your prompts, files, photo briefs, or images with advertisers. We do not require you to create an account to use the app. We do not train AI models on your data.</p>
-        <p><strong>Pseudonymous usage analytics &amp; session insights.</strong> We use <a href="https://clarity.microsoft.com/" target="_blank" rel="noopener noreferrer">Microsoft Clarity</a> to understand de-identified, aggregated usage patterns so we can improve the experience. Clarity assigns a session identifier rather than collecting your name or contact details, but because session replay and device/IP-derived metadata are involved, this data is best described as <em>pseudonymous</em> rather than fully anonymous. It includes:</p>
+        <p class="legal-meta">Last updated: May 2, 2026.</p>
+
+        <p><strong>The short version.</strong> PromptMeGood is local-first by default. The free tier requires no account and stores your prompts in your browser. If you buy Founding Member access or turn on cloud sync, you create an account and a small profile is stored on our servers. We never sell your data, never share it with advertisers, and never use your inputs to train AI models. Payments are processed by Stripe — we never see your card details.</p>
+
+        <p><strong>1. What stays on your device (free tier).</strong> Your prompt history, vault, templates, favorites, tags, notes, theme preference, Photography Suite picks, and other in-app settings are stored locally in your browser using localStorage. We do not require an account to use the free tier and we do not keep a copy of free-tier prompts on our servers.</p>
+
+        <p><strong>2. What gets sent to AI providers when you use AI features.</strong> When you use <em>Fix My Prompt</em>, <em>Run With AI</em>, <em>Help Me Start</em>, <em>Need Ideas</em>, <em>Photography Suite &rarr; Send To Image Generator</em>, file analysis, or image generation (DALL·E 3), your submitted text, photo-suite selections, and any uploaded content are sent securely over HTTPS to our AI service providers (such as OpenAI) to process your request. Inputs and outputs are not permanently stored on PromptMeGood's servers beyond what is required to fulfil your request. AI providers may retain inputs and outputs in accordance with their own privacy policies (see <a href="https://openai.com/policies/privacy-policy" target="_blank" rel="noopener noreferrer">OpenAI's Privacy Policy</a>). We do not use your inputs to train AI models, and we have configured our API access so that our provider does not train on them either.</p>
+
+        <p><strong>3. When you create an account or buy Founding Member access.</strong> An account is optional and only needed to (a) purchase Founding Member ($49 lifetime), (b) subscribe to Pro Monthly when it launches, or (c) use Cloud Vault to sync your prompts across devices. Authentication is handled by <a href="https://supabase.com/" target="_blank" rel="noopener noreferrer">Supabase</a>. When you sign up, we store on our servers:</p>
+        <ul>
+          <li>Your email address (used to sign in and to attach your plan to your account).</li>
+          <li>Your plan status (<code>free</code>, <code>pro</code>, or <code>founding</code>).</li>
+          <li>A Supabase user ID and (if applicable) a Stripe customer ID, used to keep your purchase tied to your account.</li>
+          <li>Optional profile fields you choose to add (such as a display name or avatar).</li>
+          <li>If you signed in with Google, the basic profile information Google shares (email, name, profile photo URL).</li>
+        </ul>
+        <p>You can sign out at any time, and you can request deletion of your account and associated data by emailing <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>. Deleting your account does not automatically refund a Founding Member purchase — see our <a href="/terms.html">Terms of Service</a> for refund policy.</p>
+
+        <p><strong>4. Payments (Stripe).</strong> Founding Member purchases and (when launched) Pro Monthly subscriptions are processed by <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer">Stripe</a>. We never see, handle, or store your full credit-card number, CVV, or bank account details — Stripe collects those directly. Stripe sends us a confirmation that includes your email, the amount charged, the plan you bought, a Stripe customer ID, and a checkout session ID. We use that information to mark your account as a paid member and to provide receipts and customer support. Stripe's own privacy practices apply to anything they collect; review their policy for details.</p>
+
+        <p><strong>5. Cloud Vault (signed-in users only).</strong> If you turn on Cloud Vault, the prompts you choose to save are stored on our servers (Supabase) so you can access them from any signed-in device. Cloud Vault is opt-in. You can export your saved prompts to a file at any time, or delete individual entries (or your entire vault) from inside the app. Deleted entries are removed from our database; backups are rotated on a rolling basis and any residual copies are removed within 30 days.</p>
+
+        <p><strong>6. Email collection (early-access list &amp; updates).</strong> If you submit your email through the "Join PRO Early Access" form on the pricing page or the "Want better prompts in your inbox?" form on the home page, your email is sent to a third-party form handler (<a href="https://formsubmit.co/" target="_blank" rel="noopener noreferrer">FormSubmit.co</a>) and forwarded to us. We use it only to notify you when PRO opens up or to send occasional product updates. You can unsubscribe at any time by replying to any email or by emailing <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.</p>
+
+        <p><strong>7. What we never do.</strong> We do not sell your personal data. We do not share your prompts, files, photo briefs, generated images, or vault contents with advertisers or data brokers. We do not run third-party advertising on the site. We do not use your inputs to train AI models.</p>
+
+        <p><strong>8. Pseudonymous usage analytics.</strong> We use <a href="https://clarity.microsoft.com/" target="_blank" rel="noopener noreferrer">Microsoft Clarity</a> to understand de-identified, aggregated usage patterns so we can improve the experience. Clarity assigns a session identifier rather than collecting your name or contact details, but because session replay and device/IP-derived metadata are involved, this data is best described as <em>pseudonymous</em> rather than fully anonymous. It includes:</p>
         <ul>
           <li><strong>Click and scroll behavior</strong> &mdash; which buttons are tapped and how far people scroll on each page (heatmaps).</li>
-          <li><strong>Anonymized session recordings</strong> &mdash; a replay of mouse movement, taps, and page navigation. Clarity automatically masks form fields and text inputs, so the contents of your goal field, generated prompts, and any text you type are <strong>not</strong> captured.</li>
+          <li><strong>Masked session recordings</strong> &mdash; a replay of mouse movement, taps, and page navigation. Clarity automatically masks form fields and text inputs, so the contents of your goal field, generated prompts, and any text you type are <strong>not</strong> captured.</li>
           <li><strong>Frustration signals</strong> &mdash; aggregate counts of rage clicks, dead clicks, and quick page exits, used to find broken or confusing UI.</li>
           <li><strong>Approximate location, device, browser, and IP-derived metadata</strong> &mdash; collected by Clarity for analytics. We do not use IP addresses to personally identify you.</li>
         </ul>
         <p>You can opt out of Microsoft Clarity collection across the web at <a href="https://privacy.microsoft.com/" target="_blank" rel="noopener noreferrer">privacy.microsoft.com</a>, or by enabling Do Not Track / a tracker-blocking extension in your browser.</p>
-        <p><strong>Cookies &amp; local storage.</strong> We use a small number of first-party cookies and localStorage keys to remember your theme accent, light/dark preference, vault data, and analytics session. We do not use third-party advertising cookies.</p>
-        <p><strong>You're in control.</strong> You can export, import, or clear your saved data at any time from the Prompt Vault section. Clearing your browser storage will remove everything PromptMeGood has saved on your device.</p>
-        <p><strong>Your privacy rights (GDPR / UK GDPR / CCPA).</strong> Because PromptMeGood does not maintain user accounts, the only personal-ish data we typically hold about you is the pseudonymous Microsoft Clarity session metadata described above. If you are in the EU, UK, or California (or another jurisdiction with similar laws), you have the right to: (a) request access to any data we hold about you, (b) request correction or deletion, (c) object to or restrict processing, (d) data portability where applicable, and (e) lodge a complaint with your local data-protection authority. Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a> with your request and we'll respond within a reasonable timeframe (typically 30 days). To exercise the "Do Not Sell or Share My Personal Information" right under the CCPA: we already do not sell or share your personal information.</p>
-        <p><strong>Data retention.</strong> Locally stored data (your vault, history, picks, settings) stays on your device until you clear it. AI provider request logs are subject to those providers' retention policies (typically up to 30 days). Microsoft Clarity session data is retained per Clarity's defaults (typically up to 13 months).</p>
-        <p><strong>International transfers.</strong> Our AI providers and analytics vendor are based in the United States. By using PromptMeGood you understand that your inputs may be processed in the US under appropriate safeguards (such as Standard Contractual Clauses where required).</p>
-        <p><strong>Children.</strong> PromptMeGood is intended for users 13 and older. We do not knowingly collect personal information from children under 13. If you believe a child has provided us information, contact us and we will remove it.</p>
-        <p><strong>Changes to this policy.</strong> We may update this Privacy Policy from time to time. The "Last updated" date at the top reflects the most recent revision. Material changes will be highlighted in the app.</p>
+
+        <p><strong>9. Cookies &amp; local storage.</strong> We use a small number of first-party cookies and localStorage keys to remember your theme accent, light/dark preference, vault data, daily-limit counters, sign-in session (for signed-in users), and the Microsoft Clarity analytics session. We do not use third-party advertising cookies.</p>
+
+        <p><strong>10. You're in control.</strong> You can export, import, or clear your locally stored data at any time from the Prompt Vault section. Clearing your browser storage will remove everything PromptMeGood has saved on your device. Signed-in users can also delete cloud-synced prompts and request full account deletion via email.</p>
+
+        <p><strong>11. Your privacy rights (GDPR / UK GDPR / CCPA).</strong> If you are in the EU, UK, or California (or another jurisdiction with similar laws), you have the right to: (a) request access to any data we hold about you, (b) request correction or deletion, (c) object to or restrict processing, (d) data portability where applicable, and (e) lodge a complaint with your local data-protection authority. Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a> with your request and we will respond within a reasonable timeframe (typically 30 days). To exercise the "Do Not Sell or Share My Personal Information" right under the CCPA: we already do not sell or share your personal information.</p>
+
+        <p><strong>12. Data retention.</strong> Locally stored data (your vault, history, picks, settings) stays on your device until you clear it. Cloud Vault entries stay until you delete them or your account. Account records (email, plan, Stripe customer ID) are kept while your account is active and for up to 24 months after deletion to handle billing disputes, refunds, and legal obligations. Stripe payment records are retained per Stripe's policies and tax-record requirements (typically 7 years). AI provider request logs are subject to those providers' retention policies (typically up to 30 days). Microsoft Clarity session data is retained per Clarity's defaults (typically up to 13 months).</p>
+
+        <p><strong>13. Sub-processors.</strong> The third parties we share data with to operate the service are: <strong>OpenAI</strong> (AI inference for prompt features and DALL·E 3 image generation), <strong>Stripe</strong> (payment processing for Founding Member and Pro), <strong>Supabase</strong> (authentication, account profiles, and Cloud Vault storage), <strong>Microsoft Clarity</strong> (pseudonymous analytics), and <strong>FormSubmit.co</strong> (email-form delivery for the early-access and newsletter forms). We may add or change sub-processors over time; material changes will be reflected in this policy.</p>
+
+        <p><strong>14. International transfers.</strong> Our sub-processors are primarily based in the United States. By using PromptMeGood you understand that your inputs and account data may be processed in the US under appropriate safeguards (such as Standard Contractual Clauses where required).</p>
+
+        <p><strong>15. Children.</strong> PromptMeGood is intended for users 13 and older. We do not knowingly collect personal information from children under 13. If you believe a child has provided us information, contact us and we will remove it.</p>
+
+        <p><strong>16. Security.</strong> We use industry-standard practices to protect your data — HTTPS for all traffic, hashed credentials handled by Supabase, and PCI-compliant payment processing handled by Stripe. No internet service can be guaranteed 100% secure; if we become aware of a security breach affecting your data, we will notify you and any required regulators in line with applicable law.</p>
+
+        <p><strong>17. Changes to this policy.</strong> We may update this Privacy Policy from time to time. The "Last updated" date at the top reflects the most recent revision. Material changes will be highlighted in the app.</p>
+
         <p>Questions or data requests? Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.</p>
         <div class="back-bottom"><a href="/">← Back to the App</a></div>
       </article>

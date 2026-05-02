@@ -2056,7 +2056,7 @@
     var section = document.getElementById('imageResultSection');
     if (!section) return;
     var meta = section.querySelector('.run-section-meta');
-    if (meta) meta.textContent = 'Created With DALL·E 3 · Free During Early Access';
+    if (meta) meta.textContent = 'Created With DALL·E 3 · Free tier: 1 image per day. Founding Member: unlimited.';
     var dl = document.getElementById('imageDownloadBtn');
     if (dl) dl.innerHTML = '⬇ Download Image';
     var again = document.getElementById('imageAgainBtn');
@@ -9983,7 +9983,7 @@
  *      (#pmg-t35-use-as-ref-desc — italic, centered, muted)
  *   2. "Download Will Activate Once Your Image Is Ready."
  *      (.pmg-t15-image-hint — left-aligned, default body color)
- *   3. "Created With DALL·E 3 · Free During Early Access"
+ *   3. "Created With DALL·E 3 · Free tier: 1 image per day. Founding Member: unlimited."
  *      (#imageResultSection .run-section-meta — small, muted)
  * The user wants them centered, uniformed, and intentional — to read
  * as one cohesive footer block matching the rest of the site's calm,
@@ -11729,8 +11729,12 @@
   }
 
   function startCheckout(btn) {
-    var tier = (btn.getAttribute('data-pmg-tier') || 'pro').toLowerCase();
-    if (tier !== 'founding') tier = 'pro';
+    /* Default to 'founding' since Pro Monthly is "Coming Soon — June 1, 2026"
+       and has no active Stripe price wired up yet. Anything other than
+       'founding' is normalised to 'founding' until Pro launches; this prevents
+       any stray 'Upgrade To Pro' button from kicking off a broken checkout. */
+    var tier = (btn.getAttribute('data-pmg-tier') || 'founding').toLowerCase();
+    if (tier !== 'founding') tier = 'founding';
     try { console.log('[pmg-t41] startCheckout click, tier=' + tier); } catch (_) {}
 
     var origLabel = btn.textContent;
@@ -11740,7 +11744,7 @@
     resolveSession().then(function (sess) {
       if (!sess) {
         btn.disabled = false;
-        btn.textContent = origLabel || (tier === 'founding' ? 'Become A Founding Member' : 'Upgrade To Pro');
+        btn.textContent = origLabel || 'Become A Founding Member';
         var msg = 'Sign In To Upgrade.';
         showToast(msg, 12000);
         showInlineMessage(msg);
@@ -11772,7 +11776,7 @@
       });
     }).catch(function (err) {
       btn.disabled = false;
-      btn.textContent = origLabel || (tier === 'founding' ? 'Become A Founding Member' : 'Upgrade To Pro');
+      btn.textContent = origLabel || 'Become A Founding Member';
       try { console.warn('[pmg-t41] startCheckout failed:', err); } catch (_) {}
       showToast('Could Not Start Checkout: ' + (err && err.message ? err.message : 'Unknown Error.'), 6000);
     });
@@ -11784,6 +11788,11 @@
       if (btn.getAttribute(INJECTED_FLAG) === '1') return;
       btn.setAttribute(INJECTED_FLAG, '1');
       btn.classList.add(BUTTON_CLASS);
+      /* Mark this button so pmg-pro.js's upgrade-modal fallback can detect
+         that Stripe wiring is in place and skip its own pricing-page
+         redirect. Without this flag the fallback timer in pmg-pro.js will
+         always redirect mid-checkout. */
+      try { btn.__pmgStripeWired = true; } catch (_) {}
       btn.addEventListener('click', function (ev) {
         ev.preventDefault();
         startCheckout(btn);
@@ -11804,9 +11813,13 @@
 
     var cta = document.createElement('div');
     cta.className = 'pmg-t41-inline-cta';
+    /* Pro Monthly is "Coming Soon — June 1, 2026" and has no live Stripe
+       checkout. The active paid offer is Founding Member ($49 lifetime).
+       This homepage CTA therefore points at Founding Member and is wired
+       via data-pmg-tier="founding". */
     cta.innerHTML =
-      '<span><strong>Ready For Pro?</strong> Unlimited Runs, Cloud Sync, Image Analysis, And More.</span>' +
-      '<button type="button" class="btn btn-primary ' + BUTTON_CLASS + '" data-pmg-upgrade>Upgrade To Pro</button>';
+      '<span><strong>Want Unlimited?</strong> Founding Member is a one-time $49 for lifetime access — unlimited runs, cloud sync, image analysis, and every future Pro feature.</span>' +
+      '<button type="button" class="btn btn-primary ' + BUTTON_CLASS + '" data-pmg-upgrade data-pmg-tier="founding">Become A Founding Member — $49 Lifetime</button>';
     section.parentNode.insertBefore(cta, section);
     wireButtons();
   }
@@ -11818,7 +11831,7 @@
     var p = new URLSearchParams(location.search);
     if (p.get('upgrade') !== 'success') return;
 
-    var tier = (p.get('tier') || 'pro').toLowerCase();
+    var tier = (p.get('tier') || 'founding').toLowerCase();
     var label = tier === 'founding' ? 'Founding Member' : 'Pro';
     showToast('Payment Confirmed. ' + label + ' Access Will Update Automatically.', 6000);
 

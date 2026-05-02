@@ -230,6 +230,16 @@
       '.pmg-upgrade-modal-actions {',
       '  display: flex; flex-direction: column; gap: var(--space-2, 8px);',
       '}',
+      '.pmg-upgrade-cta-secondary {',
+      '  display: inline-flex; align-items: center; justify-content: center;',
+      '  padding: 10px 18px; border-radius: var(--radius-md, 10px);',
+      '  background: transparent; color: var(--color-primary);',
+      '  border: 1px solid var(--color-primary);',
+      '  font-weight: 700; font-size: var(--text-sm, 14px);',
+      '  text-decoration: none; cursor: pointer;',
+      '  transition: background 120ms ease;',
+      '}',
+      '.pmg-upgrade-cta-secondary:hover { background: color-mix(in srgb, var(--color-primary) 8%, transparent); text-decoration: none; }',
       '.pmg-upgrade-cta {',
       '  display: block; width: 100%; padding: 14px; box-sizing: border-box;',
       '  background: var(--color-primary); color: #fff !important;',
@@ -340,17 +350,42 @@
     var overlay = document.createElement('div');
     overlay.className = 'pmg-upgrade-overlay';
     overlay.id = 'pmg-upgrade-overlay';
+    /* Two-CTA upgrade modal:
+         Primary  → Founding Member ($49 lifetime) — uses existing
+                    [data-pmg-upgrade][data-pmg-tier="founding"] hook in
+                    pmg-ux.js, which calls POST /api/create-checkout-session
+                    with { tier: 'founding' } and redirects to Stripe.
+         Secondary → Email capture for Pro Monthly launch notifications. */
     overlay.innerHTML =
       '<div class="pmg-upgrade-modal" role="dialog" aria-modal="true" aria-labelledby="pmg-upgrade-title">' +
         '<span class="pmg-upgrade-modal-icon" aria-hidden="true">🔒</span>' +
         '<h3 id="pmg-upgrade-title">' + safe + ' Is A Pro Feature</h3>' +
-        '<p>Upgrade To Pro For $9/Month And Unlock Unlimited Access To This Feature, Plus Cloud Sync, Image Generation, File Analysis, And More.</p>' +
+        '<p>Unlock unlimited access to this feature, plus cloud sync, brand voice profiles, and every future Pro feature. Founding Member is a one-time $49 payment for lifetime access — no monthly bill, no renewal. Pro Monthly ($9/month) launches June 1, 2026.</p>' +
         '<div class="pmg-upgrade-modal-actions">' +
-          '<a class="pmg-upgrade-cta" href="./pricing.html#early-access">Join Pro Early Access</a>' +
+          '<button type="button" class="pmg-upgrade-cta pmg-upgrade-btn" data-pmg-upgrade data-pmg-tier="founding">Become A Founding Member — $49 Lifetime</button>' +
+          '<a class="pmg-upgrade-cta-secondary" href="./pricing.html#early-access">Notify Me When Pro Launches</a>' +
           '<button type="button" class="pmg-upgrade-dismiss" id="pmg-upgrade-dismiss-btn">Maybe Later</button>' +
         '</div>' +
       '</div>';
     document.body.appendChild(overlay);
+
+    /* T41 in pmg-ux.js attaches the Stripe-checkout listener on a delegated
+       basis to any [data-pmg-upgrade] element. If that delegated listener
+       is not present (e.g. pmg-ux.js failed to load), fall back to sending
+       the user to the pricing page so the CTA never becomes a dead button. */
+    var primaryBtn = overlay.querySelector('.pmg-upgrade-btn[data-pmg-tier="founding"]');
+    if (primaryBtn) {
+      primaryBtn.addEventListener('click', function () {
+        /* If pmg-ux.js T41 has wired Stripe checkout, it will preventDefault
+           via its own delegated listener. If not, redirect to pricing as
+           a graceful fallback after a short tick. */
+        setTimeout(function () {
+          if (!primaryBtn.__pmgStripeWired) {
+            try { window.location.href = './pricing.html'; } catch (_) {}
+          }
+        }, 250);
+      });
+    }
 
     var dismissBtn = document.getElementById('pmg-upgrade-dismiss-btn');
     if (dismissBtn) dismissBtn.addEventListener('click', function () { overlay.remove(); });
