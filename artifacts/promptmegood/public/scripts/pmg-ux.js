@@ -3010,7 +3010,7 @@
       if (!msg) {
         msg = document.createElement('p');
         msg.id = 'pmg-photo-build-msg';
-        msg.textContent = 'Your Image Description Is Ready — Click Generate Image To Create It.';
+        msg.textContent = 'Your Image Description Is Ready — Tap Generate Image To Create It.';
         buildBtn.parentNode.insertBefore(msg, buildBtn.nextSibling);
       }
       msg.classList.add('pmg-shown');
@@ -8629,7 +8629,7 @@
       if (img) {
         try { img.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' }); } catch (e) {}
       }
-      showToast('Your Image Prompt Is Ready! Refine It Below Or Tap Generate.');
+      showToast('Your Image Prompt Is Ready! Refine It Below Or Tap Generate Image.');
     }, 200);
   }
 

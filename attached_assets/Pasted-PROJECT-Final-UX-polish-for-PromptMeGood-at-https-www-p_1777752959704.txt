@@ -1,0 +1,216 @@
+PROJECT: Final UX polish for PromptMeGood at https://www.promptmegood.com
+
+Absolute rule: This is a final refinement pass, not a redesign. The current site looks good. Do not change the visual identity, overall layout personality, or core sections unless absolutely necessary for clarity. Keep styling, typography, and overall structure intact. This is a UX polish pass only.
+
+1. Live audit of current site (must-do first)
+Before changing anything, perform a live audit of the current homepage exactly as it exists now. The content currently includes:
+
+Hero with “Finally, AI That Understands You” and “Fix it instantly” positioning.
+
+“How It Works” steps that already say:
+
+Describe what you need.
+
+Click Fix My Prompt.
+
+Review, refine, then copy or run with AI.
+
+Feature blocks: Structured Prompt Builder, Photography Suite, DALL·E 3 Image Generation, Run With AI In-App, Local Prompt Vault, Keyboard-First Workflow.
+
+“See The Difference” before/after examples.
+
+Prompt Builder area with Help Me Start, This Week’s Focus, Your Fixed Prompt, Pinned Note, Refine Your Prompt with detailed pill descriptions, prompt analysis, input summary, Best Prompts, 🔒 Prompt Vault copy, and Quick Start (7 Steps).
+
+Quick Start that already describes the exact 7-step workflow by name, including Fix My Prompt, Photography Suite, Generate Image Here, and Download/Regenerate/Use As Reference.
+
+Task A – Confirm text consistency and flows
+Confirm all primary flows and labels match the current content above:
+
+Main text CTA is Fix My Prompt (not Generate) in the core builder flow.
+
+Quick Start steps 1–7 are exactly as shown.
+
+Photography Suite + Generate Image Here + Download/Regenerate/Use As Reference messages are present.
+
+Prompt Vault section includes “Stored on this device. Export anytime. Your last 25 prompts stay in your browser…” or equivalent.
+
+Identify any remaining “Click Generate” references that conflict with Fix My Prompt, especially in:
+
+Product tour titles or steps.
+
+Any inline hints, tooltips, or overlays.
+
+Any keyboard shortcut hints or labels.
+
+Do not change any labels yet. Just list where inconsistencies still live.
+
+2. Dice Idea Generator friction
+At the top of the interface there is an element similar to:
+
+Optional
+Need Inspiration?
+🎲 Dice Idea Generator
+
+This causes friction for new users because it visually competes with the main “Type your goal / Fix My Prompt” path.
+
+Task B – Adjust Dice Idea Generator without removing it
+Keep the feature, but de-emphasize it in the first-use view:
+
+Make it visually secondary to the main input and Fix My Prompt CTA.
+
+Make clear it’s optional and for “stuck” moments, not the primary way to start.
+
+Suggested microcopy direction (adapt to current style):
+
+“Stuck? Roll a random use case” or similar, under a smaller “Optional” label.
+
+Ensure the main eye path for a new user is:
+
+Type Your Goal field.
+
+Help Me Start.
+
+Fix My Prompt.
+
+Only then should secondary helpers like Dice attract attention.
+
+Goal: new users should not feel like the dice widget is the “real” starting point.
+
+3. Apply recommendations with the current layout in mind
+After the live audit and Dice adjustments, apply these refinements in context:
+
+3.1. Single core narrative (no label drift)
+Confirm the core narrative is identical across:
+
+Hero “How It Works”.
+
+Quick Start (7 steps).
+
+Product tour (any overlay or tooltip flows).
+
+Any inline instructions near the main prompt field.
+
+Rule:
+If the action refers to turning a plain-English request into a structured text prompt, the CTA must be Fix My Prompt.
+Only the image generator should use language like Generate Image Here.
+
+Update the product tour and any remaining microcopy to match this:
+
+Describe what you need → Tap Fix My Prompt → Review, refine, then copy or run with AI.
+
+Do not change the already-correct “How It Works” and Quick Start sections.
+
+3.2. Post-result state using existing pmg-has-result
+The content around Your Fixed Prompt, Pinned Note, and Refine Your Prompt is strong. Use the existing body.pmg-has-result class (or equivalent hook) to enhance the post-result guidance with minimal UI changes.
+
+When a prompt result is present (pmg-has-result is true):
+
+Add a short, inline status sentence above or near Your Fixed Prompt, such as:
+“Your prompt is ready. Copy it, run it, or refine it.”
+
+Ensure there is one clear primary button in the actions area (e.g., Copy Prompt or Run With AI), with the other actions visually secondary, using the existing button classes:
+
+Keep #runBtn as .btn-primary.run-btn or similar as the primary, OR
+
+Make Copy Prompt primary, but do not create two primaries.
+
+For text prompts, once resultBox is populated, the visible order and emphasis should be:
+
+Primary: Copy Prompt or Run With AI (pick one based on current design; no new complex layouts).
+
+Secondary: the other of Copy / Run.
+
+Persistent utility: Save to Vault and any Download / Export Prompt action (if present).
+
+Use existing layout and class structure; do not introduce heavy new components.
+
+3.3. Photography Suite / image completion
+The Quick Start already describes the image flow: open Photography Suite, tap pills, pick outcome, Generate Image Here, then Download / Regenerate / Use As Reference.
+
+Enhance this by:
+
+Ensuring the image result area always shows, once an image exists:
+
+Download Image
+
+Regenerate
+
+Use As Reference
+
+Copy Prompt
+
+Use the existing UI patterns (buttons, spacing). The goal is: when a user sees an image, the next actions are obvious and do not require reading long text.
+
+3.4. Mid-page cognitive load and grouping
+Without removing features, slightly improve grouping and hierarchy in the “builder” section:
+
+Review the blocks: Your Fixed Prompt, Pinned Note, Refine Your Prompt, Prompt Strength / Analysis, Your Input Summary, Best Prompts, Prompt Vault.
+
+Keep them all, but:
+
+Tighten spacing and heading styles so the main path (Fixed Prompt + Refine + Run/Copy) stands out clearly above analytical and library features.
+
+If sections like #dashboard, #templates, and #history exist as separate containers, visually cluster them with consistent spacing/labels so they read as one “power user area” instead of scattered pieces.
+
+No new major sections; just adjust spacing/headings so the main workflow is visually dominant.
+
+4. Acceptance criteria
+The pass is successful when:
+
+All text-prompt flows (hero, Quick Start, product tour, any overlays) speak consistently in terms of Fix My Prompt rather than Generate for text.
+
+The Dice Idea Generator is clearly optional and visually secondary to the main “Type Your Goal / Help Me Start / Fix My Prompt” flow.
+
+After a prompt result appears:
+
+A short line confirms: “Your prompt is ready. …”
+
+Exactly one primary action is visually obvious in the result actions row.
+
+Copy, Run With AI, and Save/Export are all accessible in that state without hunting.
+
+After an image result appears:
+
+Download, Regenerate, Use As Reference, and Copy Prompt are always visible in the context of the image.
+
+Mid-page sections remain rich but are easier to parse: main path first, utilities grouped logically, no extra visual noise.
+
+The overall look and layout feel unchanged to a non-technical visitor—it should feel like the same site, just clearer, more guided, and less overwhelming.
+
+5. Diff checklist (what I want you to report back)
+When you’re done, please reply with a brief “diff report” that covers:
+
+Label fixes
+
+List all places where “Generate” was changed to “Fix My Prompt” (or similar) for text flows.
+
+List any tour / tooltip / overlay text you updated for consistency.
+
+Dice Idea Generator changes
+
+Describe how you visually de-emphasized the Dice Idea Generator.
+
+Show the final microcopy and positioning used.
+
+Post-result prompt state
+
+Show where you added the “Your prompt is ready…” style confirmation.
+
+Confirm which button is now primary in the result actions row and how secondary actions are styled.
+
+Image result state
+
+Confirm where and how Download, Regenerate, Use As Reference, and Copy Prompt are displayed with an image result.
+
+Note any small layout adjustments made to fit these actions.
+
+Grouping / hierarchy
+
+Summarize any spacing / heading / grouping changes made around Fixed Prompt, Refine, analysis, Best Prompts, and Prompt Vault.
+
+Clarify how #dashboard, #templates, and #history (if present) are now visually grouped.
+
+Visual integrity
+
+Confirm that no global styles, brand colors, typography choices, or major layout structures were changed beyond small clarity tweaks.
+
