@@ -272,7 +272,53 @@
       '#pmg-cloud-sync-btn, #pmg-team-export-btn { display: inline-flex; align-items: center; gap: 6px; }',
       '.pmg-brand-voice-row { padding: var(--space-3, 12px); border: 1px dashed color-mix(in srgb, var(--color-primary) 25%, var(--color-border)); border-radius: var(--radius-md, 8px); margin-top: var(--space-3, 12px); display: flex; flex-direction: column; gap: var(--space-2, 8px); }',
       '.pmg-brand-voice-row strong { font-size: var(--text-sm, 14px); }',
-      '.pmg-brand-voice-row span { display: block; font-size: var(--text-xs, 12px); color: var(--color-text-muted); }'
+      '.pmg-brand-voice-row span { display: block; font-size: var(--text-xs, 12px); color: var(--color-text-muted); }',
+      '.pmg-brand-voice-row.is-active { border-style: solid; background: color-mix(in srgb, var(--color-primary) 6%, transparent); }',
+      '.pmg-brand-voice-row .pmg-bv-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--color-primary, #0f6e6a); margin-top: 2px; }',
+      '.pmg-brand-voice-row .pmg-bv-dot { width: 8px; height: 8px; border-radius: 999px; background: #16a34a; box-shadow: 0 0 0 3px color-mix(in srgb, #16a34a 25%, transparent); }',
+
+      /* Brand Voice configure modal — reuses upgrade-overlay pattern */
+      '.pmg-bv-modal {',
+      '  background: var(--color-surface);',
+      '  border-radius: var(--radius-xl, 16px);',
+      '  padding: var(--space-6, 24px);',
+      '  max-width: 520px; width: 100%;',
+      '  max-height: calc(100vh - 32px); overflow-y: auto;',
+      '  box-shadow: var(--shadow-lg, 0 20px 50px rgba(0,0,0,0.3));',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 25%, var(--color-border));',
+      '  animation: pmgProSlideUp 250ms ease; box-sizing: border-box;',
+      '}',
+      '.pmg-bv-modal h3 { font-size: var(--text-lg, 18px); font-weight: 800; margin: 0 0 var(--space-2, 8px); color: var(--color-text); display: flex; align-items: center; gap: 8px; }',
+      '.pmg-bv-modal .pmg-bv-sub { font-size: var(--text-sm, 14px); color: var(--color-text-muted); margin: 0 0 var(--space-4, 16px); line-height: 1.5; }',
+      '.pmg-bv-field { display: block; margin-bottom: var(--space-3, 12px); }',
+      '.pmg-bv-field label { display: block; font-size: 12px; font-weight: 700; color: var(--color-text); margin-bottom: 4px; letter-spacing: 0.02em; text-transform: uppercase; }',
+      '.pmg-bv-field .pmg-bv-hint { display: block; font-size: 11px; color: var(--color-text-muted); margin-top: 4px; line-height: 1.4; }',
+      '.pmg-bv-field input, .pmg-bv-field textarea {',
+      '  width: 100%; box-sizing: border-box;',
+      '  padding: 10px 12px; font-size: 14px;',
+      '  font-family: inherit; color: var(--color-text);',
+      '  background: var(--color-bg, #fff);',
+      '  border: 1px solid var(--color-border);',
+      '  border-radius: var(--radius-md, 8px);',
+      '  transition: border-color 150ms ease, box-shadow 150ms ease;',
+      '}',
+      '.pmg-bv-field input:focus, .pmg-bv-field textarea:focus {',
+      '  outline: none; border-color: var(--color-primary);',
+      '  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 18%, transparent);',
+      '}',
+      '.pmg-bv-field textarea { resize: vertical; min-height: 70px; line-height: 1.45; }',
+      '.pmg-bv-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--space-4, 16px); align-items: center; }',
+      '.pmg-bv-save { flex: 1 1 160px; padding: 12px 18px; background: var(--color-primary); color: #fff; border: none; border-radius: var(--radius-full, 999px); font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity 150ms ease; }',
+      '.pmg-bv-save:hover { opacity: 0.92; }',
+      '.pmg-bv-save:disabled { opacity: 0.5; cursor: not-allowed; }',
+      '.pmg-bv-cancel { background: none; border: 1px solid var(--color-border); color: var(--color-text); padding: 10px 16px; border-radius: var(--radius-full, 999px); font-size: 13px; font-weight: 600; cursor: pointer; }',
+      '.pmg-bv-clear { background: none; border: none; color: #c0392b; padding: 10px 12px; font-size: 13px; font-weight: 600; cursor: pointer; margin-left: auto; }',
+      '.pmg-bv-clear:hover { text-decoration: underline; }',
+      '.pmg-bv-error { color: #c0392b; font-size: 12px; margin-top: 6px; min-height: 16px; }',
+      '@media (max-width: 520px) {',
+      '  .pmg-bv-actions { flex-direction: column; align-items: stretch; }',
+      '  .pmg-bv-clear { margin-left: 0; text-align: left; }',
+      '}'
     ].join('\n');
     var s = document.createElement('style');
     s.id = STYLE_ID;
@@ -497,7 +543,284 @@
     addProBadge(strong, 'PRO', 'Money Mode Pro Workflows');
   }
 
-  /* FEATURE 6: Brand Voice Profiles — new row in Power Ups (Advanced Options) */
+  /* =================================================================
+   * FEATURE 6: Brand Voice Profiles
+   * =================================================================
+   * User flow:
+   *   1. "Configure Brand Voice" button in Power Ups (Advanced Options).
+   *   2. Click -> opens modal with form (name, voice, audience, words to
+   *      use, words to avoid). Pro-gated: non-Pro sees upgrade modal.
+   *   3. Save -> persists profile to localStorage, closes modal,
+   *      switches the row to active state, updates button label.
+   *   4. Clear -> wipes profile, returns row to default state.
+   *   5. On every #prompt-form submit, a capture-phase listener
+   *      temporarily appends the brand voice block to #details so the
+   *      existing builder + AI flow picks it up automatically. The
+   *      textarea value is restored in a microtask so the user never
+   *      sees their details field mutated.
+   *
+   * Bug fix history: prior to this revision the click handler only
+   * showed a "Pro Unlocked!" toast and did nothing else, so users
+   * reported "Configure brand voice isn't working." This rewrite gives
+   * the button real behavior.
+   * ================================================================= */
+
+  var BV_STORAGE_KEY = 'pmg-brand-voice-v1';
+  var BV_MAX_FIELD_LEN = 200;
+  var BV_INJECTION_MAX_LEN = 600;
+
+  function bvEsc(s) {
+    return String(s == null ? '' : s).replace(/[<>&"']/g, function (c) {
+      return ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;' })[c];
+    });
+  }
+
+  function bvLoad() {
+    try {
+      var raw = localStorage.getItem(BV_STORAGE_KEY);
+      if (!raw) return null;
+      var p = JSON.parse(raw);
+      if (!p || typeof p !== 'object') return null;
+      return {
+        name: String(p.name || '').slice(0, BV_MAX_FIELD_LEN),
+        voice: String(p.voice || '').slice(0, BV_MAX_FIELD_LEN),
+        audience: String(p.audience || '').slice(0, BV_MAX_FIELD_LEN),
+        useWords: String(p.useWords || '').slice(0, BV_MAX_FIELD_LEN),
+        avoidWords: String(p.avoidWords || '').slice(0, BV_MAX_FIELD_LEN)
+      };
+    } catch (_) { return null; }
+  }
+
+  function bvSave(profile) {
+    try {
+      localStorage.setItem(BV_STORAGE_KEY, JSON.stringify(profile));
+      return true;
+    } catch (_) { return false; }
+  }
+
+  function bvClear() {
+    try { localStorage.removeItem(BV_STORAGE_KEY); } catch (_) {}
+  }
+
+  function bvIsActive(p) {
+    if (!p) return false;
+    return !!(p.voice || p.audience || p.useWords || p.avoidWords || p.name);
+  }
+
+  /* Build the short text block injected into #details before submit. */
+  function bvBuildInjection(p) {
+    if (!bvIsActive(p)) return '';
+    var parts = [];
+    if (p.name) parts.push('Brand: ' + p.name);
+    if (p.voice) parts.push('Voice/Tone: ' + p.voice);
+    if (p.audience) parts.push('Audience: ' + p.audience);
+    if (p.useWords) parts.push('Prefer These Words/Phrases: ' + p.useWords);
+    if (p.avoidWords) parts.push('Avoid These Words/Phrases: ' + p.avoidWords);
+    var block = '[Brand Voice Profile] ' + parts.join(' | ');
+    if (block.length > BV_INJECTION_MAX_LEN) {
+      block = block.slice(0, BV_INJECTION_MAX_LEN - 1) + '…';
+    }
+    return block;
+  }
+
+  /* Refresh the button + row to reflect current profile state. */
+  function bvRefreshButton() {
+    var btn = document.getElementById('pmg-brand-voice-btn');
+    var row = document.querySelector('.pmg-brand-voice-row');
+    if (!btn || !row) return;
+    var p = bvLoad();
+    var statusEl = row.querySelector('.pmg-bv-status');
+    if (bvIsActive(p)) {
+      btn.textContent = 'Edit Brand Voice';
+      row.classList.add('is-active');
+      if (!statusEl) {
+        statusEl = document.createElement('div');
+        statusEl.className = 'pmg-bv-status';
+        statusEl.innerHTML = '<span class="pmg-bv-dot" aria-hidden="true"></span><span class="pmg-bv-status-label"></span>';
+        var firstBtn = row.querySelector('button');
+        if (firstBtn) row.insertBefore(statusEl, firstBtn);
+        else row.appendChild(statusEl);
+      }
+      var label = statusEl.querySelector('.pmg-bv-status-label');
+      var who = p.name ? ('"' + p.name + '" ') : '';
+      if (label) label.textContent = 'Active — ' + who + 'will be applied to every prompt.';
+    } else {
+      btn.textContent = 'Configure Brand Voice';
+      row.classList.remove('is-active');
+      if (statusEl) statusEl.remove();
+    }
+  }
+
+  function bvShowToast(msg) {
+    if (typeof showProUnlockedToast === 'function') {
+      /* Reuse the existing toast styling */
+      var t = document.createElement('div');
+      t.className = 'pmg-pro-toast';
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(function () { try { t.remove(); } catch (_) {} }, 2400);
+    }
+  }
+
+  function openBrandVoiceModal() {
+    var existing = document.getElementById('pmg-bv-overlay');
+    if (existing) existing.remove();
+
+    var p = bvLoad() || { name: '', voice: '', audience: '', useWords: '', avoidWords: '' };
+
+    var overlay = document.createElement('div');
+    overlay.className = 'pmg-upgrade-overlay';
+    overlay.id = 'pmg-bv-overlay';
+    overlay.innerHTML =
+      '<div class="pmg-bv-modal" role="dialog" aria-modal="true" aria-labelledby="pmg-bv-title">' +
+        '<h3 id="pmg-bv-title"><span aria-hidden="true">🎨</span> Configure Brand Voice</h3>' +
+        '<p class="pmg-bv-sub">Save your brand voice once. We\'ll automatically apply it to every prompt you build, so the output sounds like <em>you</em>.</p>' +
+        '<form id="pmg-bv-form" novalidate>' +
+          '<div class="pmg-bv-field">' +
+            '<label for="pmg-bv-name">Brand Or Persona Name <span style="font-weight:400;color:var(--color-text-muted);text-transform:none;">(Optional)</span></label>' +
+            '<input id="pmg-bv-name" name="name" type="text" maxlength="' + BV_MAX_FIELD_LEN + '" placeholder="e.g. Acme Studios" value="' + bvEsc(p.name) + '">' +
+          '</div>' +
+          '<div class="pmg-bv-field">' +
+            '<label for="pmg-bv-voice">Voice And Tone</label>' +
+            '<textarea id="pmg-bv-voice" name="voice" maxlength="' + BV_MAX_FIELD_LEN + '" placeholder="e.g. Warm, witty, confident. Plain English, no jargon. Short sentences.">' + bvEsc(p.voice) + '</textarea>' +
+            '<span class="pmg-bv-hint">How should the writing sound? Personality, formality, sentence rhythm.</span>' +
+          '</div>' +
+          '<div class="pmg-bv-field">' +
+            '<label for="pmg-bv-audience">Audience</label>' +
+            '<input id="pmg-bv-audience" name="audience" type="text" maxlength="' + BV_MAX_FIELD_LEN + '" placeholder="e.g. Small business owners, 30–55" value="' + bvEsc(p.audience) + '">' +
+          '</div>' +
+          '<div class="pmg-bv-field">' +
+            '<label for="pmg-bv-use">Signature Words / Phrases <span style="font-weight:400;color:var(--color-text-muted);text-transform:none;">(Optional)</span></label>' +
+            '<input id="pmg-bv-use" name="useWords" type="text" maxlength="' + BV_MAX_FIELD_LEN + '" placeholder="e.g. craft, ship, real talk" value="' + bvEsc(p.useWords) + '">' +
+          '</div>' +
+          '<div class="pmg-bv-field">' +
+            '<label for="pmg-bv-avoid">Words / Phrases To Avoid <span style="font-weight:400;color:var(--color-text-muted);text-transform:none;">(Optional)</span></label>' +
+            '<input id="pmg-bv-avoid" name="avoidWords" type="text" maxlength="' + BV_MAX_FIELD_LEN + '" placeholder="e.g. synergy, leverage, utilize" value="' + bvEsc(p.avoidWords) + '">' +
+          '</div>' +
+          '<div class="pmg-bv-error" id="pmg-bv-error" role="alert" aria-live="polite"></div>' +
+          '<div class="pmg-bv-actions">' +
+            '<button type="submit" class="pmg-bv-save" id="pmg-bv-save-btn">Save Brand Voice</button>' +
+            '<button type="button" class="pmg-bv-cancel" id="pmg-bv-cancel-btn">Cancel</button>' +
+            (bvIsActive(p) ? '<button type="button" class="pmg-bv-clear" id="pmg-bv-clear-btn">Clear Profile</button>' : '') +
+          '</div>' +
+        '</form>' +
+      '</div>';
+    document.body.appendChild(overlay);
+
+    function close() {
+      try { overlay.remove(); } catch (_) {}
+      document.removeEventListener('keydown', onEsc);
+    }
+    function onEsc(e) { if (e.key === 'Escape') close(); }
+    document.addEventListener('keydown', onEsc);
+
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) close();
+    });
+
+    var form = document.getElementById('pmg-bv-form');
+    var errEl = document.getElementById('pmg-bv-error');
+    var cancelBtn = document.getElementById('pmg-bv-cancel-btn');
+    var clearBtn = document.getElementById('pmg-bv-clear-btn');
+
+    if (cancelBtn) cancelBtn.addEventListener('click', close);
+    if (clearBtn) clearBtn.addEventListener('click', function () {
+      bvClear();
+      bvRefreshButton();
+      bvShowToast('Brand voice cleared.');
+      close();
+    });
+
+    if (form) form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var newProfile = {
+        name:       (document.getElementById('pmg-bv-name')     || {}).value || '',
+        voice:      (document.getElementById('pmg-bv-voice')    || {}).value || '',
+        audience:   (document.getElementById('pmg-bv-audience') || {}).value || '',
+        useWords:   (document.getElementById('pmg-bv-use')      || {}).value || '',
+        avoidWords: (document.getElementById('pmg-bv-avoid')    || {}).value || ''
+      };
+      Object.keys(newProfile).forEach(function (k) {
+        newProfile[k] = String(newProfile[k]).trim().slice(0, BV_MAX_FIELD_LEN);
+      });
+      if (!bvIsActive(newProfile)) {
+        if (errEl) errEl.textContent = 'Please fill in at least one field (Voice And Tone is the most useful).';
+        return;
+      }
+      var ok = bvSave(newProfile);
+      if (!ok) {
+        if (errEl) errEl.textContent = 'Could not save — your browser storage may be full.';
+        return;
+      }
+      bvRefreshButton();
+      bvShowToast(newProfile.name
+        ? 'Brand voice saved — "' + newProfile.name + '" will be applied to every prompt.'
+        : 'Brand voice saved — will be applied to every prompt.');
+      close();
+    });
+
+    /* Focus first field for keyboard users. */
+    setTimeout(function () {
+      var first = document.getElementById('pmg-bv-name');
+      if (first && typeof first.focus === 'function') first.focus();
+    }, 30);
+  }
+  window.openBrandVoiceModal = openBrandVoiceModal;
+
+  /* Capture-phase submit listener: temporarily appends brand voice
+     summary into #details so the existing local builder + AI payload
+     picks it up unchanged. We restore the textarea value in a microtask
+     so the user's saved details aren't visibly mutated.
+     ---------------------------------------------------------------
+     IMPORTANT contract with index.html:
+     The bubble-phase submit handler in index.html (~line 7043) reads
+     getFormData() **synchronously** before any await. That synchronous
+     read is what makes this technique safe — by the time the microtask
+     fires to restore the field, getFormData has already captured the
+     injected value into its own `data` object. If that submit handler
+     ever becomes async-before-getFormData, this injection will leak the
+     mutated value into the visible DOM. A belt-and-suspenders setTimeout
+     restore below covers cases where the microtask is skipped.
+     --------------------------------------------------------------- */
+  function attachBrandVoiceSubmitInjector() {
+    var form = document.getElementById('prompt-form');
+    if (!form || form.__pmgBvInjected) return;
+    form.__pmgBvInjected = true;
+    form.addEventListener('submit', function () {
+      try {
+        var profile = bvLoad();
+        var inject = bvBuildInjection(profile);
+        if (!inject) return;
+        var detailsEl = document.getElementById('details');
+        if (!detailsEl) return;
+        var orig = detailsEl.value || '';
+        /* Skip only if a previous injection block is already at the END
+           of the field — i.e. trailing exactly `inject` (with optional
+           leading "\n\n"). This narrower check avoids false-skipping
+           when the user's own text merely happens to contain the phrase
+           "[Brand Voice Profile]" somewhere. */
+        var injectedSuffix = orig ? ('\n\n' + inject) : inject;
+        if (orig === inject || (orig.length > injectedSuffix.length &&
+            orig.slice(orig.length - injectedSuffix.length) === injectedSuffix)) {
+          return;
+        }
+        var combined = orig ? (orig + '\n\n' + inject) : inject;
+        detailsEl.value = combined;
+        var restore = function () {
+          if (detailsEl.value === combined) detailsEl.value = orig;
+        };
+        /* Restore in a microtask AFTER the original synchronous
+           getFormData() read in the bubble-phase submit handler. */
+        try { Promise.resolve().then(restore); } catch (_) {}
+        /* Belt-and-suspenders: also schedule a macrotask restore in
+           case Promise/microtask path is interfered with by another
+           script. Cheap and idempotent (restore is a no-op if value
+           was already restored). */
+        setTimeout(restore, 0);
+      } catch (_) { /* never break submit */ }
+    }, true);
+  }
+
   function addBrandVoiceButton() {
     var advBody = document.querySelector('.advanced-options-body');
     if (!advBody) return;
@@ -523,7 +846,7 @@
     btn.addEventListener('click', function (e) {
       e.preventDefault();
       if (pmgIsPro()) {
-        showProUnlockedToast();
+        openBrandVoiceModal();
       } else {
         showUpgradeModal('Brand Voice Profiles');
       }
@@ -531,7 +854,22 @@
     wrap.appendChild(btn);
 
     advBody.appendChild(wrap);
+
+    /* Reflect any previously saved profile + wire the submit injector. */
+    bvRefreshButton();
+    attachBrandVoiceSubmitInjector();
   }
+
+  /* Public surface for testing / debugging. */
+  window.__pmgBrandVoice = {
+    load: bvLoad,
+    save: bvSave,
+    clear: bvClear,
+    isActive: bvIsActive,
+    buildInjection: bvBuildInjection,
+    open: openBrandVoiceModal,
+    refresh: bvRefreshButton
+  };
 
   /* FEATURE 7: Bulk Export & Team Folders — new Team Export button */
   function addTeamExportButton() {

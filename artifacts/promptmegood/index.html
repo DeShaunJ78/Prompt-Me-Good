@@ -7042,6 +7042,12 @@ Context:
 
       form.addEventListener('submit', function (event) {
         event.preventDefault();
+        // NOTE: getFormData() must stay called SYNCHRONOUSLY here, before any
+        // await. pmg-pro.js attaches a capture-phase submit listener that
+        // temporarily injects the saved Brand Voice Profile into #details and
+        // restores it in a microtask/macrotask afterwards. If this read ever
+        // moves behind an await, the injected value will leak into the
+        // visible DOM. See attachBrandVoiceSubmitInjector() for the contract.
         const data = getFormData();
 
         if (!data.goal) {
