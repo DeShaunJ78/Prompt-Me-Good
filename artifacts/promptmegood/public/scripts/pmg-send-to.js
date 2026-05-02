@@ -1,19 +1,23 @@
 /* =============================================================
- * pmg-send-to.js  (Task #60)
+ * pmg-send-to.js  (Tasks #60, #84)
  *
- * One-click "Send to" handoffs to ChatGPT, Claude, Gemini,
- * Perplexity. Two additive surfaces, no edits to existing IDs,
- * classes, JS variables, or handlers:
+ * One-click "Send to" handoffs for both text-mode and image-mode
+ * prompts. Two split buttons live next to the existing Copy
+ * Prompt buttons; existing IDs / classes / handlers are
+ * untouched.
  *
- *   1. SEND TO SPLIT BUTTON — sits directly after #copy-btn in
- *      the post-generate actions row. Main half opens the user's
- *      last-used destination in a new tab with the prompt
- *      prefilled (or copied to clipboard + opened where the
- *      destination doesn't accept a URL prefill). Caret half
- *      opens a menu with all four destinations. Last choice
- *      persists in localStorage.
+ *   1. TEXT SEND TO SPLIT BUTTON — sits directly after #copy-btn
+ *      in the post-generate actions row. Destinations: ChatGPT,
+ *      Claude, Gemini, Perplexity. Last choice persists in
+ *      localStorage under `pmg.sendto.last.v1`.
  *
- *   2. EXISTING "USE YOUR PROMPT IN:" ROW — the static cards at
+ *   2. IMAGE SEND TO SPLIT BUTTON — sits directly after
+ *      #copyImagePromptBtn in the image-result-actions row.
+ *      Destinations: Midjourney, Leonardo.ai, Ideogram,
+ *      DALL·E (via ChatGPT), Bing Image Creator. Last choice
+ *      persists separately under `pmg.sendto.image.last.v1`.
+ *
+ *   3. EXISTING "USE YOUR PROMPT IN:" ROW — the static cards at
  *      #copy-btn's section already include ChatGPT, Claude,
  *      Perplexity. We add a Gemini card (so all four are
  *      represented), and intercept clicks on every card so the
@@ -21,15 +25,23 @@
  *      gets copied + the destination is opened where prefill
  *      isn't supported).
  *
- * Prefill behavior per destination:
+ * Prefill behavior per text destination:
  *   - ChatGPT    https://chat.openai.com/?q=<prompt>     prefill
  *   - Claude     https://claude.ai/new?q=<prompt>        prefill
  *   - Perplexity https://www.perplexity.ai/search?q=...  prefill
  *   - Gemini     https://gemini.google.com/app           copy+open
  *
+ * Prefill behavior per image destination:
+ *   - Midjourney   https://www.midjourney.com/imagine            copy+open
+ *   - Leonardo.ai  https://app.leonardo.ai/                      copy+open
+ *   - Ideogram     https://ideogram.ai/t/explore                 copy+open
+ *   - DALL·E       https://chat.openai.com/?q=<prompt>           prefill
+ *   - Bing Create  https://www.bing.com/images/create?q=<prompt> prefill
+ *
  * Strict additive: no backend / API / DB / payment / secret
- * changes; no rewrites of existing handlers; the original
- * Copy Prompt button still works exactly the same.
+ * changes; no rewrites of existing handlers; the original Copy
+ * Prompt and Copy Image Prompt buttons still work exactly the
+ * same.
  *
  * Disable hatches:
  *   ?nosendto                       query param
@@ -48,8 +60,18 @@
     if (localStorage.getItem('pmg_disable') === '1') return;
   } catch (_) {}
 
-  var SCRIPT_VERSION = 'task60-1';
+  var SCRIPT_VERSION = 'task84-1';
   var STYLE_ID       = 'pmg-send-to-style';
+
+  /* Shared classes used by CSS so both split buttons inherit
+     identical visuals. IDs remain stable for any external
+     reference. */
+  var SHELL_CLASS    = 'pmg-send-to-shell';
+  var MAIN_CLASS     = 'pmg-send-to-main-btn';
+  var CARET_CLASS    = 'pmg-send-to-caret-btn';
+  var MENU_CLASS     = 'pmg-send-to-menu-pop';
+
+  /* Text-mode split button (Task #60). */
   var WRAP_ID        = 'pmg-send-to-wrap';
   var MENU_ID        = 'pmg-send-to-menu';
   var MAIN_BTN_ID    = 'pmg-send-to-main';
@@ -57,9 +79,17 @@
   var LAST_KEY       = 'pmg.sendto.last.v1';
   var DEFAULT_DEST   = 'chatgpt';
 
-  /* Destination catalog. `prefill` returns the URL to open with
-     the prompt embedded (encoded). `null` = no prefill, copy +
-     open the bare URL. */
+  /* Image-mode split button (Task #84). */
+  var IMG_WRAP_ID      = 'pmg-send-to-image-wrap';
+  var IMG_MENU_ID      = 'pmg-send-to-image-menu';
+  var IMG_MAIN_BTN_ID  = 'pmg-send-to-image-main';
+  var IMG_CARET_BTN_ID = 'pmg-send-to-image-caret';
+  var IMG_LAST_KEY     = 'pmg.sendto.image.last.v1';
+  var IMG_DEFAULT_DEST = 'midjourney';
+
+  /* Text destination catalog. `prefill` returns the URL to open
+     with the prompt embedded (encoded). `null` = no prefill,
+     copy + open the bare URL. */
   var DESTS = {
     chatgpt: {
       label: 'ChatGPT',
@@ -90,8 +120,54 @@
   };
   var DEST_ORDER = ['chatgpt', 'claude', 'gemini', 'perplexity'];
 
+  /* Image destination catalog. Most image hosts don't accept a
+     URL-prefilled prompt (Midjourney's web alpha, Leonardo.ai,
+     Ideogram all require an authenticated session-bound input),
+     so we copy the prompt and open the host. The two surfaces
+     that DO accept prefill — DALL·E via ChatGPT, and Bing Image
+     Creator — get a one-click prefill URL. */
+  var IMG_DESTS = {
+    midjourney: {
+      label: 'Midjourney',
+      meta: 'Copies + opens midjourney.com',
+      url: 'https://www.midjourney.com/imagine',
+      prefill: null
+    },
+    leonardo: {
+      label: 'Leonardo.ai',
+      meta: 'Copies + opens app.leonardo.ai',
+      url: 'https://app.leonardo.ai/',
+      prefill: null
+    },
+    ideogram: {
+      label: 'Ideogram',
+      meta: 'Copies + opens ideogram.ai',
+      url: 'https://ideogram.ai/t/explore',
+      prefill: null
+    },
+    dalle: {
+      label: 'DALL·E (ChatGPT)',
+      meta: 'Prefills your prompt',
+      url: 'https://chat.openai.com/',
+      prefill: function (text) {
+        return 'https://chat.openai.com/?q=' + encodeURIComponent(text);
+      }
+    },
+    bing: {
+      label: 'Bing Image Creator',
+      meta: 'Prefills your prompt',
+      url: 'https://www.bing.com/images/create',
+      prefill: function (text) {
+        return 'https://www.bing.com/images/create?q=' + encodeURIComponent(text);
+      }
+    }
+  };
+  var IMG_DEST_ORDER = ['midjourney', 'leonardo', 'ideogram', 'dalle', 'bing'];
+
   /* ------------------------------------------------------------
-   * Storage helpers
+   * Storage helpers — text + image keys stored separately so a
+   * user can prefer (e.g.) Claude for text and Midjourney for
+   * images without one overwriting the other.
    * ------------------------------------------------------------ */
   function getLastDest() {
     try {
@@ -103,6 +179,17 @@
   function setLastDest(key) {
     if (!DESTS[key]) return;
     try { localStorage.setItem(LAST_KEY, key); } catch (_) {}
+  }
+  function getImgLastDest() {
+    try {
+      var v = localStorage.getItem(IMG_LAST_KEY);
+      if (v && IMG_DESTS[v]) return v;
+    } catch (_) {}
+    return IMG_DEFAULT_DEST;
+  }
+  function setImgLastDest(key) {
+    if (!IMG_DESTS[key]) return;
+    try { localStorage.setItem(IMG_LAST_KEY, key); } catch (_) {}
   }
 
   /* ------------------------------------------------------------
@@ -122,10 +209,8 @@
   }
 
   /* ------------------------------------------------------------
-   * Get the currently-generated prompt text. The result panel
-   * is #result-box (set up in index.html); the existing
-   * Copy Prompt button reads `resultBox.textContent`. We mirror
-   * that exact source of truth so what's sent matches what's
+   * Get the currently-generated text prompt. Mirrors the
+   * existing #copy-btn logic so what's sent matches what's
    * copied.
    * ------------------------------------------------------------ */
   function getPromptText() {
@@ -134,9 +219,24 @@
     if (!box) return '';
     var text = (box.textContent || '').trim();
     if (!text) return '';
-    /* Don't send the placeholder copy. */
     if (text.indexOf('Your fixed prompt will appear here') === 0) return '';
     return text;
+  }
+
+  /* Get the currently-composed image prompt. Mirrors the
+     existing copyImagePrompt() logic in index.html: prefer the
+     fixed prompt in #resultBox, fall back to the raw #goal
+     textarea so the user can hand off even before they've run
+     the fixer. */
+  function getImagePromptText() {
+    var rb = document.getElementById('resultBox');
+    if (rb) {
+      var t = (rb.textContent || rb.innerText || '').trim();
+      if (t && t.indexOf('Your fixed prompt will appear here') !== 0) return t;
+    }
+    var goal = document.getElementById('goal');
+    if (goal && goal.value) return goal.value.trim();
+    return '';
   }
 
   /* ------------------------------------------------------------
@@ -167,24 +267,27 @@
   }
 
   /* ------------------------------------------------------------
-   * Send the current prompt to a destination. If the dest
-   * supports URL prefill, open that URL directly. Otherwise
-   * copy to clipboard, open the bare destination, and toast
-   * "ready to paste".
+   * Generic send: parameterised over destination catalog,
+   * prompt source, and "last used" persistence. Used by both
+   * the text and image split buttons.
    *
-   * Always opens via window.open with noopener so the new tab
-   * cannot reach back into PromptMeGood.
+   * If the dest supports URL prefill, open that URL directly.
+   * Otherwise copy to clipboard, open the bare destination, and
+   * toast "ready to paste".
+   *
+   * The new tab is always opened with noopener so it cannot
+   * reach back into PromptMeGood.
    * ------------------------------------------------------------ */
-  function sendTo(destKey) {
-    var dest = DESTS[destKey];
+  function sendToCore(destKey, opts) {
+    var dest = opts.dests[destKey];
     if (!dest) return;
-    var text = getPromptText();
+    var text = opts.getText();
     if (!text) {
-      toast('Generate a prompt first.');
+      toast(opts.emptyMsg);
       return;
     }
-    setLastDest(destKey);
-    refreshMainLabel();
+    opts.setLast(destKey);
+    if (typeof opts.afterSet === 'function') opts.afterSet();
 
     if (typeof dest.prefill === 'function') {
       try {
@@ -206,8 +309,6 @@
     try { win = window.open(dest.url, '_blank', 'noopener'); } catch (_) {}
     copyText(text).then(function (ok) {
       if (!win) {
-        /* Popup blocker swallowed it — try once more (some
-           blockers allow the second open after a clipboard ack). */
         try { window.open(dest.url, '_blank', 'noopener'); } catch (_) {}
       }
       if (ok) {
@@ -218,18 +319,38 @@
     });
   }
 
+  function sendTo(destKey) {
+    sendToCore(destKey, {
+      dests: DESTS,
+      getText: getPromptText,
+      setLast: setLastDest,
+      afterSet: refreshMainLabel,
+      emptyMsg: 'Generate a prompt first.'
+    });
+  }
+  function sendToImage(destKey) {
+    sendToCore(destKey, {
+      dests: IMG_DESTS,
+      getText: getImagePromptText,
+      setLast: setImgLastDest,
+      afterSet: refreshImageMainLabel,
+      emptyMsg: 'Describe the image first, then send it.'
+    });
+  }
+
   /* ------------------------------------------------------------
-   * Styles
+   * Styles — keyed on shared classes so both split buttons get
+   * identical look + feel.
    * ------------------------------------------------------------ */
   function injectStyles() {
     if (document.getElementById(STYLE_ID)) return;
     var css = [
-      '#' + WRAP_ID + ' {',
+      '.' + SHELL_CLASS + ' {',
       '  position: relative; display: inline-flex; align-items: stretch;',
       '  border-radius: var(--radius-full, 999px); overflow: visible;',
       '  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,.06));',
       '}',
-      '#' + WRAP_ID + ' button {',
+      '.' + SHELL_CLASS + ' button {',
       '  background: var(--color-surface);',
       '  color: var(--color-text);',
       '  border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);',
@@ -237,32 +358,32 @@
       '  cursor: pointer; min-height: 48px;',
       '  transition: background 180ms ease, transform 180ms ease;',
       '}',
-      '#' + WRAP_ID + ' button:hover { background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)); }',
-      '#' + MAIN_BTN_ID + ' {',
+      '.' + SHELL_CLASS + ' button:hover { background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)); }',
+      '.' + MAIN_CLASS + ' {',
       '  border-top-left-radius: var(--radius-full, 999px);',
       '  border-bottom-left-radius: var(--radius-full, 999px);',
       '  padding: 0 var(--space-4, 16px) 0 var(--space-5, 20px);',
       '  border-right: none;',
       '}',
-      '#' + CARET_BTN_ID + ' {',
+      '.' + CARET_CLASS + ' {',
       '  border-top-right-radius: var(--radius-full, 999px);',
       '  border-bottom-right-radius: var(--radius-full, 999px);',
       '  padding: 0 14px; border-left: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);',
       '}',
-      '#' + WRAP_ID + ' .pmg-send-to-icon { font-size: 14px; opacity: 0.85; margin-right: 6px; }',
-      '#' + WRAP_ID + ' .pmg-send-to-caret { font-size: 11px; line-height: 1; }',
+      '.' + SHELL_CLASS + ' .pmg-send-to-icon { font-size: 14px; opacity: 0.85; margin-right: 6px; }',
+      '.' + SHELL_CLASS + ' .pmg-send-to-caret { font-size: 11px; line-height: 1; }',
 
-      '#' + MENU_ID + ' {',
+      '.' + MENU_CLASS + ' {',
       '  position: absolute; top: calc(100% + 6px); right: 0;',
-      '  min-width: 200px; padding: 6px;',
+      '  min-width: 220px; padding: 6px;',
       '  background: var(--color-surface);',
       '  border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);',
       '  border-radius: var(--radius-md, 12px);',
       '  box-shadow: var(--shadow-md, 0 10px 30px rgba(0,0,0,.12));',
       '  z-index: 50; display: none;',
       '}',
-      '#' + MENU_ID + '.is-open { display: block; }',
-      '#' + MENU_ID + ' button {',
+      '.' + MENU_CLASS + '.is-open { display: block; }',
+      '.' + MENU_CLASS + ' button {',
       '  display: flex; align-items: center; justify-content: space-between;',
       '  width: 100%; gap: 12px;',
       '  background: transparent; color: var(--color-text);',
@@ -271,14 +392,14 @@
       '  font-size: var(--text-sm, 14px); font-weight: 600;',
       '  text-align: left; cursor: pointer;',
       '}',
-      '#' + MENU_ID + ' button:hover, #' + MENU_ID + ' button:focus-visible {',
+      '.' + MENU_CLASS + ' button:hover, .' + MENU_CLASS + ' button:focus-visible {',
       '  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));',
       '  outline: none;',
       '}',
-      '#' + MENU_ID + ' .pmg-send-to-meta {',
+      '.' + MENU_CLASS + ' .pmg-send-to-meta {',
       '  font-size: 11px; font-weight: 500; color: var(--color-text-muted);',
       '}',
-      '#' + MENU_ID + ' .pmg-send-to-last-tag {',
+      '.' + MENU_CLASS + ' .pmg-send-to-last-tag {',
       '  font-size: 10px; font-weight: 700; letter-spacing: 0.06em;',
       '  text-transform: uppercase; color: var(--color-primary);',
       '  background: color-mix(in srgb, var(--color-primary) 12%, transparent);',
@@ -297,7 +418,7 @@
          in index.html (single source of truth). */
 
       '@media (prefers-reduced-motion: reduce) {',
-      '  #' + WRAP_ID + ' button { transition: none; }',
+      '  .' + SHELL_CLASS + ' button { transition: none; }',
       '}'
     ].join('\n');
     var s = document.createElement('style');
@@ -307,69 +428,97 @@
   }
 
   /* ------------------------------------------------------------
-   * Mount the split button next to #copy-btn.
+   * Generic split-button factory. Builds the wrap/main/caret/menu
+   * DOM, wires events, and inserts after the supplied anchor
+   * element. Returns true on successful mount, false if the
+   * anchor doesn't exist yet (caller will retry).
    * ------------------------------------------------------------ */
-  function mountSplitButton() {
-    if (document.getElementById(WRAP_ID)) return true;
-    var copyBtn = document.getElementById('copy-btn');
-    if (!copyBtn || !copyBtn.parentNode) return false;
+  function buildSplitButton(cfg) {
+    if (document.getElementById(cfg.wrapId)) return true;
+    var anchor = document.getElementById(cfg.anchorId);
+    if (!anchor || !anchor.parentNode) return false;
 
     var wrap = document.createElement('span');
-    wrap.id = WRAP_ID;
+    wrap.id = cfg.wrapId;
+    wrap.className = SHELL_CLASS;
     wrap.setAttribute('role', 'group');
-    wrap.setAttribute('aria-label', 'Send prompt to an AI tool');
+    wrap.setAttribute('aria-label', cfg.groupLabel);
 
     var main = document.createElement('button');
     main.type = 'button';
-    main.id = MAIN_BTN_ID;
-    main.setAttribute('aria-label', 'Send prompt to last-used AI tool');
+    main.id = cfg.mainId;
+    main.className = MAIN_CLASS;
+    main.setAttribute('aria-label', cfg.mainAriaLabel);
     main.innerHTML =
       '<span class="pmg-send-to-icon" aria-hidden="true">→</span>' +
-      '<span class="pmg-send-to-label">Send To ChatGPT</span>';
+      '<span class="pmg-send-to-label">' + cfg.initialLabel + '</span>';
 
     var caret = document.createElement('button');
     caret.type = 'button';
-    caret.id = CARET_BTN_ID;
+    caret.id = cfg.caretId;
+    caret.className = CARET_CLASS;
     caret.setAttribute('aria-haspopup', 'menu');
     caret.setAttribute('aria-expanded', 'false');
-    caret.setAttribute('aria-label', 'Choose a different AI tool');
+    caret.setAttribute('aria-label', cfg.caretAriaLabel);
     caret.innerHTML = '<span class="pmg-send-to-caret" aria-hidden="true">▾</span>';
 
     var menu = document.createElement('div');
-    menu.id = MENU_ID;
+    menu.id = cfg.menuId;
+    menu.className = MENU_CLASS;
     menu.setAttribute('role', 'menu');
-    menu.setAttribute('aria-label', 'Send prompt to');
+    menu.setAttribute('aria-label', cfg.menuAriaLabel);
 
     wrap.appendChild(main);
     wrap.appendChild(caret);
     wrap.appendChild(menu);
-    copyBtn.parentNode.insertBefore(wrap, copyBtn.nextSibling);
+    anchor.parentNode.insertBefore(wrap, anchor.nextSibling);
 
-    main.addEventListener('click', function () { sendTo(getLastDest()); });
+    main.addEventListener('click', function () { cfg.onMainClick(); });
     caret.addEventListener('click', function (e) {
       e.stopPropagation();
-      toggleMenu();
+      cfg.onCaretToggle();
     });
 
-    /* Build menu items once. */
-    rebuildMenu();
-    refreshMainLabel();
+    cfg.rebuildMenu();
+    cfg.refreshLabel();
 
-    /* Close menu on outside click / Escape. */
     document.addEventListener('click', function (e) {
       if (!menu.classList.contains('is-open')) return;
       if (e.target === caret || (caret.contains && caret.contains(e.target))) return;
       if (menu.contains(e.target)) return;
-      closeMenu();
+      cfg.closeMenu();
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && menu.classList.contains('is-open')) {
-        closeMenu();
+        cfg.closeMenu();
         try { caret.focus(); } catch (_) {}
       }
     });
 
     return true;
+  }
+
+  /* ------------------------------------------------------------
+   * Text split button mount.
+   * ------------------------------------------------------------ */
+  function mountSplitButton() {
+    return buildSplitButton({
+      wrapId: WRAP_ID,
+      mainId: MAIN_BTN_ID,
+      caretId: CARET_BTN_ID,
+      menuId: MENU_ID,
+      anchorId: 'copy-btn',
+      groupLabel: 'Send prompt to an AI tool',
+      mainAriaLabel: 'Send prompt to last-used AI tool',
+      caretAriaLabel: 'Choose a different AI tool',
+      menuAriaLabel: 'Send prompt to',
+      initialLabel: 'Send To ChatGPT',
+      onMainClick: function () { sendTo(getLastDest()); },
+      onCaretToggle: toggleMenu,
+      rebuildMenu: rebuildMenu,
+      refreshLabel: refreshMainLabel,
+      closeMenu: closeMenu
+    });
   }
 
   function rebuildMenu() {
@@ -427,6 +576,83 @@
   }
 
   /* ------------------------------------------------------------
+   * Image split button mount (Task #84).
+   * ------------------------------------------------------------ */
+  function mountImageSplitButton() {
+    return buildSplitButton({
+      wrapId: IMG_WRAP_ID,
+      mainId: IMG_MAIN_BTN_ID,
+      caretId: IMG_CARET_BTN_ID,
+      menuId: IMG_MENU_ID,
+      anchorId: 'copyImagePromptBtn',
+      groupLabel: 'Send image prompt to an image generator',
+      mainAriaLabel: 'Send image prompt to last-used image generator',
+      caretAriaLabel: 'Choose a different image generator',
+      menuAriaLabel: 'Send image prompt to',
+      initialLabel: 'Send To Midjourney',
+      onMainClick: function () { sendToImage(getImgLastDest()); },
+      onCaretToggle: toggleImageMenu,
+      rebuildMenu: rebuildImageMenu,
+      refreshLabel: refreshImageMainLabel,
+      closeMenu: closeImageMenu
+    });
+  }
+
+  function rebuildImageMenu() {
+    var menu = document.getElementById(IMG_MENU_ID);
+    if (!menu) return;
+    var last = getImgLastDest();
+    var html = '';
+    IMG_DEST_ORDER.forEach(function (key) {
+      var d = IMG_DESTS[key];
+      var meta = d.meta || (d.prefill ? 'Prefills your prompt' : 'Copies your prompt');
+      var lastTag = key === last
+        ? '<span class="pmg-send-to-last-tag">Last Used</span>'
+        : '<span class="pmg-send-to-meta">' + meta + '</span>';
+      html += '<button type="button" role="menuitem" data-pmg-send-image="' + key + '">' +
+        '<span>' + d.label + '</span>' +
+        lastTag +
+        '</button>';
+    });
+    menu.innerHTML = html;
+    menu.querySelectorAll('button[data-pmg-send-image]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var k = b.getAttribute('data-pmg-send-image');
+        closeImageMenu();
+        sendToImage(k);
+      });
+    });
+  }
+
+  function refreshImageMainLabel() {
+    var main = document.getElementById(IMG_MAIN_BTN_ID);
+    if (!main) return;
+    var d = IMG_DESTS[getImgLastDest()];
+    var label = main.querySelector('.pmg-send-to-label');
+    if (label && d) label.textContent = 'Send To ' + d.label;
+    if (d) main.setAttribute('title', 'Send your image prompt to ' + d.label);
+  }
+
+  function toggleImageMenu() {
+    var menu = document.getElementById(IMG_MENU_ID);
+    var caret = document.getElementById(IMG_CARET_BTN_ID);
+    if (!menu) return;
+    var open = menu.classList.toggle('is-open');
+    if (caret) caret.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) {
+      rebuildImageMenu();
+      var first = menu.querySelector('button');
+      if (first) try { first.focus(); } catch (_) {}
+    }
+  }
+  function closeImageMenu() {
+    var menu = document.getElementById(IMG_MENU_ID);
+    var caret = document.getElementById(IMG_CARET_BTN_ID);
+    if (menu) menu.classList.remove('is-open');
+    if (caret) caret.setAttribute('aria-expanded', 'false');
+  }
+
+  /* ------------------------------------------------------------
    * Augment the existing "Use Your Prompt In:" cards: add a
    * Gemini card if missing, and intercept clicks on every card
    * so the destination opens with the prompt prefilled (or
@@ -472,15 +698,17 @@
    * ------------------------------------------------------------ */
   function boot() {
     injectStyles();
-    var ok = mountSplitButton();
+    var textOk = mountSplitButton();
+    var imageOk = mountImageSplitButton();
     augmentOpenInRow();
-    if (ok) return;
+    if (textOk && imageOk) return;
     var tries = 0;
     var iv = setInterval(function () {
       tries++;
-      var mounted = mountSplitButton();
+      if (!textOk) textOk = mountSplitButton();
+      if (!imageOk) imageOk = mountImageSplitButton();
       augmentOpenInRow();
-      if (mounted || tries > 40) clearInterval(iv);
+      if ((textOk && imageOk) || tries > 40) clearInterval(iv);
     }, 150);
   }
 
@@ -494,8 +722,12 @@
   window.__pmgSendTo = {
     version: SCRIPT_VERSION,
     send: sendTo,
+    sendImage: sendToImage,
     getLast: getLastDest,
     setLast: setLastDest,
-    dests: DESTS
+    getLastImage: getImgLastDest,
+    setLastImage: setImgLastDest,
+    dests: DESTS,
+    imageDests: IMG_DESTS
   };
 })();
