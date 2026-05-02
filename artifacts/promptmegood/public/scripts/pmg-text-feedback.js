@@ -54,6 +54,15 @@
   var PANEL_ID   = 'pmg-tf-feedback';
   var STYLE_ID   = 'pmg-text-feedback-css';
   var COLLAPSE_KEY = 'pmg.textfeedback.preview.collapsed';
+  /* Task #74 — confidence-meter personalization. We persist the
+     last N confidence scores at submit time so the bands can
+     adapt to the user's typical prompt style. */
+  var HIST_KEY     = 'pmg.textfeedback.history';
+  var HIST_MAX     = 20;  /* keep last ~20 submits */
+  var HIST_MIN_FIT = 5;   /* require this many before adapting */
+  /* Default fixed thresholds — also the values we fall back to
+     when storage is blocked or history is too short. */
+  var DEFAULT_BANDS = { weak: 35, strong: 70 };
 
   /* -------- Vague-word lexicon. Lowercase keys; values are
      1–3 stronger alternatives. Word-boundary matched, case
@@ -93,6 +102,87 @@
   }
   function writeCollapsed(v) {
     try { localStorage.setItem(COLLAPSE_KEY, v ? '1' : '0'); } catch (_) {}
+  }
+
+  /* -------- Confidence history (Task #74) ----------------------
+     We store an array of integer scores in localStorage. Anything
+     malformed gets thrown away so a user clearing storage or
+     hand-editing it can't crash the panel. Storage failures
+     (Safari private mode, quota, blocked cookies) are swallowed —
+     the meter still works, it just falls back to default bands. */
+  function readHistory() {
+    try {
+      var raw = localStorage.getItem(HIST_KEY);
+      if (!raw) return [];
+      var arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return [];
+      var out = [];
+      for (var i = 0; i < arr.length; i++) {
+        var n = Number(arr[i]);
+        if (isFinite(n) && n >= 0 && n <= 100) out.push(Math.round(n));
+      }
+      if (out.length > HIST_MAX) out = out.slice(out.length - HIST_MAX);
+      return out;
+    } catch (_) { return []; }
+  }
+  function writeHistory(list) {
+    try {
+      var trimmed = list.slice(Math.max(0, list.length - HIST_MAX));
+      localStorage.setItem(HIST_KEY, JSON.stringify(trimmed));
+    } catch (_) {}
+  }
+  function pushHistory(score) {
+    var n = Math.round(Number(score));
+    if (!isFinite(n) || n < 0 || n > 100) return;
+    var list = readHistory();
+    list.push(n);
+    writeHistory(list);
+    /* Force a re-render so the new bands take effect immediately
+       on the next score (the user's *next* keystroke would also
+       do it, but doing it now keeps the meter honest). */
+    cachedBands = null;
+    lastSig = '';
+    renderDebounced();
+  }
+  function clearHistory() {
+    try { localStorage.removeItem(HIST_KEY); } catch (_) {}
+    cachedBands = null;
+    lastSig = '';
+    renderDebounced();
+  }
+  function median(sorted) {
+    var n = sorted.length;
+    if (n === 0) return 50;
+    var mid = Math.floor(n / 2);
+    return n % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  }
+  /* Compute personalized weak/strong thresholds from the user's
+     history. Bands shift toward the user's typical score so
+     "Specific enough" feels earned. We clamp the strong threshold
+     into [50, 90] and force a >=15-pt gap so the bands can never
+     invert and weak can never disappear entirely. */
+  function computeBands() {
+    var hist = readHistory();
+    if (hist.length < HIST_MIN_FIT) {
+      return { weak: DEFAULT_BANDS.weak, strong: DEFAULT_BANDS.strong, personalized: false, sample: hist.length };
+    }
+    var sorted = hist.slice().sort(function (a, b) { return a - b; });
+    var med = median(sorted);
+    var strong = Math.round(med);
+    if (strong < 50) strong = 50;
+    if (strong > 90) strong = 90;
+    var weak = Math.round(med * 0.5);
+    if (weak < 15) weak = 15;
+    if (weak > strong - 15) weak = strong - 15;
+    return { weak: weak, strong: strong, personalized: true, sample: hist.length };
+  }
+  /* Bands are recomputed only when history changes (on submit /
+     clear). Holding a cached value keeps the per-keystroke render
+     path allocation-free. */
+  var cachedBands = null;
+  function getBands() {
+    if (!cachedBands) cachedBands = computeBands();
+    return cachedBands;
   }
 
   /* -------- CSS — scoped to body.pmg-text-sibling so image
@@ -153,6 +243,24 @@
       'body.' + BODY_CLASS + ' #' + PANEL_ID + '[data-conf="weak"]   .pmg-tff-conf-label { color: #b94a4a; }',
       'body.' + BODY_CLASS + ' #' + PANEL_ID + '[data-conf="ok"]     .pmg-tff-conf-label { color: #a07a18; }',
       'body.' + BODY_CLASS + ' #' + PANEL_ID + '[data-conf="strong"] .pmg-tff-conf-label { color: var(--color-primary, #0f6e6a); }',
+      /* Tuned-bands "i" badge — sits between the label and the
+         bar. Hidden until the user has enough submit history to
+         personalize. Reuses the primary color so it reads as
+         informational, not as an alert. */
+      'body.' + BODY_CLASS + ' #' + PANEL_ID + ' .pmg-tff-tuned {',
+      '  display: inline-flex; align-items: center; justify-content: center;',
+      '  width: 18px; height: 18px; padding: 0; border-radius: 999px;',
+      '  font-size: 11px; font-weight: 800; line-height: 1;',
+      '  font-family: var(--font-body, inherit); font-style: italic;',
+      '  background: color-mix(in srgb, var(--color-primary, #0f6e6a) 14%, transparent);',
+      '  color: var(--color-primary, #0f6e6a);',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary, #0f6e6a) 40%, transparent);',
+      '  cursor: help;',
+      '}',
+      'body.' + BODY_CLASS + ' #' + PANEL_ID + ' .pmg-tff-tuned[hidden] { display: none; }',
+      'body.' + BODY_CLASS + ' #' + PANEL_ID + ' .pmg-tff-tuned:focus-visible {',
+      '  outline: 2px solid var(--color-primary, #0f6e6a); outline-offset: 2px;',
+      '}',
       'body.' + BODY_CLASS + ' #' + PANEL_ID + ' .pmg-tff-tokens {',
       '  font-size: 12px; color: var(--color-text-muted, #5f6b75); white-space: nowrap;',
       '}',
@@ -250,6 +358,9 @@
       '</div>' +
       '<div class="pmg-tff-conf" role="status" aria-live="polite" aria-atomic="true">' +
         '<span class="pmg-tff-conf-label">Too vague</span>' +
+        '<button type="button" class="pmg-tff-tuned" hidden ' +
+                'aria-label="About these confidence bands" ' +
+                'title="Tuned to your recent prompts">i</button>' +
         '<span class="pmg-tff-conf-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="Too vague (0 of 100)">' +
           '<span class="pmg-tff-conf-fill" aria-hidden="true"></span>' +
         '</span>' +
@@ -269,6 +380,7 @@
     refs = {
       panel:        panel,
       confLabel:    panel.querySelector('.pmg-tff-conf-label'),
+      confTuned:    panel.querySelector('.pmg-tff-tuned'),
       confFill:     panel.querySelector('.pmg-tff-conf-fill'),
       confBar:      panel.querySelector('.pmg-tff-conf-bar'),
       tokens:       panel.querySelector('.pmg-tff-tokens'),
@@ -277,6 +389,22 @@
       preview:      panel.querySelector('.pmg-tff-preview'),
       previewText:  panel.querySelector('.pmg-tff-preview-text')
     };
+
+    /* Tuned-bands "i" badge: native title for hover, a click
+       handler to surface the same explanation for keyboard /
+       touch users (no native title display on tap). The button
+       has type="button" so it never submits the form. */
+    if (refs.confTuned) {
+      refs.confTuned.addEventListener('click', function (e) {
+        e.preventDefault();
+        var msg = refs.confTuned.getAttribute('title') ||
+                  'Tuned to your recent prompts';
+        if (typeof window.showToast === 'function') {
+          try { window.showToast(msg); return; } catch (_) {}
+        }
+        try { window.alert(msg); } catch (_) {}
+      });
+    }
 
     /* Persist open/closed across reloads. The user only opens
        the live preview when they actually want it; remembering
@@ -324,7 +452,7 @@
        − 4  pts per vague word (capped at -16) so a goal full of
               "good things" can't read as Specific Enough.
   -------- */
-  function scoreConfidence(data, vagueCount) {
+  function scoreConfidence(data, vagueCount, bands) {
     var goal = (data.goal || '').trim();
     var goalLen = goal.length;
     var s = 0;
@@ -347,9 +475,13 @@
     s -= Math.min(16, vagueCount * 4);
     if (s < 0) s = 0;
     if (s > 100) s = 100;
+    /* Bands default to the original fixed thresholds (35/70). When
+       the user has accumulated enough submit history, getBands()
+       will hand back personalized values clamped to a safe range. */
+    var b = bands || DEFAULT_BANDS;
     var band, label;
-    if (s < 35) { band = 'weak';   label = 'Too vague'; }
-    else if (s < 70) { band = 'ok'; label = 'Getting there'; }
+    if (s < b.weak) { band = 'weak'; label = 'Too vague'; }
+    else if (s < b.strong) { band = 'ok'; label = 'Getting there'; }
     else { band = 'strong'; label = 'Specific enough'; }
     return { score: s, band: band, label: label };
   }
@@ -393,6 +525,10 @@
   /* -------- Renderer — single function, called every time any
      watched input changes (debounced). -------- */
   var lastSig = '';
+  /* Most-recent confidence score from render(). Submit hook reads
+     this so we don't have to re-grab the form data + re-score
+     when the builder emits pmg:builder-finalized. */
+  var lastConfScore = null;
   function render() {
     if (!refs) return;
     if (!isTextMode()) return;
@@ -414,7 +550,11 @@
     try { assembled = hook.generatePrompt(data); } catch (_) { assembled = ''; }
 
     var lint = scanVague(data);
-    var conf = scoreConfidence(data, lint.total);
+    var bands = getBands();
+    var conf = scoreConfidence(data, lint.total, bands);
+    /* Stash the latest score so the submit hook can record it
+       without recomputing from form state. */
+    lastConfScore = conf.score;
     var charCount = assembled.length;
     var tokenEstimate = estimateTokens(assembled);
 
@@ -422,9 +562,13 @@
        that keeps the same length/first char (very common while
        typing) still triggers a preview refresh. String compare on
        ~1–4KB is cheap relative to the 150ms debounce. Avoids
-       feedback loops with other MutationObservers on the page. */
+       feedback loops with other MutationObservers on the page.
+       Bands are part of the sig so a tuned-bands change after a
+       submit also forces a label refresh on the next paint. */
     var sig = conf.score + '|' + conf.band + '|' + tokenEstimate +
-              '|' + lint.unique.join(',') + '|' + assembled;
+              '|' + lint.unique.join(',') + '|' +
+              bands.weak + ':' + bands.strong + ':' + (bands.personalized ? 'p' : 'd') +
+              '|' + assembled;
     if (sig === lastSig) return;
     lastSig = sig;
 
@@ -438,6 +582,23 @@
        live values need updating here. */
     refs.confBar.setAttribute('aria-valuenow', String(conf.score));
     refs.confBar.setAttribute('aria-valuetext', conf.label + ' (' + conf.score + ' of 100)');
+
+    /* Tuned-bands indicator: only visible once we've collected
+       enough submits to actually personalize. The tooltip text
+       includes the sample size + active bounds so power users
+       can see exactly what was learned. */
+    if (refs.confTuned) {
+      if (bands.personalized) {
+        var tip = 'Tuned to your recent prompts (' + bands.sample +
+                  ' submits). Bands: vague <' + bands.weak +
+                  ', specific ≥' + bands.strong + '.';
+        refs.confTuned.setAttribute('title', tip);
+        refs.confTuned.setAttribute('aria-label', tip);
+        refs.confTuned.hidden = false;
+      } else {
+        refs.confTuned.hidden = true;
+      }
+    }
 
     /* Token / char estimate */
     var tokenText = charCount.toLocaleString() + ' chars · ~' +
@@ -494,6 +655,29 @@
     form.__pmgTfBound = true;
     form.addEventListener('input',  renderDebounced);
     form.addEventListener('change', renderDebounced);
+
+    /* Task #74 — Record confidence at submit time. The main app
+       fires pmg:builder-finalized after every successful prompt
+       generation (form submit AND "Fix My Prompt" both go through
+       finalize()), so subscribing here covers all submit paths
+       without us having to wrap the form's submit handler. We
+       prefer the cached lastConfScore (kept fresh by render() on
+       every keystroke) so we never disagree with the on-screen
+       meter; if we somehow missed a render we recompute from the
+       event detail as a fallback. */
+    document.addEventListener('pmg:builder-finalized', function (e) {
+      var score = lastConfScore;
+      if (score == null) {
+        try {
+          var d = (e && e.detail && e.detail.data) || null;
+          if (d) {
+            var lint = scanVague(d);
+            score = scoreConfidence(d, lint.total, getBands()).score;
+          }
+        } catch (_) {}
+      }
+      if (score != null) pushHistory(score);
+    });
   }
 
   /* Re-anchor watchdog: other scripts (pmg-ux.js relocations,
@@ -596,6 +780,11 @@
       var p = $id(PANEL_ID);
       if (p) p.remove();
     },
-    refresh: function () { lastSig = ''; render(); }
+    refresh: function () { cachedBands = null; lastSig = ''; render(); },
+    /* Task #74 — surfaced for tests + power-user diagnostics. */
+    getHistory: readHistory,
+    clearHistory: clearHistory,
+    getBands: function () { cachedBands = null; return getBands(); },
+    pushHistory: pushHistory
   };
 })();
