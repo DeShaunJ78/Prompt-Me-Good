@@ -13804,3 +13804,152 @@
   }
   setTimeout(init, 600);
 })();
+
+/* =====================================================================
+ * T94 — Surprise Me Cluster: Make It Read As OPTIONAL Helper
+ * ---------------------------------------------------------------------
+ * User feedback: the "Need Ideas? Try An Example" banner at the top of
+ * the Photography Suite (T34) currently uses a tinted card with a
+ * dashed teal border and a filled-teal Surprise Me button. Visually
+ * that competes with the actual primary action (the pill groups +
+ * Send To Image Generator), so users read it as a REQUIRED step
+ * instead of an optional helper.
+ *
+ * Strictly additive — no IDs, classes, or handlers touched. Demotes
+ * the cluster via:
+ *   1) Banner background: tinted+dashed → very subtle muted card
+ *      with hairline border (no teal accent).
+ *   2) Surprise Me button: filled teal → ghost outline (lower
+ *      visual weight than nearby pills).
+ *   3) Headline copy: prepend "OPTIONAL" eyebrow chip so the role
+ *      of this row is unmistakable at a glance.
+ *   4) Dial chrome: keep functional but visually quieter.
+ *
+ * Selector specificity is bumped (body prefix) and !important is
+ * applied where T34 / pmg-handoff also use !important, so this T94
+ * style block wins by source order tie-break.
+ * ===================================================================== */
+(function pmgT94SurpriseOptional() {
+  if (window.__pmgT94SurpriseOptionalInit) return;
+  window.__pmgT94SurpriseOptionalInit = true;
+
+  var STYLE_ID = 'pmg-t94-surprise-optional-style';
+  var BANNER_ID = 'pmg-t34-surprise-top-row';
+  var EYEBROW_MARK = 'data-pmg-t94-eyebrow';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* === Banner: demote the tinted+dashed card to a calm helper === */
+      'body #' + BANNER_ID + ' {',
+      '  background: var(--color-surface-2, #f7f7f8) !important;',
+      '  border: 1px solid var(--color-border, #e3e3e7) !important;',
+      '  border-radius: var(--radius-md, 10px) !important;',
+      '}',
+      /* Quieten the headline so it stops shouting "do this first". */
+      'body #' + BANNER_ID + ' .pmg-t34-surprise-text strong {',
+      '  font-size: var(--text-sm, 14px) !important;',
+      '  font-weight: 700 !important;',
+      '  color: var(--color-text, #1d2a32) !important;',
+      '}',
+      'body #' + BANNER_ID + ' .pmg-t34-surprise-text {',
+      '  color: var(--color-text-muted, #5f6b75) !important;',
+      '  font-size: var(--text-xs, 12px) !important;',
+      '  line-height: 1.5 !important;',
+      '}',
+      /* "OPTIONAL" eyebrow inserted by JS — render small + muted. */
+      'body #' + BANNER_ID + ' .pmg-t94-optional-eyebrow {',
+      '  display: inline-block;',
+      '  font-size: 10px;',
+      '  font-weight: 800;',
+      '  letter-spacing: 0.14em;',
+      '  text-transform: uppercase;',
+      '  color: var(--color-text-muted, #5f6b75);',
+      '  margin-right: 6px;',
+      '  padding: 2px 6px;',
+      '  border: 1px solid var(--color-border, #e3e3e7);',
+      '  border-radius: 999px;',
+      '  background: var(--color-surface, #fff);',
+      '  vertical-align: 2px;',
+      '}',
+
+      /* === Surprise Me button: filled teal → ghost outline ===
+         T34 uses `#pmg-t34-surprise-top-row .pmg-photo-surprise`
+         with !important. Same selector + body prefix bumps
+         specificity from (0,1,1,0) to (0,1,1,1) so we win cleanly. */
+      'body #' + BANNER_ID + ' .pmg-photo-surprise {',
+      '  background: var(--color-surface, #fff) !important;',
+      '  color: var(--color-text, #1d2a32) !important;',
+      '  border: 1px solid var(--color-border, #e3e3e7) !important;',
+      '  font-weight: 600 !important;',
+      '  box-shadow: none !important;',
+      '}',
+      'body #' + BANNER_ID + ' .pmg-photo-surprise:hover {',
+      '  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface, #fff)) !important;',
+      '  color: var(--color-primary) !important;',
+      '  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border, #e3e3e7)) !important;',
+      '  filter: none !important;',
+      '}',
+
+      /* === Dial: quieten the wrap chrome, keep pressed-state legible === */
+      'body #' + BANNER_ID + ' .pmg-handoff-dial-label {',
+      '  color: var(--color-text-muted, #5f6b75) !important;',
+      '  font-weight: 600 !important;',
+      '}',
+      'body #' + BANNER_ID + ' .pmg-handoff-dial-segments {',
+      '  background: var(--color-surface, #fff) !important;',
+      '  border-color: var(--color-border, #e3e3e7) !important;',
+      '}',
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  /* Prepend a small "OPTIONAL" eyebrow chip to the existing
+     <strong> headline. Idempotent — guards via dataset attribute
+     so MutationObserver re-runs are safe. */
+  function injectEyebrow() {
+    var banner = document.getElementById(BANNER_ID);
+    if (!banner) return;
+    var strong = banner.querySelector('.pmg-t34-surprise-text strong');
+    if (!strong) return;
+    if (strong.hasAttribute(EYEBROW_MARK)) return;
+    var eyebrow = document.createElement('span');
+    eyebrow.className = 'pmg-t94-optional-eyebrow';
+    eyebrow.textContent = 'Optional';
+    /* a11y: chip is a visual cue; for screen readers we expose the
+       same intent via an sr-only text node ("Optional. ") so the
+       headline announces as "Optional. Need Ideas? Try An Example"
+       instead of running together as "OptionalNeed Ideas...". */
+    eyebrow.setAttribute('aria-hidden', 'true');
+    var srPrefix = document.createElement('span');
+    srPrefix.className = 'pmg-sr-only';
+    srPrefix.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;';
+    srPrefix.textContent = 'Optional. ';
+    strong.insertBefore(eyebrow, strong.firstChild);
+    strong.insertBefore(srPrefix, strong.firstChild);
+    strong.setAttribute(EYEBROW_MARK, '1');
+  }
+
+  function init() {
+    try {
+      injectStyles();
+      injectEyebrow();
+    } catch (e) { /* ignore */ }
+    /* Late-mount safety: T34 may build the banner after this IIFE runs. */
+    try {
+      var mo = new MutationObserver(function () { injectEyebrow(); });
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 60000);
+    } catch (e) { /* ignore */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+  setTimeout(init, 600);
+})();
