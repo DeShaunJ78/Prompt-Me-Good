@@ -13953,3 +13953,135 @@
   }
   setTimeout(init, 600);
 })();
+
+/* =====================================================================
+ * T95 — Dice Idea Generator: Make It Read As OPTIONAL Helper
+ * ---------------------------------------------------------------------
+ * User feedback (follow-up to T94): the "Need Inspiration? 🎲 Dice
+ * Idea Generator" widget at the top of Prompt Tuning (text-prompt
+ * builder) "appears to be a necessary step instead of just an idea
+ * generator" and "disrupts flow." This is the text-mode counterpart
+ * to T34's image-mode Surprise banner that T94 already demoted.
+ *
+ * The wrap is built dynamically by moveRandomPromptIntoSettings()
+ * with inline-style background = teal-tinted card and the dice button
+ * uses .btn-secondary which gives it a filled treatment that competes
+ * with the actual primary controls below.
+ *
+ * Strictly additive — no IDs, classes, or handlers touched. Same
+ * pattern as T94:
+ *   1) Wrap background: teal-tinted → muted surface-2 with hairline
+ *      border (overrides inline `background:` via !important).
+ *   2) "Need Inspiration?" label gets an "OPTIONAL" eyebrow chip
+ *      prepended (with sr-only "Optional. " for screen readers).
+ *   3) Dice button: filled secondary → ghost outline so it stops
+ *      reading as a required action.
+ *
+ * Selector specificity bumped via `body` prefix; !important is used
+ * to beat moveRandomPromptIntoSettings's inline style declarations.
+ * ===================================================================== */
+(function pmgT95DiceOptional() {
+  if (window.__pmgT95DiceOptionalInit) return;
+  window.__pmgT95DiceOptionalInit = true;
+
+  var STYLE_ID = 'pmg-t95-dice-optional-style';
+  var WRAP_CLASS = 'pmg-random-prompt-wrap';
+  var BTN_ID = 'random-prompt';
+  var EYEBROW_MARK = 'data-pmg-t95-eyebrow';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* === Wrap: demote tinted card to a calm helper === */
+      'body .' + WRAP_CLASS + ' {',
+      '  background: var(--color-surface-2, #f7f7f8) !important;',
+      '  border: 1px solid var(--color-border, #e3e3e7) !important;',
+      '  border-radius: var(--radius-md, 10px) !important;',
+      '  padding: 10px 12px !important;',
+      '}',
+      /* === Label: quieter, leave room for eyebrow chip === */
+      'body .' + WRAP_CLASS + ' > p {',
+      '  color: var(--color-text-muted, #5f6b75) !important;',
+      '  font-size: var(--text-xs, 12px) !important;',
+      '  font-weight: 700 !important;',
+      '  margin: 0 0 8px !important;',
+      '}',
+      /* === "OPTIONAL" eyebrow chip === */
+      'body .' + WRAP_CLASS + ' .pmg-t95-optional-eyebrow {',
+      '  display: inline-block;',
+      '  font-size: 10px;',
+      '  font-weight: 800;',
+      '  letter-spacing: 0.14em;',
+      '  text-transform: uppercase;',
+      '  color: var(--color-text-muted, #5f6b75);',
+      '  margin-right: 6px;',
+      '  padding: 2px 6px;',
+      '  border: 1px solid var(--color-border, #e3e3e7);',
+      '  border-radius: 999px;',
+      '  background: var(--color-surface, #fff);',
+      '  vertical-align: 1px;',
+      '}',
+      /* === Dice button: filled secondary → ghost outline === */
+      'body #' + BTN_ID + ' {',
+      '  background: var(--color-surface, #fff) !important;',
+      '  color: var(--color-text, #1d2a32) !important;',
+      '  border: 1px solid var(--color-border, #e3e3e7) !important;',
+      '  font-weight: 600 !important;',
+      '  box-shadow: none !important;',
+      '}',
+      'body #' + BTN_ID + ':hover {',
+      '  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface, #fff)) !important;',
+      '  color: var(--color-primary) !important;',
+      '  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border, #e3e3e7)) !important;',
+      '  filter: none !important;',
+      '}',
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  /* Prepend a small "OPTIONAL" eyebrow chip + sr-only "Optional. "
+     prefix to the existing "Need Inspiration?" label. Idempotent —
+     guards via dataset attribute so MutationObserver re-runs are safe. */
+  function injectEyebrow() {
+    var wrap = document.querySelector('.' + WRAP_CLASS);
+    if (!wrap) return;
+    var label = wrap.querySelector('p');
+    if (!label) return;
+    if (label.hasAttribute(EYEBROW_MARK)) return;
+    var eyebrow = document.createElement('span');
+    eyebrow.className = 'pmg-t95-optional-eyebrow';
+    eyebrow.textContent = 'Optional';
+    eyebrow.setAttribute('aria-hidden', 'true');
+    var srPrefix = document.createElement('span');
+    srPrefix.className = 'pmg-sr-only';
+    srPrefix.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;';
+    srPrefix.textContent = 'Optional. ';
+    label.insertBefore(eyebrow, label.firstChild);
+    label.insertBefore(srPrefix, label.firstChild);
+    label.setAttribute(EYEBROW_MARK, '1');
+  }
+
+  function init() {
+    try {
+      injectStyles();
+      injectEyebrow();
+    } catch (e) { /* ignore */ }
+    /* Late-mount safety: moveRandomPromptIntoSettings may run after
+       this IIFE; observe so we still demote when the wrap appears. */
+    try {
+      var mo = new MutationObserver(function () { injectEyebrow(); });
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 60000);
+    } catch (e) { /* ignore */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+  setTimeout(init, 600);
+})();
