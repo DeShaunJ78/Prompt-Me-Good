@@ -1619,13 +1619,22 @@
       .theme-toggle-label { display: inline-block; margin-left: 8px; font-weight: 600; }
     }
     @media print {
-      body * { visibility: hidden !important; }
-      #print-area, #print-area * { visibility: visible !important; }
-      #print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 24px; color: #000; background: #fff; font-family: 'Helvetica', 'Arial', sans-serif; }
+      /* Hide every body sibling so the long page does NOT spill onto blank
+         printed pages. visibility:hidden was wrong because it preserves
+         layout — the 10000+ line document still occupied page after page.
+         display:none drops the elements out of layout entirely. */
+      html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; height: auto !important; min-height: 0 !important; overflow: visible !important; }
+      body > *:not(#print-area) { display: none !important; }
+      #print-area { display: block !important; position: static !important; left: auto !important; top: auto !important; width: 100%; padding: 24px; margin: 0; color: #000; background: #fff; font-family: 'Helvetica', 'Arial', sans-serif; }
       #print-area .print-title { font-size: 18px; margin: 0 0 8px; font-weight: 700; }
       #print-area .print-meta { font-size: 12px; color: #555; margin-bottom: 16px; border-bottom: 1px solid #ccc; padding-bottom: 8px; }
       #print-area pre { white-space: pre-wrap; word-wrap: break-word; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.5; margin: 0; }
       #print-area .print-footer { margin-top: 24px; font-size: 10px; color: #888; border-top: 1px solid #ccc; padding-top: 8px; }
+      /* Pagination safety: keep title+meta together; let long <pre> bodies
+         paginate naturally across pages instead of forcing a hard break. */
+      #print-area .print-title, #print-area .print-meta { page-break-inside: avoid; break-inside: avoid; }
+      #print-area pre { page-break-inside: auto; break-inside: auto; orphans: 2; widows: 2; }
+      @page { margin: 0.5in; }
     }
     #print-area { display: none; }
     .nudge-banner { background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 22%, transparent), color-mix(in srgb, var(--color-primary) 8%, transparent)); border-bottom: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent); }
@@ -10547,7 +10556,7 @@ Context:
     parsing from blocking on the network round-trip.
   -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-  <script src="/scripts/pmg-ux.js?v=task61-keep-runpanel" defer></script>
+  <script src="/scripts/pmg-ux.js?v=task92-print-fix-2" defer></script>
   <script src="/scripts/post-spec.js" defer></script>
   <script src="/scripts/pmg-image-fix.js?v=img-progress-2" defer></script>
   <script src="/scripts/pmg-result-states.js?v=2-refocus" defer></script>

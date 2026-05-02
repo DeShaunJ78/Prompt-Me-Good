@@ -4292,35 +4292,35 @@
   function injectStyles() {
     if (document.getElementById(STYLE_ID)) return;
     var css = [
-      /* ---- Print / Save PDF button restyle ---- */
-      '#print-btn {',
-      '  display: inline-flex;',
-      '  align-items: center;',
-      '  justify-content: center;',
+      /* ---- Print / Save PDF button: HIDDEN as a duplicate.
+         T22 (PHASE B post-result polish) added a tiny printer icon next to
+         the "Your Fixed Prompt" title (#pmg-result-print-icon) which is
+         the canonical print affordance — it delegates clicks to #print-btn.
+         The text "Print / Save PDF" pill in the actions row was therefore
+         a duplicate placement (T22 tried to hide its parent row but the
+         selector did not match). Hiding the pill directly leaves a single,
+         compact, well-placed print entry point near the printable content
+         while preserving #print-btn in the DOM so the icon click handler
+         (printBtn.click()) and any other programmatic callers still work.
+         Earlier T19 promoted this pill with a brand fill / pill radius /
+         hover lift; those overrides are no longer relevant since the pill
+         is hidden, but we keep the icon + flex layout below as a safety
+         net in case display:none is ever overridden downstream. */
+      '#print-btn { display: none !important; }',
+      '#print-btn[data-pmg-show="1"] {',
+      '  display: inline-flex !important;',
+      '  align-items: center !important;',
+      '  justify-content: center !important;',
       '  gap: 8px;',
-      '  font-weight: 600;',
-      '  border: 1px solid color-mix(in srgb, var(--color-primary) 35%, var(--color-border)) !important;',
-      '  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface)) !important;',
-      '  color: var(--color-text) !important;',
-      '  border-radius: var(--radius-full);',
-      '  padding: 10px 18px;',
-      '  transition: transform 120ms ease, box-shadow 200ms ease, background 180ms ease, border-color 180ms ease;',
-      '  box-shadow: 0 1px 2px rgba(0,0,0,0.04);',
       '}',
-      '#print-btn:hover {',
-      '  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface)) !important;',
-      '  border-color: var(--color-primary) !important;',
-      '  transform: translateY(-1px);',
-      '  box-shadow: 0 3px 10px color-mix(in srgb, var(--color-primary) 18%, transparent);',
-      '}',
-      '#print-btn:active { transform: translateY(0); }',
       '#print-btn .pmg-print-icon {',
       '  display: inline-flex;',
       '  align-items: center;',
       '  justify-content: center;',
-      '  width: 16px;',
-      '  height: 16px;',
-      '  flex: 0 0 16px;',
+      '  width: 14px;',
+      '  height: 14px;',
+      '  flex: 0 0 14px;',
+      '  opacity: 0.85;',
       '}',
       '#print-btn .pmg-print-icon svg { width: 100%; height: 100%; display: block; }',
 
