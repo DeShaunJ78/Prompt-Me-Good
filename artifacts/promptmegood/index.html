@@ -5978,11 +5978,20 @@ Context:
         }
         function syncPills(container, value) {
           var pills = container.querySelectorAll('.pmg-tune-pill');
+          var anyActive = false;
           for (var i = 0; i < pills.length; i++) {
             var btn = pills[i];
             var active = btn.getAttribute('data-value') === value;
             btn.classList.toggle('is-active', active);
             btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+            // Roving tabindex: the active pill is the single tab stop.
+            btn.setAttribute('tabindex', active ? '0' : '-1');
+            if (active) anyActive = true;
+          }
+          // If nothing matched (e.g. value was cleared), make the first
+          // pill the tab stop so keyboard users can still enter the group.
+          if (!anyActive && pills.length) {
+            pills[0].setAttribute('tabindex', '0');
           }
         }
 
@@ -6011,12 +6020,12 @@ Context:
           // Initial paint reflects whatever the select already has selected.
           syncPills(container, sel.value);
 
-          // Pill click → set value on the native select and dispatch a
-          // 'change' event so listeners (userTouched tracker, etc.)
-          // behave exactly as they would for a real <select> change.
-          container.addEventListener('click', function (ev) {
-            var btn = ev.target.closest && ev.target.closest('.pmg-tune-pill');
-            if (!btn || !container.contains(btn)) return;
+          // Shared activator: writes the new value through the native
+          // <select> so all existing reads and 'change' listeners
+          // (userTouched tracker, etc.) behave exactly as they would
+          // for a real <select> change.
+          function activatePill(btn) {
+            if (!btn) return;
             var newVal = btn.getAttribute('data-value');
             if (sel.value === newVal) {
               // Re-affirm UI in case state drifted, but skip event.
@@ -6032,6 +6041,64 @@ Context:
               evt.initEvent('change', true, false);
               sel.dispatchEvent(evt);
             }
+          }
+
+          // Pill click → activate.
+          container.addEventListener('click', function (ev) {
+            var btn = ev.target.closest && ev.target.closest('.pmg-tune-pill');
+            if (!btn || !container.contains(btn)) return;
+            activatePill(btn);
+          });
+
+          // Keyboard navigation (WAI-ARIA radiogroup-style):
+          //   Left/Up   → previous pill (wraps)
+          //   Right/Down → next pill (wraps)
+          //   Home      → first pill
+          //   End       → last pill
+          //   Space/Enter → activate focused pill
+          // Arrow movement also activates the newly focused pill, which
+          // matches the radiogroup pattern and keeps the hidden <select>
+          // in sync as the user navigates.
+          container.addEventListener('keydown', function (ev) {
+            var btn = ev.target.closest && ev.target.closest('.pmg-tune-pill');
+            if (!btn || !container.contains(btn)) return;
+            var key = ev.key;
+            if (key !== 'ArrowLeft' && key !== 'ArrowRight' &&
+                key !== 'ArrowUp' && key !== 'ArrowDown' &&
+                key !== 'Home' && key !== 'End' &&
+                key !== ' ' && key !== 'Spacebar' && key !== 'Enter') {
+              return;
+            }
+            var pills = container.querySelectorAll('.pmg-tune-pill');
+            if (!pills.length) return;
+            var idx = -1;
+            for (var i = 0; i < pills.length; i++) {
+              if (pills[i] === btn) { idx = i; break; }
+            }
+            if (idx < 0) return;
+
+            if (key === ' ' || key === 'Spacebar' || key === 'Enter') {
+              ev.preventDefault();
+              activatePill(btn);
+              return;
+            }
+
+            var nextIdx = idx;
+            if (key === 'ArrowLeft' || key === 'ArrowUp') {
+              nextIdx = (idx - 1 + pills.length) % pills.length;
+            } else if (key === 'ArrowRight' || key === 'ArrowDown') {
+              nextIdx = (idx + 1) % pills.length;
+            } else if (key === 'Home') {
+              nextIdx = 0;
+            } else if (key === 'End') {
+              nextIdx = pills.length - 1;
+            }
+            ev.preventDefault();
+            var nextBtn = pills[nextIdx];
+            // Activate first so syncPills updates the roving tabindex,
+            // then move focus to the (now tabindex=0) pill.
+            activatePill(nextBtn);
+            try { nextBtn.focus(); } catch (e) {}
           });
 
           // Keep pills in sync if anyone else dispatches 'change'
