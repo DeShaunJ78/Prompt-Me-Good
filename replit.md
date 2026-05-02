@@ -72,6 +72,7 @@ This is a static HTML AI prompt builder (`index.html`) built with vanilla JavaSc
 -   **Legal Pages:** `privacy.html` and `terms.html` with condensed versions embedded in `index.html`.
 -   **Pro Upgrade Modal:** Two CTAs for Founding Member Stripe checkout and a "Notify Me When Pro Launches" link.
 -   **UX Polish Pass:** Standardized CTA to **Fix My Prompt**, inline examples, repositioned **Help Me Start** copy, discoverable tooltips, persistent post-result actions including **⬇ Download .txt** and **✓ Saved To Vault** indicator, and updated Prompt Vault subhead.
+-   **Voice Input + Language Picker:** Microphone button on the **Your Goal** and post-generate **Fine-Tune** textareas (Web Speech API) with a small ▾ caret that opens a popover for picking the recognition language (en-US, en-GB, es-ES, fr-FR, de-DE, pt-BR, ja-JP, zh-CN, hi-IN). The selection persists to `localStorage` (`pmg.voice.lang.v1`) and the active code is shown in the mic tooltip; takes effect on the next recording session. Single-active-mic arbitration ensures only one recognizer runs at a time across both fields.
 
 # External Dependencies
 
