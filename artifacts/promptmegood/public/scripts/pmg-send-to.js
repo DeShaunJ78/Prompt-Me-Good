@@ -293,14 +293,8 @@
       '  z-index: 300; box-shadow: 0 8px 24px rgba(0,0,0,.25);',
       '}',
 
-      /* Make the existing open-in row a 4-column grid friendly to
-         the new Gemini card. */
-      '.open-in-btn[data-tool="gemini"]    { background: #f3e8ff; color: #6b21a8; border-color: #9333ea; }',
-      '.open-in-btn[data-tool="gemini"]:hover { background: #e9d5ff; }',
-      '[data-theme="dark"] .open-in-btn[data-tool="chatgpt"] { background: #064e3b; color: #d1fae5; border-color: #10a37f; }',
-      '[data-theme="dark"] .open-in-btn[data-tool="claude"] { background: #5b3a0e; color: #fde68a; border-color: #d97706; }',
-      '[data-theme="dark"] .open-in-btn[data-tool="perplexity"] { background: #1e2a55; color: #c7d2fe; border-color: #2563eb; }',
-      '[data-theme="dark"] .open-in-btn[data-tool="gemini"] { background: #3b1d5c; color: #e9d5ff; border-color: #9333ea; }',
+      /* Per-tool brand styling for .open-in-card / .open-in-btn lives
+         in index.html (single source of truth). */
 
       '@media (prefers-reduced-motion: reduce) {',
       '  #' + WRAP_ID + ' button { transition: none; }',
@@ -450,7 +444,7 @@
         '<span class="recommended-badge" id="rec-badge-gemini" hidden>Recommended</span>' +
         '<a class="btn open-in-btn" data-tool="gemini" aria-describedby="open-in-desc-gemini" ' +
           'href="https://gemini.google.com/app" target="_blank" rel="noopener noreferrer">Gemini</a>' +
-        '<p class="open-in-desc" id="open-in-desc-gemini">Best for Google Workspace, multimodal tasks, and image-aware chat</p>';
+        '<p class="open-in-desc" id="open-in-desc-gemini">Best for Google Workspace, multimodal tasks, and image-aware chat.</p>';
       row.appendChild(card);
     }
 

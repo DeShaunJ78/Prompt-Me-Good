@@ -339,9 +339,8 @@
       '  display: none !important;',
       '}',
 
-      /* Hide pre-generation noise (kbd hint, early-access note). */
-      'body:not(.pmg-has-result) #builder .result-wrap > p:has(kbd) { display: none !important; }',
-      'body:not(.pmg-has-result) #builder .early-access-note { display: none !important; }',
+      /* Hide pre-generation noise (post-prompt footer with shortcuts + pricing). */
+      'body:not(.pmg-has-result) #builder .post-prompt-footer { display: none !important; }',
 
       ''
     ].join('\n');

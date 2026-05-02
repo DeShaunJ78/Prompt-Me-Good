@@ -1146,15 +1146,6 @@
       .email-capture-form { flex-direction: column; align-items: stretch; }
       .email-capture-form input[type="email"] { max-width: none; }
     }
-    .early-access-note {
-      margin: var(--space-3) 0 0;
-      padding: 0;
-      font-size: var(--text-xs);
-      color: var(--color-text-muted);
-      line-height: 1.5;
-      text-align: center;
-      opacity: 0.85;
-    }
     .site-footer-early-access {
       margin: 0;
       font-size: var(--text-xs);
@@ -1340,41 +1331,157 @@
     @media (prefers-reduced-motion: reduce) {
       .panel.is-highlight { animation: none; }
     }
-    .open-in-block { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-divider); display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; }
-    .open-in-label { font-size: var(--text-sm); font-weight: 700; color: var(--color-text); padding-top: 12px; }
-    .open-in-row { display: flex; flex-wrap: wrap; gap: 14px; flex: 1 1 auto; }
-    .open-in-card { display: flex; flex-direction: column; align-items: stretch; gap: 8px; flex: 1 1 0; min-width: 150px; max-width: 240px; }
-    .open-in-desc {
-      margin: 0; padding: 0 4px;
-      font-size: 12px; line-height: 1.45;
-      color: #4b5563;
-      text-align: center;
+    /* "Use Your Prompt In:" section — polished card grid.
+       Label sits above as a real section header (not crammed beside).
+       Grid is 4-up on desktop, 2-up on tablet, 1-up on phones, so
+       Gemini never orphans on its own row. Each card is a vertical
+       cluster: brand-colored top accent, tool name, description.
+       Footer (shortcuts + free-during-founding) lives in a unified
+       chip strip so neither line looks orphaned. */
+    .open-in-block {
+      margin-top: var(--space-4);
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--color-divider);
     }
-    [data-theme="dark"] .open-in-desc { color: #d1d5db; }
-    .open-in-btn {
-      display: inline-flex; align-items: center; justify-content: center; text-align: center;
-      min-height: 44px; padding: 13px 18px;
-      border-radius: 11px;
-      border: 1px solid var(--color-border);
-      background: #ffffff;
-      font-size: var(--text-sm); font-weight: 600; line-height: 1;
-      text-decoration: none; width: 100%;
-      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    .open-in-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin: 0 0 var(--space-3, 12px);
     }
-    .open-in-btn:hover { transform: scale(1.02); }
-    .open-in-btn:active { transform: scale(0.99); }
-    .open-in-btn[data-tool="chatgpt"]    { background: #e6f7f3; color: #0f766e; border-color: #10a37f; }
-    .open-in-btn[data-tool="claude"]     { background: #fff4e6; color: #b45309; border-color: #d97706; }
-    .open-in-btn[data-tool="perplexity"] { background: #eef4ff; color: #1d4ed8; border-color: #2563eb; }
-    .open-in-btn[data-tool="chatgpt"]:hover    { background: #d2f0e6; }
-    .open-in-btn[data-tool="claude"]:hover     { background: #ffe6c7; }
-    .open-in-btn[data-tool="perplexity"]:hover { background: #dde7ff; }
+    .open-in-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+    @media (max-width: 980px) {
+      .open-in-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
     @media (max-width: 640px) {
-      .open-in-block { flex-direction: column; align-items: stretch; gap: 12px; }
-      .open-in-label { padding-top: 0; }
-      .open-in-row { flex-direction: column; gap: 14px; }
-      .open-in-card { max-width: none; min-width: 0; }
-      .open-in-btn { min-height: 48px; padding: 14px 18px; }
+      .open-in-row { grid-template-columns: 1fr; gap: 10px; }
+    }
+    .open-in-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      padding: 14px 12px 12px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg, 14px);
+      background: var(--color-surface);
+      transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+      min-width: 0;
+      max-width: none;
+    }
+    .open-in-card::before {
+      /* Brand-color top accent stripe, set per tool below. */
+      content: "";
+      position: absolute;
+      top: 0; left: 12px; right: 12px;
+      height: 3px;
+      border-radius: 0 0 4px 4px;
+      background: var(--pmg-tool-accent, var(--color-primary));
+      opacity: 0.85;
+    }
+    .open-in-card:hover {
+      border-color: color-mix(in srgb, var(--pmg-tool-accent, var(--color-primary)) 50%, var(--color-border));
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+    }
+    .open-in-desc {
+      margin: 0;
+      padding: 0;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--color-text-muted);
+      text-align: left;
+    }
+    [data-theme="dark"] .open-in-desc { color: #cbd5e1; }
+    .open-in-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-align: center;
+      min-height: 40px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      background: var(--pmg-tool-bg, var(--color-surface-2));
+      color: var(--pmg-tool-fg, var(--color-text));
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1;
+      text-decoration: none;
+      width: 100%;
+      transition: background 180ms ease, color 180ms ease, transform 150ms ease;
+    }
+    .open-in-btn:hover { background: var(--pmg-tool-bg-hover, var(--color-surface-2)); transform: translateY(-1px); }
+    .open-in-btn:active { transform: translateY(0); }
+    .open-in-btn::before {
+      /* Small brand dot to the left of the name. */
+      content: "";
+      width: 8px; height: 8px; border-radius: 999px;
+      background: var(--pmg-tool-accent, var(--color-primary));
+      flex: 0 0 auto;
+    }
+    /* Per-tool brand palettes — each card scopes its own --pmg-tool-* vars. */
+    .open-in-card:has(.open-in-btn[data-tool="chatgpt"])    { --pmg-tool-accent: #10a37f; --pmg-tool-bg: #e6f7f3; --pmg-tool-bg-hover: #d2f0e6; --pmg-tool-fg: #0f766e; }
+    .open-in-card:has(.open-in-btn[data-tool="claude"])     { --pmg-tool-accent: #d97706; --pmg-tool-bg: #fff4e6; --pmg-tool-bg-hover: #ffe6c7; --pmg-tool-fg: #b45309; }
+    .open-in-card:has(.open-in-btn[data-tool="perplexity"]) { --pmg-tool-accent: #2563eb; --pmg-tool-bg: #eef4ff; --pmg-tool-bg-hover: #dde7ff; --pmg-tool-fg: #1d4ed8; }
+    .open-in-card:has(.open-in-btn[data-tool="gemini"])     { --pmg-tool-accent: #8b5cf6; --pmg-tool-bg: #f3eeff; --pmg-tool-bg-hover: #e7defc; --pmg-tool-fg: #6d28d9; }
+    /* Dark mode tweaks — brand bgs are too bright otherwise. */
+    [data-theme="dark"] .open-in-card { background: var(--color-surface-2); }
+    [data-theme="dark"] .open-in-card:has(.open-in-btn[data-tool="chatgpt"])    { --pmg-tool-bg: rgba(16,163,127,0.15); --pmg-tool-bg-hover: rgba(16,163,127,0.25); --pmg-tool-fg: #6ee7c0; }
+    [data-theme="dark"] .open-in-card:has(.open-in-btn[data-tool="claude"])     { --pmg-tool-bg: rgba(217,119,6,0.18); --pmg-tool-bg-hover: rgba(217,119,6,0.28); --pmg-tool-fg: #fbbf24; }
+    [data-theme="dark"] .open-in-card:has(.open-in-btn[data-tool="perplexity"]) { --pmg-tool-bg: rgba(37,99,235,0.18); --pmg-tool-bg-hover: rgba(37,99,235,0.28); --pmg-tool-fg: #93c5fd; }
+    [data-theme="dark"] .open-in-card:has(.open-in-btn[data-tool="gemini"])     { --pmg-tool-bg: rgba(139,92,246,0.18); --pmg-tool-bg-hover: rgba(139,92,246,0.28); --pmg-tool-fg: #c4b5fd; }
+
+    /* Unified footer strip below the cards — shortcuts + free-during-founding
+       in one calm row, so they don't read as orphaned plain text. */
+    .post-prompt-footer {
+      margin-top: var(--space-4, 16px);
+      padding: 12px 14px;
+      border-radius: var(--radius-lg, 14px);
+      background: color-mix(in srgb, var(--color-surface-2) 70%, transparent);
+      border: 1px solid var(--color-divider);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+    .post-prompt-footer kbd {
+      display: inline-block;
+      padding: 1px 6px;
+      margin: 0 1px;
+      font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-text);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-bottom-width: 2px;
+      border-radius: 4px;
+      line-height: 1.2;
+    }
+    .post-prompt-footer-shortcuts { margin: 0; }
+    .post-prompt-footer-pricing { margin: 0; display: inline-flex; align-items: center; gap: 6px; }
+    .post-prompt-footer-pricing::before {
+      content: "";
+      width: 6px; height: 6px; border-radius: 999px;
+      background: var(--color-primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 25%, transparent);
+    }
+    @media (max-width: 600px) {
+      .post-prompt-footer { flex-direction: column; align-items: flex-start; }
     }
     .improve-block { margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-divider); }
     .improve-title { margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--color-text); }
@@ -3755,31 +3862,33 @@
               <button class="save-tip-close" type="button" id="save-tip-close" aria-label="Dismiss tip">&times;</button>
             </div>
             <div class="open-in-block" aria-label="Use your prompt in an AI tool">
-              <span class="open-in-label">Use Your Prompt In:</span>
+              <p class="open-in-label">Use Your Prompt In</p>
               <div class="open-in-row">
                 <div class="open-in-card">
                   <span class="recommended-badge" id="rec-badge-chatgpt" hidden>Recommended</span>
                   <a class="btn open-in-btn" data-tool="chatgpt" aria-describedby="open-in-desc-chatgpt" href="https://chat.openai.com/" target="_blank" rel="noopener noreferrer">ChatGPT</a>
-                  <p class="open-in-desc" id="open-in-desc-chatgpt">Best for structured answers, step-by-step guidance, and strategy</p>
+                  <p class="open-in-desc" id="open-in-desc-chatgpt">Best for structured answers, step-by-step guidance, and strategy.</p>
                 </div>
                 <div class="open-in-card">
                   <span class="recommended-badge" id="rec-badge-claude" hidden>Recommended</span>
                   <a class="btn open-in-btn" data-tool="claude" aria-describedby="open-in-desc-claude" href="https://claude.ai/" target="_blank" rel="noopener noreferrer">Claude</a>
-                  <p class="open-in-desc" id="open-in-desc-claude">Best for writing, long-form content, and natural tone</p>
+                  <p class="open-in-desc" id="open-in-desc-claude">Best for writing, long-form content, and natural tone.</p>
                 </div>
                 <div class="open-in-card">
                   <span class="recommended-badge" id="rec-badge-perplexity" hidden>Recommended</span>
                   <a class="btn open-in-btn" data-tool="perplexity" aria-describedby="open-in-desc-perplexity" href="https://www.perplexity.ai/" target="_blank" rel="noopener noreferrer">Perplexity</a>
-                  <p class="open-in-desc" id="open-in-desc-perplexity">Best for research, real-time info, and fact-based answers</p>
+                  <p class="open-in-desc" id="open-in-desc-perplexity">Best for research, real-time info, and fact-based answers.</p>
                 </div>
               </div>
             </div>
             </div>
-            <p style="margin: var(--space-3) 0 0; font-size: var(--text-xs); color: var(--color-text-muted);">
-              Shortcuts: press <kbd>G</kbd> to generate, <kbd>C</kbd> to copy, <kbd>/</kbd> to search history.
-            </p>
+            <div class="post-prompt-footer" role="contentinfo">
+              <p class="post-prompt-footer-shortcuts">
+                Shortcuts: press <kbd>G</kbd> to generate, <kbd>C</kbd> to copy, <kbd>/</kbd> to search history.
+              </p>
+              <p class="post-prompt-footer-pricing">PromptMeGood is free during our founding member period. Full pricing launches soon.</p>
+            </div>
           </div>
-          <p class="early-access-note">PromptMeGood is free during our founding member period. Full pricing launches soon.</p>
         </section>
       </div>
     </section>
