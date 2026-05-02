@@ -9688,11 +9688,33 @@ Context:
               const j = await res.json();
               if (j && (j.error || j.message)) msg = String(j.error || j.message);
             } else {
-              msg = (await res.text()) || msg;
+              const txt = (await res.text()) || '';
+              // Don't dump raw HTML bodies (e.g. SPA shell or deploy placeholder)
+              // into the response box — they'd be unreadable. Surface a concise
+              // hint instead so the user knows it's a server problem, not theirs.
+              if (/^\s*<!doctype|<html/i.test(txt)) {
+                msg = 'AI service is temporarily unavailable. Please try again in a moment.';
+              } else if (txt) {
+                msg = txt;
+              }
             }
           } catch (_) {}
           if (res.status === 429) msg = 'Rate limit reached. Please wait a bit before running again.';
           if (out) out.textContent = msg;
+          setRunning(false);
+          return;
+        }
+
+        // Defensive: a 200 that is NOT an SSE stream (e.g. static handler
+        // serving the SPA shell during a deploy gap or cold-start fallback)
+        // would otherwise be silently consumed by the reader below and leave
+        // the output box stuck on the empty-state "Waiting for AI response…"
+        // pseudo-element forever. Detect this up front and surface a clear
+        // error instead.
+        const responseCt = (res.headers.get('content-type') || '').toLowerCase();
+        if (!responseCt.includes('text/event-stream')) {
+          if (out) out.textContent = 'AI service is temporarily unavailable. Please try again in a moment.';
+          try { res.body && res.body.cancel && res.body.cancel(); } catch (_) {}
           setRunning(false);
           return;
         }
@@ -9750,6 +9772,13 @@ Context:
         } catch (err) {
           if (!lastResponseText && out) out.textContent = 'Stream interrupted. Please try again.';
         } finally {
+          // Belt-and-suspenders: if the stream closed cleanly but never delivered
+          // a single text chunk (no [DONE], no error event, just an empty body),
+          // the output box would be empty and CSS :empty::before would show
+          // "Waiting for AI response…" forever. Surface a real error instead.
+          if (!lastResponseText && out && !out.textContent) {
+            out.textContent = 'No response received from the AI service. Please try again.';
+          }
           setRunning(false);
         }
       }

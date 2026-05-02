@@ -50,7 +50,7 @@ This is a static HTML AI prompt builder (`index.html`) using vanilla JavaScript 
 -   **Rate Limiting:** Per-IP rate limits (20/hr for generate, 5/hr for run).
 -   **Cost Protection:** In-memory `INJECTION_BLOCKLIST` and a daily $3 USD cost cap.
 -   **AI Frontend Client:** `window.__pmgAI` provides generate, refine, and image prompt functions with streaming-first fallback. `localStorage` caps apply per month.
--   **Run With AI (Frontend):** Post-generation panel using `gpt-4o` responses.
+-   **Run With AI (Frontend):** Post-generation panel using `gpt-4o` responses. Streamer is defensive about non-SSE 200 responses (e.g. deploy gaps): it surfaces "AI service is temporarily unavailable" instead of leaving `#aiResponseOutput` empty (which would otherwise pin the box on its CSS `:empty::before` "Waiting for AI response…" placeholder forever).
 -   **Hero Usage Counter:** Displays combined prompt and run counts over 100.
 -   **Image Upload + Vision Analyze:** Allows uploading images for AI analysis via `/api/analyze` to describe content and fill the prompt textarea.
 -   **Paywall Switch (Open-Beta):** `isPaywallActive()` controlled by Replit Secrets.
