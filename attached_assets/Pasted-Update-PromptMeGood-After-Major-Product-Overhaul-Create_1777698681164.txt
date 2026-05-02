@@ -1,0 +1,218 @@
+Update PromptMeGood After Major Product Overhaul.
+
+Create a checkpoint before changing anything.
+
+Goal:
+Audit the current live codebase, identify current features and removed features, then update all public-facing pages, policies, pricing, SEO metadata, and Pro/free feature messaging so the site accurately reflects what PromptMeGood does now.
+
+Do not guess from old docs. Inspect the current app first.
+
+Scope:
+- Main app/page copy
+- Pricing page
+- Guide/help/manual pages
+- Privacy Policy
+- Terms
+- FAQ if present
+- Footer
+- SEO metadata
+- Open Graph/Twitter metadata
+- Schema/structured data if present
+- Pro/free tier messaging
+- Paywall/upgrade copy
+- Checkout-facing copy if present
+
+Do Not Change:
+- Backend/API logic
+- AI provider logic
+- Stripe webhook logic
+- Supabase auth logic
+- Database schema unless required for copy/display
+- Secrets/API keys
+- Existing working routes
+- Usage/cost controls
+
+Required Discovery Step:
+1. Scan the current app and list all active user-facing features.
+2. List any old/removed features still mentioned in copy.
+3. List any new features missing from pricing, guide, policies, or SEO.
+4. Identify Pro-gated features currently shown in the UI.
+5. Identify Free features currently available.
+6. Report findings before making large structural edits if anything is unclear.
+
+Update Pricing Page:
+- Rewrite pricing so Free and Pro accurately match the current product.
+- Retool Pro offerings so they feel worth paying for.
+- Do not promise features that are not currently available.
+- Use clear comparison cards.
+- Make Pro benefits outcome-based, not technical.
+- Include Founding Member / Lifetime Access only if currently active in Stripe/app.
+- If Founding Member is active, clarify:
+  “Lifetime Access To Core Features”
+  and avoid promising unlimited future high-cost features.
+- CTA buttons must use Title Case.
+- Keep pricing copy concise and trustworthy.
+
+Suggested Pro Positioning:
+PromptMeGood Pro is for users who want faster, stronger, reusable AI workflows.
+
+Possible Pro Benefits To Use Only If Supported:
+- Save More Prompts
+- Prompt History
+- Advanced Refinement
+- Money Mode Pro
+- Image Generation Enhancements
+- Transform Studio
+- Vault / Saved Work
+- Compare / Improve Tools
+- Priority Or Expanded Usage
+- Pro Templates
+- Advanced Prompt Quality Tools
+
+Update Policies:
+Privacy Policy must accurately state:
+- Users may submit prompts, files, images, and other content.
+- AI features may send submitted content to AI service providers for processing.
+- Payment processing is handled by Stripe if payments are active.
+- Authentication/account data is handled through Supabase if accounts are active.
+- Saved prompts/history may be stored if user accounts or saved features exist.
+- Do not claim everything stays local if backend/AI/payment/account features are active.
+- Keep legal copy clear, not overly scary.
+
+Terms must accurately state:
+- PromptMeGood provides AI-assisted prompt/result tools.
+- AI outputs may be imperfect and should be reviewed.
+- Users are responsible for content they submit.
+- Paid plans, subscriptions, lifetime/founding access, refunds, cancellation, and feature availability should match current app behavior.
+- Do not promise permanent availability of costly future features unless explicitly intended.
+
+Update Guide / Help:
+- Remove instructions for old removed features.
+- Add short instructions for new features.
+- Keep beginner help short.
+- Move advanced details behind Full Guide / Advanced Help if present.
+- Explain each active mode simply:
+  What it does
+  What to enter
+  What button to press
+  What happens next
+
+Update SEO:
+- Update title tags and meta descriptions for current positioning.
+- Main title should clearly include:
+  PromptMeGood
+  AI Prompt Builder
+  Better AI Results
+- Meta descriptions should be under ~160 characters when possible.
+- Add or update Open Graph:
+  og:title
+  og:description
+  og:image if available
+  og:url
+  og:type
+- Add or update Twitter card tags if present.
+- Ensure canonical URL points to https://www.promptmegood.com
+- Clean duplicate metadata.
+- Remove references to old features.
+- Add natural keywords where appropriate:
+  AI Prompt Builder
+  Prompt Generator
+  Better AI Prompts
+  ChatGPT Prompt Helper
+  AI Writing Prompts
+  AI Image Prompt Generator
+  PromptMeGood Pro
+- Do not keyword-stuff.
+- Make headings clear and human-readable.
+
+Title Case Policy:
+Use Title Case for:
+- Buttons
+- Section Titles
+- Card Titles
+- Feature Labels
+- Short Subtitles
+- Badges
+- Navigation Items
+- Modal Titles
+- CTA Text
+- Control Labels
+- Placeholders In Labeled Fields
+- Dropdown Options
+- Pill/Chip Labels
+- Status Labels
+- Confirmation Messages Tied To Actions
+- Helper Text Directly Attached To Controls
+
+Do not force Title Case on:
+- Long body paragraphs
+- Privacy Policy paragraphs
+- Terms paragraphs
+- Natural error messages where sentence case reads better
+
+UX Copy Rules:
+- No outdated feature names.
+- No fake testimonials.
+- No fake counters.
+- No “Beta User.”
+- No “0+ prompts generated.”
+- No confusing technical labels.
+- Keep copy simple for everyday users.
+- Preserve button proximity and flow.
+- Do not insert banners between input and action buttons.
+
+Free/Pro Retooling:
+Create a clean feature matrix:
+Free:
+- Best for trying PromptMeGood
+- Include only features actually free
+
+Pro:
+- Best for power users
+- Emphasize saved work, advanced tools, Money Mode, image/studio features, higher limits, or whatever actually exists
+- Use benefit-led labels:
+  Better Prompts Faster
+  Save And Reuse Your Best Work
+  Advanced Refinement
+  Money Mode Pro
+  Image And Studio Tools
+  More Room To Create
+
+Paywall/Upgrade Copy:
+- Keep it calm and clear.
+- Do not block the first-use flow unnecessarily.
+- Show upgrade prompts after value, not before first use where possible.
+- CTA:
+  Upgrade To Pro
+  Unlock Pro
+  Become A Founding Member
+  whichever matches current Stripe setup.
+
+QA:
+After changes, verify:
+- Homepage loads.
+- Pricing page loads.
+- Guide/help loads.
+- Privacy Policy loads.
+- Terms load.
+- No fatal console errors.
+- Stripe checkout route still works if payments are active.
+- Supabase login still works if accounts are active.
+- Pro/free messaging matches actual gates.
+- Removed features are no longer mentioned.
+- New features are explained.
+- Title Case policy is followed.
+- SEO metadata is present and not duplicated.
+- Mobile layout has no horizontal overflow.
+
+Report Back:
+1. Current features found.
+2. Removed/outdated features found in copy.
+3. Pages updated.
+4. Pricing changes made.
+5. Pro tier changes made.
+6. Policy changes made.
+7. SEO changes made.
+8. Files changed.
+9. QA results.
+10. Any remaining decisions needed from me.
