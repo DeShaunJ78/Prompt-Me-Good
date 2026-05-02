@@ -9503,7 +9503,65 @@
         '<p class="std-cell-text">' + afterPrompt + '</p>' +
       '</div>';
 
-    grid.appendChild(row);
+    /* Promote the cat row to be the FIRST visible comparison — it's
+       the strongest sales argument the page has (real photo before/
+       after vs the text-only rows). T14's trimSeeTheDifference()
+       has already collapsed rows[1..N] and added a "See N More" reveal
+       button assuming rows[0] is the visible default; we now flip
+       that so the cat row is the visible default and EVERY text row
+       sits behind the reveal button. */
+    grid.insertBefore(row, grid.firstChild);
+
+    var section = document.getElementById('see-the-difference');
+    var siblingTextRows = Array.prototype.filter.call(
+      grid.querySelectorAll(':scope > .std-row'),
+      function (r) { return r !== row; }
+    );
+
+    if (section && !section.classList.contains('pmg-std-expanded')) {
+      siblingTextRows.forEach(function (r, i) {
+        r.classList.add('pmg-std-collapsed');
+        r.classList.remove('pmg-std-revealed');
+        /* Use a T33-distinct prefix so we never collide with T14's
+           own 'pmg-std-row-extra-N' IDs (which it assigned earlier
+           to rows it had already collapsed). */
+        if (!r.id) r.id = 'pmg-t33-std-row-promoted-' + (i + 1);
+      });
+
+      /* Update the pre-existing reveal button label + aria-controls
+         to reflect the new hidden count (all text rows now). If the
+         button hasn't been built yet (T14 hasn't run), T14 will pick
+         up the correct collapsed set when it does run. */
+      var btn = section.querySelector('.pmg-std-reveal-btn');
+      if (btn && siblingTextRows.length > 0) {
+        var n = siblingTextRows.length;
+        btn.textContent = 'See ' + n + ' More Comparison' +
+          (n === 1 ? '' : 's') + ' →';
+        btn.setAttribute(
+          'aria-controls',
+          siblingTextRows.map(function (r) { return r.id; }).join(' ')
+        );
+
+        /* T14's button click handler closes over the `hidden` array
+           captured at T14 init — that array does NOT include the row
+           we just newly collapsed (the one T14 originally treated as
+           the visible default). Attach an idempotent reveal-all click
+           handler so every collapsed std-row reveals on click. Guarded
+           by a flag so multiple invocations don't multiply listeners. */
+        if (!btn.__pmgT33RevealAll) {
+          btn.__pmgT33RevealAll = true;
+          btn.addEventListener('click', function () {
+            grid.querySelectorAll(':scope > .std-row.pmg-std-collapsed')
+              .forEach(function (r) {
+                r.classList.remove('pmg-std-collapsed');
+                r.classList.add('pmg-std-revealed');
+              });
+            section.classList.add('pmg-std-expanded');
+            btn.setAttribute('aria-expanded', 'true');
+          });
+        }
+      }
+    }
 
     /* If the original T28 ba node exists, leave it in DOM but keep it
        hidden via CSS (already covered above). Marking it for trace. */
