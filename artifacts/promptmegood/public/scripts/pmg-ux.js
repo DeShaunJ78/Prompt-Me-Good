@@ -13621,3 +13621,186 @@
   }
   setTimeout(init, 600);
 })();
+
+/* =====================================================================
+ * T24 — AUDIT PASS (post 8.8/10 polish):
+ *   1. Inject confirmation line in the result panel ("Your prompt is
+ *      ready. Copy it, run it, or refine it.") gated on the existing
+ *      `body.pmg-has-result` class so it appears the moment a real
+ *      prompt lands and disappears on Clear.
+ *   2. Sharpen the post-result action hierarchy: demote the duplicate
+ *      `#copy-btn` (which was `btn-primary` in the result actions row
+ *      AND already mirrored in T22's secondary row) to a ghost-style
+ *      visual, and elevate the in-app `#runBtn` (Run With AI) so it is
+ *      the single dominant CTA. Closes the loop between writing a
+ *      prompt and testing it without leaving the app.
+ *   3. Reduce middle-page cognitive load: cluster the three workspace
+ *      utility sections (#dashboard / #templates / #history) under a
+ *      single eyebrow ("Your Workspace") with tighter inter-section
+ *      spacing so they read as one grouped area instead of three loud
+ *      competing widgets.
+ *
+ * Hard rules: strictly additive — no IDs, classes, or handlers
+ * touched. All visibility/state hooks reuse `body.pmg-has-result`
+ * (already set by the BUG-4 IIFE above when a real prompt lands).
+ * ===================================================================== */
+(function pmgT24AuditPass() {
+  if (window.__pmgT93AuditPassInit) return;
+  window.__pmgT93AuditPassInit = true;
+
+  var STYLE_ID = 'pmg-t24-audit-pass-style';
+  var CONFIRM_ID = 'pmg-result-confirm';
+  var EYEBROW_ID = 'pmg-workspace-eyebrow';
+  var WRAPPER_CLS = 'pmg-workspace-cluster';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* === #2 confirmation line === */
+      '#' + CONFIRM_ID + ' {',
+      '  display: none;',
+      '  margin: var(--space-2) 0 var(--space-3);',
+      '  padding: 10px 14px;',
+      '  font-size: var(--text-sm);',
+      '  font-weight: 600;',
+      '  color: var(--color-text);',
+      '  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 28%, transparent);',
+      '  border-left: 3px solid var(--color-primary);',
+      '  border-radius: var(--radius-md, 8px);',
+      '}',
+      '#' + CONFIRM_ID + ' .pmg-confirm-icon { margin-right: 6px; }',
+      'body.pmg-has-result #' + CONFIRM_ID + ' { display: block; }',
+      'body:not(.pmg-has-result) #' + CONFIRM_ID + ' { display: none !important; }',
+
+      /* === #3 action hierarchy ===
+         Demote the duplicate Copy Prompt in the result actions row.
+         T22 already exposes Copy Prompt as a secondary pill below;
+         the row above had it as btn-primary, competing with Run With
+         AI. Strip the fill so Run With AI is the single loud CTA. */
+      '.pmg-result-actions-row #copy-btn {',
+      '  background: transparent !important;',
+      '  color: var(--color-primary) !important;',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 50%, transparent) !important;',
+      '  box-shadow: none !important;',
+      '  font-weight: 600 !important;',
+      '}',
+      '.pmg-result-actions-row #copy-btn:hover {',
+      '  background: color-mix(in srgb, var(--color-primary) 8%, transparent) !important;',
+      '  border-color: var(--color-primary) !important;',
+      '}',
+
+      /* Elevate Run With AI as the single primary action.
+         Selector specificity boosted (body + 3 classes) to win over
+         `#runBtn.btn.pmg-demoted` (the demote rule from line 465). */
+      'body #runBtn.btn.run-btn {',
+      '  font-size: var(--text-base, 1rem) !important;',
+      '  font-weight: 700 !important;',
+      '  min-height: 52px !important;',
+      '  padding: 14px 28px !important;',
+      '  background: var(--color-primary) !important;',
+      '  color: #ffffff !important;',
+      '  border: 1.5px solid var(--color-primary) !important;',
+      '  box-shadow: 0 8px 22px color-mix(in srgb, var(--color-primary) 32%, transparent) !important;',
+      '}',
+      'body #runBtn.btn.run-btn:hover {',
+      '  transform: translateY(-1px);',
+      '  box-shadow: 0 10px 28px color-mix(in srgb, var(--color-primary) 40%, transparent) !important;',
+      '}',
+
+      /* === #4 middle-page workspace cluster === */
+      '#' + EYEBROW_ID + ' {',
+      '  max-width: var(--container-max, 1200px);',
+      '  margin: var(--space-6) auto var(--space-2);',
+      '  padding: 0 var(--space-4);',
+      '  font-size: var(--text-xs, 0.75rem);',
+      '  font-weight: 700;',
+      '  letter-spacing: 0.12em;',
+      '  text-transform: uppercase;',
+      '  color: var(--color-text-muted);',
+      '}',
+      '#' + EYEBROW_ID + ' .pmg-eyebrow-rule {',
+      '  display: inline-block;',
+      '  width: 28px;',
+      '  height: 2px;',
+      '  vertical-align: middle;',
+      '  margin-right: 10px;',
+      '  background: var(--color-primary);',
+      '  border-radius: 2px;',
+      '}',
+      '#' + EYEBROW_ID + ' .pmg-eyebrow-sub {',
+      '  display: block;',
+      '  margin-top: 4px;',
+      '  font-size: var(--text-xs, 0.75rem);',
+      '  font-weight: 500;',
+      '  letter-spacing: 0;',
+      '  text-transform: none;',
+      '  color: var(--color-text-faint, var(--color-text-muted));',
+      '}',
+      /* Tighten spacing between the three clustered sections. */
+      'body #dashboard.app-section { padding-top: var(--space-3) !important; padding-bottom: var(--space-3) !important; }',
+      'body #templates.app-section { padding-top: var(--space-3) !important; padding-bottom: var(--space-3) !important; }',
+      'body #history.app-section { padding-top: var(--space-3) !important; padding-bottom: var(--space-4) !important; }',
+      /* Subtle group affordance: a thin guide on the inner panels. */
+      'body #dashboard.app-section > .container > .panel,',
+      'body #templates.app-section > .container > .panel,',
+      'body #history.app-section > .container > .panel {',
+      '  border-color: color-mix(in srgb, var(--color-primary) 14%, var(--color-border)) !important;',
+      '}'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    (document.head || document.documentElement).appendChild(s);
+  }
+
+  function injectConfirmLine() {
+    if (document.getElementById(CONFIRM_ID)) return;
+    var resultBox = document.getElementById('resultBox');
+    if (!resultBox || !resultBox.parentNode) return;
+    var p = document.createElement('p');
+    p.id = CONFIRM_ID;
+    p.setAttribute('role', 'status');
+    p.setAttribute('aria-live', 'polite');
+    p.innerHTML = '<span class="pmg-confirm-icon" aria-hidden="true">✓</span>Your prompt is ready. Copy it, run it, or refine it.';
+    /* Insert directly after #resultBox so it sits between the prompt
+       text and the actions row, where users naturally land their gaze. */
+    resultBox.parentNode.insertBefore(p, resultBox.nextSibling);
+  }
+
+  function injectWorkspaceEyebrow() {
+    if (document.getElementById(EYEBROW_ID)) return;
+    var dashboard = document.getElementById('dashboard');
+    if (!dashboard || !dashboard.parentNode) return;
+    var eyebrow = document.createElement('div');
+    eyebrow.id = EYEBROW_ID;
+    eyebrow.className = WRAPPER_CLS;
+    eyebrow.innerHTML =
+      '<span class="pmg-eyebrow-rule" aria-hidden="true"></span>Your Workspace' +
+      '<span class="pmg-eyebrow-sub">Your saved data, templates, and history — all in one place.</span>';
+    dashboard.parentNode.insertBefore(eyebrow, dashboard);
+  }
+
+  function init() {
+    injectStyles();
+    injectConfirmLine();
+    injectWorkspaceEyebrow();
+    /* Late-mount safety: some scripts (T22, pmg-result-states) may
+       remount the result panel; re-inject if the elements vanish. */
+    try {
+      var mo = new MutationObserver(function () {
+        injectConfirmLine();
+        injectWorkspaceEyebrow();
+      });
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 60000);
+    } catch (e) { /* ignore */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+  setTimeout(init, 600);
+})();
