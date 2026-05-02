@@ -1,0 +1,142 @@
+Implement Premium Pricing + Workstation Positioning Into PromptMeGood.
+
+Create a checkpoint before changing anything.
+
+This is an enhancement, not a rebuild. Many features already exist, so inspect the current code first and map pricing copy to existing features only. Do not invent unavailable features.
+
+Do not change:
+- Backend/API routes
+- AI provider logic
+- Stripe webhook logic
+- Supabase auth logic
+- Database schema
+- Payment secrets
+- Usage/cost controls
+- Existing working IDs or function names
+
+Pricing Strategy:
+1. Founding Member
+Price: $59 One-Time
+Positioning: Lifetime Access To Core Features
+Protection Line: Lifetime Access To Core Features. Fair Use Limits Apply.
+
+2. Pro
+Price: $19/month
+Positioning: For Power Users Who Want The Full Prompt Workstation
+
+Update Pricing Page:
+- Replace old pricing with two premium cards:
+  Founding Member — $59 One-Time
+  Pro — $19/month
+- Make Founding Member feel limited and early.
+- Make Pro feel like the ongoing premium workstation plan.
+- Do not make Founding Member sound better than Pro forever.
+- Use this distinction:
+  Founding Member = Lifetime Core Access
+  Pro = Ongoing Premium Workstation Access
+
+Suggested Founding Member Features, only include if currently supported:
+- Better Prompt Generation
+- Run With AI
+- AI Verdict
+- Action Plans
+- Saved Prompt Vault
+- Money Mode Pro
+- Core Image Prompt Tools
+
+Suggested Pro Features, only include if currently supported:
+- Everything In Core
+- Full Suite Rendering
+- More AI Runs
+- More Image Generations
+- Advanced Refinement
+- Transform Studio
+- Priority Feature Access
+- Expanded Saved Work
+- Prompt Workstation History
+
+Update Product Language:
+- Position PromptMeGood as a Prompt Workstation.
+- Preserve Create A Text Prompt and Create An Image Prompt as simple paths.
+- Add language that explains users can start with text, start with image, or combine outputs inside the workstation.
+- Do not force workstation complexity before the first result.
+
+Add/Update Upgrade Copy:
+Use:
+- Upgrade To Pro
+- Become A Founding Member
+- Unlock Prompt Workstation
+- Lifetime Core Access
+- Fair Use Limits Apply
+
+Checkout Copy:
+Founding Member:
+PromptMeGood Founding Member — Lifetime Core Access
+Fix your prompts, run AI responses, save your best work, and access core workstation features with a one-time payment.
+
+Pro:
+PromptMeGood Pro — Full Prompt Workstation
+Get ongoing access to advanced prompt tools, AI Verdicts, saved work, image tools, and expanded workstation features.
+
+Policies:
+Update Privacy Policy and Terms so they accurately mention:
+- Supabase accounts if active
+- Stripe payments if active
+- AI features may send prompts, files, images, or submitted content to AI service providers
+- Saved prompts/history may be stored for logged-in users
+- Paid plans, Founding Member access, Pro access, cancellations, and fair use limits
+
+SEO:
+Update metadata to reflect premium positioning:
+Title:
+PromptMeGood | AI Prompt Workstation For Better AI Results
+
+Meta Description:
+Create better prompts, run AI responses, generate images, save your work, and refine results inside one AI prompt workstation.
+
+Keywords to naturally include where appropriate:
+AI Prompt Workstation
+AI Prompt Builder
+Prompt Generator
+Better AI Prompts
+AI Image Prompt Generator
+PromptMeGood Pro
+Money Mode Pro
+
+Title Case Policy:
+Use Title Case for buttons, headings, section titles, feature labels, cards, badges, nav items, CTAs, placeholders, pills, dropdown options, and helper text attached to controls.
+Do not force Title Case on long policy paragraphs or Terms body copy.
+
+UX Rules:
+- Do not add pricing banners between input and action buttons.
+- Do not obstruct Create A Text Prompt or Create An Image Prompt flow.
+- Show upgrade prompts after value where possible.
+- Keep button proximity intact.
+- No fake testimonials.
+- No fake counters.
+- No removed features mentioned.
+
+QA:
+- Homepage loads.
+- Pricing page loads.
+- Privacy Policy loads.
+- Terms load.
+- Guide/help loads.
+- Stripe checkout buttons still work.
+- Supabase login still works.
+- Founding Member button uses the active one-time Stripe product/price if configured.
+- Pro button uses the active monthly Stripe product/price if configured.
+- No frontend exposes Stripe secret keys.
+- No console-breaking errors.
+- Mobile has no horizontal overflow.
+
+Report Back:
+1. Files changed.
+2. Current features detected.
+3. Pricing updates made.
+4. Founding Member copy added.
+5. Pro copy added.
+6. Policy updates made.
+7. SEO updates made.
+8. Any unsupported feature copy skipped.
+9. QA result.
