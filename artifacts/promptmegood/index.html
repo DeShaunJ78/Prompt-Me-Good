@@ -984,6 +984,7 @@
     .quality-feedback-title { font-weight: 700; }
     .max-length-row { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
     .max-length-row select { flex: 1 1 auto; min-width: 0; }
+    .max-length-row:has(input:not([hidden])) { margin-top: var(--space-2); }
     .max-length-row input[type="number"] { width: 110px; padding: 8px 10px; border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); font-family: inherit; font-size: var(--text-sm); }
     @media (max-width: 600px) {
       .max-length-row input[type="number"] { width: 100%; }
@@ -3623,15 +3624,16 @@
 
               <div class="field">
                 <label for="maxLength">Max response length <span class="suggested-badge" id="suggested-maxLength" hidden>Suggested</span></label>
+                <select id="maxLength" name="maxLength" class="pmg-tune-native" data-pmg-tune="maxLength">
+                  <option value="">No limit</option>
+                  <option value="100">100 words</option>
+                  <option value="200">200 words</option>
+                  <option value="300">300 words</option>
+                  <option value="500">500 words</option>
+                  <option value="custom">Custom…</option>
+                </select>
+                <div class="pmg-tune-pills" data-pmg-tune-target="maxLength" role="group" aria-label="Max response length"></div>
                 <div class="max-length-row">
-                  <select id="maxLength" name="maxLength">
-                    <option value="">No limit</option>
-                    <option value="100">100 words</option>
-                    <option value="200">200 words</option>
-                    <option value="300">300 words</option>
-                    <option value="500">500 words</option>
-                    <option value="custom">Custom…</option>
-                  </select>
                   <input type="number" id="maxLengthCustom" min="20" max="5000" placeholder="Words" hidden aria-label="Custom word limit" />
                 </div>
                 <p class="helper">Optionally cap how long the AI's response can be.</p>
@@ -3653,7 +3655,7 @@
 
               <div class="field">
                 <label for="personality">Personality Mode</label>
-                <select id="personality" name="personality">
+                <select id="personality" name="personality" class="pmg-tune-native" data-pmg-tune="personality">
                   <option value="none">No Personality Added</option>
                   <option value="direct">Direct &amp; Straightforward</option>
                   <option value="friendly">Friendly &amp; Conversational</option>
@@ -3665,6 +3667,7 @@
                   <option value="luxury">Luxury Brand Voice</option>
                   <option value="viral">Viral Social Media Voice</option>
                 </select>
+                <div class="pmg-tune-pills" data-pmg-tune-target="personality" role="group" aria-label="Personality Mode"></div>
                 <p class="helper">Choose the kind of voice you want the AI response to have.</p>
               </div>
 
@@ -5966,7 +5969,7 @@ Context:
       // assignments (which do not fire 'change') still keep the
       // pill UI in sync.
       (function setupPromptTuningPills() {
-        var FIELDS = ['category', 'skillLevel', 'tone', 'outputFormat', 'outputLanguage'];
+        var FIELDS = ['category', 'skillLevel', 'tone', 'outputFormat', 'outputLanguage', 'personality', 'maxLength'];
         var nativeValueDesc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
         if (!nativeValueDesc || !nativeValueDesc.get || !nativeValueDesc.set) return;
 
