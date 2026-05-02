@@ -3436,7 +3436,11 @@
       });
       if (seen.length <= 1) return;
       var keeper = null;
-      for (var i = 0; i < seen.length; i++) {
+      /* T15.10b — prefer the post-gen actions panel when present. */
+      for (var i0 = 0; i0 < seen.length; i0++) {
+        if (seen[i0].closest('.pmg-run-panel')) { keeper = seen[i0]; break; }
+      }
+      if (!keeper) for (var i = 0; i < seen.length; i++) {
         if (seen[i].closest('.pmg-action-stack, .pmg-what-next-block')) { keeper = seen[i]; break; }
       }
       if (!keeper) keeper = seen[0];
