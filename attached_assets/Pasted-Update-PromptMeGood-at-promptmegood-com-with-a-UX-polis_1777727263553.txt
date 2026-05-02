@@ -1,0 +1,72 @@
+Update PromptMeGood at 
+promptmegood.com
+ with a UX polish pass only. Do not redesign the site. Do not change the visual identity, brand feel, color system, layout style, spacing rhythm, typography direction, or overall aesthetic unless a very minor adjustment is required for clarity. I like the way the site looks and do not want expensive breakage. Preserve the current product feel and improve only flow, user understanding, ease of use, and completion behavior. The current homepage already presents a strong product with Quick Start, Fix My Prompt, Help Me Start, Photography Suite, Prompt Vault, refinements, and Run With AI, but the experience needs to be more linear and obvious for first-time users.
+
+Treat this as a senior prompt-engineering UX refinement, not a generic SaaS cleanup. This is a prompt engineering product. The core value is that vague user intent gets transformed into a structured, model-ready prompt with better role, context, constraints, tone, and format. Because of that, standardize the main text CTA everywhere to “Fix My Prompt” and stop using “Generate” as the primary action in the text-prompt flow. The homepage currently mixes “Click Generate” with “Tap Fix My Prompt,” and that inconsistency needs to be resolved. Keep “Generate Image Here” only for the actual image-rendering flow in the Photography Suite, since that action truly generates an image.
+
+The desired default text-prompt flow is:
+
+Type Your Goal -> Help Me Start if stuck -> Fix My Prompt -> Review -> Refine -> Copy / Run With AI -> Save / Download
+
+Implement that flow without redesigning the page. Keep the current Prompt Builder in place, but add one clear inline example under the input so users instantly understand what kind of request to enter. Keep Help Me Start, but reposition it through microcopy as the beginner rescue path, for example: “Best for beginners — answer 4 quick questions and we’ll build it with you.” Make Fix My Prompt the single primary text action label everywhere in the text prompt flow. After a successful prompt result appears, show a short confirmation line such as: “Your prompt is ready. Choose what to do next.” Then visually order the next actions so the user does not have to think: Copy Prompt as the primary button, Run With AI as the secondary button, Download Prompt or Save as TXT as a persistent option, and Save to Vault as another persistent option. The refine pills should remain available, but they should appear as optional optimization tools, not the main next step.
+
+Improve the refinement experience so it feels intentional and expert-level. Keep the current refinement controls, but add small helper text, hint text, or lightweight tooltips that explain what each refinement actually does. Examples: More Detailed adds specificity and depth, More Bold & Direct sharpens tone and instruction force, Beginner Friendly simplifies wording and lowers complexity. The experience should teach prompt engineering through interaction. If prompt quality analysis or strength scoring is shown, make sure it helps after the first usable result rather than distracting the user before they succeed once.
+
+Improve completion behavior across the site. Every successful result needs an obvious “what now?” path. For text prompts, once a prompt exists, always keep Copy Prompt, Run With AI, Download Prompt / Save as TXT, and Save to Vault visible. For image outputs, once an image exists, always keep Download Image, Regenerate, Use As Reference, and Copy Prompt visible. Do not rely on surrounding copy to imply that download is possible; surface it directly in the result state. The current homepage already describes that users can copy prompts, use Run With AI, open the Photography Suite, choose Generate Image Here, and then download, regenerate, or use an image as reference, so preserve those actions but make them more obvious and persistent in the UI.
+
+Do not redesign the Photography Suite. Keep it visually consistent with the rest of the site, but make its flow feel more guided and less like a separate competing product lane. The intended image flow should be:
+
+Build photo brief -> Copy Prompt or Generate Image Here -> Review result -> Download / Regenerate / Use As Reference
+
+Add one concrete example under the image prompt/brief area so users immediately understand the expected input. Preserve the existing pills for Style, Camera & Lens, Lighting & Mood, Composition, Color Palette, and Surprise Me, but make sure the generated outcome clearly leads to the next action.
+
+Preserve advanced functionality such as Prompt Vault, prompt analysis, and Expert Mode, but do not let advanced features dominate the beginner experience. Make the site easier for first-time users without dumbing it down. The beginner path should feel obvious and linear, while Expert Mode and deeper prompt controls should still be available for more advanced users.
+
+Improve Prompt Vault trust copy without changing the feature itself. If prompts are stored locally on the device, say that clearly and add reassuring export language such as: “Stored on this device. Export anytime.” Users need to understand whether their work is temporary, local, or portable.
+
+The quality bar is high: this should feel like a polished prompt engineering operating system, not a generic prompt generator. It should communicate that PromptMeGood helps users produce more usable instructions and outputs faster, with less confusion and fewer dead ends.
+
+Do not break:
+
+The visual design.
+
+The current brand tone.
+
+The homepage aesthetic.
+
+The “See The Difference” concept and examples.
+
+The Quick Start concept.
+
+The existing depth of the product.
+
+The current sections unless a minimal structural tweak is required for clearer flow.
+
+Prioritize:
+
+Consistent CTA language.
+
+Cleaner first-time flow.
+
+Stronger post-result hierarchy.
+
+Persistent save/download actions.
+
+Better onboarding examples.
+
+Lower cognitive load without removing power.
+
+When done, report back with:
+
+What labels were standardized.
+
+What flow/order changes were made.
+
+What post-result actions were made persistent.
+
+What beginner UX improvements were added.
+
+What was intentionally preserved to protect the current design.
+
+Success means the site still looks like PromptMeGood, but now a first-time user instantly knows what to type, why to click Fix My Prompt, what changed after the result appears, and exactly what to do next—copy it, run it, save it, or download it.
+

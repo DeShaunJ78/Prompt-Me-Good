@@ -1762,6 +1762,14 @@
     .tip-block-dismiss:hover, .tip-block-dismiss:focus-visible { background: color-mix(in srgb, var(--color-primary) 12%, transparent); color: var(--color-text); outline: none; }
     .hero-helper-tip { margin-top: var(--space-3); }
     .generate-helper-tip { margin-top: var(--space-3); }
+    .helper-example { display: block; margin-top: 6px; font-size: var(--text-xs); color: var(--color-text-muted); line-height: 1.45; }
+    .helper-example em { font-style: italic; opacity: 0.95; }
+    .refine-preset-legend { list-style: none; padding: 10px 14px; margin: 10px 0 0; background: color-mix(in srgb, var(--color-primary) 5%, transparent); border-left: 3px solid color-mix(in srgb, var(--color-primary) 40%, transparent); border-radius: var(--radius-sm); font-size: var(--text-xs); color: var(--color-text-muted); line-height: 1.55; }
+    .refine-preset-legend li { margin: 0; padding: 2px 0; }
+    .refine-preset-legend li + li { border-top: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent); padding-top: 4px; margin-top: 4px; }
+    .refine-preset-legend strong { color: var(--color-text); font-weight: 700; }
+    .pmg-vault-saved-indicator { display: inline-flex; align-items: center; gap: 4px; font-size: var(--text-xs); color: var(--color-primary); font-weight: 600; padding: 4px 10px; background: color-mix(in srgb, var(--color-primary) 10%, transparent); border-radius: 999px; white-space: nowrap; }
+    .pmg-vault-saved-indicator[hidden] { display: none !important; }
     body.guidance-hidden [data-tip] { display: none !important; }
     .guidance-show-link { display: none; background: transparent; border: 0; padding: 2px 6px; color: var(--color-primary); font: inherit; font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; border-radius: 4px; }
     .guidance-show-link:hover, .guidance-show-link:focus-visible { background: color-mix(in srgb, var(--color-primary) 12%, transparent); outline: none; }
@@ -3330,8 +3338,8 @@
           <h2 class="builder-intro-title" id="builder-intro-title">How It Works</h2>
           <ol class="builder-intro-steps">
             <li>Describe what you need.</li>
-            <li>Click Generate.</li>
-            <li>Copy and use anywhere.</li>
+            <li>Click <strong>Fix My Prompt</strong>.</li>
+            <li>Review, refine, then copy or run with AI.</li>
           </ol>
         </div>
       </div>
@@ -3429,7 +3437,7 @@
             <button class="mode-switch-btn active" id="writeModeBtn" type="button" onclick="setMode('write')">✍️ Write Something</button>
             <button class="mode-switch-btn" id="imageModeBtn" type="button" onclick="setMode('image')">🎨 Create An Image</button>
           </div>
-          <p class="image-mode-hint">Describe the image you want — plain English. We’ll turn it into a professional DALL·E 3 prompt automatically.</p>
+          <p class="image-mode-hint">Describe the image you want — plain English. We’ll turn it into a professional DALL·E 3 prompt automatically. <em>Try: “A woman walking through rainy Tokyo at night, cinematic, neon reflections, 35mm film look.”</em></p>
           <div class="panel-head panel-head-row">
             <div>
               <h2 id="builder-title" hidden style="display:none">Get AI To Understand You</h2>
@@ -3463,7 +3471,7 @@
               <div class="guided-cta-text">
                 <span class="guided-cta-recommended-badge"></span>
                 <strong>Help Me Start</strong>
-                <span>Not Sure How To Start? Answer 4 Short Questions And We'll Fill The Builder For You.</span>
+                <span>Best for beginners — answer 4 quick questions and we&rsquo;ll build it with you. Skip if you already know what to type.</span>
               </div>
               <button type="button" class="btn btn-primary" id="guided-mode-btn">Help Me Start</button>
             </div>
@@ -3496,9 +3504,10 @@
                   <label for="goal">Your Goal</label>
                   <button type="button" class="btn-clear" id="clear-goal-btn" aria-label="Clear goal" data-clear-target="goal">Clear</button>
                 </div>
-                <textarea id="goal" name="goal" rows="3" placeholder="Describe What You Want — We'll Build The Perfect Prompt." aria-required="true"></textarea>
+                <textarea id="goal" name="goal" rows="3" placeholder="Describe what you want — we&rsquo;ll build the perfect prompt." aria-required="true"></textarea>
                 <p class="helper">
-                  The More Specific You Are, The Better Your Result.
+                  The more specific you are, the better your result.
+                  <span class="helper-example"><em>Try: &ldquo;Write a 3-day onboarding email sequence for a new SaaS user who just signed up for a free trial.&rdquo;</em></span>
                 </p>
               </div>
 
@@ -3524,7 +3533,7 @@
 
               <div class="post-uc-guidance" id="post-uc-guidance" role="status" aria-live="polite">
                 <span class="post-uc-guidance-icon" aria-hidden="true">✅</span>
-                <span class="post-uc-guidance-text">You're Ready — Generate Your Prompt, Then Run With AI Or Copy It.</span>
+                <span class="post-uc-guidance-text">You&rsquo;re ready — tap <strong>Fix My Prompt</strong>, then run with AI or copy it.</span>
                 <button type="button" class="post-uc-guidance-close" id="post-uc-guidance-close" aria-label="Dismiss">×</button>
               </div>
 
@@ -3540,7 +3549,7 @@
               </div>
               <p class="tip-block generate-helper-tip" data-tip="generate">
                 <span class="tip-block-icon" aria-hidden="true">🚀</span>
-                <span class="tip-block-text">Ready? Generate Your Prompt, Then Review And Copy It.</span>
+                <span class="tip-block-text">Ready? Tap <strong>Fix My Prompt</strong>, then review, refine, and copy it.</span>
                 <button type="button" class="tip-block-dismiss" data-action="dismiss-tips" aria-label="Hide all tips">Hide Tip</button>
               </p>
               <p class="demo-helper" hidden style="display:none">Not Sure Where To Start? <button type="button" class="link-btn demo-helper-link" id="demo-helper-link">See It In Action</button> <button type="button" class="guidance-show-link" id="guidance-show-link" data-action="show-tips">Show Tips</button></p>
@@ -3550,7 +3559,7 @@
                   <span class="pmg-eyebrow">Step 1.5</span>
                   <h2 id="settingsPanel-title">🎛️ Prompt Tuning</h2>
                 </div>
-                <p class="pmg-stack-helper">Shape Tone, Detail, And Structure Before You Generate.</p>
+                <p class="pmg-stack-helper">Shape Tone, Detail, And Structure Before You Fix Your Prompt.</p>
                 <div class="settings-grid">
                   <div class="auto-optimize-row" id="auto-optimize-row-inside-settings">
                     <div class="auto-opt-text">
@@ -3781,17 +3790,22 @@
             <div class="improve-block pmg-post-gen" id="improve-block">
               <div id="tour-step-improve">
                 <span class="improve-eyebrow">Refine Your Prompt</span>
-                <p class="improve-helper">Tap an option to instantly upgrade your result.</p>
+                <p class="improve-helper">Each preset teaches a different prompt-engineering move. Tap one to instantly upgrade your result.</p>
                 <div class="actions-row">
                   <button class="btn btn-ai" type="button" id="improve-with-ai-btn" aria-describedby="improve-with-ai-hint">
                     <span class="btn-ai-spark" aria-hidden="true">✨</span>
                     <span class="btn-ai-label">Improve With AI</span>
                   </button>
-                  <button class="btn btn-secondary" type="button" data-remix="detailed">More Detailed</button>
-                  <button class="btn btn-secondary" type="button" data-remix="bold-direct">More Bold &amp; Direct</button>
-                  <button class="btn btn-secondary" type="button" data-remix="beginner">Beginner Friendly</button>
+                  <button class="btn btn-secondary" type="button" data-remix="detailed" title="Adds specificity, examples, decision criteria, and a concrete execution checklist.">More Detailed</button>
+                  <button class="btn btn-secondary" type="button" data-remix="bold-direct" title="Sharpens tone and instruction force — direct, urgent, action-oriented. Cuts vague advice.">More Bold &amp; Direct</button>
+                  <button class="btn btn-secondary" type="button" data-remix="beginner" title="Simplifies wording and lowers complexity for first-time users — plain English, fewer jargon terms.">Beginner Friendly</button>
                 </div>
                 <p class="ai-improve-hint" id="improve-with-ai-hint">Sends your current prompt to AI for a deeper rewrite.</p>
+                <ul class="refine-preset-legend" aria-label="What each refinement does">
+                  <li><strong>More Detailed</strong> &mdash; adds specificity, examples, and decision criteria.</li>
+                  <li><strong>More Bold &amp; Direct</strong> &mdash; sharpens tone and instruction force.</li>
+                  <li><strong>Beginner Friendly</strong> &mdash; simplifies wording and lowers complexity.</li>
+                </ul>
                 <div class="undo-row">
                   <button class="btn btn-secondary undo-btn" type="button" id="undo-btn" disabled aria-disabled="true">↶ Undo Last Change</button>
                   <span class="undo-helper">Not feeling the change? Undo and try another.</span>
@@ -3838,11 +3852,13 @@
               </div>
               <div class="quality-feedback" id="quality-feedback" hidden role="status" aria-live="polite"></div>
             </div>
-            <div class="actions-row">
+            <div class="actions-row pmg-result-actions-row">
               <button class="btn btn-primary" type="button" id="copy-btn">Copy Prompt</button>
+              <button class="btn btn-secondary" type="button" id="download-prompt-btn" title="Download this prompt as a .txt file you can keep or share.">⬇ Download .txt</button>
               <button class="btn btn-secondary" type="button" id="share-btn" hidden>Copy Shareable Link</button>
               <button class="btn btn-secondary" type="button" id="print-btn" title="Print or save as PDF">Print / Save PDF</button>
               <button class="btn btn-secondary btn-clear btn-destructive" type="button" id="clear-prompt-btn" aria-label="Clear generated prompt">Clear Prompt</button>
+              <span class="pmg-vault-saved-indicator" id="pmg-vault-saved-indicator" role="status" aria-live="polite" hidden>✓ Saved To Vault</span>
             </div>
 
             <!-- RUN WITH AI — hidden until a prompt is generated -->
@@ -3876,8 +3892,9 @@
               <p class="run-section-helper">Created by DALL·E 3 — right here in the app.</p>
               <div class="image-result-wrap" id="imageResultWrap"><div class="image-placeholder">Your Image Will Appear Here</div></div>
               <div class="image-result-actions">
-                <a id="imageDownloadBtn" href="" download="promptmegood-image.png" class="btn btn-primary" style="display:none;text-decoration:none;">⬇ Download</a>
-                <button class="btn btn-secondary" type="button" id="imageAgainBtn" onclick="generateImage()">Generate Another Image</button>
+                <a id="imageDownloadBtn" href="" download="promptmegood-image.png" class="btn btn-primary" style="display:none;text-decoration:none;">⬇ Download Image</a>
+                <button class="btn btn-secondary" type="button" id="imageAgainBtn" onclick="generateImage()">Regenerate</button>
+                <button class="btn btn-secondary" type="button" id="copyImagePromptBtn" title="Copy the photo brief / image prompt so you can paste it into Midjourney, Stable Diffusion, or another tool.">Copy Prompt</button>
               </div>
               <p class="run-section-meta">DALL·E 3 · Free tier: 1 image per day. Founding Member: unlimited.</p>
             </div>
@@ -3909,7 +3926,7 @@
             </div>
             <div class="post-prompt-footer" role="contentinfo">
               <p class="post-prompt-footer-shortcuts">
-                Shortcuts: press <kbd>G</kbd> to generate, <kbd>C</kbd> to copy, <kbd>/</kbd> to search history.
+                Shortcuts: press <kbd>G</kbd> to fix your prompt, <kbd>C</kbd> to copy, <kbd>/</kbd> to search history.
               </p>
               <p class="post-prompt-footer-pricing">Free tier with daily limits, no signup required. <a href="./pricing.html">Founding Member ($49 lifetime)</a> unlocks unlimited use forever.</p>
             </div>
@@ -3970,7 +3987,7 @@
             <div class="panel-head-row">
               <div>
                 <h2>🔒 Prompt Vault</h2>
-                <p>Your last 25 generated prompts are saved on this device. Restore one to copy or remix it again.</p>
+                <p>Stored on this device. Export anytime. Your last 25 prompts stay in your browser — nothing is uploaded unless you turn on cloud sync as a Founding Member.</p>
               </div>
               <div class="panel-head-actions">
                 <button class="btn btn-secondary" type="button" id="toggle-archived" aria-pressed="false">Show Archived</button>
@@ -9973,7 +9990,7 @@ Context:
     if(pt){pt.addEventListener('change',function(){document.body.classList.toggle('photo-mode-active',pt.checked)});document.body.classList.toggle('photo-mode-active',pt.checked)}
     window.generateImage=async function(){
       var rb=$('resultBox'),prompt=((rb&&(rb.textContent||rb.innerText))||'').trim();
-      if(!prompt){alert('Generate a prompt first, then click Generate Image.');return}
+      if(!prompt){alert('Fix your prompt first, then click Generate Image.');return}
       var sec=$('imageResultSection'),wrap=$('imageResultWrap'),dl=$('imageDownloadBtn'),again=$('imageAgainBtn'),btn=$('imageBtn');
       if(sec)sec.hidden=false;
       if(wrap)wrap.innerHTML='<div class="image-generating-state"><div class="image-spinner"></div><span>Creating your image…<br><small>About 10 seconds</small></span></div>';
@@ -10482,6 +10499,144 @@ Context:
   <script src="/scripts/pmg-suggestions.js?v=task58-5" defer></script>
   <script src="/scripts/pmg-send-to.js?v=task60-1" defer></script>
   <script src="/scripts/pmg-postgen-actions.js?v=task61-2" defer></script>
+
+  <!-- UX Polish: persistent post-result actions (Download .txt, Saved To Vault indicator, Copy Image Prompt) -->
+  <script>
+  (function(){
+    'use strict';
+    if (window.__pmgPolishActionsLoaded) return;
+    window.__pmgPolishActionsLoaded = true;
+
+    function $(id){ return document.getElementById(id); }
+
+    function getPromptText(){
+      var rb = $('resultBox');
+      if (!rb) return '';
+      return ((rb.textContent || rb.innerText) || '').trim();
+    }
+
+    function slugify(s){
+      return (s || 'prompt').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40) || 'prompt';
+    }
+
+    function downloadTxt(){
+      var text = getPromptText();
+      if (!text){
+        try { alert('Fix your prompt first, then download it.'); } catch(_) {}
+        return;
+      }
+      var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      var stamp = new Date().toISOString().slice(0,10);
+      a.href = url;
+      a.download = 'promptmegood-' + slugify(text) + '-' + stamp + '.txt';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function(){
+        try { document.body.removeChild(a); } catch(_) {}
+        URL.revokeObjectURL(url);
+      }, 0);
+    }
+
+    function copyImagePrompt(){
+      var goal = $('goal');
+      var rb = $('resultBox');
+      var text = '';
+      if (rb && (rb.textContent || rb.innerText || '').trim()){
+        text = (rb.textContent || rb.innerText || '').trim();
+      } else if (goal && goal.value){
+        text = goal.value.trim();
+      }
+      if (!text){
+        try { alert('Describe the image first, then copy the prompt.'); } catch(_) {}
+        return;
+      }
+      var done = function(){
+        var b = $('copyImagePromptBtn');
+        if (!b) return;
+        var prev = b.textContent;
+        b.textContent = '✓ Copied';
+        setTimeout(function(){ b.textContent = prev; }, 1600);
+      };
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(text).then(done, function(){
+            fallbackCopy(text); done();
+          });
+          return;
+        }
+      } catch(_) {}
+      fallbackCopy(text); done();
+    }
+
+    function fallbackCopy(text){
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      } catch(_) {}
+    }
+
+    function showVaultSaved(){
+      var ind = $('pmg-vault-saved-indicator');
+      if (!ind) return;
+      ind.hidden = false;
+    }
+
+    function watchResultBox(){
+      var rb = $('resultBox');
+      if (!rb) return;
+      var lastShown = false;
+      var check = function(){
+        var has = !!getPromptText();
+        if (has && !lastShown){
+          lastShown = true;
+          showVaultSaved();
+        } else if (!has && lastShown){
+          lastShown = false;
+          var ind = $('pmg-vault-saved-indicator');
+          if (ind) ind.hidden = true;
+        }
+      };
+      try {
+        var mo = new MutationObserver(check);
+        mo.observe(rb, { childList: true, subtree: true, characterData: true });
+      } catch(_) {}
+      check();
+      /* Re-check after generate handler runs */
+      var gb = $('generateBtn');
+      if (gb) gb.addEventListener('click', function(){ setTimeout(check, 1500); });
+      var cb = $('clear-prompt-btn');
+      if (cb) cb.addEventListener('click', function(){ setTimeout(check, 100); });
+    }
+
+    function boot(){
+      var dl = $('download-prompt-btn');
+      if (dl && !dl.dataset.pmgBound){
+        dl.dataset.pmgBound = '1';
+        dl.addEventListener('click', downloadTxt);
+      }
+      var cip = $('copyImagePromptBtn');
+      if (cip && !cip.dataset.pmgBound){
+        cip.dataset.pmgBound = '1';
+        cip.addEventListener('click', copyImagePrompt);
+      }
+      watchResultBox();
+    }
+
+    if (document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', boot);
+    } else {
+      boot();
+    }
+  })();
+  </script>
   <script src="/scripts/pmg-ab-test.js?v=task61-3" defer></script>
   <script src="/scripts/pmg-voice.js?v=task65-2" defer></script>
 
