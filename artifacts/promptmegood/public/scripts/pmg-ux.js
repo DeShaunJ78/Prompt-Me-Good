@@ -14136,3 +14136,225 @@
   }
   setTimeout(apply, 600);
 })();
+
+/* =====================================================================
+ * T98 — Upload Field: Move Above Submit + Collapse To Optional Pill
+ *
+ * User-flagged via screenshot: the #upload-field (dashed dropzone with
+ * "Add A File Or Image (Optional)") was rendering AFTER the
+ * Fix My Prompt button. Two problems:
+ *   1. WRONG POSITION — the upload feeds context INTO the prompt
+ *      (sends file to AI for analysis, injects extracted content
+ *      back into the goal/details). It must live BEFORE the submit,
+ *      not after, or it does nothing for the prompt being built.
+ *   2. WRONG WEIGHT — full-width dashed dropzone competes visually
+ *      with the just-tapped primary CTA, same hierarchy mistake we
+ *      fixed for Surprise (T94) and Dice (T95).
+ *
+ * Cause: T39 (in `index.html` premium-polish IIFE) explicitly
+ * reorders the form as Goal → Settings → Fix My Prompt → Upload →
+ * Guidance, and `pmg-linear-flow.js` sets `#upload-field { order: 4 }`
+ * which places it AFTER the tour-step-generate (Fix My Prompt) row
+ * at order 3.
+ *
+ * Fix (strictly additive — no IDs/classes/handlers changed):
+ *   (a) Bump #upload-field's flex `order` to 1 (same bucket as the
+ *       Goal textarea), so it sorts immediately after Goal and BEFORE
+ *       Settings/Fix My Prompt by source-order tiebreak.
+ *   (b) Collapse the field by default to a small inline trigger pill
+ *       "📎 Add A File Or Image (Optional)" — neutralize the dashed
+ *       border, padding, and background while collapsed.
+ *   (c) Tapping the pill expands the original full UI (Choose File +
+ *       drop hint + preview + Analyze button). Toggle hides itself
+ *       when expanded so the dropzone reads cleanly.
+ *   (d) Auto-expand whenever the existing #upload-preview becomes
+ *       visible (covers drop, paste, programmatic file selection
+ *       paths) so users who attach via any route see the full
+ *       interface.
+ *
+ * Specificity: `body:not(.image-mode) #prompt-form > #upload-field#upload-field`
+ * — duplicate id qualifier beats linear-flow's `(1, 2, 1)` rule by
+ * id count tie-break, plus !important.
+ * ===================================================================== */
+(function pmgT98UploadCollapse() {
+  if (window.__pmgT98UploadCollapseInit) return;
+  window.__pmgT98UploadCollapseInit = true;
+
+  var STYLE_ID = 'pmg-t98-upload-collapse-style';
+  var COLLAPSED_CLASS = 'pmg-t98-collapsed';
+  var TOGGLE_ID = 'pmg-t98-upload-toggle';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      /* Move #upload-field above settings + Fix My Prompt. Same
+         `order: 1` bucket as the Goal textarea — DOM order then puts
+         Upload after Goal but before Settings (order 2) and the
+         Fix My Prompt row (order 3). */
+      'body:not(.image-mode) #prompt-form > #upload-field#upload-field {',
+      '  order: 1 !important;',
+      '}',
+      /* Collapsed state: hide all original children, neutralize the
+         dashed dropzone chrome. */
+      '#upload-field.' + COLLAPSED_CLASS + ' {',
+      '  padding: 0 !important;',
+      '  border: 0 !important;',
+      '  background: transparent !important;',
+      '  margin: 6px 0 10px !important;',
+      '  min-height: 0 !important;',
+      '  box-shadow: none !important;',
+      '}',
+      '#upload-field.' + COLLAPSED_CLASS + ' > *:not(#' + TOGGLE_ID + ') {',
+      '  display: none !important;',
+      '}',
+      /* Toggle pill: small, ghost, optional-feeling. Mirrors the T94/T95
+         "OPTIONAL" treatment so the upload reads as the same kind of
+         secondary helper. */
+      '#' + TOGGLE_ID + ' {',
+      '  display: inline-flex;',
+      '  align-items: center;',
+      '  gap: 6px;',
+      '  padding: 6px 14px;',
+      '  background: var(--color-surface, #fff);',
+      '  border: 1px solid var(--color-border, #d0d9e0);',
+      '  border-radius: var(--radius-full, 999px);',
+      '  color: var(--color-text-muted, #5f6b75);',
+      '  font-size: var(--text-sm, 13px);',
+      '  font-weight: 600;',
+      '  line-height: 1.2;',
+      '  cursor: pointer;',
+      '  transition: color 160ms ease, border-color 160ms ease, background 160ms ease;',
+      '}',
+      '#' + TOGGLE_ID + ':hover, #' + TOGGLE_ID + ':focus-visible {',
+      '  color: var(--color-primary, #0f6e6a);',
+      '  border-color: var(--color-primary, #0f6e6a);',
+      '  outline: none;',
+      '}',
+      '#' + TOGGLE_ID + ' .pmg-t98-caret {',
+      '  font-size: 10px;',
+      '  opacity: 0.7;',
+      '  margin-left: 2px;',
+      '}',
+      /* Hide the toggle entirely once expanded — the dropzone speaks
+         for itself. */
+      '#upload-field:not(.' + COLLAPSED_CLASS + ') > #' + TOGGLE_ID + ' {',
+      '  display: none !important;',
+      '}'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  function ensureToggle() {
+    var field = document.getElementById('upload-field');
+    if (!field) return false;
+    if (document.getElementById(TOGGLE_ID)) return true;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = TOGGLE_ID;
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-controls', 'upload-field');
+    btn.innerHTML =
+      '<span aria-hidden="true">📎</span>' +
+      '<span>Add A File Or Image (Optional)</span>' +
+      '<span class="pmg-t98-caret" aria-hidden="true">▾</span>';
+    btn.addEventListener('click', function () {
+      field.classList.remove(COLLAPSED_CLASS);
+      btn.setAttribute('aria-expanded', 'true');
+      /* a11y: the toggle hides itself once expanded, so we must hand
+         focus to a guaranteed-focusable control. The <label> for
+         analyze-file is not reliably focusable across browsers, so
+         prefer the file <input> itself (keyboard-operable: Space/Enter
+         opens the picker). Fall back to the visible label only if the
+         input cannot accept focus. */
+      var input = document.getElementById('analyze-file');
+      var lbl = document.getElementById('upload-btn-label');
+      try {
+        if (input && typeof input.focus === 'function') {
+          input.focus({ preventScroll: true });
+          if (document.activeElement !== input && lbl && lbl.focus) {
+            lbl.focus();
+          }
+        } else if (lbl && lbl.focus) {
+          lbl.focus();
+        }
+      } catch (e) { /* ignore */ }
+    });
+    /* Insert as first child so it's the only thing visible while
+       collapsed. */
+    field.insertBefore(btn, field.firstChild);
+    field.classList.add(COLLAPSED_CLASS);
+    return true;
+  }
+
+  /* Auto-expand when the existing #upload-preview row becomes visible.
+     Covers drop, paste, and programmatic attach paths — they all flip
+     #upload-preview's `hidden` attribute when a valid file lands.
+     Idempotency guard: init() may run multiple times (DOMContentLoaded,
+     T+600, T+1500) to handle late-mounting DOM, but the observers and
+     listeners must be installed exactly once. */
+  var watchInstalled = false;
+  function watchAutoExpand() {
+    if (watchInstalled) return;
+    var field = document.getElementById('upload-field');
+    var preview = document.getElementById('upload-preview');
+    if (!field || !preview) return;
+    watchInstalled = true;
+    function maybeExpand() {
+      if (!preview.hidden && field.classList.contains(COLLAPSED_CLASS)) {
+        field.classList.remove(COLLAPSED_CLASS);
+        var t = document.getElementById(TOGGLE_ID);
+        if (t) t.setAttribute('aria-expanded', 'true');
+      }
+    }
+    try {
+      var mo = new MutationObserver(maybeExpand);
+      mo.observe(preview, { attributes: true, attributeFilter: ['hidden'] });
+    } catch (e) { /* ignore */ }
+    /* Belt-and-suspenders: if a file is dropped directly onto the
+       collapsed pill, the drop event bubbles up to #upload-field and
+       the index.html drop handler will populate preview — but to be
+       safe, also auto-expand on dragover so the user sees the
+       dropzone before the drop completes. */
+    try {
+      field.addEventListener('dragover', function () {
+        if (field.classList.contains(COLLAPSED_CLASS)) {
+          field.classList.remove(COLLAPSED_CLASS);
+          var t = document.getElementById(TOGGLE_ID);
+          if (t) t.setAttribute('aria-expanded', 'true');
+        }
+      }, true);
+    } catch (e) { /* ignore */ }
+  }
+
+  function init() {
+    try { injectStyles(); } catch (e) { /* ignore */ }
+    if (ensureToggle()) {
+      watchAutoExpand();
+      return;
+    }
+    /* Late-mount safety: #upload-field may be re-parented by other
+       IIFEs (T39, linear-flow). Watch for it to land. */
+    try {
+      var mo = new MutationObserver(function () {
+        if (ensureToggle()) {
+          try { mo.disconnect(); } catch (e) {}
+          watchAutoExpand();
+        }
+      });
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 60000);
+    } catch (e) { /* ignore */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+  /* Late re-run after T39 / linear-flow / premium-polish settle. */
+  setTimeout(init, 600);
+  setTimeout(init, 1500);
+})();
