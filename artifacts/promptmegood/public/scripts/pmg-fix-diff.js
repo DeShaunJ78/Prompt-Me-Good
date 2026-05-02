@@ -86,10 +86,12 @@
       '#pmg-fix-diff .pfd-edit-body { min-width: 0; }',
       '#pmg-fix-diff .pfd-edit-reason { font-size: 13px; font-weight: 700; color: var(--color-text); line-height: 1.35; }',
       '#pmg-fix-diff .pfd-edit-snippet { font-size: 12px; color: var(--color-text-muted); margin-top: 3px; line-height: 1.45; word-wrap: break-word; overflow-wrap: anywhere; }',
-      '#pmg-fix-diff .pfd-edit-actions { display: inline-flex; gap: 4px; align-self: center; }',
-      '#pmg-fix-diff .pfd-edit-action { font-size: 11px; font-weight: 700; padding: 6px 12px; min-height: 36px; border-radius: 999px; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text-muted); cursor: pointer; transition: background 150ms ease, color 150ms ease, border-color 150ms ease; }',
-      '#pmg-fix-diff .pfd-edit-action:hover, #pmg-fix-diff .pfd-edit-action:focus-visible { background: var(--color-surface-2); color: var(--color-text); outline: none; }',
-      '#pmg-fix-diff .pfd-edit.is-rejected .pfd-edit-action[data-act="reject"], #pmg-fix-diff .pfd-edit:not(.is-rejected) .pfd-edit-action[data-act="accept"] { background: var(--color-primary); color: var(--color-text-inverse); border-color: var(--color-primary); }',
+      '#pmg-fix-diff .pfd-edit-actions { display: inline-flex; gap: 6px; align-self: center; }',
+      /* Inactive button is solid (not muted) so it never reads as
+         disabled; it just sits opposite the highlighted active state. */
+      '#pmg-fix-diff .pfd-edit-action { font-size: 12px; font-weight: 700; padding: 7px 14px; min-height: 36px; border-radius: 999px; border: 1.5px solid var(--color-border); background: var(--color-surface-2); color: var(--color-text); cursor: pointer; transition: background 150ms ease, color 150ms ease, border-color 150ms ease, transform 150ms ease; }',
+      '#pmg-fix-diff .pfd-edit-action:hover, #pmg-fix-diff .pfd-edit-action:focus-visible { background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface-2)); border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-border)); color: var(--color-text); outline: none; transform: translateY(-1px); }',
+      '#pmg-fix-diff .pfd-edit.is-rejected .pfd-edit-action[data-act="reject"], #pmg-fix-diff .pfd-edit:not(.is-rejected) .pfd-edit-action[data-act="accept"] { background: var(--color-primary); color: var(--color-text-inverse); border-color: var(--color-primary); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }',
 
       '#pmg-fix-diff .pfd-summary { padding: 10px 12px; border-top: 1px dashed var(--color-divider); font-size: 12px; color: var(--color-text); line-height: 1.55; }',
       '#pmg-fix-diff .pfd-summary strong { color: var(--color-primary); font-weight: 800; }',
@@ -97,9 +99,23 @@
       '#pmg-fix-diff .pfd-summary .pfd-summary-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: color-mix(in srgb, var(--color-primary) 14%, transparent); color: var(--color-primary); border: 1px solid color-mix(in srgb, var(--color-primary) 25%, transparent); }',
       '#pmg-fix-diff .pfd-summary .pfd-summary-pill.is-rejected { background: color-mix(in srgb, var(--color-text-faint) 14%, transparent); color: var(--color-text-muted); border-color: color-mix(in srgb, var(--color-text-faint) 25%, transparent); text-decoration: line-through; }',
 
-      '#pmg-fix-diff .pfd-stale { display: none; padding: 8px 10px; margin-bottom: 10px; border-radius: 8px; background: color-mix(in srgb, var(--color-text-faint) 14%, transparent); color: var(--color-text-muted); font-size: 12px; }',
+      '#pmg-fix-diff .pfd-stale { display: none; padding: 8px 10px; margin-bottom: 10px; border-radius: 8px; background: color-mix(in srgb, var(--color-primary) 10%, transparent); color: var(--color-text); border: 1px solid color-mix(in srgb, var(--color-primary) 25%, transparent); font-size: 12px; }',
       '#pmg-fix-diff.is-stale .pfd-stale { display: block; }',
-      '#pmg-fix-diff.is-stale .pfd-quick button[data-act="apply"], #pmg-fix-diff.is-stale .pfd-edits, #pmg-fix-diff.is-stale .pfd-summary { opacity: 0.55; }',
+      /* When stale, draw extra attention to the Re-apply button instead
+         of dimming everything. Toggles must NEVER look disabled — they
+         still work, and dimming them is the single biggest source of
+         user friction here. */
+      '#pmg-fix-diff.is-stale .pfd-quick button[data-act="apply"] { background: var(--color-primary); color: var(--color-text-inverse); border-color: var(--color-primary); animation: pfd-pulse 1.6s ease-in-out 0s 2; }',
+      '@keyframes pfd-pulse { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 30%, transparent); } 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-primary) 0%, transparent); } }',
+
+      /* "Done Reviewing" footer — gives the user an explicit way to
+         move on after they've toggled what they want. */
+      '#pmg-fix-diff .pfd-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: var(--space-3, 12px); padding-top: var(--space-3, 12px); border-top: 1px solid var(--color-divider); }',
+      '#pmg-fix-diff .pfd-footer-hint { font-size: 12px; color: var(--color-text-muted); margin: 0; }',
+      '#pmg-fix-diff .pfd-done { font-size: 13px; font-weight: 800; padding: 10px 18px; min-height: 40px; border-radius: 999px; border: 1.5px solid var(--color-primary); background: var(--color-primary); color: var(--color-text-inverse); cursor: pointer; transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease; box-shadow: 0 1px 3px rgba(0,0,0,0.10); }',
+      '#pmg-fix-diff .pfd-done:hover, #pmg-fix-diff .pfd-done:focus-visible { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.12); outline: none; }',
+      '#pmg-fix-diff .pfd-done .pfd-done-arrow { display: inline-block; margin-left: 6px; transition: transform 180ms ease; }',
+      '#pmg-fix-diff .pfd-done:hover .pfd-done-arrow { transform: translateX(3px); }',
 
       '@media (prefers-reduced-motion: reduce) { #pmg-fix-diff *, #pmg-fix-diff *::before, #pmg-fix-diff *::after { transition: none !important; animation: none !important; } }'
     ].join('\n');
@@ -289,37 +305,60 @@
       var t = e.target;
       if (!t || !t.tagName) return;
       var st = s(); if (!st) return;
-      if (t.matches('.pfd-edit-action[data-act="accept"]')) {
-        var row = t.closest('.pfd-edit');
+      /* Use closest() so clicks on inline children (icons, spans inside
+         buttons — e.g. the arrow inside "Done Reviewing →") still
+         register as the surrounding button. e.target.matches() alone
+         would drop those clicks silently. */
+      var rowAccept = t.closest && t.closest('.pfd-edit-action[data-act="accept"]');
+      if (rowAccept) {
+        var row = rowAccept.closest('.pfd-edit');
         if (row) {
           setEditAccepted(st, row.getAttribute('data-edit-id'), true);
           st.markFresh();
         }
         return;
       }
-      if (t.matches('.pfd-edit-action[data-act="reject"]')) {
-        var row2 = t.closest('.pfd-edit');
+      var rowReject = t.closest && t.closest('.pfd-edit-action[data-act="reject"]');
+      if (rowReject) {
+        var row2 = rowReject.closest('.pfd-edit');
         if (row2) {
           setEditAccepted(st, row2.getAttribute('data-edit-id'), false);
           st.markFresh();
         }
         return;
       }
-      if (t.matches('button[data-act="accept-all"]')) {
+      if (t.closest && t.closest('button[data-act="accept-all"]')) {
         setAll(st, true);
         st.markFresh();
         return;
       }
-      if (t.matches('button[data-act="reject-all"]')) {
+      if (t.closest && t.closest('button[data-act="reject-all"]')) {
         setAll(st, false);
         st.markFresh();
         return;
       }
-      if (t.matches('button[data-act="apply"]')) {
+      if (t.closest && t.closest('button[data-act="apply"]')) {
         // Re-write the result box from the current state (useful after a
         // refine, AI rewrite, or manual edit invalidates it).
         writeResultBox(st);
         st.markFresh();
+        return;
+      }
+      if (t.closest && t.closest('button[data-act="done"]')) {
+        // Advance the user past the diff to the next meaningful section.
+        // Prefer the "Run This Prompt" panel (added by pmg-postgen-actions),
+        // then fall back to the Refine block, then "what next" / improve.
+        var target = document.querySelector('.pmg-run-panel')
+          || document.getElementById('improve-block')
+          || document.getElementById('what-next')
+          || document.getElementById('tour-step-finalize');
+        if (target && typeof target.scrollIntoView === 'function') {
+          var beh = (window.PMG_A11Y && window.PMG_A11Y.scrollBehavior && window.PMG_A11Y.scrollBehavior()) || 'smooth';
+          try { target.scrollIntoView({ behavior: beh, block: 'start' }); } catch (_) {
+            try { target.scrollIntoView(); } catch (__) {}
+          }
+        }
+        if (st && st.live) st.live.textContent = 'Moved to the next step.';
         return;
       }
     });
@@ -336,7 +375,7 @@
     root.setAttribute('aria-labelledby', 'pmg-fix-diff-title');
     root.hidden = true;
     root.innerHTML =
-      '<div class="pfd-stale" role="status">The prompt above has changed. Tap <strong>Re-apply diff</strong> to overwrite it with your accepted changes, or run Fix My Prompt again for a fresh diff.</div>' +
+      '<div class="pfd-stale" role="status">The prompt above shows the AI rewrite. Toggle any change you don\'t want, then tap <strong>Re-apply</strong> to use only your accepted changes.</div>' +
       '<div class="pfd-head">' +
         '<div>' +
           '<h3 id="pmg-fix-diff-title" class="pfd-title">Review Changes</h3>' +
@@ -361,6 +400,10 @@
       '<p class="pfd-edits-title">Suggested Changes</p>' +
       '<div class="pfd-edits"></div>' +
       '<div class="pfd-summary" aria-live="polite"></div>' +
+      '<div class="pfd-footer">' +
+        '<p class="pfd-footer-hint">Toggle anything you want to keep or skip, then continue.</p>' +
+        '<button type="button" class="pfd-done" data-act="done">Done Reviewing<span class="pfd-done-arrow" aria-hidden="true">→</span></button>' +
+      '</div>' +
       '<span class="sr-only" data-live="diff" aria-live="polite"></span>';
     // Insert directly after the result box so it sits between the prompt
     // text and the existing "Refine Your Prompt" / "What Next" blocks.
@@ -444,6 +487,39 @@
       observer.observe(box, { childList: true, subtree: true, characterData: true });
       state.observer = observer;
     }
+
+    /* Anchor the user at the diff panel AFTER any other post-generate
+       scrolls have settled. Other modules (improve-history, suggestion
+       chips, etc.) scroll the page in the same tick. We retry twice to
+       beat any late timer-based scrolls from other modules, but bail if
+       the user has touched the page (wheel/touch/keydown) in the
+       meantime — their intent always wins. */
+    try {
+      var userScrolled = false;
+      var cancelers = ['wheel', 'touchstart', 'keydown', 'mousedown'];
+      var onUserInput = function () { userScrolled = true; };
+      cancelers.forEach(function (ev) {
+        window.addEventListener(ev, onUserInput, { passive: true, once: true });
+      });
+      var detach = function () {
+        cancelers.forEach(function (ev) {
+          try { window.removeEventListener(ev, onUserInput); } catch (_) {}
+        });
+      };
+      var landOnDiff = function () {
+        if (root.hidden) { detach(); return; }
+        if (userScrolled) { detach(); return; }
+        try {
+          var beh = (window.PMG_A11Y && window.PMG_A11Y.scrollBehavior && window.PMG_A11Y.scrollBehavior()) || 'smooth';
+          root.scrollIntoView({ behavior: beh, block: 'start' });
+        } catch (_) {
+          try { root.scrollIntoView(); } catch (__) {}
+        }
+      };
+      window.setTimeout(landOnDiff, 350);
+      // Second attempt to beat late module scrolls; cleans up listeners.
+      window.setTimeout(function () { landOnDiff(); detach(); }, 900);
+    } catch (_) {}
   }
 
   document.addEventListener('pmg:builder-finalized', function (e) {

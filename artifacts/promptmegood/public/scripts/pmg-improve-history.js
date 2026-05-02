@@ -300,11 +300,23 @@
     });
     stripList.innerHTML = '';
     stripList.appendChild(frag);
-    /* Scroll the current chip into view (tail of the strip is most
-       recent) without page-jumping. */
+    /* Scroll the current chip into view HORIZONTALLY ONLY. Using
+       Element.scrollIntoView({ block: 'nearest' }) silently scrolls the
+       PAGE vertically when the strip is below the fold (a longstanding
+       browser quirk), which yanks users past the diff panel after Fix
+       My Prompt. We mutate stripList.scrollLeft directly so the page
+       never moves. */
     var curEl = stripList.querySelector('[aria-current="true"]');
-    if (curEl && typeof curEl.scrollIntoView === 'function') {
-      try { curEl.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (_) {}
+    if (curEl && stripList) {
+      try {
+        var stripRect = stripList.getBoundingClientRect();
+        var chipRect = curEl.getBoundingClientRect();
+        if (chipRect.left < stripRect.left) {
+          stripList.scrollLeft += (chipRect.left - stripRect.left) - 8;
+        } else if (chipRect.right > stripRect.right) {
+          stripList.scrollLeft += (chipRect.right - stripRect.right) + 8;
+        }
+      } catch (_) {}
     }
   }
 

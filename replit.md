@@ -65,7 +65,7 @@ This is a static HTML AI prompt builder (`index.html`) using vanilla JavaScript 
 -   **Smart Assist:** Inactivity-driven helper for guidance.
 -   **Storage Write Warning Banner:** Displays a dismissible banner when `localStorage` persistence fails.
 -   **Text Builder Live Feedback:** Shows a live-feedback panel with a confidence meter, token estimate, vague-word linter, and collapsible "Live Preview Of Your Prompt."
--   **Fix My Prompt Diff (Side-By-Side):** Opens a diff panel for reviewing and accepting/rejecting structural changes suggested by "Fix My Prompt."
+-   **Fix My Prompt Diff (Side-By-Side):** Opens a diff panel for reviewing and accepting/rejecting structural changes suggested by "Fix My Prompt." Lands the user at the diff (deferred + retried `scrollIntoView` overrides other modules' post-generate scrolls; user wheel/touch/keydown cancels). Row Accept/Reject buttons are solid (never look greyed out, even when stale). Includes a "Done Reviewing" footer button that scrolls to `.pmg-run-panel`. The improve-history strip scrolls horizontally only (never the page) so it can't yank users past the diff.
 -   **Improve Your Prompt: History + Hover Preview:** "Refine Your Prompt" panel gains an in-memory history strip for previous prompt versions and a hover/focus preview popover for quick tweaks.
 -   **Image Generator Variations + Compare + Use-Style Handoff:**
     -   **Generate 4 Variations:** Allows generating multiple image variants simultaneously.
