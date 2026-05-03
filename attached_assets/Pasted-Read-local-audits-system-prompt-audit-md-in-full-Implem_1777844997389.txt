@@ -1,0 +1,66 @@
+Read .local/audits/system-prompt-audit.md in full.
+
+Implement the starter bundle only: P1 + P3 + P5.
+
+Goal:
+Reduce user indecision and prompt-output bloat by making PromptMeGood produce cleaner, more context-appropriate prompts.
+
+Required changes:
+
+1. Reframe the system prompt so it clearly separates:
+   - internal/meta instructions for PromptMeGood
+   - the final produced prompt that the user copies or runs
+   The model should never leak internal rules into the final prompt.
+
+2. Add a HARD RULES block:
+   - Output only the finished prompt unless the selected mode explicitly asks for explanation.
+   - Do not mention PromptMeGood inside generated prompts.
+   - Do not include meta commentary about prompt construction.
+   - Do not include “top 3 next actions” unless the user request is strategic, business-related, planning-related, or explicitly asks for next steps.
+   - Match the user’s language and locale.
+   - Avoid vague hedging and filler phrases unless uncertainty is necessary.
+   - Preserve the user’s original intent.
+
+3. Add length-scaled structure rules:
+   - Simple/short/creative requests should produce concise prompts.
+   - Medium requests should include role, task, context, constraints, and format.
+   - Complex/business/technical/strategic requests may include fuller structure and next-step logic.
+   Avoid using one universal checklist for every prompt.
+
+4. Add stronger personality voice anchors:
+   - Each personality/tone option should include specific writing behaviors.
+   - Include banned phrases and anti-patterns for each major voice.
+   - Prevent all personalities from collapsing into the same generic AI voice.
+
+5. Set sampling parameters:
+   - Default prompt generation: temperature 0.35, top_p 0.9, max_tokens 600.
+   - Creative modes only: temperature 0.65, top_p 0.95, max_tokens 700.
+   Do not increase max_tokens globally unless needed.
+
+6. Consolidate duplicate system prompts:
+   - Find any duplicate system prompt logic in /generate-prompt.
+   - Make sure the app uses one source of truth for prompt-building rules.
+   - Do not leave old conflicting prompt text active.
+
+Acceptance tests:
+Create or manually test these inputs:
+
+A. “Write a funny caption for my dog photo.”
+Expected: short, creative prompt. No next actions. No bloated checklist.
+
+B. “Help me make money with AI.”
+Expected: structured business prompt with practical next steps.
+
+C. “Rewrite this email professionally.”
+Expected: concise rewrite-focused prompt. No strategy framework unless requested.
+
+D. “Create a DALL-E prompt for a luxury watch ad.”
+Expected: visual/image-generation prompt with scene, lighting, camera, style, and constraints.
+
+E. Spanish input.
+Expected: Spanish output unless the user requests English.
+
+F. Short vague input.
+Expected: helpful refinement without overbuilding.
+
+After changes, summarize exactly which files were edited and show before/after examples for the six tests.

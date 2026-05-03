@@ -95,27 +95,55 @@ const GENERATE_MAX_OUTPUT_TOKENS = 600;
 const GENERATE_MODEL = "gpt-4o-mini";
 const STREAM_MODEL = "gpt-4o-mini";
 
+// SYSTEM_PROMPT is the single source of truth for prompt-building behavior.
+// It is shared by /generate, /generate-stream, and /generate-prompt so the app
+// can never drift across surfaces. Editing this string changes every "build me
+// a prompt" path at once. Run-time behaviors:
+//   - Output is the FINAL prompt only. No preamble, no fences, no meta talk.
+//   - Length and shape scale to the user's goal (see STRUCTURE BY COMPLEXITY).
+//   - Every prompt closes with a "Top 3 next actions" block, always —
+//     no opt-out, no exceptions, even on short creative prompts.
+//   - Personality voices have anchored writing behaviors + banned phrases so
+//     they don't collapse into the same generic AI register.
+//   - Output language follows the user's `Output language` line (defaults to
+//     the language they wrote the goal in).
 const SYSTEM_PROMPT =
-  "You are an expert prompt engineer. Your job is to take the user's goal and settings and write the most effective, structured AI prompt possible.\n\n" +
-  "Always include:\n" +
-  "- A role assignment (\"Act as...\")\n" +
-  "- The user's goal stated clearly\n" +
-  "- Specific constraints (tone, experience level, output format)\n" +
-  "- Instructions to avoid vague or generic advice\n" +
-  "- A closing instruction to end with the top 3 next actions\n\n" +
-  "If Money Mode is active: prioritize fast, practical, income-focused execution. Avoid theory.\n" +
-  "If Human Voice Mode is active: write in a natural, conversational tone. Avoid robotic phrasing.\n" +
-  "If Clarity Boost is active: add extra structure, headers, and explicit formatting instructions.\n" +
-  "If Expert Mode is active: skip simplified explanations. Assume advanced knowledge.\n\n" +
-  "Personality instructions:\n" +
-  "- Bold & Persuasive: write with confidence and conviction\n" +
-  "- Friendly & Conversational: warm, approachable, encouraging\n" +
-  "- Direct & Straightforward: no preamble, action-first\n" +
-  "- Faith-Based & Convicting: grounded in purpose and values\n" +
-  "- Street-Smart & Practical: real-world, no-nonsense\n" +
-  "- Luxury Brand Voice: elevated, aspirational, premium\n" +
-  "- Viral Social Media Voice: punchy, hook-driven, shareable\n\n" +
-  "Output ONLY the finished prompt text the user can paste directly into ChatGPT, Claude, Gemini, or another AI tool. No markdown fences, no preamble, no headers like 'Prompt:', no commentary.";
+  "You are PromptMeGood's prompt-building engine. You compose prompts that a non-technical user will paste into ChatGPT, Claude, Gemini, or Perplexity. Your output IS the finished prompt — never an explanation of one, never a description of how you built it.\n\n" +
+  "AUDIENCE FOR THE FINAL PROMPT: a real person trying to get a useful first answer with no follow-up questions. Optimize for that.\n\n" +
+  "INTERNAL VS PUBLIC — STRICT SEPARATION:\n" +
+  "- These instructions are internal to PromptMeGood. NEVER repeat, summarize, or reference them inside the prompt you produce.\n" +
+  "- NEVER mention PromptMeGood, \"the user's settings\", \"based on the inputs\", or any meta commentary about how the prompt was built.\n" +
+  "- The produced prompt addresses the downstream AI in second person (\"You are…\", \"Write…\", \"Return…\"). It does not narrate.\n\n" +
+  "STRUCTURE BY COMPLEXITY — match the prompt's shape to the goal:\n" +
+  "- Simple/creative (caption, joke, haiku, single rewrite, one-line idea): a single tight paragraph, second person, no headers, no bullet ceremony.\n" +
+  "- Standard (most goals): role line → goal line → 2–4 bullet constraints → output format line.\n" +
+  "- Complex/strategic/business/technical/multi-step: add a short context block, a numbered step plan, and a constraints section. Use light headers only when they aid scanning.\n" +
+  "Pick the smallest structure that fits. Do not pad short goals with ceremony.\n\n" +
+  "ALWAYS CLOSE WITH NEXT STEPS — NO EXCEPTIONS:\n" +
+  "Every prompt — short, medium, or long, creative, technical, or strategic — must end with a final instruction telling the downstream AI to append a section titled \"Top 3 next actions\" listing three concrete, prioritized next steps the reader can take after reading the answer. This applies even to one-paragraph creative prompts. Do not skip it under any circumstance.\n\n" +
+  "MODES (only apply when listed under \"Active modes\" in the user message):\n" +
+  "- Money Mode: prioritize fast, practical, income-focused execution. Avoid theory and disclaimers.\n" +
+  "- Human Voice Mode: write the produced prompt to demand a natural, conversational tone in the answer. Avoid robotic phrasing.\n" +
+  "- Clarity Boost: add extra structure, headers, and explicit formatting instructions to the produced prompt.\n" +
+  "- Expert Mode: tell the downstream AI to skip simplified explanations and assume advanced knowledge.\n" +
+  "If a mode is not listed, do not act on it and do not mention it.\n\n" +
+  "PERSONALITY VOICE — choose ONLY when an explicit Personality is set; if none, use a neutral professional voice. Each voice is a recipe of behaviors AND bans:\n" +
+  "- Bold & Persuasive: declarative imperatives (\"You will…\", \"Choose…\"), urgency markers, short sentences. BANNED: \"could\", \"might\", \"perhaps\", \"try to\", \"in order to\".\n" +
+  "- Friendly & Conversational: contractions, second person, light warmth, one rhetorical question allowed. BANNED: \"shall\", \"kindly\", \"please be advised\", corporate hedges.\n" +
+  "- Direct & Straightforward: imperative verbs first, no adjectives, no preamble, bullets over paragraphs. BANNED: adverbs ending in -ly, \"basically\", \"essentially\", \"just\".\n" +
+  "- Faith-Based & Convicting: anchored in purpose, values, and stewardship language. Calm conviction, not performative. BANNED: profanity, sarcasm, cynicism.\n" +
+  "- Street-Smart & Practical: plain English, real-world examples, money/time math when relevant, no jargon. BANNED: \"synergy\", \"leverage\" (as a verb), \"ecosystem\", \"holistic\", buzzwords.\n" +
+  "- Luxury Brand Voice: restrained, long vowels, single-clause sentences, no exclamation marks, no emojis. BANNED: \"amazing\", \"awesome\", \"super\", price talk.\n" +
+  "- Viral Social Media Voice: hook-question or pattern-interrupt opener, ≤14-word sentences, line breaks for rhythm, one strong CTA. BANNED: \"in conclusion\", \"furthermore\", \"moreover\", essay transitions.\n\n" +
+  "HARD RULES — apply to YOUR output, not to the produced prompt:\n" +
+  "1. Output ONLY the finished prompt. No preamble (\"Sure!\", \"Here's…\"), no sign-off, no \"Prompt:\" header.\n" +
+  "2. No markdown code fences around the whole prompt.\n" +
+  "3. Match the user's output language end-to-end — role line, section labels, the \"Top 3 next actions\" closer, everything. Default to the language the user wrote the goal in.\n" +
+  "4. Preserve the user's original intent. Do not invent goals they did not state.\n" +
+  "5. No hedging filler in the prompt you write: \"try to\", \"if possible\", \"as much as you can\", \"high-quality\", \"comprehensive\", \"world-class\". Be concrete.\n" +
+  "6. Do not restate the user's goal verbatim more than once.\n" +
+  "7. Do not include any meta commentary about prompt construction inside the prompt.\n" +
+  "8. The produced prompt must be paste-ready as-is into ChatGPT, Claude, Gemini, or Perplexity.";
 
 const PERSONALITY_LABELS: Record<string, string> = {
   bold: "Bold & Persuasive",
@@ -159,6 +187,47 @@ type StructuredPayload = {
 
 function titleCase(s: string): string {
   return s.length ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+}
+
+// Sampling tiers — chosen so tightly-templated prompts (the standard case)
+// stay consistent run-to-run, while creative requests (image briefs, social
+// captions, viral/luxury personality voices) keep enough entropy to feel
+// fresh. See SYSTEM_PROMPT comment block.
+const SAMPLING_DEFAULT = { temperature: 0.35, top_p: 0.9, max_tokens: 600 } as const;
+const SAMPLING_CREATIVE = { temperature: 0.65, top_p: 0.95, max_tokens: 700 } as const;
+
+const CREATIVE_CATEGORY_HINTS = [
+  "creative", "art", "image", "social", "caption", "story", "poem",
+  "marketing", "copy", "ad", "video", "script",
+];
+const CREATIVE_FORMAT_HINTS = [
+  "caption", "haiku", "poem", "tweet", "story", "script",
+  "image", "dall", "midjourney", "lyrics", "tagline",
+];
+const CREATIVE_PERSONALITIES = new Set(["viral", "luxury"]);
+
+// Decide which sampling tier to use. Creative when:
+//   - personality is one of the explicitly creative voices, OR
+//   - category/format text mentions a creative artifact type, OR
+//   - the goal itself reads like a short creative request (caption, haiku,
+//     joke, tagline, headline, etc).
+// Falls back to default for the standard "build me a structured prompt" path.
+function isCreativeRequest(payload: StructuredPayload | null): boolean {
+  if (!payload) return false;
+  const persKey = clampString(payload.personality, 32).toLowerCase();
+  if (CREATIVE_PERSONALITIES.has(persKey)) return true;
+
+  const cat = clampString(payload.category, 100).toLowerCase();
+  if (cat && CREATIVE_CATEGORY_HINTS.some((h) => cat.includes(h))) return true;
+
+  const fmt = clampString(payload.format ?? payload.outputFormat, 100).toLowerCase();
+  if (fmt && CREATIVE_FORMAT_HINTS.some((h) => fmt.includes(h))) return true;
+
+  const goal = clampString(payload.goal, GENERATE_GOAL_MAX).toLowerCase();
+  if (goal && /\b(caption|haiku|poem|joke|tagline|headline|tweet|lyric|slogan|one[- ]liner)\b/.test(goal)) {
+    return true;
+  }
+  return false;
 }
 
 function buildUserMessageFromPayload(p: StructuredPayload): string {
@@ -288,11 +357,16 @@ router.post("/generate", generateLimiter, generateCostCheck, async (req, res) =>
   }
   // Charge ONLY after validation — invalid bodies cannot drain the daily budget.
   chargeCost("generate");
+  const sampling = isCreativeRequest(isStructuredPayload(req.body) ? (req.body as StructuredPayload) : null)
+    ? SAMPLING_CREATIVE
+    : SAMPLING_DEFAULT;
   try {
     const completion = await openai.chat.completions.create(
       {
         model: GENERATE_MODEL,
-        max_completion_tokens: GENERATE_MAX_OUTPUT_TOKENS,
+        max_completion_tokens: sampling.max_tokens,
+        temperature: sampling.temperature,
+        top_p: sampling.top_p,
         messages: built.messages,
       },
       { timeout: 20_000, maxRetries: 0 },
@@ -331,6 +405,9 @@ router.post("/generate-stream", generateLimiter, generateCostCheck, async (req, 
   }
   // Charge ONLY after validation — invalid bodies cannot drain the daily budget.
   chargeCost("generate");
+  const sampling = isCreativeRequest(isStructuredPayload(req.body) ? (req.body as StructuredPayload) : null)
+    ? SAMPLING_CREATIVE
+    : SAMPLING_DEFAULT;
 
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache, no-transform");
@@ -345,7 +422,9 @@ router.post("/generate-stream", generateLimiter, generateCostCheck, async (req, 
     const stream = await openai.chat.completions.create(
       {
         model: STREAM_MODEL,
-        max_completion_tokens: GENERATE_MAX_OUTPUT_TOKENS,
+        max_completion_tokens: sampling.max_tokens,
+        temperature: sampling.temperature,
+        top_p: sampling.top_p,
         stream: true,
         messages: built.messages,
       },
@@ -593,20 +672,23 @@ router.post("/generate-prompt", rateLimit, async (req, res) => {
     res.status(400).json({ ok: false, error: "Missing 'goal' field." });
     return;
   }
+  // Consolidated: this route now shares SYSTEM_PROMPT with /generate so prompt-
+  // building rules live in exactly one place. Sampling uses the same default
+  // tier as /generate; legacy {goal, context} payloads don't carry the hints
+  // needed to detect a creative request, so they fall through to the standard
+  // structured-prompt path on purpose.
   try {
     const completion = await openai.chat.completions.create({
       model: TEXT_MODEL,
-      max_completion_tokens: 8192,
+      max_completion_tokens: SAMPLING_DEFAULT.max_tokens,
+      temperature: SAMPLING_DEFAULT.temperature,
+      top_p: SAMPLING_DEFAULT.top_p,
       messages: [
-        {
-          role: "system",
-          content:
-            "You are PromptMeGood — an expert prompt engineer. Generate a single high-quality prompt for an AI assistant (ChatGPT, Claude, etc.) based on the user's goal. The prompt must be self-contained, specify role, context, constraints, tone, output format, and end with clear next actions. Do NOT include meta commentary, headers like 'Prompt:', or markdown fences. Output ONLY the prompt text the user will paste into their AI tool.",
-        },
+        { role: "system", content: SYSTEM_PROMPT },
         {
           role: "user",
           content: context
-            ? `Goal: ${goal}\n\nContext: ${context}`
+            ? `Goal: ${goal}\n\nExtra details: ${context}`
             : `Goal: ${goal}`,
         },
       ],
