@@ -11645,7 +11645,14 @@
       }
     } catch (_) {}
     /* Founding members count as paid for ALL entitlement checks. They
-       paid $49 lifetime — the cache must never get cleared on them. */
+       paid $79 lifetime (price locked for life) — the cache must never
+       get cleared on them. We also persist the plan name separately so
+       pmg-pro.js can render a "Founding" badge without re-fetching. */
+    try {
+      if (profile.plan === 'founding' || profile.plan === 'pro' || profile.plan === 'free') {
+        localStorage.setItem('promptmegood:plan:v1', profile.plan);
+      }
+    } catch (_) {}
     var isPro = profile.plan === 'pro' || profile.plan === 'founding';
     var cached = false;
     try { cached = localStorage.getItem('promptmegood:pro:v1') === 'true'; } catch (_) {}
@@ -11814,11 +11821,11 @@
     var cta = document.createElement('div');
     cta.className = 'pmg-t41-inline-cta';
     /* Pro Monthly is "Coming Soon — June 1, 2026" and has no live Stripe
-       checkout. The active paid offer is Founding Member ($49 lifetime).
-       This homepage CTA therefore points at Founding Member and is wired
-       via data-pmg-tier="founding". */
+       checkout. The active paid offer is Founding Member ($79 lifetime,
+       price locked for life). This homepage CTA therefore points at
+       Founding Member and is wired via data-pmg-tier="founding". */
     cta.innerHTML =
-      '<span><strong>Want Higher Limits?</strong> Founding Member is a one-time $59 for lifetime access to core features — higher Run With AI and image generation usage. Limited to the first 500 buyers. Fair use limits apply.</span>' +
+      '<span><strong>Want Higher Limits?</strong> Founding Member is a one-time $79 for lifetime access to core features — higher Run With AI and image generation usage. Limited to the first 500 buyers, price locked for life. Fair use limits apply.</span>' +
       '<a class="btn btn-primary ' + BUTTON_CLASS + '" href="./pricing.html#early-access">Join Founding Member Waitlist</a>';
     section.parentNode.insertBefore(cta, section);
     wireButtons();
@@ -12044,7 +12051,7 @@
       '@media (max-width: 600px) { #' + BANNER_ID + ' { font-size: 13px; padding: 8px 12px; } }',
       '@media print { #' + BANNER_ID + ' { display: none !important; } }',
       /* Override T41 hide rules during beta — but ONLY for the Founding-tier
-         button, since Founding ($49 lifetime) is genuinely on sale right now.
+         button, since Founding ($79 lifetime, price locked) is genuinely on sale right now.
          Pro recurring subscriptions are NOT for sale until June 1, 2026, so
          every Pro upgrade CTA (the pricing-page "Upgrade To Pro" button and
          the auto-injected homepage `.pmg-t41-inline-cta` card) must stay

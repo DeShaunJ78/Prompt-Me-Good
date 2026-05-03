@@ -108,7 +108,7 @@ router.post(
     const tier: "pro" | "founding" = rawTier === "founding" ? "founding" : "pro";
 
     /* T43: During open beta the Pro recurring subscription is NOT yet for
-       sale — only the lifetime Founding tier ($49) is. Block any Pro
+       sale — only the lifetime Founding tier ($79, price locked for life) is. Block any Pro
        checkout request until the paywall flips on (June 1, 2026). The
        frontend already hides Pro CTAs in beta mode, but we enforce here
        too so the API cannot be used to purchase Pro early via direct
@@ -120,7 +120,7 @@ router.post(
       );
       res.status(403).json({
         error:
-          "Pro launches June 1, 2026. Founding Member access ($49 lifetime) is available now.",
+          "Pro launches June 1, 2026. Founding Member access ($79 lifetime, price locked for life) is available now.",
       });
       return;
     }
@@ -174,7 +174,7 @@ router.post(
 
       // Two distinct checkout shapes:
       //   - 'pro'      → recurring subscription (mode: 'subscription')
-      //   - 'founding' → one-time $49 lifetime (mode: 'payment')
+      //   - 'founding' → one-time $79 lifetime, price locked (mode: 'payment')
       // The webhook reads `metadata.tier` to know which side handled it.
       const baseParams = {
         customer: customerId,

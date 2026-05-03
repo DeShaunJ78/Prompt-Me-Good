@@ -125,7 +125,59 @@
     } catch (e) { return 0; }
   }
 
-  var DAILY_LIMITS = { run: 3, img: 1, analyze: 1 };
+  /* Task 100 — Tiered daily caps:
+       - Founding / Pro  → unlimited (handled by pmgIsPro() short-circuit).
+       - 7-day boosted trial for new visitors → { run:10, img:5, analyze:3 }.
+       - Standard free   → { run:3,  img:1, analyze:1 }.
+     Trial start is stamped on first encounter into localStorage and
+     auto-expires after 7 days. The `DAILY_LIMITS` name is preserved
+     for back-compat — it now resolves dynamically through a Proxy. */
+  var FIRST_VISIT_KEY = 'promptmegood:firstVisit:v1';
+  var TRIAL_DAYS = 7;
+  var TRIAL_DAILY_LIMITS = { run: 10, img: 5, analyze: 3 };
+  var FREE_DAILY_LIMITS  = { run: 3,  img: 1, analyze: 1 };
+
+  function pmgFirstVisitMs() {
+    try {
+      var v = localStorage.getItem(FIRST_VISIT_KEY);
+      if (v) {
+        var n = parseInt(v, 10);
+        if (isFinite(n) && n > 0) return n;
+      }
+      var now = Date.now();
+      localStorage.setItem(FIRST_VISIT_KEY, String(now));
+      return now;
+    } catch (e) { return Date.now(); }
+  }
+  function pmgInTrial() {
+    try {
+      var first = pmgFirstVisitMs();
+      return (Date.now() - first) < (TRIAL_DAYS * 24 * 60 * 60 * 1000);
+    } catch (e) { return false; }
+  }
+  function pmgTrialDaysLeft() {
+    try {
+      var first = pmgFirstVisitMs();
+      var remainingMs = (TRIAL_DAYS * 24 * 60 * 60 * 1000) - (Date.now() - first);
+      return Math.max(0, Math.ceil(remainingMs / (24 * 60 * 60 * 1000)));
+    } catch (e) { return 0; }
+  }
+  function getActiveDailyLimits() {
+    return pmgInTrial() ? TRIAL_DAILY_LIMITS : FREE_DAILY_LIMITS;
+  }
+
+  /* Proxy keeps the `DAILY_LIMITS[feature]` access pattern working
+     everywhere it's already used, while transparently switching between
+     trial and standard caps. Falls back to a plain object on engines
+     without Proxy support (every modern browser has it). */
+  var DAILY_LIMITS;
+  try {
+    DAILY_LIMITS = new Proxy({}, {
+      get: function (_t, key) { return getActiveDailyLimits()[key]; }
+    });
+  } catch (e) {
+    DAILY_LIMITS = FREE_DAILY_LIMITS;
+  }
 
   function pmgLimitReached(feature) {
     if (pmgIsPro()) return false;
@@ -141,6 +193,8 @@
   window.pmgIncrementDailyCount = pmgIncrementDailyCount;
   window.pmgLimitReached = pmgLimitReached;
   window.pmgRemainingToday = pmgRemainingToday;
+  window.pmgInTrial = pmgInTrial;
+  window.pmgTrialDaysLeft = pmgTrialDaysLeft;
 
   /* =================================================================
    * TASK 2 — Pro lock CSS
@@ -351,7 +405,7 @@
     overlay.className = 'pmg-upgrade-overlay';
     overlay.id = 'pmg-upgrade-overlay';
     /* Two-CTA upgrade modal:
-         Primary  → Founding Member ($49 lifetime) — uses existing
+         Primary  → Founding Member ($79 lifetime, price locked) — uses existing
                     [data-pmg-upgrade][data-pmg-tier="founding"] hook in
                     pmg-ux.js, which calls POST /api/create-checkout-session
                     with { tier: 'founding' } and redirects to Stripe.
@@ -360,7 +414,7 @@
       '<div class="pmg-upgrade-modal" role="dialog" aria-modal="true" aria-labelledby="pmg-upgrade-title">' +
         '<span class="pmg-upgrade-modal-icon" aria-hidden="true">🔒</span>' +
         '<h3 id="pmg-upgrade-title">' + safe + ' Is A Pro Feature</h3>' +
-        '<p>Unlock higher usage on this feature. Founding Member is a one-time $59 payment for lifetime access to core features — limited to the first 500 buyers. Pro Monthly ($19/month) launches June 1, 2026. Fair use limits apply.</p>' +
+        '<p>Unlock higher usage on this feature. Founding Member is a one-time $79 payment for lifetime access to core features — limited to the first 500 buyers, price locked for life. Pro Monthly ($9/month) and Pro Yearly ($79/year) launch June 1, 2026. Fair use limits apply.</p>' +
         '<div class="pmg-upgrade-modal-actions">' +
           '<a class="pmg-upgrade-cta pmg-upgrade-btn" href="./pricing.html#early-access">Join Founding Member Waitlist</a>' +
           '<a class="pmg-upgrade-cta-secondary" href="./pricing.html#early-access">Notify Me When Pro Launches</a>' +
@@ -458,8 +512,9 @@
     }
     var rem = pmgRemainingToday(feature);
     var lim = DAILY_LIMITS[feature];
+    var tierWord = pmgInTrial() ? 'Trial' : 'Free';
     var nextText = rem > 0
-      ? '(' + rem + ' Of ' + lim + ' Free Today)'
+      ? '(' + rem + ' Of ' + lim + ' ' + tierWord + ' Today)'
       : '(Daily Limit Reached — Upgrade For Unlimited)';
     /* Idempotent: only touch DOM when text actually changes. Avoids
        infinite MutationObserver feedback loops. */

@@ -149,7 +149,7 @@ async function handleCheckoutCompleted(
       ? session.subscription
       : session.subscription?.id || null;
 
-  // Founding member is a one-time $49 payment with mode='payment' AND
+  // Founding member is a one-time $79 payment with mode='payment' AND
   // payment_status='paid'. We flip plan immediately because there's no
   // subscription event coming after this one. For mode='subscription' we
   // wait for the subscription.updated event so we can verify status='active'.
