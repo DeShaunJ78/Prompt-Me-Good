@@ -2545,6 +2545,51 @@
     body.has-nudge-banner .toast { top: calc(160px + env(safe-area-inset-top, 0px)); }
     [data-theme="dark"] .toast { background: #0c4f48; border-color: #5ba8b0; color: #E6F7F5; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4); }
 
+    /* First-visit invite: gentle pulse on the main input so a fresh user knows where to start typing. */
+    @keyframes pmgFirstVisitPulse {
+      0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 0%, transparent); }
+      50%      { box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-primary) 22%, transparent); }
+    }
+    .pmg-first-visit-pulse {
+      animation: pmgFirstVisitPulse 1.6s ease-in-out 3;
+      border-color: var(--color-primary) !important;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .pmg-first-visit-pulse { animation: none; }
+    }
+
+    /* Post-run tour invite: appears after the user's first successful Run With AI. */
+    .pmg-post-run-intro {
+      position: fixed;
+      left: 50%;
+      bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+      transform: translateX(-50%) translateY(8px);
+      z-index: 1100;
+      max-width: 460px;
+      width: calc(100% - 32px);
+      background: var(--color-surface);
+      color: var(--color-text);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg, 14px);
+      box-shadow: 0 18px 44px rgba(0, 0, 0, 0.18);
+      padding: 18px 20px 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 220ms ease, transform 220ms ease;
+    }
+    .pmg-post-run-intro[hidden] { display: none; }
+    .pmg-post-run-intro.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+    .pmg-post-run-intro-title { margin: 0 0 6px; font-size: var(--text-base); font-weight: 700; }
+    .pmg-post-run-intro-body { margin: 0 0 14px; font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.45; }
+    .pmg-post-run-intro-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+    .pmg-post-run-intro-actions .btn { min-height: 38px; padding: 8px 16px; font-size: 14px; }
+    [data-theme="dark"] .pmg-post-run-intro { background: #0c4f48; border-color: #5ba8b0; color: #E6F7F5; box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5); }
+    [data-theme="dark"] .pmg-post-run-intro-body { color: #c9e7e3; }
+    @media (max-width: 640px) {
+      .pmg-post-run-intro { bottom: calc(12px + env(safe-area-inset-bottom, 0px)); padding: 14px 16px 14px; }
+      .pmg-post-run-intro-actions .btn { flex: 1 1 auto; }
+    }
+
     .post-tour-banner {
       position: fixed;
       top: calc(96px + env(safe-area-inset-top, 0px));
@@ -4340,6 +4385,15 @@
     <span class="post-tour-banner-icon" aria-hidden="true">🎉</span>
     <span class="post-tour-banner-text">You&rsquo;re ready. Build A Prompt Below And Have Fun Prompting With PromptMeGood.</span>
     <button type="button" class="post-tour-banner-btn" id="post-tour-banner-dismiss" aria-label="Dismiss message">Got It</button>
+  </div>
+
+  <div class="pmg-post-run-intro" id="pmg-post-run-intro" role="dialog" aria-modal="false" aria-labelledby="pmg-post-run-intro-title" aria-describedby="pmg-post-run-intro-body" hidden>
+    <h3 class="pmg-post-run-intro-title" id="pmg-post-run-intro-title">Nice — You Just Used PromptMeGood</h3>
+    <p class="pmg-post-run-intro-body" id="pmg-post-run-intro-body">PromptMeGood just turned your idea into a stronger prompt and ran it with AI. Want a quick tour of what else you can do?</p>
+    <div class="pmg-post-run-intro-actions">
+      <button type="button" class="btn btn-secondary" id="pmg-post-run-intro-skip">Not Now</button>
+      <button type="button" class="btn btn-primary" id="pmg-post-run-intro-go">Show Me Around</button>
+    </div>
   </div>
 
   <div class="smart-assist" id="smart-assist" role="region" aria-live="polite" aria-labelledby="smart-assist-title" hidden>
@@ -8212,10 +8266,83 @@ Context:
           }
         });
       }
+      // First-visit UX: do NOT pop the welcome card. Instead, gently invite the
+      // user to start typing (focus + soft pulse on the main input). The tour
+      // is now triggered AFTER the user's first successful Run With AI — see
+      // pmgShowPostRunTourIntro() below. The welcome card remains in the DOM
+      // and reachable via the Replay Tour button at any time.
       if (obShouldRun() && tourBanner) {
-        tourBanner.hidden = false;
         markOnboardingSessionSeen();
+        const goalEl = document.getElementById('goal');
+        if (goalEl) {
+          goalEl.classList.add('pmg-first-visit-pulse');
+          window.setTimeout(function () {
+            // Only steal focus if nothing else has it (e.g. don't yank focus
+            // from an open command palette, modal, or any other input the
+            // user has already engaged with).
+            const ae = document.activeElement;
+            const isBenignActive = !ae || ae === document.body || ae === document.documentElement;
+            const overlayOpen = document.querySelector('.is-open, dialog[open], #pmg-cmdk-backdrop:not([hidden])');
+            if (!isBenignActive || overlayOpen) return;
+            try { goalEl.focus({ preventScroll: true }); } catch (e) { goalEl.focus(); }
+          }, 250);
+          const stopPulse = function () {
+            goalEl.classList.remove('pmg-first-visit-pulse');
+            goalEl.removeEventListener('input', stopPulse);
+            goalEl.removeEventListener('focus', stopPulse);
+          };
+          goalEl.addEventListener('input', stopPulse);
+          goalEl.addEventListener('focus', stopPulse);
+        }
       }
+
+      // ===== Post-run tour invite =====
+      // Shown one time, after the user's first successful Run With AI completes.
+      // "Show Me Around" launches the existing onboarding tour. "Not Now"
+      // dismisses it for the session and won't reappear (per spec).
+      const POST_RUN_INTRO_KEY = 'promptmegood:postRunTourIntroSeen:v1';
+      function pmgHasSeenPostRunIntro() {
+        try { return localStorage.getItem(POST_RUN_INTRO_KEY) === '1'; } catch (e) { return false; }
+      }
+      function pmgMarkPostRunIntroSeen() {
+        try { localStorage.setItem(POST_RUN_INTRO_KEY, '1'); } catch (e) {}
+      }
+      function pmgShowPostRunTourIntro() {
+        if (pmgHasSeenPostRunIntro()) return;
+        const card = document.getElementById('pmg-post-run-intro');
+        if (!card) return;
+        // Don't double-up if the tour is already visible (e.g. user manually replayed).
+        if (typeof obIsOpen === 'function' && obIsOpen()) return;
+        pmgMarkPostRunIntroSeen();
+        card.hidden = false;
+        // Force reflow so the transition runs from hidden -> visible.
+        // eslint-disable-next-line no-unused-expressions
+        card.offsetWidth;
+        card.classList.add('is-visible');
+        const skipBtn = document.getElementById('pmg-post-run-intro-skip');
+        const goBtn = document.getElementById('pmg-post-run-intro-go');
+        const hide = function () {
+          card.classList.remove('is-visible');
+          window.setTimeout(function () { card.hidden = true; }, 240);
+        };
+        if (skipBtn) {
+          skipBtn.addEventListener('click', function () {
+            hide();
+            if (typeof obDismissForSession === 'function') obDismissForSession();
+            if (typeof pmgMarkVisited === 'function') pmgMarkVisited();
+          }, { once: true });
+        }
+        if (goBtn) {
+          goBtn.addEventListener('click', function () {
+            hide();
+            if (typeof markOnboardingSessionSeen === 'function') markOnboardingSessionSeen();
+            if (typeof pmgMarkVisited === 'function') pmgMarkVisited();
+            if (typeof obStart === 'function') obStart();
+          }, { once: true });
+        }
+      }
+      window.__pmgShowPostRunTourIntro = pmgShowPostRunTourIntro;
+
       function startReplayTour() {
         hideTourBanner();
         obIndex = 0;
@@ -10129,6 +10256,14 @@ Context:
             out.textContent = 'No response received from the AI service. Please try again.';
           }
           setRunning(false);
+          // Post-run tour invite: fire one time after the user's first
+          // successful Run With AI. Only on real, non-empty responses.
+          if (lastResponseText && lastResponseText.trim() && typeof window.__pmgShowPostRunTourIntro === 'function') {
+            // Small delay so the user sees the response settle before the invite appears.
+            window.setTimeout(function () {
+              try { window.__pmgShowPostRunTourIntro(); } catch (_) {}
+            }, 900);
+          }
         }
       }
 
