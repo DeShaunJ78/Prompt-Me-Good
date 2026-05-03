@@ -95,3 +95,9 @@ id = "WAQuIhSkoElSqir3nzOdj"
 uri = "file://.local/exports/promptmegood-workstation-mockup.svg"
 type = "image"
 title = "PromptMeGood Workstation — Two-Column Layout Mockup"
+
+[[outputs]]
+id = "enI_rXmsbCINfz44wU5hi"
+uri = "file://.local/exports/promptmegood-workstation-mockup-v2.svg"
+type = "image"
+title = "PromptMeGood Workstation v2 — Help Me Start Hero + Live Prompt Preview Bridge"
