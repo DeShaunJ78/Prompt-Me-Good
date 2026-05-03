@@ -47,7 +47,13 @@
     if (localStorage.getItem('pmg_disable') === '1') return;
   } catch (_) {}
 
-  var SCRIPT_VERSION = 'task111-1';
+  var SCRIPT_VERSION = 'task113-1';
+
+  /* Task #113: when the Suite's build pipeline runs while a hydration
+     payload is present, the chip arms a one-shot clear so the user
+     sees the chip vanish as soon as the new image arrives. */
+  var _pendingClearObs = null;
+  var _useHydratedSubject = true;
 
   var CARD_ID    = 'pmg-suite-handoff-card';
   var CTA_ID     = 'pmg-suite-handoff-cta';
@@ -139,6 +145,22 @@
       '#' + REF_ID + ' .pmg-suite-hydration-label {',
       '  font-weight: 700; color: var(--color-text, #1d2a32);',
       '  margin-right: 6px;',
+      '}',
+      /* Task #113: per-build opt-out toggle. Sits on the right edge
+         of the chip on desktop, drops to a second row on mobile. */
+      '#' + REF_ID + ' .pmg-suite-hydration-toggle {',
+      '  display: inline-flex; align-items: center; gap: 6px;',
+      '  flex: 0 0 auto; cursor: pointer;',
+      '  font-size: var(--text-xs, 12px);',
+      '  color: var(--color-text-muted, #5f6b75);',
+      '  user-select: none; white-space: nowrap;',
+      '}',
+      '#' + REF_ID + ' .pmg-suite-hydration-toggle input {',
+      '  width: 16px; height: 16px; margin: 0; cursor: pointer;',
+      '}',
+      '@media (max-width: 640px) {',
+      '  #' + REF_ID + ' { flex-wrap: wrap; }',
+      '  #' + REF_ID + ' .pmg-suite-hydration-toggle { width: 100%; padding-top: 4px; }',
       '}',
 
       /* Section pulse — 600ms one-shot subtle highlight. */
@@ -290,8 +312,87 @@
       '<div class="pmg-suite-hydration-text">' +
         '<span class="pmg-suite-hydration-label">' + escHtml(label) + '</span>' +
         '<span class="pmg-suite-hydration-snippet">' + escHtml(text) + '</span>' +
-      '</div>';
+      '</div>' +
+      '<label class="pmg-suite-hydration-toggle" title="Use the previous prompt as the subject for the next build">' +
+        '<input type="checkbox" class="pmg-suite-hydration-use-subject"' +
+          (_useHydratedSubject ? ' checked' : '') +
+        ' aria-label="Use previous prompt as subject for the next build" />' +
+        '<span>Use previous prompt as subject</span>' +
+      '</label>';
+
+    var cb = ref.querySelector('.pmg-suite-hydration-use-subject');
+    if (cb) {
+      cb.addEventListener('change', function () {
+        _useHydratedSubject = !!cb.checked;
+      });
+    }
     return true;
+  }
+
+  /* -------- Task #113: one-shot clear after a Suite-driven build -- */
+  function clearHydration() {
+    try { window.__pmgSuiteHydration = null; } catch (_) {}
+    var ref = $id(REF_ID);
+    if (ref && ref.parentNode) {
+      try { ref.parentNode.removeChild(ref); } catch (_) {}
+    }
+    if (_pendingClearObs) {
+      try { _pendingClearObs.disconnect(); } catch (_) {}
+      _pendingClearObs = null;
+    }
+  }
+
+  function armOneShotClear() {
+    /* No-op if there's no hydration to clear or we're already armed. */
+    if (!window.__pmgSuiteHydration) return false;
+    if (_pendingClearObs) return true;
+    var wrap = document.getElementById('imageResultWrap');
+    if (!wrap || typeof MutationObserver !== 'function') return false;
+
+    var prevUrl = (window.__pmgSuiteHydration && window.__pmgSuiteHydration.imageUrl) || '';
+    var armedAt = Date.now();
+
+    var check = function () {
+      var img = wrap.querySelector('img');
+      if (!img) return;
+      var src = img.getAttribute('src') || '';
+      if (!src) return;
+      /* New image == src differs from the hydrated URL. */
+      if (src !== prevUrl) {
+        clearHydration();
+      }
+    };
+
+    try {
+      _pendingClearObs = new MutationObserver(function () { check(); });
+      _pendingClearObs.observe(wrap, {
+        childList: true, subtree: true,
+        attributes: true, attributeFilter: ['src']
+      });
+    } catch (_) {
+      _pendingClearObs = null;
+      return false;
+    }
+    /* Avoid leaking the observer indefinitely if the build never
+       actually produces a new image (e.g. user cancels). */
+    setTimeout(function () {
+      if (_pendingClearObs) {
+        try { _pendingClearObs.disconnect(); } catch (_) {}
+        _pendingClearObs = null;
+      }
+    }, 60_000);
+    /* Edge case: if the wrap already has a different image at arm
+       time (some flows mount the new <img> synchronously before our
+       observer attaches), trip the clear immediately. */
+    check();
+    /* Mark when we armed so callers can debug ordering. */
+    return armedAt > 0;
+  }
+
+  function shouldUseHydration() {
+    var hyd = window.__pmgSuiteHydration;
+    if (!hyd || !hyd.prompt) return false;
+    return !!_useHydratedSubject;
   }
 
   /* -------- Routing -------- */
@@ -341,6 +442,9 @@
   function handoff() {
     var prompt = currentPrompt();
     var imageUrl = currentImageUrl();
+    /* Task #113: opt-out is per-build, so each new refinement cycle
+       starts with the toggle re-enabled. */
+    _useHydratedSubject = true;
     setHydration(prompt, imageUrl);
     mountHydrationRef(prompt, imageUrl);
     scrollToSuite();
@@ -440,6 +544,11 @@
       };
     },
     hydration:      function () { return window.__pmgSuiteHydration || null; },
+    shouldUseHydration: shouldUseHydration,
+    setUseHydratedSubject: function (v) { _useHydratedSubject = !!v; },
+    getUseHydratedSubject: function () { return !!_useHydratedSubject; },
+    armOneShotClear: armOneShotClear,
+    clearHydration: clearHydration,
     _setHydration:  setHydration,
     _mountRef:      mountHydrationRef
   };

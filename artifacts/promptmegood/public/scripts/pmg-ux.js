@@ -6603,10 +6603,27 @@
        the Pin CTA so it doesn't keep nagging across the image flow. */
     if (_surpriseFresh) setSurpriseFresh(false);
 
-    /* Build the final prompt. Use the user's existing builder goal as
-       the subject (if present), otherwise a friendly default. */
+    /* Build the final prompt. Task #113: when the Photography Suite
+       was opened via the handoff card and a hydration payload is
+       present, prefer the hydrated prompt as the subject seed (and
+       only when the user hasn't unchecked the per-build opt-out
+       toggle on the reference chip). Falls back to the existing
+       builder goal, then a friendly default. */
     var goal = document.getElementById('goal');
-    var subject = (goal && goal.value && goal.value.trim()) ? goal.value.trim() : 'A striking photograph';
+    var subject = '';
+    var handoffApi = window.__pmgSuiteHandoff;
+    var hyd = window.__pmgSuiteHydration;
+    var usingHydration = !!(
+      hyd && hyd.prompt &&
+      handoffApi && typeof handoffApi.shouldUseHydration === 'function' &&
+      handoffApi.shouldUseHydration()
+    );
+    if (usingHydration) {
+      subject = String(hyd.prompt).trim();
+    }
+    if (!subject) {
+      subject = (goal && goal.value && goal.value.trim()) ? goal.value.trim() : 'A striking photograph';
+    }
     var finalPrompt = subject + ' — ' + photoText + '.';
 
     /* Populate the canonical image-mode goal field. */
@@ -6637,6 +6654,17 @@
     } else {
       var btn = document.getElementById('image-generate-btn') || document.getElementById('imageBtn');
       if (btn) btn.click();
+    }
+
+    /* Task #113: whenever a Suite build runs while a hydration
+       payload is present, arm the one-shot clear so the reference
+       chip vanishes the moment the new image arrives in
+       #imageResultWrap. This is independent of the per-build
+       opt-out toggle — even if the user opted out of using the
+       hydrated prompt as the subject, the refinement cycle is
+       still considered consumed once the new image renders. */
+    if (hyd && handoffApi && typeof handoffApi.armOneShotClear === 'function') {
+      try { handoffApi.armOneShotClear(); } catch (e) {}
     }
 
     /* Scroll the user down to the image section. */
