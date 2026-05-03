@@ -1,0 +1,97 @@
+Redesign the homepage first-use experience into an immediate two-panel AI prompt workstation.
+
+Goal:
+When a user lands on the site, they should immediately see a working input area and an AI response area above the fold. The first experience should feel like “wow, I typed something simple and PromptMeGood turned it into a powerful prompt and useful response.”
+
+Required Layout:
+
+Desktop:
+- Above the fold, show two side-by-side panels.
+- Left panel: shared User Input + Generated Prompt box.
+- Right panel: AI Response box.
+- The user should be able to type immediately without scrolling.
+
+Mobile:
+- Stack the panels vertically.
+- User Input / Generated Prompt comes first.
+- AI Response comes directly below.
+- Keep the first input visible near the top.
+
+Left Panel Behavior:
+- Start with a clear textarea where the user types what they want.
+- Placeholder example:
+  “Tell PromptMeGood what you want AI to help with…”
+- Primary button:
+  “Generate Prompt”
+- Secondary button:
+  “Help Me Start”
+- Optional small controls can exist, but advanced tuning should stay collapsed under:
+  “Customize Output”
+
+Adaptive Intent:
+- By default, PromptMeGood should analyze the user’s input and infer intent automatically.
+- It should determine whether the user likely wants:
+  - Business copy
+  - Marketing content
+  - Image prompt
+  - Learning help
+  - Productivity help
+  - Money/business plan
+  - Personal writing
+  - Technical help
+  - General AI answer
+- Do not force the user to choose a category first.
+- Category, tone, format, and depth should be auto-selected unless the user opens “Customize Output.”
+
+Generated Prompt Behavior:
+- The user input and generated prompt should share the same left-side workspace.
+- After the user clicks “Generate Prompt,” keep the original user input visible or editable.
+- Show the generated prompt directly below or inside the same left panel.
+- The generated prompt should be detailed, specific, structured, and designed to produce a useful AI response.
+- Main actions near the generated prompt:
+  - “Run With AI Here”
+  - “Copy Prompt”
+  - “Improve With AI”
+- “Run With AI Here” should be the visually strongest action.
+
+AI Response Panel:
+- The right panel should be reserved for the AI response.
+- Before generation, show an empty-state message like:
+  “Your AI Response Will Appear Here”
+- After “Run With AI Here,” show:
+  - Loading state: “Generating Response”
+  - Final AI response
+  - “Copy Response”
+  - “Run Again”
+- Keep the AI response panel visually connected to the generated prompt so the user understands the sequence.
+
+Ideal First Flow:
+1. User lands on site.
+2. User immediately sees the input box.
+3. User types a simple request.
+4. User clicks “Generate Prompt.”
+5. PromptMeGood creates a detailed prompt.
+6. User clicks “Run With AI Here,” or optionally auto-runs if that is already supported.
+7. AI response appears in the right panel.
+8. User immediately understands the value.
+
+Important:
+- Keep existing functionality.
+- Do not remove the deeper builder, tuning controls, prompt vault, history, or image tools.
+- Move dashboard-style elements, saved-work cards, analytics, pricing nudges, and long explanations below the initial workstation.
+- The homepage should feel like a tool first, landing page second.
+
+CTA Behavior:
+- “Create A Text Prompt” should focus the main homepage input.
+- “Create An Image Prompt” should scroll to or open the image prompt builder.
+- “Start Here” should focus the main homepage input.
+
+Acceptance Tests:
+- On desktop 1440px, the user sees the input panel and AI response panel above the fold.
+- On mobile 390px, the input appears near the top and the AI response panel follows directly below.
+- A first-time user can type and generate a prompt within 10 seconds.
+- The site does not require choosing a category before generating a prompt.
+- The generated prompt appears in the same left-side workspace as the user input.
+- The AI response appears in its own right-side panel on desktop.
+- Advanced tuning is collapsed by default on mobile.
+- Dashboard, vault, analytics, pricing, and account blocks do not interrupt the first-use flow.

@@ -1,0 +1,122 @@
+Update the PromptMeGood onboarding tour so it appears after the user generates their first AI response, not before.
+
+Goal:
+The user’s first experience should be:
+1. Land on site
+2. Type what they want
+3. Generate a strong prompt
+4. Run it with AI
+5. See a useful AI response
+6. Then receive a guided tour that explains what else they can do
+
+Do not show the tour immediately on page load.
+
+Tour Trigger:
+- Trigger the tour only after the user successfully generates an AI response for the first time.
+- If possible, trigger it after the AI response is visible.
+- Do not interrupt loading states.
+- Do not trigger the tour after only generating a prompt.
+- Trigger after the first completed “Run With AI Here” result.
+
+Tour Intro Copy:
+Replace the current first-tour messaging with:
+
+Title:
+“Nice — You Just Used PromptMeGood”
+
+Body:
+“PromptMeGood just turned your idea into a stronger prompt and ran it with AI. Want a quick tour of what else you can do?”
+
+Buttons:
+- “Show Me Around”
+- “Not Now”
+
+Tour Flow:
+Rewrite the tour around the completed user journey, not around explaining the site before use.
+
+Suggested Tour Steps:
+
+1. Generated Prompt
+Title:
+“Your Better Prompt”
+
+Body:
+“This is the upgraded prompt PromptMeGood built from your original idea. You can copy it, improve it, or run it with AI right here.”
+
+2. AI Response
+Title:
+“Your AI Response”
+
+Body:
+“This is the answer produced from your improved prompt. If it is close but not perfect, you can run again, refine the prompt, or copy the result.”
+
+3. Improve With AI
+Title:
+“Refine The Prompt”
+
+Body:
+“Use Improve With AI when you want a stronger, clearer, more detailed, or more targeted version of your prompt.”
+
+4. Prompt Tuning
+Title:
+“Customize Output”
+
+Body:
+“Open Customize Output when you want to control tone, format, length, language, experience level, or extra rules.”
+
+5. Image Prompts
+Title:
+“Create Image Prompts”
+
+Body:
+“Switch to image mode when you want PromptMeGood to build detailed visual prompts for DALL·E, Midjourney, or other image tools.”
+
+6. Prompt Vault
+Title:
+“Save Your Best Work”
+
+Body:
+“Your best prompts and results can be saved so you can reuse, improve, or export them later.”
+
+7. Upgrade / Founding Member
+Title:
+“Unlock More Usage”
+
+Body:
+“Free users can try the core workflow. Founding Member and Pro options unlock higher usage limits and more power features when available.”
+
+Final Tour Step:
+Title:
+“You’re Ready”
+
+Body:
+“Start with any rough idea. PromptMeGood will help turn it into a prompt that gets better AI results.”
+
+Buttons:
+- “Start Another Prompt”
+- “Explore Features”
+
+Behavior Requirements:
+- The tour should be skippable.
+- The tour should not block the user from copying or using their result.
+- If the user chooses “Not Now,” do not immediately show the tour again in the same session.
+- If the user chooses “Show Me Around,” guide them through visible, relevant areas.
+- Avoid pointing to hidden or collapsed sections unless the tour expands them first.
+- On mobile, keep tour overlays compact and avoid covering the active result/actions.
+
+Out Of Scope:
+- Pricing page redesign
+- Title-case cleanup outside tour text
+- Backend changes
+- Visual identity redesign
+
+Acceptance Tests:
+- Fresh user lands on homepage and sees no tour modal before using the tool.
+- User enters a request and generates a prompt.
+- Tour still does not appear yet.
+- User runs the prompt with AI.
+- After AI response appears, tour prompt appears with the new “Nice — You Just Used PromptMeGood” copy.
+- “Not Now” dismisses the tour for the session.
+- “Show Me Around” starts the rewritten tour.
+- Tour steps point only to visible or intentionally expanded UI.
+- Tour works on desktop and mobile.
