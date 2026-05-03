@@ -38,6 +38,34 @@ type GoalGeometry = {
   pageScrollY: number;
 };
 
+async function switchToImageMode(page: Page): Promise<boolean> {
+  // Use a user-realistic path: click the #imageModeBtn the visitor would
+  // tap, falling back to window.setMode('image') if the button isn't yet
+  // bound on first load. We do NOT directly add the `image-mode` body
+  // class — that would mask regressions in the real wiring (e.g. if the
+  // mode-switch handler stops applying the class, this test should fail
+  // rather than silently paper over the bug).
+  await page.evaluate(() => {
+    const btn = document.getElementById(
+      "imageModeBtn",
+    ) as HTMLButtonElement | null;
+    if (btn) {
+      btn.click();
+      return;
+    }
+    const w = window as unknown as { setMode?: (m: string) => void };
+    if (typeof w.setMode === "function") {
+      w.setMode("image");
+    }
+  });
+  // Let any image-mode CSS / JS settle (label swap, generate-btn swap,
+  // photo-suite mount, image-mode-hint reveal).
+  await page.waitForTimeout(400);
+  return await page.evaluate(() =>
+    document.body.classList.contains("image-mode"),
+  );
+}
+
 async function readGoalGeometry(page: Page): Promise<GoalGeometry> {
   return await page.evaluate(() => {
     const el = document.getElementById("goal");
@@ -232,6 +260,98 @@ for (const vp of VIEWPORTS) {
         page.locator("#resultBox"),
         "#resultBox must contain a generated prompt after Fix My Prompt",
       ).not.toBeEmpty({ timeout: 10_000 });
+    });
+
+    test(`image mode does not pre-scroll the page on first load (${vp.name})`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: vp.width, height: vp.height });
+      await page.goto("/");
+      await settle(page);
+      await dismissOnboarding(page);
+      await page.waitForTimeout(300);
+
+      // Capture pre-switch scroll position. A regression that auto-scrolls
+      // on mode switch (e.g. an unguarded `scrollIntoView` on a re-mounted
+      // image-mode card) would push the textarea below the fold even if it
+      // was correctly positioned in source.
+      const beforeScrollY = await page.evaluate(() => window.scrollY);
+
+      const switched = await switchToImageMode(page);
+      expect(
+        switched,
+        "homepage should enter image mode (body.image-mode)",
+      ).toBe(true);
+
+      const afterScrollY = await page.evaluate(() => window.scrollY);
+
+      // NOTE on intent vs reality (read before tightening this guard):
+      // Image mode today does NOT mirror text mode's "real text input above
+      // the fold" guarantee — the canonical #goal textarea is intentionally
+      // hidden by the image-mode flow, and the actual image-prompt textarea
+      // currently lives just below the fold (the visible above-fold band is
+      // the styled <p class="image-mode-hint"> banner, not a real input,
+      // followed by the Photography Suite which mounts further down). A
+      // strict above-fold-input assertion here would red-flag intentional
+      // UX and block PRs that have nothing to do with image mode. If the
+      // product later decides image mode should also surface a real input
+      // above the fold (matching text mode), this test should be tightened
+      // to require it. For now we only guard the regression vectors we own:
+      //   1) Switching into image mode must not auto-scroll the page.
+      //   2) The mode switch itself must succeed (asserted above).
+      // The companion test below additionally guards that the image-mode
+      // generate handler stays wired.
+      expect(
+        afterScrollY,
+        `page must not auto-scroll when entering image mode (before=${beforeScrollY}px, after=${afterScrollY}px)`,
+      ).toBeLessThanOrEqual(Math.max(1, beforeScrollY));
+    });
+
+    test(`Image-mode generate path is wired on first load (${vp.name})`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: vp.width, height: vp.height });
+      await page.goto("/");
+      await settle(page);
+      await dismissOnboarding(page);
+      await page.waitForTimeout(300);
+
+      const switched = await switchToImageMode(page);
+      expect(
+        switched,
+        "homepage should enter image mode (body.image-mode)",
+      ).toBe(true);
+
+      // The image-mode CTA (#image-generate-btn) is dynamically demoted by
+      // pmg-pro / pmg-ux on first load (paywall + UX heuristics), so we do
+      // NOT assert it is visually visible — that would lock in implementation
+      // details we don't own here. We DO assert the regression-critical
+      // invariants: the button still exists in the DOM AND a runtime image-
+      // generation entry point is registered on window. We deliberately do
+      // not lock the wiring style (inline onclick="runImageGeneration()" vs
+      // addEventListener), so a future refactor away from inline onclick
+      // remains valid as long as the runtime function is still callable.
+      const wiring = await page.evaluate(() => {
+        const btn = document.getElementById("image-generate-btn");
+        const w = window as unknown as {
+          runImageGeneration?: unknown;
+          generateImage?: unknown;
+        };
+        return {
+          exists: !!btn,
+          runtimeWired:
+            typeof w.runImageGeneration === "function" ||
+            typeof w.generateImage === "function",
+        };
+      });
+      expect(
+        wiring.exists,
+        "#image-generate-btn must exist in the DOM in image mode",
+      ).toBe(true);
+      expect(
+        wiring.runtimeWired,
+        "window.runImageGeneration (or generateImage fallback) must be registered so the image-mode CTA can resolve",
+      ).toBe(true);
     });
   });
 }
