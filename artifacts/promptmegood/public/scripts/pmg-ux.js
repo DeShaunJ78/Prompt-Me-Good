@@ -9440,22 +9440,101 @@
       '  }',
       '}',
 
-      /* (8) Photography Suite pills — looser layout so they read as
-         tags, not crowded buttons. Increase group-body gap and tighten
-         pill padding, plus a touch more vertical rhythm. */
+      /* (8) Photography Suite pills — looser tag-like layout on
+         desktop, bumped to a 44px tappable target on mobile. The
+         mobile breakpoint wins via media query, and we keep the
+         !important here to defeat the earlier site-wide FIX 9
+         pill rules that otherwise force 8px×16px / 13px on every
+         pill regardless of viewport. (Task #110) */
       '#pmg-photo-suite .pmg-photo-group-body {',
       '  gap: 10px !important;',
       '  padding: 4px 16px 16px !important;',
       '}',
-      '#pmg-photo-suite .pmg-photo-pill {',
-      '  padding: 6px 12px !important;',
-      '  font-size: 13px !important;',
-      '  line-height: 1.3 !important;',
-      '  font-weight: 500 !important;',
+      '@media (min-width: 641px) {',
+      '  #pmg-photo-suite .pmg-photo-pill {',
+      '    padding: 6px 12px !important;',
+      '    font-size: 13px !important;',
+      '    line-height: 1.3 !important;',
+      '    font-weight: 500 !important;',
+      '  }',
+      '}',
+      '@media (max-width: 640px) {',
+      '  #pmg-photo-suite .pmg-photo-group-body {',
+      '    gap: 14px 10px !important;',
+      '    padding: 8px 14px 18px !important;',
+      '  }',
+      '  #pmg-photo-suite .pmg-photo-pill {',
+      '    padding: 12px 16px !important;',
+      '    min-height: 44px !important;',
+      '    font-size: 14px !important;',
+      '    line-height: 1.25 !important;',
+      '    font-weight: 500 !important;',
+      '  }',
+      '  #pmg-photo-suite .pmg-photo-group {',
+      '    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);',
+      '  }',
+      '  #pmg-photo-suite .pmg-photo-group:last-of-type {',
+      '    border-bottom: 0;',
+      '  }',
+      '  #pmg-photo-suite .pmg-photo-group-head {',
+      '    font-size: 15px !important;',
+      '    font-weight: 600 !important;',
+      '    padding: 14px 16px !important;',
+      '    min-height: 48px;',
+      '  }',
+      '}',
+      /* Selected-state ring — covers both the new Suite class
+         (.is-active) and the legacy .selected / aria-pressed states.
+         Sits on top of the FIX 9 primary fill so a picked pill
+         clearly stands out from neighbours. (Task #110) */
+      '#pmg-photo-suite .pmg-photo-pill.is-active,',
+      '#pmg-photo-suite .pmg-photo-pill.selected,',
+      '#pmg-photo-suite .pmg-photo-pill[aria-pressed="true"] {',
+      '  box-shadow: inset 0 0 0 2px #ffffff, 0 0 0 2px var(--color-primary) !important;',
       '}',
       '#pmg-photo-suite .pmg-photo-pill.is-active::before {',
       '  margin-right: 2px;',
       '}',
+      /* Mobile-only intro strip injected before the suite content. */
+      '#pmg-photo-suite-intro { display: none; }',
+      '@media (max-width: 640px) {',
+      '  #pmg-photo-suite-intro {',
+      '    display: block;',
+      '    margin: 4px 0 12px;',
+      '    padding: 10px 14px;',
+      '    border-radius: 12px;',
+      '    background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));',
+      '    border: 1px solid color-mix(in srgb, var(--color-primary) 16%, var(--color-border));',
+      '  }',
+      '  #pmg-photo-suite-intro .pmg-suite-intro-title {',
+      '    display: block; font-size: 16px; font-weight: 700;',
+      '    color: var(--color-text); margin: 0 0 2px;',
+      '  }',
+      '  #pmg-photo-suite-intro .pmg-suite-intro-sub {',
+      '    display: block; font-size: 13px; color: var(--color-text-muted);',
+      '  }',
+      '}',
+      /* Sticky build CTA — bottom-fixed, mobile only. Toggled
+         visible by pmg-suite-mobile-polish.js when (a) suite is
+         intersecting the viewport AND (b) at least one pill is
+         picked. Reuses the existing .pmg-photo-send click. */
+      '#pmg-photo-suite-sticky-cta {',
+      '  position: fixed; left: 0; right: 0; bottom: 0;',
+      '  display: none; align-items: center; justify-content: center;',
+      '  width: 100%; min-height: 56px;',
+      '  padding: 14px 16px max(14px, env(safe-area-inset-bottom));',
+      '  background: var(--color-primary); color: #fff;',
+      '  border: 0; border-top: 1px solid color-mix(in srgb, #000 14%, var(--color-primary));',
+      '  font-size: 16px; font-weight: 700; cursor: pointer;',
+      '  z-index: 110;',
+      '  box-shadow: 0 -8px 20px color-mix(in srgb, #000 12%, transparent);',
+      '}',
+      '#pmg-photo-suite-sticky-cta.is-visible { display: inline-flex; }',
+      '#pmg-photo-suite-sticky-cta[disabled],',
+      '#pmg-photo-suite-sticky-cta[aria-disabled="true"] {',
+      '  opacity: 0.55; cursor: not-allowed;',
+      '}',
+      '@media (min-width: 641px) { #pmg-photo-suite-sticky-cta { display: none !important; } }',
 
       /* New std-row variant for the moved cat before/after — stacks
          the image above the prompt text and label inside each cell. */
