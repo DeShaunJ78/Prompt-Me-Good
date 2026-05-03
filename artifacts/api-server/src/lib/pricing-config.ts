@@ -13,7 +13,7 @@ export const PMG_PRICING = {
   PRO_MONTHLY_USD: 9,
   PRO_YEARLY_USD: 79,
   FOUNDING_LIMIT: 500,
-  PRO_LAUNCH_DATE: "June 1, 2026",
+  FOUNDING_DEADLINE_COPY: "Offer Ends July 1 Or At 500 Founding Members — Whichever Comes First",
   TRIAL_DAYS: 7,
   TRIAL_DAILY_CAPS: { run: 10, img: 5, analyze: 3 },
   FREE_DAILY_CAPS: { run: 3, img: 1, analyze: 1 },

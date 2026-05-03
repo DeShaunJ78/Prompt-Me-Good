@@ -133,9 +133,18 @@
      auto-expires after 7 days. The `DAILY_LIMITS` name is preserved
      for back-compat — it now resolves dynamically through a Proxy. */
   var FIRST_VISIT_KEY = 'promptmegood:firstVisit:v1';
-  var TRIAL_DAYS = 7;
-  var TRIAL_DAILY_LIMITS = { run: 10, img: 5, analyze: 3 };
-  var FREE_DAILY_LIMITS  = { run: 3,  img: 1, analyze: 1 };
+  /* Read pricing/cap constants from the centralized PMG_PRICING config
+     (loaded by /scripts/pmg-pricing-config.js BEFORE this script). The
+     hardcoded literals are kept ONLY as a safety fallback if the config
+     script failed to load, so existing call sites never NaN out. */
+  var __PMG_CFG = (typeof window !== 'undefined' && window.PMG_PRICING) || {};
+  var TRIAL_DAYS = (typeof __PMG_CFG.TRIAL_DAYS === 'number') ? __PMG_CFG.TRIAL_DAYS : 7;
+  var TRIAL_DAILY_LIMITS = __PMG_CFG.TRIAL_DAILY_CAPS
+    ? { run: __PMG_CFG.TRIAL_DAILY_CAPS.run, img: __PMG_CFG.TRIAL_DAILY_CAPS.img, analyze: __PMG_CFG.TRIAL_DAILY_CAPS.analyze }
+    : { run: 10, img: 5, analyze: 3 };
+  var FREE_DAILY_LIMITS = __PMG_CFG.FREE_DAILY_CAPS
+    ? { run: __PMG_CFG.FREE_DAILY_CAPS.run, img: __PMG_CFG.FREE_DAILY_CAPS.img, analyze: __PMG_CFG.FREE_DAILY_CAPS.analyze }
+    : { run: 3, img: 1, analyze: 1 };
 
   function pmgFirstVisitMs() {
     try {
@@ -414,7 +423,7 @@
       '<div class="pmg-upgrade-modal" role="dialog" aria-modal="true" aria-labelledby="pmg-upgrade-title">' +
         '<span class="pmg-upgrade-modal-icon" aria-hidden="true">🔒</span>' +
         '<h3 id="pmg-upgrade-title">' + safe + ' Is A Pro Feature</h3>' +
-        '<p>Unlock higher usage on this feature. Founding Member is a one-time $79 payment for lifetime access to core features — limited to the first 500 buyers, price locked for life. Pro Monthly ($9/month) and Pro Yearly ($79/year) launch June 1, 2026. Fair use limits apply.</p>' +
+        '<p>Unlock higher usage on this feature. Founding Member is a one-time $79 payment for lifetime access to core features — limited to the first 500 buyers, price locked for life. Offer ends July 1 or at 500 founding members, whichever comes first. Pro Monthly ($9/month) and Pro Yearly ($79/year) launch soon. Fair use limits apply.</p>' +
         '<div class="pmg-upgrade-modal-actions">' +
           '<a class="pmg-upgrade-cta pmg-upgrade-btn" href="./pricing.html#early-access">Join Founding Member Waitlist</a>' +
           '<a class="pmg-upgrade-cta-secondary" href="./pricing.html#early-access">Notify Me When Pro Launches</a>' +

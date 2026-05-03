@@ -8,6 +8,7 @@ import { logger } from "../lib/logger";
 import { clampString, sanitizeGoal } from "../middlewares/sanitize";
 import { generateLimiter, runLimiter, rateLimit, imageLimiter } from "../middlewares/rateLimit";
 import { chargeCost, generateCostCheck, runCostCheck, imageCheck, imageCheckMulti, chargeImage } from "../middlewares/costGuard";
+import { userCapEnforce } from "../middlewares/userCaps";
 
 const router: IRouter = Router();
 
@@ -384,7 +385,7 @@ const RUN_MAX_OUTPUT_TOKENS = 1000;
 const RUN_SYSTEM_PROMPT =
   "You are a helpful, direct AI assistant. Execute the user's prompt exactly as instructed. Be specific, practical, and thorough.";
 
-router.post("/run", runLimiter, runCostCheck, async (req, res) => {
+router.post("/run", runLimiter, runCostCheck, userCapEnforce("run"), async (req, res) => {
   const promptRaw = req.body?.prompt;
   if (typeof promptRaw !== "string") {
     res.status(400).json({ success: false, ok: false, error: "A prompt is required." });
@@ -459,7 +460,7 @@ const IMAGE_PROMPT_ENHANCER =
   "Include: subject, setting, lighting, camera angle, mood, style, and technical quality descriptors. " +
   "Make it vivid and specific. Output ONLY the enhanced prompt — no commentary, no preamble.";
 
-router.post("/image", imageLimiter, async (req: Request, res: Response) => {
+router.post("/image", imageLimiter, userCapEnforce("img"), async (req: Request, res: Response) => {
   const descRaw = req.body?.prompt ?? req.body?.description ?? req.body?.goal;
   if (typeof descRaw !== "string" || !descRaw.trim()) {
     res.status(400).json({ success: false, ok: false, error: "A description is required." });

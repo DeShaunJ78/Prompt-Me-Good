@@ -11625,6 +11625,50 @@
   /* ----------------------------------------------------------------- */
   var apiBase = ''; /* same-origin; reverse proxy routes /api → api-server */
 
+  /* Task #100 — Always-visible plan pill in the topbar.
+     Renders "★ Founding Member" or "★ Pro Member" inline in the global
+     topbar when the user holds that plan; removes itself for free users.
+     Standalone DOM injection (no dependency on T40's collapsible panel)
+     so the badge stays visible whether or not the account panel is open. */
+  var HEADER_PILL_ID = 'pmg-header-plan-pill';
+  function renderHeaderPlanPill(plan) {
+    try {
+      var existing = document.getElementById(HEADER_PILL_ID);
+      if (plan !== 'founding' && plan !== 'pro') {
+        if (existing) existing.remove();
+        return;
+      }
+      var pill = existing;
+      if (!pill) {
+        pill = document.createElement('span');
+        pill.id = HEADER_PILL_ID;
+        pill.style.cssText = [
+          'display:inline-flex',
+          'align-items:center',
+          'gap:6px',
+          'padding:4px 10px',
+          'border-radius:999px',
+          'font:700 11px/1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif',
+          'letter-spacing:0.06em',
+          'text-transform:uppercase',
+          'margin-left:8px',
+          'background:linear-gradient(90deg,#f6c84c 0%,#ff9e3d 100%)',
+          'color:#1b1408',
+          'border:1px solid rgba(0,0,0,0.10)',
+          'box-shadow:0 1px 2px rgba(0,0,0,0.06)',
+          'white-space:nowrap',
+          'vertical-align:middle'
+        ].join(';');
+        var topbar = document.querySelector('.topbar-inner') || document.querySelector('.topbar');
+        if (topbar) topbar.appendChild(pill);
+        else (document.body || document.documentElement).appendChild(pill);
+      }
+      pill.textContent = plan === 'founding' ? '\u2605 Founding Member' : '\u2605 Pro Member';
+      pill.setAttribute('data-plan', plan);
+      pill.setAttribute('aria-label', plan === 'founding' ? 'Founding Member plan' : 'Pro Member plan');
+    } catch (_) {}
+  }
+
   function fetchProfile() {
     return getAccessTokenP().then(function (token) {
       if (!token) return null;
@@ -11643,6 +11687,24 @@
       if (window.__pmgT40 && typeof window.__pmgT40.setPlanBadge === 'function') {
         window.__pmgT40.setPlanBadge(profile.plan);
       }
+    } catch (_) {}
+    /* Task #100 — Render an always-visible "Founding Member" / "Pro Member"
+       pill in the global topbar so the plan badge is never hidden inside
+       the collapsed account panel. Removes itself when the user is on the
+       free plan. */
+    try { renderHeaderPlanPill(profile.plan); } catch (_) {}
+    /* Task #100 — Surface authoritative server-side trial/caps/used data
+       so pmg-pro.js and other consumers can prefer it over the
+       localStorage-only fallback. */
+    try {
+      window.__pmgServerProfile = {
+        plan: profile.plan,
+        trial: profile.trial || null,
+        caps: profile.caps || null,
+        used: profile.used || null,
+        created_at: profile.created_at || null,
+        pricing: profile.pricing || null,
+      };
     } catch (_) {}
     /* Founding members count as paid for ALL entitlement checks. They
        paid $79 lifetime (price locked for life) — the cache must never
@@ -11736,7 +11798,7 @@
   }
 
   function startCheckout(btn) {
-    /* Default to 'founding' since Pro Monthly is "Coming Soon — June 1, 2026"
+    /* Default to 'founding' since Pro Monthly is "Coming Soon"
        and has no active Stripe price wired up yet. Anything other than
        'founding' is normalised to 'founding' until Pro launches; this prevents
        any stray 'Upgrade To Pro' button from kicking off a broken checkout. */
@@ -11820,7 +11882,7 @@
 
     var cta = document.createElement('div');
     cta.className = 'pmg-t41-inline-cta';
-    /* Pro Monthly is "Coming Soon — June 1, 2026" and has no live Stripe
+    /* Pro Monthly is "Coming Soon" and has no live Stripe
        checkout. The active paid offer is Founding Member ($79 lifetime,
        price locked for life). This homepage CTA therefore points at
        Founding Member and is wired via data-pmg-tier="founding". */
@@ -11937,7 +11999,7 @@
 /* ============================================================================
  * T42 — Open-Beta Paywall Controller
  * ----------------------------------------------------------------------------
- * Until June 1, 2026 the product is fully unlocked for everyone. The backend
+ * Until the paywall flips on, the product is fully unlocked for everyone. The backend
  * is the only authority on this — we read /api/public-config (which calls
  * the backend's isPaywallActive() helper) and mirror its decision to the
  * browser:
@@ -11951,7 +12013,7 @@
  *     access; Free users see the upgrade prompts.
  *
  * A non-blocking banner is rendered at the top of every page during beta:
- *   "Free Beta Access Until June 1, 2026 — Founding Member Access
+ *   "Free Beta Access — Founding Member Access
  *    Available Now."
  *
  * The banner is dismissable for the session, but re-appears on page load so
@@ -12009,14 +12071,14 @@
   }
 
   function fmtActivationDate(iso) {
-    if (!iso) return 'June 1, 2026';
+    if (!iso) return 'soon';
     try {
       var d = new Date(iso);
-      if (isNaN(d.getTime())) return 'June 1, 2026';
+      if (isNaN(d.getTime())) return 'soon';
       return d.toLocaleDateString(undefined, {
         year: 'numeric', month: 'long', day: 'numeric'
       });
-    } catch (_) { return 'June 1, 2026'; }
+    } catch (_) { return 'soon'; }
   }
 
   function injectStyles() {
@@ -12052,7 +12114,7 @@
       '@media print { #' + BANNER_ID + ' { display: none !important; } }',
       /* Override T41 hide rules during beta — but ONLY for the Founding-tier
          button, since Founding ($79 lifetime, price locked) is genuinely on sale right now.
-         Pro recurring subscriptions are NOT for sale until June 1, 2026, so
+         Pro recurring subscriptions are NOT for sale during open beta, so
          every Pro upgrade CTA (the pricing-page "Upgrade To Pro" button and
          the auto-injected homepage `.pmg-t41-inline-cta` card) must stay
          hidden during beta. T41's pmg-is-pro hide rule already takes care of

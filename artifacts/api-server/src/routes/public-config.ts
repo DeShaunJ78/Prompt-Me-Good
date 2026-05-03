@@ -24,9 +24,9 @@ const router: IRouter = Router();
 router.get("/public-config", (_req, res) => {
   const supabaseUrl = process.env["SUPABASE_URL"] ?? "";
   const supabasePublishableKey = process.env["SUPABASE_PUBLISHABLE_KEY"] ?? "";
-  // Short cache: paywall flips at a known instant on June 1, 2026, so we keep
-  // staleness tight. The browser polls /api/public-config on every page load
-  // anyway, so 30s is plenty.
+  // Short cache: paywall flips at a known instant configured via env var
+  // (PMG_PAYWALL_FLIP_AT_ISO), so we keep staleness tight. The browser
+  // polls /api/public-config on every page load anyway, so 30s is plenty.
   res.set("Cache-Control", "public, max-age=30");
   res.json({
     supabaseUrl,

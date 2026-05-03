@@ -8,7 +8,10 @@
  *     a new one (with idempotency key keyed on user_id) and stores the id on
  *     the profile.
  *   - Creates a Stripe Checkout Session in subscription mode using
- *     STRIPE_PRICE_ID. The user_id is stamped onto BOTH session.metadata and
+ *     STRIPE_PRO_MONTHLY_PRICE_ID (with STRIPE_PRICE_ID kept as a fallback
+ *     for backward compat) for Pro Monthly, STRIPE_PRO_YEARLY_PRICE_ID for
+ *     Pro Yearly, or STRIPE_FOUNDING_PRICE_ID for the one-time Founding
+ *     lifetime tier. The user_id is stamped onto BOTH session.metadata and
  *     subscription_data.metadata so the webhook can map any later event back
  *     to the right user.
  *   - Returns { url } — the frontend redirects the browser to it.
@@ -107,38 +110,57 @@ router.post(
   async (req: AuthedRequest, res) => {
     const user = req.user!;
 
-    // Pick the tier — defaults to 'pro' for backward compat with the original
-    // T41 button. Frontend sends { tier: 'pro' | 'founding' }.
+    // Pick the tier — defaults to 'pro' (monthly) for backward compat with
+    // the original T41 button. Frontend sends
+    // { tier: 'pro' | 'pro_yearly' | 'founding' }.
     const rawTier =
       typeof req.body === "object" && req.body && typeof req.body.tier === "string"
-        ? req.body.tier.toLowerCase()
+        ? req.body.tier.toLowerCase().replace("-", "_")
         : "pro";
-    const tier: "pro" | "founding" = rawTier === "founding" ? "founding" : "pro";
+    const tier: "pro" | "founding" | "pro_yearly" =
+      rawTier === "founding"
+        ? "founding"
+        : rawTier === "pro_yearly"
+        ? "pro_yearly"
+        : "pro";
 
-    /* T43: During open beta the Pro recurring subscription is NOT yet for
-       sale — only the lifetime Founding tier ($79, price locked for life) is. Block any Pro
-       checkout request until the paywall flips on (June 1, 2026). The
-       frontend already hides Pro CTAs in beta mode, but we enforce here
-       too so the API cannot be used to purchase Pro early via direct
-       calls or stale clients. Founding always passes through. */
-    if (tier === "pro" && !isPaywallActive()) {
+    /* T43: During open beta both Pro recurring subscriptions (monthly and
+       yearly) are NOT yet for sale — only the lifetime Founding tier
+       ($79, price locked for life) is. Block any Pro checkout request
+       until the paywall flips on. The frontend already hides Pro CTAs in
+       beta mode, but we enforce here too so the API cannot be used to
+       purchase Pro early via direct calls or stale clients. Founding
+       always passes through. */
+    if ((tier === "pro" || tier === "pro_yearly") && !isPaywallActive()) {
       req.log?.info(
-        { userId: user.id },
+        { userId: user.id, tier },
         "blocked pro checkout during open beta",
       );
       res.status(403).json({
-        error:
-          "Pro launches June 1, 2026. Founding Member access ($79 lifetime, price locked for life) is available now.",
+        error: `Pro launches soon. Founding Member access ($${PMG_PRICING.FOUNDING_PRICE_USD} lifetime, ${PMG_PRICING.PRICE_LOCK_TAGLINE}) is available now.`,
       });
       return;
     }
 
+    /* Map tier → Stripe Price ID env var. STRIPE_PRO_MONTHLY_PRICE_ID is
+       the canonical name; STRIPE_PRICE_ID is kept as a fallback so any
+       existing deploys with the old secret name continue to work
+       unchanged. STRIPE_FOUNDING_PRICE_ID and STRIPE_PRO_YEARLY_PRICE_ID
+       are required for their respective tiers and have no fallback. */
     const priceId =
       tier === "founding"
         ? process.env["STRIPE_FOUNDING_PRICE_ID"]
-        : process.env["STRIPE_PRICE_ID"];
+        : tier === "pro_yearly"
+        ? process.env["STRIPE_PRO_YEARLY_PRICE_ID"]
+        : process.env["STRIPE_PRO_MONTHLY_PRICE_ID"] ??
+          process.env["STRIPE_PRICE_ID"];
     if (!priceId) {
-      const which = tier === "founding" ? "STRIPE_FOUNDING_PRICE_ID" : "STRIPE_PRICE_ID";
+      const which =
+        tier === "founding"
+          ? "STRIPE_FOUNDING_PRICE_ID"
+          : tier === "pro_yearly"
+          ? "STRIPE_PRO_YEARLY_PRICE_ID"
+          : "STRIPE_PRO_MONTHLY_PRICE_ID";
       req.log?.error({ tier, which }, "price id not configured");
       res
         .status(500)
@@ -180,9 +202,10 @@ router.post(
       // Build return URLs from a strict allowlist (NOT the raw Origin header).
       const origin = pickOrigin(req.headers.origin as string | undefined);
 
-      // Two distinct checkout shapes:
-      //   - 'pro'      → recurring subscription (mode: 'subscription')
-      //   - 'founding' → one-time $79 lifetime, price locked (mode: 'payment')
+      // Three distinct checkout shapes:
+      //   - 'pro'        → recurring monthly subscription (mode: 'subscription')
+      //   - 'pro_yearly' → recurring yearly subscription  (mode: 'subscription')
+      //   - 'founding'   → one-time $79 lifetime, price locked (mode: 'payment')
       // The webhook reads `metadata.tier` to know which side handled it.
       const baseParams = {
         customer: customerId,
@@ -231,10 +254,32 @@ router.get(
     const user = req.user!;
     try {
       const profile = await getOrCreateProfile(user.id, user.email);
+      const planRaw = (profile.plan || "free").toLowerCase();
+      const plan: PmgPlan =
+        planRaw === "pro" || planRaw === "founding" ? planRaw : "free";
+      // Trial is anchored to the Supabase auth.users.created_at timestamp
+      // (delivered via requireSupabaseUser) so it can't be reset by
+      // clearing browser data. Founding/Pro users are unlimited and have
+      // no trial state.
+      const caps = effectiveCaps(plan, user.createdAtMs);
+      const used = getUserUsageSnapshot(user.id);
       res.json({
-        plan: profile.plan || "free",
+        plan,
         subscription_status: profile.subscription_status,
         current_period_end: profile.current_period_end,
+        created_at: new Date(user.createdAtMs).toISOString(),
+        trial: {
+          active: plan === "free" && isInTrial(user.createdAtMs),
+          days_left: plan === "free" ? trialDaysLeft(user.createdAtMs) : 0,
+        },
+        caps, // null when unlimited (founding / pro)
+        used,
+        pricing: {
+          founding_usd: PMG_PRICING.FOUNDING_PRICE_USD,
+          pro_monthly_usd: PMG_PRICING.PRO_MONTHLY_USD,
+          pro_yearly_usd: PMG_PRICING.PRO_YEARLY_USD,
+          founding_deadline: PMG_PRICING.FOUNDING_DEADLINE_COPY,
+        },
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
