@@ -1,0 +1,193 @@
+Implement Mockup 4 (Text → Image Synergy) With Adaptive Logic — WITHOUT Breaking Existing Flow.
+
+Create a checkpoint before changes.
+
+This is an enhancement. Do NOT rebuild the site. Do NOT remove existing flows.
+
+━━━━━━━━━━━━━━━━━━━━
+CORE OBJECTIVE
+━━━━━━━━━━━━━━━━━━━━
+
+Add a “Text → Image” synergy layer AFTER the user gets a result.
+
+Users must still be able to:
+1. Create A Text Prompt only
+2. Create An Image Prompt only
+3. Optionally combine both (Workstation behavior)
+
+Do NOT force users into combined mode.
+
+━━━━━━━━━━━━━━━━━━━━
+WHERE TO IMPLEMENT
+━━━━━━━━━━━━━━━━━━━━
+
+ONLY AFTER a successful result.
+
+Text Flow:
+User → Fix My Prompt → Run With AI → AI Response → THEN add enhancement
+
+Image Flow:
+User → Generate Image → Image Result → THEN add enhancement
+
+Do NOT add anything before first generation.
+
+━━━━━━━━━━━━━━━━━━━━
+TEXT → IMAGE SYNERGY (MOCKUP 4 CORE)
+━━━━━━━━━━━━━━━━━━━━
+
+After AI Response, add:
+
+SECTION TITLE:
+What Next?
+
+For creative/business/writing prompts, show:
+
+- Make A Hero Image
+- Create Caption
+- Improve Prompt
+
+When user clicks “Make A Hero Image”:
+
+1. Generate an Image Brief automatically from:
+   - Optimized Prompt
+   - AI Response
+   - Tone + intent
+
+2. Prefill the existing Photography Suite / Image Prompt builder
+
+3. DO NOT auto-generate image immediately
+   - Let user review/edit the brief
+
+4. Then user clicks:
+   Generate Image
+
+5. Use EXISTING DALL·E 3 flow (no backend changes)
+
+━━━━━━━━━━━━━━━━━━━━
+IMAGE → TEXT SYNERGY
+━━━━━━━━━━━━━━━━━━━━
+
+After Image Result, add:
+
+SECTION TITLE:
+What Next?
+
+Show:
+
+- Write Text For This Image
+- Create Caption
+- Generate Another Style
+
+When clicked:
+- Use existing Run With AI / text system
+- Base output on:
+  - Image prompt
+  - Selected Photography Suite inputs
+
+Do NOT claim real image analysis unless implemented.
+
+━━━━━━━━━━━━━━━━━━━━
+ADAPTIVE INTENT LOGIC (CRITICAL)
+━━━━━━━━━━━━━━━━━━━━
+
+DO NOT always show image options.
+
+Detect intent silently based on input.
+
+Categories:
+- Creative / Visual
+- Business / Marketing
+- Writing / Social
+- Practical / Sensitive
+- General
+
+If prompt is Practical / Sensitive (examples: homeless, emergency, unsafe, no money, crisis):
+
+Replace What Next with:
+
+- Turn Into Action Plan
+- Add Local Details
+- Make This Step-By-Step
+- Write Message Asking For Help
+
+DO NOT prioritize image here.
+
+If Creative / Business / Writing:
+
+Show image bridge options:
+- Make A Hero Image
+- Create Caption
+- Improve Prompt
+
+━━━━━━━━━━━━━━━━━━━━
+IMPORTANT UX RULES
+━━━━━━━━━━━━━━━━━━━━
+
+- Do NOT move the builder
+- Do NOT add new modes
+- Do NOT add pre-input decisions
+- Do NOT interrupt linear flow
+
+Keep:
+Input → Generate → Result → What Next
+
+━━━━━━━━━━━━━━━━━━━━
+NAMING
+━━━━━━━━━━━━━━━━━━━━
+
+Use exactly:
+
+What Next?
+Make A Hero Image
+Write Text For This Image
+Create Caption
+Improve Prompt
+Turn Into Action Plan
+Add Local Details
+Make This Step-By-Step
+Write Message Asking For Help
+
+Use “Photography Suite” (not Photography Studio)
+
+Use Title Case everywhere for buttons, labels, and UI controls.
+
+━━━━━━━━━━━━━━━━━━━━
+DO NOT ADD (YET)
+━━━━━━━━━━━━━━━━━━━━
+
+Do NOT implement or reference:
+
+- AI Verdict
+- Action Plans as a system feature
+- Transform Studio
+- Full Suite Rendering
+- Prompt Chains
+
+Only use existing functionality.
+
+━━━━━━━━━━━━━━━━━━━━
+QA REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━
+
+Verify:
+
+- Text-only users can complete flow without seeing image prompts
+- Image-only users can complete flow without text prompts
+- “Make A Hero Image” correctly pre-fills image builder
+- “Write Text For This Image” correctly uses text system
+- Sensitive prompts DO NOT show image-first suggestions
+- No console errors
+- No broken buttons
+- Mobile remains clean (no overflow, 44px buttons)
+
+━━━━━━━━━━━━━━━━━━━━
+REPORT BACK
+━━━━━━━━━━━━━━━━━━━━
+
+1. Files modified
+2. Where What Next was added
+3. How intent detection was implemented
+4. How text → image prefill works
+5. How image → text flow works
+6. QA results
+7. Any stubbed logic

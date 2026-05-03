@@ -1,0 +1,86 @@
+PromptMeGood Workstation — Text + Image Seamless Integration
+Write the post on the left. Generate the matching hero image on the right with one click — the image brief is auto-built from your post. Two pipelines, one canvas.
+PromptMeGood
+Start Here · Guide · Pricing
+Sign In
+SHAPE YOUR PROMPT
+Write Your Post
+Text Prompt
+Photography
+Image
+✨ Help Me Start
+Stuck on what to write? 3 questions and we'll draft it together.
+Start In 3 Steps
+Your Goal
+Write a LinkedIn post announcing our new prompt workstation —
+friendly and confident, around 150 words. Open with a hook, give two
+concrete benefits, end with one open question.
+Strong ✓
+Quick Actions
+Fix My Prompt
+More Detailed
+Bold & Direct
+Beginner
+Undo
+Tuning
+Friendly
+Confident
+Concise
+Detailed
+Length: 150 ▾
+RUN WITH AI
+Send to ChatGPT, Claude, Perplexity, Gemini — or run it here.
+Run With AI ▸
+SEAMLESS HANDOFF — TEXT ↔ IMAGE
+Add a hero image to this post — automatically.
+Once your post is written, PromptMeGood reads it and drafts an image brief for you.
+Edit the brief if you want, or just hit Generate. The image lands beside your post.
+Make A Hero Image ▸
+Edit Image Brief First
+(opens Photography tab pre-filled from your post)
+WHAT MAKES IT SEAMLESS
+• You never copy-paste between tools.
+• You never re-explain your idea — the post becomes the image's brief.
+• You can edit the auto-brief before generating, or trust it.
+• The result exports as one Post-and-Image pair, ready for LinkedIn / X / blog.
+Same pattern works in reverse: generate an image first, then "Write A Caption For This".
+LIVE LINK
+AUTO-BRIEF
+SEE THE RESULT
+Adaptive Response
+Friendly
+Confident
+150 words
+For LinkedIn
+LIVE PROMPT PREVIEW · UPDATES AS YOU TYPE
+You are a friendly, confident copywriter. Write a 150-word
+LinkedIn post announcing our new prompt workstation. Open
+with a hook, give two concrete benefits, end with one open
+question. Avoid jargon and hype.
+Copy
+Open In ▾
+~ 78 tokens · ChatGPT-ready
+AI RESPONSE — YOUR LINKEDIN POST
+Most prompt tools are a wall of buttons.
+Today we're shipping something different — a workstation
+that turns scattered ideas into clear instructions in
+seconds, then shows the answer right next to where you
+typed. Two wins for your day: less re-prompting, and one
+screen instead of fifteen tabs.
+What's the one prompt you wish you could rewrite?
+Copy
+Save Prompt
+Share
+Run Again
+AUTO-BRIEF FOR YOUR HERO IMAGE
+built from your post above
+"Cinematic, modern desk scene with a glowing screen showing a clean
+two-column workstation. Warm, optimistic, calm focus."
+35mm · golden glow · rule of thirds · warm palette · no text in image
+COMPANION IMAGE
+DALL·E 3 · 1024×1024
+EXPORT AS A PAIR
+Post + image, ready for LinkedIn, X, or your blog. One file.
+Save As Pair ▸
+The seamless story:
+your post writes itself → the post writes the image brief → the image lands next to the post → both export as one file.
