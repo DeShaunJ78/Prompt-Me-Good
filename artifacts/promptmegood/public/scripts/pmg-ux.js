@@ -12024,12 +12024,18 @@
 
     var cta = document.createElement('div');
     cta.className = 'pmg-t41-inline-cta';
-    /* Pro Monthly is "Coming Soon" and has no live Stripe
-       checkout. The active paid offer is Founding Member ($79 lifetime,
-       price locked for life). This homepage CTA therefore points at
-       Founding Member and is wired via data-pmg-tier="founding". */
+    /* Pro Monthly is "Coming Soon" and has no live Stripe checkout. The
+       active paid offer is Founding Member (one-time, price locked for
+       life). All numbers are sourced from window.PMG_PRICING so this
+       copy can never drift from the canonical config. */
+    var __cfgCTA  = (typeof window !== 'undefined' && window.PMG_PRICING) || {};
+    var __ctaAmt  = (typeof __cfgCTA.FOUNDING_PRICE_USD === 'number') ? __cfgCTA.FOUNDING_PRICE_USD : 79;
+    var __ctaLim  = (typeof __cfgCTA.FOUNDING_LIMIT       === 'number') ? __cfgCTA.FOUNDING_LIMIT      : 500;
+    var __ctaLock = __cfgCTA.PRICE_LOCK_TAGLINE || 'price locked for life';
     cta.innerHTML =
-      '<span><strong>Want Higher Limits?</strong> Founding Member is a one-time $79 for lifetime access to core features — higher Run With AI and image generation usage. Limited to the first 500 buyers, price locked for life. Fair use limits apply.</span>' +
+      '<span><strong>Want Higher Limits?</strong> Founding Member is a one-time $' + __ctaAmt +
+      ' for lifetime access to core features — higher Run With AI and image generation usage. Limited to the first ' +
+      __ctaLim + ' buyers, ' + __ctaLock + '. Fair use limits apply.</span>' +
       '<a class="btn btn-primary ' + BUTTON_CLASS + '" href="./pricing.html#early-access">Join Founding Member Waitlist</a>';
     section.parentNode.insertBefore(cta, section);
     wireButtons();
