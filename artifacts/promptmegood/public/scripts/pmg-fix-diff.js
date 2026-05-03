@@ -117,6 +117,35 @@
       '#pmg-fix-diff .pfd-done .pfd-done-arrow { display: inline-block; margin-left: 6px; transition: transform 180ms ease; }',
       '#pmg-fix-diff .pfd-done:hover .pfd-done-arrow { transform: translateX(3px); }',
 
+      /* Mobile compaction (<=640px): the screenshot showed each
+         Suggested Change card stretching to 8-10 lines because the
+         3-column grid (checkbox + body + actions) squeezed the body
+         column to ~50% of a 390px viewport, forcing the reason and
+         snippet to wrap aggressively. The fix:
+           1) Re-flow the card into 2 rows: row 1 = checkbox + body
+              (body now spans the full remaining width), row 2 =
+              Accept/Reject right-aligned. Body gets ~310px instead
+              of ~150px, so reasons fit on 1-2 lines instead of 4-6.
+           2) Clamp the snippet to 2 lines with line-clamp so a
+              verbose snippet can't run on for 5+ lines.
+           3) Cap the entire .pfd-edits list at 60vh with
+              overflow-y so a 10-edit response can't dominate the
+              page; users still see the count + Accept All / Reject
+              All shortcuts above the scroll region.
+           4) Tighten paddings and the Accept/Reject button height
+              so each card is visually denser without losing the
+              44px tap target on the underlying card hit-area. */
+      '@media (max-width: 640px) {',
+      '  #pmg-fix-diff .pfd-edits { max-height: 60vh; overflow-y: auto; padding-right: 4px; -webkit-overflow-scrolling: touch; }',
+      '  #pmg-fix-diff .pfd-edit { grid-template-columns: auto 1fr; grid-template-rows: auto auto; gap: 6px 8px; padding: 8px 10px; }',
+      '  #pmg-fix-diff .pfd-edit-toggle { grid-row: 1; grid-column: 1; width: 20px; height: 20px; }',
+      '  #pmg-fix-diff .pfd-edit-body { grid-row: 1; grid-column: 2; }',
+      '  #pmg-fix-diff .pfd-edit-actions { grid-row: 2; grid-column: 1 / -1; justify-content: flex-end; align-self: stretch; }',
+      '  #pmg-fix-diff .pfd-edit-reason { font-size: 13px; line-height: 1.3; }',
+      '  #pmg-fix-diff .pfd-edit-snippet { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px; }',
+      '  #pmg-fix-diff .pfd-edit-action { font-size: 12px; padding: 6px 12px; min-height: 32px; }',
+      '}',
+
       '@media (prefers-reduced-motion: reduce) { #pmg-fix-diff *, #pmg-fix-diff *::before, #pmg-fix-diff *::after { transition: none !important; animation: none !important; } }'
     ].join('\n');
     var s = document.createElement('style');
