@@ -1,0 +1,282 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1180" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F4F7F6"/>
+      <stop offset="1" stop-color="#E7EDEB"/>
+    </linearGradient>
+    <linearGradient id="brandFill" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0F766E"/>
+      <stop offset="1" stop-color="#14857C"/>
+    </linearGradient>
+    <linearGradient id="liveFill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFF8E1"/>
+      <stop offset="1" stop-color="#FCEFC2"/>
+    </linearGradient>
+    <linearGradient id="bridgeFill" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#E6F4F1"/>
+      <stop offset="1" stop-color="#D2EAE4"/>
+    </linearGradient>
+    <linearGradient id="heroSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#A6D8E8"/>
+      <stop offset="0.5" stop-color="#FFD89B"/>
+      <stop offset="1" stop-color="#F8B393"/>
+    </linearGradient>
+    <linearGradient id="heroFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3A6273"/>
+      <stop offset="1" stop-color="#1B2C36"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.7" cy="0.45" r="0.25">
+      <stop offset="0" stop-color="#FFF6D8" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#FFF6D8" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-2%" y="-2%" width="104%" height="104%">
+      <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#0F2A2A" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#0F766E"/>
+    </marker>
+    <marker id="arrBack" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M10,0 L0,5 L10,10 z" fill="#0F766E"/>
+    </marker>
+  </defs>
+
+  <rect width="1400" height="1180" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="40" y="44" font-size="22" font-weight="800" fill="#0F2A2A">PromptMeGood Workstation — Text + Image Seamless Integration</text>
+  <text x="40" y="68" font-size="13" fill="#56706C">Write the post on the left. Generate the matching hero image on the right with one click — the image brief is auto-built from your post. Two pipelines, one canvas.</text>
+
+  <!-- Top app bar -->
+  <rect x="40" y="92" width="1320" height="56" rx="14" fill="#FFFFFF" stroke="#D9E2DF" filter="url(#soft)"/>
+  <rect x="58" y="108" width="28" height="28" rx="6" fill="url(#brandFill)"/>
+  <text x="96" y="128" font-size="15" font-weight="800" fill="#0F2A2A">PromptMeGood</text>
+  <text x="222" y="128" font-size="13" fill="#56706C">Start Here · Guide · Pricing</text>
+  <rect x="1244" y="108" width="100" height="28" rx="14" fill="url(#brandFill)"/>
+  <text x="1294" y="127" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">Sign In</text>
+
+  <!-- ============ LEFT COLUMN ============ -->
+  <rect x="40" y="170" width="780" height="980" rx="18" fill="#FFFFFF" stroke="#D9E2DF" filter="url(#soft)"/>
+  <text x="60" y="200" font-size="11" font-weight="800" letter-spacing="2" fill="#0F766E">SHAPE YOUR PROMPT</text>
+  <text x="60" y="226" font-size="22" font-weight="800" fill="#0F2A2A">Write Your Post</text>
+
+  <!-- Tabs (Text Prompt active) -->
+  <rect x="60" y="252" width="740" height="48" rx="12" fill="#F2F6F5" stroke="#D9E2DF"/>
+  <rect x="68" y="260" width="240" height="32" rx="8" fill="#FFFFFF" stroke="#0F766E" stroke-width="1.5"/>
+  <text x="188" y="281" text-anchor="middle" font-size="13" font-weight="700" fill="#0F2A2A">Text Prompt</text>
+  <text x="436" y="281" text-anchor="middle" font-size="13" fill="#56706C">Photography</text>
+  <text x="676" y="281" text-anchor="middle" font-size="13" fill="#56706C">Image</text>
+
+  <!-- Help Me Start (slim, pinned) -->
+  <rect x="60" y="316" width="740" height="44" rx="10" fill="#E6F4F1" stroke="#0F766E"/>
+  <text x="78" y="343" font-size="13" font-weight="800" fill="#0F2A2A">✨ Help Me Start</text>
+  <text x="200" y="343" font-size="12" fill="#0F2A2A">Stuck on what to write? 3 questions and we'll draft it together.</text>
+  <rect x="660" y="324" width="124" height="28" rx="14" fill="url(#brandFill)"/>
+  <text x="722" y="343" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">Start In 3 Steps</text>
+
+  <!-- Goal -->
+  <text x="60" y="386" font-size="12" font-weight="700" fill="#0F2A2A">Your Goal</text>
+  <rect x="60" y="396" width="740" height="92" rx="10" fill="#FAFCFB" stroke="#D9E2DF"/>
+  <text x="76" y="424" font-size="13" fill="#0F2A2A">Write a LinkedIn post announcing our new prompt workstation —</text>
+  <text x="76" y="444" font-size="13" fill="#0F2A2A">friendly and confident, around 150 words. Open with a hook, give two</text>
+  <text x="76" y="464" font-size="13" fill="#0F2A2A">concrete benefits, end with one open question.</text>
+  <rect x="688" y="456" width="98" height="22" rx="11" fill="#0F766E"/>
+  <text x="737" y="471" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Strong ✓</text>
+
+  <!-- Quick Actions -->
+  <text x="60" y="518" font-size="12" font-weight="700" fill="#0F2A2A">Quick Actions</text>
+  <g font-size="12" fill="#0F2A2A">
+    <rect x="60"  y="530" width="148" height="34" rx="17" fill="url(#brandFill)"/>
+    <text x="134" y="552" text-anchor="middle" fill="#FFFFFF" font-weight="700">Fix My Prompt</text>
+    <rect x="216" y="530" width="148" height="34" rx="17" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="290" y="552" text-anchor="middle">More Detailed</text>
+    <rect x="372" y="530" width="148" height="34" rx="17" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="446" y="552" text-anchor="middle">Bold &amp; Direct</text>
+    <rect x="528" y="530" width="148" height="34" rx="17" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="602" y="552" text-anchor="middle">Beginner</text>
+    <rect x="684" y="530" width="116" height="34" rx="17" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="742" y="552" text-anchor="middle">Undo</text>
+  </g>
+
+  <!-- Tuning -->
+  <text x="60" y="600" font-size="12" font-weight="700" fill="#0F2A2A">Tuning</text>
+  <g font-size="11" fill="#56706C">
+    <rect x="60"  y="612" width="86" height="30" rx="15" fill="#0F766E"/>
+    <text x="103" y="631" text-anchor="middle" fill="#FFFFFF" font-weight="700">Friendly</text>
+    <rect x="154" y="612" width="86" height="30" rx="15" fill="#0F766E"/>
+    <text x="197" y="631" text-anchor="middle" fill="#FFFFFF" font-weight="700">Confident</text>
+    <rect x="248" y="612" width="86" height="30" rx="15" fill="#F2F6F5" stroke="#D9E2DF"/>
+    <text x="291" y="631" text-anchor="middle">Concise</text>
+    <rect x="342" y="612" width="86" height="30" rx="15" fill="#F2F6F5" stroke="#D9E2DF"/>
+    <text x="385" y="631" text-anchor="middle">Detailed</text>
+    <rect x="436" y="612" width="120" height="30" rx="8" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="448" y="631" font-size="11" fill="#0F2A2A">Length: 150 ▾</text>
+  </g>
+
+  <!-- Run row -->
+  <rect x="60" y="668" width="740" height="80" rx="12" fill="#0F2A2A"/>
+  <text x="80" y="698" font-size="12" font-weight="700" fill="#9AD1CB">RUN WITH AI</text>
+  <text x="80" y="724" font-size="14" fill="#FFFFFF">Send to ChatGPT, Claude, Perplexity, Gemini — or run it here.</text>
+  <rect x="640" y="688" width="140" height="40" rx="20" fill="url(#brandFill)"/>
+  <text x="710" y="713" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">Run With AI ▸</text>
+
+  <!-- THE SEAMLESS BRIDGE PANEL — left column -->
+  <rect x="60" y="768" width="740" height="184" rx="14" fill="url(#bridgeFill)" stroke="#0F766E"/>
+  <text x="76" y="794" font-size="11" font-weight="800" letter-spacing="2" fill="#0F766E">SEAMLESS HANDOFF — TEXT ↔ IMAGE</text>
+  <text x="76" y="820" font-size="16" font-weight="800" fill="#0F2A2A">Add a hero image to this post — automatically.</text>
+  <text x="76" y="844" font-size="13" fill="#0F2A2A">Once your post is written, PromptMeGood reads it and drafts an image brief for you.</text>
+  <text x="76" y="864" font-size="13" fill="#0F2A2A">Edit the brief if you want, or just hit Generate. The image lands beside your post.</text>
+
+  <!-- Two action chips -->
+  <rect x="76" y="884" width="216" height="44" rx="22" fill="url(#brandFill)"/>
+  <text x="184" y="911" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">Make A Hero Image ▸</text>
+  <rect x="304" y="884" width="216" height="44" rx="22" fill="#FFFFFF" stroke="#0F766E"/>
+  <text x="412" y="911" text-anchor="middle" font-size="13" font-weight="700" fill="#0F766E">Edit Image Brief First</text>
+  <text x="540" y="911" font-size="11" fill="#56706C">(opens Photography tab pre-filled from your post)</text>
+
+  <!-- Hidden tabs note -->
+  <rect x="60" y="968" width="740" height="166" rx="12" fill="#FAFCFB" stroke="#D9E2DF" stroke-dasharray="4 4"/>
+  <text x="76" y="994" font-size="11" font-weight="800" letter-spacing="2" fill="#0F766E">WHAT MAKES IT SEAMLESS</text>
+  <text x="76" y="1020" font-size="13" fill="#0F2A2A">• You never copy-paste between tools.</text>
+  <text x="76" y="1042" font-size="13" fill="#0F2A2A">• You never re-explain your idea — the post becomes the image's brief.</text>
+  <text x="76" y="1064" font-size="13" fill="#0F2A2A">• You can edit the auto-brief before generating, or trust it.</text>
+  <text x="76" y="1086" font-size="13" fill="#0F2A2A">• The result exports as one Post-and-Image pair, ready for LinkedIn / X / blog.</text>
+  <text x="76" y="1116" font-size="11" fill="#56706C">Same pattern works in reverse: generate an image first, then "Write A Caption For This".</text>
+
+  <!-- BRIDGE arrows between columns (bidirectional) -->
+  <g>
+    <line x1="824" y1="500" x2="836" y2="500" stroke="#0F766E" stroke-width="2" marker-end="url(#arr)"/>
+    <line x1="824" y1="630" x2="836" y2="630" stroke="#0F766E" stroke-width="2" marker-end="url(#arr)"/>
+    <line x1="836" y1="860" x2="824" y2="860" stroke="#0F766E" stroke-width="2.5" marker-end="url(#arrBack)"/>
+    <text x="830" y="540" text-anchor="middle" font-size="9" font-weight="700" letter-spacing="1" fill="#0F766E" transform="rotate(-90 830 540)">LIVE LINK</text>
+    <text x="830" y="900" text-anchor="middle" font-size="9" font-weight="700" letter-spacing="1" fill="#0F766E" transform="rotate(-90 830 900)">AUTO-BRIEF</text>
+  </g>
+
+  <!-- ============ RIGHT COLUMN ============ -->
+  <rect x="840" y="170" width="520" height="980" rx="18" fill="#FFFFFF" stroke="#D9E2DF" filter="url(#soft)"/>
+  <text x="860" y="200" font-size="11" font-weight="800" letter-spacing="2" fill="#0F766E">SEE THE RESULT</text>
+  <text x="860" y="226" font-size="22" font-weight="800" fill="#0F2A2A">Adaptive Response</text>
+
+  <!-- Tuned chips echoing left state -->
+  <g font-size="11">
+    <rect x="860" y="240" width="80" height="22" rx="11" fill="#0F766E"/>
+    <text x="900" y="255" text-anchor="middle" fill="#FFFFFF" font-weight="700">Friendly</text>
+    <rect x="948" y="240" width="86" height="22" rx="11" fill="#0F766E"/>
+    <text x="991" y="255" text-anchor="middle" fill="#FFFFFF" font-weight="700">Confident</text>
+    <rect x="1042" y="240" width="76" height="22" rx="11" fill="#F2F6F5" stroke="#D9E2DF"/>
+    <text x="1080" y="255" text-anchor="middle" fill="#0F2A2A">150 words</text>
+    <rect x="1126" y="240" width="92" height="22" rx="11" fill="#F2F6F5" stroke="#D9E2DF"/>
+    <text x="1172" y="255" text-anchor="middle" fill="#0F2A2A">For LinkedIn</text>
+  </g>
+
+  <!-- Live Prompt Preview -->
+  <rect x="860" y="276" width="480" height="148" rx="12" fill="url(#liveFill)" stroke="#D4A82A"/>
+  <circle cx="876" cy="296" r="5" fill="#D4A82A">
+    <animate attributeName="opacity" values="1;0.3;1" dur="1.4s" repeatCount="indefinite"/>
+  </circle>
+  <text x="892" y="300" font-size="11" font-weight="800" letter-spacing="2" fill="#8A6A0A">LIVE PROMPT PREVIEW · UPDATES AS YOU TYPE</text>
+  <text x="876" y="328" font-size="13" font-weight="700" fill="#0F2A2A">You are a friendly, confident copywriter. Write a 150-word</text>
+  <text x="876" y="346" font-size="13" font-weight="700" fill="#0F2A2A">LinkedIn post announcing our new prompt workstation. Open</text>
+  <text x="876" y="364" font-size="13" font-weight="700" fill="#0F2A2A">with a hook, give two concrete benefits, end with one open</text>
+  <text x="876" y="382" font-size="13" font-weight="700" fill="#0F2A2A">question. Avoid jargon and hype.</text>
+  <g font-size="11">
+    <rect x="876" y="396" width="76" height="22" rx="11" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="914" y="411" text-anchor="middle" fill="#0F2A2A">Copy</text>
+    <rect x="958" y="396" width="84" height="22" rx="11" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="1000" y="411" text-anchor="middle" fill="#0F2A2A">Open In ▾</text>
+    <text x="1052" y="411" font-size="10" fill="#56706C">~ 78 tokens · ChatGPT-ready</text>
+  </g>
+
+  <!-- AI Response (the post) -->
+  <rect x="860" y="440" width="480" height="220" rx="12" fill="#FAFCFB" stroke="#D9E2DF"/>
+  <text x="876" y="464" font-size="11" font-weight="800" letter-spacing="2" fill="#56706C">AI RESPONSE — YOUR LINKEDIN POST</text>
+  <text x="876" y="490" font-size="13" font-weight="700" fill="#0F2A2A">Most prompt tools are a wall of buttons.</text>
+  <text x="876" y="510" font-size="13" fill="#0F2A2A">Today we're shipping something different — a workstation</text>
+  <text x="876" y="528" font-size="13" fill="#0F2A2A">that turns scattered ideas into clear instructions in</text>
+  <text x="876" y="546" font-size="13" fill="#0F2A2A">seconds, then shows the answer right next to where you</text>
+  <text x="876" y="564" font-size="13" fill="#0F2A2A">typed. Two wins for your day: less re-prompting, and one</text>
+  <text x="876" y="582" font-size="13" fill="#0F2A2A">screen instead of fifteen tabs.</text>
+  <text x="876" y="608" font-size="13" font-style="italic" fill="#0F2A2A">What's the one prompt you wish you could rewrite?</text>
+  <g font-size="11">
+    <rect x="876" y="624" width="76" height="26" rx="13" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="914" y="641" text-anchor="middle" fill="#0F2A2A">Copy</text>
+    <rect x="958" y="624" width="92" height="26" rx="13" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="1004" y="641" text-anchor="middle" fill="#0F2A2A">Save Prompt</text>
+    <rect x="1056" y="624" width="76" height="26" rx="13" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="1094" y="641" text-anchor="middle" fill="#0F2A2A">Share</text>
+    <rect x="1140" y="624" width="100" height="26" rx="13" fill="url(#brandFill)"/>
+    <text x="1190" y="641" text-anchor="middle" fill="#FFFFFF" font-weight="700">Run Again</text>
+  </g>
+
+  <!-- AUTO-BRIEF CARD (the seamless handoff) -->
+  <rect x="860" y="676" width="480" height="92" rx="12" fill="url(#bridgeFill)" stroke="#0F766E" stroke-dasharray="6 4"/>
+  <text x="876" y="700" font-size="11" font-weight="800" letter-spacing="2" fill="#0F766E">AUTO-BRIEF FOR YOUR HERO IMAGE</text>
+  <text x="1304" y="700" text-anchor="end" font-size="10" fill="#56706C">built from your post above</text>
+  <text x="876" y="724" font-size="13" font-weight="700" fill="#0F2A2A">"Cinematic, modern desk scene with a glowing screen showing a clean</text>
+  <text x="876" y="742" font-size="13" font-weight="700" fill="#0F2A2A">two-column workstation. Warm, optimistic, calm focus."</text>
+  <text x="876" y="760" font-size="11" fill="#56706C">35mm · golden glow · rule of thirds · warm palette · no text in image</text>
+
+  <!-- Generated companion image -->
+  <text x="860" y="790" font-size="11" font-weight="800" letter-spacing="2" fill="#56706C">COMPANION IMAGE</text>
+  <text x="1304" y="790" text-anchor="end" font-size="10" fill="#9AAFAB">DALL·E 3 · 1024×1024</text>
+
+  <g filter="url(#soft)">
+    <clipPath id="imgClip2">
+      <rect x="860" y="800" width="480" height="240" rx="12"/>
+    </clipPath>
+    <g clip-path="url(#imgClip2)">
+      <!-- backdrop -->
+      <rect x="860" y="800" width="480" height="160" fill="url(#heroSky)"/>
+      <rect x="860" y="940" width="480" height="100" fill="url(#heroFloor)"/>
+      <!-- horizon glow -->
+      <rect x="860" y="800" width="480" height="240" fill="url(#glow)"/>
+      <!-- desk -->
+      <rect x="940" y="940" width="320" height="14" rx="3" fill="#2A3F4A"/>
+      <rect x="940" y="954" width="320" height="60" fill="#1B2C36"/>
+      <!-- monitor -->
+      <rect x="1010" y="858" width="200" height="92" rx="6" fill="#0F2A2A" stroke="#3A6273" stroke-width="2"/>
+      <!-- screen content - mini two-column -->
+      <rect x="1018" y="866" width="106" height="76" rx="3" fill="#F4F7F6"/>
+      <rect x="1128" y="866" width="74"  height="76" rx="3" fill="#FFF8E1"/>
+      <rect x="1024" y="872" width="50" height="6" rx="2" fill="#0F766E"/>
+      <rect x="1024" y="884" width="92" height="4" rx="2" fill="#9AAFAB"/>
+      <rect x="1024" y="892" width="80" height="4" rx="2" fill="#9AAFAB"/>
+      <rect x="1024" y="900" width="86" height="4" rx="2" fill="#9AAFAB"/>
+      <rect x="1024" y="912" width="60" height="14" rx="7" fill="#0F766E"/>
+      <rect x="1134" y="872" width="60" height="6" rx="2" fill="#D4A82A"/>
+      <rect x="1134" y="884" width="62" height="4" rx="2" fill="#9AAFAB"/>
+      <rect x="1134" y="892" width="56" height="4" rx="2" fill="#9AAFAB"/>
+      <rect x="1134" y="900" width="62" height="4" rx="2" fill="#9AAFAB"/>
+      <!-- monitor stand -->
+      <rect x="1100" y="950" width="20" height="12" fill="#2A3F4A"/>
+      <!-- coffee cup -->
+      <ellipse cx="970" cy="954" rx="14" ry="4" fill="#1B2C36" opacity="0.5"/>
+      <rect x="958" y="924" width="24" height="30" rx="3" fill="#E7EDEB"/>
+      <path d="M982 932 q10 4 0 14" stroke="#E7EDEB" stroke-width="3" fill="none"/>
+      <ellipse cx="970" cy="926" rx="11" ry="3" fill="#5A4A3A"/>
+      <!-- plant -->
+      <rect x="1240" y="934" width="18" height="20" fill="#3A6273"/>
+      <path d="M1249 934 q-8 -16 -2 -28 q6 12 2 28 z" fill="#4A7A5A"/>
+      <path d="M1249 934 q8 -14 4 -26 q-6 12 -4 26 z" fill="#5A8A6A"/>
+      <!-- soft warm vignette -->
+      <radialGradient id="vig2" cx="0.5" cy="0.55" r="0.7">
+        <stop offset="0" stop-color="#FFD89B" stop-opacity="0"/>
+        <stop offset="1" stop-color="#1B2C36" stop-opacity="0.4"/>
+      </radialGradient>
+      <rect x="860" y="800" width="480" height="240" fill="url(#vig2)"/>
+    </g>
+    <rect x="860" y="800" width="480" height="240" rx="12" fill="none" stroke="#D9E2DF"/>
+  </g>
+
+  <!-- Pair export action -->
+  <rect x="860" y="1056" width="480" height="76" rx="12" fill="#0F2A2A"/>
+  <text x="880" y="1082" font-size="11" font-weight="800" letter-spacing="2" fill="#9AD1CB">EXPORT AS A PAIR</text>
+  <text x="880" y="1106" font-size="13" fill="#FFFFFF">Post + image, ready for LinkedIn, X, or your blog. One file.</text>
+  <rect x="1190" y="1074" width="140" height="40" rx="20" fill="url(#brandFill)"/>
+  <text x="1260" y="1099" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">Save As Pair ▸</text>
+
+  <!-- Footer notes -->
+  <g font-size="12" fill="#56706C">
+    <text x="40" y="1170" font-weight="800" fill="#0F2A2A">The seamless story:</text>
+    <text x="200" y="1170">your post writes itself → the post writes the image brief → the image lands next to the post → both export as one file.</text>
+  </g>
+</svg>

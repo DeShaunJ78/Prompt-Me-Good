@@ -113,3 +113,21 @@ id = "rXtQIFiwd2rCvBWmRZ0rG"
 uri = "file://.local/exports/promptmegood-text-image-synergy.svg"
 type = "image"
 title = "Text + Image Seamless Integration"
+
+[[outputs]]
+id = "uleqGmyw7B_vE5iYvKya4"
+uri = "file://screenshots/01-mockup.svg"
+type = "image"
+title = "1. Mockup — Text↔Image Synergy (Concept)"
+
+[[outputs]]
+id = "JMASlESu4JNAD35du5oXf"
+uri = "file://screenshots/02-live-desktop.jpg"
+type = "image"
+title = "2. Live What Next? Panel — Desktop (1280px)"
+
+[[outputs]]
+id = "yOVs7HCucB2H9TUBiKpTb"
+uri = "file://screenshots/03-live-mobile.jpg"
+type = "image"
+title = "3. Live What Next? Panel — Mobile (390px)"
