@@ -1,0 +1,124 @@
+Verify And Preserve External Prompt Portability Across PromptMeGood.
+
+Create a checkpoint before changes.
+
+Goal:
+Ensure users can still take BOTH text prompts and image prompts and use them outside PromptMeGood (ChatGPT, Claude, Gemini, Perplexity, Midjourney, etc.) after the new What Next / Workstation enhancements are added.
+
+Do NOT remove or break any existing export, copy, or external AI functionality.
+
+━━━━━━━━━━━━━━━━━━━━
+REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━
+
+Text Prompts:
+- Users must be able to:
+  - Copy Prompt
+  - Open In ChatGPT
+  - Open In Claude
+  - Open In Gemini
+  - Open In Perplexity
+
+Image Prompts:
+- Users must be able to:
+  - Copy Image Prompt
+  - Send To Midjourney
+  - Use prompt in external image tools manually
+
+━━━━━━━━━━━━━━━━━━━━
+ACTIONS
+━━━━━━━━━━━━━━━━━━━━
+
+1. Audit Existing Buttons And Links
+
+Locate and verify functionality of:
+- Copy Prompt
+- Copy Image Prompt
+- Open In ChatGPT
+- Open In Claude
+- Open In Gemini
+- Open In Perplexity
+- Send To Midjourney
+
+Confirm:
+- Buttons are visible after generation
+- Buttons are clickable
+- They produce correct behavior (copy or open correct URL)
+
+2. Preserve Placement
+
+Ensure:
+- These actions remain directly next to their relevant outputs
+- Do NOT move them away from:
+  - Generated prompt
+  - Image prompt
+  - Image result
+
+3. Integrate With What Next
+
+Ensure new What Next panel:
+- Does NOT replace or hide existing export actions
+- Appears BELOW existing core actions
+
+Correct order:
+
+TEXT FLOW:
+Generated Prompt / AI Response
+[ Copy Prompt ] [ Run With AI ] [ Refine ]
+[ External AI Links ]
+What Next?
+
+IMAGE FLOW:
+Generated Image
+[ Download Image ] [ Generate Another ]
+[ Copy Image Prompt ] [ Send To Midjourney ]
+What Next?
+
+4. Fix If Missing
+
+If any export feature is missing or broken:
+- Reconnect it to existing logic
+- Or recreate simple copy-to-clipboard functionality
+- Do NOT introduce new backend dependencies
+
+5. UX Copy
+
+Add subtle helper text (if not present):
+
+"Use Anywhere" or
+"Copy Or Use In Your Favorite AI Tool"
+
+Keep it minimal. Do not add clutter.
+
+6. QA
+
+Verify:
+- Copy Prompt copies correct text
+- Copy Image Prompt copies correct text
+- Open In ChatGPT opens correct link
+- Open In Claude opens correct link
+- Open In Gemini opens correct link
+- Open In Perplexity opens correct link
+- Send To Midjourney works as designed
+- What Next panel does not interfere
+- Mobile layout remains clean
+- No console errors
+
+━━━━━━━━━━━━━━━━━━━━
+DO NOT CHANGE
+━━━━━━━━━━━━━━━━━━━━
+
+- Backend/API logic
+- AI provider logic
+- Stripe/Supabase
+- Prompt generation logic
+
+━━━━━━━━━━━━━━━━━━━━
+REPORT BACK
+━━━━━━━━━━━━━━━━━━━━
+
+1. Export features found
+2. Any broken links fixed
+3. Any missing buttons added
+4. Placement verification
+5. QA results

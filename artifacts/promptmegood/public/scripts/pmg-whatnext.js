@@ -388,7 +388,16 @@
 
   /* -------------------------------------------------------------
    * Panel rendering
+   *
+   * IMPORTANT: callers must guard with a signature hash before
+   * invoking buildPanel — otherwise re-creating the panel mutates
+   * the observed result-section subtree, which re-fires our
+   * MutationObserver and creates a render loop. mountTextWhatNext
+   * and mountImageWhatNext both compute a signature and short-
+   * circuit when the panel is already current.
    * ----------------------------------------------------------- */
+  var lastSig = { text: '', image: '' };
+
   function buildPanel(panelId, title, helper, actions, opts) {
     var existing = $id(panelId);
     if (existing) existing.parentNode.removeChild(existing);
@@ -445,12 +454,29 @@
    * ----------------------------------------------------------- */
   function mountTextWhatNext() {
     var section = $id('aiResponseSection');
-    if (!section || section.hidden) return;
+    if (!section || section.hidden) {
+      /* Section was hidden again — drop the panel + clear sig so
+         a future result re-mounts cleanly. */
+      var stale = $id('pmg-wn-text');
+      if (stale && stale.parentNode) stale.parentNode.removeChild(stale);
+      lastSig.text = '';
+      return;
+    }
     var output = $id('aiResponseOutput');
-    if (!output || !output.textContent || !output.textContent.trim()) return;
+    var respText = output ? (output.textContent || '').trim() : '';
+    if (!respText) return;
 
-    var combined = (getGoalText() + '\n' + getResponseText()).slice(0, 4000);
+    var combined = (getGoalText() + '\n' + respText).slice(0, 4000);
     var intent = detectIntent(combined);
+
+    /* Signature short-circuit — if nothing relevant changed, do not
+       rebuild. Critical: rebuilding mutates the observed subtree
+       and would re-fire our own MutationObserver in a loop. */
+    var sig = 'T|' + intent.bucket + '|' + (intent.crisis ? '1' : '0') +
+              '|' + respText.length + '|' + respText.slice(0, 64);
+    if (sig === lastSig.text && $id('pmg-wn-text')) return;
+    lastSig.text = sig;
+
     var actions = getTextActions(intent);
     var title = intent.bucket === 'practical-sensitive'
       ? 'What Would Help Right Now?'
@@ -474,11 +500,23 @@
 
   function mountImageWhatNext() {
     var section = $id('imageResultSection');
-    if (!section || section.hidden) return;
+    if (!section || section.hidden) {
+      var stale = $id('pmg-wn-image');
+      if (stale && stale.parentNode) stale.parentNode.removeChild(stale);
+      lastSig.image = '';
+      return;
+    }
     var wrap = $id('imageResultWrap');
     if (!wrap) return;
     /* Only mount once an actual <img> has rendered (not the placeholder). */
-    if (!wrap.querySelector('img')) return;
+    var img = wrap.querySelector('img');
+    if (!img) return;
+
+    /* Signature short-circuit — see mountTextWhatNext for rationale. */
+    var src = img.getAttribute('src') || '';
+    var sig = 'I|' + src.length + '|' + src.slice(0, 96);
+    if (sig === lastSig.image && $id('pmg-wn-image')) return;
+    lastSig.image = sig;
 
     var actions = getImageActions();
     var panel = buildPanel(
