@@ -14667,3 +14667,220 @@
   setTimeout(init, 600);
   setTimeout(init, 1500);
 })();
+
+/* ====================================================================
+ * Task #107 — Homepage UX overhaul: result hierarchy + image-gen
+ * feedback + page density.
+ *
+ * - Reorders the post-generation cluster so the primary action chain
+ *   (Run With AI -> Copy Prompt -> Improve With AI) sits directly under
+ *   #resultBox, above the verbose Refine/Fine-Tune/Strength scaffolding.
+ *   Achieved by moving #runSection and the .pmg-result-actions-row out
+ *   of the deep #tour-final-actions wrapper to be siblings of
+ *   #improve-block, then assigning explicit flex order on .result-wrap.
+ *   No buttons are duplicated and all existing handlers stay attached.
+ *
+ * - Wires the image-mode disabled-state hint (#image-gen-hint) and
+ *   pre-flight scroll/loading state for #imageResultSection so the
+ *   user always sees feedback after tapping Generate.
+ *
+ * - Wraps #history (Prompt Vault) in a collapsed disclosure on first
+ *   visit on small viewports so the page reads as a working tool first
+ *   and a workspace second.
+ * ==================================================================== */
+(function pmgTask107() {
+  'use strict';
+  if (window.__pmgTask107Init) return;
+  window.__pmgTask107Init = true;
+
+  var STYLE_ID = 'pmg-task-107-styles';
+  var VAULT_DISCLOSURE_KEY = 'pmg.task107.vaultExpanded';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = [
+      /* Result-panel cluster ordering. .result-wrap normally renders as
+         a block; switching to a flex column lets us promote the primary
+         action group directly under #resultBox without DOM gymnastics. */
+      '.result-wrap { display: flex; flex-direction: column; }',
+      '.result-wrap > .pill-row { order: 1; }',
+      '.result-wrap > #pinned-note { order: 2; }',
+      '.result-wrap > #resultBox { order: 3; }',
+      '.result-wrap > .result-edit-row { order: 4; }',
+      '.result-wrap > #runSection { order: 5; }',
+      '.result-wrap > .pmg-result-actions-row { order: 6; margin-top: 8px; }',
+      '.result-wrap > #improve-block { order: 7; }',
+      '.result-wrap > #what-next { order: 8; }',
+      '.result-wrap > #tour-final-actions { order: 9; }',
+
+      /* Visual emphasis: lift the primary Run With AI button above the
+         secondary copy/download row, and tighten the cluster spacing. */
+      '.result-wrap > #runSection { margin-top: 14px; padding-top: 14px; }',
+      '.result-wrap > #runSection .run-section-divider { display: none; }',
+      '.result-wrap > #runSection #runBtn { box-shadow: 0 10px 24px color-mix(in srgb, var(--color-primary) 26%, transparent); font-weight: 700; }',
+      '.result-wrap > .pmg-result-actions-row { gap: 8px; }',
+
+      /* Image-gen disabled hint. Visible while #image-generate-btn is
+         considered "not ready" (no goal text yet). Hidden once the goal
+         field has any non-whitespace value. */
+      '.image-gen-hint { display: none; margin: 6px 0 0; padding: 8px 12px; font-size: 13px; line-height: 1.4; color: color-mix(in srgb, var(--color-text) 70%, transparent); background: color-mix(in srgb, var(--color-primary) 6%, transparent); border-left: 3px solid color-mix(in srgb, var(--color-primary) 50%, transparent); border-radius: 8px; }',
+      'body.image-mode .image-gen-hint.is-shown { display: block; }',
+      'body:not(.image-mode) .image-gen-hint { display: none !important; }',
+
+      /* When the image-gen button is gated, give it the disabled look so
+         the hint is the obvious next step. */
+      'body.image-mode #image-generate-btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }',
+
+      /* Density: collapsed Prompt Vault section. Show only the heading
+         row by default; user expands on demand. The disclosure wraps the
+         existing .panel content via JS so we keep all wiring intact. */
+      '.history-section .panel.pmg-vault-collapsed > :not(.panel-head):not(.pmg-vault-toggle) { display: none !important; }',
+      '.history-section .panel.pmg-vault-collapsed .panel-head-actions { display: none !important; }',
+      '.pmg-vault-toggle { display: inline-flex; align-items: center; gap: 6px; margin: 8px 0 0; padding: 8px 14px; min-height: 36px; border: 1px solid color-mix(in srgb, var(--color-primary) 40%, transparent); background: transparent; color: var(--color-primary); font-weight: 700; font-size: 13px; border-radius: 999px; cursor: pointer; }',
+      '.pmg-vault-toggle:hover, .pmg-vault-toggle:focus-visible { background: color-mix(in srgb, var(--color-primary) 8%, transparent); outline: none; }'
+    ].join('\n');
+    (document.head || document.documentElement).appendChild(s);
+  }
+
+  /* ---------- Result hierarchy: move runSection + actions row ---------- */
+  function reorderResultCluster() {
+    var resultWrap = document.querySelector('#result-panel .result-wrap');
+    if (!resultWrap) return;
+    var runSection = document.getElementById('runSection');
+    var actionsRow = resultWrap.querySelector('.pmg-result-actions-row');
+    var improveBlock = document.getElementById('improve-block');
+    /* Re-parent so flex order rules above can take effect. */
+    if (runSection && runSection.parentNode !== resultWrap) {
+      try { resultWrap.appendChild(runSection); } catch (e) {}
+    }
+    if (actionsRow && actionsRow.parentNode !== resultWrap) {
+      try { resultWrap.appendChild(actionsRow); } catch (e) {}
+    }
+    /* Make sure improve-block is a direct child too (it already is, but
+       guard against nested wrappers). */
+    if (improveBlock && improveBlock.parentNode !== resultWrap) {
+      try { resultWrap.appendChild(improveBlock); } catch (e) {}
+    }
+  }
+
+  /* ---------- Image-gen disabled hint + pre-flight feedback ---------- */
+  function wireImageGenHint() {
+    var hint = document.getElementById('image-gen-hint');
+    var btn = document.getElementById('image-generate-btn');
+    var goal = document.getElementById('goal');
+    if (!hint || !btn || !goal) return;
+
+    function isReady() {
+      return (goal.value || '').trim().length > 0;
+    }
+    function sync() {
+      var ready = isReady();
+      if (ready) {
+        hint.classList.remove('is-shown');
+        btn.removeAttribute('aria-disabled');
+      } else {
+        hint.classList.add('is-shown');
+        btn.setAttribute('aria-disabled', 'true');
+      }
+    }
+    goal.addEventListener('input', sync);
+    goal.addEventListener('change', sync);
+    /* Surprise Me / Dice Idea Generator fills the goal — listen for it. */
+    var dice = document.getElementById('random-prompt');
+    if (dice) {
+      dice.addEventListener('click', function () {
+        /* Defer one tick so the random handler has populated the field. */
+        setTimeout(sync, 50);
+        setTimeout(sync, 250);
+      });
+    }
+    sync();
+
+    /* Pre-flight click handler: if the button is gated, swallow the click
+       and surface the hint loudly. Otherwise let runImageGeneration run
+       and ensure #imageResultSection is visible + scrolled-to with the
+       loading state instantly (the existing handler also does this with
+       a 150ms timeout — we make it instant). */
+    btn.addEventListener('click', function (ev) {
+      if (!isReady()) {
+        ev.preventDefault();
+        ev.stopImmediatePropagation();
+        hint.classList.add('is-shown');
+        try { hint.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+        try { goal.focus(); } catch (e) {}
+        return;
+      }
+      var sec = document.getElementById('imageResultSection');
+      var wrap = document.getElementById('imageResultWrap');
+      if (sec) { sec.hidden = false; }
+      if (wrap && !wrap.querySelector('img')) {
+        wrap.innerHTML =
+          '<div class="image-generating-state">' +
+            '<div class="image-spinner" aria-hidden="true"></div>' +
+            '<span><strong>Generating Image</strong><br><small>Usually about 10 seconds — feel free to wait or come back.</small></span>' +
+          '</div>';
+      }
+      try {
+        if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (e) {}
+    }, true);
+  }
+
+  /* ---------- Density: collapsible Prompt Vault on first visit ---------- */
+  function wireVaultDisclosure() {
+    var section = document.getElementById('history');
+    if (!section) return;
+    var panel = section.querySelector('.panel');
+    if (!panel || panel.querySelector('.pmg-vault-toggle')) return;
+
+    var toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'pmg-vault-toggle';
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.innerHTML = '<span aria-hidden="true">▾</span> <span class="pmg-vault-toggle-label">Show Prompt Vault</span>';
+
+    function setExpanded(expanded) {
+      panel.classList.toggle('pmg-vault-collapsed', !expanded);
+      toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+      var label = toggle.querySelector('.pmg-vault-toggle-label');
+      if (label) label.textContent = expanded ? 'Hide Prompt Vault' : 'Show Prompt Vault';
+      try { localStorage.setItem(VAULT_DISCLOSURE_KEY, expanded ? '1' : '0'); } catch (e) {}
+    }
+
+    var head = panel.querySelector('.panel-head');
+    if (head && head.parentNode === panel) {
+      head.appendChild(toggle);
+    } else {
+      panel.insertBefore(toggle, panel.firstChild);
+    }
+
+    toggle.addEventListener('click', function () {
+      var nowExpanded = panel.classList.contains('pmg-vault-collapsed');
+      setExpanded(nowExpanded);
+    });
+
+    /* Default-collapsed on first visit; honor user preference on returns. */
+    var saved = null;
+    try { saved = localStorage.getItem(VAULT_DISCLOSURE_KEY); } catch (e) {}
+    setExpanded(saved === '1');
+  }
+
+  function init() {
+    injectStyles();
+    reorderResultCluster();
+    wireImageGenHint();
+    wireVaultDisclosure();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+  /* Late re-run, mirroring other phases, in case downstream scripts
+     replace any of these nodes after their initial render. */
+  setTimeout(init, 800);
+  setTimeout(init, 1800);
+})();

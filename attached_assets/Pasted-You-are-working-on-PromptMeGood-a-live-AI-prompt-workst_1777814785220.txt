@@ -1,0 +1,117 @@
+You are working on PromptMeGood, a live AI prompt workstation.
+
+Goal:
+Reduce first-use friction on the homepage/app without removing functionality, changing backend logic, changing pricing copy/layout, changing title-case strings, or redesigning the visual identity.
+
+What To Fix:
+The homepage currently feels like a dashboard before it feels like a working tool. First-time users should be able to start creating a text prompt within about 10 seconds of landing.
+
+Scope:
+Frontend layout, copy hierarchy, interaction state, scroll behavior, responsive behavior, and action placement only.
+
+Out Of Scope:
+- Title-case cleanup
+- Pricing-page copy or pricing layout
+- Backend changes
+- Visual identity or color-system redesign
+- Removing existing features
+
+Required Changes:
+
+1. First-Use Flow
+- Make the hero “Create A Text Prompt” CTA scroll directly to the active text builder.
+- Focus the “Your Goal” textarea after the scroll completes.
+- If possible, also make “Start Here” and “Go To Start Here” land directly on the active builder, not guide/comparison content.
+- Optional alternative: add a compact “Start Here” prompt input above the fold, but do not create duplicate state problems.
+
+Acceptance:
+- A new user can reach the text prompt input and start typing within about 10 seconds.
+- CTA behavior is consistent on desktop and mobile.
+- The first-use path does not stop at comparison, guide, dashboard, pricing, account, or saved-work sections.
+
+2. Mobile Prompt Tuning
+- Collapse advanced tuning by default on mobile.
+- Use a disclosure labeled “Customize Output.”
+- The default mobile flow should show: Your Goal, Help Me Start, Fix My Prompt, and Add A File Or Image.
+- Keep desktop similar to current behavior, but reduce visual weight if needed.
+
+Acceptance:
+- On 390px mobile, advanced controls do not push “Fix My Prompt” far below the first input.
+- Advanced controls expand only when the user opts in.
+- Existing tuning functionality remains intact.
+
+3. Text Prompt Result Hierarchy
+- After “Fix My Prompt,” keep the generated prompt and main actions in one visual region.
+- Place “Run With AI Here,” “Copy Prompt,” and “Improve With AI” directly near the generated prompt.
+- Make “Run With AI Here” the primary action.
+- Keep “Copy Prompt” and “Improve With AI” visually secondary.
+- Keep Accept/Reject suggested changes and Prompt Strength visible but compact.
+- Do not let Prompt Strength or suggestions push the generated prompt/actions below the fold on common desktop and mobile viewports.
+
+Acceptance:
+- After prompt generation, the user immediately sees the generated prompt and what to do next.
+- Run, copy, and improve actions are adjacent to the result.
+- Primary action hierarchy is obvious.
+
+4. Image Generation UX
+- When “Generate Image Here” is disabled, show inline helper text next to or directly below the button.
+- Recommended copy: “Choose A Style Or Tap Surprise Me To Generate.”
+- Hide or update the helper once the button becomes active.
+- Ensure “Surprise Me” visibly changes the image prompt state and activates the generate button.
+- After “Generate Image Here,” scroll or anchor the user to the result area.
+- Show a loading state labeled “Generating Image.”
+- Use non-binding wait copy, such as “This Can Take A Few Moments.”
+- Keep “Save Image To Your Device,” “Generate Another,” and “Copy Prompt” adjacent to the generated image.
+
+Acceptance:
+- Users understand why Generate Image Here is disabled.
+- Users see clear feedback after clicking Generate Image Here.
+- Result actions stay next to the result.
+
+5. Page Density Cleanup
+- Move Workspace analytics, Prompt Vault, saved-work cards, and dashboard-style panels lower on the page or group them behind a “Workspace” tab.
+- Keep the working tool as the first major interactive experience.
+- Keep pricing/account nudges secondary during first-use.
+- Do not remove Prompt Vault or saved-work functionality.
+
+Acceptance:
+- The homepage feels like a working tool before it feels like a dashboard.
+- First-time users are not interrupted by analytics or saved-work panels before their first result.
+
+Verification:
+Restart the PromptMeGood workflow and run the test suite.
+
+Use runTest to verify:
+
+Desktop, 1440px:
+- Fresh user lands on homepage.
+- Hero CTA takes user directly to text builder.
+- “Your Goal” textarea is focused or immediately visible.
+- User enters a goal.
+- User clicks “Fix My Prompt.”
+- Generated prompt appears.
+- “Run With AI Here,” “Copy Prompt,” and “Improve With AI” are visible near the result.
+- “Run With AI Here” is visually primary.
+- User clicks “Run With AI Here.”
+- AI response appears.
+
+Mobile, 390px:
+- No horizontal overflow.
+- Hero CTA or Start Here path reaches the builder quickly.
+- Advanced tuning is collapsed under “Customize Output.”
+- User can type goal and reach “Fix My Prompt” without excessive scrolling.
+- Generated prompt and main actions remain easy to find.
+
+Image Flow:
+- Before style selection, “Generate Image Here” shows the helper: “Choose A Style Or Tap Surprise Me To Generate.”
+- After “Surprise Me,” the helper disappears or changes and the button becomes active.
+- Clicking “Generate Image Here” scrolls/anchors to the result area.
+- “Generating Image” loading state appears.
+- Final image result keeps “Save Image To Your Device,” “Generate Another,” and “Copy Prompt” adjacent to the image.
+
+Do Not:
+- Change pricing page work.
+- Change title-case strings unless required by the new labels above.
+- Change backend APIs.
+- Remove existing features.
+- Redesign the brand.
