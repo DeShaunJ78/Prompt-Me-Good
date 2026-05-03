@@ -11719,6 +11719,53 @@
      topbar when the user holds that plan; removes itself for free users.
      Standalone DOM injection (no dependency on T40's collapsible panel)
      so the badge stays visible whether or not the account panel is open. */
+  /* Task #100 — Visible "Trial — N days left" badge.
+     Mirrors the plan-pill design but uses a calmer indigo gradient so it
+     reads as informational, not promotional. Renders only for free-plan
+     users with an active trial; auto-removes itself at trial end or for
+     paid users (their plan pill takes the same slot). */
+  var TRIAL_PILL_ID = 'pmg-header-trial-pill';
+  function renderHeaderTrialPill(trial, plan) {
+    try {
+      var existing = document.getElementById(TRIAL_PILL_ID);
+      var active = trial && trial.active && plan === 'free' &&
+        typeof trial.days_left === 'number' && trial.days_left > 0;
+      if (!active) {
+        if (existing) existing.remove();
+        return;
+      }
+      var pill = existing;
+      if (!pill) {
+        pill = document.createElement('span');
+        pill.id = TRIAL_PILL_ID;
+        pill.style.cssText = [
+          'display:inline-flex',
+          'align-items:center',
+          'gap:6px',
+          'padding:4px 10px',
+          'border-radius:999px',
+          'font:700 11px/1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif',
+          'letter-spacing:0.06em',
+          'text-transform:uppercase',
+          'margin-left:8px',
+          'background:linear-gradient(90deg,#6c8cff 0%,#8b5cf6 100%)',
+          'color:#ffffff',
+          'border:1px solid rgba(0,0,0,0.10)',
+          'box-shadow:0 1px 2px rgba(0,0,0,0.06)',
+          'white-space:nowrap',
+          'vertical-align:middle'
+        ].join(';');
+        var topbar = document.querySelector('.topbar-inner') || document.querySelector('.topbar');
+        if (topbar) topbar.appendChild(pill);
+        else (document.body || document.documentElement).appendChild(pill);
+      }
+      var dl = trial.days_left;
+      pill.textContent = '\u23F3 Trial \u2014 ' + dl + ' day' + (dl === 1 ? '' : 's') + ' left';
+      pill.setAttribute('data-trial-days-left', String(dl));
+      pill.setAttribute('aria-label', 'Free trial: ' + dl + ' day' + (dl === 1 ? '' : 's') + ' remaining');
+    } catch (_) {}
+  }
+
   var HEADER_PILL_ID = 'pmg-header-plan-pill';
   function renderHeaderPlanPill(plan) {
     try {
@@ -11782,6 +11829,9 @@
        the collapsed account panel. Removes itself when the user is on the
        free plan. */
     try { renderHeaderPlanPill(profile.plan); } catch (_) {}
+    /* Task #100 — Trial countdown pill driven by server-authoritative
+       trial.days_left from /api/me/profile (anchored to auth.users.created_at). */
+    try { renderHeaderTrialPill(profile.trial, profile.plan); } catch (_) {}
     /* Re-run the price renderer in case profile-driven content
        (account panel, history) added new data-pmg-price nodes. */
     try { pmgRenderConfigDrivenPrices(); } catch (_) {}

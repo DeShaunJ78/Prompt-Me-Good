@@ -3,6 +3,7 @@ import healthRouter from "./health";
 import aiRouter from "./ai";
 import reviewRouter from "./review";
 import publicConfigRouter from "./public-config";
+import pricingConfigRouter from "./pricing-config";
 import billingRouter from "./billing";
 
 const router: IRouter = Router();
@@ -10,6 +11,7 @@ const router: IRouter = Router();
 router.use(healthRouter);
 router.use(aiRouter);
 router.use(publicConfigRouter);
+router.use(pricingConfigRouter);
 router.use(billingRouter);
 
 // Dev-only Claude code-review endpoint. Mounted only when NODE_ENV !==

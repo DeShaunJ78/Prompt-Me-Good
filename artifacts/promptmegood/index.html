@@ -10594,7 +10594,10 @@ Context:
     parsing from blocking on the network round-trip.
   -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-  <script src="/scripts/pmg-pricing-config.js?v=task100" defer></script>
+  <!-- Canonical pricing config: rendered server-side from api-server/src/lib/pricing-config.ts.
+       The static file at /scripts/pmg-pricing-config.js is kept only as a no-JS / api-down
+       fallback; the real source of truth is the backend route below. -->
+  <script src="/api/pricing-config.js?v=task100" defer></script>
   <script src="/scripts/pmg-ux.js?v=task100" defer></script>
   <script src="/scripts/post-spec.js" defer></script>
   <script src="/scripts/pmg-image-fix.js?v=img-progress-2" defer></script>
