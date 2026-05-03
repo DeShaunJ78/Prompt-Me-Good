@@ -37,7 +37,18 @@
     if (localStorage.getItem('pmg_disable') === '1') return;
   } catch (_) {}
 
-  var VERSION = 'task92-1';
+  var VERSION = 'task93-1';
+
+  /* -------------------------------------------------------------
+   * Analytics — safe no-op if pmg-analytics.js is absent / blocked.
+   * ----------------------------------------------------------- */
+  function emit(name, payload) {
+    try {
+      if (typeof window.__pmgTrack === 'function') {
+        window.__pmgTrack(name, payload || {});
+      }
+    } catch (_) {}
+  }
 
   /* -------------------------------------------------------------
    * Intent detection
@@ -427,6 +438,16 @@
     panel.addEventListener('click', function (e) {
       var btn = e.target.closest && e.target.closest('[data-wn-action]');
       if (!btn) return;
+      try {
+        emit('pmg_what_next_clicked', {
+          source: (panelId === 'pmg-wn-image') ? 'image_result' : 'text_result',
+          bucket: (opts && opts.bucket) || 'creative-visual',
+          crisis: !!(opts && opts.crisis),
+          action: btn.getAttribute('data-wn-action') || '',
+          label:  (btn.textContent || '').trim().slice(0, 60),
+          ts:     new Date().toISOString()
+        });
+      } catch (_) {}
       var key = btn.getAttribute('data-wn-action');
       if (!key) return;
       runAction(key);
@@ -486,8 +507,15 @@
       title,
       helperFor(intent, false),
       actions,
-      { crisis: intent.crisis }
+      { crisis: intent.crisis, bucket: intent.bucket }
     );
+    emit('pmg_what_next_shown', {
+      source: 'text_result',
+      bucket: intent.bucket,
+      crisis: !!intent.crisis,
+      action_count: actions.length,
+      ts:     new Date().toISOString()
+    });
     /* Place after the action row in the AI response section so it
        sits right under "Copy Response / Run Again". */
     var actionsRow = section.querySelector('.ai-response-actions');
@@ -524,8 +552,15 @@
       'What Next?',
       helperFor({ bucket: 'creative-visual' }, true),
       actions,
-      { crisis: false }
+      { crisis: false, bucket: 'creative-visual' }
     );
+    emit('pmg_what_next_shown', {
+      source: 'image_result',
+      bucket: 'creative-visual',
+      crisis: false,
+      action_count: actions.length,
+      ts:     new Date().toISOString()
+    });
     var actionsRow = section.querySelector('.image-result-actions');
     if (actionsRow && actionsRow.parentNode === section) {
       section.insertBefore(panel, actionsRow.nextSibling);
