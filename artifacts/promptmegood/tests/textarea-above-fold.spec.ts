@@ -262,6 +262,24 @@ for (const vp of VIEWPORTS) {
       ).not.toBeEmpty({ timeout: 10_000 });
     });
 
+  });
+
+  // Image mode is split out into its own describe block because, unlike text
+  // mode, it does NOT today guarantee a real input above the fold (the
+  // canonical #goal is intentionally hidden by the image-mode flow, the
+  // actual image-prompt textarea sits just below the 800px fold, and the
+  // visible above-fold band is the styled <p class="image-mode-hint">
+  // banner — not a typing surface). The tests below therefore guard the
+  // narrower image-mode invariants we own today: (1) entering image mode
+  // must not auto-scroll the page, and (2) the image-mode generate path
+  // stays wired (button in DOM + runtime function registered). Follow-up
+  // Task #120 tracks the actual UX work to bring the image-prompt input
+  // above the fold; once that lands, these guards should be tightened to
+  // also assert above-fold input visibility under a renamed describe
+  // block. Naming this describe "image mode homepage regression guards"
+  // (not "textarea above the fold") prevents future readers from assuming
+  // image mode meets the same above-fold contract that text mode does.
+  test.describe(`image mode homepage regression guards @ ${vp.name}`, () => {
     test(`image mode does not pre-scroll the page on first load (${vp.name})`, async ({
       page,
     }) => {
