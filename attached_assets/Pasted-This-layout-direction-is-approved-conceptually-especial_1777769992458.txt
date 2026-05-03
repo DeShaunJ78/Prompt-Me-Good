@@ -1,0 +1,119 @@
+This layout direction is approved conceptually, especially the Text ↔ Image bridge shown in Mockup 4 and the Photography Suite → Live Prompt Preview flow shown in Mockup 3.
+
+Important: Do Not Rebuild The Site Or Replace The Current Linear Flow.
+
+Preserve the existing user paths:
+1. Create A Text Prompt
+2. Create An Image Prompt
+3. Optional Workstation Bridge After Results
+
+The goal is not to force every user into a combined workstation. The goal is to let users stay in one lane if they want, then reveal smart bridge actions after a result.
+
+Implement the synergy as post-result actions, not as required pre-generation steps.
+
+Core Pattern:
+Text Result → Optional Image Brief → Generate Companion Image
+Image Result → Optional Text Output → Caption / Post / Explanation
+
+For Text Prompt Results:
+After the AI response/result, add a section titled:
+What Next?
+
+Actions should adapt to intent.
+
+For creative, business, writing, or social/content prompts, show:
+- Make A Hero Image
+- Create Caption
+- Turn Into Social Post
+- Improve Prompt
+
+For practical, sensitive, urgent, or life-problem prompts, do NOT prioritize image.
+Show:
+- Turn Into Action Plan
+- Add Local Details
+- Make This Step-By-Step
+- Write Message Asking For Help
+
+For image/visual prompts, show:
+- Render As Image
+- Add Lighting Style
+- Create Variations
+- Write Caption
+
+For Image Results:
+After the generated image and Download / Generate Another actions, add:
+What Next?
+
+Show:
+- Write Text For This Image
+- Create Caption
+- Generate Another Style
+- Use As Reference
+
+Add Lightweight Intent Detection:
+Detect intent silently from the user’s text.
+Do not add a required dropdown.
+Do not make users choose intent before generating.
+
+Intent categories:
+- Creative / Visual
+- Business / Money
+- Writing / Social
+- Practical / Sensitive
+- General
+
+Sensitive/practical keywords include:
+homeless, sleeping in my car, eviction, unsafe, emergency, crisis, food, shelter, rent, job, no money, need help.
+
+If sensitive/practical is detected:
+- Use calm, helpful copy.
+- Prioritize practical next actions.
+- Do not push image generation as a primary next step.
+- If immediate danger language is present, show:
+If You Are In Immediate Danger, Contact Local Emergency Services.
+
+Text → Image Bridge:
+If user clicks Make A Hero Image:
+- Build an editable image brief from the text result or optimized prompt.
+- Prefill the existing Photography/Image flow.
+- Let the user edit the image brief before generating.
+- Then use the existing DALL·E 3 generation flow.
+- Do not create a new image backend.
+
+Image → Text Bridge:
+If user clicks Write Text For This Image or Create Caption:
+- Use the existing text/AI response flow.
+- Generate text based on the image prompt, selected style chips, and any available image context.
+- Do not claim actual image understanding unless the app is analyzing the image.
+
+Live Prompt Preview:
+Approved if it does not add friction.
+It should update as the user types or selects Photography Suite pills.
+It should not replace the existing result.
+It should not require an extra step before Fix My Prompt or Generate Image.
+
+Do Not Add:
+- Required Workstation Mode before first use
+- More choices before the user’s first generation
+- A forced two-column desktop rebuild if it risks breaking mobile/anchors
+- Fake features like AI Verdict, Action Plans, Full Suite Rendering, Prompt Chains, or Transform Studio unless they are actually implemented
+
+Naming:
+Use “Prompt Workstation” as product positioning.
+Use “Photography Suite” consistently, not Photography Studio.
+Use “Make A Hero Image” for text-to-image bridge.
+Use “Write Text For This Image” for image-to-text bridge.
+Use “Export As Pair” only if the export actually works.
+
+Title Case:
+All buttons, section titles, cards, labels, pills, badges, and helper text attached to controls must use Title Case.
+
+QA:
+- Text-only users can still generate and stop there.
+- Image-only users can still generate and stop there.
+- Workstation bridge appears only after a result.
+- Sensitive/practical prompts do not get image-first suggestions.
+- Creative/business/social prompts do get image bridge suggestions.
+- No backend/API/Stripe/Supabase logic is changed unless required.
+- No console errors.
+- Mobile remains linear with no horizontal overflow.
