@@ -498,20 +498,22 @@
 
       '.' + MENU_CLASS + ' {',
       '  position: absolute; top: calc(100% + 6px); right: 0;',
-      '  min-width: 220px; padding: 6px;',
+      '  min-width: 260px;',
+      '  max-width: min(320px, calc(100vw - 24px));',
+      '  padding: 6px;',
       '  background: var(--color-surface);',
       '  border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);',
       '  border-radius: var(--radius-md, 12px);',
       '  box-shadow: var(--shadow-md, 0 10px 30px rgba(0,0,0,.12));',
-      '  z-index: 50; display: none;',
+      '  z-index: 200; display: none;',
       '}',
       '.' + MENU_CLASS + '.is-open { display: block; }',
       '.' + MENU_CLASS + ' button {',
-      '  display: flex; align-items: center; justify-content: space-between;',
-      '  width: 100%; gap: 12px;',
+      '  display: flex; flex-direction: column; align-items: stretch;',
+      '  width: 100%; gap: 4px;',
       '  background: transparent; color: var(--color-text);',
       '  border: none; border-radius: 8px;',
-      '  padding: 10px 12px; min-height: 40px;',
+      '  padding: 10px 12px; min-height: 44px;',
       '  font-size: var(--text-sm, 14px); font-weight: 600;',
       '  text-align: left; cursor: pointer;',
       '}',
@@ -519,14 +521,22 @@
       '  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface));',
       '  outline: none;',
       '}',
+      '.' + MENU_CLASS + ' .pmg-send-to-row {',
+      '  display: flex; align-items: center; justify-content: space-between;',
+      '  gap: 8px; width: 100%;',
+      '}',
+      '.' + MENU_CLASS + ' .pmg-send-to-label-text {',
+      '  white-space: nowrap; flex: 1 1 auto;',
+      '}',
       '.' + MENU_CLASS + ' .pmg-send-to-meta {',
       '  font-size: 11px; font-weight: 500; color: var(--color-text-muted);',
+      '  white-space: normal; line-height: 1.35;',
       '}',
       '.' + MENU_CLASS + ' .pmg-send-to-last-tag {',
       '  font-size: 10px; font-weight: 700; letter-spacing: 0.06em;',
       '  text-transform: uppercase; color: var(--color-primary);',
       '  background: color-mix(in srgb, var(--color-primary) 12%, transparent);',
-      '  padding: 2px 6px; border-radius: 999px;',
+      '  padding: 2px 6px; border-radius: 999px; flex: 0 0 auto;',
       '}',
 
       '.pmg-send-to-toast {',
@@ -711,12 +721,15 @@
     DEST_ORDER.forEach(function (key) {
       var d = DESTS[key];
       var meta = d.prefill ? 'Prefills your prompt' : 'Copies your prompt';
-      var lastTag = key === last
-        ? '<span class="pmg-send-to-last-tag">Last Used</span>'
-        : '<span class="pmg-send-to-meta">' + meta + '</span>';
+      var isLast = key === last;
+      var rowExtra = isLast ? '<span class="pmg-send-to-last-tag">Last Used</span>' : '';
+      var metaLine = isLast ? '' : '<span class="pmg-send-to-meta">' + meta + '</span>';
       html += '<button type="button" role="menuitem" data-pmg-send="' + key + '">' +
-        '<span>' + d.label + '</span>' +
-        lastTag +
+        '<span class="pmg-send-to-row">' +
+          '<span class="pmg-send-to-label-text">' + d.label + '</span>' +
+          rowExtra +
+        '</span>' +
+        metaLine +
         '</button>';
     });
     menu.innerHTML = html;
@@ -788,12 +801,15 @@
     IMG_DEST_ORDER.forEach(function (key) {
       var d = IMG_DESTS[key];
       var meta = d.meta || (d.prefill ? 'Prefills your prompt' : 'Copies your prompt');
-      var lastTag = key === last
-        ? '<span class="pmg-send-to-last-tag">Last Used</span>'
-        : '<span class="pmg-send-to-meta">' + meta + '</span>';
+      var isLast = key === last;
+      var rowExtra = isLast ? '<span class="pmg-send-to-last-tag">Last Used</span>' : '';
+      var metaLine = isLast ? '' : '<span class="pmg-send-to-meta">' + meta + '</span>';
       html += '<button type="button" role="menuitem" data-pmg-send-image="' + key + '">' +
-        '<span>' + d.label + '</span>' +
-        lastTag +
+        '<span class="pmg-send-to-row">' +
+          '<span class="pmg-send-to-label-text">' + d.label + '</span>' +
+          rowExtra +
+        '</span>' +
+        metaLine +
         '</button>';
     });
     menu.innerHTML = html;
