@@ -9482,6 +9482,18 @@
       '    padding: 14px 16px !important;',
       '    min-height: 48px;',
       '  }',
+      /* Promote the inline emoji icon at the start of each group head
+         into a proper icon chip so the section reads as a curated
+         panel rather than text with stray emoji. The emoji lives in
+         <span aria-hidden="true"> as the first child of the head. */
+      '  #pmg-photo-suite .pmg-photo-group-head > span:first-child > span[aria-hidden="true"]:first-child {',
+      '    display: inline-flex; align-items: center; justify-content: center;',
+      '    width: 28px; height: 28px;',
+      '    margin-right: 8px;',
+      '    border-radius: 8px;',
+      '    background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));',
+      '    font-size: 16px; line-height: 1;',
+      '  }',
       '}',
       /* Selected-state ring — covers both the new Suite class
          (.is-active) and the legacy .selected / aria-pressed states.
