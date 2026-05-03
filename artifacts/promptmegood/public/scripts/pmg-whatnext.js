@@ -1,0 +1,557 @@
+/* =============================================================
+ * pmg-whatnext.js  (Task #92)
+ *
+ * Adaptive "What Next?" panel — appears AFTER a successful result
+ * (text or image). Pure layer-on-top: never appears before first
+ * generation, never moves any existing element, never changes any
+ * backend / Stripe / Supabase / API logic. All actions reuse
+ * existing handlers (Fix My Prompt, Improve With AI, Run With AI,
+ * Photography Suite, window.__pmgHandoff).
+ *
+ * Intent buckets (detected silently from goal text):
+ *   - creative-visual   → visual / design language
+ *   - business-marketing
+ *   - writing-social
+ *   - practical-sensitive (e.g. homeless, eviction, no money, crisis)
+ *   - general (fallback)
+ *
+ * Crisis sub-flag (immediate danger language) shows a calm safety
+ * line above the buttons. Practical/sensitive prompts NEVER get
+ * image-first suggestions.
+ *
+ * Disable hatches:
+ *   ?nowhatnext              query param
+ *   localStorage.pmg_whatnext_disable = '1'
+ *   localStorage.pmg_disable          = '1'
+ * ============================================================= */
+(function () {
+  'use strict';
+  if (window.__pmgWhatNextLoaded) return;
+  window.__pmgWhatNextLoaded = true;
+
+  /* ---- Disable hatches ---- */
+  try {
+    var qs = (window.location && window.location.search) || '';
+    if (/[?&]nowhatnext\b/.test(qs)) return;
+    if (localStorage.getItem('pmg_whatnext_disable') === '1') return;
+    if (localStorage.getItem('pmg_disable') === '1') return;
+  } catch (_) {}
+
+  var VERSION = 'task92-1';
+
+  /* -------------------------------------------------------------
+   * Intent detection
+   * ----------------------------------------------------------- */
+  var SENSITIVE_KW = [
+    'homeless', 'sleeping in my car', 'sleep in my car', 'eviction', 'evicted',
+    'unsafe', 'emergency', 'crisis', 'food bank', 'shelter', 'no shelter',
+    'rent due', 'cant pay rent', "can't pay rent", 'cant afford', "can't afford",
+    'no money', 'broke', 'lost my job', 'no job', 'need help', 'need a job',
+    'starving', 'no food', 'hungry', 'utilities shut off', 'power shut off',
+    'domestic violence', 'abuse', 'abused', 'abusive', 'scared',
+    'cant feed', "can't feed", 'foreclosure'
+  ];
+  var CRISIS_KW = [
+    'suicide', 'suicidal', 'kill myself', 'killing myself', 'end my life',
+    'want to die', 'hurt myself', 'self harm', 'self-harm',
+    'in immediate danger', 'in danger', 'going to hurt', 'about to hurt',
+    'overdose', 'overdosing'
+  ];
+  var VISUAL_KW = [
+    'image', 'photo', 'photograph', 'picture', 'illustration', 'logo',
+    'poster', 'thumbnail', 'render', 'artwork', 'painting', 'mockup',
+    'banner', 'graphic', 'design a', 'design an', 'icon', 'avatar',
+    'portrait', 'wallpaper', 'cover art', 'album cover'
+  ];
+  var BUSINESS_KW = [
+    'launch', 'product', 'customer', 'campaign', 'ad copy', 'landing page',
+    'pitch', 'deck', 'proposal', 'revenue', 'sales', 'marketing',
+    'startup', 'brand', 'pricing', 'cold email', 'lead gen', 'b2b',
+    'investor', 'roadmap'
+  ];
+  var WRITING_KW = [
+    'write', 'post', 'tweet', 'linkedin', 'instagram', 'facebook',
+    'blog', 'article', 'newsletter', 'caption', 'story', 'essay',
+    'email', 'copy', 'headline', 'tagline', 'social media',
+    'announce', 'announcement'
+  ];
+
+  function hasAny(text, list) {
+    if (!text) return false;
+    var t = text.toLowerCase();
+    for (var i = 0; i < list.length; i++) {
+      if (t.indexOf(list[i]) !== -1) return true;
+    }
+    return false;
+  }
+
+  function detectIntent(text) {
+    if (hasAny(text, CRISIS_KW))    return { bucket: 'practical-sensitive', crisis: true };
+    if (hasAny(text, SENSITIVE_KW)) return { bucket: 'practical-sensitive', crisis: false };
+    if (hasAny(text, VISUAL_KW))    return { bucket: 'creative-visual',     crisis: false };
+    if (hasAny(text, BUSINESS_KW))  return { bucket: 'business-marketing',  crisis: false };
+    if (hasAny(text, WRITING_KW))   return { bucket: 'writing-social',      crisis: false };
+    return { bucket: 'general', crisis: false };
+  }
+
+  /* -------------------------------------------------------------
+   * DOM helpers
+   * ----------------------------------------------------------- */
+  function $id(id) { return document.getElementById(id); }
+  function getGoalText() {
+    var g = $id('goal');
+    return g ? (g.value || '').trim() : '';
+  }
+  function getResponseText() {
+    var r = $id('aiResponseOutput');
+    if (!r) return '';
+    return (r.textContent || '').trim();
+  }
+  function showToast(msg) {
+    if (typeof window.showToast === 'function') {
+      try { window.showToast(msg); return; } catch (_) {}
+    }
+    try { console.info('[pmg-whatnext]', msg); } catch (_) {}
+  }
+  function smoothScrollTo(el) {
+    if (!el) return;
+    try { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {
+      try { el.scrollIntoView(); } catch (__) {}
+    }
+  }
+  function softHighlight(el) {
+    if (!el) return;
+    el.classList.add('pmg-wn-highlight');
+    setTimeout(function () { el.classList.remove('pmg-wn-highlight'); }, 1800);
+  }
+  function trim(text, max) {
+    text = String(text || '').replace(/\s+/g, ' ').trim();
+    if (text.length <= max) return text;
+    return text.slice(0, max - 1).trim() + '…';
+  }
+
+  /* -------------------------------------------------------------
+   * Styles
+   * ----------------------------------------------------------- */
+  function injectStyles() {
+    if ($id('pmg-wn-styles')) return;
+    var s = document.createElement('style');
+    s.id = 'pmg-wn-styles';
+    s.textContent = [
+      '.pmg-wn-panel{margin-top:20px;padding:20px 18px;border:1px solid var(--color-divider,#e5e0d8);',
+      '  border-radius:14px;background:var(--color-surface,#fbf9f5);}',
+      '.pmg-wn-panel[hidden]{display:none!important;}',
+      '.pmg-wn-eyebrow{font-size:11px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;',
+      '  color:var(--color-primary,#0f766e);margin:0 0 4px;}',
+      '.pmg-wn-title{margin:0 0 4px;font-size:18px;font-weight:800;color:var(--color-text,#1f1f1f);}',
+      '.pmg-wn-helper{margin:0 0 14px;font-size:13px;color:var(--color-text-muted,#6b6b6b);line-height:1.5;}',
+      '.pmg-wn-safety{margin:0 0 14px;padding:10px 12px;border-radius:10px;',
+      '  background:#fff4e0;border:1px solid #e6c79a;font-size:13px;color:#5a3d10;line-height:1.5;}',
+      '.pmg-wn-safety strong{color:#3d2807;}',
+      '.pmg-wn-actions{display:flex;flex-wrap:wrap;gap:10px;}',
+      '.pmg-wn-btn{flex:1 1 auto;min-height:44px;padding:10px 16px;border-radius:10px;',
+      '  border:1px solid var(--color-border,#d4cfc4);background:#fff;color:var(--color-text,#1f1f1f);',
+      '  font:inherit;font-weight:600;font-size:14px;cursor:pointer;text-align:center;',
+      '  transition:transform .12s ease,border-color .12s ease,background .12s ease;',
+      '  white-space:normal;line-height:1.25;}',
+      '.pmg-wn-btn:hover,.pmg-wn-btn:focus-visible{border-color:var(--color-primary,#0f766e);',
+      '  color:var(--color-primary,#0f766e);outline:none;}',
+      '.pmg-wn-btn.is-primary{background:var(--color-primary,#0f766e);color:#fff;',
+      '  border-color:var(--color-primary,#0f766e);}',
+      '.pmg-wn-btn.is-primary:hover,.pmg-wn-btn.is-primary:focus-visible{filter:brightness(1.05);color:#fff;}',
+      '.pmg-wn-btn:active{transform:translateY(1px);}',
+      '@media (max-width:540px){',
+      '  .pmg-wn-actions{flex-direction:column;gap:8px;}',
+      '  .pmg-wn-btn{flex:1 1 100%;width:100%;min-height:48px;}',
+      '  .pmg-wn-panel{padding:16px 14px;margin-top:16px;}',
+      '}',
+      '.pmg-wn-highlight{box-shadow:0 0 0 3px rgba(15,118,110,0.35),0 0 24px rgba(15,118,110,0.15)!important;',
+      '  transition:box-shadow .35s ease;border-radius:14px;}',
+      '@media (prefers-reduced-motion:reduce){',
+      '  .pmg-wn-btn{transition:none;}',
+      '  .pmg-wn-highlight{transition:none;}',
+      '}'
+    ].join('\n');
+    document.head.appendChild(s);
+  }
+
+  /* -------------------------------------------------------------
+   * Action button menus
+   * ----------------------------------------------------------- */
+  function getTextActions(intent) {
+    if (intent.bucket === 'practical-sensitive') {
+      return [
+        { key: 'action-plan',    label: 'Turn Into Action Plan',    primary: true  },
+        { key: 'step-by-step',   label: 'Make This Step-By-Step',   primary: false },
+        { key: 'local-details',  label: 'Add Local Details',        primary: false },
+        { key: 'ask-for-help',   label: 'Write Message Asking For Help', primary: false }
+      ];
+    }
+    if (intent.bucket === 'creative-visual') {
+      return [
+        { key: 'hero-image',     label: 'Make A Hero Image', primary: true  },
+        { key: 'create-caption', label: 'Create Caption',    primary: false },
+        { key: 'improve-prompt', label: 'Improve Prompt',    primary: false }
+      ];
+    }
+    if (intent.bucket === 'business-marketing' || intent.bucket === 'writing-social') {
+      return [
+        { key: 'hero-image',     label: 'Make A Hero Image',  primary: true  },
+        { key: 'create-caption', label: 'Create Caption',     primary: false },
+        { key: 'improve-prompt', label: 'Improve Prompt',     primary: false }
+      ];
+    }
+    /* general fallback — give the bridge but downplay it */
+    return [
+      { key: 'improve-prompt', label: 'Improve Prompt',    primary: true  },
+      { key: 'hero-image',     label: 'Make A Hero Image', primary: false },
+      { key: 'create-caption', label: 'Create Caption',    primary: false }
+    ];
+  }
+
+  function getImageActions() {
+    /* Image results never get the sensitive variant — image gen is
+       not used for crisis prompts. Always show the bridge trio. */
+    return [
+      { key: 'write-text-for-image', label: 'Write Text For This Image', primary: true  },
+      { key: 'create-caption-image', label: 'Create Caption',            primary: false },
+      { key: 'another-style',        label: 'Generate Another Style',    primary: false }
+    ];
+  }
+
+  /* -------------------------------------------------------------
+   * Action handlers
+   * ----------------------------------------------------------- */
+  function clickIfPresent(id) {
+    var el = $id(id);
+    if (el && typeof el.click === 'function') { el.click(); return true; }
+    return false;
+  }
+
+  function seedGoalAndNudge(text, nudgeMsg) {
+    var g = $id('goal');
+    if (!g) return;
+    g.value = text;
+    try { g.dispatchEvent(new Event('input', { bubbles: true })); } catch (_) {}
+    try { g.dispatchEvent(new Event('change', { bubbles: true })); } catch (_) {}
+    smoothScrollTo(g);
+    setTimeout(function () { try { g.focus(); } catch (_) {} }, 350);
+    showToast(nudgeMsg || 'Updated Your Goal — Tap Fix My Prompt');
+  }
+
+  function actionHeroImage() {
+    /* Prefer the existing handoff API (mode switch + pill seed). */
+    try {
+      var api = window.__pmgHandoff;
+      if (api && typeof api.textToImage === 'function') {
+        api.textToImage();
+      }
+    } catch (_) {}
+    /* Then scroll to and softly highlight the photo suite so the
+       user can review/edit the brief before generating. */
+    setTimeout(function () {
+      var suite = $id('pmg-photo-suite');
+      if (suite) {
+        smoothScrollTo(suite);
+        softHighlight(suite);
+        return;
+      }
+      /* Fallback — toggle photo mode and scroll to its checkbox area. */
+      var pm = $id('photoMode');
+      if (pm && !pm.checked) {
+        pm.checked = true;
+        try { pm.dispatchEvent(new Event('change', { bubbles: true })); } catch (_) {}
+      }
+      if (pm) smoothScrollTo(pm);
+    }, 100);
+    showToast('Image Brief Ready — Review And Tap Generate Image');
+  }
+
+  function actionWriteTextForImage() {
+    try {
+      var api = window.__pmgHandoff;
+      if (api && typeof api.imageToText === 'function') {
+        api.imageToText();
+      }
+    } catch (_) {}
+    /* Fallback / supplement: seed the goal with a write-about-this
+       prompt so even users without the handoff API get a useful
+       starting point. */
+    var brief = '';
+    try {
+      var ip = $id('imagePromptOutput') || $id('aiResponseOutput');
+      if (ip) brief = (ip.textContent || '').trim();
+    } catch (_) {}
+    if (!brief) brief = getGoalText();
+    var seed = 'Write A Short, Vivid Description Of An Image Featuring: ' +
+               trim(brief, 240) +
+               '. Use Plain, Sensory Language. Two To Three Sentences.';
+    var g = $id('goal');
+    /* Only re-seed if the handoff didn't already populate the goal. */
+    if (g && (!g.value || g.value.trim().length < 10)) {
+      seedGoalAndNudge(seed, 'Updated Your Goal — Tap Fix My Prompt');
+    } else {
+      smoothScrollTo(g);
+      showToast('Switched To Text Mode — Edit And Tap Fix My Prompt');
+    }
+  }
+
+  function actionImproveprompt() {
+    /* Re-use the existing Improve With AI button — no new pattern. */
+    if (clickIfPresent('improve-with-ai-btn')) {
+      var btn = $id('improve-with-ai-btn');
+      if (btn) smoothScrollTo(btn);
+      return;
+    }
+    /* Fallback: click the in-house Fix My Prompt button. */
+    clickIfPresent('generateBtn');
+    var gen = $id('generateBtn');
+    if (gen) smoothScrollTo(gen);
+  }
+
+  function actionCreateCaption(fromImage) {
+    var source = fromImage
+      ? trim(($id('imageResultWrap') && $id('imageResultWrap').textContent) || getGoalText(), 240)
+      : trim(getResponseText() || getGoalText(), 240);
+    if (!source) source = getGoalText();
+    var seed = 'Write A Short, Engaging Social Media Caption (Under 240 Characters) For This Content. ' +
+               'Friendly Tone, One Hook, One Call To Action. Source: ' + source;
+    seedGoalAndNudge(seed);
+  }
+
+  function actionAnotherStyle() {
+    /* Roll new photography pills, then trigger the existing image
+       regenerate handler. */
+    var rolled = false;
+    var surprise = document.querySelector('.pmg-photo-surprise');
+    if (surprise && typeof surprise.click === 'function') {
+      try { surprise.click(); rolled = true; } catch (_) {}
+    }
+    setTimeout(function () {
+      if (!clickIfPresent('imageAgainBtn')) clickIfPresent('imageBtn');
+    }, rolled ? 300 : 50);
+    showToast('Rolling A New Style — Generating…');
+  }
+
+  function actionActionPlan() {
+    var goal = trim(getGoalText(), 280);
+    var resp = trim(getResponseText(), 360);
+    var seed = 'Take My Situation And Turn It Into A Clear Practical Action Plan. ' +
+               'Use Plain Language. Number Each Step. Separate What I Should Do Today From What I Should Do This Week. ' +
+               'List Any Free Or Low-Cost Resources I Can Use. Be Calm And Direct. ' +
+               'My Situation: ' + goal +
+               (resp ? ' Earlier Suggestion I Got: ' + resp : '');
+    seedGoalAndNudge(seed);
+  }
+
+  function actionStepByStep() {
+    var goal = trim(getGoalText(), 280);
+    var resp = trim(getResponseText(), 360);
+    var seed = 'Rewrite The Following Into A Clear Numbered Step-By-Step Plan A Stressed Person Can Follow Today. ' +
+               'One Action Per Step, Plain Language, No Jargon. ' +
+               'Original Goal: ' + goal +
+               (resp ? ' Original Response: ' + resp : '');
+    seedGoalAndNudge(seed);
+  }
+
+  function actionLocalDetails() {
+    var goal = trim(getGoalText(), 280);
+    var seed = 'Adapt The Following To My Local Area. ' +
+               'Suggest Specific Types Of Resources I Should Search For — Shelters, Food Banks, Community Aid, Hotlines, Local Government Offices, Faith Communities. ' +
+               'Tell Me What To Search For And What Questions To Ask. Do Not Invent Specific Phone Numbers. ' +
+               'My Situation: ' + goal;
+    seedGoalAndNudge(seed);
+  }
+
+  function actionAskForHelp() {
+    var goal = trim(getGoalText(), 280);
+    var seed = 'Help Me Write A Short, Dignified Message I Can Send To A Friend, Family Member, Social Worker, Or Local Resource Asking For Help. ' +
+               'Be Specific About What I Need But Not Desperate. Keep It Under 120 Words. Offer Two Versions — One For A Friend, One For A Professional. ' +
+               'My Situation: ' + goal;
+    seedGoalAndNudge(seed);
+  }
+
+  function runAction(key) {
+    switch (key) {
+      case 'hero-image':            return actionHeroImage();
+      case 'write-text-for-image':  return actionWriteTextForImage();
+      case 'improve-prompt':        return actionImproveprompt();
+      case 'create-caption':        return actionCreateCaption(false);
+      case 'create-caption-image':  return actionCreateCaption(true);
+      case 'another-style':         return actionAnotherStyle();
+      case 'action-plan':           return actionActionPlan();
+      case 'step-by-step':          return actionStepByStep();
+      case 'local-details':         return actionLocalDetails();
+      case 'ask-for-help':          return actionAskForHelp();
+    }
+  }
+
+  /* -------------------------------------------------------------
+   * Panel rendering
+   * ----------------------------------------------------------- */
+  function buildPanel(panelId, title, helper, actions, opts) {
+    var existing = $id(panelId);
+    if (existing) existing.parentNode.removeChild(existing);
+
+    var panel = document.createElement('section');
+    panel.id = panelId;
+    panel.className = 'pmg-wn-panel pmg-post-gen';
+    panel.setAttribute('aria-label', title);
+
+    var html = '<p class="pmg-wn-eyebrow">What Next?</p>' +
+               '<h3 class="pmg-wn-title">' + title + '</h3>';
+    if (opts && opts.crisis) {
+      html += '<p class="pmg-wn-safety"><strong>If You Are In Immediate Danger,</strong> ' +
+              'Contact Local Emergency Services. Your Safety Comes First.</p>';
+    }
+    if (helper) {
+      html += '<p class="pmg-wn-helper">' + helper + '</p>';
+    }
+    html += '<div class="pmg-wn-actions" role="group" aria-label="What Next Actions">';
+    actions.forEach(function (a) {
+      html += '<button type="button" class="pmg-wn-btn' + (a.primary ? ' is-primary' : '') +
+              '" data-wn-action="' + a.key + '">' + a.label + '</button>';
+    });
+    html += '</div>';
+    panel.innerHTML = html;
+
+    panel.addEventListener('click', function (e) {
+      var btn = e.target.closest && e.target.closest('[data-wn-action]');
+      if (!btn) return;
+      var key = btn.getAttribute('data-wn-action');
+      if (!key) return;
+      runAction(key);
+    });
+    return panel;
+  }
+
+  function helperFor(intent, isImage) {
+    if (isImage) {
+      return 'Keep going with this image — write a description, draft a caption, or roll a different style.';
+    }
+    if (intent.bucket === 'practical-sensitive') {
+      return 'Take The Answer Above And Turn It Into Something You Can Act On Today.';
+    }
+    if (intent.bucket === 'creative-visual' ||
+        intent.bucket === 'business-marketing' ||
+        intent.bucket === 'writing-social') {
+      return 'Pair Your Words With An Image, Refine It Further, Or Spin Off A Caption.';
+    }
+    return 'Refine This Prompt, Add A Hero Image, Or Spin Off A Caption.';
+  }
+
+  /* -------------------------------------------------------------
+   * Mounting after a result
+   * ----------------------------------------------------------- */
+  function mountTextWhatNext() {
+    var section = $id('aiResponseSection');
+    if (!section || section.hidden) return;
+    var output = $id('aiResponseOutput');
+    if (!output || !output.textContent || !output.textContent.trim()) return;
+
+    var combined = (getGoalText() + '\n' + getResponseText()).slice(0, 4000);
+    var intent = detectIntent(combined);
+    var actions = getTextActions(intent);
+    var title = intent.bucket === 'practical-sensitive'
+      ? 'What Would Help Right Now?'
+      : 'What Next?';
+    var panel = buildPanel(
+      'pmg-wn-text',
+      title,
+      helperFor(intent, false),
+      actions,
+      { crisis: intent.crisis }
+    );
+    /* Place after the action row in the AI response section so it
+       sits right under "Copy Response / Run Again". */
+    var actionsRow = section.querySelector('.ai-response-actions');
+    if (actionsRow && actionsRow.parentNode === section) {
+      section.insertBefore(panel, actionsRow.nextSibling);
+    } else {
+      section.appendChild(panel);
+    }
+  }
+
+  function mountImageWhatNext() {
+    var section = $id('imageResultSection');
+    if (!section || section.hidden) return;
+    var wrap = $id('imageResultWrap');
+    if (!wrap) return;
+    /* Only mount once an actual <img> has rendered (not the placeholder). */
+    if (!wrap.querySelector('img')) return;
+
+    var actions = getImageActions();
+    var panel = buildPanel(
+      'pmg-wn-image',
+      'What Next?',
+      helperFor({ bucket: 'creative-visual' }, true),
+      actions,
+      { crisis: false }
+    );
+    var actionsRow = section.querySelector('.image-result-actions');
+    if (actionsRow && actionsRow.parentNode === section) {
+      section.insertBefore(panel, actionsRow.nextSibling);
+    } else {
+      section.appendChild(panel);
+    }
+  }
+
+  /* -------------------------------------------------------------
+   * Observers — mount only when results actually appear
+   * ----------------------------------------------------------- */
+  function observeResults() {
+    var textSection = $id('aiResponseSection');
+    var imageSection = $id('imageResultSection');
+
+    var debounce = null;
+    function refresh() {
+      if (debounce) clearTimeout(debounce);
+      debounce = setTimeout(function () {
+        try { mountTextWhatNext(); } catch (e) { try { console.warn('[pmg-wn] text mount', e); } catch (_) {} }
+        try { mountImageWhatNext(); } catch (e) { try { console.warn('[pmg-wn] image mount', e); } catch (_) {} }
+      }, 80);
+    }
+
+    if (textSection) {
+      var to = new MutationObserver(refresh);
+      to.observe(textSection, {
+        attributes: true, attributeFilter: ['hidden'],
+        childList: true, subtree: true, characterData: true
+      });
+    }
+    if (imageSection) {
+      var io = new MutationObserver(refresh);
+      io.observe(imageSection, {
+        attributes: true, attributeFilter: ['hidden'],
+        childList: true, subtree: true
+      });
+    }
+    /* One catch-up pass in case content was already rendered before
+       the observers attached. */
+    refresh();
+  }
+
+  /* -------------------------------------------------------------
+   * Boot
+   * ----------------------------------------------------------- */
+  function boot() {
+    injectStyles();
+    observeResults();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot, { once: true });
+  } else {
+    boot();
+  }
+
+  /* -------------------------------------------------------------
+   * Public API for tests
+   * ----------------------------------------------------------- */
+  window.__pmgWhatNext = {
+    version:        VERSION,
+    detectIntent:   detectIntent,
+    mountText:      mountTextWhatNext,
+    mountImage:     mountImageWhatNext,
+    runAction:      runAction
+  };
+})();
