@@ -126,7 +126,8 @@
   }
 
   /* Task 100 — Tiered daily caps:
-       - Founding / Pro  → unlimited (handled by pmgIsPro() short-circuit).
+       - Founding / Pro  → higher fair-use caps (server-enforced via the
+         /me/profile caps matrix — pmg-pro.js prefers those when present).
        - 7-day boosted trial for new visitors → { run:10, img:5, analyze:3 }.
        - Standard free   → { run:3,  img:1, analyze:1 }.
      Trial start is stamped on first encounter into localStorage and
@@ -563,7 +564,7 @@
     var tierWord = pmgInTrial() ? 'Trial' : 'Free';
     var nextText = rem > 0
       ? '(' + rem + ' Of ' + lim + ' ' + tierWord + ' Today)'
-      : '(Daily Limit Reached — Upgrade For Unlimited)';
+      : '(Daily Limit Reached — Upgrade For Higher Daily Caps. Fair Use Limits Apply.)';
     /* Idempotent: only touch DOM when text actually changes. Avoids
        infinite MutationObserver feedback loops. */
     if (hint.textContent !== nextText) hint.textContent = nextText;

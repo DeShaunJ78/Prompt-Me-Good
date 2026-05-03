@@ -2056,7 +2056,7 @@
     var section = document.getElementById('imageResultSection');
     if (!section) return;
     var meta = section.querySelector('.run-section-meta');
-    if (meta) meta.textContent = 'Created With DALL·E 3 · Free tier: 1 image per day. Founding Member: unlimited.';
+    if (meta) meta.textContent = 'Created With DALL·E 3 · Free tier: 1 image per day. Founding Member: 15 per day. Fair use limits apply.';
     var dl = document.getElementById('imageDownloadBtn');
     if (dl) dl.innerHTML = '⬇ Download Image';
     var again = document.getElementById('imageAgainBtn');
@@ -9983,7 +9983,7 @@
  *      (#pmg-t35-use-as-ref-desc — italic, centered, muted)
  *   2. "Download Will Activate Once Your Image Is Ready."
  *      (.pmg-t15-image-hint — left-aligned, default body color)
- *   3. "Created With DALL·E 3 · Free tier: 1 image per day. Founding Member: unlimited."
+ *   3. "Created With DALL·E 3 · Free tier: 1 image per day. Founding Member: 15 per day. Fair use limits apply."
  *      (#imageResultSection .run-section-meta — small, muted)
  * The user wants them centered, uniformed, and intentional — to read
  * as one cohesive footer block matching the rest of the site's calm,
@@ -11665,6 +11665,55 @@
     pmgRenderConfigDrivenPrices();
   }
 
+  /* Task #100 — JSON-LD hydration from canonical PMG_PRICING.
+     Walks every <script type="application/ld+json"> block, parses the
+     JSON, and rewrites Offer.price for the named offers (Founding Member,
+     Pro Monthly, Pro Yearly) plus FAQ answers that reference dollar
+     figures. This makes window.PMG_PRICING the single source of truth
+     even for SEO surfaces — modern search crawlers (Googlebot, Bingbot)
+     execute JS, so they pick up the hydrated values; the literal
+     fallbacks already match config so no-JS crawlers are never wrong. */
+  function pmgHydrateJsonLd() {
+    try {
+      var cfg = window.PMG_PRICING;
+      if (!cfg) return;
+      var founding = String(cfg.FOUNDING_PRICE_USD ?? '79');
+      var proM     = String(cfg.PRO_MONTHLY_USD    ?? '9');
+      var proY     = String(cfg.PRO_YEARLY_USD     ?? '79');
+      var blocks = document.querySelectorAll('script[type="application/ld+json"]');
+      for (var i = 0; i < blocks.length; i++) {
+        var blk = blocks[i];
+        var raw = blk.textContent || '';
+        if (!raw.trim()) continue;
+        var data;
+        try { data = JSON.parse(raw); } catch (_) { continue; }
+        var changed = false;
+        if (data && Array.isArray(data.offers)) {
+          for (var j = 0; j < data.offers.length; j++) {
+            var off = data.offers[j];
+            if (!off || typeof off !== 'object') continue;
+            var nm = String(off.name || '').toLowerCase();
+            if (nm.indexOf('founding') !== -1 && off.price !== founding) {
+              off.price = founding; changed = true;
+            } else if (nm.indexOf('yearly') !== -1 && off.price !== proY) {
+              off.price = proY; changed = true;
+            } else if (nm.indexOf('monthly') !== -1 && off.price !== proM) {
+              off.price = proM; changed = true;
+            }
+          }
+        }
+        if (changed) {
+          try { blk.textContent = JSON.stringify(data, null, 2); } catch (_) {}
+        }
+      }
+    } catch (_) {}
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', pmgHydrateJsonLd, { once: true });
+  } else {
+    pmgHydrateJsonLd();
+  }
+
   /* Task #100 — Always-visible plan pill in the topbar.
      Renders "★ Founding Member" or "★ Pro Member" inline in the global
      topbar when the user holds that plan; removes itself for free users.
@@ -11959,7 +12008,27 @@
         );
         if (done) {
           if (typeof window.pmgUnlockPro === 'function') window.pmgUnlockPro();
-          showToast(label + ' Unlocked. Welcome To PromptMeGood ' + label + '.', 5000);
+          /* Task #100 — Show the price-lock guarantee right in the
+             post-purchase success state for Founding Member, sourced
+             from PMG_PRICING so the copy can never drift from config. */
+          if (tier === 'founding') {
+            try {
+              var __cfgPL = window.PMG_PRICING || {};
+              var __pAmt  = (typeof __cfgPL.FOUNDING_PRICE_USD === 'number')
+                ? '$' + __cfgPL.FOUNDING_PRICE_USD : '$79';
+              var __pLock = __cfgPL.PRICE_LOCK_TAGLINE || 'price locked for life';
+              showToast(
+                'Founding Member Unlocked — ' + __pAmt + ' One-Time, ' +
+                __pLock.charAt(0).toUpperCase() + __pLock.slice(1) +
+                '. Welcome To PromptMeGood Founding Member.',
+                7000
+              );
+            } catch (_) {
+              showToast(label + ' Unlocked. Welcome To PromptMeGood ' + label + '.', 5000);
+            }
+          } else {
+            showToast(label + ' Unlocked. Welcome To PromptMeGood ' + label + '.', 5000);
+          }
           stripUpgradeParam();
           return;
         }

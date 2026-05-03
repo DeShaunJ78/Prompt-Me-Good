@@ -259,8 +259,8 @@ router.get(
         planRaw === "pro" || planRaw === "founding" ? planRaw : "free";
       // Trial is anchored to the Supabase auth.users.created_at timestamp
       // (delivered via requireSupabaseUser) so it can't be reset by
-      // clearing browser data. Founding/Pro users are unlimited and have
-      // no trial state.
+      // clearing browser data. Founding/Pro users skip trial state and
+      // get their own (higher) fair-use caps from effectiveCaps.
       const caps = effectiveCaps(plan, user.createdAtMs);
       const used = getUserUsageSnapshot(user.id);
       res.json({
