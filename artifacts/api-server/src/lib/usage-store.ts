@@ -218,9 +218,39 @@ export async function getUserDay(userId: string): Promise<UserDay> {
   return row;
 }
 
+/** Per-key serialization queue. All read-modify-write operations for the
+ *  same `${userId}:${date}` are chained on a single Promise so checks and
+ *  increments are atomic within this server process — no increments are
+ *  lost and no concurrent request can squeeze past the cap. */
+const keyLocks = new Map<string, Promise<unknown>>();
+
+function withLock<T>(key: string, fn: () => Promise<T>): Promise<T> {
+  const prev = keyLocks.get(key) ?? Promise.resolve();
+  const next = prev.catch(() => undefined).then(fn);
+  keyLocks.set(key, next);
+  void next.finally(() => {
+    if (keyLocks.get(key) === next) keyLocks.delete(key);
+  });
+  return next;
+}
+
+function applyDelta(
+  key: string,
+  date: string,
+  current: UserDay,
+  feature: PmgFeature,
+  n: number,
+): UserDay {
+  const updated: UserDay = { ...current, date };
+  updated[feature] = (updated[feature] || 0) + n;
+  pendingWrites.set(key, updated);
+  cache.set(key, { expires: Date.now() + CACHE_TTL_MS, row: updated });
+  scheduleFlush();
+  return updated;
+}
+
 /** Increment the per-user, per-day counter for `feature` by `n` (default 1).
- *  Coalesces writes via a short timer so a burst of requests results in a
- *  single Supabase upsert. Returns the new row. */
+ *  Serialized per (userId, date) so concurrent calls cannot lose increments. */
 export async function bumpUserDay(
   userId: string,
   feature: PmgFeature,
@@ -228,11 +258,49 @@ export async function bumpUserDay(
 ): Promise<UserDay> {
   const date = todayKey();
   const key = cacheKey(userId, date);
-  const current = await getUserDay(userId);
-  const next: UserDay = { ...current, date };
-  next[feature] = (next[feature] || 0) + n;
-  pendingWrites.set(key, next);
-  cache.set(key, { expires: Date.now() + CACHE_TTL_MS, row: next });
-  scheduleFlush();
-  return next;
+  return withLock(key, async () => {
+    const current = await getUserDay(userId);
+    return applyDelta(key, date, current, feature, n);
+  });
+}
+
+/** Reserve `n` units of `feature` for `userId` if doing so would not
+ *  exceed `cap`. Atomic per (userId, date): the check and the increment
+ *  happen inside the same per-key mutex, so under concurrent requests no
+ *  caller can squeeze past the cap. Returns the new row on success or
+ *  null when the reservation would exceed the cap. */
+export async function reserveUserDay(
+  userId: string,
+  feature: PmgFeature,
+  n: number,
+  cap: number,
+): Promise<UserDay | null> {
+  const date = todayKey();
+  const key = cacheKey(userId, date);
+  return withLock(key, async () => {
+    const current = await getUserDay(userId);
+    if ((current[feature] || 0) + n > cap) return null;
+    return applyDelta(key, date, current, feature, n);
+  });
+}
+
+/** Refund a previously reserved `n` units of `feature` (e.g. when the
+ *  underlying request failed and the work wasn't actually performed).
+ *  Clamped at zero so a refund can never produce a negative counter. */
+export async function refundUserDay(
+  userId: string,
+  feature: PmgFeature,
+  n: number,
+): Promise<UserDay> {
+  const date = todayKey();
+  const key = cacheKey(userId, date);
+  return withLock(key, async () => {
+    const current = await getUserDay(userId);
+    const updated: UserDay = { ...current, date };
+    updated[feature] = Math.max(0, (updated[feature] || 0) - n);
+    pendingWrites.set(key, updated);
+    cache.set(key, { expires: Date.now() + CACHE_TTL_MS, row: updated });
+    scheduleFlush();
+    return updated;
+  });
 }

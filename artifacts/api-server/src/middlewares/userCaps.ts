@@ -27,7 +27,7 @@ import {
   type PmgFeature,
   type PmgPlan,
 } from "../lib/pricing-config";
-import { bumpUserDay, getUserDay } from "../lib/usage-store";
+import { refundUserDay, reserveUserDay } from "../lib/usage-store";
 
 const JWT_CACHE_TTL_MS = 60_000;
 
@@ -124,8 +124,12 @@ export function userCapEnforce(
     }
 
     const caps = effectiveCaps(ctx.plan, ctx.createdAtMs);
-    const today = await getUserDay(ctx.userId);
-    if (today[feature] + n > caps[feature]) {
+    // Atomic reserve: under concurrent requests, only enough callers to fill
+    // the cap pass through; the rest get 429 immediately. The reservation is
+    // refunded if the downstream handler ends up failing (status >= 400) so
+    // failed work doesn't burn the user's daily quota.
+    const reserved = await reserveUserDay(ctx.userId, feature, n, caps[feature]);
+    if (!reserved) {
       res.status(429).json({
         success: false,
         ok: false,
@@ -134,8 +138,8 @@ export function userCapEnforce(
       return;
     }
     res.on("finish", () => {
-      if (res.statusCode < 400) {
-        void bumpUserDay(ctx.userId, feature, n);
+      if (res.statusCode >= 400) {
+        void refundUserDay(ctx.userId, feature, n);
       }
     });
     next();
