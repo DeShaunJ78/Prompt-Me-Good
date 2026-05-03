@@ -14772,8 +14772,38 @@
     var goal = document.getElementById('goal');
     if (!hint || !btn || !goal) return;
 
-    function isReady() {
+    /* Readiness model: in image mode the user becomes "ready" once they
+       have either selected an image style/pill (Surprise Me does this
+       in bulk via pmg-handoff.rollPicks) OR typed a description into
+       the goal field. Style-pill selection is the primary signal the
+       brief calls out — "Choose A Style Or Tap Surprise Me" — so any
+       active pill flips readiness on, and the helper text retracts. */
+    function hasActivePill() {
+      try {
+        /* Pills carry .selected when active (see pmg-ux styles around
+           L2269). aria-pressed="true" is the secondary signal used by
+           dial segments and toggle pills in pmg-handoff. */
+        var pillSelectors = [
+          '.pmg-pill.selected',
+          '.pmg-photo-pill.selected',
+          '.suggestion-chip.selected',
+          '.use-case-chip.selected',
+          '.pmg-pill[aria-pressed="true"]',
+          '.pmg-photo-pill[aria-pressed="true"]'
+        ];
+        for (var i = 0; i < pillSelectors.length; i++) {
+          if (document.querySelector(pillSelectors[i])) return true;
+        }
+      } catch (e) {}
+      return false;
+    }
+    function hasDescription() {
       return (goal.value || '').trim().length > 0;
+    }
+    function isReady() {
+      /* Either real signal counts: a chosen style OR a typed
+         description. Surprise Me triggers the pill path automatically. */
+      return hasActivePill() || hasDescription();
     }
     function sync() {
       var ready = isReady();
@@ -14787,14 +14817,33 @@
     }
     goal.addEventListener('input', sync);
     goal.addEventListener('change', sync);
-    /* Surprise Me / Dice Idea Generator fills the goal — listen for it. */
+    /* Surprise Me / Dice Idea Generator fills pills + goal — re-check
+       once the handoff has settled. */
     var dice = document.getElementById('random-prompt');
     if (dice) {
       dice.addEventListener('click', function () {
-        /* Defer one tick so the random handler has populated the field. */
         setTimeout(sync, 50);
         setTimeout(sync, 250);
+        setTimeout(sync, 600);
       });
+    }
+    /* Any pill click anywhere on the page can change readiness — listen
+       at document level so we catch dynamically rendered pills. */
+    document.addEventListener('click', function (ev) {
+      var t = ev.target && ev.target.closest && ev.target.closest('.pmg-pill, .pmg-photo-pill, .suggestion-chip, .use-case-chip, [aria-pressed]');
+      if (t) setTimeout(sync, 30);
+    }, true);
+    /* Watch for class changes on pills that get toggled
+       programmatically (Surprise Me path goes through applyPicksToDom). */
+    if ('MutationObserver' in window) {
+      try {
+        var mo = new MutationObserver(function () { sync(); });
+        mo.observe(document.body, {
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['class', 'aria-pressed']
+        });
+      } catch (e) {}
     }
     sync();
 
@@ -14861,14 +14910,72 @@
       setExpanded(nowExpanded);
     });
 
-    /* Default-expanded so the vault list and its controls (search, sort,
-       tag chips, history items) remain reachable for users and for
-       playwright fixtures that target #history-list directly. The
-       toggle is still there for users who want to collapse the section
-       manually; their preference persists across reloads. */
+    /* First-use density: collapse Prompt Vault by default ONLY when
+       (a) the viewport is small (<= 768px), AND
+       (b) the user has nothing saved yet (#history-list is empty),
+       AND (c) they have not previously toggled this disclosure.
+       This keeps the homepage readable as a working tool first on
+       phones, while preserving full access for returning users with
+       saved prompts and for desktop visitors. Playwright fixtures
+       that pre-seed history (vault-smart) populate #history-list
+       before the toggle wires up, so the list is non-empty and the
+       section stays expanded for those tests. */
     var saved = null;
     try { saved = localStorage.getItem(VAULT_DISCLOSURE_KEY); } catch (e) {}
-    setExpanded(saved !== '0');
+
+    function shouldCollapseByDefault() {
+      try {
+        if (!window.matchMedia || !window.matchMedia('(max-width: 768px)').matches) return false;
+      } catch (e) { return false; }
+      var list = document.getElementById('history-list');
+      if (!list) return false;
+      /* Treat the list as "populated" if it has any item nodes OR any
+         non-empty content. The empty state itself is rendered as
+         <div class="history-empty">..</div> by pmg-ux's vault renderer,
+         so we check specifically for a real history-item child. */
+      if (list.querySelector('.history-item')) return false;
+      return true;
+    }
+
+    if (saved === '1' || saved === '0') {
+      setExpanded(saved === '1');
+    } else if (shouldCollapseByDefault()) {
+      /* Defer the actual collapse one tick so the vault renderer can
+         populate items first if the user has data saved (avoids a
+         flash of "collapsed" for returning users on mobile). */
+      setExpanded(true);
+      setTimeout(function () {
+        if (saved !== null) return; /* user already chose */
+        if (shouldCollapseByDefault()) setExpanded(false);
+      }, 250);
+    } else {
+      setExpanded(true);
+    }
+  }
+
+  /* ---------- First-use: hero CTA -> builder + focus goal ---------- */
+  function wireHeroCtaToBuilder() {
+    var cta = document.getElementById('hero-build-cta');
+    var goal = document.getElementById('goal');
+    if (!cta || cta.__pmgT107Wired) return;
+    cta.__pmgT107Wired = true;
+    cta.addEventListener('click', function (ev) {
+      var builder = document.getElementById('builder');
+      if (!builder) return;
+      /* Let the native href="#builder" set the hash, but smooth-scroll
+         and focus the goal field so the user lands inside the working
+         tool, not on the header above it. */
+      try {
+        ev.preventDefault();
+        builder.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        history.replaceState(null, '', '#builder');
+      } catch (e) {}
+      setTimeout(function () {
+        try { if (goal) goal.focus({ preventScroll: true }); } catch (e) {
+          try { if (goal) goal.focus(); } catch (e2) {}
+        }
+      }, 350);
+    });
   }
 
   function init() {
@@ -14876,6 +14983,7 @@
     reorderResultCluster();
     wireImageGenHint();
     wireVaultDisclosure();
+    wireHeroCtaToBuilder();
   }
 
   if (document.readyState === 'loading') {
