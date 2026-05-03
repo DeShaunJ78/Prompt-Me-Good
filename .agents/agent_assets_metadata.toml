@@ -101,3 +101,9 @@ id = "enI_rXmsbCINfz44wU5hi"
 uri = "file://.local/exports/promptmegood-workstation-mockup-v2.svg"
 type = "image"
 title = "PromptMeGood Workstation v2 — Help Me Start Hero + Live Prompt Preview Bridge"
+
+[[outputs]]
+id = "8xqxr9av_8oXZA16qHHzU"
+uri = "file://.local/exports/promptmegood-photo-image-synergy.svg"
+type = "image"
+title = "Photography + Image Synergy — with Magic-Link Sign In"
