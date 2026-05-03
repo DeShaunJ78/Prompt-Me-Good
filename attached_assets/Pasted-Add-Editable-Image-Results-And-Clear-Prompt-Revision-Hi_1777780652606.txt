@@ -1,0 +1,253 @@
+Add Editable Image Results And Clear Prompt Revision History.
+
+Create a checkpoint before changing anything.
+
+This is an enhancement, not a redesign. Do not break the current linear flow, What Next panel, existing image generation, Run With AI, Copy, Vault, Stripe, Supabase, backend/API, or payment logic.
+
+Goal:
+1. Generated images should feel editable after creation.
+2. Every time a prompt is updated, refined, revised, or improved, the user should clearly see:
+   - Old Version
+   - New Version
+   - What Changed
+
+━━━━━━━━━━━━━━━━━━━━
+IMAGE RESULT EDITING
+━━━━━━━━━━━━━━━━━━━━
+
+After an image is generated, keep existing actions:
+- Save Image To Your Device
+- Share
+- Generate Another
+- Copy Prompt
+- Send To Midjourney
+- Use As Reference
+- Generate Variations
+- Use This Style On A New Photo
+- Write A Prompt About This
+
+Add or improve an image-editing action area directly below the generated image.
+
+Use Title Case labels.
+
+Suggested section title:
+Edit This Image
+
+Suggested actions:
+- Revise Image Prompt
+- Change Style
+- Change Lighting
+- Change Composition
+- Generate Another Version
+- Use This As Reference
+
+Important:
+Do not claim true pixel-level image editing unless the backend actually supports image editing.
+If the current system only supports generating a new image from a revised prompt, call it:
+Generate Another Version
+or
+Revise Image Prompt
+
+Do not use misleading labels like:
+Edit Pixels
+Edit Image Directly
+unless that actually exists.
+
+Correct flow:
+Generated Image
+↓
+Download / Generate Another / Copy Prompt
+↓
+Edit This Image
+↓
+Revise Prompt / Change Style / Generate Another Version
+
+When user chooses an edit:
+- Keep the existing generated image visible.
+- Show the revised image prompt before generating again.
+- Let the user review/edit the revised prompt.
+- Then use the existing Generate Image flow.
+- Do not create a new backend unless required.
+
+━━━━━━━━━━━━━━━━━━━━
+PROMPT REVISION HISTORY
+━━━━━━━━━━━━━━━━━━━━
+
+Every time a prompt changes due to:
+- Fix My Prompt
+- Improve Prompt
+- Refine
+- More Detailed
+- More Bold & Direct
+- Beginner Friendly
+- User tweak
+- Text → Image handoff
+- Image → Text handoff
+- Photography Suite changes
+- Any prompt regeneration
+
+Show a clear revision comparison.
+
+Use a section titled:
+What Changed
+
+Display:
+Old Version
+New Version
+Changes Made
+
+Suggested layout:
+Old Version:
+[previous prompt]
+
+New Version:
+[current prompt]
+
+Changes Made:
+- Added clearer role
+- Added output format
+- Added constraints
+- Made tone more direct
+- Added visual style
+- Added lighting detail
+
+If exact diff logic is difficult, implement a simple safe version:
+- Show Old Version and New Version
+- Add a short generated or heuristic summary of the change if available
+- Otherwise show: Prompt Updated For Clarity And Better Results
+
+Do not overcomplicate this in the first pass.
+
+━━━━━━━━━━━━━━━━━━━━
+BEFORE / AFTER VIEW
+━━━━━━━━━━━━━━━━━━━━
+
+Add a compact Before / After comparison for revised prompts.
+
+User should be able to see:
+- Before
+- After
+- Undo / Restore Previous Version if existing undo/history supports it
+
+If existing Prompt History already tracks versions:
+- Reuse that system.
+- Improve its visibility.
+- Do not create duplicate competing history systems.
+
+If Prompt History exists but is buried:
+- Add a clearer visible comparison near the current result.
+
+Correct placement:
+Generated Prompt
+↓
+Run With AI / Copy Prompt / Refine
+↓
+What Changed / Before And After
+↓
+What Next
+
+Do not place comparison between input and primary action.
+
+━━━━━━━━━━━━━━━━━━━━
+UX RULES
+━━━━━━━━━━━━━━━━━━━━
+
+Keep strict proximity:
+- Image edit actions must be directly near the generated image.
+- Prompt comparison must be directly near the revised prompt.
+- Do not make users scroll a full page to see what changed.
+
+Keep the current site flow:
+Input → Action → Result → Next Action
+
+Do not add new mode selection before first generation.
+
+Do not show revision comparison before the user has at least two prompt versions.
+
+Do not show image edit tools before an image exists.
+
+━━━━━━━━━━━━━━━━━━━━
+TITLE CASE POLICY
+━━━━━━━━━━━━━━━━━━━━
+
+Use Title Case for:
+- Edit This Image
+- Revise Image Prompt
+- Change Style
+- Change Lighting
+- Change Composition
+- Generate Another Version
+- Use This As Reference
+- What Changed
+- Old Version
+- New Version
+- Changes Made
+- Before
+- After
+- Restore Previous Version
+
+Do not force Title Case on long body explanations.
+
+━━━━━━━━━━━━━━━━━━━━
+ANALYTICS
+━━━━━━━━━━━━━━━━━━━━
+
+If the existing pmg-analytics helper exists, track these events safely:
+
+pmg_prompt_revision_shown
+Payload:
+- source
+- revision_count
+- ts
+
+pmg_prompt_revision_restored
+Payload:
+- source
+- ts
+
+pmg_image_edit_started
+Payload:
+- action
+- ts
+
+pmg_image_regenerated_from_edit
+Payload:
+- action
+- ts
+
+Do not break if analytics is unavailable.
+
+━━━━━━━━━━━━━━━━━━━━
+QA REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━
+
+Verify:
+1. Text prompt generation still works.
+2. Run With AI still works.
+3. Improve Prompt still works.
+4. Prompt revision comparison appears only after a revision.
+5. Old Version and New Version are visible.
+6. Undo/restore still works if already supported.
+7. Image generation still works.
+8. Image edit actions appear only after image generation.
+9. Revised image prompt is visible before regeneration.
+10. Existing Download / Share / Send To Midjourney actions remain.
+11. What Next panel still appears after result.
+12. What Next analytics still works.
+13. Mobile has no horizontal overflow.
+14. No console errors.
+15. No Stripe/Supabase/backend/payment changes.
+
+━━━━━━━━━━━━━━━━━━━━
+REPORT BACK
+━━━━━━━━━━━━━━━━━━━━
+
+Report:
+1. Files changed.
+2. Image edit actions added.
+3. How image revision works.
+4. Prompt comparison/Before-After added.
+5. Whether existing Prompt History was reused.
+6. Analytics events added.
+7. QA results.
+8. Any limitations, especially if image editing is prompt-based rather than pixel-level.
