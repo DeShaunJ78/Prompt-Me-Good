@@ -997,15 +997,69 @@
       .pmg-tune-pill,
       .pmg-prompt-tuning .pmg-tune-pill,
       #pmg-t42-beta-banner .pmg-t42-msg a,
-      #pmg-t42-beta-banner .pmg-t42-close {
+      #pmg-t42-beta-banner .pmg-t42-close,
+      .smart-assist-close,
+      .save-tip-close,
+      .tour-card-close,
+      .post-uc-guidance-close,
+      .tip-block-dismiss,
+      .pmg-voice-caret,
+      .manual-toggle,
+      details.advanced-options > summary,
+      details.quick-start-card > summary,
+      details.pricing-faq-item > summary {
         min-height: 44px !important;
-        min-width: 44px;
+        min-width: 44px !important;
+      }
+      .smart-assist-close,
+      .save-tip-close,
+      .tour-card-close,
+      .post-uc-guidance-close,
+      .tip-block-dismiss {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 8px !important;
       }
       #pmg-t42-beta-banner .pmg-t42-msg a {
         display: inline-block;
         padding: 10px 4px;
       }
     }
+    /* ===== Task #106 — Mobile tap-target + overflow audit =====
+       Brand/home link, footer links, and small dropdown carets need a
+       44x44 hit area on mobile. Also defend against horizontal overflow
+       at 375/390/430px viewports from any oversized fixed-width child. */
+    @media (max-width: 480px) {
+      .brand {
+        min-height: 44px;
+        padding: 4px 0;
+      }
+      .site-footer-link {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 12px;
+      }
+      .site-footer-social-links .site-footer-link {
+        min-height: 44px;
+        padding: 8px 10px;
+        font-size: var(--text-sm);
+      }
+      .site-footer-legal .site-footer-link {
+        min-height: 44px;
+        padding: 8px 10px;
+      }
+      .legal-modal-close {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+    html, body { max-width: 100%; overflow-x: clip; }
 
     .quality-row { display: flex; flex-direction: column; gap: var(--space-2); margin: 0 0 var(--space-3); }
     .quality-row .btn { align-self: flex-start; }

@@ -163,6 +163,29 @@
       .pricing-hero { padding: var(--space-6) 0 var(--space-4); }
       .pricing-card { padding: var(--space-5); }
     }
+    /* ===== Task #106 — Mobile tap targets (>=44px) on pricing page ===== */
+    @media (max-width: 480px) {
+      .brand { min-height: 44px; padding: 4px 0; }
+      .top-actions .ghost-link,
+      .top-actions .theme-toggle {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 14px;
+      }
+      .site-footer-link {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 10px;
+      }
+      details.pricing-faq-item > summary {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+      }
+    }
+    html, body { max-width: 100%; overflow-x: clip; }
     /* Interaction feedback polish (matches index.html). Because we suppress the default mobile
        tap-highlight, we provide replacement feedback on EVERY tappable so links don't feel dead. */
     html { -webkit-tap-highlight-color: transparent; }
