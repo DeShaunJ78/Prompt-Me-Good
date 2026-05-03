@@ -459,10 +459,13 @@
                     && typeof __cfg2.FOUNDING_LIMIT === 'number';
     var __lock     = __cfg2.PRICE_LOCK_TAGLINE || 'price locked for life';
     var __deadline = __cfg2.FOUNDING_DEADLINE_COPY || '';
+    var __fcaps2   = (__cfg2.FOUNDING_DAILY_CAPS) || { run: 30, img: 15, analyze: 10 };
+    var __capStr2  = __fcaps2.run + ' Run With AI, ' + __fcaps2.img +
+                     ' image generations, ' + __fcaps2.analyze + ' file analyses per day';
     var __pCopy;
     if (__hasFull) {
       __pCopy =
-        'Unlock higher daily caps on this feature (30 Run With AI, 15 image generations, 10 file analyses per day). Founding Member is a one-time $' +
+        'Unlock higher daily caps on this feature (' + __capStr2 + '). Founding Member is a one-time $' +
         __cfg2.FOUNDING_PRICE_USD + ' payment for lifetime access to core features — limited to the first ' +
         __cfg2.FOUNDING_LIMIT + ' buyers, ' + __lock + '.' +
         (__deadline ? ' ' + __deadline : '') +

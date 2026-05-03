@@ -12082,16 +12082,19 @@
     var __cfgCTA  = (typeof window !== 'undefined' && window.PMG_PRICING) || {};
     var __hasPx   = typeof __cfgCTA.FOUNDING_PRICE_USD === 'number'
                     && typeof __cfgCTA.FOUNDING_LIMIT === 'number';
+    var __fcaps   = (__cfgCTA.FOUNDING_DAILY_CAPS) || { run: 30, img: 15, analyze: 10 };
+    var __capStr  = __fcaps.run + ' Run With AI executions, ' + __fcaps.img +
+                    ' image generations, and ' + __fcaps.analyze + ' file analyses per day';
     var __ctaCopy;
     if (__hasPx) {
       var __ctaLock = __cfgCTA.PRICE_LOCK_TAGLINE || 'price locked for life';
       __ctaCopy =
         'Founding Member is a one-time $' + __cfgCTA.FOUNDING_PRICE_USD +
-        ' for lifetime access to core features — 30 Run With AI executions, 15 image generations, and 10 file analyses per day. Limited to the first ' +
+        ' for lifetime access to core features — ' + __capStr + '. Limited to the first ' +
         __cfgCTA.FOUNDING_LIMIT + ' buyers, ' + __ctaLock + '. Fair use limits apply.';
     } else {
       __ctaCopy =
-        'Founding Member unlocks lifetime access to core features — 30 Run With AI executions, 15 image generations, and 10 file analyses per day. See pricing for details. Fair use limits apply.';
+        'Founding Member unlocks lifetime access to core features — ' + __capStr + '. See pricing for details. Fair use limits apply.';
     }
     cta.innerHTML =
       '<span><strong>Want Higher Limits?</strong> ' + __ctaCopy + '</span>' +
