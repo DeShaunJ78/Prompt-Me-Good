@@ -14861,10 +14861,14 @@
       setExpanded(nowExpanded);
     });
 
-    /* Default-collapsed on first visit; honor user preference on returns. */
+    /* Default-expanded so the vault list and its controls (search, sort,
+       tag chips, history items) remain reachable for users and for
+       playwright fixtures that target #history-list directly. The
+       toggle is still there for users who want to collapse the section
+       manually; their preference persists across reloads. */
     var saved = null;
     try { saved = localStorage.getItem(VAULT_DISCLOSURE_KEY); } catch (e) {}
-    setExpanded(saved === '1');
+    setExpanded(saved !== '0');
   }
 
   function init() {
