@@ -14953,29 +14953,159 @@
     }
   }
 
-  /* ---------- First-use: hero CTA -> builder + focus goal ---------- */
+  /* ---------- First-use: hero CTAs + Start Here nav ----------
+     All four entry points must drop the user inside the relevant
+     working area (not the guide / comparison / dashboard / vault /
+     pricing sections that live below the hero):
+
+       #hero-build-cta     "Create A Text Prompt"  -> text builder
+       #hero-image-cta     "Create An Image Prompt" -> image builder
+       a.ghost-link[#builder] topbar "Start Here"  -> text builder
+       #tour-jump          "Go To Start Here"      -> text builder
+
+     Behaviour for each is identical in shape: switch mode if needed,
+     smooth-scroll to #builder, expand any collapsed image controls
+     when entering image mode, then focus the canonical input. */
+  function pmgT107SwitchMode(mode) {
+    /* setMode is the single source of truth for text vs image mode
+       (defined at index.html L10206). It updates body classes,
+       reveals the right column's photo suite + image generator, and
+       hides text-only controls. Wrapped in try because setMode is
+       defined late in the page and may not be ready on initial
+       click of a returning-visitor session. */
+    try {
+      if (typeof window.setMode === 'function') window.setMode(mode);
+    } catch (e) {}
+  }
+
+  function pmgT107ExpandPhotoSuite() {
+    /* Photo groups carry .is-collapsed when closed (T23 builder /
+       L9920 toggle). On a fresh page render T15's
+       collapsePhotoCategories closes every group except the first
+       to keep the suite scannable. When the user explicitly clicks
+       "Create An Image Prompt" we want every style category open so
+       Style controls are clearly visible at the landing point. */
+    var groups = document.querySelectorAll('#pmg-photo-suite .pmg-photo-group');
+    for (var i = 0; i < groups.length; i++) {
+      groups[i].classList.remove('is-collapsed');
+      var head = groups[i].querySelector('.pmg-photo-group-head');
+      if (head) head.setAttribute('aria-expanded', 'true');
+    }
+  }
+
+  function pmgT107ScrollAndFocus(targetMode) {
+    var builder = document.getElementById('builder');
+    if (!builder) return;
+    try { builder.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+    try { history.replaceState(null, '', '#builder'); } catch (e) {}
+    /* Focus the goal textarea after the smooth-scroll settles. #goal
+       is the canonical first input in both modes — it captures the
+       user's description for text prompts and (per the brief's image
+       hint copy) the optional description for image prompts. The
+       Style pills + Surprise Me + Generate Image controls all sit
+       above the fold once #builder is the scroll target, so they
+       are visible without further scrolling. */
+    setTimeout(function () {
+      var goal = document.getElementById('goal');
+      try { if (goal) goal.focus({ preventScroll: true }); } catch (e) {
+        try { if (goal) goal.focus(); } catch (e2) {}
+      }
+      if (targetMode === 'image') {
+        /* After mode + scroll settle, make sure the image column's
+           controls (Style pills, Generate Image) are unambiguously
+           visible. We scroll the photo suite into view ONLY if its
+           top edge is currently below the viewport — keeps small
+           screens (390px) from jumping past #goal which the user
+           also needs to see. */
+        try {
+          var suite = document.getElementById('pmg-photo-suite') ||
+                      document.getElementById('photo-suite-section');
+          if (suite) {
+            var r = suite.getBoundingClientRect();
+            if (r.top > (window.innerHeight || 800)) {
+              suite.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }
+        } catch (e3) {}
+      }
+    }, 380);
+  }
+
+  function pmgT107HandleTextEntry(ev) {
+    if (ev) {
+      try { ev.preventDefault(); } catch (e) {}
+    }
+    pmgT107SwitchMode('write');
+    pmgT107ScrollAndFocus('write');
+  }
+
+  function pmgT107HandleImageEntry(ev) {
+    if (ev) {
+      try { ev.preventDefault(); } catch (e) {}
+    }
+    pmgT107SwitchMode('image');
+    /* setMode reveals the photo suite section; expand its inner
+       groups one tick later so they're definitely in the DOM. */
+    setTimeout(pmgT107ExpandPhotoSuite, 30);
+    setTimeout(pmgT107ExpandPhotoSuite, 200);
+    pmgT107ScrollAndFocus('image');
+  }
+
   function wireHeroCtaToBuilder() {
-    var cta = document.getElementById('hero-build-cta');
-    var goal = document.getElementById('goal');
-    if (!cta || cta.__pmgT107Wired) return;
-    cta.__pmgT107Wired = true;
-    cta.addEventListener('click', function (ev) {
-      var builder = document.getElementById('builder');
-      if (!builder) return;
-      /* Let the native href="#builder" set the hash, but smooth-scroll
-         and focus the goal field so the user lands inside the working
-         tool, not on the header above it. */
-      try {
-        ev.preventDefault();
-        builder.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        history.replaceState(null, '', '#builder');
-      } catch (e) {}
-      setTimeout(function () {
-        try { if (goal) goal.focus({ preventScroll: true }); } catch (e) {
-          try { if (goal) goal.focus(); } catch (e2) {}
-        }
-      }, 350);
-    });
+    /* (1) Hero text CTA. */
+    var textCta = document.getElementById('hero-build-cta');
+    if (textCta && !textCta.__pmgT107Wired) {
+      textCta.__pmgT107Wired = true;
+      textCta.addEventListener('click', pmgT107HandleTextEntry);
+    }
+
+    /* (2) Hero image CTA. T28 (L7888) injects this asynchronously
+       once .hero-actions is reframed, so we may have to retry. */
+    var imageCta = document.getElementById('hero-image-cta');
+    if (imageCta && !imageCta.__pmgT107Wired) {
+      imageCta.__pmgT107Wired = true;
+      imageCta.addEventListener('click', pmgT107HandleImageEntry);
+    }
+
+    /* (3) Topbar "Start Here" — a.ghost-link[href="#builder"]. The
+       native anchor jumps the page but doesn't focus #goal, so we
+       upgrade it to the text-entry handler. Selector pinned to the
+       topbar so a similarly-named link inside a guide page can't
+       collide. */
+    var startHere = document.querySelector('header.topbar a.ghost-link[href="#builder"]');
+    if (startHere && !startHere.__pmgT107Wired) {
+      startHere.__pmgT107Wired = true;
+      startHere.addEventListener('click', pmgT107HandleTextEntry);
+    }
+
+    /* (4) "Go To Start Here" — the welcome-banner CTA at #tour-jump. */
+    var tourJump = document.getElementById('tour-jump');
+    if (tourJump && !tourJump.__pmgT107Wired) {
+      tourJump.__pmgT107Wired = true;
+      tourJump.addEventListener('click', pmgT107HandleTextEntry);
+    }
+  }
+
+  /* The image CTA + Start Here are injected/late-bound by other
+     IIFEs (T28 hero reframe, post-spec.js banner). Re-run the wire
+     pass on body mutations until all four are wired, with a hard
+     time cap so we don't observe forever. */
+  function pmgT107ObserveLateCtas() {
+    if (!('MutationObserver' in window)) return;
+    var allWired = function () {
+      var t = document.getElementById('hero-build-cta');
+      var i = document.getElementById('hero-image-cta');
+      return !!(t && t.__pmgT107Wired) && !!(i && i.__pmgT107Wired);
+    };
+    if (allWired()) return;
+    try {
+      var mo = new MutationObserver(function () {
+        wireHeroCtaToBuilder();
+        if (allWired()) { try { mo.disconnect(); } catch (e) {} }
+      });
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { try { mo.disconnect(); } catch (e) {} }, 30000);
+    } catch (e) {}
   }
 
   function init() {
@@ -14984,6 +15114,7 @@
     wireImageGenHint();
     wireVaultDisclosure();
     wireHeroCtaToBuilder();
+    pmgT107ObserveLateCtas();
   }
 
   if (document.readyState === 'loading') {
