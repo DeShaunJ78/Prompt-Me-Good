@@ -2953,8 +2953,7 @@
     }
     /* ── End PMG v3 Polish ── */
 
-    .image-result-section{margin-top:var(--space-4)}.image-result-wrap{width:100%;background:var(--color-surface-2);border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--color-border);min-height:200px;display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-3)}.image-placeholder{font-size:var(--text-sm);color:var(--color-text-faint);padding:var(--space-8)}#imageResultWrap img{display:block;width:100%;height:auto;border-radius:var(--radius-lg)}.image-result-actions{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-bottom:var(--space-2)}.image-generating-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-3);padding:var(--space-8);color:var(--color-text-muted);font-size:var(--text-sm);text-align:center}.image-spinner{width:36px;height:36px;border:3px solid var(--color-border);border-top-color:var(--color-primary);border-radius:50%;animation:imgSpin 0.8s linear infinite}@keyframes imgSpin{to{transform:rotate(360deg)}}body.photo-mode-active #imageBtn{display:inline-flex!important}body.photo-mode-active #runBtn{display:none!important}
-    /* ── Mode Switch ── */
+    .image-result-section{margin-top:var(--space-4)}.image-result-wrap{width:100%;background:var(--color-surface-2);border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--color-border);min-height:200px;display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-3)}.image-placeholder{font-size:var(--text-sm);color:var(--color-text-faint);padding:var(--space-8)}#imageResultWrap img{display:block;width:100%;height:auto;border-radius:var(--radius-lg)}.image-result-actions{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-bottom:var(--space-2)}.image-generating-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-3);padding:var(--space-8);color:var(--color-text-muted);font-size:var(--text-sm);text-align:center}.image-spinner{width:36px;height:36px;border:3px solid var(--color-border);border-top-color:var(--color-primary);border-radius:50%;animation:imgSpin 0.8s linear infinite}@keyframes imgSpin{to{transform:rotate(360deg)}}    /* ── Mode Switch ── */
     .workspace-header { margin: 0 0 var(--space-4); padding: 0 0 var(--space-3); border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); display: flex; flex-direction: column; gap: 4px; }
     .workspace-header-eyebrow { display: inline-block; font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-primary); }
     .workspace-header-sub { margin: 0; color: var(--color-text-muted); font-size: var(--text-sm); line-height: 1.5; }
@@ -3792,7 +3791,7 @@
                   <span class="adv-icon" aria-hidden="true">⚙️</span>
                   <span class="adv-text">
                     <span class="adv-title">Customize Output (Optional)</span>
-                    <span class="adv-sub">Money Mode, Human Voice, Clarity Boost, Photo Prompt</span>
+                    <span class="adv-sub">Money Mode, Human Voice, Clarity Boost</span>
                   </span>
                   <span class="adv-chevron" aria-hidden="true">▾</span>
                 </summary>
@@ -3832,16 +3831,6 @@
                     </label>
                   </div>
 
-                  <div class="toggle-row">
-                    <div>
-                      <strong>Photo Prompt Mode</strong>
-                      <span>Generate high-quality prompts for AI image tools (Midjourney, DALL&middot;E, etc.)</span>
-                    </div>
-                    <label class="switch" aria-label="Turn Photo Prompt Mode on or off">
-                      <input id="photoMode" name="photoMode" type="checkbox" />
-                      <span class="slider"></span>
-                    </label>
-                  </div>
                 </div>
               </details>
                 </div>
@@ -4751,18 +4740,6 @@ ${data['rules or limits']}`
 - Clarity Boost Mode: prioritize clarity. Organize the response with clear sections, define unclear terms, call out assumptions, and make each step easy to understand and act on.`
           : '';
 
-        const photoLine = data.photoMode
-          ? `
-- Photo Prompt Mode: act as a professional photographer and visual director. Create a highly detailed image prompt including:
-  - lighting (studio, natural, cinematic)
-  - camera type and lens (e.g. 85mm, DSLR)
-  - composition and framing
-  - textures and environment
-  - color grading
-  - mood and realism
-  - ultra-detailed, high-resolution output`
-          : '';
-
         const languageLabels = { english: 'English', spanish: 'Spanish', portuguese: 'Portuguese', russian: 'Russian', french: 'French', german: 'German' };
         const languageKey = data.outputLanguage && languageLabels[data.outputLanguage] ? data.outputLanguage : 'english';
         const languageLine = languageKey !== 'english'
@@ -4806,7 +4783,7 @@ Here's what I need from you:
 - Format the answer as ${articleFor(data.outputFormat)} ${titleCase(data.outputFormat)}.
 - Avoid vague advice, filler, or generic motivation.
 - Include examples, templates, checklists, or scripts when useful.
-- End with the top 3 actions I should take next.${maxLengthLine}${rulesOrLimitsLine}${personalityLine}${moneyMode}${humanLine}${clarityLine}${photoLine}${languageLine}${remixLine}
+- End with the top 3 actions I should take next.${maxLengthLine}${rulesOrLimitsLine}${personalityLine}${moneyMode}${humanLine}${clarityLine}${languageLine}${remixLine}
 
 Context:
 - Category: ${categoryLabels[categoryKey]}
@@ -4842,7 +4819,6 @@ Context:
           moneyMode: document.getElementById('moneyMode').checked,
           humanTone: document.getElementById('humanTone').checked,
           clarityBoost: document.getElementById('clarityBoost').checked,
-          photoMode: document.getElementById('photoMode').checked,
           outputLanguage: document.getElementById('outputLanguage').value,
           personality: document.getElementById('personality').value
         };
@@ -4934,7 +4910,6 @@ Context:
           if (data.moneyMode) edits.push({ id: 'money_mode', label: 'Money Mode', reason: 'Added Money Mode — prioritize practical, results-driven answers', kind: 'directive', line: 'Money Mode: prioritize practical, actionable, and results-driven answers. Focus on outcomes and execution.' });
           if (data.humanTone) edits.push({ id: 'human_voice', label: 'Human Voice', reason: 'Added Human Voice Mode — natural, varied phrasing', kind: 'directive', line: 'Human Voice Mode: write in a natural, human tone with varied sentence structure. Avoid robotic phrasing, repetitive patterns, and overly stiff wording. Use subtle variation and natural flow to reduce obvious AI-generated patterns.' });
           if (data.clarityBoost) edits.push({ id: 'clarity_boost', label: 'Clarity Boost', reason: 'Added Clarity Boost — clear sections and defined terms', kind: 'directive', line: 'Clarity Boost Mode: prioritize clarity. Organize the response with clear sections, define unclear terms, call out assumptions, and make each step easy to understand and act on.' });
-          if (data.photoMode) edits.push({ id: 'photo_mode', label: 'Photo Prompt Mode', reason: 'Added Photo Prompt Mode — full visual brief', kind: 'directive', line: 'Photo Prompt Mode: act as a professional photographer and visual director. Create a highly detailed image prompt including:\n  - lighting (studio, natural, cinematic)\n  - camera type and lens (e.g. 85mm, DSLR)\n  - composition and framing\n  - textures and environment\n  - color grading\n  - mood and realism\n  - ultra-detailed, high-resolution output' });
           if (languageKey !== 'english') edits.push({ id: 'language', label: 'Output language', reason: 'Set the output language — ' + languageLabels[languageKey], kind: 'directive', line: 'Write the final response in ' + languageLabels[languageKey] + '.' });
           // Context block
           edits.push({ id: 'ctx_category', label: 'Context: category', reason: 'Pinned the category metadata at the bottom', kind: 'context', line: 'Category: ' + categoryLabels[categoryKey] });
@@ -5584,7 +5559,6 @@ Context:
         document.getElementById('moneyMode').checked = !!item.data.moneyMode;
         document.getElementById('humanTone').checked = !!item.data.humanTone;
         document.getElementById('clarityBoost').checked = !!(item.data.clarityBoost || item.data.avoidAi);
-        document.getElementById('photoMode').checked = !!item.data.photoMode;
         document.getElementById('outputLanguage').value = item.data.outputLanguage || 'english';
         document.getElementById('personality').value = item.data.personality || 'none';
         setPromptText(item.prompt);
@@ -6557,7 +6531,7 @@ Context:
           if (data.maxLength && data.maxLength > 0) score += 10;
 
           if (data.personality && data.personality !== 'none') score += 10;
-          if (data.moneyMode || data.humanTone || data.clarityBoost || data.photoMode) score += 10;
+          if (data.moneyMode || data.humanTone || data.clarityBoost) score += 10;
           if (data.tone) score += 5;
           if (data.outputFormat) score += 5;
 
@@ -6692,9 +6666,34 @@ Context:
           const SUGGESTIONS = [
             { id: 'moneyMode', kws: ['money','business','sales','income','profit','product','dropshipping','revenue','client','customer','side hustle','startup','launch'], reason: 'Your goal sounds money or business related — Money Mode adds practical, results-driven framing.' },
             { id: 'humanTone', kws: ['writing','email','social','post ','posts','content','caption','storytelling','newsletter','blog','copy','script','tweet','linkedin'], reason: 'You are writing for people — Human Voice Mode keeps the tone natural.' },
-            { id: 'clarityBoost', kws: ['planning','plan ','decision','strategy','explain','explanation','learning','learn ','problem','step','process','how to','understand','teach','breakdown'], reason: 'This looks like a planning or learning task — Clarity Boost adds clearer structure and steps.' },
-            { id: 'photoMode', kws: ['image','photo','photography','visual','ad ','ads ','mockup','midjourney','dall','dalle','picture','poster','thumbnail','illustration','artwork'], reason: 'You mentioned visuals — Photo Prompt Mode formats output for image AI tools.' }
+            { id: 'clarityBoost', kws: ['planning','plan ','decision','strategy','explain','explanation','learning','learn ','problem','step','process','how to','understand','teach','breakdown'], reason: 'This looks like a planning or learning task — Clarity Boost adds clearer structure and steps.' }
           ];
+          // Visual-goal nudge — replaces the former "Photo Prompt Mode" toggle suggestion.
+          // Routes the user to image mode + the Photography Suite instead of toggling a checkbox.
+          const IMAGE_KWS = ['image','photo','photography','visual','ad ','ads ','mockup','midjourney','dall','dalle','picture','poster','thumbnail','illustration','artwork'];
+          const alreadyInImage = document.body.classList.contains('image-mode');
+          const imageMatched = IMAGE_KWS.some(function (kw) { return t.indexOf(kw) !== -1; });
+          if (imageMatched && !alreadyInImage) {
+            let nudge = document.getElementById('pmg-image-mode-nudge');
+            if (!nudge) {
+              nudge = document.createElement('div');
+              nudge.id = 'pmg-image-mode-nudge';
+              nudge.setAttribute('role', 'note');
+              nudge.style.cssText = 'margin:var(--space-3,12px) 0;padding:var(--space-3,12px);border:1px solid var(--color-primary,#3b82f6);border-radius:var(--radius-md,8px);background:var(--color-surface-2,#f5f7fb);display:flex;gap:var(--space-2,8px);align-items:center;flex-wrap:wrap;';
+              nudge.innerHTML = '<span style="flex:1 1 200px;font-size:var(--text-sm,14px);">You mentioned visuals — open the Photography Suite for image-tuned prompts.</span><button type="button" id="pmg-image-mode-nudge-btn" class="btn btn-primary" style="min-height:44px;">Switch to Image Mode</button>';
+              const adv = document.getElementById('advanced-options');
+              if (adv && adv.parentNode) adv.parentNode.insertBefore(nudge, adv);
+              const btn = document.getElementById('pmg-image-mode-nudge-btn');
+              if (btn) btn.addEventListener('click', function () {
+                try { if (typeof window.setMode === 'function') window.setMode('image'); } catch (_) {}
+                const suite = document.getElementById('photo-suite-section') || document.getElementById('pmg-photo-suite');
+                if (suite && typeof suite.scrollIntoView === 'function') {
+                  try { suite.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) { suite.scrollIntoView(); }
+                }
+                nudge.remove();
+              });
+            }
+          }
           const isExpert = document.body.classList.contains('is-expert-mode');
           const aoCheckbox = document.getElementById('auto-optimize-toggle');
           const isAutoOptOn = aoCheckbox ? aoCheckbox.checked : true;
@@ -7163,7 +7162,6 @@ Context:
         document.getElementById('moneyMode').checked = !!t.data.moneyMode;
         document.getElementById('humanTone').checked = !!t.data.humanTone;
         document.getElementById('clarityBoost').checked = !!(t.data.clarityBoost || t.data.avoidAi);
-        document.getElementById('photoMode').checked = !!t.data.photoMode;
         document.getElementById('outputLanguage').value = t.data.outputLanguage || 'english';
         document.getElementById('personality').value = t.data.personality || 'none';
         const data = getFormData();
@@ -10154,8 +10152,6 @@ Context:
   <script>
   (function(){
     function $(id){return document.getElementById(id)}
-    var pt=$('photoMode');
-    if(pt){pt.addEventListener('change',function(){document.body.classList.toggle('photo-mode-active',pt.checked)});document.body.classList.toggle('photo-mode-active',pt.checked)}
     window.generateImage=async function(){
       var rb=$('resultBox'),prompt=((rb&&(rb.textContent||rb.innerText))||'').trim();
       if(!prompt){alert('Fix your prompt first, then click Generate Image.');return}
@@ -10177,29 +10173,6 @@ Context:
     }
   })()
   </script>
-
-<script>
-(function(){
-  function syncPhoto(){
-    var t=document.getElementById('photoMode');
-    var ib=document.getElementById('imageBtn');
-    var rb=document.getElementById('runBtn');
-    if(!t||!ib||!rb) return;
-    if(t.checked){
-      ib.style.display='inline-flex';
-      rb.style.display='none';
-    } else {
-      ib.style.display='none';
-      rb.style.display='';
-    }
-  }
-  document.addEventListener('DOMContentLoaded', function(){
-    var t=document.getElementById('photoMode');
-    if(t) t.addEventListener('change', syncPhoto);
-    syncPhoto();
-  });
-})();
-</script>
 
 <script>
 (function(){

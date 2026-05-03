@@ -299,13 +299,10 @@
         softHighlight(suite);
         return;
       }
-      /* Fallback — toggle photo mode and scroll to its checkbox area. */
-      var pm = $id('photoMode');
-      if (pm && !pm.checked) {
-        pm.checked = true;
-        try { pm.dispatchEvent(new Event('change', { bubbles: true })); } catch (_) {}
-      }
-      if (pm) smoothScrollTo(pm);
+      /* Fallback — switch to image mode so the Photography Suite mounts, then scroll to it. */
+      try { if (typeof window.setMode === 'function') window.setMode('image'); } catch (_) {}
+      var late = $id('pmg-photo-suite') || $id('photo-suite-section');
+      if (late) smoothScrollTo(late);
     }, 100);
     showToast('Image Brief Ready — Review And Tap Generate Image');
   }

@@ -483,7 +483,6 @@
     if (form.moneyMode)    p.push('money-mode');
     if (form.humanTone)    p.push('human-tone');
     if (form.clarityBoost) p.push('clarity-boost');
-    if (form.photoMode)    p.push('photo-mode');
     if (form.maxLength)    p.push('len:<=' + form.maxLength);
     return p;
   }
@@ -702,7 +701,6 @@
     /* Form-pill fallbacks. */
     var d = (item && item.data) || {};
     if (out.length < 3 && d.moneyMode      && !seen['money-mode'])   { out.push('money-mode'); seen['money-mode'] = 1; }
-    if (out.length < 3 && d.photoMode      && !seen['photo'])        { out.push('photo'); seen['photo'] = 1; }
     if (out.length < 3 && d.humanTone      && !seen['human-tone'])   { out.push('human-tone'); seen['human-tone'] = 1; }
     if (out.length < 3 && d.tone && d.tone !== 'bold-direct' && !seen[d.tone]) { out.push(d.tone); seen[d.tone] = 1; }
     return out;
