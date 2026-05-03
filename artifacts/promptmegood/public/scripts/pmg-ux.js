@@ -5514,12 +5514,32 @@
       });
     });
 
-    /* Enable / disable Send button. */
+    /* Enable / disable Send button.
+     *
+     * "hasAny" treats EITHER a positive pick OR an explicit Avoid as
+     * a real user signal. If a user marks a whole group as Avoid
+     * (no positive pills there), they have still made a deliberate
+     * choice about that segment and should not be blocked from
+     * generating an image. The avoid signal is detected via:
+     *   - any pill with `.is-negative` (an explicit "avoid this")
+     *   - or any group with `.is-avoiding` (group-level avoid mode)
+     */
     var sendBtn = document.querySelector('#' + SUITE_ID + ' .pmg-photo-send');
-    var hasAny = Object.keys(picks).some(function (k) { return picks[k].length > 0; });
+    var hasPick = Object.keys(picks).some(function (k) { return picks[k].length > 0; });
+    var hasAvoid = false;
+    try {
+      var suiteRoot = document.getElementById(SUITE_ID);
+      if (suiteRoot) {
+        hasAvoid = !!suiteRoot.querySelector(
+          '.pmg-photo-pill.is-negative, .pmg-photo-group.is-avoiding'
+        );
+      }
+    } catch (_) { /* defensive — never let avoid detection break gating */ }
+    var hasAny = hasPick || hasAvoid;
     if (sendBtn) sendBtn.disabled = !hasAny;
     /* Task #35: Save This Combo follows the same enabled state — no
-       point saving an empty combo. */
+       point saving an empty combo. An Avoid-only setup is still a
+       valid, savable combo. */
     var saveBtn = document.querySelector('#' + SUITE_ID + ' .pmg-photo-save-combo');
     if (saveBtn) saveBtn.disabled = !hasAny;
 

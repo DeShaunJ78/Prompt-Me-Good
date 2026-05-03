@@ -208,14 +208,14 @@
       '  border-color: var(--color-border); outline: none;',
       '}',
 
-      /* Avoid mode toggle: sibling of the group head. Slim,
-         right-aligned chip directly under the head bar so it's
-         visually associated with that group but lives outside the
-         head <button> (the browser blocks click events on
-         interactive content nested inside another button). */
+      /* Avoid mode toggle: lives at the BOTTOM of each group's body,
+         after the pill grid, so the top of the open dropdown stays
+         clean. The toggle still lives outside the head <button>
+         (the browser blocks click events on interactive content
+         nested inside another button). */
       '#' + SUITE_ID + ' .pmg-avoid-toggle {',
       '  display: inline-flex; align-items: center; gap: 4px;',
-      '  margin: 4px 8px 6px auto; padding: 2px 10px;',
+      '  margin: 10px 0 2px auto; padding: 4px 12px;',
       '  font-size: 10px; font-weight: 700; letter-spacing: 0.05em;',
       '  text-transform: uppercase; color: var(--color-text-muted);',
       '  background: transparent;',
@@ -223,11 +223,14 @@
       '  border-radius: var(--radius-full, 999px); cursor: pointer;',
       '  transition: color 150ms ease, background 150ms ease, border-color 150ms ease;',
       '  align-self: flex-end;',
+      '  min-height: 32px;',
       '}',
-      /* Hide the toggle when the group is collapsed so it doesn't
-         visually float above an empty body. */
-      '#' + SUITE_ID + ' .pmg-photo-group.is-collapsed > .pmg-avoid-toggle {',
-      '  display: none;',
+      /* The body is a flex column, so margin-left:auto on a flex item
+         won\'t right-align unless the parent is row-flex. Use a tiny
+         row wrapper around the toggle to right-align it cleanly. */
+      '#' + SUITE_ID + ' .pmg-avoid-toggle-row {',
+      '  display: flex; justify-content: flex-end; width: 100%;',
+      '  margin-top: 8px;',
       '}',
       '#' + SUITE_ID + ' .pmg-avoid-toggle:hover,',
       '#' + SUITE_ID + ' .pmg-avoid-toggle:focus-visible {',
@@ -491,6 +494,14 @@
       btn.setAttribute('aria-pressed', on ? 'true' : 'false');
       btn.textContent = on ? '✕ Avoid: On' : '✕ Avoid';
     }
+    /* Re-run the suite's summary refresh so the Send button gating
+       picks up the new avoid signal — an avoid-only setup is a real
+       user choice and must enable Send. */
+    try {
+      if (typeof window.__pmgPhotoRefreshSummary === 'function') {
+        window.__pmgPhotoRefreshSummary();
+      }
+    } catch (_) { /* no-op */ }
   }
 
   function clearAllNegatives() {
@@ -545,17 +556,27 @@
 
     /* Add an Avoid toggle to every group. The group head is a real
        <button> (collapse trigger) and the browser refuses to fire
-       clicks on interactive content nested inside another button —
-       even on a <span role="button">. So we insert the toggle as a
-       SIBLING of the head, immediately after it, inside the group
-       container. Visually it sits right under the head label. */
-    var heads = suite.querySelectorAll('.pmg-photo-group-head');
-    for (var i = 0; i < heads.length; i++) {
-      var head = heads[i];
-      var grp = head.parentNode;
-      if (!grp || grp.querySelector(':scope > .pmg-avoid-toggle')) continue;
+       clicks on interactive content nested inside another button.
+       Place the toggle at the BOTTOM of the group body so the top
+       of the open dropdown stays clean. Wrapped in a flex row so it
+       right-aligns regardless of the body\'s flex direction. */
+    var groups = suite.querySelectorAll('.pmg-photo-group');
+    for (var i = 0; i < groups.length; i++) {
+      var grp = groups[i];
       var groupId = grp.getAttribute('data-group');
       if (!groupId) continue;
+      var body = grp.querySelector(':scope > .pmg-photo-group-body');
+      if (!body) continue;
+      /* Idempotent: if a row already exists, leave it alone. Also
+         migrate any legacy top-level toggle (sibling of the head)
+         into the new bottom row. */
+      var legacy = grp.querySelector(':scope > .pmg-avoid-toggle');
+      if (legacy && legacy.parentNode === grp) {
+        try { legacy.parentNode.removeChild(legacy); } catch (_) {}
+      }
+      if (body.querySelector(':scope > .pmg-avoid-toggle-row')) continue;
+      var row = document.createElement('div');
+      row.className = 'pmg-avoid-toggle-row';
       var toggle = document.createElement('button');
       toggle.type = 'button';
       toggle.className = 'pmg-avoid-toggle';
@@ -563,9 +584,8 @@
       toggle.setAttribute('aria-pressed', 'false');
       toggle.setAttribute('aria-label', 'Toggle Avoid mode for this group');
       toggle.textContent = '✕ Avoid';
-      /* Insert directly after the head so it sits between the head
-         and the body. */
-      grp.insertBefore(toggle, head.nextSibling);
+      row.appendChild(toggle);
+      body.appendChild(row);
     }
 
     wireOnce(suite);
