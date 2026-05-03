@@ -1,0 +1,508 @@
+PromptMeGood Implementation Checklist
+Prepared: May 3, 2026. Based on the latest live-site re-audit of PromptMeGood’s public homepage/app, pricing page, guide, privacy policy, and terms (PromptMeGood, Pricing, Guide, Privacy Policy, Terms of Service).
+
+Ship First
+These are the fixes most likely to affect trust, conversion, mobile usability, or launch readiness.
+
+Fix Founding Member Timing Contradiction
+Replace the top banner text “Founding Member Access Available Now” with “Founding Member Waitlist Open” until Stripe checkout is actually live.
+
+Make the same wording consistent across the homepage, pricing page, footer, guide, privacy policy, and terms.
+
+Keep “Available Now” only for features users can actually use today.
+
+Add a short note near Founding Member CTAs: “Checkout Opens Soon. Join The Waitlist To Be Notified.”
+
+Acceptance criteria:
+
+No public page claims users can buy Founding Member access today unless checkout is actually live.
+
+Pricing still clearly says $79 one-time, first 500 members, offer ends July 1 or at 500 members, and fair use limits apply.
+
+Banner, pricing card, CTA, and policy language do not contradict each other.
+
+Define Paid Usage Limits Before Checkout Launch
+Replace vague “higher usage” language with exact numeric limits for Founding Member.
+
+Replace vague “higher usage” language with exact numeric limits for Pro Monthly.
+
+Replace vague “higher usage” language with exact numeric limits for Pro Yearly.
+
+Match pricing-page limits to in-app limits, including the image result copy that says Founding Member receives 15 image generations per day.
+
+Keep “Fair Use Limits Apply” next to every paid usage statement.
+
+Acceptance criteria:
+
+A user can tell exactly what Free, Founding Member, Pro Monthly, and Pro Yearly include.
+
+No paid tier uses “unlimited” unless there is a clearly adjacent fair-use explanation.
+
+“Lifetime Access To Core Features” is still used instead of “unlimited forever.”
+
+Verify Upload Analysis End To End
+Test JPG upload.
+
+Test PNG upload.
+
+Test PDF upload.
+
+Confirm the upload control accepts only intended file types.
+
+Confirm the product shows a clear loading state while analyzing.
+
+Confirm the product shows a useful analysis result.
+
+Confirm the analysis result can be used in prompt creation.
+
+Confirm error handling for unsupported files.
+
+Confirm error handling for oversized files.
+
+Acceptance criteria:
+
+Upload is no longer only “visible”; it is verified as fully functional.
+
+The upload area explains supported formats and what happens after upload.
+
+Failed uploads produce clear, non-technical user messages.
+
+Verify Supabase Magic-Link Login End To End
+Submit a valid email through the account panel.
+
+Confirm the magic-link email arrives.
+
+Open the magic link and confirm a Supabase session is created.
+
+Confirm signed-in state appears in the UI.
+
+Save a prompt while signed in.
+
+Refresh the browser and confirm saved work persists.
+
+Sign out and confirm the UI returns to signed-out state.
+
+Confirm local vault behavior still works for non-logged-in users.
+
+Acceptance criteria:
+
+Login is no longer only “visible”; it is verified as functional.
+
+Saved prompt behavior is clear for local users versus signed-in users.
+
+No account copy promises sync unless sync actually works.
+
+Add Disabled-State Hint For Image Generation
+When “Generate Image Here” is disabled, show a direct helper beside or below the button.
+
+Recommended copy: “Choose A Style Or Tap Surprise Me To Generate.”
+
+If the user adds enough required image details manually, enable the button.
+
+If the user clicks “Surprise Me,” enable the button and visually show what changed.
+
+Acceptance criteria:
+
+A first-time user understands why the image button is disabled.
+
+The helper disappears or changes after the button becomes active.
+
+The hint follows the site’s Title Case policy.
+
+Improve Mobile Touch Targets
+Increase account-panel caret touch area to at least 44px tall.
+
+Increase brand/home link touch area to at least 44px tall.
+
+Increase mobile pricing nav links to at least 44px tall.
+
+Increase footer links to at least 44px tall or group them into larger tappable rows.
+
+Audit small dropdown controls and icon-only buttons.
+
+Confirm visually hidden screen-reader labels are implemented with a proper sr-only pattern and are not exposed as tiny visible targets.
+
+Acceptance criteria:
+
+Primary and secondary mobile controls are at least 44px tall.
+
+There is no accidental horizontal scrolling at 375px, 390px, or 430px widths.
+
+Sticky or fixed UI does not cover active inputs or bottom actions.
+
+Fix Remaining Title Case Violations
+Change “Search your prompts, templates, or saved ideas” to “Search Your Prompts, Templates, Or Saved Ideas.”
+
+Change “Switch to dark mode” to “Switch To Dark Mode.”
+
+Change “Output format” to “Output Format.”
+
+Change “Max response length” to “Max Response Length.”
+
+Change “Extra details (optional)” to “Extra Details (Optional).”
+
+Change inline “(optional)” to “(Optional)” where attached to controls.
+
+Change “Choose the kind of voice you want the AI response to have.” to “Choose The Kind Of Voice You Want The AI Response To Have.”
+
+Change “Optionally cap how long the AI's response can be.” to “Optionally Cap How Long The AI's Response Can Be.”
+
+Change “Only the AI’s response language changes — the app stays in English.” to “Only The AI’s Response Language Changes — The App Stays In English.”
+
+Change “This tells the AI how advanced or beginner you are so it can adjust the response.” to “This Tells The AI How Advanced Or Beginner You Are So It Can Adjust The Response.”
+
+Change “Cold email that books a call” to “Cold Email That Books A Call.”
+
+Change “First $100 plan” to “First $100 Plan.”
+
+Change “Money-mode plan to make your first $100 fast.” to “Money-Mode Plan To Make Your First $100 Fast.”
+
+Acceptance criteria:
+
+Buttons, section titles, card titles, feature labels, short subtitles, badges, navigation items, modal titles, CTA text, control labels, placeholders, dropdown options, chip labels, status labels, action confirmations, and helper text attached to controls use Title Case.
+
+Long body paragraphs, Terms, Privacy paragraphs, and natural error messages are not forced into Title Case.
+
+Trust And Pricing Fixes
+Add A Pricing FAQ
+Add “What Does Founding Member Mean?”
+
+Add “What Does Price Locked For Life Mean?”
+
+Add “What Are Fair Use Limits?”
+
+Add “When Does Checkout Open?”
+
+Add “Can I Cancel Pro?”
+
+Add “Do You Offer Refunds?”
+
+Add “What Happens If PromptMeGood Changes Features Later?”
+
+Recommended answers:
+
+Founding Member: “A limited one-time offer for the first 500 members.”
+
+Price Locked: “Your Founding price does not become a monthly subscription.”
+
+Lifetime Core Access: “Access to core PromptMeGood features while PromptMeGood operates, subject to fair use limits.”
+
+Fair Use: “Limits protect service quality and AI provider costs. Exact daily limits are shown by plan.”
+
+Checkout Timing: “Checkout is not open yet. Join the waitlist to be notified.”
+
+Acceptance criteria:
+
+Users understand what they get, what they do not get, and when they can buy.
+
+The FAQ reduces overpromise risk around lifetime access.
+
+Keep Unshipped Features Out Of Pricing
+Do not list AI Verdict.
+
+Do not list Action Plans.
+
+Do not list Transform Studio.
+
+Do not list Full Suite Rendering.
+
+Do not list Prompt Chains.
+
+Do not list Money Mode Pro.
+
+Do not list Brand Voice Profiles.
+
+Do not list Team Folders.
+
+Do not list Stripe checkout as live until checkout is live.
+
+Acceptance criteria:
+
+Pricing only lists visible, usable, or clearly coming-soon features.
+
+Coming-soon features are labeled as coming soon, not included as current plan value.
+
+Create A Single Pricing Source Of Truth
+Define plan names in one config object or pricing content file.
+
+Define prices in the same source.
+
+Define limits in the same source.
+
+Use that source for pricing page cards.
+
+Use that source for guide references.
+
+Use that source for app limit messages.
+
+Use that source for policy snippets where possible.
+
+Acceptance criteria:
+
+Updating Founding, Pro, or yearly pricing in one place updates all public references.
+
+Search across the codebase returns no stale $49, $59, or $19 references unless intentionally archived or commented with context.
+
+UX Polish Fixes
+Reduce First-Use Friction
+Add a compact “Start Here” prompt input above the fold, or make the hero CTA auto-scroll directly to the active builder.
+
+Keep advanced tuning collapsed by default on mobile.
+
+Label the collapsed tuning section “Customize Output.”
+
+Default the text flow to goal input plus “Fix My Prompt.”
+
+Show advanced controls only after the user opts in.
+
+Acceptance criteria:
+
+A first-time user can start creating a text prompt within 10 seconds.
+
+The first visible action is not blocked by pricing, account setup, or advanced settings.
+
+Improve Text Prompt Result Hierarchy
+After “Fix My Prompt,” keep “Run With AI Here,” “Copy Prompt,” and “Improve With AI” close to the generated prompt.
+
+Make the primary next action visually stronger than secondary actions.
+
+Keep Accept/Reject suggested changes visible but not overwhelming.
+
+Keep Prompt Strength visible without pushing the output too far down.
+
+Acceptance criteria:
+
+After prompt generation, the user immediately sees what to do next.
+
+Copy, run, and refine actions are within the same visual region as the generated prompt.
+
+Improve Image Generation Feedback
+After “Generate Image Here,” scroll or anchor the user to the result/loading area.
+
+Show a loading state that says “Generating Image.”
+
+Show estimated wait language without promising an exact time.
+
+Keep “Save Image To Your Device” and “Generate Another” directly near the generated image.
+
+Keep “Copy Prompt” near the image prompt used to generate the image.
+
+Acceptance criteria:
+
+The user is never unsure whether image generation started.
+
+The image result actions remain visible and adjacent to the image.
+
+Clean Up Long Page Density
+Move workspace analytics lower on the page.
+
+Consider putting Prompt Vault, analytics, and saved-work tools behind a “Workspace” tab.
+
+Keep account and pricing nudges secondary during first prompt creation.
+
+Avoid showing too many cards before the first successful result.
+
+Acceptance criteria:
+
+The homepage feels like a working tool first, and a dashboard second.
+
+Pricing and saved-work areas do not interrupt first-use flow.
+
+SEO And Metadata Maintenance
+Keep Current Homepage Metadata
+Keep title: “PromptMeGood | AI Prompt Workstation For Better AI Results.”
+
+Keep meta description: “Create better prompts, run AI responses, generate images, save your work, and refine results inside one AI prompt workstation.”
+
+Keep homepage canonical as https://www.promptmegood.com/.
+
+Keep Open Graph and Twitter card tags present.
+
+Update social image alt text if desired to emphasize the workstation positioning.
+
+Acceptance criteria:
+
+Homepage metadata still matches the target after the next deployment.
+
+No duplicate conflicting title or description tags are present.
+
+Keep Pricing Metadata In Sync
+Update pricing meta title and description whenever plan status changes.
+
+If checkout launches, remove waitlist-only wording from pricing metadata.
+
+If Founding Member sells out, update the pricing metadata, plan card, FAQ, and guide.
+
+Acceptance criteria:
+
+Search previews do not advertise stale pricing or stale availability.
+
+Policy Launch Checklist
+Before Stripe Checkout Goes Live
+Confirm Privacy Policy mentions Stripe/payment processing.
+
+Confirm Terms mention paid plans, cancellation, refunds, lifetime access, and fair use.
+
+Confirm pricing page links to Terms and Privacy.
+
+Confirm checkout copy states what is being purchased.
+
+Confirm checkout success page repeats plan name, price, and fair-use limits.
+
+Confirm cancellation language exists for Pro Monthly and Pro Yearly.
+
+Acceptance criteria:
+
+Users understand billing before payment.
+
+Legal pages match the actual checkout state.
+
+Before Account Sync Goes Live Publicly
+Confirm Privacy Policy mentions Supabase/auth/account handling.
+
+Confirm Privacy Policy explains saved prompt/history storage.
+
+Confirm users can delete or export saved work.
+
+Confirm users understand local vault versus cloud/account storage.
+
+Acceptance criteria:
+
+Account features do not surprise users with hidden storage or sync behavior.
+
+Safe Pricing Copy To Use Now
+Free Plan
+Create Text Prompts With Fix My Prompt.
+
+Use Help Me Start.
+
+Use Prompt Tuning Controls.
+
+Check Prompt Strength And Prompt Quality.
+
+Use Basic Refinement Tools.
+
+Run With AI With Daily Limits.
+
+Create Image Prompts With Photography Suite.
+
+Generate Images With Daily Limits.
+
+Save Work Locally In Prompt Vault.
+
+Use Prompt History.
+
+Export And Import Local Prompts.
+
+Open Prompts In ChatGPT, Claude, Perplexity, And Gemini.
+
+Founding Member Plan
+One-Time $79 Founding Member Access.
+
+Limited To The First 500 Members.
+
+Offer Ends July 1 Or At 500 Founding Members, Whichever Comes First.
+
+Price Locked For Life.
+
+Lifetime Access To Core Features While PromptMeGood Operates.
+
+Higher Run With AI Usage.
+
+Higher Image Generation Usage.
+
+More File / Image Analysis after the upload flow is fully verified.
+
+Prompt Vault And History.
+
+Photography Suite Tools.
+
+Money Mode.
+
+Fair Use Limits Apply.
+
+Pro Monthly Plan
+Everything In Free.
+
+Higher Run With AI Usage.
+
+Higher Image Generation Usage.
+
+More File / Image Analysis after the upload flow is fully verified.
+
+More Prompt Vault Capacity.
+
+More Saved Work And History.
+
+Photography Suite Power Tools.
+
+Money Mode.
+
+Priority Feature Access.
+
+Fair Use Limits Apply.
+
+Final QA Pass After Fixes
+Run this checklist after deployment:
+
+Open homepage on desktop at 1440px.
+
+Open homepage on mobile at 390px.
+
+Create a text prompt.
+
+Click “Fix My Prompt.”
+
+Confirm generated prompt appears.
+
+Click “Run With AI Here.”
+
+Confirm AI response appears.
+
+Copy prompt.
+
+Improve prompt.
+
+Check quality.
+
+Create an image prompt.
+
+Use “Surprise Me.”
+
+Generate an image.
+
+Confirm save/share/generate-another actions appear.
+
+Upload JPG.
+
+Upload PNG.
+
+Upload PDF.
+
+Test magic-link login.
+
+Save a prompt signed out.
+
+Save a prompt signed in.
+
+Open Pricing.
+
+Confirm Free, Founding Member, Pro Monthly, and Pro Yearly are accurate.
+
+Confirm no stale prices appear.
+
+Open Privacy Policy.
+
+Open Terms.
+
+Confirm policy language matches current live features.
+
+Search visible copy for AI Verdict, Action Plans, Transform Studio, Full Suite Rendering, Prompt Chains, Money Mode Pro, Brand Voice Profiles, and Team Folders.
+
+Confirm those unshipped names are absent unless deliberately labeled “Coming Soon.”
+
+Validate title tag, meta description, canonical URL, Open Graph tags, and Twitter tags.
+
+Confirm there is no horizontal overflow on mobile.
+
+Confirm visible mobile tap targets are at least 44px tall.
