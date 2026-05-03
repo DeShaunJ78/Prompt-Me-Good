@@ -43,8 +43,13 @@ test.describe("Photography Suite handoff @ mobile-360", () => {
       undefined,
       { timeout: 10_000 },
     );
-    /* Enter image mode so the suite + result section are exposed. */
+    /* Enter image mode so the suite + result section are exposed.
+       Also drop `pmg-workstation-promote` so the entry-point cue (which
+       opts out of the streamlined homepage above-the-fold mode) is
+       allowed to mount — this test exercises the handoff feature in
+       isolation, not the streamlined homepage layout. */
     await page.evaluate(() => {
+      document.body.classList.remove("pmg-workstation-promote");
       const w = window as unknown as { setMode?: (m: string) => void };
       if (typeof w.setMode === "function") {
         w.setMode("image");
@@ -55,6 +60,13 @@ test.describe("Photography Suite handoff @ mobile-360", () => {
       const sec = document.getElementById("imageResultSection");
       if (sec) sec.removeAttribute("hidden");
     });
+    /* Give the suite-handoff init retries a chance to mount the cue
+       now that the streamlined-mode opt-out is gone. */
+    await page.waitForFunction(
+      () => !!document.getElementById("pmg-suite-handoff-cue"),
+      undefined,
+      { timeout: 5_000 },
+    );
     await page.waitForSelector("#pmg-suite-handoff-card", {
       state: "attached",
       timeout: 5_000,

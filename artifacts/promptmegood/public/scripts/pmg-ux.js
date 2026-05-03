@@ -7784,14 +7784,19 @@
     anchor.style.cssText = 'display:block;height:0;scroll-margin-top:96px;';
     wrap.appendChild(anchor);
 
-    /* Header card — pairs with #pmg-col-image's header. */
-    var header = document.createElement('header');
-    header.id = TEXT_HEADER_ID;
-    header.innerHTML =
-      '<span class="pmg-col-text-eyebrow">Workspace</span>' +
-      '<h2 class="pmg-col-text-title">Create A Text Prompt</h2>' +
-      '<p class="pmg-col-text-sub">Describe What You Want — We\'ll Build A Sharp Prompt You Can Run With AI Right Here Or Copy Anywhere.</p>';
-    wrap.appendChild(header);
+    /* Header card — pairs with #pmg-col-image's header. Streamlined
+       homepage mode (`body.pmg-workstation-promote`) opts out of this
+       above-the-fold decoration so the textarea stays above the fold;
+       the rest of the column wrapper still gets built. */
+    if (!(document.body && document.body.classList.contains('pmg-workstation-promote'))) {
+      var header = document.createElement('header');
+      header.id = TEXT_HEADER_ID;
+      header.innerHTML =
+        '<span class="pmg-col-text-eyebrow">Workspace</span>' +
+        '<h2 class="pmg-col-text-title">Create A Text Prompt</h2>' +
+        '<p class="pmg-col-text-sub">Describe What You Want — We\'ll Build A Sharp Prompt You Can Run With AI Right Here Or Copy Anywhere.</p>';
+      wrap.appendChild(header);
+    }
 
     /* Insert wrapper where #builder-panel was, then move both panels in. */
     appShell.insertBefore(wrap, builderPanel);
@@ -11159,6 +11164,10 @@
   /* ---------- DOM ---------- */
   function buildPanel() {
     if (document.getElementById(SECTION_ID)) return true;
+    /* Streamlined homepage mode opts out of above-the-fold decorations.
+       The account panel mounts immediately above #builder, which would
+       push the textarea below the fold; we skip mounting in that mode. */
+    if (document.body && document.body.classList.contains('pmg-workstation-promote')) return false;
     var builder = document.getElementById('builder');
     if (!builder || !builder.parentNode) return false;
     var section = document.createElement('section');
@@ -12809,6 +12818,12 @@
        times by other IIFEs and we want them hidden as soon as they
        appear, even on retries when the pin itself is already promoted. */
     hideDuplicateHelpCTAs();
+
+    /* Streamlined homepage mode opts out of above-the-fold decorations.
+       The promoted pin lives in a wrapper above the .app-shell, which
+       would push the textarea below the fold; we leave the pin in its
+       original (default-hidden) location instead. */
+    if (document.body && document.body.classList.contains('pmg-workstation-promote')) return false;
 
     var pin = document.getElementById('weekly-goal-pin');
     var builder = document.getElementById('builder');

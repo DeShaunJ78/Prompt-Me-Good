@@ -460,6 +460,8 @@
   /* -------- Entry-point cue -------- */
   function mountEntryCue() {
     if ($id(CUE_ID)) return true;
+    /* Streamlined homepage mode opts out of above-the-fold decorations. */
+    if (document.body && document.body.classList.contains('pmg-workstation-promote')) return false;
     var btn = $id('imageModeBtn');
     if (!btn || !btn.parentNode || !btn.parentNode.parentNode) return false;
     /* Mount as a sibling to .image-mode-hint (already there) so

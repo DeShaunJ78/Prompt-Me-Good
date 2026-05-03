@@ -3375,19 +3375,20 @@
     window.addEventListener('load', function () { window.scrollTo(0, 0); }, { once: true });
   </script>
 <style id="pmg-workstation-promote">
-    /* Workstation-promote: keep the textarea above the fold by hiding
-       JS-injected decorations that mount immediately above #builder. */
-    #pmg-account,
-    #pmg-tf-step1,
-    #weekly-goal-pin,
-    #pmg-weekly-pin-wrap,
-    #pmg-col-text-header,
-    #pmg-suite-handoff-cue,
-    .hero .hero-proof-bar,
-    html #weekly-goal-pin.pmg-weekly-pin-promoted { display: none !important; }
+    /* Workstation-promote: a named layout mode that keeps the textarea
+       above the fold. The body carries `pmg-workstation-promote`; injection
+       scripts (pmg-ux T28/T40/T44, pmg-text-flow-v2, pmg-suite-handoff)
+       check the flag at mount time and skip their above-the-fold
+       decorations. The CSS below only hides the static-DOM elements that
+       can't opt out at mount time — the proof bar in the hero, and the
+       weekly-goal pin (which is otherwise revealed once the user has
+       generated a result). New homepage cards should opt out in their
+       own injection script, not by adding selectors here. */
+    body.pmg-workstation-promote .hero .hero-proof-bar,
+    body.pmg-workstation-promote #weekly-goal-pin { display: none !important; }
   </style>
 </head>
-<body>
+<body class="pmg-workstation-promote">
   <a class="skip-link" href="#main">Skip to content</a>
 
   <header class="topbar">

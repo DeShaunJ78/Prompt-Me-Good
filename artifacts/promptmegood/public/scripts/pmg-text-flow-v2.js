@@ -227,6 +227,8 @@
   function injectStep1() {
     var builder = $id('builder');
     if (!builder || !builder.parentNode) return;
+    /* Streamlined homepage mode opts out of above-the-fold decorations. */
+    if (document.body && document.body.classList.contains('pmg-workstation-promote')) return;
     var step = $id(STEP1_ID);
     if (!step) {
       step = buildStep(
