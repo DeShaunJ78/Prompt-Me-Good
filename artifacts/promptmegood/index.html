@@ -1035,20 +1035,16 @@
         min-height: 44px;
         padding: 4px 0;
       }
-      .site-footer-link {
+      /* Scope 44px hit area to footer NAV containers only — .site-footer-link
+         is also used as inline prose in legal-modal paragraphs and the early
+         access blurb, where inline-flex+min-height would distort paragraph flow. */
+      .site-footer-social-links .site-footer-link,
+      .site-footer-legal .site-footer-link {
         min-height: 44px;
         display: inline-flex;
         align-items: center;
-        padding: 8px 12px;
-      }
-      .site-footer-social-links .site-footer-link {
-        min-height: 44px;
         padding: 8px 10px;
         font-size: var(--text-sm);
-      }
-      .site-footer-legal .site-footer-link {
-        min-height: 44px;
-        padding: 8px 10px;
       }
       .legal-modal-close {
         min-width: 44px;
