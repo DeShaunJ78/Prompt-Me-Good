@@ -38,6 +38,20 @@
         }
       } catch (e) {}
     })();
+    /* Light/dark theme bootstrap — honor the user's saved sitewide preference so
+       this legal page matches the theme they chose on index/pricing/guide. */
+    (function () {
+      try {
+        var saved = localStorage.getItem('promptmegood:theme');
+        var theme;
+        if (saved === 'dark' || saved === 'light') {
+          theme = saved;
+        } else {
+          theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {}
+    })();
   </script>
   <style>
     :root, [data-theme="light"] {

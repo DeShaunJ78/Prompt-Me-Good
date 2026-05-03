@@ -45,6 +45,21 @@
         }
       } catch (e) {}
     })();
+    /* Light/dark theme bootstrap — applies the saved preference BEFORE paint to
+       eliminate the brief flash of light theme before the body script runs.
+       The body script (later in this file) still wires the toggle button. */
+    (function () {
+      try {
+        var saved = localStorage.getItem('promptmegood:theme');
+        var theme;
+        if (saved === 'dark' || saved === 'light') {
+          theme = saved;
+        } else {
+          theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {}
+    })();
   </script>
   <style>
     :root, [data-theme="light"] {

@@ -878,9 +878,21 @@
 
   <script>
     (function () {
+      const THEME_KEY = 'promptmegood:theme';
       const root = document.documentElement;
       const toggle = document.querySelector('[data-theme-toggle]');
-      let theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      /* Read the saved sitewide preference first; fall back to OS. Storage key
+         matches pricing.html / index.html so theme persists across all pages. */
+      let theme;
+      try {
+        const saved = localStorage.getItem(THEME_KEY);
+        if (saved === 'dark' || saved === 'light') {
+          theme = saved;
+        }
+      } catch (e) {}
+      if (!theme) {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
       root.setAttribute('data-theme', theme);
 
       function renderThemeIcon(mode) {
@@ -897,6 +909,7 @@
         theme = theme === 'dark' ? 'light' : 'dark';
         root.setAttribute('data-theme', theme);
         renderThemeIcon(theme);
+        try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
       });
     })();
   </script>

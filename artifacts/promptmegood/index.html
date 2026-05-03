@@ -222,6 +222,22 @@
         }
       } catch (e) {}
     })();
+    /* Light/dark theme bootstrap — runs in <head> before paint so the saved preference
+       (set on any page: pricing.html, guide.html, etc.) is honored sitewide and there is
+       no flash of the wrong theme. Falls back to the OS preference when nothing is saved.
+       Storage key matches pricing.html's writer: 'promptmegood:theme'. */
+    (function () {
+      try {
+        var saved = localStorage.getItem('promptmegood:theme');
+        var theme;
+        if (saved === 'dark' || saved === 'light') {
+          theme = saved;
+        } else {
+          theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {}
+    })();
   </script>
   <style>
     /* Art direction: lightweight prompt-builder SaaS → clean, direct, conversion-first.
@@ -4421,9 +4437,13 @@
   </div>
   <script>
     (function () {
+      const THEME_KEY = 'promptmegood:theme';
       const root = document.documentElement;
       const toggle = document.querySelector('[data-theme-toggle]');
-      let theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      /* The head bootstrap already applied the saved/system theme to <html>.
+         Read the current attribute instead of re-deriving from system preference
+         so we don't overwrite the user's saved choice. */
+      let theme = root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
       root.setAttribute('data-theme', theme);
 
       function renderThemeIcon(mode) {
@@ -4440,6 +4460,9 @@
         theme = theme === 'dark' ? 'light' : 'dark';
         root.setAttribute('data-theme', theme);
         renderThemeIcon(theme);
+        /* Persist sitewide so pricing.html, guide.html, and the legal pages
+           load in the same theme. Same key pricing.html reads/writes. */
+        try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
       });
 
       /* Theme accent picker — clicks update <html data-accent>, persist to localStorage, and
