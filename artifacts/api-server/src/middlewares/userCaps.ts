@@ -182,11 +182,9 @@ export function userCapEnforce(feature: PmgFeature, n = 1) {
       return;
     }
     req.pmgUser = ctx;
+    // Every plan has finite daily caps now (founding/pro use higher
+    // fair-use limits); enforce against the appropriate cap matrix.
     const caps = effectiveCaps(ctx.plan, ctx.createdAtMs);
-    if (caps === null) {
-      next();
-      return;
-    }
     const used = getOrInitDay(ctx.userId)[feature];
     if (used + n > caps[feature]) {
       res.status(429).json({

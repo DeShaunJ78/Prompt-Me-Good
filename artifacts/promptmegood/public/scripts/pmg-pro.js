@@ -158,13 +158,35 @@
       return now;
     } catch (e) { return Date.now(); }
   }
+  /* Task #100 — Server-first trial source of truth.
+     For signed-in users, pmg-ux.js publishes the authoritative trial
+     state from /api/me/profile to window.__pmgServerProfile. We prefer
+     that over the localStorage first-visit timestamp so the cap UI never
+     desyncs from the server's enforcement. Anonymous visitors fall back
+     to the localStorage signal so the trial banner still works pre-login. */
+  function pmgServerTrialState() {
+    try {
+      var sp = window.__pmgServerProfile;
+      if (!sp || !sp.trial) return null;
+      return {
+        active: !!sp.trial.active,
+        daysLeft: typeof sp.trial.days_left === 'number' ? sp.trial.days_left : 0,
+        plan: sp.plan || 'free',
+        caps: sp.caps || null
+      };
+    } catch (_) { return null; }
+  }
   function pmgInTrial() {
+    var srv = pmgServerTrialState();
+    if (srv) return srv.plan === 'free' && srv.active;
     try {
       var first = pmgFirstVisitMs();
       return (Date.now() - first) < (TRIAL_DAYS * 24 * 60 * 60 * 1000);
     } catch (e) { return false; }
   }
   function pmgTrialDaysLeft() {
+    var srv = pmgServerTrialState();
+    if (srv) return srv.plan === 'free' ? srv.daysLeft : 0;
     try {
       var first = pmgFirstVisitMs();
       var remainingMs = (TRIAL_DAYS * 24 * 60 * 60 * 1000) - (Date.now() - first);
@@ -172,6 +194,12 @@
     } catch (e) { return 0; }
   }
   function getActiveDailyLimits() {
+    /* Prefer server-published caps when available — they reflect the
+       user's actual plan (founding/pro/free + trial state) authoritatively. */
+    var srv = pmgServerTrialState();
+    if (srv && srv.caps && typeof srv.caps.run === 'number') {
+      return { run: srv.caps.run, img: srv.caps.img, analyze: srv.caps.analyze };
+    }
     return pmgInTrial() ? TRIAL_DAILY_LIMITS : FREE_DAILY_LIMITS;
   }
 
@@ -419,11 +447,22 @@
                     pmg-ux.js, which calls POST /api/create-checkout-session
                     with { tier: 'founding' } and redirects to Stripe.
          Secondary → Email capture for Pro Monthly launch notifications. */
+    /* Modal copy is templated from window.PMG_PRICING so prices and the
+       deadline string flow from one canonical source. The fallback
+       literals match the config defaults and only fire if the config
+       script failed to load. */
+    var __cfg2 = (typeof window !== 'undefined' && window.PMG_PRICING) || {};
+    var __founding = (typeof __cfg2.FOUNDING_PRICE_USD === 'number') ? __cfg2.FOUNDING_PRICE_USD : 79;
+    var __proM     = (typeof __cfg2.PRO_MONTHLY_USD    === 'number') ? __cfg2.PRO_MONTHLY_USD    : 9;
+    var __proY     = (typeof __cfg2.PRO_YEARLY_USD     === 'number') ? __cfg2.PRO_YEARLY_USD     : 79;
+    var __limit    = (typeof __cfg2.FOUNDING_LIMIT     === 'number') ? __cfg2.FOUNDING_LIMIT     : 500;
+    var __lock     = __cfg2.PRICE_LOCK_TAGLINE || 'price locked for life';
+    var __deadline = __cfg2.FOUNDING_DEADLINE_COPY || 'Offer ends July 1 or at 500 founding members, whichever comes first.';
     overlay.innerHTML =
       '<div class="pmg-upgrade-modal" role="dialog" aria-modal="true" aria-labelledby="pmg-upgrade-title">' +
         '<span class="pmg-upgrade-modal-icon" aria-hidden="true">🔒</span>' +
         '<h3 id="pmg-upgrade-title">' + safe + ' Is A Pro Feature</h3>' +
-        '<p>Unlock higher usage on this feature. Founding Member is a one-time $79 payment for lifetime access to core features — limited to the first 500 buyers, price locked for life. Offer ends July 1 or at 500 founding members, whichever comes first. Pro Monthly ($9/month) and Pro Yearly ($79/year) launch soon. Fair use limits apply.</p>' +
+        '<p>Unlock higher usage on this feature. Founding Member is a one-time $' + __founding + ' payment for lifetime access to core features — limited to the first ' + __limit + ' buyers, ' + __lock + '. ' + __deadline + ' Pro Monthly ($' + __proM + '/month) and Pro Yearly ($' + __proY + '/year) launch soon. Fair use limits apply.</p>' +
         '<div class="pmg-upgrade-modal-actions">' +
           '<a class="pmg-upgrade-cta pmg-upgrade-btn" href="./pricing.html#early-access">Join Founding Member Waitlist</a>' +
           '<a class="pmg-upgrade-cta-secondary" href="./pricing.html#early-access">Notify Me When Pro Launches</a>' +

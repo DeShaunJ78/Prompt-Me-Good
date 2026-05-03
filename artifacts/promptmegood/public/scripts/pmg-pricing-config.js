@@ -20,8 +20,11 @@
     FOUNDING_LIMIT: 500,
     FOUNDING_DEADLINE_COPY: 'Offer Ends July 1 Or At 500 Founding Members — Whichever Comes First',
     TRIAL_DAYS: 7,
-    TRIAL_DAILY_CAPS: { run: 10, img: 5, analyze: 3 },
-    FREE_DAILY_CAPS:  { run: 3,  img: 1, analyze: 1 },
+    /* Per-plan daily caps. Mirrors api-server/src/lib/pricing-config.ts. */
+    TRIAL_DAILY_CAPS:    { run: 10, img: 5,  analyze: 3  },
+    FREE_DAILY_CAPS:     { run: 3,  img: 1,  analyze: 1  },
+    FOUNDING_DAILY_CAPS: { run: 30, img: 15, analyze: 10 },
+    PRO_DAILY_CAPS:      { run: 60, img: 30, analyze: 20 },
     PRICE_LOCK_TAGLINE: 'price locked for life'
   };
 })();

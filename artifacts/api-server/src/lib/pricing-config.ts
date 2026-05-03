@@ -15,8 +15,14 @@ export const PMG_PRICING = {
   FOUNDING_LIMIT: 500,
   FOUNDING_DEADLINE_COPY: "Offer Ends July 1 Or At 500 Founding Members — Whichever Comes First",
   TRIAL_DAYS: 7,
-  TRIAL_DAILY_CAPS: { run: 10, img: 5, analyze: 3 },
-  FREE_DAILY_CAPS: { run: 3, img: 1, analyze: 1 },
+  // Per-day per-feature caps for every plan. None of the paid tiers are
+  // unlimited — they have generous fair-use caps so unit economics stay
+  // predictable. Trial caps apply to free users in their first 7 days
+  // since account creation; standard free caps apply afterward.
+  TRIAL_DAILY_CAPS:    { run: 10, img: 5,  analyze: 3 },
+  FREE_DAILY_CAPS:     { run: 3,  img: 1,  analyze: 1 },
+  FOUNDING_DAILY_CAPS: { run: 30, img: 15, analyze: 10 },
+  PRO_DAILY_CAPS:      { run: 60, img: 30, analyze: 20 },
   PRICE_LOCK_TAGLINE: "price locked for life",
 } as const;
 
@@ -42,15 +48,16 @@ export interface DailyCaps {
   analyze: number;
 }
 
-/** Returns the effective per-day caps for the user, or `null` when unlimited
- *  (Founding / Pro). Free users in the first 7 days since account creation
- *  get the higher trial caps; otherwise the standard free caps. */
+/** Returns the effective per-day caps for the user. No tier is unlimited:
+ *  founding/pro have generous fair-use caps, free users in their 7-day
+ *  trial get the higher trial caps, and the rest get standard free caps. */
 export function effectiveCaps(
   plan: PmgPlan,
   createdAtMs: number,
   now: number = Date.now(),
-): DailyCaps | null {
-  if (plan === "founding" || plan === "pro") return null;
+): DailyCaps {
+  if (plan === "pro") return { ...PMG_PRICING.PRO_DAILY_CAPS };
+  if (plan === "founding") return { ...PMG_PRICING.FOUNDING_DAILY_CAPS };
   return isInTrial(createdAtMs, now)
     ? { ...PMG_PRICING.TRIAL_DAILY_CAPS }
     : { ...PMG_PRICING.FREE_DAILY_CAPS };

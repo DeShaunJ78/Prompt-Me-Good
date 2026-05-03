@@ -11625,6 +11625,46 @@
   /* ----------------------------------------------------------------- */
   var apiBase = ''; /* same-origin; reverse proxy routes /api → api-server */
 
+  /* Task #100 — Authoritative price renderer.
+     Walks the document for elements tagged with data-pmg-price="<key>"
+     and data-pmg-deadline, and overwrites their text content with the
+     value from window.PMG_PRICING. HTML keeps literal numbers so search
+     engines and no-JS visitors see the right price; this overlay
+     guarantees the rendered numbers match the canonical config at
+     runtime, eliminating drift between HTML and JS surfaces. Idempotent
+     and runs once at DOM ready (and again whenever the profile is
+     applied, in case dynamic content was injected). */
+  var __pmgPriceRendered = false;
+  function pmgRenderConfigDrivenPrices() {
+    try {
+      var cfg = window.PMG_PRICING;
+      if (!cfg) return;
+      var priceMap = {
+        founding:    typeof cfg.FOUNDING_PRICE_USD === 'number' ? '$' + cfg.FOUNDING_PRICE_USD : null,
+        pro_monthly: typeof cfg.PRO_MONTHLY_USD    === 'number' ? '$' + cfg.PRO_MONTHLY_USD    : null,
+        pro_yearly:  typeof cfg.PRO_YEARLY_USD     === 'number' ? '$' + cfg.PRO_YEARLY_USD     : null
+      };
+      var nodes = document.querySelectorAll('[data-pmg-price]');
+      for (var i = 0; i < nodes.length; i++) {
+        var key = nodes[i].getAttribute('data-pmg-price');
+        if (key && priceMap[key]) nodes[i].textContent = priceMap[key];
+      }
+      var deadlineNodes = document.querySelectorAll('[data-pmg-deadline]');
+      var deadline = cfg.FOUNDING_DEADLINE_COPY;
+      if (deadline) {
+        for (var j = 0; j < deadlineNodes.length; j++) {
+          deadlineNodes[j].textContent = deadline;
+        }
+      }
+      __pmgPriceRendered = true;
+    } catch (_) {}
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', pmgRenderConfigDrivenPrices, { once: true });
+  } else {
+    pmgRenderConfigDrivenPrices();
+  }
+
   /* Task #100 — Always-visible plan pill in the topbar.
      Renders "★ Founding Member" or "★ Pro Member" inline in the global
      topbar when the user holds that plan; removes itself for free users.
@@ -11693,6 +11733,9 @@
        the collapsed account panel. Removes itself when the user is on the
        free plan. */
     try { renderHeaderPlanPill(profile.plan); } catch (_) {}
+    /* Re-run the price renderer in case profile-driven content
+       (account panel, history) added new data-pmg-price nodes. */
+    try { pmgRenderConfigDrivenPrices(); } catch (_) {}
     /* Task #100 — Surface authoritative server-side trial/caps/used data
        so pmg-pro.js and other consumers can prefer it over the
        localStorage-only fallback. */

@@ -272,7 +272,7 @@ router.get(
           active: plan === "free" && isInTrial(user.createdAtMs),
           days_left: plan === "free" ? trialDaysLeft(user.createdAtMs) : 0,
         },
-        caps, // null when unlimited (founding / pro)
+        caps, // every plan has finite caps; founding/pro just have higher ones
         used,
         pricing: {
           founding_usd: PMG_PRICING.FOUNDING_PRICE_USD,

@@ -752,6 +752,7 @@ router.post(
   runLimiter,
   handleAnalyzeUpload,
   runCostCheck,
+  userCapEnforce("analyze"),
   async (req: Request, res: Response) => {
     const file = (req as Request & { file?: Express.Multer.File }).file;
     const goalRaw = typeof req.body?.prompt === "string" ? req.body.prompt : "";
