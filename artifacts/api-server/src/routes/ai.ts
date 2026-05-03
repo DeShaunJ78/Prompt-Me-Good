@@ -460,7 +460,18 @@ const IMAGE_PROMPT_ENHANCER =
   "Include: subject, setting, lighting, camera angle, mood, style, and technical quality descriptors. " +
   "Make it vivid and specific. Output ONLY the enhanced prompt — no commentary, no preamble.";
 
-router.post("/image", imageLimiter, userCapEnforce("img"), async (req: Request, res: Response) => {
+// Per-user image cap charges 1 unit per generated image (1–4 per request)
+// so a single n=4 call can't bypass the per-day matrix (free=1, trial=5,
+// founding=15, pro=30).
+const imageCostExtractor = (req: Request): number => {
+  const raw = (req.body as { n?: unknown } | undefined)?.n;
+  if (typeof raw === "number" && Number.isFinite(raw)) {
+    return Math.min(4, Math.max(1, Math.floor(raw)));
+  }
+  return 1;
+};
+
+router.post("/image", imageLimiter, userCapEnforce("img", imageCostExtractor), async (req: Request, res: Response) => {
   const descRaw = req.body?.prompt ?? req.body?.description ?? req.body?.goal;
   if (typeof descRaw !== "string" || !descRaw.trim()) {
     res.status(400).json({ success: false, ok: false, error: "A description is required." });

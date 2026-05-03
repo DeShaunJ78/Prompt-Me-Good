@@ -163,8 +163,14 @@ export interface UserCapsRequest extends Request {
 }
 
 /** Express middleware factory: enforces per-user, per-plan daily caps for
- *  the given feature. Anonymous and Founding/Pro users pass through. */
-export function userCapEnforce(feature: PmgFeature, n = 1) {
+ *  the given feature. Anonymous and unauthenticated requests pass through
+ *  (existing IP rate limits still apply). The cost can be a fixed number
+ *  or a function of the request body — used by /image where one HTTP
+ *  request may produce 1–4 images and must charge the cap accordingly. */
+export function userCapEnforce(
+  feature: PmgFeature,
+  cost: number | ((req: Request) => number) = 1,
+) {
   return async function userCapEnforceMiddleware(
     req: UserCapsRequest,
     res: Response,
@@ -182,6 +188,18 @@ export function userCapEnforce(feature: PmgFeature, n = 1) {
       return;
     }
     req.pmgUser = ctx;
+    // Resolve the per-request cost. For /image this comes from req.body.n
+    // (1–4); for run/analyze it's a constant 1. Always clamp to >=1 so a
+    // bogus payload can't sneak through with cost=0.
+    let n = 1;
+    try {
+      const raw = typeof cost === "function" ? cost(req) : cost;
+      if (typeof raw === "number" && Number.isFinite(raw) && raw >= 1) {
+        n = Math.floor(raw);
+      }
+    } catch (_) {
+      n = 1;
+    }
     // Every plan has finite daily caps now (founding/pro use higher
     // fair-use limits); enforce against the appropriate cap matrix.
     const caps = effectiveCaps(ctx.plan, ctx.createdAtMs);
