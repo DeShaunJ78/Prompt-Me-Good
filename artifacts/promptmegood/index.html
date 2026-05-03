@@ -4761,7 +4761,7 @@ Context:
 - Category: ${categoryLabels[categoryKey]}
 - Experience level: ${titleCase(data.skillLevel)}
 - Tone: ${titleCase(data.tone)}
-- Output format: ${titleCase(data.outputFormat)}${personalityContext}${extraDetails}${rulesOrLimitsBlock}`;
+- Output Format: ${titleCase(data.outputFormat)}${personalityContext}${extraDetails}${rulesOrLimitsBlock}`;
       }
 
       function getFormData() {
@@ -4873,7 +4873,7 @@ Context:
           edits.push({ id: 'category', label: 'Category focus', reason: 'Tied to your "' + categoryLabels[categoryKey] + '" category', kind: 'directive', line: 'Category focus (' + categoryLabels[categoryKey] + '): ' + categoryDirectives[categoryKey] });
           if (data.tone) edits.push({ id: 'tone', label: 'Tone instruction', reason: 'Added a tone — ' + titleCase(data.tone), kind: 'directive', line: 'Use ' + articleFor(data.tone) + ' ' + titleCase(data.tone) + ' tone.' });
           if (data.skillLevel) edits.push({ id: 'skill_match', label: 'Audience clarifier', reason: 'Clarified the audience — ' + titleCase(data.skillLevel) + ' user', kind: 'directive', line: 'Keep the response appropriate for ' + articleFor(data.skillLevel) + ' ' + titleCase(data.skillLevel) + ' user.' });
-          if (data.outputFormat) edits.push({ id: 'format', label: 'Output format', reason: 'Locked the output format — ' + titleCase(data.outputFormat), kind: 'directive', line: 'Format the answer as ' + articleFor(data.outputFormat) + ' ' + titleCase(data.outputFormat) + '.' });
+          if (data.outputFormat) edits.push({ id: 'format', label: 'Output Format', reason: 'Locked The Output Format — ' + titleCase(data.outputFormat), kind: 'directive', line: 'Format the answer as ' + articleFor(data.outputFormat) + ' ' + titleCase(data.outputFormat) + '.' });
           edits.push({ id: 'no_filler', label: 'Cut filler', reason: 'Removed filler — bans vague advice and generic motivation', kind: 'directive', line: 'Avoid vague advice, filler, or generic motivation.' });
           edits.push({ id: 'examples', label: 'Concrete examples', reason: 'Asks for examples, templates, checklists, or scripts', kind: 'directive', line: 'Include examples, templates, checklists, or scripts when useful.' });
           edits.push({ id: 'next_actions', label: 'Top 3 next actions', reason: 'Ends with the top 3 actions to take next', kind: 'directive', line: 'End with the top 3 actions I should take next.' });
@@ -4889,7 +4889,7 @@ Context:
           edits.push({ id: 'ctx_category', label: 'Context: category', reason: 'Pinned the category metadata at the bottom', kind: 'context', line: 'Category: ' + categoryLabels[categoryKey] });
           if (data.skillLevel) edits.push({ id: 'ctx_experience', label: 'Context: experience', reason: 'Pinned the experience level metadata', kind: 'context', line: 'Experience level: ' + titleCase(data.skillLevel) });
           if (data.tone) edits.push({ id: 'ctx_tone', label: 'Context: tone', reason: 'Pinned the tone metadata', kind: 'context', line: 'Tone: ' + titleCase(data.tone) });
-          if (data.outputFormat) edits.push({ id: 'ctx_format', label: 'Context: format', reason: 'Pinned the format metadata', kind: 'context', line: 'Output format: ' + titleCase(data.outputFormat) });
+          if (data.outputFormat) edits.push({ id: 'ctx_format', label: 'Context: Format', reason: 'Pinned The Format Metadata', kind: 'context', line: 'Output Format: ' + titleCase(data.outputFormat) });
           if (personalityKey !== 'none') edits.push({ id: 'ctx_personality', label: 'Context: personality', reason: 'Pinned the personality metadata — ' + personalityLabel[personalityKey], kind: 'context', line: 'Personality: ' + personalityLabel[personalityKey] });
           if (data.details) edits.push({ id: 'ctx_details', label: 'Extra context', reason: 'Carried your extra-context notes into the prompt', kind: 'block', line: 'Extra context to respect:\n' + data.details });
           if (data['rules or limits']) edits.push({ id: 'ctx_rules', label: 'Rules block', reason: 'Carried your rules-or-limits notes into the prompt', kind: 'block', line: 'Things to avoid (rules or limits):\n' + data['rules or limits'] });
