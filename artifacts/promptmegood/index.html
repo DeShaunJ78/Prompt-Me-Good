@@ -3374,6 +3374,18 @@
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     window.addEventListener('load', function () { window.scrollTo(0, 0); }, { once: true });
   </script>
+<style id="pmg-workstation-promote">
+    /* Workstation-promote: keep the textarea above the fold by hiding
+       JS-injected decorations that mount immediately above #builder. */
+    #pmg-account,
+    #pmg-tf-step1,
+    #weekly-goal-pin,
+    #pmg-weekly-pin-wrap,
+    #pmg-col-text-header,
+    #pmg-suite-handoff-cue,
+    .hero .hero-proof-bar,
+    html #weekly-goal-pin.pmg-weekly-pin-promoted { display: none !important; }
+  </style>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
