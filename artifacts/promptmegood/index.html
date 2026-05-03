@@ -3276,7 +3276,7 @@
       </a>
       <div class="global-search">
         <label class="global-search-label" for="global-search-input">Search</label>
-        <input type="search" id="global-search-input" placeholder="Search your prompts, templates, or saved ideas…" aria-label="Search your prompts, templates, or saved ideas" autocomplete="off" />
+        <input type="search" id="global-search-input" placeholder="Search Your Prompts, Templates, Or Saved Ideas…" aria-label="Search Your Prompts, Templates, Or Saved Ideas" autocomplete="off" />
         <span class="global-search-helper">Quickly find past prompts or saved ideas</span>
         <div class="global-results" id="global-search-results" role="listbox" aria-label="Search results"></div>
       </div>
@@ -3645,7 +3645,7 @@
                   <option value="advanced">Advanced</option>
                 </select>
                 <div class="pmg-tune-pills" data-pmg-tune-target="skillLevel" role="group" aria-label="Your Experience Level"></div>
-                <p class="helper">This tells the AI how advanced or beginner you are so it can adjust the response.</p>
+                <p class="helper">This Tells The AI How Advanced Or Beginner You Are So It Can Adjust The Response.</p>
               </div>
 
               <div class="field">
@@ -3660,17 +3660,17 @@
               </div>
 
               <div class="field">
-                <label for="outputFormat">Output format <span class="suggested-badge" id="suggested-outputFormat" hidden>Suggested</span></label>
+                <label for="outputFormat">Output Format <span class="suggested-badge" id="suggested-outputFormat" hidden>Suggested</span></label>
                 <select id="outputFormat" name="outputFormat" class="pmg-tune-native" data-pmg-tune="outputFormat">
                   <option value="step-by-step">Step-By-Step</option>
                   <option value="list">List</option>
                   <option value="detailed breakdown">Detailed Breakdown</option>
                 </select>
-                <div class="pmg-tune-pills" data-pmg-tune-target="outputFormat" role="group" aria-label="Output format"></div>
+                <div class="pmg-tune-pills" data-pmg-tune-target="outputFormat" role="group" aria-label="Output Format"></div>
               </div>
 
               <div class="field">
-                <label for="maxLength">Max response length <span class="suggested-badge" id="suggested-maxLength" hidden>Suggested</span></label>
+                <label for="maxLength">Max Response Length <span class="suggested-badge" id="suggested-maxLength" hidden>Suggested</span></label>
                 <select id="maxLength" name="maxLength" class="pmg-tune-native" data-pmg-tune="maxLength">
                   <option value="">No Limit</option>
                   <option value="100">100 Words</option>
@@ -3679,11 +3679,11 @@
                   <option value="500">500 Words</option>
                   <option value="custom">Custom…</option>
                 </select>
-                <div class="pmg-tune-pills" data-pmg-tune-target="maxLength" role="group" aria-label="Max response length"></div>
+                <div class="pmg-tune-pills" data-pmg-tune-target="maxLength" role="group" aria-label="Max Response Length"></div>
                 <div class="max-length-row">
                   <input type="number" id="maxLengthCustom" min="20" max="5000" placeholder="Words" hidden aria-label="Custom word limit" />
                 </div>
-                <p class="helper">Optionally cap how long the AI's response can be.</p>
+                <p class="helper">Optionally Cap How Long The AI's Response Can Be.</p>
               </div>
 
               <div class="field">
@@ -3697,7 +3697,7 @@
                   <option value="german">German</option>
                 </select>
                 <div class="pmg-tune-pills" data-pmg-tune-target="outputLanguage" role="group" aria-label="Output Language"></div>
-                <p class="helper">Only the AI&rsquo;s response language changes &mdash; the app stays in English.</p>
+                <p class="helper">Only The AI&rsquo;s Response Language Changes &mdash; The App Stays In English.</p>
               </div>
 
               <div class="field">
@@ -3715,12 +3715,12 @@
                   <option value="viral">Viral Social Media Voice</option>
                 </select>
                 <div class="pmg-tune-pills" data-pmg-tune-target="personality" role="group" aria-label="Personality Mode"></div>
-                <p class="helper">Choose the kind of voice you want the AI response to have.</p>
+                <p class="helper">Choose The Kind Of Voice You Want The AI Response To Have.</p>
               </div>
 
               <div class="field">
                 <div class="field-label-row">
-                  <label for="details">Extra details <span class="helper">(optional)</span></label>
+                  <label for="details">Extra Details <span class="helper">(Optional)</span></label>
                   <button type="button" class="btn-clear" id="clear-details-btn" aria-label="Clear extra details" data-clear-target="details">Clear</button>
                 </div>
                 <textarea id="details" name="details" placeholder="Example: I have $50, I’m using Shopify, and I need something I can execute this week."></textarea>
@@ -4390,9 +4390,9 @@
         const icon = mode === 'dark'
           ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path></svg>'
           : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
-        const label = mode === 'dark' ? 'Light Mode' : 'Dark mode';
+        const label = mode === 'dark' ? 'Light Mode' : 'Dark Mode';
         toggle.innerHTML = icon + '<span class="theme-toggle-label">' + label + '</span>';
-        toggle.setAttribute('aria-label', mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+        toggle.setAttribute('aria-label', mode === 'dark' ? 'Switch To Light Mode' : 'Switch To Dark Mode');
       }
 
       renderThemeIcon(theme);
@@ -6984,7 +6984,7 @@ Context:
 
       const TEMPLATES = [
         {
-          title: 'Cold email that books a call',
+          title: 'Cold Email That Books A Call',
           desc: 'Outbound email to a stranger who needs your service.',
           data: {
             goal: 'Write a cold email to a small business owner that gets them to book a 15-minute call about my service',
@@ -7023,8 +7023,8 @@ Context:
           }
         },
         {
-          title: 'First $100 plan',
-          desc: 'Money-mode plan to make your first $100 fast.',
+          title: 'First $100 Plan',
+          desc: 'Money-Mode Plan To Make Your First $100 Fast.',
           data: {
             goal: 'Help me make my first $100 online this week with no audience and no budget',
             category: 'money',

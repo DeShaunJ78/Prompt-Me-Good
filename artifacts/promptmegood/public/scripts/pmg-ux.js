@@ -13254,13 +13254,13 @@
       svg.setAttribute('viewBox', '0 0 24 24');
       svg.setAttribute('stroke-linecap', 'round');
       svg.innerHTML = SUN_MARKUP;
-      btn.setAttribute('aria-label', 'Switch to light mode');
-      btn.setAttribute('title', 'Switch to light mode');
+      btn.setAttribute('aria-label', 'Switch To Light Mode');
+      btn.setAttribute('title', 'Switch To Light Mode');
     } else {
       svg.setAttribute('viewBox', '0 0 24 24');
       svg.innerHTML = '<path d="' + MOON_PATH + '"></path>';
-      btn.setAttribute('aria-label', 'Switch to dark mode');
-      btn.setAttribute('title', 'Switch to dark mode');
+      btn.setAttribute('aria-label', 'Switch To Dark Mode');
+      btn.setAttribute('title', 'Switch To Dark Mode');
     }
   }
 
