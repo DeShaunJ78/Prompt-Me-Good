@@ -462,7 +462,7 @@
     var __pCopy;
     if (__hasFull) {
       __pCopy =
-        'Unlock higher usage on this feature. Founding Member is a one-time $' +
+        'Unlock higher daily caps on this feature (30 Run With AI, 15 image generations, 10 file analyses per day). Founding Member is a one-time $' +
         __cfg2.FOUNDING_PRICE_USD + ' payment for lifetime access to core features — limited to the first ' +
         __cfg2.FOUNDING_LIMIT + ' buyers, ' + __lock + '.' +
         (__deadline ? ' ' + __deadline : '') +
@@ -470,7 +470,7 @@
         __cfg2.PRO_YEARLY_USD + '/year) launch soon. Fair use limits apply.';
     } else {
       __pCopy =
-        'Unlock higher usage on this feature. Founding Member is a one-time payment for lifetime access to core features — see pricing for current details. Fair use limits apply.';
+        'Unlock higher daily caps on this feature. Founding Member is a one-time payment for lifetime access to core features — see pricing for current details. Fair use limits apply.';
     }
     overlay.innerHTML =
       '<div class="pmg-upgrade-modal" role="dialog" aria-modal="true" aria-labelledby="pmg-upgrade-title">' +

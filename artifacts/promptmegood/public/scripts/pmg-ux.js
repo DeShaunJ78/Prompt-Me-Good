@@ -12087,11 +12087,11 @@
       var __ctaLock = __cfgCTA.PRICE_LOCK_TAGLINE || 'price locked for life';
       __ctaCopy =
         'Founding Member is a one-time $' + __cfgCTA.FOUNDING_PRICE_USD +
-        ' for lifetime access to core features — higher Run With AI and image generation usage. Limited to the first ' +
+        ' for lifetime access to core features — 30 Run With AI executions, 15 image generations, and 10 file analyses per day. Limited to the first ' +
         __cfgCTA.FOUNDING_LIMIT + ' buyers, ' + __ctaLock + '. Fair use limits apply.';
     } else {
       __ctaCopy =
-        'Founding Member unlocks lifetime access to core features — higher Run With AI and image generation usage. See pricing for details. Fair use limits apply.';
+        'Founding Member unlocks lifetime access to core features — 30 Run With AI executions, 15 image generations, and 10 file analyses per day. See pricing for details. Fair use limits apply.';
     }
     cta.innerHTML =
       '<span><strong>Want Higher Limits?</strong> ' + __ctaCopy + '</span>' +
