@@ -12246,8 +12246,8 @@
  *     access; Free users see the upgrade prompts.
  *
  * A non-blocking banner is rendered at the top of every page during beta:
- *   "Free Beta Access — Founding Member Access
- *    Available Now."
+ *   "Free Beta Access — Founding Member Waitlist Open ·
+ *    Checkout Opens Soon."
  *
  * The banner is dismissable for the session, but re-appears on page load so
  * we never lose visibility of the upcoming change.
@@ -12383,8 +12383,8 @@
     var msg = document.createElement('span');
     msg.className = 'pmg-t42-msg';
     /* On pricing.html keep it as plain text — there's no need to link to the
-       page you're already on. Everywhere else, link "Founding Member Access"
-       to the pricing page so the call-to-action is one click away. */
+       page you're already on. Everywhere else, link "Founding Member Waitlist
+       Open" to the pricing page so the call-to-action is one click away. */
     var onPricing = /\/pricing\.html(?:[?#]|$)/i.test(location.pathname + location.search);
     if (onPricing) {
       msg.textContent = 'Free Beta Access Until ' + dateLabel + ' — Founding Member Waitlist Open · Checkout Opens Soon.';
