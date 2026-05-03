@@ -15277,65 +15277,147 @@
 })();
 
 /* =====================================================================
- * T34 — Hoist primary CTA above the optional file upload.
+ * T100 — Add a SECOND "Fix My Prompt" CTA directly under the goal
+ *        textarea, without touching the original.
  *
  * Problem:
- *   New users type their goal in #goal, then look for the next step.
- *   The "Fix My Prompt" button sits BELOW the optional file-upload
- *   field, the post-uc-guidance banner, and other affordances — on
- *   mobile it falls way below the fold. Users who don't scroll
- *   simply bounce; users who do scroll feel friction.
+ *   New users type a goal in #goal and look for the next step. The
+ *   original "Fix My Prompt" button (#generateBtn) sits well below
+ *   the optional file-upload field and other affordances, often
+ *   below the fold on mobile. Users bounce or feel friction.
  *
- * Fix:
- *   Move the entire #tour-step-generate actions-row (Fix My Prompt +
- *   Generate Image + Demo Values + Dice Idea Generator) AND the
- *   #post-uc-guidance "✅ ready" hint to live IMMEDIATELY after the
- *   #goal field's wrapper. The optional file-upload field stays in
- *   the DOM but moves visually below the primary action.
+ * Why a second button (not move the original):
+ *   The original CTA is the natural next step for users who DO scroll
+ *   the full workstation column — moving it would introduce a new
+ *   "where did the button go?" friction lower down the page. Adding
+ *   a second CTA above the fold gives new users a 10-second path to
+ *   their first prompt, while leaving the column experience intact.
  *
- * Why DOM-move (not CSS order):
- *   .form-grid is not a flex/grid container today and changing it to
- *   one risks regressing every other layout inside the form. A pure
- *   DOM move preserves every existing event binding, tour anchor,
- *   and script that targets #generateBtn / #tour-step-generate.
+ * Implementation:
+ *   - Inject a button with id="generateBtnTop" immediately after the
+ *     #goal field (above the upload field).
+ *   - On click, it programmatically submits the existing #prompt-form,
+ *     so all existing form-submit logic (validation, AI call, result
+ *     rendering, post-gen actions) runs identically.
+ *   - The original #generateBtn is untouched. Both buttons fire the
+ *     same code path.
+ *   - When body.image-mode is active, the top CTA hides (matches the
+ *     existing CSS rule for #generateBtn in image mode).
  *
- * Idempotent via window.__pmgT34Init.
+ * Numbered T100 (not T34) because __pmgT34Init is already claimed by
+ * pmgT34ImageColumnFlow earlier in this file.
+ *
+ * Idempotent via window.__pmgT100Init.
  * ===================================================================== */
-(function pmgT34HoistCta() {
-  if (window.__pmgT34Init) return;
-  window.__pmgT34Init = true;
+(function pmgT100TopCta() {
+  if (window.__pmgT100Init) return;
+  window.__pmgT100Init = true;
 
-  function hoist() {
+  var TOP_BTN_ID = 'generateBtnTop';
+  var WRAP_ID = 'pmg-t100-top-cta-wrap';
+  var STYLE_ID = 'pmg-t100-top-cta-style';
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      '#' + WRAP_ID + ' {',
+      '  margin: 0.75rem 0 0.25rem;',
+      '  display: block;',
+      '}',
+      '#' + TOP_BTN_ID + ' {',
+      '  width: 100%;',
+      '  min-height: 54px;',
+      '  font-weight: 800;',
+      '  font-size: 1.05rem;',
+      '  box-shadow: 0 12px 28px color-mix(in srgb, var(--color-primary) 28%, transparent);',
+      '}',
+      /* Hide the top CTA in image mode (matches the original #generateBtn rule). */
+      'body.image-mode #' + WRAP_ID + ' { display: none !important; }'
+    ].join('\n');
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  function ensureTopCta() {
     var goal = document.getElementById('goal');
     if (!goal) return false;
-    // The .field wrapper that contains the goal label, textarea, and helper.
     var goalField = goal.closest('.field');
     if (!goalField || !goalField.parentNode) return false;
-    var actionsRow = document.getElementById('tour-step-generate');
-    if (!actionsRow) return false;
+    if (document.getElementById(TOP_BTN_ID)) return true;
 
-    var parent = goalField.parentNode;
-    var anchor = goalField.nextSibling;
+    injectStyles();
 
-    // Already hoisted? Bail.
-    if (anchor === actionsRow) return true;
+    var wrap = document.createElement('div');
+    wrap.id = WRAP_ID;
+    wrap.className = 'actions-row pmg-t100-top-cta-row';
 
-    // Insert actionsRow immediately after the goal field.
-    parent.insertBefore(actionsRow, anchor);
+    var btn = document.createElement('button');
+    btn.id = TOP_BTN_ID;
+    btn.type = 'button';
+    btn.className = 'btn btn-primary';
+    btn.textContent = 'Fix My Prompt';
+    btn.setAttribute('aria-label',
+      'Fix My Prompt (also available below)');
 
-    // Also hoist the post-uc-guidance "✅ ready" banner to live just
-    // above the actions row, so the reassurance copy stays adjacent
-    // to the CTA the user is about to tap.
-    var guidance = document.getElementById('post-uc-guidance');
-    if (guidance && guidance.parentNode) {
-      parent.insertBefore(guidance, actionsRow);
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      var form = document.getElementById('prompt-form');
+      if (!form) return;
+      // Prefer requestSubmit so the form's submit handler runs exactly
+      // as if the original #generateBtn were clicked.
+      if (typeof form.requestSubmit === 'function') {
+        form.requestSubmit();
+      } else {
+        var orig = document.getElementById('generateBtn');
+        if (orig) orig.click();
+        else form.submit();
+      }
+    });
+
+    wrap.appendChild(btn);
+    /* Insert INSIDE the goal's .field wrapper as its last child rather
+       than as a sibling. Sibling insertion was unreliable because other
+       T-functions reorder the form-grid children at various lifecycle
+       points and our wrap got dragged down to live next to
+       #post-uc-guidance. As a child of the .field, the wrap stays
+       glued to the textarea regardless of outer reordering. */
+    goalField.appendChild(wrap);
+
+    /* Mirror the primary #generateBtn's label + disabled state onto
+       the top CTA so users see the same "Generating..." / "Generated ✓"
+       feedback even though the original button is below the fold. We
+       watch attributes + childList so we catch both text changes and
+       any aria-busy / disabled toggles the existing handlers apply. */
+    var orig = document.getElementById('generateBtn');
+    if (orig && typeof MutationObserver === 'function') {
+      var sync = function () {
+        try {
+          var label = (orig.textContent || '').trim();
+          if (label && btn.textContent !== label) btn.textContent = label;
+          btn.disabled = !!orig.disabled;
+          if (orig.hasAttribute('aria-busy')) {
+            btn.setAttribute('aria-busy', orig.getAttribute('aria-busy') || 'false');
+          }
+        } catch (e) { /* noop */ }
+      };
+      sync();
+      var mo = new MutationObserver(sync);
+      mo.observe(orig, {
+        attributes: true,
+        childList: true,
+        characterData: true,
+        subtree: true,
+        attributeFilter: ['disabled', 'aria-busy', 'aria-disabled']
+      });
     }
 
     return true;
   }
 
   function init() {
-    try { hoist(); } catch (e) { /* noop */ }
+    try { ensureTopCta(); } catch (e) { /* noop */ }
   }
 
   if (document.readyState === 'loading') {
@@ -15343,8 +15425,6 @@
   } else {
     init();
   }
-  // Re-run a couple of times in case other T-functions inject siblings
-  // around the goal field after initial paint.
   setTimeout(init, 400);
   setTimeout(init, 1200);
 })();
