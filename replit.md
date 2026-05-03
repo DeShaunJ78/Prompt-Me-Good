@@ -72,6 +72,16 @@ This is a static HTML AI prompt builder (`index.html`) built with vanilla JavaSc
 -   **Pro Upgrade Modal:** CTAs for Stripe checkout and a "Notify Me When Pro Launches" link.
 -   **Voice Input + Language Picker:** Microphone button on textareas (Web Speech API) with language selection persisting to `localStorage`. Single-active-mic arbitration.
 
+# Validation
+
+Named pre-release validation steps (see the `validation` skill — register/run via `setValidationCommand` / `startValidationRun`).
+
+-   **`overflow-360`** — runs `pnpm --filter @workspace/promptmegood run test:overflow`, which executes the full Playwright suite under `artifacts/promptmegood/tests/` (config: `artifacts/promptmegood/playwright.config.ts`). This is the canonical homepage guard run and covers:
+    -   `textarea-above-fold.spec.ts` — text-mode #goal must stay above the fold at 360x800 + 1280x800; Fix My Prompt / Run with AI buttons must work on first load; image-mode regression guards (no auto-scroll on mode switch, generate path stays wired).
+    -   `horizontal-overflow.spec.ts` — no horizontal overflow at 360-width across text + image modes.
+    -   Other specs in the same folder (`vault-smart`, `command-palette-smoke`, `share`, `handoff`, `photo-suite-*`, `undo-stack`, `whatnext`, `suggestions`, `photo-prompt-toggle-removed`).
+    Run this before merging any homepage / image-mode / vault / share change.
+
 # External Dependencies
 
 -   **PostgreSQL:** Primary database.
