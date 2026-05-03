@@ -12098,7 +12098,8 @@
     }
     cta.innerHTML =
       '<span><strong>Want Higher Limits?</strong> ' + __ctaCopy + '</span>' +
-      '<a class="btn btn-primary ' + BUTTON_CLASS + '" href="./pricing.html#early-access">Join Founding Member Waitlist</a>';
+      '<a class="btn btn-primary ' + BUTTON_CLASS + '" href="./pricing.html#early-access">Join Founding Member Waitlist</a>' +
+      '<span class="pmg-cta-helper" style="display:block;margin-top:6px;font-size:0.875em;color:var(--color-text-muted);">Checkout Opens Soon. Join The Waitlist To Be Notified.</span>';
     section.parentNode.insertBefore(cta, section);
     wireButtons();
   }

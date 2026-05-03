@@ -482,6 +482,7 @@
         '<p>' + __pCopy + '</p>' +
         '<div class="pmg-upgrade-modal-actions">' +
           '<a class="pmg-upgrade-cta pmg-upgrade-btn" href="./pricing.html#early-access">Join Founding Member Waitlist</a>' +
+          '<span class="pmg-upgrade-cta-helper" style="display:block;margin-top:6px;font-size:0.875em;color:var(--color-text-muted);">Checkout Opens Soon. Join The Waitlist To Be Notified.</span>' +
           '<a class="pmg-upgrade-cta-secondary" href="./pricing.html#early-access">Notify Me When Pro Launches</a>' +
           '<button type="button" class="pmg-upgrade-dismiss" id="pmg-upgrade-dismiss-btn">Maybe Later</button>' +
         '</div>' +
