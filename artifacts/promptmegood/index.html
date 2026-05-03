@@ -7467,14 +7467,8 @@ Context:
           return;
         }
 
-        // Cost-control: cap goal length client-side (server also enforces).
-        if ((data.goal || '').length > 500) {
-          if (typeof showToast === 'function') {
-            showToast('Your goal is too long. Please keep it under 500 characters.');
-          }
-          document.getElementById('goal').focus();
-          return;
-        }
+        // No client-side length cap — server enforces a generous safety
+        // ceiling (8000 chars) so real users never hit a "too long" wall.
 
         // Always build the local prompt first — it's our guaranteed result and our AI-failure fallback.
         const localPrompt = generatePrompt(data);

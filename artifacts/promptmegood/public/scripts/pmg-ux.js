@@ -13094,13 +13094,7 @@
       try { goalEl.focus({ preventScroll: true }); } catch (e) { goalEl.focus(); }
       return;
     }
-    if (goal.length > 500) {
-      if (typeof window.showToast === 'function') {
-        window.showToast('Your idea is too long. Please keep it under 500 characters.');
-      }
-      try { goalEl.focus({ preventScroll: true }); } catch (e) { goalEl.focus(); }
-      return;
-    }
+    // No client-side length cap — server enforces a generous safety ceiling.
     resetOriginal();
     box.textContent = goal;
     if (typeof window.__pmgClearUndo === 'function') window.__pmgClearUndo();

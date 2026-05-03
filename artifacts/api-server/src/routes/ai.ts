@@ -90,7 +90,7 @@ function readStats(): StatsState {
 }
 
 const GENERATE_MAX_INPUT = 4000;
-const GENERATE_GOAL_MAX = 500;
+const GENERATE_GOAL_MAX = 8000;
 const GENERATE_MAX_OUTPUT_TOKENS = 600;
 const GENERATE_MODEL = "gpt-4o-mini";
 const STREAM_MODEL = "gpt-4o-mini";
