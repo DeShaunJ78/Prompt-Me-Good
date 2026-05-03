@@ -253,6 +253,9 @@
   <main>
     <section class="pricing-hero">
       <div class="container">
+        <div id="pmg-checkout-cancel-notice" hidden style="max-width: 640px; margin: 0 auto var(--space-4); padding: 12px 16px; border-radius: 10px; background: color-mix(in srgb, var(--color-primary) 8%, transparent); border: 1px solid color-mix(in srgb, var(--color-primary) 25%, transparent); color: var(--color-text); font-size: 0.95rem; text-align: left;" role="status" aria-live="polite">
+          <strong>Checkout canceled.</strong> No charge was made — your card was not billed by Stripe. The Founding Member offer ($79 one-time, price locked for life — offer ends July 1 or at 500 founding members, whichever comes first) is still here whenever you're ready. Pro Monthly ($9/mo) and Pro Yearly ($79/yr) launch soon and you can cancel renewals any time. Questions? Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.
+        </div>
         <span class="eyebrow">Pricing</span>
         <h1>Simple, Honest Pricing</h1>
         <p>Start free with no signup &mdash; the structured <strong>Prompt Builder</strong> and the <strong>Photography Suite</strong> (Style, Camera &amp; Lens, Lighting, Composition, Color) are unlimited. Run With AI, image generation, and file analysis come with a 7-day boosted trial, then drop to small daily caps on the free tier. Lock in lifetime access to core features with our one-time <strong>Founding Member</strong> deal at $79 &mdash; <strong>offer ends July 1 or at 500 founding members, whichever comes first</strong>, and your price is locked for life. <strong style="color: var(--color-primary);">Checkout Opens Soon. Join The Waitlist To Be Notified.</strong> The full beta is free to use during the founding period. Or wait for monthly <strong>PRO</strong> at $9/month and yearly <strong>PRO</strong> at $79/year, launching soon. Fair use limits apply on all paid tiers.</p>
@@ -438,6 +441,26 @@
   </footer>
 
   <script>
+    (function () {
+      try {
+        var sp = new URLSearchParams(location.search);
+        if (sp.get('upgrade') === 'cancel') {
+          var n = document.getElementById('pmg-checkout-cancel-notice');
+          if (n) {
+            n.hidden = false;
+            try { n.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+          }
+          /* Strip the query so refresh / share doesn't re-trigger the banner. */
+          try {
+            sp.delete('upgrade');
+            sp.delete('tier');
+            var qs = sp.toString();
+            history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+          } catch (e2) {}
+        }
+      } catch (e) {}
+    })();
+
     (function () {
       const THEME_KEY = 'promptmegood:theme';
       const root = document.documentElement;
