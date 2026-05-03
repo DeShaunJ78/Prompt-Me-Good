@@ -37,7 +37,7 @@
     if (localStorage.getItem('pmg_disable') === '1') return;
   } catch (_) {}
 
-  var VERSION = 'task93-1';
+  var VERSION = 'task94-1';
 
   /* -------------------------------------------------------------
    * Analytics — safe no-op if pmg-analytics.js is absent / blocked.
@@ -149,37 +149,60 @@
     var s = document.createElement('style');
     s.id = 'pmg-wn-styles';
     s.textContent = [
-      '.pmg-wn-panel{margin-top:20px;padding:20px 18px;border:1px solid var(--color-divider,#e5e0d8);',
-      '  border-radius:14px;background:var(--color-surface,#fbf9f5);}',
+      /* Panel — lifted card, distinct surface, generous padding. */
+      '.pmg-wn-panel{margin-top:32px;padding:26px 24px;border:1px solid #ece6da;',
+      '  border-radius:18px;background:#ffffff;',
+      '  box-shadow:0 1px 2px rgba(15,23,42,0.04),0 10px 32px rgba(15,23,42,0.06);}',
       '.pmg-wn-panel[hidden]{display:none!important;}',
       '.pmg-wn-eyebrow{font-size:11px;font-weight:800;letter-spacing:0.16em;text-transform:uppercase;',
-      '  color:var(--color-primary,#0f766e);margin:0 0 4px;}',
-      '.pmg-wn-title{margin:0 0 4px;font-size:18px;font-weight:800;color:var(--color-text,#1f1f1f);}',
-      '.pmg-wn-helper{margin:0 0 14px;font-size:13px;color:var(--color-text-muted,#6b6b6b);line-height:1.5;}',
-      '.pmg-wn-safety{margin:0 0 14px;padding:10px 12px;border-radius:10px;',
+      '  color:var(--color-primary,#0f766e);margin:0 0 6px;}',
+      '.pmg-wn-title{margin:0 0 6px;font-size:20px;font-weight:800;color:var(--color-text,#1f1f1f);',
+      '  letter-spacing:-0.01em;line-height:1.25;}',
+      '.pmg-wn-helper{margin:0 0 18px;font-size:13.5px;color:var(--color-text-muted,#6b6b6b);',
+      '  line-height:1.55;}',
+      '.pmg-wn-safety{margin:0 0 18px;padding:12px 14px;border-radius:12px;',
       '  background:#fff4e0;border:1px solid #e6c79a;font-size:13px;color:#5a3d10;line-height:1.5;}',
       '.pmg-wn-safety strong{color:#3d2807;}',
-      '.pmg-wn-actions{display:flex;flex-wrap:wrap;gap:10px;}',
-      '.pmg-wn-btn{flex:1 1 auto;min-height:44px;padding:10px 16px;border-radius:10px;',
-      '  border:1px solid var(--color-border,#d4cfc4);background:#fff;color:var(--color-text,#1f1f1f);',
-      '  font:inherit;font-weight:600;font-size:14px;cursor:pointer;text-align:center;',
-      '  transition:transform .12s ease,border-color .12s ease,background .12s ease;',
-      '  white-space:normal;line-height:1.25;}',
-      '.pmg-wn-btn:hover,.pmg-wn-btn:focus-visible{border-color:var(--color-primary,#0f766e);',
-      '  color:var(--color-primary,#0f766e);outline:none;}',
-      '.pmg-wn-btn.is-primary{background:var(--color-primary,#0f766e);color:#fff;',
-      '  border-color:var(--color-primary,#0f766e);}',
-      '.pmg-wn-btn.is-primary:hover,.pmg-wn-btn.is-primary:focus-visible{filter:brightness(1.05);color:#fff;}',
-      '.pmg-wn-btn:active{transform:translateY(1px);}',
+      '.pmg-wn-actions{display:block;}',
+      /* Primary — visually dominant, full-width, two-line stack. */
+      '.pmg-wn-btn{font:inherit;cursor:pointer;text-align:center;white-space:normal;',
+      '  line-height:1.25;border-style:solid;}',
+      '.pmg-wn-btn.pmg-wn-primary{display:flex;flex-direction:column;align-items:center;',
+      '  justify-content:center;gap:3px;width:100%;min-height:56px;padding:12px 20px;',
+      '  border-radius:14px;background:var(--color-primary,#0f766e);color:#fff;',
+      '  border:1px solid var(--color-primary,#0f766e);font-weight:700;',
+      '  box-shadow:0 6px 18px rgba(15,118,110,0.22);',
+      '  transition:transform .12s ease,box-shadow .12s ease,filter .12s ease;}',
+      '.pmg-wn-btn.pmg-wn-primary:hover,.pmg-wn-btn.pmg-wn-primary:focus-visible{',
+      '  filter:brightness(1.05);outline:none;',
+      '  box-shadow:0 8px 22px rgba(15,118,110,0.30);}',
+      '.pmg-wn-btn.pmg-wn-primary:active{transform:translateY(1px);',
+      '  box-shadow:0 4px 12px rgba(15,118,110,0.26);}',
+      '.pmg-wn-btn-title{font-size:15.5px;font-weight:800;line-height:1.2;}',
+      '.pmg-wn-btn-sub{font-size:12.5px;font-weight:500;opacity:0.92;line-height:1.3;}',
+      /* Secondaries — quieter row beneath the primary. */
+      '.pmg-wn-secondaries{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}',
+      '.pmg-wn-btn.pmg-wn-secondary{flex:1 1 0;min-height:42px;padding:8px 14px;',
+      '  border-radius:10px;background:transparent;color:var(--color-text-muted,#6b6b6b);',
+      '  border:1px solid var(--color-border,#d4cfc4);font-weight:600;font-size:13px;',
+      '  transition:color .12s ease,border-color .12s ease,background .12s ease;}',
+      '.pmg-wn-btn.pmg-wn-secondary:hover,.pmg-wn-btn.pmg-wn-secondary:focus-visible{',
+      '  color:var(--color-primary,#0f766e);border-color:var(--color-primary,#0f766e);',
+      '  background:rgba(15,118,110,0.04);outline:none;}',
+      /* Mobile: keep linear, no horizontal overflow, primary stays dominant. */
       '@media (max-width:540px){',
-      '  .pmg-wn-actions{flex-direction:column;gap:8px;}',
-      '  .pmg-wn-btn{flex:1 1 100%;width:100%;min-height:48px;}',
-      '  .pmg-wn-panel{padding:16px 14px;margin-top:16px;}',
+      '  .pmg-wn-panel{padding:22px 18px;margin-top:24px;border-radius:16px;}',
+      '  .pmg-wn-title{font-size:18px;}',
+      '  .pmg-wn-btn.pmg-wn-primary{min-height:60px;}',
+      '  .pmg-wn-btn-title{font-size:15px;}',
+      '  .pmg-wn-secondaries{flex-direction:column;gap:8px;}',
+      '  .pmg-wn-btn.pmg-wn-secondary{flex:1 1 100%;width:100%;min-height:44px;}',
       '}',
+      /* Soft highlight halo (used by Hero Image scroll target). */
       '.pmg-wn-highlight{box-shadow:0 0 0 3px rgba(15,118,110,0.35),0 0 24px rgba(15,118,110,0.15)!important;',
       '  transition:box-shadow .35s ease;border-radius:14px;}',
       '@media (prefers-reduced-motion:reduce){',
-      '  .pmg-wn-btn{transition:none;}',
+      '  .pmg-wn-btn,.pmg-wn-btn.pmg-wn-primary,.pmg-wn-btn.pmg-wn-secondary{transition:none;}',
       '  .pmg-wn-highlight{transition:none;}',
       '}'
     ].join('\n');
@@ -191,30 +214,38 @@
    * ----------------------------------------------------------- */
   function getTextActions(intent) {
     if (intent.bucket === 'practical-sensitive') {
+      /* Order matters — buildPanel renders 1 primary + first 2 secondaries.
+         Most actionable in crisis: action plan (primary), step-by-step,
+         ask-for-help. local-details kept reachable via runAction() but
+         not surfaced to honour the 1+2 rule. */
       return [
-        { key: 'action-plan',    label: 'Turn Into Action Plan',    primary: true  },
-        { key: 'step-by-step',   label: 'Make This Step-By-Step',   primary: false },
-        { key: 'local-details',  label: 'Add Local Details',        primary: false },
-        { key: 'ask-for-help',   label: 'Write Message Asking For Help', primary: false }
+        { key: 'action-plan',    label: 'Turn Into Action Plan',          primary: true,
+          subtext: 'Turn This Into Concrete Steps For Today' },
+        { key: 'step-by-step',   label: 'Make This Step-By-Step',         primary: false },
+        { key: 'ask-for-help',   label: 'Write Message Asking For Help',  primary: false },
+        { key: 'local-details',  label: 'Add Local Details',              primary: false }
       ];
     }
     if (intent.bucket === 'creative-visual') {
       return [
-        { key: 'hero-image',     label: 'Make A Hero Image', primary: true  },
+        { key: 'hero-image',     label: 'Make A Hero Image', primary: true,
+          subtext: 'Turn This Into A Visual' },
         { key: 'create-caption', label: 'Create Caption',    primary: false },
         { key: 'improve-prompt', label: 'Improve Prompt',    primary: false }
       ];
     }
     if (intent.bucket === 'business-marketing' || intent.bucket === 'writing-social') {
       return [
-        { key: 'hero-image',     label: 'Make A Hero Image',  primary: true  },
+        { key: 'hero-image',     label: 'Make A Hero Image',  primary: true,
+          subtext: 'Turn This Into A Visual' },
         { key: 'create-caption', label: 'Create Caption',     primary: false },
         { key: 'improve-prompt', label: 'Improve Prompt',     primary: false }
       ];
     }
-    /* general fallback — give the bridge but downplay it */
+    /* general fallback — bridge with improve as the recommended next step */
     return [
-      { key: 'improve-prompt', label: 'Improve Prompt',    primary: true  },
+      { key: 'improve-prompt', label: 'Improve Prompt',    primary: true,
+        subtext: 'Make This Clearer And More Effective' },
       { key: 'hero-image',     label: 'Make A Hero Image', primary: false },
       { key: 'create-caption', label: 'Create Caption',    primary: false }
     ];
@@ -224,7 +255,8 @@
     /* Image results never get the sensitive variant — image gen is
        not used for crisis prompts. Always show the bridge trio. */
     return [
-      { key: 'write-text-for-image', label: 'Write Text For This Image', primary: true  },
+      { key: 'write-text-for-image', label: 'Write Text For This Image', primary: true,
+        subtext: 'Caption, Headline, Or Post Copy For This Image' },
       { key: 'create-caption-image', label: 'Create Caption',            primary: false },
       { key: 'another-style',        label: 'Generate Another Style',    primary: false }
     ];
@@ -418,7 +450,7 @@
     panel.className = 'pmg-wn-panel pmg-post-gen';
     panel.setAttribute('aria-label', title);
 
-    var html = '<p class="pmg-wn-eyebrow">What Next?</p>' +
+    var html = '<p class="pmg-wn-eyebrow">Suggested Next Step</p>' +
                '<h3 class="pmg-wn-title">' + title + '</h3>';
     if (opts && opts.crisis) {
       html += '<p class="pmg-wn-safety"><strong>If You Are In Immediate Danger,</strong> ' +
@@ -427,11 +459,43 @@
     if (helper) {
       html += '<p class="pmg-wn-helper">' + helper + '</p>';
     }
-    html += '<div class="pmg-wn-actions" role="group" aria-label="What Next Actions">';
+
+    /* Split into 1 primary + up to 2 secondaries. The primary is the
+     * first action with .primary === true (or the first action overall
+     * as a defensive fallback). All other reachable actions remain
+     * callable via window.__pmgWhatNext.runAction(key). */
+    var primaryAction = null;
+    var secondaryActions = [];
     actions.forEach(function (a) {
-      html += '<button type="button" class="pmg-wn-btn' + (a.primary ? ' is-primary' : '') +
-              '" data-wn-action="' + a.key + '">' + a.label + '</button>';
+      if (!primaryAction && a.primary) primaryAction = a;
+      else if (secondaryActions.length < 2) secondaryActions.push(a);
     });
+    if (!primaryAction && actions.length) {
+      primaryAction = actions[0];
+      secondaryActions = actions.slice(1, 3);
+    }
+
+    html += '<div class="pmg-wn-actions" role="group" aria-label="What Next Actions">';
+    if (primaryAction) {
+      var sub = primaryAction.subtext
+        ? '<span class="pmg-wn-btn-sub">' + primaryAction.subtext + '</span>'
+        : '';
+      html += '<button type="button" class="pmg-wn-btn pmg-wn-primary"' +
+              ' data-wn-action="' + primaryAction.key + '"' +
+              ' data-wn-label="' + primaryAction.label + '">' +
+              '<span class="pmg-wn-btn-title">' + primaryAction.label + '</span>' +
+              sub +
+              '</button>';
+    }
+    if (secondaryActions.length) {
+      html += '<div class="pmg-wn-secondaries">';
+      secondaryActions.forEach(function (a) {
+        html += '<button type="button" class="pmg-wn-btn pmg-wn-secondary"' +
+                ' data-wn-action="' + a.key + '"' +
+                ' data-wn-label="' + a.label + '">' + a.label + '</button>';
+      });
+      html += '</div>';
+    }
     html += '</div>';
     panel.innerHTML = html;
 
@@ -439,12 +503,17 @@
       var btn = e.target.closest && e.target.closest('[data-wn-action]');
       if (!btn) return;
       try {
+        /* Prefer data-wn-label so the analytics label stays a clean
+           single string ("Make A Hero Image") even when the primary
+           button stacks a title + subtext span pair. */
+        var lbl = btn.getAttribute('data-wn-label')
+          || (btn.textContent || '').trim();
         emit('pmg_what_next_clicked', {
           source: (panelId === 'pmg-wn-image') ? 'image_result' : 'text_result',
           bucket: (opts && opts.bucket) || 'creative-visual',
           crisis: !!(opts && opts.crisis),
           action: btn.getAttribute('data-wn-action') || '',
-          label:  (btn.textContent || '').trim().slice(0, 60),
+          label:  lbl.slice(0, 60),
           ts:     new Date().toISOString()
         });
       } catch (_) {}

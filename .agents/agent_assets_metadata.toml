@@ -118,16 +118,28 @@ title = "Text + Image Seamless Integration"
 id = "uleqGmyw7B_vE5iYvKya4"
 uri = "file://screenshots/01-mockup.svg"
 type = "image"
-title = "1. Mockup — Text↔Image Synergy (Concept)"
+title = "1. Mockup — Original Concept (Reference)"
 
 [[outputs]]
 id = "JMASlESu4JNAD35du5oXf"
 uri = "file://screenshots/02-live-desktop.jpg"
 type = "image"
-title = "2. Live What Next? Panel — Desktop (1280px)"
+title = "2. Before — Old Panel (Desktop)"
 
 [[outputs]]
 id = "yOVs7HCucB2H9TUBiKpTb"
 uri = "file://screenshots/03-live-mobile.jpg"
 type = "image"
-title = "3. Live What Next? Panel — Mobile (390px)"
+title = "4. Before — Old Panel (Mobile)"
+
+[[outputs]]
+id = "krawismgdUZ3RWVt-bGLZ"
+uri = "file://screenshots/04-card-desktop.jpg"
+type = "image"
+title = "3. After — Card Upgrade (Desktop)"
+
+[[outputs]]
+id = "vLBoAR5qVWV41SDutOLHY"
+uri = "file://screenshots/05-card-mobile.jpg"
+type = "image"
+title = "5. After — Card Upgrade (Mobile)"
