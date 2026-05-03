@@ -89,3 +89,9 @@ id = "_oS34Scp0Be-ayaB4hjM_"
 uri = "file://screenshots/col-result.jpg"
 type = "image"
 title = "Column bottom: Upgrade This Text + Your Fixed Prompt placeholder"
+
+[[outputs]]
+id = "WAQuIhSkoElSqir3nzOdj"
+uri = "file://.local/exports/promptmegood-workstation-mockup.svg"
+type = "image"
+title = "PromptMeGood Workstation — Two-Column Layout Mockup"
