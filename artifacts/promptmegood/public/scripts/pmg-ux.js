@@ -11656,6 +11656,23 @@
           deadlineNodes[j].textContent = deadline;
         }
       }
+      /* Task #104 — Daily-cap renderer. Walks elements tagged with
+         data-pmg-cap="<plan>:<feature>" (e.g. "founding:img") and
+         overwrites their text with the numeric daily cap from
+         window.PMG_PRICING.PLAN_CAPS, so pricing surfaces cite exact
+         numbers instead of vague "higher usage" copy. HTML keeps a
+         literal fallback that already matches config so no-JS visitors
+         still see the right number. */
+      var capNodes = document.querySelectorAll('[data-pmg-cap]');
+      for (var k = 0; k < capNodes.length; k++) {
+        var ref = (capNodes[k].getAttribute('data-pmg-cap') || '').split(':');
+        var planKey = (ref[0] || '').toUpperCase();
+        var featKey = ref[1] || '';
+        var planCaps = cfg[planKey + '_DAILY_CAPS'];
+        if (planCaps && typeof planCaps[featKey] === 'number') {
+          capNodes[k].textContent = String(planCaps[featKey]);
+        }
+      }
       __pmgPriceRendered = true;
     } catch (_) {}
   }
@@ -11688,18 +11705,51 @@
         var data;
         try { data = JSON.parse(raw); } catch (_) { continue; }
         var changed = false;
+        /* Task #104 — Description hydrator. Rewrite numeric daily caps
+           inside Offer.description / FAQ Answer.text strings so SEO
+           surfaces stay in lock-step with PMG_PRICING. We target a
+           narrow set of well-known phrasings (the only ones we author)
+           to avoid touching unrelated text. */
+        var fc = cfg.FREE_DAILY_CAPS    || { run: 3,  img: 1,  analyze: 1  };
+        var foc = cfg.FOUNDING_DAILY_CAPS || { run: 30, img: 15, analyze: 10 };
+        var tc = cfg.TRIAL_DAILY_CAPS   || { run: 10, img: 5,  analyze: 3  };
+        function hydrateDesc(text, caps) {
+          if (typeof text !== 'string') return text;
+          return text
+            .replace(/\b\d+\s+Run With AI executions\b/i, caps.run + ' Run With AI executions')
+            .replace(/\b\d+\s+image generations\b/i, caps.img + ' image generations')
+            .replace(/\b\d+\s+file analyses\b/i, caps.analyze + ' file analyses');
+        }
+        function hydrateFreeFaq(text) {
+          if (typeof text !== 'string') return text;
+          return text
+            .replace(/\(\d+\s+Run With AI,\s*\d+\s+image generation,\s*and\s+\d+\s+file analysis per day\)/i,
+                     '(' + fc.run + ' Run With AI, ' + fc.img + ' image generation, and ' + fc.analyze + ' file analysis per day)')
+            .replace(/\(\d+\s+Run With AI,\s*\d+\s+images,\s*\d+\s+file analyses per day for the first week\)/i,
+                     '(' + tc.run + ' Run With AI, ' + tc.img + ' images, ' + tc.analyze + ' file analyses per day for the first week)');
+        }
         if (data && Array.isArray(data.offers)) {
           for (var j = 0; j < data.offers.length; j++) {
             var off = data.offers[j];
             if (!off || typeof off !== 'object') continue;
             var nm = String(off.name || '').toLowerCase();
-            if (nm.indexOf('founding') !== -1 && off.price !== founding) {
-              off.price = founding; changed = true;
+            if (nm.indexOf('founding') !== -1) {
+              if (off.price !== founding) { off.price = founding; changed = true; }
+              var nd = hydrateDesc(off.description, foc);
+              if (nd !== off.description) { off.description = nd; changed = true; }
             } else if (nm.indexOf('yearly') !== -1 && off.price !== proY) {
               off.price = proY; changed = true;
             } else if (nm.indexOf('monthly') !== -1 && off.price !== proM) {
               off.price = proM; changed = true;
             }
+          }
+        }
+        if (data && Array.isArray(data.mainEntity)) {
+          for (var m = 0; m < data.mainEntity.length; m++) {
+            var ent = data.mainEntity[m];
+            if (!ent || !ent.acceptedAnswer || typeof ent.acceptedAnswer.text !== 'string') continue;
+            var nt = hydrateFreeFaq(ent.acceptedAnswer.text);
+            if (nt !== ent.acceptedAnswer.text) { ent.acceptedAnswer.text = nt; changed = true; }
           }
         }
         if (changed) {
@@ -12337,10 +12387,10 @@
        to the pricing page so the call-to-action is one click away. */
     var onPricing = /\/pricing\.html(?:[?#]|$)/i.test(location.pathname + location.search);
     if (onPricing) {
-      msg.textContent = 'Free Beta Access Until ' + dateLabel + ' — Founding Member Access Available Now.';
+      msg.textContent = 'Free Beta Access Until ' + dateLabel + ' — Founding Member Waitlist Open · Checkout Opens Soon.';
     } else {
       msg.innerHTML = 'Free Beta Access Until ' + dateLabel +
-        ' — <a href="./pricing.html">Founding Member Access Available Now</a>.';
+        ' — <a href="./pricing.html">Founding Member Waitlist Open</a> · Checkout Opens Soon.';
     }
     bar.appendChild(msg);
 
