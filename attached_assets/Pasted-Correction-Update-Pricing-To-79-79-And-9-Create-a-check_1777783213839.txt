@@ -1,0 +1,82 @@
+Correction: Update Pricing To $79, $79, And $9.
+
+Create a checkpoint first.
+
+Final Pricing:
+- Founding Member: $79 One-Time
+- Pro Monthly: $9/Month
+- Pro Yearly: $79/Year
+
+Founding Member Positioning:
+Lifetime Access To Core Features.
+Fair Use Limits Apply.
+Offer Ends July 1 Or At 500 Founding Members — Whichever Comes First.
+
+Pro Monthly Positioning:
+Ongoing Premium Access.
+$9/Month.
+
+Pro Yearly Positioning:
+Best Value.
+$79/Year.
+
+Update All Pricing Copy:
+- Replace old $49 references with $79 where referring to Founding Member.
+- Replace old $59 references with $79 where referring to Founding Member.
+- Keep Pro Monthly at $9/Month.
+- Keep or update Pro Yearly to $79/Year.
+- Remove any $19/month references.
+- Remove old June 1 launch/deadline copy if still present.
+- Replace with:
+  Ends July 1 Or At 500 Founding Members
+  or
+  Offer Ends July 1 Or When 500 Copies Are Sold — Whichever Comes First.
+
+Update Stripe Price IDs:
+Find config/secrets/price ID references for:
+- Founding Member one-time
+- Pro Monthly
+- Pro Yearly
+
+Use the correct configured IDs:
+- STRIPE_FOUNDING_PRICE_ID for $79 one-time
+- STRIPE_PRO_MONTHLY_PRICE_ID for $9/month
+- STRIPE_PRO_YEARLY_PRICE_ID for $79/year
+
+If those exact secret names do not exist, inspect current naming and map correctly.
+Do not hardcode Stripe secret keys.
+Do not expose secret keys in frontend code.
+
+Checkout Behavior:
+- Founding Member button should use $79 one-time price.
+- Pro Monthly button should use $9/month price if active.
+- Pro Yearly button should use $79/year price if active.
+- If Pro checkout is not active, show Coming Soon or Join Waitlist instead of a dead checkout button.
+
+Trust Copy:
+Use:
+Lifetime Access To Core Features. Fair Use Limits Apply.
+
+Avoid:
+Unlimited Forever
+Everything In Pro Forever
+All Future Pro Features Forever
+
+QA:
+- Pricing page shows Founding Member $79 One-Time.
+- Pricing page shows Pro Monthly $9/Month.
+- Pricing page shows Pro Yearly $79/Year.
+- No $49, $59, or $19 references remain.
+- Deadline language is July 1 Or 500 Founding Members.
+- Checkout buttons use the correct Stripe price IDs.
+- No console errors.
+- Stripe secrets are not exposed.
+- Backend/API/AI logic is unchanged except payment price configuration.
+
+Report:
+1. Files changed.
+2. Final price copy.
+3. Stripe Price ID mapping.
+4. Old prices removed.
+5. Deadline copy updated.
+6. Checkout QA result.

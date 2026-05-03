@@ -22,6 +22,14 @@ import { stripe } from "../lib/stripe-client";
 import { supabaseAdmin } from "../lib/supabase-admin";
 import { requireSupabaseUser, type AuthedRequest } from "../lib/auth";
 import { isPaywallActive } from "../lib/paywall";
+import {
+  PMG_PRICING,
+  effectiveCaps,
+  isInTrial,
+  trialDaysLeft,
+  type PmgPlan,
+} from "../lib/pricing-config";
+import { getUserUsageSnapshot } from "../middlewares/userCaps";
 
 const router: IRouter = Router();
 

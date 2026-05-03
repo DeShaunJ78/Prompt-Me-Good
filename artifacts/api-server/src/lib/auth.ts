@@ -13,7 +13,7 @@ import type { Request, Response, NextFunction } from "express";
 import { supabaseAdmin } from "./supabase-admin";
 
 export interface AuthedRequest extends Request {
-  user?: { id: string; email: string };
+  user?: { id: string; email: string; createdAtMs: number };
 }
 
 export async function requireSupabaseUser(
@@ -34,7 +34,14 @@ export async function requireSupabaseUser(
       res.status(401).json({ error: "Invalid or expired session." });
       return;
     }
-    req.user = { id: data.user.id, email: data.user.email || "" };
+    const createdAtMs = data.user.created_at
+      ? new Date(data.user.created_at).getTime()
+      : Date.now();
+    req.user = {
+      id: data.user.id,
+      email: data.user.email || "",
+      createdAtMs: Number.isFinite(createdAtMs) ? createdAtMs : Date.now(),
+    };
     next();
   } catch (err) {
     req.log?.warn({ err }, "supabase auth.getUser threw");
