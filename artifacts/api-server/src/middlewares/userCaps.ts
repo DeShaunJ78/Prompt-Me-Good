@@ -10,18 +10,15 @@
  * Behavior:
  *   - Anonymous request (no `Authorization` header): pass through. Existing
  *     IP rate limit + global cost guard handle anonymous abuse.
- *   - Signed-in Founding / Pro: pass through. Fair-use caps stay in the
- *     existing rateLimit + costGuard layer (untouched).
+ *   - Signed-in Founding / Pro: enforced against fair-use caps.
  *   - Signed-in Free user, in 7-day trial: enforce trial caps (10/5/3).
  *   - Signed-in Free user, after trial: enforce standard caps (3/1/1).
  *   - Counter increments only on a successful (status < 400) response.
  *
- * Storage: in-memory `Map` flushed to `data/pmg_user_usage.json` (mirrors
- * the cost-guard pattern). Per-user, per-day, per-feature counters. No
- * Supabase schema changes — this lives entirely server-side.
+ * Storage: counters live in Supabase `public.user_usage_daily` keyed by
+ * `(user_id, usage_date)` — see `lib/usage-store.ts`. A local JSON file
+ * is used as a graceful fallback if the table doesn't exist yet.
  * ============================================================================ */
-import * as fs from "node:fs";
-import * as path from "node:path";
 import type { Request, Response, NextFunction } from "express";
 import { supabaseAdmin } from "../lib/supabase-admin";
 import { logger } from "../lib/logger";
@@ -30,82 +27,9 @@ import {
   type PmgFeature,
   type PmgPlan,
 } from "../lib/pricing-config";
+import { bumpUserDay, getUserDay } from "../lib/usage-store";
 
-const DATA_DIR = path.resolve(process.cwd(), "data");
-const FILE = path.join(DATA_DIR, "pmg_user_usage.json");
-const FLUSH_MS = 1000;
 const JWT_CACHE_TTL_MS = 60_000;
-
-interface UserDay {
-  date: string;
-  run: number;
-  img: number;
-  analyze: number;
-}
-
-function todayKey(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function readFromDisk(): Record<string, UserDay> {
-  try {
-    const raw = fs.readFileSync(FILE, "utf8");
-    const parsed = JSON.parse(raw);
-    if (parsed && typeof parsed === "object") {
-      return parsed as Record<string, UserDay>;
-    }
-  } catch {
-    /* file missing or unparseable — start fresh */
-  }
-  return {};
-}
-
-let usage: Record<string, UserDay> = readFromDisk();
-let flushTimer: NodeJS.Timeout | null = null;
-
-function flushToDisk(): void {
-  flushTimer = null;
-  try {
-    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-    fs.writeFileSync(FILE, JSON.stringify(usage));
-  } catch (err) {
-    logger.warn(
-      { err: err instanceof Error ? err.message : "unknown" },
-      "user usage write failed",
-    );
-  }
-}
-
-function scheduleFlush(): void {
-  if (flushTimer) return;
-  flushTimer = setTimeout(flushToDisk, FLUSH_MS);
-  if (typeof flushTimer.unref === "function") flushTimer.unref();
-}
-
-function getOrInitDay(userId: string): UserDay {
-  const today = todayKey();
-  let row = usage[userId];
-  if (!row || row.date !== today) {
-    row = { date: today, run: 0, img: 0, analyze: 0 };
-    usage[userId] = row;
-  }
-  return row;
-}
-
-export function userBump(userId: string, feature: PmgFeature, n = 1): void {
-  const row = getOrInitDay(userId);
-  row[feature] += n;
-  scheduleFlush();
-}
-
-export function getUserUsageSnapshot(userId: string): {
-  run: number;
-  img: number;
-  analyze: number;
-} {
-  const row = getOrInitDay(userId);
-  return { run: row.run, img: row.img, analyze: row.analyze };
-}
 
 interface CachedUser {
   expires: number;
@@ -117,7 +41,7 @@ interface CachedUser {
 
 const jwtCache = new Map<string, CachedUser>();
 
-async function resolveUserFromJwt(jwt: string): Promise<CachedUser | null> {
+export async function resolveUserFromJwt(jwt: string): Promise<CachedUser | null> {
   const now = Date.now();
   const cached = jwtCache.get(jwt);
   if (cached && cached.expires > now) return cached;
@@ -188,9 +112,7 @@ export function userCapEnforce(
       return;
     }
     req.pmgUser = ctx;
-    // Resolve the per-request cost. For /image this comes from req.body.n
-    // (1–4); for run/analyze it's a constant 1. Always clamp to >=1 so a
-    // bogus payload can't sneak through with cost=0.
+
     let n = 1;
     try {
       const raw = typeof cost === "function" ? cost(req) : cost;
@@ -200,11 +122,10 @@ export function userCapEnforce(
     } catch (_) {
       n = 1;
     }
-    // Every plan has finite daily caps now (founding/pro use higher
-    // fair-use limits); enforce against the appropriate cap matrix.
+
     const caps = effectiveCaps(ctx.plan, ctx.createdAtMs);
-    const used = getOrInitDay(ctx.userId)[feature];
-    if (used + n > caps[feature]) {
+    const today = await getUserDay(ctx.userId);
+    if (today[feature] + n > caps[feature]) {
       res.status(429).json({
         success: false,
         ok: false,
@@ -214,7 +135,7 @@ export function userCapEnforce(
     }
     res.on("finish", () => {
       if (res.statusCode < 400) {
-        userBump(ctx.userId, feature, n);
+        void bumpUserDay(ctx.userId, feature, n);
       }
     });
     next();

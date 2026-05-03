@@ -32,7 +32,7 @@ import {
   trialDaysLeft,
   type PmgPlan,
 } from "../lib/pricing-config";
-import { getUserUsageSnapshot } from "../middlewares/userCaps";
+import { getUserDay } from "../lib/usage-store";
 
 const router: IRouter = Router();
 
@@ -262,7 +262,8 @@ router.get(
       // clearing browser data. Founding/Pro users skip trial state and
       // get their own (higher) fair-use caps from effectiveCaps.
       const caps = effectiveCaps(plan, user.createdAtMs);
-      const used = getUserUsageSnapshot(user.id);
+      const day = await getUserDay(user.id);
+      const used = { run: day.run, img: day.img, analyze: day.analyze };
       res.json({
         plan,
         subscription_status: profile.subscription_status,
