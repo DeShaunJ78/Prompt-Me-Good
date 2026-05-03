@@ -448,22 +448,35 @@
                     pmg-ux.js, which calls POST /api/create-checkout-session
                     with { tier: 'founding' } and redirects to Stripe.
          Secondary → Email capture for Pro Monthly launch notifications. */
-    /* Modal copy is templated from window.PMG_PRICING so prices and the
-       deadline string flow from one canonical source. The fallback
-       literals match the config defaults and only fire if the config
-       script failed to load. */
-    var __cfg2 = (typeof window !== 'undefined' && window.PMG_PRICING) || {};
-    var __founding = (typeof __cfg2.FOUNDING_PRICE_USD === 'number') ? __cfg2.FOUNDING_PRICE_USD : 79;
-    var __proM     = (typeof __cfg2.PRO_MONTHLY_USD    === 'number') ? __cfg2.PRO_MONTHLY_USD    : 9;
-    var __proY     = (typeof __cfg2.PRO_YEARLY_USD     === 'number') ? __cfg2.PRO_YEARLY_USD     : 79;
-    var __limit    = (typeof __cfg2.FOUNDING_LIMIT     === 'number') ? __cfg2.FOUNDING_LIMIT     : 500;
+    /* Modal copy is templated exclusively from window.PMG_PRICING so the
+       canonical config is the single source of truth. If the config
+       script failed to load we render a non-priced generic message
+       rather than duplicating business constants in this file. */
+    var __cfg2     = (typeof window !== 'undefined' && window.PMG_PRICING) || {};
+    var __hasFull  = typeof __cfg2.FOUNDING_PRICE_USD === 'number'
+                    && typeof __cfg2.PRO_MONTHLY_USD === 'number'
+                    && typeof __cfg2.PRO_YEARLY_USD === 'number'
+                    && typeof __cfg2.FOUNDING_LIMIT === 'number';
     var __lock     = __cfg2.PRICE_LOCK_TAGLINE || 'price locked for life';
-    var __deadline = __cfg2.FOUNDING_DEADLINE_COPY || 'Offer ends July 1 or at 500 founding members, whichever comes first.';
+    var __deadline = __cfg2.FOUNDING_DEADLINE_COPY || '';
+    var __pCopy;
+    if (__hasFull) {
+      __pCopy =
+        'Unlock higher usage on this feature. Founding Member is a one-time $' +
+        __cfg2.FOUNDING_PRICE_USD + ' payment for lifetime access to core features — limited to the first ' +
+        __cfg2.FOUNDING_LIMIT + ' buyers, ' + __lock + '.' +
+        (__deadline ? ' ' + __deadline : '') +
+        ' Pro Monthly ($' + __cfg2.PRO_MONTHLY_USD + '/month) and Pro Yearly ($' +
+        __cfg2.PRO_YEARLY_USD + '/year) launch soon. Fair use limits apply.';
+    } else {
+      __pCopy =
+        'Unlock higher usage on this feature. Founding Member is a one-time payment for lifetime access to core features — see pricing for current details. Fair use limits apply.';
+    }
     overlay.innerHTML =
       '<div class="pmg-upgrade-modal" role="dialog" aria-modal="true" aria-labelledby="pmg-upgrade-title">' +
         '<span class="pmg-upgrade-modal-icon" aria-hidden="true">🔒</span>' +
         '<h3 id="pmg-upgrade-title">' + safe + ' Is A Pro Feature</h3>' +
-        '<p>Unlock higher usage on this feature. Founding Member is a one-time $' + __founding + ' payment for lifetime access to core features — limited to the first ' + __limit + ' buyers, ' + __lock + '. ' + __deadline + ' Pro Monthly ($' + __proM + '/month) and Pro Yearly ($' + __proY + '/year) launch soon. Fair use limits apply.</p>' +
+        '<p>' + __pCopy + '</p>' +
         '<div class="pmg-upgrade-modal-actions">' +
           '<a class="pmg-upgrade-cta pmg-upgrade-btn" href="./pricing.html#early-access">Join Founding Member Waitlist</a>' +
           '<a class="pmg-upgrade-cta-secondary" href="./pricing.html#early-access">Notify Me When Pro Launches</a>' +

@@ -12026,16 +12026,25 @@
     cta.className = 'pmg-t41-inline-cta';
     /* Pro Monthly is "Coming Soon" and has no live Stripe checkout. The
        active paid offer is Founding Member (one-time, price locked for
-       life). All numbers are sourced from window.PMG_PRICING so this
-       copy can never drift from the canonical config. */
+       life). Numbers are sourced exclusively from window.PMG_PRICING —
+       if config is unavailable we render a non-priced generic message
+       so business constants never get duplicated in this file. */
     var __cfgCTA  = (typeof window !== 'undefined' && window.PMG_PRICING) || {};
-    var __ctaAmt  = (typeof __cfgCTA.FOUNDING_PRICE_USD === 'number') ? __cfgCTA.FOUNDING_PRICE_USD : 79;
-    var __ctaLim  = (typeof __cfgCTA.FOUNDING_LIMIT       === 'number') ? __cfgCTA.FOUNDING_LIMIT      : 500;
-    var __ctaLock = __cfgCTA.PRICE_LOCK_TAGLINE || 'price locked for life';
+    var __hasPx   = typeof __cfgCTA.FOUNDING_PRICE_USD === 'number'
+                    && typeof __cfgCTA.FOUNDING_LIMIT === 'number';
+    var __ctaCopy;
+    if (__hasPx) {
+      var __ctaLock = __cfgCTA.PRICE_LOCK_TAGLINE || 'price locked for life';
+      __ctaCopy =
+        'Founding Member is a one-time $' + __cfgCTA.FOUNDING_PRICE_USD +
+        ' for lifetime access to core features — higher Run With AI and image generation usage. Limited to the first ' +
+        __cfgCTA.FOUNDING_LIMIT + ' buyers, ' + __ctaLock + '. Fair use limits apply.';
+    } else {
+      __ctaCopy =
+        'Founding Member unlocks lifetime access to core features — higher Run With AI and image generation usage. See pricing for details. Fair use limits apply.';
+    }
     cta.innerHTML =
-      '<span><strong>Want Higher Limits?</strong> Founding Member is a one-time $' + __ctaAmt +
-      ' for lifetime access to core features — higher Run With AI and image generation usage. Limited to the first ' +
-      __ctaLim + ' buyers, ' + __ctaLock + '. Fair use limits apply.</span>' +
+      '<span><strong>Want Higher Limits?</strong> ' + __ctaCopy + '</span>' +
       '<a class="btn btn-primary ' + BUTTON_CLASS + '" href="./pricing.html#early-access">Join Founding Member Waitlist</a>';
     section.parentNode.insertBefore(cta, section);
     wireButtons();
@@ -12070,15 +12079,21 @@
           if (tier === 'founding') {
             try {
               var __cfgPL = window.PMG_PRICING || {};
-              var __pAmt  = (typeof __cfgPL.FOUNDING_PRICE_USD === 'number')
-                ? '$' + __cfgPL.FOUNDING_PRICE_USD : '$79';
               var __pLock = __cfgPL.PRICE_LOCK_TAGLINE || 'price locked for life';
-              showToast(
-                'Founding Member Unlocked — ' + __pAmt + ' One-Time, ' +
-                __pLock.charAt(0).toUpperCase() + __pLock.slice(1) +
-                '. Welcome To PromptMeGood Founding Member.',
-                7000
-              );
+              if (typeof __cfgPL.FOUNDING_PRICE_USD === 'number') {
+                showToast(
+                  'Founding Member Unlocked — $' + __cfgPL.FOUNDING_PRICE_USD +
+                  ' One-Time, ' +
+                  __pLock.charAt(0).toUpperCase() + __pLock.slice(1) +
+                  '. Welcome To PromptMeGood Founding Member.',
+                  7000
+                );
+              } else {
+                showToast(
+                  'Founding Member Unlocked. Welcome To PromptMeGood Founding Member.',
+                  5000
+                );
+              }
             } catch (_) {
               showToast(label + ' Unlocked. Welcome To PromptMeGood ' + label + '.', 5000);
             }
