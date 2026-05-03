@@ -15275,3 +15275,76 @@
   setTimeout(init, 800);
   setTimeout(init, 1800);
 })();
+
+/* =====================================================================
+ * T34 — Hoist primary CTA above the optional file upload.
+ *
+ * Problem:
+ *   New users type their goal in #goal, then look for the next step.
+ *   The "Fix My Prompt" button sits BELOW the optional file-upload
+ *   field, the post-uc-guidance banner, and other affordances — on
+ *   mobile it falls way below the fold. Users who don't scroll
+ *   simply bounce; users who do scroll feel friction.
+ *
+ * Fix:
+ *   Move the entire #tour-step-generate actions-row (Fix My Prompt +
+ *   Generate Image + Demo Values + Dice Idea Generator) AND the
+ *   #post-uc-guidance "✅ ready" hint to live IMMEDIATELY after the
+ *   #goal field's wrapper. The optional file-upload field stays in
+ *   the DOM but moves visually below the primary action.
+ *
+ * Why DOM-move (not CSS order):
+ *   .form-grid is not a flex/grid container today and changing it to
+ *   one risks regressing every other layout inside the form. A pure
+ *   DOM move preserves every existing event binding, tour anchor,
+ *   and script that targets #generateBtn / #tour-step-generate.
+ *
+ * Idempotent via window.__pmgT34Init.
+ * ===================================================================== */
+(function pmgT34HoistCta() {
+  if (window.__pmgT34Init) return;
+  window.__pmgT34Init = true;
+
+  function hoist() {
+    var goal = document.getElementById('goal');
+    if (!goal) return false;
+    // The .field wrapper that contains the goal label, textarea, and helper.
+    var goalField = goal.closest('.field');
+    if (!goalField || !goalField.parentNode) return false;
+    var actionsRow = document.getElementById('tour-step-generate');
+    if (!actionsRow) return false;
+
+    var parent = goalField.parentNode;
+    var anchor = goalField.nextSibling;
+
+    // Already hoisted? Bail.
+    if (anchor === actionsRow) return true;
+
+    // Insert actionsRow immediately after the goal field.
+    parent.insertBefore(actionsRow, anchor);
+
+    // Also hoist the post-uc-guidance "✅ ready" banner to live just
+    // above the actions row, so the reassurance copy stays adjacent
+    // to the CTA the user is about to tap.
+    var guidance = document.getElementById('post-uc-guidance');
+    if (guidance && guidance.parentNode) {
+      parent.insertBefore(guidance, actionsRow);
+    }
+
+    return true;
+  }
+
+  function init() {
+    try { hoist(); } catch (e) { /* noop */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+  // Re-run a couple of times in case other T-functions inject siblings
+  // around the goal field after initial paint.
+  setTimeout(init, 400);
+  setTimeout(init, 1200);
+})();
