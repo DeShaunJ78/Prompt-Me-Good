@@ -10309,6 +10309,7 @@ Context:
         if (!root.hidden) {
           root.hidden = true;
         }
+        root.inert = true;
         currentStage = 0;
         if (persist) ssSet(ASSIST_DISMISSED_KEY, '1');
       }
@@ -10353,6 +10354,7 @@ Context:
           actionsEl.appendChild(makeBtn('Dismiss', 'ghost', function () { dismissAssist(true); }));
         }
         root.hidden = false;
+        root.inert = false;
         ssSet(ASSIST_SHOWN_KEY, '1');
       }
 
