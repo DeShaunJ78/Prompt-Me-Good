@@ -1,0 +1,78 @@
+Add subtle “next best action” glow states for new users on PromptMeGood.
+
+Goal:
+Help first-time users immediately know what to press next without making the site look gimmicky.
+
+Do not redesign the site.
+Do not make every button glow.
+Do not add flashing, pulsing chaos, or distracting animation.
+Keep it premium, soft, and mobile-friendly.
+
+Glow rules:
+Only one primary action should glow at a time.
+
+Suggested flow:
+1. On first load:
+   Glow “Fix My Prompt” only after the user has typed something meaningful in the textarea.
+   Do not glow it when the textarea is empty.
+
+2. After prompt generation:
+   Glow “Run With AI Here” as the recommended next step.
+   Secondary actions like Copy Prompt and Refine It should not glow.
+
+3. After AI response appears:
+   Glow either:
+   - “Run Again” if the user may iterate, or
+   - “Try Image Mode” / “Make A Hero Image” if that is the desired next product discovery step.
+   Choose only one.
+
+4. In Photography Suite:
+   Glow “Generate Image Here” only when the required image prompt/vibe is ready.
+   Do not glow while disabled.
+   Do not glow while generating.
+
+5. In tours:
+   Do not glow underlying buttons while a tour overlay is active.
+   The tour Next/Done button can have a subtle emphasis, but no extra pulsing.
+
+Style:
+Use a soft teal glow that matches the brand:
+- subtle box-shadow
+- slow gentle pulse
+- no harsh neon
+- no layout shift
+- respect prefers-reduced-motion
+
+Example CSS:
+```css
+.pmg-next-action {
+  position: relative;
+  box-shadow:
+    0 0 0 3px rgba(0, 128, 128, 0.12),
+    0 0 22px rgba(0, 128, 128, 0.28);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pmg-next-action {
+    animation: pmgNextActionPulse 1.8s ease-in-out infinite;
+  }
+
+  @keyframes pmgNextActionPulse {
+    0%, 100% {
+      box-shadow:
+        0 0 0 3px rgba(0, 128, 128, 0.10),
+        0 0 18px rgba(0, 128, 128, 0.22);
+    }
+    50% {
+      box-shadow:
+        0 0 0 5px rgba(0, 128, 128, 0.16),
+        0 0 28px rgba(0, 128, 128, 0.34);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pmg-next-action {
+    animation: none;
+  }
+}

@@ -1,0 +1,111 @@
+Final polish pass for PromptMeGood. The site is launch-ready, but fix these remaining watch items before scaling traffic.
+
+Do not redesign the site.
+Do not change pricing, SEO, legal pages, or core copy.
+Do not break Fix My Prompt, Run With AI, Workstation Tour, Intro Tour, image generation, or mobile first-load layout.
+This is a surgical stability/polish pass only.
+
+Current rating is about 9.1/10. Goal is 9.5+.
+
+Fix only these three items:
+
+1. Intro Tour rapid-tap timing / duplicate Step 2
+
+Observed:
+The Intro Tour reaches the final Done step, but in fast mobile automation, Step 2 can appear twice during rapid clicking. Normal manual tapping may work, but rapid taps should not cause duplicate/lagged steps.
+
+Fix:
+- Add a transition lock/debounce to Intro Tour Next clicks.
+- While a step is scrolling/measuring/repositioning, ignore additional Next clicks.
+- Disable the Next button briefly until the new step is fully rendered.
+- Ensure currentStep increments exactly once per tap.
+- Ensure the UI label and internal state cannot get out of sync.
+- Do not allow Step 2 to repeat unless the user intentionally goes back, if back exists.
+- Recalculate highlight after scroll/layout settles, then unlock Next.
+
+Acceptance:
+At 390×844:
+- Start Intro Tour.
+- Tap Next rapidly 6–8 times.
+- Tour should still progress cleanly:
+  Step 1 → Step 2 → Step 3 → Step 4 → Step 5 → Step 6 → Done.
+- No duplicate Step 2.
+- No skipped visible content.
+- No 0×0 highlights.
+- Done closes the tour.
+
+2. Photography Suite button click stability
+
+Observed:
+In automation, `button.pmg-photo-surprise` / Surprise Me sometimes appears visible but unstable or not clickable. On real phone it may work, but stabilize it so both real users and browser automation can click it reliably.
+
+Fix:
+- Inspect layout around `.pmg-photo-surprise`, `.pmg-photo-send`, Photography Suite cards, and any parent containers.
+- Ensure no animation/layout shift is continuously moving the button after scroll.
+- Ensure no invisible overlay, tour invite, container, sticky header, or pseudo-element intercepts clicks.
+- Ensure hidden/closed invite overlays use `pointer-events: none`, `hidden`, `inert`, or `display:none`.
+- Ensure active Photography Suite controls have stable dimensions and are not re-rendering repeatedly.
+- Avoid changing button position during hover/focus/loading states.
+- If scrollIntoView is used, account for sticky headers and settle layout before enabling interaction.
+
+Acceptance:
+At 390×844:
+- Scroll to Photography Suite.
+- Normal click on Surprise Me works repeatedly.
+- Normal click on Generate Image Here works once a valid prompt/vibe exists.
+- No “element not stable” behavior.
+- No overlay/container intercepts the click.
+- The button remains enabled/disabled only based on valid input state, not layout glitches.
+
+3. Fontshare CORS / font loading errors
+
+Observed:
+Live browser console shows repeated Fontshare font load/CORS failures for `.woff2`, `.woff`, and `.ttf` files. This may cause fallback typography and layout shifts.
+
+Fix options:
+Preferred:
+- Self-host the fonts used by PromptMeGood.
+- Place font files in the project/public assets.
+- Update `@font-face` URLs to local same-origin paths.
+- Use only the formats needed, ideally `.woff2`.
+- Add `font-display: swap`.
+
+Alternative:
+- Remove Fontshare dependency and use a reliable system/font stack.
+- Keep the visual style close to current design.
+
+Acceptance:
+- Reload live site.
+- Console should not show Fontshare CORS errors.
+- Fonts should load from same-origin or reliable source.
+- No visible layout shift from late font failure.
+- Typography still looks close to current brand.
+
+Final regression checks:
+At mobile 390×844:
+1. First-load textarea and Fix My Prompt remain above the fold.
+2. Fix My Prompt works.
+3. Run With AI works.
+4. Intro Tour works with normal taps and rapid taps.
+5. Workstation Tour still works all 6 stops.
+6. Photography Suite Surprise Me click is stable.
+7. Generate Image Here still works.
+8. Hidden focusable scan remains near zero.
+9. No horizontal overflow.
+10. No Fontshare CORS errors in console.
+
+At desktop 1440×900:
+1. First-load layout remains good.
+2. Fix My Prompt works.
+3. Run With AI works.
+4. No obvious layout regressions.
+
+Return:
+- files changed
+- exact debounce/lock added to Intro Tour
+- exact Photography Suite click-stability fix
+- font-loading fix used
+- before/after console font error status
+- mobile rapid-tap Intro Tour result
+- mobile Photography Suite click result
+- final QA confirmation

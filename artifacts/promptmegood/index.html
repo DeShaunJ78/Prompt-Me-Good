@@ -209,8 +209,112 @@
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "wgs6567cte");
   </script>
-  <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
-  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet" />
+  <!-- Self-hosted Satoshi (was Fontshare CDN). Eliminates external CORS
+       failures on .woff2/.woff/.ttf and the resulting fallback FOUT.
+       Same files originally fetched from cdn.fontshare.com, downloaded
+       once and shipped from same-origin /assets/fonts/. -->
+  <style>
+    @font-face {
+      font-family: 'Satoshi';
+      src: url('/assets/fonts/satoshi-400.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Satoshi';
+      src: url('/assets/fonts/satoshi-500.woff2') format('woff2');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Satoshi';
+      src: url('/assets/fonts/satoshi-700.woff2') format('woff2');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Satoshi';
+      src: url('/assets/fonts/satoshi-900.woff2') format('woff2');
+      font-weight: 900;
+      font-style: normal;
+      font-display: swap;
+    }
+  </style>
+  <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/satoshi-400.woff2" crossorigin />
+  <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/satoshi-700.woff2" crossorigin />
+  <!-- Photography Suite Surprise Me click-stability hardening.
+       The Surprise Me button is moved into #pmg-t34-surprise-top-row at
+       runtime by pmg-ux.js (T34). Several styles already apply to it
+       through later !important rules (T34, T94). To guarantee that the
+       button:
+         * has stable dimensions (so its bounding box never changes
+           between automation stability checks),
+         * is never accidentally covered by a parent pseudo-element or
+           sibling overlay,
+         * does not transform on hover/focus (avoiding sub-pixel jitter
+           that mobile rapid-tap automation flags as "not stable"),
+         * is never animated when the user has prefers-reduced-motion,
+       we add the following bounded rules. They use higher specificity
+       (body prefix) so they win over T34/T94 without changing their
+       intent. -->
+  <style>
+    body #pmg-t34-surprise-top-row .pmg-photo-surprise,
+    body #pmg-photo-suite .pmg-photo-actions .pmg-photo-surprise {
+      min-height: 44px;
+      min-width: 132px;
+      position: relative;
+      z-index: 2;
+      pointer-events: auto;
+      transform: none !important;
+      will-change: auto;
+      /* Box-sizing & line-height locked so font swap from fallback
+         to Satoshi cannot resize the button mid-render. */
+      box-sizing: border-box;
+      line-height: 1.2;
+      /* When the suite is scrolled into view (e.g. by the tour, by
+         deep-linking, or by Playwright's `scrollIntoViewIfNeeded`),
+         leave room for the sticky beta banner (~78px) and topbar
+         (~71px) so the button never lands behind them. Without this,
+         elementFromPoint at the button's centre returns the banner's
+         own anchor, which is what's been blocking automated clicks. */
+      scroll-margin-top: 160px;
+    }
+    /* Promote the button's row to its own stacking context so that the
+       button's z-index:2 wins decisively against any ancestor (including
+       parent .container wrappers that may otherwise be reported as the
+       topmost element at the button's screen position by elementFromPoint
+       in mobile WebKit). */
+    body #pmg-t34-surprise-top-row {
+      position: relative;
+      isolation: isolate;
+      z-index: 1;
+    }
+    body #pmg-t34-surprise-top-row .pmg-photo-surprise:hover,
+    body #pmg-t34-surprise-top-row .pmg-photo-surprise:focus,
+    body #pmg-t34-surprise-top-row .pmg-photo-surprise:active,
+    body #pmg-photo-suite .pmg-photo-actions .pmg-photo-surprise:hover,
+    body #pmg-photo-suite .pmg-photo-actions .pmg-photo-surprise:focus,
+    body #pmg-photo-suite .pmg-photo-actions .pmg-photo-surprise:active {
+      transform: none !important;
+    }
+    /* The pulse animation on the suite uses box-shadow only and so does
+       not move children, but make this contract explicit and respect
+       reduced-motion preferences. */
+    @media (prefers-reduced-motion: reduce) {
+      .pmg-t34-pulse { animation: none !important; }
+    }
+    /* Belt-and-braces: ensure the hidden post-tour-banner and the
+       hidden post-run-intro can never intercept clicks. They already
+       use [hidden] { display:none } and `inert`, but mobile Safari has
+       historically been finicky with `inert`, so re-enforce
+       pointer-events. */
+    .post-tour-banner[hidden],
+    .pmg-post-run-intro[hidden],
+    #tour-banner[hidden] { pointer-events: none !important; }
+  </style>
   <script>
     /* Theme accent bootstrap — runs synchronously in <head> before styles paint to avoid a flash
        of the wrong accent color on initial load. Must match the writer in the Personalize footer. */
@@ -8775,6 +8879,12 @@ Context:
         const completed = !!(opts && opts.completed);
         const wasDemo = currentIsDemo;
         demoGenerationToken += 1;
+        // Release the rapid-tap lock immediately so that a re-opened tour
+        // (e.g. user starts the Workstation Tour after finishing Intro)
+        // does not start with a locked Next button. Safe even if the lock
+        // was never set; obSetStepLock is a no-op when called with the
+        // already-current state.
+        try { if (typeof obSetStepLock === 'function') obSetStepLock(false); } catch (e) {}
         // Clean up any step-level state (e.g. temporarily revealed sections).
         obInvokeStepLeave();
         // Spec #1: any onboarding dismissal (skip, complete, escape, backdrop) marks the user as visited.
@@ -8878,21 +8988,89 @@ Context:
         banner.classList.remove('is-visible');
         window.setTimeout(function () { banner.hidden = true; banner.inert = true; }, 260);
       }
+      /* Rapid-tap guard: while a step is scrolling/measuring/repositioning,
+         additional Next clicks (or Enter presses) are dropped, and the Next
+         button is briefly disabled. Prevents currentStep from being
+         incremented twice on a single fast double-tap (the source of the
+         "Step 2 appears twice" bug observed under mobile rapid-tap
+         automation). The lock is auto-released by a single watchdog
+         timer (no other code path releases it) so it always outlasts
+         the deepest positioning path — even when obPositionStep defers
+         via needsScroll retries on the slowest mobile case. */
+      var obStepLock = false;
+      var obStepLockTimer = 0;
+      /* Worst-case mobile positioning budget = 150ms initial wait
+         + 2 × 360ms scroll re-attempts inside obPositionStep
+         + 100ms mobile reveal delay = ~970ms. 1100ms gives a safe
+         margin while staying short enough to feel responsive. */
+      var OB_STEP_LOCK_MS = 1100;
+      function obSetStepLock(on) {
+        obStepLock = !!on;
+        if (obNextBtn) {
+          if (on) {
+            obNextBtn.setAttribute('disabled', '');
+            obNextBtn.setAttribute('aria-busy', 'true');
+          } else {
+            obNextBtn.removeAttribute('disabled');
+            obNextBtn.removeAttribute('aria-busy');
+          }
+        }
+        if (obStepLockTimer) { window.clearTimeout(obStepLockTimer); obStepLockTimer = 0; }
+        if (on) {
+          obStepLockTimer = window.setTimeout(function () {
+            obStepLock = false;
+            if (obNextBtn) {
+              obNextBtn.removeAttribute('disabled');
+              obNextBtn.removeAttribute('aria-busy');
+            }
+            obStepLockTimer = 0;
+          }, OB_STEP_LOCK_MS);
+        }
+      }
       function obNextStep() {
+        /* Note: the rapid-tap lock is enforced in `handleObNextClick` and
+           the Enter key branch — NOT here. This is intentional so that
+           internal callers (the missing-target fallback inside
+           `obPositionStep` at the top of this IIFE, and the demo-gen
+           auto-advance in `runDemoGenerationStep`) can still skip
+           through unreachable steps without being blocked by a lock the
+           user's click set milliseconds ago.
+
+           Lock release is also NOT done here — the fallback watchdog
+           timer in obSetStepLock is the sole release mechanism. This
+           is deliberate because obPositionStep can defer settling via
+           further setTimeouts (`needsScroll` retries, mobile reveal
+           delay) whose total can approach ~970ms; releasing the lock
+           at the 150ms mark would leave a race window where a rapid
+           second tap lands while positioning is still in flight. */
         obInvokeStepLeave();
         if (obIndex >= currentSteps.length - 1) { obFinish({ completed: true }); return; }
         obIndex += 1;
         obOverlay.classList.add('is-transitioning');
         obInvokeStepEnter();
-        window.setTimeout(function () { obPositionStep(); }, 150);
+        window.setTimeout(function () {
+          obPositionStep();
+        }, 150);
       }
-      obNextBtn.addEventListener('click', obNextStep);
+      function handleObNextClick() {
+        /* User-initiated Next: enforce rapid-tap debounce. Drop extra
+           taps that arrive while a previous transition is still
+           settling. */
+        if (obStepLock) return;
+        obSetStepLock(true);
+        obNextStep();
+      }
+      obNextBtn.addEventListener('click', handleObNextClick);
       obSkipBtn.addEventListener('click', function () { obFinish(); });
       obBackdrop.addEventListener('click', function () { obFinish(); });
       document.addEventListener('keydown', function (event) {
         if (!obOverlay.classList.contains('is-open')) return;
         if (event.key === 'Escape') obFinish();
-        else if (event.key === 'Enter') obNextStep();
+        else if (event.key === 'Enter') {
+          if (obStepLock) { event.preventDefault(); return; }
+          obSetStepLock(true);
+          obNextStep();
+        }
       });
       const tourBanner = document.getElementById('tour-banner');
       function hideTourBanner() {
