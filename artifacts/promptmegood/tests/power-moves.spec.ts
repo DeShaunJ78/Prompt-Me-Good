@@ -69,14 +69,13 @@ test.describe("Power Moves MVP", () => {
     });
     expect(overflow).toBe(false);
 
-    const cols = await page.evaluate(() => {
-      const grid = document.querySelector(".pmg-pm-grid");
-      if (!grid) return null;
-      return getComputedStyle(grid).gridTemplateColumns;
+    const allOnOneRow = await page.evaluate(() => {
+      const chips = document.querySelectorAll(".pmg-pm-grid .pmg-pm-chip");
+      if (chips.length === 0) return false;
+      const tops = Array.from(chips).map(c => c.getBoundingClientRect().top);
+      return tops.every(t => Math.abs(t - tops[0]) < 5);
     });
-    expect(cols).toBeTruthy();
-    const colCount = cols!.split(/\s+/).length;
-    expect(colCount).toBe(2);
+    expect(allOnOneRow).toBe(true);
   });
 
   test("Check Quality chip → #quality-feedback div becomes visible with content", async ({ page }) => {
