@@ -16463,11 +16463,18 @@
       prepare: null
     },
     {
-      selector: '#runSection',
-      fallback: '#runBtn',
+      selector: '#runBtn',
+      fallback: '#runSection',
       title: 'Run With AI',
       text: 'Execute your prompt and get an AI response right here — no copy-paste needed.',
-      prepare: null
+      prepare: function () {
+        var rs = document.getElementById('runSection');
+        if (rs && rs.hidden) { rs.hidden = false; rs.dataset.wsTourRevealed = '1'; }
+      },
+      cleanup: function () {
+        var rs = document.getElementById('runSection');
+        if (rs && rs.dataset.wsTourRevealed === '1') { rs.hidden = true; delete rs.dataset.wsTourRevealed; }
+      }
     },
     {
       selector: '#pmg-power-moves',
@@ -16774,7 +16781,15 @@
     else if (e.key === 'Enter') nextStep();
   }
 
+  function invokeCleanup() {
+    var step = STEPS[stepIndex];
+    if (step && typeof step.cleanup === 'function') {
+      try { step.cleanup(); } catch (e) {}
+    }
+  }
+
   function nextStep() {
+    invokeCleanup();
     if (stepIndex >= STEPS.length - 1) { finish(true); return; }
     stepIndex++;
     var step = STEPS[stepIndex];
@@ -16795,6 +16810,7 @@
   }
 
   function finish(completed) {
+    invokeCleanup();
     var overlay = document.getElementById(OVERLAY_ID);
     if (overlay) {
       overlay.classList.remove('is-open');
@@ -16866,6 +16882,11 @@
       parentMo.observe(section.parentElement, { attributes: true, childList: true });
     }
   }
+
+  window.pmgStartWorkstationTour = function () {
+    injectStyles();
+    startTour();
+  };
 
   function init() {
     injectStyles();

@@ -1273,6 +1273,14 @@
     .site-footer-replay { margin-top: var(--space-2); }
     .site-footer-replay-btn { background: transparent; border: 1px dashed color-mix(in srgb, var(--color-primary) 40%, transparent); color: var(--color-primary); padding: 6px 14px; border-radius: var(--radius-sm); font-size: var(--text-sm); cursor: pointer; transition: background var(--transition-interactive), border-color var(--transition-interactive); }
     .site-footer-replay-btn:hover { background: color-mix(in srgb, var(--color-primary) 10%, transparent); border-color: var(--color-primary); }
+    .replay-tour-dropdown { position: relative; display: inline-block; }
+    .replay-tour-menu { position: absolute; bottom: calc(100% + 6px); right: 0; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md, 8px); box-shadow: 0 8px 24px rgba(0,0,0,0.18); padding: 4px; min-width: 200px; z-index: 100; display: flex; flex-direction: column; gap: 2px; white-space: nowrap; }
+    #replay-tour-dropdown-builder .replay-tour-menu { bottom: auto; top: calc(100% + 6px); }
+    .replay-tour-menu-item { display: block; width: 100%; padding: 10px 14px; background: transparent; border: 0; border-radius: var(--radius-sm, 6px); color: var(--color-text); font-size: var(--text-sm); font-weight: 600; text-align: left; cursor: pointer; transition: background 120ms ease; }
+    .replay-tour-menu-item:hover { background: color-mix(in srgb, var(--color-primary) 12%, transparent); }
+    .replay-tour-menu-item:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
+    [data-theme="dark"] .replay-tour-menu { background: var(--color-surface); border-color: rgba(91,168,176,0.3); }
+    [data-theme="dark"] .replay-tour-menu-item:hover { background: rgba(91,168,176,0.15); }
     .site-footer-personalize { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; margin-top: var(--space-3); }
     .site-footer-personalize-label { font-size: var(--text-xs); color: var(--color-text-muted); letter-spacing: 0.04em; text-transform: uppercase; font-weight: 600; }
     .accent-swatches { display: inline-flex; align-items: center; gap: 8px; }
@@ -3316,7 +3324,7 @@
   .what-next { border: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent) !important; border-left: 0 !important; background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 10%, transparent), color-mix(in srgb, var(--color-primary) 4%, transparent)) !important; }
   .what-next-title { font-size: 1rem !important; margin-bottom: 12px !important; }
   .what-next-list li { padding: 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); background: var(--color-surface); }
-  #weekly-goal-pin, #replay-tour-btn-builder, .guided-cta-recommended-badge:empty { display: none !important; }
+  #weekly-goal-pin, #replay-tour-dropdown-builder, .guided-cta-recommended-badge:empty { display: none !important; }
   body.pmg-has-generated #weekly-goal-pin { display: block !important; }
   body.image-mode label[for="goal"] { font-size: 0; }
   body.image-mode label[for="goal"]::after { content: "Your Image"; font-size: var(--text-base); }
@@ -3523,10 +3531,16 @@
                   <span class="expert-mode-toggle-sub">For Advanced Users Who Want Full Control.</span>
                 </span>
               </label>
-              <button type="button" class="builder-replay-btn" id="replay-tour-btn-builder" aria-label="Replay the onboarding tour">
-                <span class="builder-replay-icon" aria-hidden="true">?</span>
-                <span>Replay Tour</span>
-              </button>
+              <div class="replay-tour-dropdown" id="replay-tour-dropdown-builder">
+                <button type="button" class="builder-replay-btn" id="replay-tour-btn-builder" aria-label="Replay a tour" aria-expanded="false" aria-haspopup="true">
+                  <span class="builder-replay-icon" aria-hidden="true">?</span>
+                  <span>Replay Tour</span>
+                </button>
+                <div class="replay-tour-menu" id="replay-tour-menu-builder" role="menu" hidden>
+                  <button type="button" class="replay-tour-menu-item" role="menuitem" data-tour="intro">Intro Tour</button>
+                  <button type="button" class="replay-tour-menu-item" role="menuitem" data-tour="workstation">Workstation Tour</button>
+                </div>
+              </div>
             </div>
           </div>
           <div class="form-wrap">
@@ -4293,7 +4307,13 @@
           </div>
         </div>
         <div class="site-footer-replay">
-          <button type="button" class="site-footer-replay-btn" id="replay-tour-btn">Replay Tour</button>
+          <div class="replay-tour-dropdown" id="replay-tour-dropdown-footer">
+            <button type="button" class="site-footer-replay-btn" id="replay-tour-btn" aria-expanded="false" aria-haspopup="true">Replay Tour</button>
+            <div class="replay-tour-menu" id="replay-tour-menu-footer" role="menu" hidden>
+              <button type="button" class="replay-tour-menu-item" role="menuitem" data-tour="intro">Intro Tour</button>
+              <button type="button" class="replay-tour-menu-item" role="menuitem" data-tour="workstation">Workstation Tour</button>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
@@ -4412,7 +4432,7 @@
 
   <div class="smart-assist" id="smart-assist" role="region" aria-live="polite" aria-labelledby="smart-assist-title" hidden>
     <button type="button" class="smart-assist-close" id="smart-assist-close" aria-label="Dismiss helper">&times;</button>
-    <h3 class="smart-assist-title" id="smart-assist-title">Need help getting started?</h3>
+    <h3 class="smart-assist-title" id="smart-assist-title">What would you like to do?</h3>
     <p class="smart-assist-body" id="smart-assist-body" hidden></p>
     <div class="smart-assist-actions" id="smart-assist-actions"></div>
   </div>
@@ -8425,14 +8445,44 @@ Context:
         if (obIsOpen()) obFinish();
         obStart();
       }
-      const replayTourBtn = document.getElementById('replay-tour-btn');
-      if (replayTourBtn) {
-        replayTourBtn.addEventListener('click', startReplayTour);
+      window.pmgStartReplayTour = startReplayTour;
+      function startReplayWorkstationTour() {
+        hideTourBanner();
+        if (obIsOpen()) obFinish();
+        if (typeof window.pmgStartWorkstationTour === 'function') {
+          window.pmgStartWorkstationTour();
+        }
       }
-      const replayTourBtnBuilder = document.getElementById('replay-tour-btn-builder');
-      if (replayTourBtnBuilder) {
-        replayTourBtnBuilder.addEventListener('click', startReplayTour);
+      function initReplayDropdown(triggerId, menuId) {
+        var trigger = document.getElementById(triggerId);
+        var menu = document.getElementById(menuId);
+        if (!trigger || !menu) return;
+        trigger.addEventListener('click', function (e) {
+          var isOpen = !menu.hidden;
+          closeAllReplayMenus();
+          if (!isOpen) {
+            menu.hidden = false;
+            trigger.setAttribute('aria-expanded', 'true');
+          }
+        });
+        menu.querySelectorAll('[data-tour]').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            closeAllReplayMenus();
+            var tour = btn.getAttribute('data-tour');
+            if (tour === 'workstation') startReplayWorkstationTour();
+            else startReplayTour();
+          });
+        });
       }
+      function closeAllReplayMenus() {
+        document.querySelectorAll('.replay-tour-menu').forEach(function (m) { m.hidden = true; });
+        document.querySelectorAll('[aria-haspopup="true"]').forEach(function (t) { t.setAttribute('aria-expanded', 'false'); });
+      }
+      document.addEventListener('click', function (e) {
+        if (!e.target.closest('.replay-tour-dropdown')) closeAllReplayMenus();
+      });
+      initReplayDropdown('replay-tour-btn-builder', 'replay-tour-menu-builder');
+      initReplayDropdown('replay-tour-btn', 'replay-tour-menu-footer');
 
       function openLegalDialog(id) {
         const dialog = document.getElementById(id);
@@ -9747,7 +9797,8 @@ Context:
           }));
           actionsEl.appendChild(makeBtn('Full Tour', '', function () {
             dismissAssist(true);
-            const replay = document.getElementById('replay-tour-btn-builder') || document.getElementById('replay-tour-btn');
+            if (typeof window.pmgStartReplayTour === 'function') { window.pmgStartReplayTour(); return; }
+            var replay = document.getElementById('replay-tour-btn-builder') || document.getElementById('replay-tour-btn');
             if (replay && typeof replay.click === 'function') replay.click();
           }));
           actionsEl.appendChild(makeBtn('Dismiss', 'ghost', function () { dismissAssist(true); }));
