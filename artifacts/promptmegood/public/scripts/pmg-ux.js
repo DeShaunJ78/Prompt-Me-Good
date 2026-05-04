@@ -15408,7 +15408,11 @@
       '  box-shadow: 0 12px 28px color-mix(in srgb, var(--color-primary) 28%, transparent);',
       '}',
       /* Hide the top CTA in image mode (matches the original #generateBtn rule). */
-      'body.image-mode #' + WRAP_ID + ' { display: none !important; }'
+      'body.image-mode #' + WRAP_ID + ' { display: none !important; }',
+      '@media (max-width: 480px) {',
+      '  #' + WRAP_ID + ' { display: none !important; }',
+      '  #' + TOP_BTN_ID + ' { display: none !important; }',
+      '}'
     ].join('\n');
     var style = document.createElement('style');
     style.id = STYLE_ID;
@@ -15453,13 +15457,22 @@
     });
 
     wrap.appendChild(btn);
-    /* Insert INSIDE the goal's .field wrapper as its last child rather
-       than as a sibling. Sibling insertion was unreliable because other
-       T-functions reorder the form-grid children at various lifecycle
-       points and our wrap got dragged down to live next to
-       #post-uc-guidance. As a child of the .field, the wrap stays
-       glued to the textarea regardless of outer reordering. */
     goalField.appendChild(wrap);
+
+    function syncA11yHidden() {
+      var isHidden = window.getComputedStyle(wrap).display === 'none';
+      if (isHidden) {
+        wrap.setAttribute('aria-hidden', 'true');
+        wrap.inert = true;
+        btn.tabIndex = -1;
+      } else {
+        wrap.removeAttribute('aria-hidden');
+        wrap.inert = false;
+        btn.tabIndex = 0;
+      }
+    }
+    syncA11yHidden();
+    window.addEventListener('resize', syncA11yHidden);
 
     /* Mirror the primary #generateBtn's label + disabled state onto
        the top CTA so users see the same "Generating..." / "Generated ✓"
@@ -16119,8 +16132,9 @@
       '}',
 
       '/* P6: Proof Block */',
-      '#pmg-proof-block { margin: 0 0 12px; padding: 12px 16px; background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface)); border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent); border-radius: var(--radius-md, 8px); }',
-      '#pmg-proof-block .pmg-proof-title { font-size: 13px; font-weight: 700; color: var(--color-primary); margin: 0 0 8px; cursor: pointer; }',
+      '#pmg-proof-block { margin: 0 0 8px; padding: 8px 14px; background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface)); border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent); border-radius: var(--radius-md, 8px); }',
+      '#pmg-proof-block .pmg-proof-title { font-size: 13px; font-weight: 700; color: var(--color-primary); margin: 0; cursor: pointer; background: none; border: none; padding: 0; font-family: inherit; }',
+      '#pmg-proof-block:not(.is-collapsed) .pmg-proof-title { margin: 0 0 8px; }',
       '#pmg-proof-block .pmg-proof-title::after { content: " \\25BE"; font-size: 11px; }',
       '#pmg-proof-block.is-collapsed .pmg-proof-title::after { content: " \\25B8"; }',
       '#pmg-proof-block .pmg-proof-body { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }',
@@ -16412,7 +16426,7 @@
     proof.classList.add('is-collapsed');
 
     proof.innerHTML =
-      '<p class="pmg-proof-title">See Example</p>' +
+      '<button type="button" class="pmg-proof-title" aria-expanded="false">See Example</button>' +
       '<div class="pmg-proof-body">' +
         '<div class="pmg-proof-col pmg-proof-before">' +
           '<div class="pmg-proof-label">Before</div>' +
@@ -16428,6 +16442,7 @@
     if (title) {
       title.addEventListener('click', function () {
         proof.classList.toggle('is-collapsed');
+        title.setAttribute('aria-expanded', String(!proof.classList.contains('is-collapsed')));
       });
     }
 

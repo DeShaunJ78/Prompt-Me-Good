@@ -253,12 +253,10 @@
       var realBtn = document.getElementById('runBtn');
       if (realBtn && typeof realBtn.click === 'function') {
         realBtn.click();
-        /* Scroll the AI response section into view so the user sees the
-           result populate. */
         setTimeout(function () {
           var resp = document.getElementById('aiResponseSection');
           if (resp) {
-            try { resp.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {}
+            try { resp.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
           }
         }, 150);
         return;
