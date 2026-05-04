@@ -3442,12 +3442,12 @@
     <div class="tour-card" role="region" aria-label="Welcome">
       <span class="tour-card-icon" aria-hidden="true">👋</span>
       <div class="tour-card-body">
-        <h2 class="tour-card-title">New To PromptMeGood?</h2>
-        <p class="tour-card-sub">Take the full tour, or jump straight to Start Here if you already know what you want to build.</p>
+        <h2 class="tour-card-title">Welcome To PromptMeGood</h2>
+        <p class="tour-card-sub">See how the Prompt Builder, Run With AI, and Image Generator work — or jump straight in and start typing.</p>
       </div>
       <div class="tour-card-actions">
-        <button class="btn btn-primary" type="button" id="tour-show">Show Me The Full Tour</button>
-        <button class="btn btn-secondary" type="button" id="tour-jump">Go To Start Here</button>
+        <button class="btn btn-primary" type="button" id="tour-show">Show Me Around</button>
+        <button class="btn btn-secondary" type="button" id="tour-jump">Jump To Start Here</button>
       </div>
       <button class="tour-card-close" type="button" id="tour-skip" aria-label="Dismiss onboarding choice">×</button>
     </div>
@@ -4402,8 +4402,8 @@
   </div>
 
   <div class="pmg-post-run-intro" id="pmg-post-run-intro" role="dialog" aria-modal="false" aria-labelledby="pmg-post-run-intro-title" aria-describedby="pmg-post-run-intro-body" hidden>
-    <h3 class="pmg-post-run-intro-title" id="pmg-post-run-intro-title">Nice — You Just Used PromptMeGood</h3>
-    <p class="pmg-post-run-intro-body" id="pmg-post-run-intro-body">PromptMeGood just turned your idea into a stronger prompt and ran it with AI. Want a quick tour of what else you can do?</p>
+    <h3 class="pmg-post-run-intro-title" id="pmg-post-run-intro-title">Your First Prompt Is Done</h3>
+    <p class="pmg-post-run-intro-body" id="pmg-post-run-intro-body">You just built a prompt, ran it with AI, and got your answer. Want a quick look at the rest of the workstation — image generation, the Photography Suite, Power Moves, and more?</p>
     <div class="pmg-post-run-intro-actions">
       <button type="button" class="btn btn-secondary" id="pmg-post-run-intro-skip">Not Now</button>
       <button type="button" class="btn btn-primary" id="pmg-post-run-intro-go">Show Me Around</button>
@@ -7898,67 +7898,89 @@ Context:
       const OB_STEPS = [
         {
           selector: '#goal',
-          title: 'Type what you want',
-          text: "Tell us what you need help with — in plain, everyday words. We'll turn it into a clear prompt for you."
+          title: 'Start here — describe what you need',
+          text: "Type what you want help with in plain, everyday words. One honest sentence is enough — we handle the rest. The strength pill above the field shows when you have enough detail."
         },
         {
           selector: '#tour-step-generate',
           fallbackSelector: '#generateBtn',
           title: 'Tap Fix My Prompt',
-          text: 'Tap Fix My Prompt. We turn your idea into a clear, structured prompt in seconds.'
+          text: "This is the main action. Tap it and we turn your idea into a structured prompt with role, context, tone, format, and next steps baked in. Your finished prompt appears in the output box below."
         },
         {
-          selector: '#tour-final-actions',
-          fallbackSelector: '#copy-btn',
-          title: 'Run With AI or copy it',
-          text: 'Tap Run With AI to see your answer right here — no copy-paste needed. Or hit Copy to take it to any AI tool you already use.'
+          selector: '#resultBox',
+          fallbackSelector: '#tour-final-actions',
+          title: 'Your prompt appears here',
+          text: "This is your generated prompt. You can click inside to edit it, tap Copy Prompt to take it to any AI tool, or hit Run With AI to execute it right here and see the answer without leaving the app."
         },
         {
-          selector: '#upload-field',
-          fallbackSelector: '#analyze-file',
-          title: 'Upload A File Or Image For Smarter Results For Smarter Results',
-          text: "Got a PDF, contract, or screenshot? Upload it and the AI will read it before answering — for sharper, more relevant results."
+          selector: '#runSection',
+          fallbackSelector: '#runBtn',
+          title: 'Run With AI — get your answer instantly',
+          text: "After generating a prompt, tap Run With AI to execute it against an AI model. The response streams right below — no copy-paste, no switching tabs. Use Run Again to iterate or Copy Response to save it.",
+          onEnter: function () {
+            var rs = document.getElementById('runSection');
+            if (rs && rs.hidden) { rs.hidden = false; rs.dataset.tourRevealed = '1'; }
+          },
+          onLeave: function () {
+            var rs = document.getElementById('runSection');
+            if (rs && rs.dataset.tourRevealed === '1') { rs.hidden = true; delete rs.dataset.tourRevealed; }
+          }
+        },
+        {
+          selector: '#modeSwitch',
+          fallbackSelector: '#imageModeBtn',
+          title: 'Write or create an image',
+          text: "Switch between Write Something for text prompts (emails, plans, scripts) and Create An Image for DALL\u00B7E 3 image generation. In image mode, the Photography Suite appears with Style, Camera, Lighting, Composition, and Color pills to shape your image."
         },
         {
           selector: '#guided-mode-btn',
           fallbackSelector: '.guided-cta-row',
-          title: "Stuck? Use Help Me Start",
-          text: "Not sure how to phrase your goal? Tap Help Me Start and we'll ask 4 short questions and fill the builder for you."
+          title: "Not sure what to type? Use Help Me Start",
+          text: "Tap Help Me Start and we ask 4 short questions — what you need, who it's for, the outcome that matters, and any rules. Then we fill the builder for you. You can also use Surprise Me in the Photography Suite for random creative picks."
         }
       ];
       const DEMO_STEPS = [
         {
-          selector: '#prompt-form',
+          selector: '#goal',
           fallbackSelector: '#builder-panel',
-          title: 'Step 1: Type what you want',
-          text: "We added a sample goal so you can see how it works. Yours can be just as simple."
+          title: 'Step 1: We filled in a sample goal',
+          text: "We added a sample goal so you can see how it works. Your real goals can be just as simple — one honest sentence is all you need."
         },
         {
           selector: '#tour-step-generate',
           fallbackSelector: '#generateBtn',
           title: 'Step 2: Tap Fix My Prompt',
-          text: 'Watch — we turn the goal into a clear, structured prompt right now.',
+          text: "Watch — we take that goal and turn it into a structured prompt with role, context, tone, and format. Generating now\u2026",
           onEnter: function () {
             runDemoGenerationStep();
           }
         },
         {
           selector: '#resultBox',
-          fallbackSelector: '#result-panel',
-          title: 'Step 3: See your prompt',
-          text: 'This is your finished prompt. You can tweak it, run it, or copy it.'
+          fallbackSelector: '#tour-final-actions',
+          title: 'Step 3: Here is your finished prompt',
+          text: "This is your generated prompt. You can click inside to edit the wording, use the refinement buttons (More Detailed, More Bold, Beginner Friendly) to upgrade it, or Fine-Tune it with a plain-English instruction."
         },
         {
-          selector: '#tour-final-actions',
+          selector: '#runSection',
           fallbackSelector: '#copy-btn',
-          title: 'Step 4: Run with AI or copy it',
-          text: 'Tap Run With AI to get your answer right here in the app. Or use Copy if you prefer to run it in another AI tool.'
+          title: 'Step 4: Run it or copy it',
+          text: "Tap Run With AI to execute this prompt and see the AI\u2019s answer right here. Or use Copy Prompt to paste it into ChatGPT, Claude, or Perplexity — we highlight the best fit for your goal.",
+          onEnter: function () {
+            var rs = document.getElementById('runSection');
+            if (rs && rs.hidden) { rs.hidden = false; rs.dataset.tourRevealed = '1'; }
+          },
+          onLeave: function () {
+            var rs = document.getElementById('runSection');
+            if (rs && rs.dataset.tourRevealed === '1') { rs.hidden = true; delete rs.dataset.tourRevealed; }
+          }
         },
         {
-          selector: '#replay-tour-btn',
-          fallbackSelector: '.site-footer-replay-btn',
-          title: "Step 5: That's it",
-          text: "Now try your own goal. If you need help again, tap Replay tour at the bottom of the page."
+          selector: '#guided-mode-btn',
+          fallbackSelector: '.guided-cta-row',
+          title: "Step 5: You\u2019re ready!",
+          text: "Clear the demo and type your own goal. If you get stuck, tap Help Me Start for a guided setup, or use Surprise Me in the Photography Suite for creative image ideas. Replay Tour is always at the bottom of the page."
         }
       ];
       const obOverlay = document.getElementById('ob-overlay');
@@ -8074,6 +8096,12 @@ Context:
           }, isMobile ? 100 : 30);
         }
       }
+      function obInvokeStepLeave() {
+        const step = currentSteps[obIndex];
+        if (step && typeof step.onLeave === 'function') {
+          try { step.onLeave(); } catch (e) {}
+        }
+      }
       function obInvokeStepEnter() {
         const step = currentSteps[obIndex];
         if (step && typeof step.onEnter === 'function') {
@@ -8165,6 +8193,8 @@ Context:
         const completed = !!(opts && opts.completed);
         const wasDemo = currentIsDemo;
         demoGenerationToken += 1;
+        // Clean up any step-level state (e.g. temporarily revealed sections).
+        obInvokeStepLeave();
         // Spec #1: any onboarding dismissal (skip, complete, escape, backdrop) marks the user as visited.
         if (typeof pmgMarkVisited === 'function') pmgMarkVisited();
         obOverlay.classList.remove('is-open');
@@ -8265,6 +8295,7 @@ Context:
         window.setTimeout(function () { banner.hidden = true; }, 260);
       }
       function obNextStep() {
+        obInvokeStepLeave();
         if (obIndex >= currentSteps.length - 1) { obFinish({ completed: true }); return; }
         obIndex += 1;
         // Pre-stage: fade highlight + tooltip out immediately so the user
@@ -9691,30 +9722,30 @@ Context:
         currentStage = stage;
         clearActions();
         if (stage === 1) {
-          titleEl.textContent = 'Need help getting started?';
+          titleEl.textContent = 'What would you like to do?';
           bodyEl.hidden = true;
           bodyEl.textContent = '';
           actionsEl.appendChild(makeBtn('Help Me Start', 'primary', function () {
             dismissAssist(true);
             clickById('guided-mode-btn');
           }));
-          actionsEl.appendChild(makeBtn('Use Demo Values', '', function () {
+          actionsEl.appendChild(makeBtn('Try A Demo', '', function () {
             dismissAssist(true);
             clickById('fill-demo');
           }));
         } else {
-          titleEl.textContent = 'Still stuck?';
+          titleEl.textContent = 'Here are a few ways to get going';
           bodyEl.hidden = false;
-          bodyEl.textContent = "Use Help Me Start for step-by-step setup, try a demo, or replay the tour.";
+          bodyEl.textContent = "Answer 4 quick questions with Help Me Start, see a working example with Try A Demo, or take the full guided tour.";
           actionsEl.appendChild(makeBtn('Help Me Start', 'primary', function () {
             dismissAssist(true);
             clickById('guided-mode-btn');
           }));
-          actionsEl.appendChild(makeBtn('Use Demo Values', '', function () {
+          actionsEl.appendChild(makeBtn('Try A Demo', '', function () {
             dismissAssist(true);
             clickById('fill-demo');
           }));
-          actionsEl.appendChild(makeBtn('Tour', '', function () {
+          actionsEl.appendChild(makeBtn('Full Tour', '', function () {
             dismissAssist(true);
             const replay = document.getElementById('replay-tour-btn-builder') || document.getElementById('replay-tour-btn');
             if (replay && typeof replay.click === 'function') replay.click();
