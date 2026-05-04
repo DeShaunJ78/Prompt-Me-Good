@@ -8449,6 +8449,7 @@ Context:
       function startReplayWorkstationTour() {
         hideTourBanner();
         if (obIsOpen()) obFinish();
+        try { localStorage.removeItem('pmg.workstationTourSeen'); } catch (e) {}
         if (typeof window.pmgStartWorkstationTour === 'function') {
           window.pmgStartWorkstationTour();
         }
