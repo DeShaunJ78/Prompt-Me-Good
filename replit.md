@@ -54,6 +54,7 @@ This is a static HTML AI prompt builder (`index.html`) built with vanilla JavaSc
 -   **Paywall Switch (Open-Beta):** Controlled by Replit Secrets.
 -   **Supabase Auth + Save Best Prompts:** Magic-link email authentication for saving/reloading prompts and AI outputs.
 -   **Image Generation UX:** Polished waiting card with progress indicators.
+-   **Photography Suite Aspect Ratio:** Single-select Aspect Ratio pill group (Square 1:1, Portrait 3:4, Landscape 4:3, Auto) that maps to `gpt-image-1` size parameters (`1024x1024`, `1024x1536`, `1536x1024`, `auto`). Aspect is a size parameter only — not included in prompt text synthesis. No Avoid toggle for this group.
 -   **Photography Suite Saved Combos (My Combos):** Allows saving current pill selections across five groups.
 -   **Text Builder Live Feedback:** Live-feedback panel with confidence meter, token estimate, vague-word linter, and "Live Preview Of Your Prompt."
 -   **Fix My Prompt Diff (Side-By-Side):** Diff panel for reviewing and accepting/rejecting suggested structural changes.

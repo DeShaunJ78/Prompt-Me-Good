@@ -100,6 +100,9 @@
       'Warm Tones', 'Cool Blues', 'Monochrome', 'Pastel Soft',
       'High Contrast', 'Muted Earth', 'Neon Saturated',
       'Sepia', 'Teal & Orange', 'Forest Greens', 'Sunset Reds'
+    ]},
+    { id: 'aspect', singleSelect: true, pills: [
+      'Square (1:1)', 'Portrait (3:4)', 'Landscape (4:3)', 'Auto'
     ]}
   ];
 
@@ -429,7 +432,7 @@
       if (!hasAny) return rollPicks('mix');
       var idx = Math.floor(Math.random() * GROUPS.length);
       var g = GROUPS[idx];
-      var n = Math.random() < 0.5 ? 1 : 2;
+      var n = g.singleSelect ? 1 : (Math.random() < 0.5 ? 1 : 2);
       picks[g.id] = pickN(g.pills, n);
       /* Add one accent pill in another group if missing/empty. */
       var other = GROUPS[(idx + 1 + Math.floor(Math.random() * (GROUPS.length - 1))) % GROUPS.length];
@@ -439,18 +442,20 @@
       return picks;
     }
     if (dial === 'wild') {
-      /* Fill every group with 2-3 pills. Maximum chaos. */
+      /* Fill every group with 2-3 pills. Maximum chaos.
+         Single-select groups (e.g. aspect ratio) get exactly 1. */
       picks = {};
       GROUPS.forEach(function (g) {
-        var n = 2 + (Math.random() < 0.5 ? 0 : 1);
+        var n = g.singleSelect ? 1 : (2 + (Math.random() < 0.5 ? 0 : 1));
         picks[g.id] = pickN(g.pills, n);
       });
       return picks;
     }
-    /* mix (default) — 1-2 pills per group across all groups */
+    /* mix (default) — 1-2 pills per group across all groups.
+       Single-select groups get exactly 1. */
     picks = {};
     GROUPS.forEach(function (g) {
-      var n = Math.random() < 0.4 ? 2 : 1;
+      var n = g.singleSelect ? 1 : (Math.random() < 0.4 ? 2 : 1);
       picks[g.id] = pickN(g.pills, n);
     });
     return picks;
@@ -587,6 +592,7 @@
          triggers pmg-ux's refreshSummary in a single round-trip
          without changing the final state. */
       refreshSuiteSummary();
+      if (typeof window.__pmgSyncAspectRatio === 'function') window.__pmgSyncAspectRatio();
       var nice = DIAL_LABEL[dial];
       showToast('Surprise (' + nice + ') applied — saved to Recent.');
     }, true);

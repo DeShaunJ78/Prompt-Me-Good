@@ -565,6 +565,7 @@
       var grp = groups[i];
       var groupId = grp.getAttribute('data-group');
       if (!groupId) continue;
+      if (groupId === 'aspect') continue;
       var body = grp.querySelector(':scope > .pmg-photo-group-body');
       if (!body) continue;
       /* Idempotent: if a row already exists, leave it alone. Also

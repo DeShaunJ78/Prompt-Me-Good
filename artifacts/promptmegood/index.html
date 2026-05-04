@@ -10451,7 +10451,7 @@ Context:
       if(again)again.disabled=true;
       setTimeout(function(){if(sec)sec.scrollIntoView({behavior:window.PMG_A11Y.scrollBehavior(),block:'center'})},100);
       try{
-        var res=await fetch('/api/image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt})});
+        var res=await fetch('/api/image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,size:window.__pmgAspectRatio||'1024x1024'})});
         var data=await res.json();
         if(!res.ok||!data.url){if(wrap)wrap.innerHTML='<div class="image-generating-state"><span>⚠️ '+(data.error||'Failed. Try again.')+'</span></div>';return}
         if(wrap){wrap.innerHTML='';var img=document.createElement('img');img.src=data.url;img.alt='AI generated image';img.onload=function(){if(sec)sec.scrollIntoView({behavior:window.PMG_A11Y.scrollBehavior(),block:'center'})};wrap.appendChild(img)}
@@ -10486,7 +10486,7 @@ Context:
     if(btn){btn.disabled=true;btn.innerHTML='⏳ Generating…'}
     setTimeout(function(){if(sec)sec.scrollIntoView({behavior:window.PMG_A11Y.scrollBehavior(),block:'center'})},150);
     try{
-      var res=await fetch('/api/image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:desc})});
+      var res=await fetch('/api/image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:desc,size:window.__pmgAspectRatio||'1024x1024'})});
       var data=await res.json();
       if(!res.ok||!data.url){if(wrap)wrap.innerHTML='<div style="padding:2rem;text-align:center;color:var(--color-text-muted)">⚠️ '+(data.error||'Failed. Try again.')+'</div>';return}
       if(wrap){wrap.innerHTML='';var img=document.createElement('img');img.src=data.url;img.alt='AI generated image';img.onload=function(){if(sec)sec.scrollIntoView({behavior:window.PMG_A11Y.scrollBehavior(),block:'center'})};wrap.appendChild(img)}

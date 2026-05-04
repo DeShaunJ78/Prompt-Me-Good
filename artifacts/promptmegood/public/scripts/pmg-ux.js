@@ -5019,6 +5019,13 @@
         'High Contrast', 'Muted Earth', 'Neon Saturated',
         'Sepia', 'Teal & Orange', 'Forest Greens', 'Sunset Reds'
       ]
+    },
+    {
+      id: 'aspect', label: 'Aspect Ratio', icon: '📐',
+      singleSelect: true,
+      pills: [
+        'Square (1:1)', 'Portrait (3:4)', 'Landscape (4:3)', 'Auto'
+      ]
     }
   ];
 
@@ -5470,6 +5477,20 @@
     return picks;
   }
 
+  var ASPECT_SIZE_MAP = {
+    'Square (1:1)': '1024x1024',
+    'Portrait (3:4)': '1024x1536',
+    'Landscape (4:3)': '1536x1024',
+    'Auto': 'auto'
+  };
+
+  function syncAspectRatio() {
+    var picks = getSelections();
+    var aspectPick = (picks.aspect && picks.aspect[0]) || null;
+    window.__pmgAspectRatio = aspectPick ? (ASPECT_SIZE_MAP[aspectPick] || '1024x1024') : '1024x1024';
+  }
+  window.__pmgSyncAspectRatio = syncAspectRatio;
+
   function buildPromptText(picks) {
     var parts = [];
     if (picks.style && picks.style.length) parts.push(picks.style.join(', ') + ' style');
@@ -5663,11 +5684,21 @@
     /* Pill toggles. */
     root.querySelectorAll('.pmg-photo-pill').forEach(function (p) {
       p.addEventListener('click', function () {
-        p.classList.toggle('is-active');
+        var groupId = p.getAttribute('data-group');
+        var groupDef = GROUPS.find(function (g) { return g.id === groupId; });
+        if (groupDef && groupDef.singleSelect) {
+          var siblings = root.querySelectorAll('.pmg-photo-pill[data-group="' + groupId + '"]');
+          var wasActive = p.classList.contains('is-active');
+          siblings.forEach(function (s) { s.classList.remove('is-active'); });
+          if (!wasActive) p.classList.add('is-active');
+        } else {
+          p.classList.toggle('is-active');
+        }
         /* Task #38: any manual pill change diverges from the last
            Surprise Me roll, so retire the Pin offer. */
         if (_surpriseFresh) setSurpriseFresh(false);
         refreshSummary();
+        syncAspectRatio();
       });
     });
     /* Task #25: Quick-Style preset clicks. Clears the group's existing
@@ -5792,6 +5823,7 @@
        calls clearAllPicks then re-sets the flag, so this is safe. */
     if (_surpriseFresh) setSurpriseFresh(false);
     refreshSummary();
+    syncAspectRatio();
   }
 
   /* ---------------- Task #34: preset preview tooltip ----------------
@@ -6279,12 +6311,14 @@
         });
       });
       refreshSummary();
+      syncAspectRatio();
       showToast(applied ? 'Surprise re-applied!' : 'Combo has no usable picks anymore.');
       return;
     }
     /* Preset combo. */
     var entries = presetEntriesOf(combo);
     entries.forEach(function (e) { applyPreset(e.group, e.idx); });
+    syncAspectRatio();
     showToast('Recent combo applied!');
   }
 
@@ -6543,8 +6577,8 @@
        set it back true at the end so the offer appears for THIS roll. */
     clearAllPicks();
     GROUPS.forEach(function (g) {
-      /* Pick 1 or 2 random pills per group. */
-      var n = Math.random() < 0.4 ? 2 : 1;
+      /* Single-select groups (e.g. aspect ratio) get exactly 1 pick. */
+      var n = g.singleSelect ? 1 : (Math.random() < 0.4 ? 2 : 1);
       var pool = g.pills.slice();
       for (var i = 0; i < n && pool.length > 0; i++) {
         var idx = Math.floor(Math.random() * pool.length);
@@ -6555,6 +6589,7 @@
       }
     });
     refreshSummary();
+    syncAspectRatio();
     setSurpriseFresh(true);
     showToast('Surprise picks applied! Pin to keep this look.');
   }
@@ -7220,7 +7255,7 @@
   var OUTCOME_LABEL_CLASS = 'pmg-photo-outcome-label';
   var TOAST_ID = 'pmg-photo-toast';
 
-  var GROUPS_KEYS = ['style', 'camera', 'lighting', 'composition', 'palette'];
+  var GROUPS_KEYS = ['style', 'camera', 'lighting', 'composition', 'palette', 'aspect'];
 
   /* ---------------- Style injection ---------------- */
   function injectStyles() {
@@ -10316,6 +10351,12 @@
       'Teal & Orange': 'Hollywood color grade — teal shadows, orange highlights.',
       'Forest Greens': 'Deep greens with woodland warmth.',
       'Sunset Reds': 'Rich reds and golds — dusk-like warmth.'
+    },
+    aspect: {
+      'Square (1:1)': 'Standard square format — balanced and versatile.',
+      'Portrait (3:4)': 'Tall vertical format — ideal for people and mobile screens.',
+      'Landscape (4:3)': 'Wide horizontal format — great for scenes and banners.',
+      'Auto': 'Let the AI choose the best aspect ratio for your prompt.'
     }
   };
 
@@ -10325,7 +10366,8 @@
     camera: 'Not Sure Which Camera Or Lens To Pick? See What Each One Does.',
     lighting: 'Not Sure Which Light Or Mood Fits? See What Each One Means.',
     composition: 'Not Sure How To Frame It? See What Each Composition Means.',
-    palette: 'Not Sure Which Palette Fits? See What Each Color Mood Means.'
+    palette: 'Not Sure Which Palette Fits? See What Each Color Mood Means.',
+    aspect: 'Pick A Shape For Your Image — Or Let The AI Decide.'
   };
 
   function injectStyles() {
@@ -16124,7 +16166,7 @@
       setTimeout(function () { if (sec) sec.scrollIntoView({ behavior: scrollBehavior(), block: 'center' }); }, 150);
 
       try {
-        var res = await fetch('/api/image', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: desc }) });
+        var res = await fetch('/api/image', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: desc, size: window.__pmgAspectRatio || '1024x1024' }) });
         var data = await res.json();
         if (!res.ok || !data.url) {
           if (wrap) wrap.innerHTML = '<div class="pmg-img-loading"><span>\u26A0\uFE0F ' + (data.error || 'Failed. Try again.') + '</span></div>';

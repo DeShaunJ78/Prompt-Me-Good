@@ -298,7 +298,7 @@
     fetch('/api/image', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: prompt, n: 4 })
+      body: JSON.stringify({ prompt: prompt, n: 4, size: window.__pmgAspectRatio || '1024x1024' })
     })
       .then(function (res) {
         return res.json().then(function (data) { return { ok: res.ok, data: data }; });

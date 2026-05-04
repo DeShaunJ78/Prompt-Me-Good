@@ -558,6 +558,10 @@ router.post("/image", imageLimiter, userCapEnforce("img", imageCostExtractor), a
   }
   const description = descRaw.trim().slice(0, 1000);
 
+  const VALID_SIZES = new Set(["1024x1024", "1024x1536", "1536x1024", "auto"]);
+  const sizeRaw = req.body?.size;
+  const size = (typeof sizeRaw === "string" && VALID_SIZES.has(sizeRaw)) ? sizeRaw : "1024x1024";
+
   // Task #52: caller may request 1–4 images in a single call so the frontend
   // can render a "Generate variations" 2x2 grid without burning extra
   // imageLimiter slots (still 1 HTTP call). We charge image budget n times
@@ -600,7 +604,7 @@ router.post("/image", imageLimiter, userCapEnforce("img", imageCostExtractor), a
       model: "gpt-image-1",
       prompt: enhancedPrompt,
       n,
-      size: "1024x1024",
+      size: size as "1024x1024" | "1024x1536" | "1536x1024" | "auto",
       quality: n > 1 ? "low" : "medium",
     });
 

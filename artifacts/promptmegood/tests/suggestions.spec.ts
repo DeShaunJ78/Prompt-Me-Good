@@ -225,13 +225,16 @@ test.describe("Smart pill suggestions + negative pills @ mobile-360", () => {
       const groups = document.querySelectorAll(
         "#pmg-photo-suite .pmg-photo-group",
       );
+      const aspectGroups = document.querySelectorAll(
+        '#pmg-photo-suite .pmg-photo-group[data-group="aspect"]',
+      );
       const toggles = document.querySelectorAll(
         "#pmg-photo-suite .pmg-avoid-toggle",
       );
-      return { groups: groups.length, toggles: toggles.length };
+      return { groups: groups.length, aspectGroups: aspectGroups.length, toggles: toggles.length };
     });
     expect(counts.groups).toBeGreaterThan(0);
-    expect(counts.toggles).toBe(counts.groups);
+    expect(counts.toggles).toBe(counts.groups - counts.aspectGroups);
   });
 
   test("clicking avoid toggle enters avoid mode for that group only", async ({
