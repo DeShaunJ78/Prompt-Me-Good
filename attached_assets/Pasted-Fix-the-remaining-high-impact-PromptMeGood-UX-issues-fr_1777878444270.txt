@@ -1,0 +1,152 @@
+Fix the remaining high-impact PromptMeGood UX issues from the May 4 live audit.
+
+Goal:
+Move PromptMeGood from 8.5/10 to 9+/10 by restoring no-scroll desktop first-use, tightening mobile result hierarchy, improving image loading feedback, reducing scroll jumps, and adding a value-timed Founding Member waitlist nudge.
+
+Do not redesign the brand.
+Do not change pricing page layout.
+Do not remove existing functionality.
+Do not add fake/nonfunctional buttons.
+Do not break mobile first-use, which is currently improved.
+
+Priority 1: Restore Desktop No-Scroll First Action
+Problem:
+The new before/after proof block is good for conversion, but on desktop 1440x900 with the banner open, the textarea is visible while Fix My Prompt is below the fold.
+
+Fix:
+- Keep the before/after proof block, but prevent it from pushing Fix My Prompt below the fold.
+- Make the proof block more compact on desktop.
+- Option A: collapse it behind a “See Example” toggle by default.
+- Option B: move it beside the workstation instead of above the input.
+- Option C: attach Fix My Prompt directly to the input card so it always stays visible.
+- The primary action must be visible without scrolling.
+
+Acceptance:
+- On desktop 1440x900, fresh load with banner open shows:
+  - Your Goal textarea
+  - Fix My Prompt button
+- both without scrolling.
+- Before/after proof still exists somewhere near the top.
+- No horizontal overflow.
+
+Priority 2: Tighten Mobile Result Hierarchy
+Problem:
+After Fix My Prompt on mobile, Run With AI Here appears too low and too tall, extending beyond the viewport.
+
+Fix:
+- Make Run With AI Here a normal-height primary button on mobile.
+- Keep it close to the generated prompt.
+- Keep Copy Prompt and Power Moves nearby but secondary.
+- Power Moves should stay compact, ideally a 2-column grid or short stacked layout.
+- Do not let Power Moves push Run With AI below the fold.
+- Do not render Run With AI as a huge/tall block.
+
+Acceptance:
+- On mobile 390x844, after Fix My Prompt:
+  - Generated prompt is visible.
+  - Run With AI Here is easy to find.
+  - Run With AI Here is normal button height.
+  - Copy Prompt and Power Moves are nearby.
+  - No horizontal overflow.
+
+Priority 3: Add True Image Generation Loading State
+Problem:
+Image generation works, but after clicking Generate Image Here, the result panel still shows placeholder copy during the 20-second wait.
+
+Fix:
+- Immediately after clicking Generate Image Here, replace placeholder content with:
+  “Generating Image”
+  “This Can Take A Few Moments.”
+- Show a spinner, skeleton, or progress visual.
+- Disable duplicate Generate Image clicks during generation.
+- Keep the result area in view.
+- When finished, show:
+  “Your Image Is Ready”
+- Keep Save Image To Your Device, Generate Another, Copy Prompt, Use As Reference, Generate 4 Variations, and related actions near the image.
+
+Acceptance:
+- Click Generate Image Here.
+- Within 1 second, “Generating Image” appears.
+- User clearly knows the click registered.
+- Final image still appears.
+- Save Image To Your Device becomes active after generation.
+
+Priority 4: Reduce Scroll Jumps
+Problem:
+After Fix My Prompt and Run With AI, the page scrolls very far down and the result can feel disconnected from the original workstation.
+
+Fix:
+- After Fix My Prompt, scroll/anchor to a compact result container.
+- Do not overshoot into unrelated advanced controls or workspace sections.
+- After Run With AI, anchor to the AI response panel.
+- Keep generated prompt and AI response visually connected.
+- On mobile, avoid large scroll jumps that skip context.
+
+Acceptance:
+- After Fix My Prompt, user lands at generated prompt with primary actions visible.
+- After Run With AI, user lands at AI response with Copy Response and Run Again visible.
+- Result flow feels connected, not jumpy.
+
+Priority 5: Add Post-Response Founding Member Waitlist Nudge
+Problem:
+The post-response tour appears, but there is no clear conversion nudge at the moment of value.
+
+Fix:
+After the user successfully runs AI and the AI response appears, show a small non-blocking conversion nudge near the response.
+
+Copy:
+“You Just Used The Core PromptMeGood Workflow”
+
+Body:
+“Founding Members get higher daily limits, more saved work, and lifetime access to core features while PromptMeGood operates.”
+
+Buttons:
+- Join Founding Waitlist
+- Keep Using Free
+
+Rules:
+- Show only after a successful AI response.
+- Do not block Copy Response, Run Again, Power Moves, or tour controls.
+- Do not show before the user gets value.
+- Do not imply checkout is live.
+- Link Join Founding Waitlist to the current waitlist/early-access section.
+- Allow dismissal for the session.
+- If the post-response tour prompt is also visible, do not stack them aggressively. Either place the waitlist nudge below the response or show it after the tour prompt is dismissed.
+
+Acceptance:
+- User runs AI.
+- AI response appears.
+- Conversion nudge appears near the response.
+- Nudge is dismissible.
+- Join Founding Waitlist does not imply payment is live.
+
+Priority 6: Clean Hidden Duplicate Controls
+Problem:
+Automated audit detected hidden/zero-size duplicate controls, including a hidden Fix My Prompt.
+
+Fix:
+- Ensure hidden duplicate buttons are either removed from the DOM or properly hidden from keyboard and screen readers.
+- Use aria-hidden, inert, hidden, or display:none appropriately.
+- Do not leave zero-size focusable duplicate controls.
+
+Acceptance:
+- Keyboard tab order does not land on hidden controls.
+- Screen readers should not announce hidden duplicate buttons.
+- Visible controls still work.
+
+Final QA:
+- Test desktop 1440x900 with banner open.
+- Confirm textarea and Fix My Prompt are visible without scrolling.
+- Test mobile 390x844 with banner open.
+- Confirm textarea and Fix My Prompt are visible without scrolling.
+- Generate a prompt.
+- Confirm generated prompt, Run With AI Here, Copy Prompt, and Power Moves are close together.
+- Confirm Run With AI Here is normal height on mobile.
+- Run With AI.
+- Confirm AI response appears and scroll anchoring feels correct.
+- Confirm post-response waitlist nudge appears without blocking actions.
+- Generate an image.
+- Confirm “Generating Image” appears within 1 second.
+- Confirm final image and actions appear.
+- Confirm no horizontal overflow.
+- Confirm hidden duplicate controls are not focusable.

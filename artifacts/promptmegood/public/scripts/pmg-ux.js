@@ -16409,11 +16409,10 @@
 
     var proof = document.createElement('div');
     proof.id = PROOF_BLOCK_ID;
-    var isMobile = window.innerWidth <= 480;
-    if (isMobile) proof.classList.add('is-collapsed');
+    proof.classList.add('is-collapsed');
 
     proof.innerHTML =
-      '<p class="pmg-proof-title">' + (isMobile ? 'See Example' : 'See What PromptMeGood Does') + '</p>' +
+      '<p class="pmg-proof-title">See Example</p>' +
       '<div class="pmg-proof-body">' +
         '<div class="pmg-proof-col pmg-proof-before">' +
           '<div class="pmg-proof-label">Before</div>' +
