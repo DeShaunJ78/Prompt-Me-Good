@@ -1,0 +1,82 @@
+One more targeted polish pass only. Do not redesign the page.
+
+Current QA score: 8/10.
+Replay Tour is fixed. Photography Suite heading is fixed. Do not touch those.
+
+Remaining issues to fix:
+
+1. Show Full Prompt placement
+The “Show Full Prompt” toggle still feels disconnected from the actual generated prompt box.
+Fix:
+- Place “Show Full Prompt” directly above, inside, or attached to the generated prompt body it controls.
+- It should visually belong to the generated prompt card, not the action stack or a separate small box.
+- Add aria-controls pointing to the actual generated prompt container.
+- Add aria-expanded correctly.
+- The controlled generated prompt container should have a stable ID.
+
+Acceptance:
+- User can immediately tell which box “Show Full Prompt” controls.
+- No unrelated box appears between the toggle and the generated prompt body.
+
+2. Simplify generated prompt result area
+The result card is still too busy.
+Fix:
+- Keep one clear heading: “Your Fixed Prompt.”
+- Avoid duplicate/stacked labels like “Your Fixed Prompt” plus “Your Fixed Prompt Print or save as PDF.”
+- Move print/save controls into a small secondary actions row or icon group.
+- The generated prompt text should be the visual focus.
+- “Review Changes” should not compete with the generated prompt. If possible, place it below the generated prompt as a secondary expandable section.
+
+Acceptance:
+- After clicking Fix My Prompt, the generated prompt text is the obvious focus.
+- The user sees one clear result card, not multiple competing labels.
+
+3. Image-result buttons before image exists
+Some image-result actions still look active before any image exists.
+Fix:
+Disable or visually soften these until an image exists:
+- Send To Midjourney
+- Use As Reference
+- Generate 4 Variations
+- Generate Another
+- Copy Prompt, if there is no image prompt/result to copy
+
+Acceptance:
+- Before image generation, dependent actions are disabled or clearly unavailable.
+- Show helper text like “Generate an image first.”
+- Do not remove the buttons permanently.
+
+4. Accessibility label cleanup
+Still found:
+- aria-label: “Toggle Auto Optimize (mirror)”
+
+Fix:
+- Replace with user-facing label: “Auto Optimize.”
+- Remove “mirror” from all user-facing or accessibility labels unless it is actually referring to a camera/lens setting like “Mirrorless.”
+
+5. Result print icon label
+The print icon/button in the result panel appears unlabeled.
+Fix:
+- Add aria-label like “Print or save fixed prompt as PDF.”
+- If visually appropriate, add tooltip text.
+- Do not make it visually bulky.
+
+Do not touch:
+- Replay Tour dropdown behavior.
+- Photography Suite mobile heading.
+- Hero section.
+- Branding/colors/fonts.
+- Major layout structure.
+- Tour sequence logic.
+
+Verification:
+Desktop and mobile:
+- Enter a simple goal.
+- Click Fix My Prompt.
+- Confirm the result card has one clear “Your Fixed Prompt” heading.
+- Confirm generated prompt text is the focus.
+- Confirm “Show Full Prompt” is visually attached to the generated prompt text box.
+- Confirm aria-controls points to the generated prompt container.
+- Confirm image-dependent buttons are disabled before image exists.
+- Confirm no “mirror” accessibility label remains except true camera/lens terms.
+- Confirm Replay Tour still works and remains closed by default.

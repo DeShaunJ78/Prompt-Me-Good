@@ -2998,6 +2998,9 @@
     .result-box-toggle { display: none; margin: 6px 0 0; padding: 6px 14px; font-size: 13px; font-weight: 600; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-primary); cursor: pointer; }
     .result-box-toggle:hover { background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)); }
     .result-box-toggle.is-visible { display: inline-flex; }
+    .pmg-result-actions-row { border-top: 1px solid var(--color-border); padding-top: 12px; margin-top: 8px; }
+    .pmg-result-actions-row .btn { font-size: 13px; padding: 6px 12px; min-height: 34px; }
+    .image-result-actions .btn:disabled { opacity: 0.45; cursor: not-allowed; }
     .result-top-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
     .result-top-btn { flex: 1 1 auto; min-height: 42px; font-size: 14px; font-weight: 700; padding: 8px 14px; border-radius: var(--radius-md); }
     .result-top-btn#result-top-run { background: var(--color-primary); color: #fff; border: 1.5px solid var(--color-primary); }
@@ -3728,7 +3731,7 @@
                       <strong>Auto Optimize <span style="color: var(--color-primary); font-weight: 600;">(Recommended)</span></strong>
                       <span>Suggests The Best Category, Tone, Format, And Length Based On Your Goal.</span>
                     </div>
-                    <label class="switch" aria-label="Toggle Auto Optimize (mirror)">
+                    <label class="switch" aria-label="Auto Optimize">
                       <input type="checkbox" id="auto-optimize-toggle-mirror" checked />
                       <span class="slider"></span>
                     </label>
@@ -3920,7 +3923,6 @@
         <section class="panel" id="result-panel" aria-labelledby="result-title">
           <div class="panel-head">
             <h2 id="result-title" data-tour-target="fixed-prompt-output">Your Fixed Prompt</h2>
-            <p>Run With AI right here, or copy it to use anywhere.</p>
             <p class="demo-next-step" id="demo-next-step" role="status" aria-live="polite" hidden>This is a sample prompt. Copy it, refine it, or go back and enter your own goal.</p>
           </div>
           <div class="result-top-actions pmg-post-gen" id="result-top-actions">
@@ -3943,7 +3945,7 @@
               <div class="pinned-note-source" id="pinned-note-source"></div>
             </div>
             <div class="result-box" id="resultBox" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Generated prompt (editable)">Your fixed prompt will appear here.</div>
-            <button type="button" class="result-box-toggle" id="resultBoxToggle" aria-expanded="false">Show Full Prompt ▾</button>
+            <button type="button" class="result-box-toggle" id="resultBoxToggle" aria-expanded="false" aria-controls="resultBox">Show Full Prompt ▾</button>
             <div class="result-edit-row">
               <span class="result-edit-indicator" id="result-edit-indicator" hidden>Edited manually</span>
             </div>
@@ -4016,7 +4018,7 @@
               <button class="btn btn-primary" type="button" id="copy-btn">Copy Prompt</button>
               <button class="btn btn-secondary" type="button" id="download-prompt-btn" title="Download this prompt as a .txt file you can keep or share.">⬇ Download .txt</button>
               <button class="btn btn-secondary" type="button" id="share-btn" hidden>Copy Shareable Link</button>
-              <button class="btn btn-secondary" type="button" id="print-btn" title="Print Or Save As PDF">Print / Save PDF</button>
+              <button class="btn btn-secondary" type="button" id="print-btn" title="Print Or Save As PDF" aria-label="Print or save fixed prompt as PDF">Print / Save PDF</button>
               <button class="btn btn-secondary btn-clear btn-destructive" type="button" id="clear-prompt-btn" aria-label="Clear generated prompt">Clear Prompt</button>
               <span class="pmg-vault-saved-indicator" id="pmg-vault-saved-indicator" role="status" aria-live="polite" hidden>✓ Saved To Vault</span>
             </div>
@@ -4058,8 +4060,8 @@
               <div class="image-result-wrap" id="imageResultWrap"><div class="image-placeholder">Your Image Will Appear Here</div></div>
               <div class="image-result-actions">
                 <a id="imageDownloadBtn" href="" download="promptmegood-image.png" class="btn btn-primary" style="display:none;text-decoration:none;">⬇ Download Image</a>
-                <button class="btn btn-secondary" type="button" id="imageAgainBtn" onclick="generateImage()">Regenerate</button>
-                <button class="btn btn-secondary" type="button" id="copyImagePromptBtn" title="Copy the photo brief / image prompt so you can paste it into Midjourney, Stable Diffusion, or another tool.">Copy Prompt</button>
+                <button class="btn btn-secondary" type="button" id="imageAgainBtn" onclick="generateImage()" disabled aria-disabled="true">Regenerate</button>
+                <button class="btn btn-secondary" type="button" id="copyImagePromptBtn" title="Copy the photo brief / image prompt so you can paste it into Midjourney, Stable Diffusion, or another tool." disabled aria-disabled="true">Copy Prompt</button>
               </div>
               <p class="run-section-meta">DALL·E 3 · Free tier: <span data-pmg-cap="free:img">1</span> image per day. Founding Member: <span data-pmg-cap="founding:img">15</span> per day. Fair use limits apply.</p>
             </div>
@@ -11047,8 +11049,10 @@ Context:
         if(!res.ok||!data.url){if(wrap)wrap.innerHTML='<div class="image-generating-state"><span>⚠️ '+(data.error||'Failed. Try again.')+'</span></div>';return}
         if(wrap){wrap.innerHTML='';var img=document.createElement('img');img.src=data.url;img.alt='AI generated image';img.onload=function(){if(sec)sec.scrollIntoView({behavior:window.PMG_A11Y.scrollBehavior(),block:'center'})};wrap.appendChild(img)}
         if(dl){dl.href=data.url;dl.style.display='inline-flex'}
+        if(again){again.disabled=false;again.removeAttribute('aria-disabled')}
+        var cpib=$('copyImagePromptBtn');if(cpib){cpib.disabled=false;cpib.removeAttribute('aria-disabled')}
       }catch(e){if(wrap)wrap.innerHTML='<div class="image-generating-state"><span>⚠️ Network error. Try again.</span></div>'}
-      finally{if(btn){btn.disabled=false;btn.innerHTML='🎨 Generate Image'}if(again)again.disabled=false}
+      finally{if(btn){btn.disabled=false;btn.innerHTML='🎨 Generate Image'}}
     }
   })()
   </script>
@@ -11094,6 +11098,8 @@ Context:
       }
       if(wrap){wrap.innerHTML='';var img=document.createElement('img');img.src=data.url;img.alt='AI generated image';img.onload=function(){if(sec)sec.scrollIntoView({behavior:window.PMG_A11Y.scrollBehavior(),block:'center'})};wrap.appendChild(img)}
       if(dl){dl.href=data.url;dl.style.display='inline-flex'}
+      var ag2=document.getElementById('imageAgainBtn');if(ag2){ag2.disabled=false;ag2.removeAttribute('aria-disabled')}
+      var cp2=document.getElementById('copyImagePromptBtn');if(cp2){cp2.disabled=false;cp2.removeAttribute('aria-disabled')}
     }catch(e){if(wrap)wrap.innerHTML='<div style="padding:2rem;text-align:center;color:var(--color-text-muted)">\u26A0\uFE0F Network error. Check your connection and try again.</div>'}
     finally{_imgRunning=false;if(btn){btn.disabled=false;btn.textContent='\uD83C\uDFA8 Generate Image'}}
   };
