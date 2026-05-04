@@ -257,7 +257,8 @@
       'body:not(.pmg-has-result) .save-tip',
       'body:not(.pmg-has-result) #strength-score',
       'body:not(.pmg-has-result) #aiResponseSection',
-      'body:not(.pmg-has-result) .pmg-post-gen'
+      'body:not(.pmg-has-result) .pmg-post-gen',
+      'body:not(.pmg-has-result) #pmg-power-moves'
     ].join(',\n');
     /* These elements use the HTML `hidden` attribute by default. When the
        result is revealed via CSS only (no finalize() call), `hidden` keeps
@@ -15427,4 +15428,234 @@
   }
   setTimeout(init, 400);
   setTimeout(init, 1200);
+})();
+
+/* =====================================================================
+ * T101 — Power Moves MVP
+ *
+ * After the first prompt is generated, show a compact contextual action
+ * row near the generated prompt that helps users discover the deeper
+ * features of the workstation without scrolling or hunting.
+ *
+ * Placement: inside .result-wrap, after #improve-block.
+ * Visibility: hidden until body.pmg-has-result (via the hide-selector
+ *   list in the T01 visibility CSS above).
+ *
+ * Each button maps to an existing, working feature:
+ *   Improve With AI   → clicks #improve-with-ai-btn
+ *   More Detailed     → clicks [data-remix="detailed"]
+ *   Beginner Friendly → clicks [data-remix="beginner"]
+ *   Try In Image Mode → calls window.setMode('image')
+ *   Save To Vault     → scrolls to #history, expands vault
+ *   Check Quality     → clicks #check-quality-btn
+ *
+ * Idempotent via window.__pmgT101Init.
+ * ===================================================================== */
+(function pmgT101PowerMoves() {
+  if (window.__pmgT101Init) return;
+  window.__pmgT101Init = true;
+
+  var SECTION_ID = 'pmg-power-moves';
+  var STYLE_ID  = 'pmg-t101-style';
+
+  var MOVES = [
+    { id: 'pm-improve',   label: '✨ Improve With AI',   icon: '', action: 'improve'  },
+    { id: 'pm-detailed',  label: '📋 More Detailed',     icon: '', action: 'detailed' },
+    { id: 'pm-beginner',  label: '🎓 Beginner Friendly', icon: '', action: 'beginner' },
+    { id: 'pm-image',     label: '🎨 Try Image Mode',    icon: '', action: 'image'    },
+    { id: 'pm-vault',     label: '💾 Save To Vault',     icon: '', action: 'vault'    },
+    { id: 'pm-quality',   label: '🔍 Check Quality',     icon: '', action: 'quality'  }
+  ];
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var css = [
+      '#' + SECTION_ID + ' {',
+      '  margin: var(--space-4, 16px) 0;',
+      '  padding: var(--space-4, 16px);',
+      '  background: color-mix(in srgb, var(--color-primary) 4%, var(--color-surface));',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 15%, transparent);',
+      '  border-radius: var(--radius-lg, 12px);',
+      '}',
+      '#' + SECTION_ID + ' .pmg-pm-title {',
+      '  font-size: var(--text-sm, 13px);',
+      '  font-weight: 800;',
+      '  text-transform: uppercase;',
+      '  letter-spacing: 0.06em;',
+      '  color: var(--color-primary);',
+      '  margin: 0 0 2px;',
+      '}',
+      '#' + SECTION_ID + ' .pmg-pm-subtitle {',
+      '  font-size: 12.5px;',
+      '  color: var(--color-text-muted);',
+      '  margin: 0 0 var(--space-3, 12px);',
+      '}',
+      '#' + SECTION_ID + ' .pmg-pm-grid {',
+      '  display: grid;',
+      '  grid-template-columns: repeat(3, 1fr);',
+      '  gap: 8px;',
+      '}',
+      '@media (max-width: 600px) {',
+      '  #' + SECTION_ID + ' .pmg-pm-grid {',
+      '    grid-template-columns: repeat(2, 1fr);',
+      '  }',
+      '}',
+      '#' + SECTION_ID + ' .pmg-pm-chip {',
+      '  display: flex;',
+      '  align-items: center;',
+      '  justify-content: center;',
+      '  gap: 4px;',
+      '  padding: 10px 8px;',
+      '  font-size: 12.5px;',
+      '  font-weight: 600;',
+      '  line-height: 1.3;',
+      '  text-align: center;',
+      '  border: 1.5px solid color-mix(in srgb, var(--color-primary) 25%, transparent);',
+      '  border-radius: var(--radius-md, 8px);',
+      '  background: var(--color-surface);',
+      '  color: var(--color-text);',
+      '  cursor: pointer;',
+      '  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;',
+      '}',
+      '#' + SECTION_ID + ' .pmg-pm-chip:hover,',
+      '#' + SECTION_ID + ' .pmg-pm-chip:focus-visible {',
+      '  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));',
+      '  border-color: var(--color-primary);',
+      '  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 15%, transparent);',
+      '  outline: none;',
+      '}',
+      '#' + SECTION_ID + ' .pmg-pm-chip:active {',
+      '  transform: scale(0.97);',
+      '}',
+      'body.image-mode #' + SECTION_ID + ' #pm-image { display: none; }'
+    ].join('\n');
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  function scrollBehavior() {
+    try { return window.PMG_A11Y.scrollBehavior(); } catch (e) { return 'smooth'; }
+  }
+
+  function scrollAndClick(el, block) {
+    if (!el) return;
+    el.scrollIntoView({ behavior: scrollBehavior(), block: block || 'center' });
+    setTimeout(function () { el.click(); }, 300);
+  }
+
+  /* Maps each action to a DOM selector (or function name) so we can
+     check at build-time whether the target exists and hide chips
+     whose wiring target is missing — no dead buttons, ever. */
+  var TARGET_CHECKS = {
+    improve:  function () { return !!document.getElementById('improve-with-ai-btn'); },
+    detailed: function () { return !!document.querySelector('#improve-block [data-remix="detailed"]'); },
+    beginner: function () { return !!document.querySelector('#improve-block [data-remix="beginner"]'); },
+    image:    function () { return typeof window.setMode === 'function'; },
+    vault:    function () { return !!document.getElementById('history'); },
+    quality:  function () { return !!document.getElementById('check-quality-btn'); }
+  };
+
+  function handleAction(action) {
+    switch (action) {
+      case 'improve': {
+        scrollAndClick(document.getElementById('improve-with-ai-btn'));
+        break;
+      }
+      case 'detailed': {
+        scrollAndClick(document.querySelector('#improve-block [data-remix="detailed"]'));
+        break;
+      }
+      case 'beginner': {
+        scrollAndClick(document.querySelector('#improve-block [data-remix="beginner"]'));
+        break;
+      }
+      case 'image': {
+        if (typeof window.setMode === 'function') window.setMode('image');
+        var goal = document.getElementById('goal');
+        if (goal) goal.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
+        break;
+      }
+      case 'vault': {
+        var hist = document.getElementById('history');
+        if (hist) {
+          hist.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+          var toggle = hist.querySelector('.pmg-vault-toggle');
+          if (toggle) {
+            var panel = hist.querySelector('.panel');
+            if (panel && panel.classList.contains('pmg-vault-collapsed')) {
+              setTimeout(function () { toggle.click(); }, 400);
+            }
+          }
+        }
+        break;
+      }
+      case 'quality': {
+        scrollAndClick(document.getElementById('check-quality-btn'));
+        break;
+      }
+    }
+  }
+
+  function buildSection() {
+    if (document.getElementById(SECTION_ID)) return true;
+
+    var improveBlock = document.getElementById('improve-block');
+    if (!improveBlock || !improveBlock.parentNode) return false;
+
+    injectStyles();
+
+    var section = document.createElement('div');
+    section.id = SECTION_ID;
+    section.className = 'pmg-post-gen';
+    section.setAttribute('role', 'region');
+    section.setAttribute('aria-label', 'Power Moves — quick actions for your prompt');
+
+    var title = document.createElement('p');
+    title.className = 'pmg-pm-title';
+    title.textContent = 'Power Moves';
+
+    var subtitle = document.createElement('p');
+    subtitle.className = 'pmg-pm-subtitle';
+    subtitle.textContent = 'Make this prompt stronger, clearer, or more useful.';
+
+    var grid = document.createElement('div');
+    grid.className = 'pmg-pm-grid';
+
+    MOVES.forEach(function (move) {
+      var check = TARGET_CHECKS[move.action];
+      if (check && !check()) return;
+
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.id = move.id;
+      chip.className = 'pmg-pm-chip';
+      chip.textContent = move.label;
+      chip.addEventListener('click', function (e) {
+        e.preventDefault();
+        handleAction(move.action);
+      });
+      grid.appendChild(chip);
+    });
+
+    section.appendChild(title);
+    section.appendChild(subtitle);
+    section.appendChild(grid);
+
+    improveBlock.parentNode.insertBefore(section, improveBlock.nextSibling);
+    return true;
+  }
+
+  function init() {
+    try { buildSection(); } catch (e) { /* noop */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+  setTimeout(init, 600);
+  setTimeout(init, 1500);
 })();

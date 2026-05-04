@@ -62,6 +62,8 @@ This is a static HTML AI prompt builder (`index.html`) built with vanilla JavaSc
 -   **Image Generator Variations + Compare + Use-Style Handoff:** Generates 4 image variants, provides a before/after slider for comparison, and allows applying styles to new photos.
 -   **Photography Suite Preset Thumbnails:** Small representative SVG thumbnails for Quick-Style preset buttons.
 -   **Smarter Vault:** Enhancements to the Vault (`#history` section) including multi-tag chip filters, four sort modes, and "Compare Many" functionality.
+-   **Power Moves MVP (T101):** After the first prompt is generated, a compact "Power Moves" action row appears near the result with 6 contextual chips: Improve With AI, More Detailed, Beginner Friendly, Try Image Mode, Save To Vault, Check Quality. Each chip wires to an existing feature (no dead buttons — chips whose target DOM element is missing are automatically excluded). Hidden until `body.pmg-has-result`. Desktop: 3-column grid; mobile: 2-column grid. Tests in `tests/power-moves.spec.ts`.
+-   **Above-Fold CTA (T100):** Second "Fix My Prompt" button injected inside `.field.field-primary` right under the goal textarea for instant new-user access. MutationObserver mirrors the original button's loading state. Original `#generateBtn` untouched.
 -   **Command Palette (⌘K):** Global keyboard-driven palette for searching and executing commands, modes, actions, presets, and vault items.
 -   **Unified Share Button:** Single entry point for sharing, offering "Copy link" and "Export as image card."
 -   **Smart Pill Suggestions + Negative Pills:** "You Might Also Like" suggestions and per-group "Avoid mode" for excluding pill influence from prompts.
