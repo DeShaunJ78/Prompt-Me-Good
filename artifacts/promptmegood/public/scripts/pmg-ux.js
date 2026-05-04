@@ -16411,3 +16411,472 @@
   setTimeout(init, 800);
   setTimeout(init, 2000);
 })();
+
+/* =====================================================================
+ * T122 — Workstation Tour (Phase 2: Full guided tour after first AI
+ *        response)
+ *
+ * After the user clicks "Run With AI" and #aiResponseSection becomes
+ * visible for the first time, a non-blocking invite banner asks
+ * "Want To See The Full Workstation?" with "Show Me The Full Power" /
+ * "Not Now" buttons.
+ *
+ * If accepted, a lightweight overlay walks through 6 key stops:
+ *   1. Original Idea (#goal)
+ *   2. Better Prompt (#resultBox)
+ *   3. Run With AI (#runSection)
+ *   4. Power Moves (#pmg-power-moves)
+ *   5. Prompt Vault (#history)
+ *   6. Photography Suite (#photo-suite-section / #pmg-photo-suite)
+ *
+ * The tour opens collapsed/hidden sections before highlighting them,
+ * is dismissible at any point, and stores preference in localStorage
+ * so it never re-triggers.
+ *
+ * Idempotent via window.__pmgT122Init.
+ * ===================================================================== */
+(function pmgT122WorkstationTour() {
+  'use strict';
+  if (window.__pmgT122Init) return;
+  window.__pmgT122Init = true;
+
+  var LS_KEY = 'pmg.workstationTourSeen';
+  var STYLE_ID = 'pmg-t122-styles';
+  var INVITE_ID = 'pmg-ws-tour-invite';
+  var OVERLAY_ID = 'pmg-ws-tour-overlay';
+
+  function safeGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function safeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function scrollBehavior() {
+    return window.PMG_A11Y && window.PMG_A11Y.scrollBehavior ? window.PMG_A11Y.scrollBehavior() : 'smooth';
+  }
+
+  var STEPS = [
+    {
+      selector: '#goal',
+      title: 'Your Original Idea',
+      text: 'This is where it all starts. Type what you need in plain words — no jargon required.',
+      prepare: null
+    },
+    {
+      selector: '#resultBox',
+      title: 'Your Better Prompt',
+      text: 'PromptMeGood rewrites your idea into a clear, structured prompt that AI actually understands.',
+      prepare: null
+    },
+    {
+      selector: '#runSection',
+      fallback: '#runBtn',
+      title: 'Run With AI',
+      text: 'Execute your prompt and get an AI response right here — no copy-paste needed.',
+      prepare: null
+    },
+    {
+      selector: '#pmg-power-moves',
+      title: 'Power Moves',
+      text: 'Quick-action shortcuts: try image mode, save to vault, or check prompt quality — one tap each.',
+      prepare: null
+    },
+    {
+      selector: '#history',
+      title: 'Prompt Vault',
+      text: 'Every prompt you generate is saved here on your device. Search, compare, export, or restore any time.',
+      prepare: function () {
+        var panel = document.querySelector('#history .panel');
+        if (panel && panel.classList.contains('pmg-vault-collapsed')) {
+          panel.classList.remove('pmg-vault-collapsed');
+          var label = panel.querySelector('.pmg-vault-toggle-label');
+          if (label) label.textContent = 'Hide Prompt Vault';
+          try { localStorage.setItem('pmg.task107.vaultExpanded', '1'); } catch (e) {}
+        }
+      }
+    },
+    {
+      selector: '#photo-suite-section',
+      fallback: '#pmg-photo-suite',
+      title: 'Photography Suite',
+      text: 'Switch to image mode and build DALL\u00B7E 3 prompts with style, lighting, and composition controls.',
+      prepare: function () {
+        var el = document.getElementById('photo-suite-section') || document.getElementById('pmg-photo-suite');
+        if (el) {
+          el.removeAttribute('hidden');
+          el.style.removeProperty('display');
+        }
+      }
+    }
+  ];
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = [
+      '#' + INVITE_ID + ' {',
+      '  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);',
+      '  z-index: 200; max-width: 420px; width: calc(100% - 32px);',
+      '  background: var(--color-surface); border: 1px solid var(--color-border);',
+      '  border-radius: var(--radius-lg, 12px); padding: 16px 20px;',
+      '  box-shadow: 0 12px 40px rgba(0,0,0,0.22);',
+      '  display: flex; flex-direction: column; gap: 12px; text-align: center;',
+      '  animation: pmgWsTourSlideUp 0.3s ease-out both;',
+      '}',
+      '@keyframes pmgWsTourSlideUp {',
+      '  from { opacity: 0; transform: translateX(-50%) translateY(20px); }',
+      '  to   { opacity: 1; transform: translateX(-50%) translateY(0); }',
+      '}',
+      '#' + INVITE_ID + ' .ws-tour-title {',
+      '  font-size: 15px; font-weight: 800; color: var(--color-text); margin: 0;',
+      '}',
+      '#' + INVITE_ID + ' .ws-tour-sub {',
+      '  font-size: 13px; color: var(--color-text-muted); margin: 0;',
+      '}',
+      '#' + INVITE_ID + ' .ws-tour-actions {',
+      '  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;',
+      '}',
+      '#' + INVITE_ID + ' .ws-tour-actions .btn { min-height: 38px; font-size: 13px; padding: 0 16px; }',
+      '#' + INVITE_ID + ' .ws-tour-dismiss {',
+      '  background: transparent; border: 0; color: var(--color-text-muted);',
+      '  cursor: pointer; font-size: 12px; padding: 6px 4px; text-decoration: underline;',
+      '}',
+      '#' + INVITE_ID + ' .ws-tour-dismiss:hover { color: var(--color-text); }',
+
+      '#' + OVERLAY_ID + ' {',
+      '  position: fixed; inset: 0; z-index: 210; pointer-events: none; display: none;',
+      '}',
+      '#' + OVERLAY_ID + '.is-open { display: block; }',
+      '#' + OVERLAY_ID + ' .ws-backdrop {',
+      '  position: absolute; inset: 0; background: color-mix(in srgb, #000 12%, transparent);',
+      '  pointer-events: none; opacity: 0; transition: opacity 0.18s ease-out;',
+      '}',
+      '#' + OVERLAY_ID + '.is-open .ws-backdrop { opacity: 1; }',
+      '#' + OVERLAY_ID + ' .ws-highlight {',
+      '  position: absolute; pointer-events: none; border-radius: 12px;',
+      '  box-shadow: 0 0 0 3px var(--color-primary), 0 0 0 6px color-mix(in srgb, var(--color-primary) 40%, transparent);',
+      '  transition: top 0.18s ease-out, left 0.18s ease-out, width 0.18s ease-out, height 0.18s ease-out, opacity 0.18s ease-out;',
+      '}',
+      '#' + OVERLAY_ID + ' .ws-tooltip {',
+      '  position: absolute; pointer-events: auto; max-width: 320px; min-width: 240px;',
+      '  background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border);',
+      '  border-radius: var(--radius-lg, 12px); padding: 16px; box-shadow: 0 12px 32px rgba(0,0,0,0.24);',
+      '  display: flex; flex-direction: column; gap: 10px;',
+      '  transition: top 0.18s ease-out, left 0.18s ease-out, opacity 0.18s ease-out;',
+      '}',
+      '#' + OVERLAY_ID + '.is-transitioning .ws-highlight,',
+      '#' + OVERLAY_ID + '.is-transitioning .ws-tooltip {',
+      '  opacity: 0; pointer-events: none; transition: opacity 0.12s ease-out;',
+      '}',
+      '#' + OVERLAY_ID + ' .ws-step-label {',
+      '  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;',
+      '  color: var(--color-primary); text-align: center;',
+      '}',
+      '#' + OVERLAY_ID + ' .ws-title {',
+      '  font-size: 15px; font-weight: 800; margin: 0; text-align: center; color: var(--color-text);',
+      '}',
+      '#' + OVERLAY_ID + ' .ws-text {',
+      '  font-size: 13px; line-height: 1.5; margin: 0; text-align: center; color: var(--color-text); font-weight: 600;',
+      '}',
+      '#' + OVERLAY_ID + ' .ws-actions {',
+      '  display: flex; justify-content: space-between; align-items: center; gap: 8px;',
+      '}',
+      '#' + OVERLAY_ID + ' .ws-actions .btn { min-height: 36px; padding: 0 14px; font-size: 12px; }',
+      '#' + OVERLAY_ID + ' .ws-skip {',
+      '  background: transparent; border: 0; color: var(--color-text-muted);',
+      '  cursor: pointer; font-size: 12px; padding: 8px 4px; text-decoration: underline;',
+      '}',
+      '#' + OVERLAY_ID + ' .ws-skip:hover { color: var(--color-text); }',
+
+      '@media (max-width: 640px) {',
+      '  #' + OVERLAY_ID + ' .ws-tooltip { max-width: calc(100vw - 24px); min-width: 0; left: 12px !important; right: 12px; }',
+      '  #' + OVERLAY_ID + ' .ws-highlight, #' + OVERLAY_ID + ' .ws-tooltip { transition: opacity 0.18s ease-out; }',
+      '  #' + INVITE_ID + ' { bottom: 12px; padding: 14px 16px; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  #' + OVERLAY_ID + ' .ws-backdrop, #' + OVERLAY_ID + ' .ws-highlight, #' + OVERLAY_ID + ' .ws-tooltip { transition: none; }',
+      '  #' + INVITE_ID + ' { animation: none; }',
+      '}'
+    ].join('\n');
+    (document.head || document.documentElement).appendChild(s);
+  }
+
+  function buildInvite() {
+    if (document.getElementById(INVITE_ID)) return document.getElementById(INVITE_ID);
+    var el = document.createElement('div');
+    el.id = INVITE_ID;
+    el.setAttribute('role', 'dialog');
+    el.setAttribute('aria-label', 'Workstation tour invite');
+    el.innerHTML =
+      '<p class="ws-tour-title">Want To See The Full Workstation?</p>' +
+      '<p class="ws-tour-sub">You just ran your first prompt. There\u2019s a lot more you can do here.</p>' +
+      '<div class="ws-tour-actions">' +
+        '<button class="btn btn-primary" type="button" id="pmg-ws-tour-accept">Show Me The Full Power</button>' +
+        '<button class="ws-tour-dismiss" type="button" id="pmg-ws-tour-decline">Not Now</button>' +
+      '</div>';
+    document.body.appendChild(el);
+    return el;
+  }
+
+  function removeInvite() {
+    var el = document.getElementById(INVITE_ID);
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+  }
+
+  function buildOverlay() {
+    if (document.getElementById(OVERLAY_ID)) return;
+    var el = document.createElement('div');
+    el.id = OVERLAY_ID;
+    el.setAttribute('role', 'dialog');
+    el.setAttribute('aria-modal', 'false');
+    el.setAttribute('aria-label', 'Workstation tour');
+    el.setAttribute('aria-hidden', 'true');
+    el.innerHTML =
+      '<div class="ws-backdrop" id="pmg-ws-backdrop"></div>' +
+      '<div class="ws-highlight" id="pmg-ws-highlight"></div>' +
+      '<div class="ws-tooltip" id="pmg-ws-tooltip">' +
+        '<span class="ws-step-label" id="pmg-ws-step-label"></span>' +
+        '<h3 class="ws-title" id="pmg-ws-title"></h3>' +
+        '<p class="ws-text" id="pmg-ws-text"></p>' +
+        '<div class="ws-actions">' +
+          '<button type="button" class="ws-skip" id="pmg-ws-skip">Skip Tour</button>' +
+          '<button type="button" class="btn btn-primary" id="pmg-ws-next">Next</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(el);
+  }
+
+  var stepIndex = 0;
+  var scrollRaf = 0;
+  var listenersAttached = false;
+
+  function isOpen() {
+    var ov = document.getElementById(OVERLAY_ID);
+    return ov && ov.classList.contains('is-open');
+  }
+
+  function positionStep(scrollAttempts) {
+    if (!isOpen()) return;
+    var step = STEPS[stepIndex];
+    if (!step) { finish(); return; }
+    var target = document.querySelector(step.selector);
+    if (!target && step.fallback) target = document.querySelector(step.fallback);
+    if (!target) { nextStep(); return; }
+
+    var overlay = document.getElementById(OVERLAY_ID);
+    var highlight = document.getElementById('pmg-ws-highlight');
+    var tooltip = document.getElementById('pmg-ws-tooltip');
+    var stepLabel = document.getElementById('pmg-ws-step-label');
+    var titleEl = document.getElementById('pmg-ws-title');
+    var textEl = document.getElementById('pmg-ws-text');
+    var nextBtn = document.getElementById('pmg-ws-next');
+
+    var rect = target.getBoundingClientRect();
+    var attempts = scrollAttempts || 0;
+    var isMobile = window.matchMedia('(max-width: 640px)').matches;
+    var needsScroll = rect.top < 80 || rect.bottom > window.innerHeight - 80;
+
+    if (needsScroll && attempts < 2) {
+      overlay.classList.add('is-transitioning');
+      target.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
+      setTimeout(function () { positionStep(attempts + 1); }, isMobile ? 360 : 400);
+      return;
+    }
+
+    var pad = 6;
+    highlight.style.top = (rect.top - pad) + 'px';
+    highlight.style.left = (rect.left - pad) + 'px';
+    highlight.style.width = (rect.width + pad * 2) + 'px';
+    highlight.style.height = (rect.height + pad * 2) + 'px';
+
+    var tipW = tooltip.getBoundingClientRect().width || 280;
+    var tipH = tooltip.getBoundingClientRect().height || 140;
+    var margin = 12;
+    var tipTop = rect.top + rect.height + pad + margin;
+    if (tipTop + tipH > window.innerHeight - margin) {
+      tipTop = Math.max(margin, rect.top - pad - tipH - margin);
+    }
+    var tipLeft = rect.left + (rect.width / 2) - (tipW / 2);
+    tipLeft = Math.max(margin, Math.min(tipLeft, window.innerWidth - tipW - margin));
+    tooltip.style.top = tipTop + 'px';
+    tooltip.style.left = tipLeft + 'px';
+
+    var activeCount = STEPS.filter(function (s) {
+      var el = document.querySelector(s.selector);
+      if (!el && s.fallback) el = document.querySelector(s.fallback);
+      return !!el;
+    }).length;
+    var visibleIndex = 0;
+    for (var i = 0; i < stepIndex; i++) {
+      var el = document.querySelector(STEPS[i].selector);
+      if (!el && STEPS[i].fallback) el = document.querySelector(STEPS[i].fallback);
+      if (el) visibleIndex++;
+    }
+    stepLabel.textContent = 'Stop ' + (visibleIndex + 1) + ' of ' + activeCount;
+    titleEl.textContent = step.title;
+    textEl.textContent = step.text;
+    nextBtn.textContent = stepIndex === STEPS.length - 1 ? 'Done' : 'Next';
+
+    if (overlay.classList.contains('is-transitioning')) {
+      setTimeout(function () { overlay.classList.remove('is-transitioning'); }, isMobile ? 100 : 30);
+    }
+  }
+
+  function schedulePosition() {
+    if (!isOpen()) return;
+    var overlay = document.getElementById(OVERLAY_ID);
+    if (overlay && overlay.classList.contains('is-transitioning')) return;
+    if (scrollRaf) return;
+    scrollRaf = requestAnimationFrame(function () {
+      scrollRaf = 0;
+      positionStep();
+    });
+  }
+
+  function attachListeners() {
+    if (listenersAttached) return;
+    window.addEventListener('resize', schedulePosition);
+    window.addEventListener('scroll', schedulePosition, { passive: true });
+    listenersAttached = true;
+  }
+
+  function detachListeners() {
+    if (!listenersAttached) return;
+    window.removeEventListener('resize', schedulePosition);
+    window.removeEventListener('scroll', schedulePosition, { passive: true });
+    listenersAttached = false;
+    if (scrollRaf) { cancelAnimationFrame(scrollRaf); scrollRaf = 0; }
+  }
+
+  function startTour() {
+    removeInvite();
+    buildOverlay();
+    stepIndex = 0;
+    var overlay = document.getElementById(OVERLAY_ID);
+    overlay.classList.add('is-open');
+    overlay.setAttribute('aria-hidden', 'false');
+    attachListeners();
+
+    var step = STEPS[stepIndex];
+    if (step && step.prepare) { try { step.prepare(); } catch (e) {} }
+
+    setTimeout(function () {
+      positionStep();
+      try {
+        var btn = document.getElementById('pmg-ws-next');
+        if (btn) btn.focus({ preventScroll: true });
+      } catch (e) {}
+    }, 50);
+
+    document.getElementById('pmg-ws-next').addEventListener('click', nextStep);
+    document.getElementById('pmg-ws-skip').addEventListener('click', function () { finish(); });
+    document.addEventListener('keydown', tourKeyHandler);
+  }
+
+  function tourKeyHandler(e) {
+    if (!isOpen()) return;
+    if (e.key === 'Escape') finish();
+    else if (e.key === 'Enter') nextStep();
+  }
+
+  function nextStep() {
+    if (stepIndex >= STEPS.length - 1) { finish(true); return; }
+    stepIndex++;
+    var step = STEPS[stepIndex];
+
+    var target = document.querySelector(step.selector);
+    if (!target && step.fallback) target = document.querySelector(step.fallback);
+    if (!target && stepIndex < STEPS.length - 1) {
+      nextStep();
+      return;
+    }
+    if (!target) { finish(true); return; }
+
+    if (step.prepare) { try { step.prepare(); } catch (e) {} }
+
+    var overlay = document.getElementById(OVERLAY_ID);
+    overlay.classList.add('is-transitioning');
+    positionStep();
+  }
+
+  function finish(completed) {
+    var overlay = document.getElementById(OVERLAY_ID);
+    if (overlay) {
+      overlay.classList.remove('is-open');
+      overlay.setAttribute('aria-hidden', 'true');
+    }
+    detachListeners();
+    document.removeEventListener('keydown', tourKeyHandler);
+    var hl = document.getElementById('pmg-ws-highlight');
+    if (hl) { hl.style.top = '-9999px'; hl.style.left = '-9999px'; hl.style.width = '0'; hl.style.height = '0'; }
+    stepIndex = 0;
+    safeSet(LS_KEY, String(Date.now()));
+  }
+
+  function alreadySeen() {
+    return !!safeGet(LS_KEY);
+  }
+
+  function showInvite() {
+    if (alreadySeen()) return;
+    if (document.getElementById(INVITE_ID)) return;
+    var existingOb = document.getElementById('ob-overlay');
+    if (existingOb && existingOb.classList.contains('is-open')) return;
+
+    injectStyles();
+    var invite = buildInvite();
+
+    document.getElementById('pmg-ws-tour-accept').addEventListener('click', function () {
+      safeSet(LS_KEY, 'started');
+      startTour();
+    });
+    document.getElementById('pmg-ws-tour-decline').addEventListener('click', function () {
+      safeSet(LS_KEY, String(Date.now()));
+      removeInvite();
+    });
+  }
+
+  function watchForFirstAIResponse() {
+    if (alreadySeen()) return;
+
+    var section = document.getElementById('aiResponseSection');
+    if (!section) {
+      setTimeout(watchForFirstAIResponse, 2000);
+      return;
+    }
+
+    if (!section.hidden && section.offsetParent !== null) {
+      setTimeout(showInvite, 1500);
+      return;
+    }
+
+    if (!('MutationObserver' in window)) return;
+
+    var mo = new MutationObserver(function () {
+      if (!section.hidden && section.offsetParent !== null) {
+        mo.disconnect();
+        setTimeout(showInvite, 1500);
+      }
+    });
+    mo.observe(section, { attributes: true, attributeFilter: ['hidden', 'style'] });
+
+    var parentMo = new MutationObserver(function () {
+      if (!section.hidden && section.offsetParent !== null) {
+        parentMo.disconnect();
+        mo.disconnect();
+        setTimeout(showInvite, 1500);
+      }
+    });
+    if (section.parentElement) {
+      parentMo.observe(section.parentElement, { attributes: true, childList: true });
+    }
+  }
+
+  function init() {
+    injectStyles();
+    watchForFirstAIResponse();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+})();
