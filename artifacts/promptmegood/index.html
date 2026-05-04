@@ -2993,8 +2993,7 @@
     /* result box: compact when empty */
     .result-box:empty, .result-box[data-empty] { min-height: 80px !important; max-height: 120px; }
     .result-panel:not(.has-result) .result-box { min-height: 80px !important; }
-    .result-box.is-clamped { max-height: 280px; overflow: hidden; position: relative; }
-    .result-box.is-clamped::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 48px; background: linear-gradient(to bottom, transparent, var(--color-surface-2)); pointer-events: none; }
+    .result-box.is-clamped { max-height: 280px; overflow-y: auto; position: relative; }
     .result-box-toggle { display: none; margin: 6px 0 0; padding: 6px 14px; font-size: 13px; font-weight: 600; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-primary); cursor: pointer; }
     .result-box-toggle:hover { background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)); }
     .result-box-toggle.is-visible { display: inline-flex; }
@@ -3944,8 +3943,8 @@
               <div id="pinned-note-text"></div>
               <div class="pinned-note-source" id="pinned-note-source"></div>
             </div>
-            <div class="result-box" id="resultBox" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Generated prompt (editable)">Your fixed prompt will appear here.</div>
             <button type="button" class="result-box-toggle" id="resultBoxToggle" aria-expanded="false" aria-controls="resultBox">Show Full Prompt ▾</button>
+            <div class="result-box" id="resultBox" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Generated prompt (editable)">Your fixed prompt will appear here.</div>
             <div class="result-edit-row">
               <span class="result-edit-indicator" id="result-edit-indicator" hidden>Edited manually</span>
             </div>

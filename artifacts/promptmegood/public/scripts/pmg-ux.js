@@ -1454,6 +1454,8 @@
     if (!resultBox || !improve || !improve.parentNode) return;
     var parent = improve.parentNode;
     try {
+      var toggle = document.getElementById('resultBoxToggle');
+      if (toggle) parent.insertBefore(toggle, resultBox);
       if (whatNext && resultBox.nextSibling !== whatNext) parent.insertBefore(whatNext, resultBox.nextSibling);
       if (runSection && whatNext) parent.insertBefore(runSection, whatNext.nextSibling);
       if (improve && runSection) parent.insertBefore(improve, runSection.nextSibling);
@@ -14972,13 +14974,15 @@
       '.result-wrap { display: flex; flex-direction: column; }',
       '.result-wrap > .pill-row { order: 1; }',
       '.result-wrap > #pinned-note { order: 2; }',
-      '.result-wrap > #resultBox { order: 3; }',
-      '.result-wrap > .result-edit-row { order: 4; }',
-      '.result-wrap > #runSection { order: 5; }',
-      '.result-wrap > .pmg-result-actions-row { order: 6; margin-top: 8px; }',
-      '.result-wrap > #improve-block { order: 7; }',
-      '.result-wrap > #what-next { order: 8; }',
-      '.result-wrap > #tour-final-actions { order: 9; }',
+      '.result-wrap > #resultBoxToggle { order: 3; }',
+      '.result-wrap > .pmg-result-overlay { order: 4; }',
+      '.result-wrap > #resultBox { order: 4; }',
+      '.result-wrap > .result-edit-row { order: 5; }',
+      '.result-wrap > #runSection { order: 6; }',
+      '.result-wrap > .pmg-result-actions-row { order: 7; margin-top: 8px; }',
+      '.result-wrap > #improve-block { order: 8; }',
+      '.result-wrap > #what-next { order: 9; }',
+      '.result-wrap > #tour-final-actions { order: 10; }',
 
       /* Visual emphasis: lift the primary Run With AI button above the
          secondary copy/download row, and tighten the cluster spacing. */
