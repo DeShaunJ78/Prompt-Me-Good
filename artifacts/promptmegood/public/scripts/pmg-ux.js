@@ -12633,7 +12633,11 @@
       '  border-radius: 4px;',
       '}',
       '#' + BANNER_ID + ' button.pmg-t42-close:hover { background: rgba(0,0,0,0.08); }',
-      '@media (max-width: 600px) { #' + BANNER_ID + ' { font-size: 13px; padding: 8px 12px; } }',
+      '#' + BANNER_ID + ' .pmg-t42-br { display: none; }',
+      '@media (max-width: 600px) {',
+      '  #' + BANNER_ID + ' { font-size: 13px; padding: 8px 12px; }',
+      '  #' + BANNER_ID + ' .pmg-t42-br { display: block; }',
+      '}',
       '@media print { #' + BANNER_ID + ' { display: none !important; } }',
       /* Override T41 hide rules during beta — but ONLY for the Founding-tier
          button, since Founding ($79 lifetime, price locked) is genuinely on sale right now.
@@ -12677,10 +12681,11 @@
        Open" to the pricing page so the call-to-action is one click away. */
     var onPricing = /\/pricing\.html(?:[?#]|$)/i.test(location.pathname + location.search);
     if (onPricing) {
-      msg.textContent = 'Free Beta Access Until ' + dateLabel + ' — Founding Member Waitlist Open · Checkout Opens Soon.';
+      msg.innerHTML = 'Free Beta Access Until ' + dateLabel +
+        ' —<br class="pmg-t42-br"> Founding Member Waitlist Open';
     } else {
       msg.innerHTML = 'Free Beta Access Until ' + dateLabel +
-        ' — <a href="./pricing.html">Founding Member Waitlist Open</a> · Checkout Opens Soon.';
+        ' —<br class="pmg-t42-br"> <a href="./pricing.html">Founding Member Waitlist Open</a>';
     }
     bar.appendChild(msg);
 
