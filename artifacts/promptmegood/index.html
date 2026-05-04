@@ -7855,7 +7855,52 @@ Context:
           var bib = document.getElementById('pmg-build-image-btn');
           if (bib) bib.inert = !isImageMode;
 
-          // Hero actions: these are legitimately visible, skip them
+          // Hero CTA links: zero-size when workstation-promote is active
+          ['hero-build-cta', 'hero-image-cta'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) { var r = el.getBoundingClientRect(); setTabReversible(el, r.width === 0 || r.height === 0); }
+          });
+
+          // Buttons that are display:none or zero-size in various states
+          ['random-prompt', 'fill-demo', 'pmg-expert-toggle-btn', 'clear-history',
+           'pmg-shortcuts-trigger', 'toggle-archived', 'compare-two', 'export-history',
+           'import-history', 'open-backup', 'collapse-all-history'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) {
+              var r = el.getBoundingClientRect();
+              var cs = getComputedStyle(el);
+              setTabReversible(el, r.width === 0 || r.height === 0 || cs.display === 'none');
+            }
+          });
+
+          // History search/sort/filter controls: zero-size when vault is collapsed
+          ['history-search', 'history-sort', 'filter-notes'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) { var r = el.getBoundingClientRect(); setTabReversible(el, r.width === 0 || r.height === 0); }
+          });
+
+          // Quick-start card: inert when display:none
+          var qsc2 = document.getElementById('quick-start-card');
+          if (qsc2 && getComputedStyle(qsc2).display === 'none') qsc2.inert = true;
+
+          // Command Center File/Image Analysis pill: hidden on narrow screens
+          document.querySelectorAll('.pmg-cc-link').forEach(function (el) {
+            var r = el.getBoundingClientRect();
+            var cs = getComputedStyle(el);
+            if (r.width === 0 || r.height === 0 || cs.display === 'none') setTabReversible(el, true);
+            else setTabReversible(el, false);
+          });
+
+          // Overlays/banners: pointer-events:none when not visible
+          ['nudge-banner', 'tour-banner', 'keyboard-hints', 'compare-overlay',
+           'bk-overlay', 'ob-overlay', 'pmg-post-run-intro'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) {
+              var isHidden = el.hidden || getComputedStyle(el).display === 'none' || getComputedStyle(el).opacity === '0';
+              el.style.pointerEvents = isHidden ? 'none' : '';
+              if (isHidden) el.inert = true;
+            }
+          });
         }
 
         function debouncedSync() {

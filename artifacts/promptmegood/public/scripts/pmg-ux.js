@@ -3435,6 +3435,7 @@
       var btns = document.querySelectorAll('button, a.btn');
       Array.prototype.forEach.call(btns, function (b) {
         if (b.classList.contains('pmg-t15-hide-dup')) return;
+        if (b.id === 'result-top-run') return;
         var t = (b.textContent || '').replace(/\s+/g, ' ').trim();
         if (!/Run With AI/i.test(t)) return;
         if (/Run Again/i.test(t)) return;
@@ -6670,7 +6671,11 @@
     return String(s).replace(/["'\\]/g, '\\$&');
   }
 
+  var _suiteImageGenerating = false;
+
   function sendToImageGenerator() {
+    if (_suiteImageGenerating) return;
+
     var picks = getSelections();
     var photoText = buildPromptText(picks);
     if (!photoText) {
@@ -6683,6 +6688,37 @@
        from "should I keep these picks?" to "render them now". Dismiss
        the Pin CTA so it doesn't keep nagging across the image flow. */
     if (_surpriseFresh) setSurpriseFresh(false);
+
+    _suiteImageGenerating = true;
+
+    var sendBtn = document.querySelector('#' + SUITE_ID + ' .pmg-photo-send');
+    var stickyCta = document.getElementById('pmg-photo-suite-sticky-cta');
+    var sendBtnOrigHTML = sendBtn ? sendBtn.innerHTML : '';
+    var stickyOrigHTML = stickyCta ? stickyCta.innerHTML : '';
+    if (sendBtn) {
+      sendBtn.disabled = true;
+      sendBtn.innerHTML = '<span aria-hidden="true">\uD83C\uDFA8</span><span>Generating Image\u2026</span>';
+      sendBtn.setAttribute('aria-busy', 'true');
+    }
+    if (stickyCta) {
+      stickyCta.disabled = true;
+      stickyCta.textContent = 'Generating Image\u2026';
+      stickyCta.setAttribute('aria-busy', 'true');
+    }
+
+    function restoreSendBtn() {
+      _suiteImageGenerating = false;
+      if (sendBtn) {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = sendBtnOrigHTML;
+        sendBtn.removeAttribute('aria-busy');
+      }
+      if (stickyCta) {
+        stickyCta.disabled = false;
+        stickyCta.innerHTML = stickyOrigHTML;
+        stickyCta.removeAttribute('aria-busy');
+      }
+    }
 
     /* Build the final prompt. Task #113: when the Photography Suite
        was opened via the handoff card and a hydration payload is
@@ -6725,6 +6761,7 @@
     if (imgSec) {
       imgSec.hidden = false;
       imgSec.removeAttribute('hidden');
+      imgSec.setAttribute('aria-busy', 'true');
     }
 
     /* Fire the existing pipeline. */
@@ -6735,6 +6772,24 @@
     } else {
       var btn = document.getElementById('image-generate-btn') || document.getElementById('imageBtn');
       if (btn) btn.click();
+    }
+
+    /* Watch for image completion to restore send button. */
+    var imgWrap = document.getElementById('imageResultWrap');
+    if (imgWrap) {
+      var _imgObs = new MutationObserver(function () {
+        var hasImg = imgWrap.querySelector('img');
+        var hasError = imgWrap.querySelector('[style*="color:var(--color-text-muted)"]');
+        if (hasImg || hasError) {
+          _imgObs.disconnect();
+          restoreSendBtn();
+          if (imgSec) imgSec.removeAttribute('aria-busy');
+        }
+      });
+      _imgObs.observe(imgWrap, { childList: true, subtree: true });
+      setTimeout(function () { _imgObs.disconnect(); restoreSendBtn(); if (imgSec) imgSec.removeAttribute('aria-busy'); }, 60000);
+    } else {
+      setTimeout(restoreSendBtn, 5000);
     }
 
     /* Task #113: whenever a Suite build runs while a hydration

@@ -1,0 +1,152 @@
+Final cleanup pass for PromptMeGood after the latest live audit.
+
+Important:
+Do not redesign the site.
+Do not change pricing, legal, SEO, homepage copy, or plan copy.
+Do not remove working features.
+Do not touch the first-load hero layout unless required to prevent overlap.
+This is a surgical cleanup only.
+
+Current score is about 9.0/10. Fix the remaining live-audit issues only.
+
+Issue 1: Desktop Run With AI is still too low after Fix My Prompt
+
+Problem:
+After Fix My Prompt completes on desktop, the top result area now shows:
+- Copy Prompt
+- Refine It
+
+But Run With AI Here is still lower down and not visible in the first result viewport.
+
+Fix:
+Add Run With AI Here to the same top action row as Copy Prompt and Refine It inside the generated result card.
+
+Top result action row should include:
+- Copy Prompt
+- Run With AI Here
+- Refine It
+
+Keep it compact and responsive.
+
+Desktop acceptance:
+At 1440×900, after Fix My Prompt completes, the viewport must show:
+- Your Fixed Prompt
+- beginning of the generated prompt
+- Copy Prompt
+- Run With AI Here
+- Refine It
+
+Mobile acceptance:
+At 390×844, after Fix My Prompt completes, the viewport must still show:
+- Copy Prompt
+- Run With AI Here
+- Refine It
+
+Do not let a long generated prompt push Run With AI below the first action view.
+
+Issue 2: Image generation loading state is still not exact enough
+
+Problem:
+Image generation succeeds, but the visible loading state still does not match the requested UX. Current behavior shows “Sending to image generator…” but the visible Generate Image Here button does not clearly become disabled with “Generating Image…”, and the image frame does not clearly replace placeholder copy with:
+- “Generating Image”
+- “This can take a few moments.”
+
+Fix:
+When the user clicks Generate Image Here:
+- Immediately disable the visible `.pmg-photo-send` button.
+- Change the visible `.pmg-photo-send` text to “Generating Image…”
+- Add `aria-busy="true"` to the image result panel.
+- Replace the placeholder image-frame copy with:
+  Title: “Generating Image”
+  Body: “This can take a few moments.”
+- Keep the existing “Sending to image generator…” status if desired, but do not rely on it as the only loading feedback.
+- Prevent duplicate `/api/image` calls while `imageGenerating === true`.
+- On success, restore normal controls and show the final ready state.
+- On error, restore the button and show a visible inline error.
+
+Image acceptance:
+Within 1 second of clicking Generate Image Here:
+- visible Generate Image Here button becomes disabled
+- visible button text says “Generating Image…”
+- image panel says “Generating Image”
+- image panel says “This can take a few moments.”
+- duplicate click does not create a second `/api/image` request
+
+Issue 3: Pointer interception in the Photography Suite
+
+Problem:
+During testing, normal Playwright click on `button.pmg-photo-surprise` sometimes failed because the header/container intercepted pointer events while scrolling.
+
+Fix:
+Inspect layout/sticky header/overlays around the Photography Suite.
+Make sure clickable photo controls are not overlapped by:
+- `.topbar`
+- `.container`
+- invisible overlays
+- sticky elements
+- tour/menu layers
+- any zero-height or offscreen element with pointer events enabled
+
+Recommended fixes:
+- Ensure hidden/closed overlays use `pointer-events: none`.
+- Ensure visible photo controls have adequate z-index when in their active area.
+- Ensure sticky header does not cover scrolled-to controls.
+- If `scrollIntoView()` is used, use `{ block: "center" }` or account for sticky header offset.
+- Do not raise the header z-index over active controls unless it is visually covering them intentionally.
+
+Acceptance:
+A normal browser click on `button.pmg-photo-surprise` should work reliably after scrolling to the Photography Suite.
+
+Issue 4: Remaining hidden focusable controls
+
+Problem:
+The hidden focusable count improved from hundreds to roughly:
+- desktop: 53
+- mobile: 49
+
+Target is still:
+- desktop: 0–5
+- mobile: 0–5
+
+Remaining examples from audit:
+- hidden hero CTA links: “Create A Text Prompt Free · Works In Seconds”, “Create An Image Prompt”
+- hidden weekly goal CTA
+- hidden demo values button
+- hidden Expert Mode toggle duplicates
+- hidden/demoted Generate Image buttons
+- hidden/demoted Run With AI buttons
+- hidden “what next” rows
+- hidden refine textarea/buttons
+- hidden voice buttons
+- hidden Clear button
+- hidden quality checker tooltip buttons
+- hidden A/B branch button
+- hidden Send To ChatGPT controls
+
+Fix:
+For any control that is visually hidden, collapsed, zero-size, inactive, offscreen, or in a non-current panel:
+- remove it from DOM when inactive, OR
+- add `hidden`, OR
+- add `inert`, OR
+- set `disabled`, OR
+- set `tabindex="-1"` and `aria-hidden="true"` until active.
+
+Important:
+Do not make visible/active controls inaccessible.
+Only remove inactive hidden controls from keyboard/screen-reader access.
+When a panel, modal, drawer, menu, or control becomes visible again, restore accessibility.
+
+Acceptance scan:
+Run this in desktop and mobile after fixes:
+
+```js
+[...document.querySelectorAll('a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"]), [role="button"], [contenteditable="true"]')]
+  .filter(el => !el.disabled && el.getAttribute('aria-disabled') !== 'true' && el.getAttribute('tabindex') !== '-1')
+  .filter(el => {
+    const r = el.getBoundingClientRect();
+    const cs = getComputedStyle(el);
+    return (r.width === 0 || r.height === 0 || cs.display === 'none' || cs.visibility === 'hidden' || el.offsetParent === null)
+      && !el.closest('[hidden]')
+      && !el.closest('[inert]');
+  })
+  .length
