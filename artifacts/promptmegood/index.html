@@ -7873,17 +7873,28 @@ Context:
           var topActions = document.getElementById('top-actions');
           if (topActions) topActions.inert = isMobile && !topActions.classList.contains('is-open');
 
-          // Photo accordion (dynamic from pmg-ux.js)
-          var acc = document.getElementById('pmg-photo-accordion');
-          if (acc) acc.inert = !isImageMode;
-
-          // Photo suite (dynamic)
-          var suite = document.getElementById('pmg-photo-suite') || document.getElementById('photo-suite-section');
-          if (suite) suite.inert = !isImageMode;
-
-          // Photo assistant (dynamic)
-          var asst = document.getElementById('pmg-photo-assistant');
-          if (asst) asst.inert = !isImageMode;
+          // Photo accordion / suite / assistant (dynamic from pmg-ux.js)
+          // Bug fix: previously these were marked inert whenever
+          // body lacked .image-mode, but they're visible on the page
+          // for everyone (typing in the box, scrolling to the suite,
+          // picking pills are all valid pre-image-mode interactions).
+          // Using image-mode as the gate made the visible Surprise Me
+          // and group-head buttons unclickable on mobile — pointer
+          // events bubbled up to .container which Playwright reported
+          // as the interceptor. Now we gate on ACTUAL VISIBILITY:
+          // only mark inert when the element is genuinely hidden
+          // (display:none, hidden attribute, or zero-size box).
+          function inertWhenHidden(el) {
+            if (!el) return;
+            if (el.hidden) { el.inert = true; return; }
+            var cs = getComputedStyle(el);
+            if (cs.display === 'none' || cs.visibility === 'hidden') { el.inert = true; return; }
+            var r = el.getBoundingClientRect();
+            el.inert = (r.width === 0 && r.height === 0);
+          }
+          inertWhenHidden(document.getElementById('pmg-photo-accordion'));
+          inertWhenHidden(document.getElementById('pmg-photo-suite') || document.getElementById('photo-suite-section'));
+          inertWhenHidden(document.getElementById('pmg-photo-assistant'));
 
           // Photographer wizard collapsed card bodies
           document.querySelectorAll('.pmg-photo-card').forEach(function (card) {
