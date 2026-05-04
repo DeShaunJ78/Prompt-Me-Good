@@ -3644,6 +3644,7 @@
               <div class="field">
                 <label for="category">Category <span class="suggested-badge" id="suggested-category" hidden>Suggested</span></label>
                 <select id="category" name="category" class="pmg-tune-native" data-pmg-tune="category">
+                  <option value="other">General</option>
                   <option value="business">Business</option>
                   <option value="money">Money</option>
                   <option value="content">Content</option>
@@ -3652,7 +3653,6 @@
                   <option value="productivity">Productivity</option>
                   <option value="learning">Learning</option>
                   <option value="faith">Faith</option>
-                  <option value="other">Other</option>
                 </select>
                 <div class="pmg-tune-pills" data-pmg-tune-target="category" role="group" aria-label="Category"></div>
               </div>
@@ -3774,7 +3774,7 @@
                       <span>Use this for business, income, execution, or practical results. Turn off for neutral/general prompts.</span>
                     </div>
                     <label class="switch" aria-label="Turn Money Mode on or off">
-                      <input id="moneyMode" name="moneyMode" type="checkbox" checked />
+                      <input id="moneyMode" name="moneyMode" type="checkbox" />
                       <span class="slider"></span>
                     </label>
                   </div>
@@ -5624,7 +5624,7 @@ Context:
 
       function restoreHistoryItem(item) {
         document.getElementById('goal').value = item.data.goal || '';
-        document.getElementById('category').value = item.data.category || 'business';
+        document.getElementById('category').value = item.data.category || 'other';
         document.getElementById('skillLevel').value = item.data.skillLevel || 'beginner';
         document.getElementById('tone').value = item.data.tone || 'bold-direct';
         document.getElementById('outputFormat').value = item.data.outputFormat || 'step-by-step';
@@ -6309,13 +6309,18 @@ Context:
 
         // Track which fields the user has manually changed since last reset
         const userTouched = new Set();
-        const TRACKED_FIELDS = ['category', 'tone', 'outputFormat', 'maxLength'];
+        const TRACKED_FIELDS = ['category', 'tone', 'outputFormat', 'maxLength', 'personality'];
+        const TRACKED_TOGGLES = ['moneyMode', 'humanTone', 'clarityBoost'];
         TRACKED_FIELDS.forEach(function (id) {
           const el = document.getElementById(id);
           if (!el) return;
-          // Any change event (real click, keyboard, or assistive tech) marks the field as touched.
-          // Our own programmatic `.value = ...` assignments do NOT fire `change` on <select>,
-          // so the suggestion engine itself never accidentally marks fields as touched.
+          el.addEventListener('change', function () {
+            userTouched.add(id);
+          });
+        });
+        TRACKED_TOGGLES.forEach(function (id) {
+          const el = document.getElementById(id);
+          if (!el) return;
           el.addEventListener('change', function () {
             userTouched.add(id);
           });
@@ -6331,16 +6336,16 @@ Context:
 
           const out = {};
 
-          // Category detection
-          if (/\b(make money|earn|income|side hustle|side-hustle|profit|monetize|revenue|sell|sales|customer|cash|first \$|\$\d|dollar|salary)\b/.test(t)) out.category = 'money';
+          // Category detection — specific domains first, generic last
+          if (/\b(faith|prayer|scripture|bible|spiritual|god|jesus|christian|devotion|verse|psalm|sermon|worship)\b/.test(t)) out.category = 'faith';
+          else if (/\b(make money|earn|income|side hustle|side-hustle|profit|monetize|revenue|sell|sales|customer|cash|first \$|\$\d|dollar|salary)\b/.test(t)) out.category = 'money';
+          else if (/\b(resume|interview|career|job|cv|cover letter|hiring|promotion|networking|salary negotiation|recruit)\b/.test(t)) out.category = 'career';
+          else if (/\b(relationship|personal|life|decision|advice|stress|anxious|family|friend|emotional|mental health)\b/.test(t)) out.category = 'personal';
           else if (/\b(write|email|copy|copywriting|content|blog|article|hook|caption|script|tweet|post|landing page|product description|story|newsletter)\b/.test(t)) out.category = 'content';
           else if (/\b(research|find out|fact|study|data|paper|source|cite|news|current|latest|recent|literature)\b/.test(t)) out.category = 'learning';
           else if (/\b(business|startup|strategy|operations|marketing plan|launch|brand|saas|b2b|company|founder)\b/.test(t)) out.category = 'business';
-          else if (/\b(resume|interview|career|job|cv|cover letter|hiring|promotion|networking|salary negotiation|recruit)\b/.test(t)) out.category = 'career';
           else if (/\b(focus|habit|productivity|routine|schedule|time management|prioritize|procrastinat|workflow|system)\b/.test(t)) out.category = 'productivity';
           else if (/\b(learn|study|teach|explain|understand|tutorial|course|practice|skill|master|how does|how do)\b/.test(t)) out.category = 'learning';
-          else if (/\b(faith|prayer|scripture|bible|spiritual|god|jesus|christian|devotion|verse)\b/.test(t)) out.category = 'faith';
-          else if (/\b(relationship|personal|life|decision|advice|stress|anxious|family|friend|emotional|mental health)\b/.test(t)) out.category = 'personal';
 
           // Tone detection
           if (/\b(fast|bold-direct|urgent|hustle|attack|push|crush|dominate|win|conquer|sell|profit)\b/.test(t)) out.tone = 'bold-direct';
@@ -6358,6 +6363,28 @@ Context:
           else if (/\b(email|product description|hook|landing page|outline|bullet)\b/.test(t)) out.maxLength = '200';
           else if (/\b(plan|guide|step|strategy|how to|breakdown|roadmap)\b/.test(t)) out.maxLength = '300';
           else if (/\b(essay|article|blog|comprehensive|long form|long-form|in-depth|detailed)\b/.test(t)) out.maxLength = '500';
+
+          // Boost toggle detection — true means turn ON, false means leave OFF
+          if (/\b(make money|earn|income|side hustle|side-hustle|profit|monetize|revenue|sell|sales|customer|cash|first \$|\$\d|dollar|dropshipping|client|startup|launch|business)\b/.test(t)) out.moneyMode = true;
+          else out.moneyMode = false;
+
+          if (/\b(write|writing|written|email|social|post|posts|content|caption|storytelling|newsletter|blog|copy|script|tweet|linkedin|natural|human|tiktok|video|reel|reels|youtube)\b/.test(t)) out.humanTone = true;
+          else out.humanTone = false;
+
+          if (/\b(planning|plan|decision|strategy|explain|explanation|learning|learn|problem|step|process|how to|understand|teach|breakdown|organize|structure)\b/.test(t)) out.clarityBoost = true;
+          else out.clarityBoost = false;
+
+          // Personality detection — specific domains first, generic last
+          if (/\b(faith|prayer|scripture|bible|spiritual|god|jesus|christian|devotion|psalm|sermon|worship)\b/.test(t)) out.personality = 'faith';
+          else if (/\b(tiktok|viral|reel|reels|shorts|youtube short|influencer|trending|go viral|social media)\b/.test(t)) out.personality = 'viral';
+          else if (/\b(luxury|premium|high[\s-]?end|exclusive|elegant|sophisticated|upscale)\b/.test(t)) out.personality = 'luxury';
+          else if (/\b(street|hustle|grind|real talk|no bs|no bullshit|raw|gritty)\b/.test(t)) out.personality = 'street';
+          else if (/\b(creative|artistic|poetic|imaginative|expressive|storytell)\b/.test(t)) out.personality = 'creative';
+          else if (/\b(bold|aggressive|dominate|crush|conquer|attack|push hard)\b/.test(t)) out.personality = 'bold';
+          else if (/\b(friend|casual|chat|chill|fun|relaxed|conversational)\b/.test(t)) out.personality = 'friendly';
+          else if (/\b(formal|corporate|stakeholder|board|investor|presentation|professional)\b/.test(t)) out.personality = 'professional';
+          else if (/\b(direct|straightforward|concise|no fluff|to the point|blunt)\b/.test(t)) out.personality = 'direct';
+          else out.personality = 'none';
 
           // AI tool recommendation
           if (/\b(research|fact|cite|source|current|latest|news|real-time|stat|statistic|study)\b/.test(t)) out.aiTool = 'perplexity';
@@ -6377,32 +6404,46 @@ Context:
           else { badge.hidden = true; badge.classList.remove('is-on'); }
         }
 
+        const SELECT_DEFAULTS = { category: 'other', tone: 'professional', outputFormat: 'step-by-step', maxLength: '', personality: 'none' };
+        const TOGGLE_DEFAULTS = { moneyMode: false, humanTone: false, clarityBoost: false };
+
         function applySuggestionsToFields(suggestions, force) {
-          if (!suggestions) return;
-          ['category', 'tone', 'outputFormat', 'maxLength'].forEach(function (field) {
-            const value = suggestions[field];
-            const el = document.getElementById(field);
-            if (!el || value === undefined) {
-              showSuggestedBadge(field, false);
-              return;
-            }
-            const isTouched = userTouched.has(field);
-            const shouldApply = force || (autoOptToggle.checked && !isTouched);
+          var selectFields = ['category', 'tone', 'outputFormat', 'maxLength', 'personality'];
+          selectFields.forEach(function (field) {
+            var value = suggestions ? suggestions[field] : undefined;
+            var el = document.getElementById(field);
+            if (!el) { showSuggestedBadge(field, false); return; }
+            var isTouched = userTouched.has(field);
+            var shouldApply = force || (autoOptToggle.checked && !isTouched);
             if (shouldApply) {
-              if (el.value !== value) {
-                el.value = value;
-                // For maxLength, hide custom input
+              var target = value !== undefined ? value : SELECT_DEFAULTS[field];
+              if (el.value !== target) {
+                el.value = target;
                 if (field === 'maxLength') {
-                  const custom = document.getElementById('maxLengthCustom');
+                  var custom = document.getElementById('maxLengthCustom');
                   if (custom) { custom.hidden = true; custom.value = ''; }
                 }
               }
-              showSuggestedBadge(field, true);
-            } else if (!isTouched) {
-              // Show badge as hint even when off (since we have a recommendation)
+              showSuggestedBadge(field, value !== undefined);
+            } else if (!isTouched && value !== undefined) {
               showSuggestedBadge(field, true);
             } else {
               showSuggestedBadge(field, false);
+            }
+          });
+
+          TRACKED_TOGGLES.forEach(function (id) {
+            var wanted = suggestions ? suggestions[id] : false;
+            var el = document.getElementById(id);
+            if (!el) return;
+            var isTouched = userTouched.has(id);
+            var shouldApply = force || (autoOptToggle.checked && !isTouched);
+            if (shouldApply) {
+              if (wanted === true || wanted === false) {
+                el.checked = wanted;
+              } else {
+                el.checked = TOGGLE_DEFAULTS[id];
+              }
             }
           });
         }
@@ -6438,6 +6479,7 @@ Context:
             currentSuggestions = null;
             ['category', 'tone', 'outputFormat', 'maxLength'].forEach(function (f) { showSuggestedBadge(f, false); });
             updateAIToolRecommendation(null);
+            applySuggestionsToFields(null, false);
             return;
           }
           currentSuggestions = analyzeGoal(goalText);
@@ -6461,7 +6503,7 @@ Context:
 
         // Expose for demo / template loaders to mark fields as touched (so suggestions don't override demo data)
         window.__pmgSmartSystems = {
-          markAllTouched: function () { TRACKED_FIELDS.forEach(function (f) { userTouched.add(f); }); },
+          markAllTouched: function () { TRACKED_FIELDS.forEach(function (f) { userTouched.add(f); }); TRACKED_TOGGLES.forEach(function (f) { userTouched.add(f); }); },
           clearTouched: function () { userTouched.clear(); },
           recompute: function (force) { recomputeSuggestions(!!force); }
         };
@@ -6812,11 +6854,6 @@ Context:
               reasonEl.className = 'toggle-suggestion-reason';
               reasonEl.textContent = s.reason;
               textWrap.appendChild(reasonEl);
-            }
-            // Auto-flip only when Auto Optimize is on AND not in Expert Mode AND not already on.
-            if (isAutoOptOn && !isExpert && !checkbox.checked) {
-              checkbox.checked = true;
-              try { checkbox.dispatchEvent(new Event('change', { bubbles: true })); } catch (e) {}
             }
           });
           if (suggestedAny) {
@@ -7245,7 +7282,7 @@ Context:
       }
       function applyTemplate(t) {
         document.getElementById('goal').value = t.data.goal || '';
-        document.getElementById('category').value = t.data.category || 'business';
+        document.getElementById('category').value = t.data.category || 'other';
         document.getElementById('skillLevel').value = t.data.skillLevel || 'beginner';
         document.getElementById('tone').value = t.data.tone || 'professional';
         document.getElementById('outputFormat').value = t.data.outputFormat || 'step-by-step';

@@ -36,7 +36,7 @@ This is a static HTML AI prompt builder (`index.html`) built with vanilla JavaSc
 
 ### Key Features and Technical Implementations
 -   **Prompt Builder:** Dynamic form with parameters and "Boost Toggles."
--   **Smart Systems:** Smart Suggestions, Auto Optimize, AI Tool Recommender, and Prompt Strength Score.
+-   **Smart Systems:** Smart Suggestions, Auto Optimize (manages category, tone, format, length, boost toggles, and personality based on goal keywords — resets to neutral defaults when no keywords match), AI Tool Recommender, and Prompt Strength Score.
 -   **Guided Mode:** Structured modal for prompt formulation.
 -   **Refinement and Quality Check:** Tools for prompt refinement, undo, and a "Quality Checker."
 -   **Prompt Sharing:** Encodes prompt parameters into a URL hash.
