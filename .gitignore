@@ -51,3 +51,5 @@ Thumbs.db
 # Playwright / E2E test artifacts
 test-results/
 playwright-report/
+artifacts/api-server/data/pmg_cost.json
+artifacts/api-server/data/pmg_stats.json
