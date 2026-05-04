@@ -1,0 +1,115 @@
+Fix only the remaining PromptMeGood live-audit blockers from the May 4 audit.
+
+Goal:
+Move PromptMeGood from ~8.7/10 to 9+/10 by tightening post-generation action visibility, image-loading feedback, and hidden-control accessibility.
+
+Do not redesign the site.
+Do not change pricing.
+Do not change SEO, privacy, or terms copy.
+Do not remove working features.
+Do not add new product sections.
+Keep the current desktop and mobile first-use flow intact.
+
+Issue 1: Generated Prompt Action Placement
+
+Problem:
+Fix My Prompt works, but after generation, long prompts push Copy Prompt, Run With AI Here, Refine It, and Power Moves far below the visible viewport.
+
+Fix:
+Inside the generated prompt/result card, keep these actions visible near the top:
+- Copy Prompt
+- Run With AI Here
+- Refine It / Improve With AI
+- Power Moves
+
+Recommended implementation:
+- Add a compact action row directly under the “Your Fixed Prompt” header, before the long prompt body.
+- Keep the existing lower action buttons if needed, but duplicate the primary actions near the top.
+- On mobile, cap the generated prompt preview height and add a clear “Show Full Prompt” toggle.
+- Do not make users scroll through the full generated prompt before seeing the next action.
+
+Acceptance:
+After clicking Fix My Prompt, desktop and mobile should show:
+- Your Fixed Prompt
+- beginning of generated prompt
+- Copy Prompt
+- Run With AI Here
+- Refine/Improve option
+
+Issue 2: Scroll Anchoring After Fix My Prompt
+
+Problem:
+After Fix My Prompt, the page can land inside the long prompt body instead of on a useful result-and-action view.
+
+Fix:
+When generation completes, scroll to the generated result card header/action row, not to the middle of the prompt body.
+
+Acceptance:
+After generation, the first viewport should make the next step obvious within 1 second:
+Copy Prompt or Run With AI Here must be visible without additional scrolling.
+
+Issue 3: Image Generation Loading State
+
+Problem:
+Generate Image Here fires /api/image and succeeds, but the visible loading state is still weak. The visible Generate Image Here button can remain enabled while generation is running, and the image frame can still show placeholder copy.
+
+Fix:
+When Generate Image Here is clicked:
+- Immediately disable the visible Generate Image Here button.
+- Change visible button text to “Generating Image…”
+- In the image frame, replace placeholder copy with:
+  “Generating Image”
+  “This can take a few moments.”
+- Prevent duplicate clicks while generation is in progress.
+- On success, restore final state: “Your Image Is Ready” plus Save Image To Your Device, Generate Another, Copy Prompt, Send To Midjourney, Use As Reference, Generate 4 Variations, and Write A Prompt About This.
+- On error, show a visible inline error explaining whether the issue is missing prompt, quota, auth, network, or API failure.
+
+Acceptance:
+Within 1 second after clicking Generate Image Here:
+- visible button is disabled
+- visible button says “Generating Image…”
+- image frame says “Generating Image” and “This can take a few moments”
+- a second click cannot fire another /api/image request
+
+Issue 4: Hidden Focusable Controls
+
+Problem:
+The live audit still found hundreds of zero-size or hidden focusable controls on desktop and mobile. Examples include hidden nav, hidden search, hidden mode switch buttons, image wizard controls, hidden photography pills, hidden inputs, closed modal/tour controls, and hidden drawer controls.
+
+Fix:
+Any inactive, closed, hidden, or zero-size UI must be removed from keyboard navigation and screen-reader access.
+
+Apply one of these patterns consistently:
+- conditional render only when active
+- `hidden`
+- `inert`
+- `aria-hidden="true"` plus `tabindex="-1"` on focusable children
+- `display: none`
+- disabled state for inactive buttons/inputs
+- remove `href` or set `tabindex="-1"` for inactive hidden links
+
+Specific areas to inspect:
+- mobile nav when closed
+- global search when closed
+- image prompt wizard steps when closed
+- collapsed Photography Suite option groups
+- hidden “Tap To Edit” links
+- hidden photo pills
+- hidden mode switch buttons
+- tour/modal controls when closed
+- old demoted buttons with zero width/height
+
+Acceptance:
+Run this scan after the fix and get near zero results:
+
+```js
+[...document.querySelectorAll('a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"]), [role="button"], [contenteditable="true"]')]
+  .filter(el => !el.disabled && el.getAttribute('aria-disabled') !== 'true' && el.getAttribute('tabindex') !== '-1')
+  .filter(el => {
+    const r = el.getBoundingClientRect();
+    const cs = getComputedStyle(el);
+    return (r.width === 0 || r.height === 0 || cs.display === 'none' || cs.visibility === 'hidden' || el.offsetParent === null)
+      && !el.closest('[hidden]')
+      && !el.closest('[inert]');
+  })
+  .length

@@ -2997,6 +2997,11 @@
     .result-box-toggle { display: none; margin: 6px 0 0; padding: 6px 14px; font-size: 13px; font-weight: 600; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-primary); cursor: pointer; }
     .result-box-toggle:hover { background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)); }
     .result-box-toggle.is-visible { display: inline-flex; }
+    .result-top-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .result-top-btn { flex: 1 1 auto; min-height: 42px; font-size: 14px; font-weight: 700; padding: 8px 14px; border-radius: var(--radius-md); }
+    .result-top-btn#result-top-run { background: var(--color-primary); color: #fff; border: 1.5px solid var(--color-primary); }
+    .result-top-btn#result-top-copy { background: var(--color-surface); color: var(--color-primary); border: 1.5px solid var(--color-primary); }
+    @media (max-width: 760px) { .result-top-actions { flex-direction: column; } .result-top-btn { width: 100%; } }
     .ai-response-output.is-clamped { max-height: 320px; overflow: hidden; position: relative; }
     .ai-response-output.is-clamped::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 48px; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--color-primary) 4%, var(--color-surface))); pointer-events: none; }
     .ai-response-toggle { display: none; margin: 6px 0 0; padding: 6px 14px; font-size: 13px; font-weight: 600; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-primary); cursor: pointer; }
@@ -3885,6 +3890,11 @@
             <p>Run With AI right here, or copy it to use anywhere.</p>
             <p class="demo-next-step" id="demo-next-step" role="status" aria-live="polite" hidden>This is a sample prompt. Copy it, refine it, or go back and enter your own goal.</p>
           </div>
+          <div class="result-top-actions pmg-post-gen" id="result-top-actions">
+            <button type="button" class="btn btn-primary result-top-btn" id="result-top-copy">Copy Prompt</button>
+            <button type="button" class="btn btn-primary result-top-btn" id="result-top-run">▶ Run With AI</button>
+            <button type="button" class="btn btn-secondary result-top-btn" id="result-top-refine">Refine It</button>
+          </div>
           <div class="result-wrap">
             <div class="pill-row" aria-hidden="true">
               <span class="pill">Role Assignment</span>
@@ -4654,6 +4664,7 @@
         navPanel.classList.toggle('is-open', open);
         navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
         navToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        navPanel.inert = !open;
       }
       if (navToggle && navPanel) {
         navToggle.addEventListener('click', function (e) {
@@ -7647,6 +7658,243 @@ Context:
         });
       })();
 
+      // --- Result top actions wiring ---
+      (function wireResultTopActions() {
+        var topCopy = document.getElementById('result-top-copy');
+        var topRun = document.getElementById('result-top-run');
+        var topRefine = document.getElementById('result-top-refine');
+        if (topCopy) topCopy.addEventListener('click', function () {
+          var cb = document.getElementById('copy-btn');
+          if (cb) cb.click();
+        });
+        if (topRun) topRun.addEventListener('click', function () {
+          var rb = document.getElementById('runBtn') || document.getElementById('pmg-run-here');
+          if (rb) rb.click();
+        });
+        if (topRefine) topRefine.addEventListener('click', function () {
+          var ib = document.getElementById('improve-with-ai-btn');
+          if (ib) { ib.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'center' }); ib.click(); }
+        });
+      })();
+
+      // --- Broad inert for hidden containers (Issue 4) ---
+      // Runs immediately + deferred (dynamic content from pmg-ux.js) + on body class changes.
+      (function broadInert() {
+        var _timer = 0;
+        function syncAll() {
+          var isImageMode = document.body.classList.contains('image-mode');
+          var isPreGen = document.body.classList.contains('pmg-pre-gen');
+          var isMobile = window.matchMedia('(max-width: 760px)').matches;
+
+          // Mobile nav
+          var topActions = document.getElementById('top-actions');
+          if (topActions) topActions.inert = isMobile && !topActions.classList.contains('is-open');
+
+          // Photo accordion (dynamic from pmg-ux.js)
+          var acc = document.getElementById('pmg-photo-accordion');
+          if (acc) acc.inert = !isImageMode;
+
+          // Photo suite (dynamic)
+          var suite = document.getElementById('pmg-photo-suite') || document.getElementById('photo-suite-section');
+          if (suite) suite.inert = !isImageMode;
+
+          // Photo assistant (dynamic)
+          var asst = document.getElementById('pmg-photo-assistant');
+          if (asst) asst.inert = !isImageMode;
+
+          // Photographer wizard collapsed card bodies
+          document.querySelectorAll('.pmg-photo-card').forEach(function (card) {
+            var body = card.querySelector('.pmg-photo-body');
+            if (body) body.inert = card.classList.contains('pmg-photo-collapsed');
+          });
+
+          // Post-gen elements: inert before first generation
+          document.querySelectorAll('.pmg-post-gen').forEach(function (el) { el.inert = isPreGen; });
+
+          // Result panel post-gen wrappers not tagged .pmg-post-gen
+          ['result-wrap', 'actions-row', 'pmg-result-actions-row'].forEach(function (cls) {
+            document.querySelectorAll('#result-panel .' + cls).forEach(function (el) {
+              if (!el.classList.contains('pmg-post-gen')) el.inert = isPreGen;
+            });
+          });
+          var fineRow = document.getElementById('tour-step-finalize');
+          if (fineRow) fineRow.inert = isPreGen;
+          var qualRow = document.getElementById('quality-row');
+          if (qualRow) qualRow.inert = isPreGen;
+
+          // Dialogs: inert when closed
+          ['expert-warning-dialog', 'guided-mode-dialog', 'privacy-dialog', 'terms-dialog'].forEach(function (id) {
+            var d = document.getElementById(id);
+            if (d) d.inert = !d.open;
+          });
+
+          // Compare banner: inert when not active
+          var cb = document.getElementById('compare-banner');
+          if (cb) cb.inert = !cb.classList.contains('is-active');
+
+          // Shortcuts panel: inert when hidden
+          var sp = document.getElementById('pmg-shortcuts-panel');
+          if (sp) {
+            var spR = sp.getBoundingClientRect();
+            sp.inert = (spR.width === 0 || spR.height === 0 || getComputedStyle(sp).display === 'none');
+          }
+
+          // mmpro panel: inert when locked
+          document.querySelectorAll('.pmg-mmpro-panel').forEach(function (p) {
+            var locked = p.querySelector('.pmg-mmpro-locked-overlay');
+            if (locked) p.inert = true;
+          });
+
+          // Hidden file inputs (display:none, triggered by buttons)
+          document.querySelectorAll('input[type="file"]').forEach(function (inp) {
+            var cs = getComputedStyle(inp);
+            if (cs.display === 'none' || inp.offsetParent === null) inp.setAttribute('tabindex', '-1');
+          });
+
+          // Native selects behind pill UI
+          document.querySelectorAll('#settingsPanel select.pmg-tune-native').forEach(function (sel) {
+            sel.setAttribute('tabindex', '-1');
+          });
+
+          // Toggle switch hidden inputs (opacity:0, width:0, height:0 behind custom slider)
+          document.querySelectorAll('.switch input, .expert-mode-toggle input').forEach(function (inp) {
+            var r = inp.getBoundingClientRect();
+            if (r.width === 0 || r.height === 0) inp.setAttribute('tabindex', '-1');
+          });
+
+          // Mobile-only close button: tabindex=-1 on desktop
+          if (!isMobile) {
+            var mobileX = document.querySelector('.pmg-mobile-nav-x');
+            if (mobileX) mobileX.setAttribute('tabindex', '-1');
+          }
+
+          // Reversible tabindex helper: sets -1 when hidden, restores 0 when visible
+          function setTabReversible(el, hidden) {
+            if (!el) return;
+            if (hidden) { el.setAttribute('tabindex', '-1'); }
+            else { el.removeAttribute('tabindex'); }
+          }
+
+          // Nav search toggle & hamburger: tabindex=-1 on desktop when zero-size
+          ['pmg-nav-search-toggle', 'nav-toggle'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) { var r = el.getBoundingClientRect(); setTabReversible(el, !isMobile && (r.width === 0 || r.height === 0)); }
+          });
+
+          // Mobile close button
+          var mobileX2 = document.querySelector('.pmg-mobile-nav-x');
+          if (mobileX2) setTabReversible(mobileX2, !isMobile);
+
+          // Pro lock icon span: remove from tab order
+          document.querySelectorAll('.pmg-pro-lock-icon').forEach(function (el) { el.setAttribute('tabindex', '-1'); });
+
+          // Replay tour button: reversible
+          var rtb = document.getElementById('replay-tour-btn-builder');
+          if (rtb) { var rtbR = rtb.getBoundingClientRect(); setTabReversible(rtb, rtbR.width === 0 || rtbR.height === 0); }
+
+          // Image-mode-only controls: reversible
+          document.querySelectorAll('.pmg-photo-edit-link').forEach(function (el) { setTabReversible(el, !isImageMode); });
+
+          // Tip block dismiss and expert-mode-link: reversible
+          document.querySelectorAll('.tip-block-dismiss, .expert-mode-link').forEach(function (el) {
+            var r = el.getBoundingClientRect();
+            setTabReversible(el, r.width === 0 || r.height === 0 || getComputedStyle(el).display === 'none');
+          });
+
+          // Marketing insight toggle: reversible based on visibility
+          var mkt = document.querySelector('.pmg-mkt-toggle-btn');
+          if (mkt) { var mktR = mkt.getBoundingClientRect(); setTabReversible(mkt, mktR.width === 0 || mktR.height === 0); }
+
+          // Settings panel tune pills on mobile: inert when settings is collapsed
+          if (isMobile) {
+            var sp2 = document.getElementById('settingsPanel');
+            if (sp2 && !sp2.open) sp2.inert = true; else if (sp2) sp2.inert = false;
+          }
+
+          // Mobile collapsed upload field
+          var upField = document.querySelector('.upload-field.pmg-t98-collapsed');
+          if (upField) upField.inert = true;
+
+          // Send-to menu popup: inert when hidden
+          var stm = document.getElementById('pmg-send-to-menu-pop');
+          if (stm) stm.inert = getComputedStyle(stm).display === 'none';
+
+          // Global search: inert when not expanded
+          var gs = document.querySelector('.global-search');
+          if (gs) gs.inert = !gs.classList.contains('pmg-expanded');
+
+          // Mode switch: inert when zero-size
+          var ms = document.getElementById('modeSwitch');
+          if (ms) { var r = ms.getBoundingClientRect(); ms.inert = (r.width === 0 || r.height === 0); }
+
+          // Collapsed advanced-options <details>
+          var advOpts = document.getElementById('advanced-options');
+          if (advOpts) {
+            advOpts.querySelectorAll('input, select, button').forEach(function (el) {
+              el.setAttribute('tabindex', advOpts.open ? '0' : '-1');
+            });
+          }
+
+          // Post-upload guidance: inert when hidden
+          var pug = document.getElementById('post-uc-guidance');
+          if (pug && getComputedStyle(pug).display === 'none') pug.inert = true;
+
+          // Pinned note: inert when hidden
+          var pn = document.getElementById('pinned-note');
+          if (pn) { var pnR = pn.getBoundingClientRect(); if (pnR.width === 0 || pnR.height === 0) pn.inert = true; }
+
+          // Quick-start card: children inert when closed
+          var qsc = document.getElementById('quick-start-card');
+          if (qsc && !qsc.open) {
+            qsc.querySelectorAll('input, button, a, select, textarea').forEach(function (el) {
+              if (el.tagName !== 'SUMMARY' && !el.closest('summary')) el.setAttribute('tabindex', '-1');
+            });
+          }
+
+          // Collapse row / workstation promo: inert when hidden
+          document.querySelectorAll('.pmg-collapse-row, .pmg-workstation-promote').forEach(function (el) {
+            var elR = el.getBoundingClientRect();
+            if (elR.width === 0 || elR.height === 0 || getComputedStyle(el).display === 'none') el.inert = true;
+          });
+
+          // Image-mode-only button
+          var bib = document.getElementById('pmg-build-image-btn');
+          if (bib) bib.inert = !isImageMode;
+
+          // Hero actions: these are legitimately visible, skip them
+        }
+
+        function debouncedSync() {
+          clearTimeout(_timer);
+          _timer = setTimeout(syncAll, 50);
+        }
+
+        // Initial run + deferred for dynamic content
+        syncAll();
+        setTimeout(syncAll, 1500);
+        setTimeout(syncAll, 3500);
+
+        // Re-run on body class changes and resize
+        window.addEventListener('resize', debouncedSync);
+        if ('MutationObserver' in window) {
+          new MutationObserver(debouncedSync).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'hidden', 'open', 'style'] });
+        }
+
+        // Advanced-options toggle listener
+        var advOpts = document.getElementById('advanced-options');
+        if (advOpts) advOpts.addEventListener('toggle', syncAll);
+
+        // Dialog open/close observers
+        ['expert-warning-dialog', 'guided-mode-dialog', 'privacy-dialog', 'terms-dialog'].forEach(function (id) {
+          var d = document.getElementById(id);
+          if (d && 'MutationObserver' in window) {
+            new MutationObserver(function () { d.inert = !d.open; }).observe(d, { attributes: true, attributeFilter: ['open'] });
+          }
+        });
+
+        window.__pmgSyncInert = syncAll;
+      })();
+
       form.addEventListener('submit', function (event) {
         event.preventDefault();
         // NOTE: getFormData() must stay called SYNCHRONOUSLY here, before any
@@ -10625,24 +10873,36 @@ Context:
     if(title)title.textContent=isImg?'Create An Image':'Build Your Prompt';
     if(!isImg){var sec=document.getElementById('imageResultSection');if(sec)sec.hidden=true;}
   };
+  var _imgRunning=false;
   window.runImageGeneration=async function(){
+    if(_imgRunning)return;
     var goal=document.getElementById('goal');
     var desc=((goal&&goal.value)||'').trim();
-    if(!desc){alert('Describe the image you want first, then click Generate Image.');return}
+    var hint=document.getElementById('image-gen-hint');
+    if(!desc){if(hint){hint.textContent='Add An Image Idea First';hint.hidden=false;}return}
+    _imgRunning=true;
     var sec=document.getElementById('imageResultSection'),wrap=document.getElementById('imageResultWrap'),dl=document.getElementById('imageDownloadBtn'),btn=document.getElementById('image-generate-btn');
+    if(hint)hint.hidden=true;
     if(sec)sec.hidden=false;
-    if(wrap)wrap.innerHTML='<div style="text-align:center;padding:2rem"><div class="image-spinner"></div><p style="color:var(--color-text-muted);font-size:.9rem">Creating with DALL·E 3…<br><small>About 10 seconds</small></p></div>';
+    if(wrap)wrap.innerHTML='<div style="text-align:center;padding:2rem"><div class="image-spinner"></div><p style="font-weight:700;font-size:1rem;margin:12px 0 4px">Generating Image</p><p style="color:var(--color-text-muted);font-size:.85rem">This can take a few moments.</p></div>';
     if(dl)dl.style.display='none';
-    if(btn){btn.disabled=true;btn.innerHTML='⏳ Generating…'}
+    if(btn){btn.disabled=true;btn.textContent='Generating Image\u2026'}
     setTimeout(function(){if(sec)sec.scrollIntoView({behavior:window.PMG_A11Y.scrollBehavior(),block:'center'})},150);
     try{
       var res=await fetch('/api/image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:desc,size:window.__pmgAspectRatio||'1024x1024'})});
       var data=await res.json();
-      if(!res.ok||!data.url){if(wrap)wrap.innerHTML='<div style="padding:2rem;text-align:center;color:var(--color-text-muted)">⚠️ '+(data.error||'Failed. Try again.')+'</div>';return}
+      if(!res.ok||!data.url){
+        var errMsg='Failed. Try again.';
+        if(res.status===429)errMsg='Image Limit Reached Today';
+        else if(res.status>=500)errMsg='Image Generation Is Temporarily Unavailable';
+        else if(data.error)errMsg=data.error;
+        if(wrap)wrap.innerHTML='<div style="padding:2rem;text-align:center;color:var(--color-text-muted)">\u26A0\uFE0F '+errMsg+'</div>';
+        return;
+      }
       if(wrap){wrap.innerHTML='';var img=document.createElement('img');img.src=data.url;img.alt='AI generated image';img.onload=function(){if(sec)sec.scrollIntoView({behavior:window.PMG_A11Y.scrollBehavior(),block:'center'})};wrap.appendChild(img)}
       if(dl){dl.href=data.url;dl.style.display='inline-flex'}
-    }catch(e){if(wrap)wrap.innerHTML='<div style="padding:2rem;text-align:center;color:var(--color-text-muted)">⚠️ Network error. Try again.</div>'}
-    finally{if(btn){btn.disabled=false;btn.innerHTML='🎨 Generate Image'}}
+    }catch(e){if(wrap)wrap.innerHTML='<div style="padding:2rem;text-align:center;color:var(--color-text-muted)">\u26A0\uFE0F Network error. Check your connection and try again.</div>'}
+    finally{_imgRunning=false;if(btn){btn.disabled=false;btn.textContent='\uD83C\uDFA8 Generate Image'}}
   };
   window.generateImage=window.runImageGeneration;
 })();
