@@ -29,6 +29,7 @@ async function gotoApp(page: Page): Promise<void> {
   await page.addInitScript(() => {
     try {
       localStorage.setItem("promptmegood:tour:v1:done", "1");
+      sessionStorage.setItem("promptmegood:t42-banner-dismissed", "1");
       localStorage.removeItem("pmg.photo.recentPresets");
       localStorage.removeItem("pmg.surprise.dial.v1");
       localStorage.removeItem("pmg_whatnext_disable");

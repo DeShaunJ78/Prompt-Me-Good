@@ -70,6 +70,7 @@ async function seedVault(page: Page, opts: { sort?: string } = {}) {
         localStorage.setItem(key, JSON.stringify(payload));
         if (sort) localStorage.setItem(sortKey, sort);
         localStorage.setItem("promptmegood:tour:v1:done", "1");
+        sessionStorage.setItem("promptmegood:t42-banner-dismissed", "1");
       } catch {
         /* private mode: tests in such a context will surface a
            different failure; nothing actionable here. */
@@ -253,6 +254,7 @@ test.describe("Smart Vault @ mobile-360", () => {
         }));
         localStorage.setItem(key, JSON.stringify(six));
         localStorage.setItem("promptmegood:tour:v1:done", "1");
+        sessionStorage.setItem("promptmegood:t42-banner-dismissed", "1");
       },
       { key: HISTORY_KEY },
     );

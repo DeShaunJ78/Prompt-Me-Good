@@ -35,6 +35,9 @@ type SuiteHandoff = {
 
 test.describe("Photography Suite handoff @ mobile-360", () => {
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      sessionStorage.setItem("promptmegood:t42-banner-dismissed", "1");
+    });
     await page.goto(BASE_URL + "/", { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () =>

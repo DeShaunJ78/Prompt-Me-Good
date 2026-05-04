@@ -1631,13 +1631,7 @@
       line-height: 1.2;
     }
     .post-prompt-footer-shortcuts { margin: 0; }
-    .post-prompt-footer-pricing { margin: 0; display: inline-flex; align-items: center; gap: 6px; }
-    .post-prompt-footer-pricing::before {
-      content: "";
-      width: 6px; height: 6px; border-radius: 999px;
-      background: var(--color-primary);
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 25%, transparent);
-    }
+    .post-prompt-footer-pricing { margin: 6px 0 0; font-size: var(--text-xs, 12px); line-height: 1.55; }
     @media (max-width: 600px) {
       .post-prompt-footer { flex-direction: column; align-items: flex-start; }
     }

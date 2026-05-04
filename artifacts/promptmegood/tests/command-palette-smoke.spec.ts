@@ -4,6 +4,9 @@ const BASE_URL = process.env.PMG_BASE_URL ?? "http://localhost:80";
 
 test.describe("Command palette (⌘K) smoke @ mobile-360", () => {
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      sessionStorage.setItem("promptmegood:t42-banner-dismissed", "1");
+    });
     await page.goto(BASE_URL + "/", { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => !!(window as unknown as { __pmgCommandPalette?: unknown }).__pmgCommandPalette,

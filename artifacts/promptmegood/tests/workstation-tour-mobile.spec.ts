@@ -11,6 +11,7 @@ async function gotoApp(page: Page) {
   await page.setViewportSize({ width: MOBILE_W, height: MOBILE_H });
   await page.addInitScript(() => {
     localStorage.setItem("promptmegood:tour:v1:done", "1");
+    sessionStorage.setItem("promptmegood:t42-banner-dismissed", "1");
     localStorage.removeItem("pmg.workstationTourSeen");
   });
   await page.goto(BASE_URL + "/");

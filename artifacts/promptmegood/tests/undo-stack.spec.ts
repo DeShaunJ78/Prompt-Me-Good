@@ -24,6 +24,7 @@ async function gotoApp(page: Page) {
   await page.addInitScript(() => {
     try {
       localStorage.setItem("promptmegood:tour:v1:done", "1");
+      sessionStorage.setItem("promptmegood:t42-banner-dismissed", "1");
     } catch {
       /* ignore */
     }
