@@ -320,15 +320,19 @@ test.describe("Photography Suite handoff @ mobile-360", () => {
 
     /* Even when the user opted out of using hydration as the
        subject, the refinement cycle is still considered consumed
-       once a new image arrives — the chip should clear. */
+       once a new image arrives — the chip should clear.
+       Note: after Send, pmg-image-fix.js replaces the wrap contents
+       with an empty placeholder, so we must INSERT a new <img>
+       (simulating generation completing) rather than modifying an
+       existing one that was already removed. */
     await page.evaluate(() => {
       const wrap = document.getElementById("imageResultWrap");
-      const img = wrap?.querySelector("img") as HTMLImageElement | null;
-      if (img) {
-        img.setAttribute(
-          "src",
-          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
-        );
+      if (wrap) {
+        wrap.innerHTML = "";
+        const img = document.createElement("img");
+        img.src =
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==";
+        wrap.appendChild(img);
       }
     });
     await expect(page.locator("#pmg-suite-hydration-ref")).toHaveCount(0, {
@@ -364,15 +368,18 @@ test.describe("Photography Suite handoff @ mobile-360", () => {
       .click();
     await page.locator("#pmg-photo-suite .pmg-photo-send").click();
 
-    /* Simulate a new image arriving (different src). */
+    /* Simulate a new image arriving (different src).
+       After Send, pmg-image-fix.js replaces the wrap contents with
+       an empty placeholder, so we must INSERT a new <img> (simulating
+       generation completing) rather than modifying a now-removed one. */
     await page.evaluate(() => {
       const wrap = document.getElementById("imageResultWrap");
-      const img = wrap?.querySelector("img") as HTMLImageElement | null;
-      if (img) {
-        img.setAttribute(
-          "src",
-          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
-        );
+      if (wrap) {
+        wrap.innerHTML = "";
+        const img = document.createElement("img");
+        img.src =
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==";
+        wrap.appendChild(img);
       }
     });
 

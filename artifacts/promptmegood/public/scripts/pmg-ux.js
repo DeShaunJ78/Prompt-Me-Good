@@ -16344,6 +16344,29 @@
     }
   }
 
+  function patchNudgeRelocation() {
+    if (typeof MutationObserver !== 'function') return;
+    if (window.innerWidth > 480) return;
+    var settings = document.getElementById('settingsPanel');
+    if (!settings) return;
+    function relocate() {
+      var nudge = document.getElementById('pmg-image-mode-nudge');
+      if (!nudge) return;
+      if (!settings.contains(nudge)) return;
+      var form = document.getElementById('prompt-form');
+      var actionsRow = form && form.querySelector('.actions-row');
+      if (actionsRow && actionsRow.parentNode) {
+        actionsRow.parentNode.insertBefore(nudge, actionsRow.nextSibling);
+        nudge.style.order = '3';
+      }
+    }
+    try {
+      var mo = new MutationObserver(function () { relocate(); });
+      mo.observe(settings, { childList: true, subtree: true });
+    } catch (e) { /* noop */ }
+    relocate();
+  }
+
   function patchHistoryGuard() {
     var HKEY = 'promptmegood:history:v1';
     try {
@@ -16366,6 +16389,7 @@
       patchRunWithAI();
       buildCommandCenter();
       buildProofBlock();
+      patchNudgeRelocation();
     } catch (e) { /* noop */ }
   }
 
