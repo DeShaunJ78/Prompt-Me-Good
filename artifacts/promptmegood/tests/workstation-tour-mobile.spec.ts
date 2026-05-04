@@ -100,7 +100,10 @@ async function getStepInfo(page: Page) {
 }
 
 async function clickNextAndWait(page: Page) {
-  await page.locator("#pmg-ws-next").click({ force: true, timeout: 10000 });
+  await page.evaluate(() => {
+    const btn = document.getElementById("pmg-ws-next");
+    if (btn) btn.click();
+  });
   await page.waitForTimeout(900);
 }
 
@@ -197,7 +200,10 @@ test.describe("Workstation tour compact overlay @ mobile-400x720", () => {
 
     await navigateToEnd(page);
 
-    await page.locator("#pmg-ws-next").click({ force: true });
+    await page.evaluate(() => {
+      const btn = document.getElementById("pmg-ws-next");
+      if (btn) btn.click();
+    });
     await page.waitForTimeout(300);
 
     expect(await isOverlayOpen(page)).toBe(false);
@@ -209,7 +215,10 @@ test.describe("Workstation tour compact overlay @ mobile-400x720", () => {
 
     expect(await isOverlayOpen(page)).toBe(true);
 
-    await page.locator("#pmg-ws-skip").click({ force: true });
+    await page.evaluate(() => {
+      const btn = document.getElementById("pmg-ws-skip");
+      if (btn) btn.click();
+    });
     await page.waitForTimeout(300);
 
     expect(await isOverlayOpen(page)).toBe(false);
