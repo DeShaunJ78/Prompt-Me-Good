@@ -30,7 +30,7 @@ This is a static HTML AI prompt builder (`index.html`) built with vanilla JavaSc
 -   **Responsive Design:** Optimized for mobile and desktop.
 -   **Form Layout:** Dedicated areas for prompt generation and an always-visible Prompt Tuning section.
 -   **Prompt Tuning Section:** Persistent `<section id="settingsPanel">` for controlling various prompt parameters.
--   **User Guidance:** Includes onboarding flows, modals, toasts, and "Expert Mode." Adaptive Goal Box (T102) detects returning power users (3+ prompts) and adapts the UX: shorter placeholder, compact helper text, compressed guided wizard, "Pick up where you left off" resume chip from latest vault entry, and hidden "(Recommended)" tag on Auto Optimize.
+-   **User Guidance:** Includes onboarding flows, modals, toasts, and "Expert Mode." Adaptive Goal Box (T102) detects returning power users (3+ prompts) and adapts the UX. T103 UX Overhaul adds: P1 mobile first-use compression (textarea + Fix My Prompt above fold on 390x844), P2 mobile result hierarchy (tighter spacing), P3 image generation loading state ("Generating Image" / "Your Image Is Ready"), P4 post-response conversion nudge (session-dismissible, links to Founding Waitlist), P5 returning user Command Center (Welcome Back with Continue Last Prompt, Start New, Open Workspace + 6 secondary workflow links), P6 before/after proof block (collapsed "See Example" on mobile, expanded on desktop).
 -   **Canonical Domain & SEO:** `https://www.promptmegood.com` with comprehensive meta-tags.
 -   **Accessibility:** Fully opaque topbar, clear visual cues, and universal close affordances.
 

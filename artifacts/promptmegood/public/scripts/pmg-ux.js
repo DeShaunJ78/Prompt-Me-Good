@@ -15890,3 +15890,490 @@
   setTimeout(init, 600);
   setTimeout(init, 1500);
 })();
+
+/* ====================================================================
+ * T103 — UX & Conversion Overhaul (6 priorities)
+ *
+ * P1: Mobile First-Use Compression
+ * P2: Mobile Result Hierarchy
+ * P3: Image Generation Loading State
+ * P4: Post-Response Conversion Nudge
+ * P5: Returning User Command Center
+ * P6: Before/After Proof Block
+ * ==================================================================== */
+(function __pmgT103UXOverhaul() {
+  'use strict';
+  if (window.__pmgT103Init) return;
+  window.__pmgT103Init = true;
+
+  var STYLE_ID = 'pmg-t103-styles';
+  var HISTORY_KEY = 'promptmegood:history:v1';
+  var NUDGE_DISMISSED_KEY = 'pmg_nudge_dismissed_session';
+  var COMMAND_CENTER_ID = 'pmg-command-center';
+  var PROOF_BLOCK_ID = 'pmg-proof-block';
+  var NUDGE_ID = 'pmg-conversion-nudge';
+
+  function scrollBehavior() {
+    try { return window.PMG_A11Y.scrollBehavior(); } catch (e) { return 'smooth'; }
+  }
+
+  function getPromptCount() {
+    if (typeof window.__pmgGetPromptCount === 'function') return window.__pmgGetPromptCount();
+    try { return parseInt(localStorage.getItem('pmg_prompt_count') || '0', 10) || 0; } catch (e) { return 0; }
+  }
+
+  function isReturningUser() {
+    return getPromptCount() >= 1;
+  }
+
+  function getLatestVaultItem() {
+    try {
+      var raw = localStorage.getItem(HISTORY_KEY);
+      if (!raw) return null;
+      var items = JSON.parse(raw);
+      if (!Array.isArray(items) || items.length === 0) return null;
+      var sorted = items.filter(function (i) { return !i.archived && i.data && i.data.goal; });
+      if (sorted.length === 0) return null;
+      sorted.sort(function (a, b) { return (b.savedAt || 0) - (a.savedAt || 0); });
+      return sorted[0];
+    } catch (e) { return null; }
+  }
+
+  function truncate(str, max) {
+    if (!str) return '';
+    str = str.trim();
+    if (str.length <= max) return str;
+    return str.substring(0, max - 1) + '\u2026';
+  }
+
+  function escapeHtml(str) {
+    var d = document.createElement('div');
+    d.textContent = str || '';
+    return d.innerHTML;
+  }
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = [
+
+      '/* P1: Mobile First-Use Compression */',
+      '@media (max-width: 480px) {',
+      '  .hero { padding-top: clamp(1rem, 3vw, 2rem) !important; padding-bottom: clamp(0.5rem, 2vw, 1rem) !important; }',
+      '  .hero-heading { font-size: clamp(1.4rem, 6vw, 1.9rem) !important; margin-bottom: 8px !important; margin-top: 4px !important; }',
+      '  .hero-subtext-box { padding: 10px 12px !important; margin-bottom: 8px !important; }',
+      '  .hero-subtext { font-size: 13px !important; line-height: 1.4 !important; }',
+      '  #builder { padding-top: 0 !important; }',
+      '  .workspace-header { margin-bottom: 8px !important; padding-bottom: 6px !important; }',
+      '  .workspace-header-sub { display: none !important; }',
+      '  .mode-switch { margin-bottom: 10px !important; }',
+      '  .panel-head.panel-head-row { display: none !important; }',
+      '  #guided-cta-row { padding: 8px 10px !important; margin-bottom: 8px !important; }',
+      '  #guided-cta-row .guided-cta-text span { display: none !important; }',
+      '  #guided-cta-row .guided-cta-text strong { font-size: 13px !important; }',
+      '  .guided-cta-recommended-badge { display: none !important; }',
+      '  #prompt-form { gap: 10px !important; }',
+      '  .field-primary .helper { font-size: 11px !important; }',
+      '  .field-primary .helper .helper-example { display: none !important; }',
+      '  #auto-optimize-row { padding: 6px 10px !important; margin-bottom: 0 !important; }',
+      '  #auto-optimize-row .auto-opt-text span { display: none !important; }',
+      '  #auto-optimize-row .auto-opt-text strong { font-size: 13px !important; }',
+      '  .field-primary textarea#goal { min-height: 72px !important; padding: 10px 12px !important; }',
+      '  .actions-row { padding-top: 0 !important; }',
+      '  .actions-row .btn { min-height: 44px !important; padding: 10px 16px !important; }',
+      '  .panel { padding: 12px !important; }',
+      '  .form-wrap { padding: 12px !important; }',
+      '  #prompt-form .actions-row, #prompt-form #tour-step-generate { order: 2 !important; }',
+      '  #prompt-form #settingsPanel { order: 8 !important; display: none !important; }',
+      '  #prompt-form #upload-field { order: 7 !important; display: none !important; }',
+      '  #prompt-form #pmg-help-me-start-btn { order: 3 !important; padding: 8px 14px !important; min-height: 40px !important; font-size: 13px !important; }',
+      '  #prompt-form .pmg-t100-top-cta-row, #prompt-form #generateBtnTop { display: none !important; }',
+      '}',
+
+      '/* P2: Mobile Result Hierarchy */',
+      '@media (max-width: 480px) {',
+      '  .run-section { margin-top: 12px !important; }',
+      '  .run-section-title { font-size: 15px !important; margin-bottom: 4px !important; }',
+      '  .run-section-helper { font-size: 12px !important; margin-bottom: 8px !important; }',
+      '  #runBtn { min-height: 48px !important; font-size: 16px !important; font-weight: 700 !important; }',
+      '  .ai-response-section { margin-top: 12px !important; }',
+      '  .ai-response-actions { gap: 6px !important; margin-top: 8px !important; }',
+      '  .ai-response-actions .btn { min-height: 40px !important; font-size: 13px !important; }',
+      '  #pmg-power-moves { margin-top: 12px !important; padding: 10px !important; }',
+      '  #pmg-power-moves .pmg-pm-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; }',
+      '  #pmg-power-moves .pmg-pm-chip { padding: 8px 10px !important; font-size: 12px !important; min-height: 36px !important; }',
+      '  .image-result-section { margin-top: 12px !important; }',
+      '  .image-result-actions { gap: 6px !important; }',
+      '  .image-result-actions .btn { font-size: 13px !important; min-height: 40px !important; }',
+      '}',
+
+      '/* P5: Command Center */',
+      '#pmg-command-center {',
+      '  margin: 0 0 16px; padding: 16px 18px;',
+      '  background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)), color-mix(in srgb, var(--color-primary) 3%, var(--color-surface)));',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 25%, transparent);',
+      '  border-radius: var(--radius-lg, 12px);',
+      '}',
+      '#pmg-command-center .pmg-cc-title { font-size: 18px; font-weight: 700; margin: 0 0 4px; color: var(--color-text); }',
+      '#pmg-command-center .pmg-cc-sub { font-size: 13px; color: var(--color-text-muted); margin: 0 0 14px; }',
+      '#pmg-command-center .pmg-cc-primary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }',
+      '#pmg-command-center .pmg-cc-btn { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent); border-radius: var(--radius-md, 8px); background: var(--color-surface); cursor: pointer; font-size: 13px; font-weight: 600; color: var(--color-text); transition: background .15s, border-color .15s; text-align: center; line-height: 1.3; }',
+      '#pmg-command-center .pmg-cc-btn:hover { background: color-mix(in srgb, var(--color-primary) 10%, transparent); border-color: color-mix(in srgb, var(--color-primary) 50%, transparent); }',
+      '#pmg-command-center .pmg-cc-btn-primary { background: var(--color-primary); color: #fff; border-color: var(--color-primary); font-weight: 700; }',
+      '#pmg-command-center .pmg-cc-btn-primary:hover { background: color-mix(in srgb, var(--color-primary) 85%, #000); }',
+      '#pmg-command-center .pmg-cc-secondary { display: flex; flex-wrap: wrap; gap: 6px; }',
+      '#pmg-command-center .pmg-cc-link { padding: 6px 12px; border-radius: var(--radius-full, 999px); background: color-mix(in srgb, var(--color-primary) 8%, transparent); border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent); font-size: 12px; font-weight: 500; color: var(--color-text); cursor: pointer; transition: background .15s; white-space: nowrap; }',
+      '#pmg-command-center .pmg-cc-link:hover { background: color-mix(in srgb, var(--color-primary) 18%, transparent); }',
+      '@media (max-width: 480px) {',
+      '  #pmg-command-center { padding: 12px 14px; margin-bottom: 10px; }',
+      '  #pmg-command-center .pmg-cc-primary { grid-template-columns: 1fr; gap: 6px; }',
+      '  #pmg-command-center .pmg-cc-btn { padding: 10px; font-size: 13px; }',
+      '  #pmg-command-center .pmg-cc-secondary { gap: 5px; }',
+      '  #pmg-command-center .pmg-cc-link { font-size: 11px; padding: 5px 10px; }',
+      '  #pmg-command-center .pmg-cc-link[data-cc="file"] { display: none; }',
+      '}',
+
+      '/* P6: Proof Block */',
+      '#pmg-proof-block { margin: 0 0 12px; padding: 12px 16px; background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface)); border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent); border-radius: var(--radius-md, 8px); }',
+      '#pmg-proof-block .pmg-proof-title { font-size: 13px; font-weight: 700; color: var(--color-primary); margin: 0 0 8px; cursor: pointer; }',
+      '#pmg-proof-block .pmg-proof-title::after { content: " \\25BE"; font-size: 11px; }',
+      '#pmg-proof-block.is-collapsed .pmg-proof-title::after { content: " \\25B8"; }',
+      '#pmg-proof-block .pmg-proof-body { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }',
+      '#pmg-proof-block.is-collapsed .pmg-proof-body { display: none; }',
+      '#pmg-proof-block .pmg-proof-col { font-size: 12px; line-height: 1.5; }',
+      '#pmg-proof-block .pmg-proof-label { font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }',
+      '#pmg-proof-block .pmg-proof-before .pmg-proof-label { color: var(--color-text-muted); }',
+      '#pmg-proof-block .pmg-proof-after .pmg-proof-label { color: var(--color-primary); }',
+      '#pmg-proof-block .pmg-proof-before .pmg-proof-text { color: var(--color-text-muted); font-style: italic; }',
+      '#pmg-proof-block .pmg-proof-after .pmg-proof-text { color: var(--color-text); }',
+      '@media (max-width: 480px) {',
+      '  #pmg-proof-block { padding: 10px 12px; }',
+      '  #pmg-proof-block .pmg-proof-body { grid-template-columns: 1fr; gap: 8px; }',
+      '}',
+
+      '/* P4: Conversion Nudge */',
+      '#pmg-conversion-nudge { margin: 16px 0 0; padding: 14px 16px; background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 10%, var(--color-surface)), color-mix(in srgb, var(--color-primary) 4%, var(--color-surface))); border: 1px solid color-mix(in srgb, var(--color-primary) 28%, transparent); border-radius: var(--radius-lg, 12px); position: relative; }',
+      '#pmg-conversion-nudge .pmg-cn-title { font-size: 14px; font-weight: 700; margin: 0 0 6px; color: var(--color-text); }',
+      '#pmg-conversion-nudge .pmg-cn-body { font-size: 13px; color: var(--color-text-muted); margin: 0 0 12px; line-height: 1.5; }',
+      '#pmg-conversion-nudge .pmg-cn-actions { display: flex; gap: 8px; flex-wrap: wrap; }',
+      '#pmg-conversion-nudge .pmg-cn-btn { padding: 8px 16px; border-radius: var(--radius-full, 999px); font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: background .15s; }',
+      '#pmg-conversion-nudge .pmg-cn-primary { background: var(--color-primary); color: #fff; }',
+      '#pmg-conversion-nudge .pmg-cn-primary:hover { background: color-mix(in srgb, var(--color-primary) 85%, #000); }',
+      '#pmg-conversion-nudge .pmg-cn-secondary { background: transparent; color: var(--color-text-muted); border: 1px solid var(--color-border); }',
+      '#pmg-conversion-nudge .pmg-cn-secondary:hover { background: color-mix(in srgb, var(--color-text) 5%, transparent); }',
+      '#pmg-conversion-nudge .pmg-cn-dismiss { position: absolute; top: 8px; right: 8px; background: none; border: none; cursor: pointer; color: var(--color-text-muted); font-size: 16px; padding: 4px; line-height: 1; }',
+
+      '/* P3: Image loading state enhancements */',
+      '.pmg-img-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 3rem 1.5rem; text-align: center; }',
+      '.pmg-img-loading .pmg-img-spinner { width: 44px; height: 44px; border: 3px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: imgSpin 0.8s linear infinite; }',
+      '.pmg-img-loading .pmg-img-loading-title { font-size: 16px; font-weight: 700; color: var(--color-text); margin: 0; }',
+      '.pmg-img-loading .pmg-img-loading-sub { font-size: 13px; color: var(--color-text-muted); margin: 0; }',
+      '.pmg-img-ready { font-size: 14px; font-weight: 600; color: var(--color-primary); text-align: center; margin: 0 0 8px; }',
+
+      ''
+    ].join('\n');
+    document.head.appendChild(s);
+  }
+
+  /* ── P3: Image Generation Loading State ── */
+  function patchImageGeneration() {
+    var origRunImage = window.runImageGeneration;
+    if (!origRunImage || origRunImage.__pmgT103Patched) return;
+
+    window.runImageGeneration = async function () {
+      var goal = document.getElementById('goal');
+      var desc = ((goal && goal.value) || '').trim();
+      if (!desc) { alert('Describe the image you want first, then click Generate Image.'); return; }
+
+      var sec = document.getElementById('imageResultSection');
+      var wrap = document.getElementById('imageResultWrap');
+      var dl = document.getElementById('imageDownloadBtn');
+      var btn = document.getElementById('image-generate-btn');
+      var againBtn = document.getElementById('imageAgainBtn');
+
+      if (btn && btn.disabled) return;
+
+      if (sec) sec.hidden = false;
+      if (wrap) wrap.innerHTML =
+        '<div class="pmg-img-loading">' +
+          '<div class="pmg-img-spinner"></div>' +
+          '<p class="pmg-img-loading-title">Generating Image</p>' +
+          '<p class="pmg-img-loading-sub">This Can Take A Few Moments.</p>' +
+        '</div>';
+      if (dl) dl.style.display = 'none';
+      if (btn) { btn.disabled = true; btn.innerHTML = '\u23F3 Generating\u2026'; }
+      if (againBtn) { againBtn.disabled = true; againBtn.style.opacity = '0.5'; }
+
+      setTimeout(function () { if (sec) sec.scrollIntoView({ behavior: scrollBehavior(), block: 'center' }); }, 150);
+
+      try {
+        var res = await fetch('/api/image', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: desc }) });
+        var data = await res.json();
+        if (!res.ok || !data.url) {
+          if (wrap) wrap.innerHTML = '<div class="pmg-img-loading"><span>\u26A0\uFE0F ' + (data.error || 'Failed. Try again.') + '</span></div>';
+          return;
+        }
+        if (wrap) {
+          wrap.innerHTML = '<p class="pmg-img-ready">Your Image Is Ready</p>';
+          var img = document.createElement('img');
+          img.src = data.url;
+          img.alt = 'AI generated image';
+          img.onload = function () { if (sec) sec.scrollIntoView({ behavior: scrollBehavior(), block: 'center' }); };
+          wrap.appendChild(img);
+        }
+        if (dl) { dl.href = data.url; dl.style.display = 'inline-flex'; }
+      } catch (e) {
+        if (wrap) wrap.innerHTML = '<div class="pmg-img-loading"><span>\u26A0\uFE0F Network error. Try again.</span></div>';
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = '\uD83C\uDFA8 Generate Image'; }
+        if (againBtn) { againBtn.disabled = false; againBtn.style.opacity = ''; }
+      }
+    };
+    window.runImageGeneration.__pmgT103Patched = true;
+    window.generateImage = window.runImageGeneration;
+  }
+
+  /* ── P4: Post-Response Conversion Nudge ── */
+  function patchRunWithAI() {
+    var origPostRunHook = window.__pmgShowPostRunTourIntro;
+
+    window.__pmgShowPostRunTourIntro = function () {
+      if (origPostRunHook && typeof origPostRunHook === 'function') {
+        try { origPostRunHook(); } catch (e) {}
+      }
+      showConversionNudge();
+    };
+  }
+
+  function showConversionNudge() {
+    if (document.getElementById(NUDGE_ID)) return;
+    try { if (sessionStorage.getItem(NUDGE_DISMISSED_KEY)) return; } catch (e) {}
+
+    var respSection = document.getElementById('aiResponseSection');
+    if (!respSection) return;
+
+    var nudge = document.createElement('div');
+    nudge.id = NUDGE_ID;
+    nudge.innerHTML =
+      '<button type="button" class="pmg-cn-dismiss" aria-label="Dismiss">\u00D7</button>' +
+      '<p class="pmg-cn-title">You Just Used The Core PromptMeGood Workflow</p>' +
+      '<p class="pmg-cn-body">Founding Members get higher daily limits, more saved work, and lifetime access to core features while PromptMeGood operates.</p>' +
+      '<div class="pmg-cn-actions">' +
+        '<button type="button" class="pmg-cn-btn pmg-cn-primary" data-action="waitlist">Join Founding Waitlist</button>' +
+        '<button type="button" class="pmg-cn-btn pmg-cn-secondary" data-action="dismiss">Keep Using Free</button>' +
+      '</div>';
+
+    nudge.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      var action = btn.getAttribute('data-action');
+      if (action === 'waitlist') {
+        var pricing = document.getElementById('pricing') || document.getElementById('founding');
+        if (pricing) pricing.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+      }
+      try { sessionStorage.setItem(NUDGE_DISMISSED_KEY, '1'); } catch (e2) {}
+      nudge.remove();
+    });
+
+    var dismissBtn = nudge.querySelector('.pmg-cn-dismiss');
+    if (dismissBtn) {
+      dismissBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        try { sessionStorage.setItem(NUDGE_DISMISSED_KEY, '1'); } catch (e2) {}
+        nudge.remove();
+      });
+    }
+
+    respSection.appendChild(nudge);
+  }
+
+  /* ── P5: Returning User Command Center ── */
+  function buildCommandCenter() {
+    if (document.getElementById(COMMAND_CENTER_ID)) return;
+    if (!isReturningUser()) return;
+
+    var latest = getLatestVaultItem();
+
+    var cc = document.createElement('div');
+    cc.id = COMMAND_CENTER_ID;
+
+    var primaryBtns =
+      (latest
+        ? '<button type="button" class="pmg-cc-btn pmg-cc-btn-primary" data-cc="continue">\u21BB Continue Last Prompt</button>'
+        : '') +
+      '<button type="button" class="pmg-cc-btn' + (latest ? '' : ' pmg-cc-btn-primary') + '" data-cc="new">\u270F\uFE0F Start A New Prompt</button>' +
+      '<button type="button" class="pmg-cc-btn" data-cc="workspace">\uD83D\uDCBC Open Workspace</button>';
+
+    cc.innerHTML =
+      '<p class="pmg-cc-title">Welcome Back</p>' +
+      '<p class="pmg-cc-sub">Continue where you left off, start a new power workflow, or open your workspace.</p>' +
+      '<div class="pmg-cc-primary">' + primaryBtns + '</div>' +
+      '<div class="pmg-cc-secondary">' +
+        '<button type="button" class="pmg-cc-link" data-cc="builder">\uD83D\uDEE0\uFE0F Full Builder</button>' +
+        '<button type="button" class="pmg-cc-link" data-cc="image">\uD83C\uDFA8 Image Prompt</button>' +
+        '<button type="button" class="pmg-cc-link" data-cc="file">\uD83D\uDCC1 File / Image Analysis</button>' +
+        '<button type="button" class="pmg-cc-link" data-cc="vault">\uD83D\uDCBE Prompt Vault</button>' +
+        '<button type="button" class="pmg-cc-link" data-cc="history">\uD83D\uDD53 Prompt History</button>' +
+        '<button type="button" class="pmg-cc-link" data-cc="templates">\uD83D\uDCCB Templates</button>' +
+      '</div>';
+
+    cc.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-cc]');
+      if (!btn) return;
+      var action = btn.getAttribute('data-cc');
+
+      switch (action) {
+        case 'continue':
+          if (latest) {
+            var goalEl = document.getElementById('goal');
+            if (goalEl && latest.data) {
+              goalEl.value = latest.data.goal || '';
+              try { goalEl.dispatchEvent(new Event('input', { bubbles: true })); } catch (ex) {}
+              var fieldMap = {
+                category: latest.data.category || 'other',
+                skillLevel: latest.data.skillLevel || 'beginner',
+                tone: latest.data.tone || 'professional',
+                outputFormat: latest.data.outputFormat || 'step-by-step',
+                details: latest.data.details || '',
+                outputLanguage: latest.data.outputLanguage || 'english',
+                personality: latest.data.personality || 'none'
+              };
+              for (var id in fieldMap) {
+                var el = document.getElementById(id);
+                if (el) el.value = fieldMap[id];
+              }
+              var moneyEl = document.getElementById('moneyMode');
+              if (moneyEl) moneyEl.checked = !!latest.data.moneyMode;
+              var humanEl = document.getElementById('humanTone');
+              if (humanEl) humanEl.checked = !!latest.data.humanTone;
+              var clarityEl = document.getElementById('clarityBoost');
+              if (clarityEl) clarityEl.checked = !!(latest.data.clarityBoost || latest.data.avoidAi);
+              if (window.__pmgSmartSystems) {
+                if (typeof window.__pmgSmartSystems.markAllTouched === 'function') window.__pmgSmartSystems.markAllTouched();
+                if (typeof window.__pmgSmartSystems.recompute === 'function') window.__pmgSmartSystems.recompute(false);
+              }
+              goalEl.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
+              try { goalEl.focus({ preventScroll: true }); } catch (ex) { goalEl.focus(); }
+              if (typeof window.showToast === 'function') window.showToast('Last prompt loaded \u2014 ready to refine or generate.');
+            }
+          }
+          break;
+        case 'new':
+          var g = document.getElementById('goal');
+          if (g) { g.value = ''; g.scrollIntoView({ behavior: scrollBehavior(), block: 'center' }); try { g.focus({ preventScroll: true }); } catch (ex) { g.focus(); } }
+          break;
+        case 'workspace':
+          var ws = document.getElementById('history') || document.getElementById('workspace-header');
+          if (ws) ws.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+          break;
+        case 'builder':
+          var b = document.getElementById('goal');
+          if (b) b.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
+          break;
+        case 'image':
+          if (typeof window.setMode === 'function') window.setMode('image');
+          var ig = document.getElementById('goal');
+          if (ig) ig.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
+          break;
+        case 'file':
+          var fi = document.getElementById('upload-field');
+          if (fi) fi.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
+          break;
+        case 'vault':
+          var vault = document.getElementById('history');
+          if (vault) {
+            vault.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+            var toggle = vault.querySelector('.pmg-vault-toggle');
+            if (toggle) {
+              var panel = vault.querySelector('.panel');
+              if (panel && panel.hidden) toggle.click();
+            }
+          }
+          break;
+        case 'history':
+          var hist = document.getElementById('history');
+          if (hist) hist.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+          break;
+        case 'templates':
+          var tpl = document.getElementById('templates');
+          if (tpl) tpl.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+          break;
+      }
+    });
+
+    var formWrap = document.querySelector('#builder-panel .form-wrap');
+    if (formWrap) {
+      formWrap.insertBefore(cc, formWrap.firstChild);
+    }
+  }
+
+  /* ── P6: Before/After Proof Block ── */
+  function buildProofBlock() {
+    if (document.getElementById(PROOF_BLOCK_ID)) return;
+    if (isReturningUser()) return;
+
+    var proof = document.createElement('div');
+    proof.id = PROOF_BLOCK_ID;
+    var isMobile = window.innerWidth <= 480;
+    if (isMobile) proof.classList.add('is-collapsed');
+
+    proof.innerHTML =
+      '<p class="pmg-proof-title">' + (isMobile ? 'See Example' : 'See What PromptMeGood Does') + '</p>' +
+      '<div class="pmg-proof-body">' +
+        '<div class="pmg-proof-col pmg-proof-before">' +
+          '<div class="pmg-proof-label">Before</div>' +
+          '<div class="pmg-proof-text">\u201CWrite me a product description.\u201D</div>' +
+        '</div>' +
+        '<div class="pmg-proof-col pmg-proof-after">' +
+          '<div class="pmg-proof-label">After</div>' +
+          '<div class="pmg-proof-text">\u201CAct as a conversion copywriter. Write a persuasive product description for [product] aimed at [audience]. Include benefits, emotional hooks, objections, and a clear CTA.\u201D</div>' +
+        '</div>' +
+      '</div>';
+
+    var title = proof.querySelector('.pmg-proof-title');
+    if (title) {
+      title.addEventListener('click', function () {
+        proof.classList.toggle('is-collapsed');
+      });
+    }
+
+    var guidedRow = document.getElementById('guided-cta-row');
+    if (guidedRow && guidedRow.parentNode) {
+      guidedRow.parentNode.insertBefore(proof, guidedRow.nextSibling);
+    }
+  }
+
+  function patchHistoryGuard() {
+    var HKEY = 'promptmegood:history:v1';
+    try {
+      var raw = localStorage.getItem(HKEY);
+      if (!raw) return;
+      var arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return;
+      var cleaned = arr.filter(function (e) { return e && typeof e === 'object' && e.data && typeof e.data === 'object'; });
+      if (cleaned.length !== arr.length) {
+        localStorage.setItem(HKEY, JSON.stringify(cleaned));
+      }
+    } catch (e) { /* noop */ }
+  }
+
+  function init() {
+    try {
+      patchHistoryGuard();
+      injectStyles();
+      patchImageGeneration();
+      patchRunWithAI();
+      buildCommandCenter();
+      buildProofBlock();
+    } catch (e) { /* noop */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+  setTimeout(init, 800);
+  setTimeout(init, 2000);
+})();

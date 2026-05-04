@@ -1,0 +1,194 @@
+Fix the next highest-impact PromptMeGood UX and conversion issues.
+
+Goal:
+Move PromptMeGood from a strong working product to a 9+ conversion-ready experience. Do not redesign the brand, do not change pricing page layout, do not remove existing functionality, and do not add fake/nonfunctional buttons.
+
+Priority 1: Mobile First-Use Compression
+Problem:
+On 390x844 mobile, the “Your Goal” input is visible, but “Fix My Prompt” starts below the fold.
+
+Fix:
+- Tighten the mobile hero/top workstation so the user can see both:
+  - Your Goal textarea
+  - Fix My Prompt button
+- without scrolling.
+- Keep the input and primary button together as one obvious first action.
+- Reduce vertical height from the mobile hero, helper text, spacing, or Help Me Start area.
+- Consider moving Help Me Start below Fix My Prompt on mobile.
+- Keep advanced controls collapsed by default on mobile.
+
+Acceptance:
+- On 390x844 mobile, a fresh user sees the textarea and Fix My Prompt button without scrolling.
+- No horizontal overflow.
+- The user can land → type → click Fix My Prompt within 10 seconds.
+
+Priority 2: Mobile Result Hierarchy
+Problem:
+After Fix My Prompt on mobile, Run With AI Here is too low and awkwardly positioned.
+
+Fix:
+- Keep the generated prompt, Run With AI Here, Copy Prompt, and Power Moves close together.
+- Run With AI Here must remain the primary next action.
+- Power Moves should be secondary and compact.
+- On mobile, Power Moves should use a compact 2-column grid or short vertical stack.
+- Do not let Power Moves push Run With AI Here too far down.
+
+Acceptance:
+- After Fix My Prompt on 390x844 mobile, the user can quickly see the generated prompt and Run With AI Here.
+- Copy Prompt and Power Moves are nearby but secondary.
+- Run With AI Here is visually dominant.
+
+Priority 3: Image Generation Loading State
+Problem:
+Image generation works, but during the 19–21 second wait, the UI does not clearly show that generation is in progress.
+
+Fix:
+- Immediately after clicking Generate Image Here, show a clear loading state in the image result area:
+  “Generating Image”
+  “This Can Take A Few Moments.”
+- Keep the image result area in view.
+- Disable duplicate Generate clicks while the image is generating.
+- When complete, replace the loading state with:
+  “Your Image Is Ready”
+- Keep Save Image To Your Device, Generate Another, Copy Prompt, Use As Reference, and related actions near the image.
+
+Acceptance:
+- Click Generate Image Here.
+- Loading state appears immediately.
+- User understands the click registered.
+- Final image still appears.
+- Save Image To Your Device becomes active after generation.
+
+Priority 4: Post-Response Conversion Nudge
+Problem:
+Users experience the core workflow, but there is no strong conversion nudge at the moment of value.
+
+Fix:
+After the user successfully runs AI and the AI response appears, show a small non-blocking conversion nudge near the response.
+
+Copy:
+“You Just Used The Core PromptMeGood Workflow”
+
+Body:
+“Founding Members get higher daily limits, more saved work, and lifetime access to core features while PromptMeGood operates.”
+
+Buttons:
+- Join Founding Waitlist
+- Keep Using Free
+
+Rules:
+- Show only after a successful AI response.
+- Do not block Copy Response, Run Again, or other result actions.
+- Do not show before the user gets value.
+- Do not imply checkout is live.
+- Link Join Founding Waitlist to the current waitlist/early access section.
+- Allow dismissal for the session.
+
+Acceptance:
+- User runs AI.
+- AI response appears.
+- Conversion nudge appears near the response.
+- Nudge is dismissible.
+- “Join Founding Waitlist” does not imply payment/checkout is live.
+
+Priority 5: Returning User Command Center
+Problem:
+Returning users with prompt history still see mostly the beginner homepage state.
+
+Fix:
+If local history, saved prompts, generated prompt count, or prior Run With AI usage exists, show a returning-user Command Center near the top.
+
+Copy:
+Title:
+“Welcome Back”
+
+Subtitle:
+“Continue where you left off, start a new power workflow, or open your workspace.”
+
+Primary buttons:
+- Continue Last Prompt
+- Start A New Prompt
+- Open Workspace
+
+Secondary workflow buttons:
+- Full Builder
+- Image Prompt
+- File Or Image Analysis
+- Prompt Vault
+- Prompt History
+- Templates
+
+Behavior:
+- Continue Last Prompt restores the most recent prompt/result if available.
+- Start A New Prompt focuses the Your Goal textarea.
+- Open Workspace scrolls to Prompt Vault/workspace.
+- Full Builder opens or scrolls to the Create A Text Prompt column with Customize Output available.
+- Image Prompt scrolls to or opens the Photography Suite.
+- File Or Image Analysis opens the upload control.
+- Prompt Vault opens saved prompts.
+- Prompt History opens history.
+- Templates opens the templates/best prompts area.
+
+Rules:
+- Fresh users should still see the instant first-use prompt experience.
+- Returning users should get faster access to deeper workflows.
+- Do not show multiple nudges at once.
+- Do not block the user.
+- Mobile layout must remain clean.
+
+Acceptance:
+- Fresh user sees the instant input and Fix My Prompt flow.
+- Returning user with local history sees Welcome Back / Command Center.
+- Continue Last Prompt restores previous work.
+- Start A New Prompt focuses input.
+- Open Workspace works.
+- Image Prompt opens Photography Suite.
+- No horizontal overflow on mobile.
+
+Priority 6: Before/After Proof Near The Tool
+Problem:
+Visitors understand the tool better after using it, but they need faster proof before typing.
+
+Fix:
+Add a compact before/after proof block near the top workstation, without pushing the input/button below the fold.
+
+Copy:
+Before:
+“Write me a product description.”
+
+After:
+“Act as a conversion copywriter. Write a persuasive product description for [product] aimed at [audience]. Include benefits, emotional hooks, objections, and a clear CTA.”
+
+Rules:
+- Keep it compact.
+- On mobile, collapse it behind “See Example” if needed.
+- Do not let it push Fix My Prompt below the fold.
+
+Acceptance:
+- Desktop shows quick proof near the tool.
+- Mobile either shows compact proof or a collapsed “See Example.”
+- Input and Fix My Prompt remain visible without scrolling.
+
+Do Not:
+- Build a long 14-step tour.
+- Redesign the visual identity.
+- Change pricing page layout.
+- Change backend APIs unless required for existing local state detection.
+- Add fake testimonials.
+- Add placeholder buttons.
+- Remove existing features.
+
+Final QA:
+- Test desktop 1440x900.
+- Test mobile 390x844.
+- Confirm input and Fix My Prompt are visible without scrolling.
+- Generate a prompt.
+- Confirm generated prompt, Run With AI Here, Copy Prompt, and Power Moves are close together.
+- Run With AI.
+- Confirm AI response appears.
+- Confirm post-response conversion nudge appears.
+- Generate an image.
+- Confirm Generating Image loading state appears immediately.
+- Confirm final image and actions appear.
+- Reload with local history.
+- Confirm returning-user Command Center appears.
