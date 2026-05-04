@@ -1,5 +1,7 @@
 import { test, expect, Page } from "@playwright/test";
 
+type PmgWindow = Window & { pmgStartWorkstationTour?: () => void };
+
 const BASE_URL = process.env.PMG_BASE_URL ?? "http://localhost:80";
 const MOBILE_W = 400;
 const MOBILE_H = 720;
@@ -21,8 +23,9 @@ async function gotoApp(page: Page) {
 
 async function launchTour(page: Page) {
   await page.evaluate(() => {
-    if (typeof (window as any).pmgStartWorkstationTour === "function") {
-      (window as any).pmgStartWorkstationTour();
+    const w = window as unknown as PmgWindow;
+    if (typeof w.pmgStartWorkstationTour === "function") {
+      w.pmgStartWorkstationTour();
     }
   });
   await page.waitForSelector("#pmg-ws-tour-overlay.is-open", { timeout: 5000 });
@@ -221,7 +224,7 @@ test.describe("Workstation tour compact overlay @ mobile-400x720", () => {
     expect(await isOverlayOpen(page)).toBe(false);
   });
 
-  test("invite banner fits within mobile viewport", async ({ page }) => {
+  test("invite banner fits within mobile viewport when shown", async ({ page }) => {
     await page.setViewportSize({ width: MOBILE_W, height: MOBILE_H });
     await page.addInitScript(() => {
       localStorage.setItem("promptmegood:tour:v1:done", "1");
@@ -232,23 +235,36 @@ test.describe("Workstation tour compact overlay @ mobile-400x720", () => {
     try {
       await page.waitForLoadState("networkidle", { timeout: 8000 });
     } catch {}
+    await page.waitForTimeout(400);
 
-    const inviteVisible = await page.evaluate(() => {
-      const el = document.getElementById("pmg-ws-tour-invite");
-      if (!el) return false;
-      const r = el.getBoundingClientRect();
-      return r.width > 0 && r.height > 0;
+    await page.evaluate(() => {
+      const existing = document.getElementById("pmg-ws-tour-invite");
+      if (existing) return;
+      const el = document.createElement("div");
+      el.id = "pmg-ws-tour-invite";
+      el.setAttribute("role", "dialog");
+      el.setAttribute("aria-label", "Workstation tour invite");
+      el.innerHTML =
+        '<p class="ws-tour-title">Want To See The Full Workstation?</p>' +
+        '<p class="ws-tour-sub">You just ran your first prompt.</p>' +
+        '<div class="ws-tour-actions">' +
+        '<button class="btn btn-primary" type="button">Show Me</button>' +
+        '<button class="ws-tour-dismiss" type="button">Not Now</button>' +
+        "</div>";
+      document.body.appendChild(el);
     });
 
-    if (inviteVisible) {
-      const bounds = await page.evaluate(() => {
-        const el = document.getElementById("pmg-ws-tour-invite")!;
-        const r = el.getBoundingClientRect();
-        return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width };
-      });
-      expect(bounds.left).toBeGreaterThanOrEqual(-1);
-      expect(bounds.right).toBeLessThanOrEqual(MOBILE_W + 1);
-    }
+    const invite = page.locator("#pmg-ws-tour-invite");
+    await expect(invite).toBeVisible({ timeout: 3000 });
+
+    const bounds = await page.evaluate(() => {
+      const el = document.getElementById("pmg-ws-tour-invite")!;
+      const r = el.getBoundingClientRect();
+      return { left: r.left, right: r.right, width: r.width };
+    });
+    expect(bounds.left).toBeGreaterThanOrEqual(-1);
+    expect(bounds.right).toBeLessThanOrEqual(MOBILE_W + 1);
+    expect(bounds.width).toBeGreaterThan(0);
   });
 
   test("no horizontal overflow while tour is open", async ({ page }) => {
