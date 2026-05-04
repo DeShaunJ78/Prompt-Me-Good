@@ -15636,3 +15636,257 @@
   setTimeout(init, 600);
   setTimeout(init, 1500);
 })();
+
+/* ====================================================================
+ * T102 — Adaptive Goal Box for returning power users
+ *
+ * Detects returning users (3+ prompts generated) via pmg_prompt_count
+ * and adapts the goal textarea UX:
+ *   1. Placeholder text → shorter, assumes competence
+ *   2. Helper text → compact tip, no long example
+ *   3. Guided wizard CTA → compressed to a small text link
+ *   4. "Pick up where you left off" chip → most recent vault entry
+ *   5. Auto Optimize label → drops "(Recommended)" tag
+ *
+ * All changes are non-destructive — the underlying elements remain
+ * in the DOM for other T-functions that reference them.
+ * ==================================================================== */
+(function __pmgT102AdaptiveGoalBox() {
+  'use strict';
+  if (window.__pmgT102Init) return;
+  window.__pmgT102Init = true;
+
+  var POWER_USER_THRESHOLD = 3;
+  var HISTORY_KEY = 'promptmegood:history:v1';
+  var STYLE_ID = 'pmg-t102-styles';
+  var RESUME_ID = 'pmg-resume-chip';
+
+  function getPromptCount() {
+    if (typeof window.__pmgGetPromptCount === 'function') return window.__pmgGetPromptCount();
+    try { return parseInt(localStorage.getItem('pmg_prompt_count') || '0', 10) || 0; } catch (e) { return 0; }
+  }
+
+  function isPowerUser() {
+    return getPromptCount() >= POWER_USER_THRESHOLD;
+  }
+
+  function getLatestVaultItem() {
+    try {
+      var raw = localStorage.getItem(HISTORY_KEY);
+      if (!raw) return null;
+      var items = JSON.parse(raw);
+      if (!Array.isArray(items) || items.length === 0) return null;
+      var sorted = items.filter(function (i) { return !i.archived && i.data && i.data.goal; });
+      if (sorted.length === 0) return null;
+      sorted.sort(function (a, b) { return (b.savedAt || 0) - (a.savedAt || 0); });
+      return sorted[0];
+    } catch (e) { return null; }
+  }
+
+  function truncate(str, max) {
+    if (!str) return '';
+    str = str.trim();
+    if (str.length <= max) return str;
+    return str.substring(0, max - 1) + '\u2026';
+  }
+
+  function scrollBehavior() {
+    try { return window.PMG_A11Y.scrollBehavior(); } catch (e) { return 'smooth'; }
+  }
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = [
+      '.pmg-resume-chip{display:flex;align-items:center;gap:var(--space-2,8px);',
+      'padding:10px 14px;border:1px solid color-mix(in srgb,var(--color-primary) 30%,transparent);',
+      'border-radius:var(--radius-md,8px);background:color-mix(in srgb,var(--color-primary) 6%,transparent);',
+      'cursor:pointer;transition:background .15s,border-color .15s;max-width:100%;overflow:hidden;}',
+      '.pmg-resume-chip:hover{background:color-mix(in srgb,var(--color-primary) 14%,transparent);',
+      'border-color:color-mix(in srgb,var(--color-primary) 50%,transparent);}',
+      '.pmg-resume-chip-icon{font-size:16px;flex:0 0 auto;}',
+      '.pmg-resume-chip-text{flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;',
+      'font-size:var(--text-sm,14px);color:var(--color-text);}',
+      '.pmg-resume-chip-label{font-size:var(--text-xs,12px);color:var(--color-text-muted);display:block;margin-bottom:1px;}',
+      '.pmg-resume-chip-dismiss{flex:0 0 auto;background:none;border:none;cursor:pointer;',
+      'color:var(--color-text-muted);font-size:14px;padding:2px 4px;line-height:1;border-radius:4px;}',
+      '.pmg-resume-chip-dismiss:hover{background:color-mix(in srgb,var(--color-text) 10%,transparent);}',
+      'body.pmg-power-user #guided-cta-row{display:flex !important;align-items:center;',
+      'padding:6px 0;gap:var(--space-2,8px);border:none;background:none;margin:0;}',
+      'body.pmg-power-user #guided-cta-row .guided-cta-text{display:none !important;}',
+      'body.pmg-power-user #guided-cta-row .btn{font-size:var(--text-xs,12px);',
+      'padding:4px 12px;min-height:28px;background:transparent;color:var(--color-primary);',
+      'border:1px solid color-mix(in srgb,var(--color-primary) 30%,transparent);font-weight:500;}',
+      'body.pmg-power-user #guided-cta-row .btn:hover{background:color-mix(in srgb,var(--color-primary) 10%,transparent);}',
+      'body.pmg-power-user .build-cta-guidance{display:none !important;}',
+      'body.image-mode .pmg-resume-chip{display:none !important;}',
+      '@media(max-width:600px){.pmg-resume-chip{padding:8px 10px;}}'
+    ].join('\n');
+    document.head.appendChild(s);
+  }
+
+  function adaptForPowerUser() {
+    if (!isPowerUser()) return;
+
+    document.body.classList.add('pmg-power-user');
+
+    var goalEl = document.getElementById('goal');
+    if (goalEl) {
+      goalEl.placeholder = 'What are you working on?';
+    }
+
+    var helperP = goalEl ? goalEl.parentNode.querySelector('.helper') : null;
+    if (helperP) {
+      helperP.innerHTML = '<em>Tip: add audience, constraints, or context for sharper results.</em>';
+    }
+
+    var autoOptLabel = document.querySelector('#auto-optimize-row .auto-opt-text strong');
+    if (autoOptLabel) {
+      var recSpan = autoOptLabel.querySelector('span');
+      if (recSpan) recSpan.style.display = 'none';
+    }
+
+    var autoOptDesc = document.querySelector('#auto-optimize-row .auto-opt-text > span');
+    if (autoOptDesc) {
+      autoOptDesc.textContent = 'Auto-adjusts settings to match your goal.';
+    }
+
+    var guidedBtn = document.getElementById('guided-mode-btn');
+    if (guidedBtn) {
+      guidedBtn.textContent = 'Guided Mode';
+    }
+
+    buildResumeChip();
+  }
+
+  function buildResumeChip() {
+    if (document.getElementById(RESUME_ID)) return;
+
+    var latest = getLatestVaultItem();
+    if (!latest) return;
+
+    var goalText = truncate(latest.data.goal, 60);
+    if (!goalText) return;
+
+    var chip = document.createElement('div');
+    chip.id = RESUME_ID;
+    chip.className = 'pmg-resume-chip';
+    chip.setAttribute('role', 'button');
+    chip.setAttribute('tabindex', '0');
+    chip.setAttribute('aria-label', 'Resume: ' + goalText);
+
+    chip.innerHTML =
+      '<span class="pmg-resume-chip-icon" aria-hidden="true">\u21BB</span>' +
+      '<span class="pmg-resume-chip-text">' +
+        '<span class="pmg-resume-chip-label">Pick up where you left off</span>' +
+        '<span>' + escapeHtml(goalText) + '</span>' +
+      '</span>' +
+      '<button type="button" class="pmg-resume-chip-dismiss" aria-label="Dismiss" title="Dismiss">\u00D7</button>';
+
+    var dismiss = chip.querySelector('.pmg-resume-chip-dismiss');
+    if (dismiss) {
+      dismiss.addEventListener('click', function (e) {
+        e.stopPropagation();
+        chip.remove();
+      });
+    }
+
+    chip.addEventListener('click', function () {
+      restoreFromVaultItem(latest);
+      chip.remove();
+    });
+
+    chip.addEventListener('keydown', function (e) {
+      if ((e.key === 'Enter' || e.key === ' ') && e.target === chip) {
+        e.preventDefault();
+        restoreFromVaultItem(latest);
+        chip.remove();
+      }
+    });
+
+    var guidedRow = document.getElementById('guided-cta-row');
+    if (guidedRow && guidedRow.parentNode) {
+      guidedRow.parentNode.insertBefore(chip, guidedRow.nextSibling);
+    }
+  }
+
+  function restoreFromVaultItem(item) {
+    var goalEl = document.getElementById('goal');
+    if (!goalEl) return;
+
+    goalEl.value = item.data.goal || '';
+    try { goalEl.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
+
+    var fieldMap = {
+      category: item.data.category || 'other',
+      skillLevel: item.data.skillLevel || 'beginner',
+      tone: item.data.tone || 'professional',
+      outputFormat: item.data.outputFormat || 'step-by-step',
+      details: item.data.details || '',
+      outputLanguage: item.data.outputLanguage || 'english',
+      personality: item.data.personality || 'none'
+    };
+    for (var id in fieldMap) {
+      var el = document.getElementById(id);
+      if (el) el.value = fieldMap[id];
+    }
+
+    var rulesEl = document.getElementById('rules or limits');
+    if (rulesEl) rulesEl.value = item.data['rules or limits'] || '';
+
+    var maxSel = document.getElementById('maxLength');
+    var maxCustom = document.getElementById('maxLengthCustom');
+    if (maxSel) {
+      var mv = item.data.maxLength != null ? String(item.data.maxLength) : '';
+      var presets = ['', '100', '200', '300', '500'];
+      if (presets.indexOf(mv) !== -1) {
+        maxSel.value = mv;
+        if (maxCustom) { maxCustom.hidden = true; maxCustom.value = ''; }
+      } else if (mv) {
+        maxSel.value = 'custom';
+        if (maxCustom) { maxCustom.hidden = false; maxCustom.value = mv; }
+      }
+    }
+
+    var moneyEl = document.getElementById('moneyMode');
+    if (moneyEl) moneyEl.checked = !!item.data.moneyMode;
+    var humanEl = document.getElementById('humanTone');
+    if (humanEl) humanEl.checked = !!item.data.humanTone;
+    var clarityEl = document.getElementById('clarityBoost');
+    if (clarityEl) clarityEl.checked = !!(item.data.clarityBoost || item.data.avoidAi);
+
+    if (window.__pmgSmartSystems) {
+      if (typeof window.__pmgSmartSystems.markAllTouched === 'function') window.__pmgSmartSystems.markAllTouched();
+      if (typeof window.__pmgSmartSystems.recompute === 'function') window.__pmgSmartSystems.recompute(false);
+    }
+
+    goalEl.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
+    try { goalEl.focus({ preventScroll: true }); } catch (e) { goalEl.focus(); }
+
+    if (typeof window.showToast === 'function') {
+      window.showToast('Last prompt loaded \u2014 ready to refine or generate.');
+    }
+  }
+
+  function escapeHtml(str) {
+    var d = document.createElement('div');
+    d.textContent = str || '';
+    return d.innerHTML;
+  }
+
+  function init() {
+    try {
+      injectStyles();
+      adaptForPowerUser();
+    } catch (e) { /* noop */ }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+  setTimeout(init, 600);
+  setTimeout(init, 1500);
+})();
