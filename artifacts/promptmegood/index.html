@@ -7906,7 +7906,11 @@ Context:
             var el = document.getElementById(id);
             if (el) {
               var isOpen = el.classList.contains('is-open');
-              if (isOpen) return;
+              if (isOpen) {
+                el.style.pointerEvents = '';
+                el.inert = false;
+                return;
+              }
               var isHidden = el.hidden || getComputedStyle(el).display === 'none' || getComputedStyle(el).opacity === '0';
               el.style.pointerEvents = isHidden ? 'none' : '';
               if (isHidden) el.inert = true;
@@ -7914,9 +7918,14 @@ Context:
           });
           // WS tour overlay: same treatment
           var wsOv = document.getElementById('pmg-ws-tour-overlay');
-          if (wsOv && !wsOv.classList.contains('is-open')) {
-            wsOv.style.pointerEvents = 'none';
-            wsOv.inert = true;
+          if (wsOv) {
+            if (wsOv.classList.contains('is-open')) {
+              wsOv.style.pointerEvents = '';
+              wsOv.inert = false;
+            } else {
+              wsOv.style.pointerEvents = 'none';
+              wsOv.inert = true;
+            }
           }
         }
 
