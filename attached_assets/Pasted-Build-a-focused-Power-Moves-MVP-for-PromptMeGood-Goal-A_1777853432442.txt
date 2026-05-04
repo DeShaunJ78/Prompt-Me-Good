@@ -1,0 +1,76 @@
+Build a focused “Power Moves MVP” for PromptMeGood.
+
+Goal:
+After a user generates their first prompt, show a compact contextual action row that helps them discover the deeper power of the product without adding friction.
+
+This is Phase One only.
+Do not build the full tour yet.
+Do not build a persistent rail.
+Do not redesign the page.
+Do not change pricing.
+Do not change backend logic unless absolutely required.
+Do not create nonfunctional buttons.
+
+Where It Appears:
+- Show Power Moves directly near the generated prompt after “Fix My Prompt” completes.
+- It should appear close to the existing generated prompt actions.
+- It should not push “Run With AI Here,” “Copy Prompt,” or the generated prompt far below the fold.
+- “Run With AI Here” remains the primary next action.
+
+Section Copy:
+Title:
+“Power Moves”
+
+Subtitle:
+“Make this prompt stronger, clearer, or more useful.”
+
+MVP Buttons:
+1. Improve With AI
+2. Make More Detailed
+3. Beginner Friendly
+4. Try In Image Mode
+5. Save To Vault
+
+Optional if already easy:
+6. Check Quality
+
+Button Mapping:
+- Improve With AI → use the existing Improve With AI flow.
+- Make More Detailed → use the existing More Detailed refinement preset if it already exists.
+- Beginner Friendly → use the existing Beginner Friendly refinement preset if it already exists.
+- Try In Image Mode → use the existing image-mode handoff if it already exists; otherwise scroll to the Photography Suite with the current prompt copied into the image context if that behavior already exists.
+- Save To Vault → use the existing save/vault behavior.
+- Check Quality → use existing quality/prompt-strength behavior only if available.
+
+Important:
+If any MVP button cannot be wired to an existing working feature, do not include it yet.
+No dead buttons.
+No placeholder actions.
+
+Layout:
+Desktop:
+- Show Power Moves as a compact row or small card under/near the generated prompt.
+- Keep Run With AI Here visually stronger than the Power Moves.
+- Use small secondary buttons or chips.
+
+Mobile:
+- Show Power Moves as a compact 2-column grid or vertical stack.
+- Do not use a horizontal scrolling chip rail.
+- Keep the generated prompt and Run With AI Here easy to find.
+
+Behavior:
+- Power Moves appears only after a prompt is generated.
+- It should not appear before the user has a result.
+- It should not block copying, running, refining, or saving.
+- It should work with existing prompt history and undo behavior.
+
+Acceptance Tests:
+- Fresh user lands, types, and clicks Fix My Prompt.
+- Generated prompt appears.
+- Run With AI Here remains the most prominent next action.
+- Power Moves appears near the generated prompt.
+- Each visible Power Move performs a real existing action.
+- No Power Move button is dead or placeholder.
+- On desktop 1440x900, the result area remains readable.
+- On mobile 390x844, Power Moves does not bury Run With AI Here.
+- Existing prompt refinement, copy, save, history, and Run With AI behavior still work.
