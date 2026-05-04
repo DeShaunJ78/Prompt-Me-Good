@@ -1,0 +1,103 @@
+Final mobile cleanup pass. The live site improved, but three issues remain.
+
+Confirmed against live public URL with cache busting:
+https://www.promptmegood.com/?auditBust=TIMESTAMP
+
+Good news:
+- Intro Tour now passes all 6 steps.
+- Run With AI normal mobile click now works.
+- No horizontal overflow at 390×844.
+
+Do not touch those working areas unless necessary.
+
+Remaining issues to fix only:
+
+1. Workstation Tour still opens broken
+
+Live observed:
+- Clicking “Workstation Tour” opens:
+  - Step 1 of 6
+  - blank title
+  - blank body
+  - highlight rect 0×0
+  - overlay behaves closed/broken.
+
+Fix:
+- Check replay menu handler for “Workstation Tour.”
+- Check tour key/name mismatch.
+- Check Workstation Tour config object.
+- Ensure Workstation Tour has a valid six-step array.
+- Ensure every step has:
+  - title
+  - body text
+  - valid target selector/resolver
+  - fallback target if primary target is unavailable
+- Ensure Step 1 is not empty/default.
+- Ensure the overlay stays open after starting.
+
+Required Workstation Tour sequence:
+1. Workstation overview
+   Target: command center title/card, Open Workspace button, or visible workspace card header.
+2. Your Better Prompt
+   Target: `#result-title` or `[data-tour-target="fixed-prompt-output"]`.
+3. Run With AI
+   Target: top Run With AI button or Run This Prompt header.
+4. Prompt Vault
+   Target: `#vault-title`, `[data-tour-target="vault-title"]`, or Prompt Vault nav pill.
+5. Photography Suite
+   Target: `#pmg-photo-suite-title`, `[data-tour-target="photo-suite-title"]`, or a visible Photography Suite group title.
+6. Final/help step
+   Target: Help button, Replay Tour button, or Help Me Start button.
+
+Acceptance:
+At 390×844:
+- Workstation Tour opens with non-empty title and body.
+- Step 1 highlight is non-zero.
+- Next advances through all 6 steps.
+- Every step highlight has width > 0 and height > 0.
+- Step 6 shows Done.
+- Done closes the tour.
+- Prompt Vault step highlights title/header/nav pill, not the whole list.
+- Photography Suite step highlights title/header/group title, not the entire tall form.
+
+2. Photography Suite heading still wraps awkwardly
+
+Live observed at 390×844:
+`#pmg-photo-suite-title` currently measures about:
+- width: 188px
+- height: 59px
+- display: block
+- white-space: normal
+- font-size: ~24px
+- line-height: ~29px
+
+This means it is still wrapping into multiple lines. It improved from 88px, but it is not clean yet.
+
+Fix:
+Make actual site heading “📸 Photography Suite” visually clean on mobile.
+
+Acceptance:
+At 390×844:
+- Heading should be one clean line if possible.
+- Icon should stay inline with “Photography Suite.”
+- No icon-on-own-line.
+- No awkward 2-line/3-line wrap.
+- No horizontal overflow.
+
+Suggested CSS:
+```css
+@media (max-width: 520px) {
+  #pmg-photo-suite-title,
+  [data-tour-target="photo-suite-title"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    width: 100%;
+    max-width: 100%;
+    white-space: nowrap;
+    text-wrap: nowrap;
+    line-height: 1.15;
+    font-size: clamp(1rem, 4.5vw, 1.18rem);
+  }
+}
