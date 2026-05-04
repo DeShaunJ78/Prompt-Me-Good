@@ -1303,8 +1303,9 @@
     .site-footer-replay-btn { background: transparent; border: 1px dashed color-mix(in srgb, var(--color-primary) 40%, transparent); color: var(--color-primary); padding: 6px 14px; border-radius: var(--radius-sm); font-size: var(--text-sm); cursor: pointer; transition: background var(--transition-interactive), border-color var(--transition-interactive); }
     .site-footer-replay-btn:hover { background: color-mix(in srgb, var(--color-primary) 10%, transparent); border-color: var(--color-primary); }
     .replay-tour-dropdown { position: relative; display: inline-block; }
-    .replay-tour-menu { position: absolute; bottom: calc(100% + 6px); right: 0; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md, 8px); box-shadow: 0 8px 24px rgba(0,0,0,0.18); padding: 4px; min-width: 200px; z-index: 100; display: flex; flex-direction: column; gap: 2px; white-space: nowrap; }
-    #replay-tour-dropdown-builder .replay-tour-menu { bottom: auto; top: calc(100% + 6px); }
+    .replay-tour-menu { position: absolute; bottom: calc(100% + 6px); right: 0; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md, 8px); box-shadow: 0 8px 24px rgba(0,0,0,0.18); padding: 4px; min-width: 200px; z-index: 100; display: none; flex-direction: column; gap: 2px; white-space: nowrap; }
+    .replay-tour-menu:not([hidden]) { display: flex; }
+    #replay-tour-dropdown-builder .replay-tour-menu, #replay-tour-dropdown-header .replay-tour-menu { bottom: auto; top: calc(100% + 6px); }
     .replay-tour-menu-item { display: block; width: 100%; padding: 10px 14px; background: transparent; border: 0; border-radius: var(--radius-sm, 6px); color: var(--color-text); font-size: var(--text-sm); font-weight: 600; text-align: left; cursor: pointer; transition: background 120ms ease; }
     .replay-tour-menu-item:hover { background: color-mix(in srgb, var(--color-primary) 12%, transparent); }
     .replay-tour-menu-item:focus-visible { outline: 2px solid var(--color-primary); outline-offset: -2px; }
@@ -1716,7 +1717,7 @@
         display: none;
       }
       .top-actions.is-open { display: flex; }
-      .top-actions .ghost-link, .top-actions .theme-toggle {
+      .top-actions .ghost-link, .top-actions .theme-toggle, .top-actions .builder-replay-btn {
         width: 100%;
         min-height: 52px;
         justify-content: center;
@@ -1728,29 +1729,33 @@
         color: #1f2937;
         transition: background 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
       }
-      .top-actions .ghost-link:hover, .top-actions .theme-toggle:hover {
+      .top-actions .ghost-link:hover, .top-actions .theme-toggle:hover, .top-actions .builder-replay-btn:hover {
         background: #E6F5F2;
         border-color: rgba(15, 118, 110, 0.6);
         transform: none;
       }
-      .top-actions .ghost-link:active, .top-actions .theme-toggle:active {
+      .top-actions .ghost-link:active, .top-actions .theme-toggle:active, .top-actions .builder-replay-btn:active {
         background: #E6F5F2;
         border-color: rgba(15, 118, 110, 0.6);
         transform: scale(0.98);
       }
+      .top-actions .replay-tour-dropdown { width: 100%; }
+      .top-actions .theme-toggle { margin-left: 0 !important; }
       [data-theme="dark"] .top-actions {
         background: #0f3a3d;
         border-color: rgba(91, 168, 176, 0.35);
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
       }
       [data-theme="dark"] .top-actions .ghost-link,
-      [data-theme="dark"] .top-actions .theme-toggle {
+      [data-theme="dark"] .top-actions .theme-toggle,
+      [data-theme="dark"] .top-actions .builder-replay-btn {
         background: #144749;
         border-color: rgba(91, 168, 176, 0.4);
         color: #e6f5f2;
       }
       [data-theme="dark"] .top-actions .ghost-link:hover,
-      [data-theme="dark"] .top-actions .theme-toggle:hover {
+      [data-theme="dark"] .top-actions .theme-toggle:hover,
+      [data-theme="dark"] .top-actions .builder-replay-btn:hover {
         background: #1a5557;
         border-color: rgba(91, 168, 176, 0.7);
       }
@@ -2890,7 +2895,8 @@
       .top-actions { gap: 10px; }
       /* Symmetrical pill buttons — equal padding, equal height, even spacing */
       .top-actions .ghost-link,
-      .top-actions .theme-toggle {
+      .top-actions .theme-toggle,
+      .top-actions .builder-replay-btn {
         min-height: 38px;
         height: 38px;
         padding: 0 16px;
@@ -2901,7 +2907,8 @@
         font-size: 14px;
         font-weight: 600;
       }
-      .top-actions .theme-toggle { padding: 0 12px; }
+      .top-actions .builder-replay-btn { margin-left: 6px; }
+      .top-actions .theme-toggle { padding: 0 12px; margin-left: 4px; }
       /* Why It Matters card: more breathing room */
       .hero-card {
         padding: clamp(var(--space-6), 2.4vw, var(--space-8));
@@ -3485,7 +3492,17 @@
         <a class="ghost-link" href="#builder">Start Here</a>
         <a class="ghost-link" href="#how-it-works">How It Works</a>
         <a class="ghost-link" href="./pricing.html">Pricing</a>
-        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">
+        <div class="replay-tour-dropdown" id="replay-tour-dropdown-header">
+          <button type="button" class="builder-replay-btn" id="replay-tour-btn-header" aria-label="Replay a tour" aria-expanded="false" aria-haspopup="true">
+            <span class="builder-replay-icon" aria-hidden="true">?</span>
+            <span>Replay Tour</span>
+          </button>
+          <div class="replay-tour-menu" id="replay-tour-menu-header" role="menu" hidden>
+            <button type="button" class="replay-tour-menu-item" role="menuitem" data-tour="intro">Intro Tour</button>
+            <button type="button" class="replay-tour-menu-item" role="menuitem" data-tour="workstation">Workstation Tour</button>
+          </div>
+        </div>
+        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme" style="margin-left: 8px;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
           </svg>
@@ -9027,6 +9044,11 @@ Context:
       document.addEventListener('click', function (e) {
         if (!e.target.closest('.replay-tour-dropdown')) closeAllReplayMenus();
       });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeAllReplayMenus();
+      });
+      closeAllReplayMenus();
+      initReplayDropdown('replay-tour-btn-header', 'replay-tour-menu-header');
       initReplayDropdown('replay-tour-btn-builder', 'replay-tour-menu-builder');
       initReplayDropdown('replay-tour-btn', 'replay-tour-menu-footer');
 

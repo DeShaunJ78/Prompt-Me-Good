@@ -892,21 +892,7 @@
   }
 
   function addReplayTourToMenu() {
-    var topActions = document.querySelector('.top-actions');
-    if (!topActions) return;
-    if (document.getElementById('pmg-replay-tour-menu-link')) return;
-    var btn = document.createElement('button');
-    btn.id = 'pmg-replay-tour-menu-link';
-    btn.type = 'button';
-    btn.className = 'ghost-link pmg-replay-tour-menu';
-    btn.textContent = 'Replay Tour';
-    btn.addEventListener('click', function () {
-      var footerBtn = document.getElementById('replay-tour-btn');
-      var builderBtn = document.getElementById('replay-tour-btn-builder');
-      var target = footerBtn || builderBtn;
-      if (target) target.click();
-    });
-    topActions.appendChild(btn);
+    if (document.getElementById('replay-tour-dropdown-header')) return;
   }
 
   function insertHelpMeStartLink() {

@@ -1,0 +1,63 @@
+Fix the Replay Tour dropdown bug on production/mobile.
+
+Observed issue from live QA + screenshot:
+- Footer Replay Tour menu is visible/open by default.
+- The dropdown with “Intro Tour” and “Workstation Tour” is showing all the time above the Replay Tour button.
+- Expected behavior: Replay Tour should be a closed button by default. When the user taps/clicks Replay Tour, it should open the menu. The user then selects either Intro Tour or Workstation Tour.
+- The menu should close after a selection, when clicking outside, when pressing Escape, and on page load.
+
+Also from previous QA:
+- Photography Suite heading at 375px passes. Do not change that.
+- WS tour sequence/content mostly passes. Do not regress it.
+- Starter/smart assist was inconsistent, but this prompt is specifically for the Replay Tour dropdown bug.
+
+Acceptance criteria:
+1. On page load, both replay dropdown menus are closed/hidden:
+   - Header replay menu if present.
+   - Footer replay menu if present.
+2. “Intro Tour” and “Workstation Tour” must not be visible until the user opens the Replay Tour menu.
+3. Clicking/tapping “Replay Tour” toggles the menu open.
+4. The menu appears positioned near the Replay Tour button and does not cover unrelated footer content awkwardly on mobile.
+5. Clicking “Intro Tour” starts the intro/full tour.
+6. Clicking “Workstation Tour” starts the workstation tour.
+7. After selecting either menu item, the dropdown closes.
+8. Clicking outside the dropdown closes it.
+9. Pressing Escape closes it.
+10. The Replay Tour button should have correct aria-expanded:
+    - false when closed
+    - true when open
+11. The menu should not rely only on hover. It must work on mobile tap/click.
+12. Verify on live production/mobile viewport, not just local dev.
+
+Implementation hint:
+Look for replay tour dropdown code/classes/IDs like:
+- #replay-tour-btn
+- #replay-tour-btn-builder
+- #pmg-replay-tour-menu-link
+- .replay-tour-dropdown
+- .replay-tour-menu
+- .replay-tour-menu-item
+- #replay-tour-menu-footer
+- #replay-tour-dropdown-footer
+
+Likely fix:
+- Make dropdown closed by default in HTML/CSS/JS.
+- Add a class like .is-open only when Replay Tour is clicked.
+- CSS should hide menus unless parent/open state is active, for example:
+  .replay-tour-menu { display: none; }
+  .replay-tour-dropdown.is-open .replay-tour-menu { display: block; }
+- On initialization, explicitly remove .is-open and set aria-expanded="false".
+- Do not leave footer dropdown permanently visible due to hover/focus styles or default CSS display.
+- On mobile, avoid :hover-only behavior because mobile can leave hover state stuck.
+
+Please run a final verification:
+- Load page fresh on 375px mobile.
+- Confirm menu is hidden.
+- Tap Replay Tour.
+- Confirm menu opens.
+- Tap Intro Tour.
+- Confirm tour starts and menu closes.
+- Reload.
+- Tap Replay Tour.
+- Tap Workstation Tour.
+- Confirm workstation tour starts and menu closes.
