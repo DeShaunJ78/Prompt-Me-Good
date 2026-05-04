@@ -40,6 +40,7 @@ async function gotoApp(page: Page): Promise<void> {
       localStorage.setItem("promptmegood:tour:v1:done", "1");
       localStorage.removeItem("pmg.photo.recentPresets");
       localStorage.removeItem("pmg.surprise.dial.v1");
+      sessionStorage.setItem("promptmegood:t42-banner-dismissed", "1");
     } catch {
       /* ignore */
     }
@@ -54,6 +55,12 @@ async function gotoApp(page: Page): Promise<void> {
      after first paint). */
   await page.waitForSelector("#pmg-photo-suite", { timeout: 10_000 });
   await page.waitForSelector("#pmg-handoff-dial", { timeout: 10_000 });
+  await page.evaluate(() => {
+    const s = document.createElement("style");
+    s.textContent =
+      "#pmg-photo-suite-sticky-cta { display: none !important; }";
+    document.head.appendChild(s);
+  });
 }
 
 test.describe("Surprise Me dial + handoff @ mobile-360", () => {
