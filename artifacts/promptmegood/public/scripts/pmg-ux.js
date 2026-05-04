@@ -16392,13 +16392,26 @@
           if (ws) ws.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
           break;
         case 'builder':
+          if (typeof window.setMode === 'function') window.setMode('write');
           var b = document.getElementById('goal');
-          if (b) b.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
+          if (b) {
+            var bField = b.closest('.field-primary');
+            if (bField && getComputedStyle(bField).display === 'none') {
+              bField.style.setProperty('display', 'block', 'important');
+            }
+            b.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
+            try { b.focus({ preventScroll: true }); } catch (ex) { b.focus(); }
+          }
           break;
         case 'image':
           if (typeof window.setMode === 'function') window.setMode('image');
-          var ig = document.getElementById('goal');
-          if (ig) ig.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
+          var photoSuite = document.getElementById('photo-suite-section') || document.getElementById('pmg-photo-suite');
+          if (photoSuite) {
+            photoSuite.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+          } else {
+            var ig = document.getElementById('goal');
+            if (ig) ig.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
+          }
           break;
         case 'file':
           var fi = document.getElementById('upload-field');
