@@ -1,0 +1,120 @@
+Full PromptMeGood bug audit and fix pass.
+
+The main prompt flow is strong, but the Photography Suite appears to have a mobile interaction blocker. Please audit the whole site for bugs, then fix only confirmed issues.
+
+Do not redesign the site.
+Do not change pricing/legal/SEO copy.
+Do not remove working features.
+Do not break Fix My Prompt, Run With AI, Intro Tour, Workstation Tour, or first-load mobile layout.
+
+Primary confirmed issue:
+Photography Suite controls are visible but not reliably clickable on mobile.
+
+Live test details:
+URL tested with cache busting:
+https://www.promptmegood.com/?auditBust=TIMESTAMP
+
+Viewport:
+390×844 mobile.
+
+Observed:
+- Scrolled to Photography Suite.
+- “📸 Photography Suite” heading looked clean.
+- “🎲 Surprise Me” was visible and enabled.
+- Normal click on `button.pmg-photo-surprise` timed out.
+- Playwright reported:
+  `<div class="container">…</div> intercepts pointer events`
+- Opening the first group button `.pmg-photo-group-head` also timed out.
+- Same issue:
+  `<div class="container">…</div> intercepts pointer events`
+- Because Surprise Me and the group buttons could not be clicked, the vibe stayed empty:
+  “Your Vibe: Pick a few options above to compose your shot.”
+- `button.pmg-photo-send` / Generate Image Here stayed disabled.
+- No `/api/image` request fired through the normal user path.
+
+Primary fix needed:
+Find why `.container` is intercepting pointer events over the Photography Suite controls.
+
+Inspect:
+- `.container`
+- Photography Suite parent containers
+- sticky headers/topbar
+- beta banner
+- tour overlays/backdrops
+- workstation invite overlays
+- pseudo-elements
+- any absolute/fixed/sticky elements with z-index
+- any transform/animation/layout-shift that makes buttons unstable
+- any overlay left in DOM after tours or invites close
+- any full-page container layer that visually appears behind but is actually on top
+
+Rules:
+- Visible active buttons must receive pointer events directly.
+- Decorative wrappers/overlays must not sit on top of active controls.
+- Hidden/closed overlays must use `display:none`, `hidden`, `inert`, or `pointer-events:none`.
+- Do not set `pointer-events:none` on a parent if it breaks child controls.
+- If a pseudo-element is decorative, set `pointer-events:none`.
+- If a sticky/fixed layer overlaps after scrolling, adjust z-index or scroll-margin.
+- Button positions should be stable after scroll; avoid repeated layout shifts.
+
+Photography Suite acceptance tests:
+At mobile 390×844:
+1. Scroll to Photography Suite.
+2. Normal click on `button.pmg-photo-surprise` works.
+3. The vibe summary updates after Surprise Me.
+4. `button.pmg-photo-send` becomes enabled.
+5. Normal click on `button.pmg-photo-send` works.
+6. Button changes to “Generating Image…” or visible loading state.
+7. `/api/image` fires once.
+8. Final state shows “Your Image Is Ready” or a clear inline error.
+9. Manual path also works:
+   - click Style group
+   - choose an option
+   - click Camera/Lens or Lighting group
+   - choose an option
+   - prompt/vibe updates
+10. No `.container`, overlay, banner, or hidden element intercepts clicks.
+
+Then audit the rest of the site for bugs:
+
+Core prompt flow:
+- First-load textarea and Fix My Prompt visible above fold on 390×844 and 1440×900.
+- Textarea input works.
+- Fix My Prompt works.
+- Copy Prompt works.
+- Run With AI works.
+- Copy Response and Run Again appear.
+- No click interception on result buttons.
+
+Tours:
+- Intro Tour works through all 6 steps.
+- Workstation Tour works through all 6 stops.
+- No duplicate/rapid-tap bugs.
+- Done closes both tours.
+- No tour overlay remains clickable after closing.
+- Hidden focusables remain near zero.
+
+Navigation/pages:
+- Pricing page loads.
+- Guide page loads.
+- Privacy page loads.
+- Terms page loads.
+- No horizontal overflow on mobile.
+- Header/menu/search buttons work.
+- Footer links work.
+
+Accessibility/DOM:
+Run hidden focusable scan on mobile and desktop.
+Target: 0–5 hidden focusables maximum.
+
+Use this scan:
+```js
+[...document.querySelectorAll('a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"]), [role="button"], [contenteditable="true"]')]
+  .filter(el => !el.disabled && el.getAttribute('aria-disabled') !== 'true' && el.getAttribute('tabindex') !== '-1')
+  .filter(el => {
+    const r = el.getBoundingClientRect();
+    const cs = getComputedStyle(el);
+    return (r.width === 0 || r.height === 0 || cs.display === 'none' || cs.visibility === 'hidden' || el.offsetParent === null)
+      && !el.closest('[hidden]')
+      && !el.closest('[inert]');
+  }).length
