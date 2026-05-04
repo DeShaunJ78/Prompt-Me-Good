@@ -6673,7 +6673,11 @@
   function sendToImageGenerator() {
     var picks = getSelections();
     var photoText = buildPromptText(picks);
-    if (!photoText) { showToast('Pick at least one option first.'); return; }
+    if (!photoText) {
+      var hint = document.getElementById('image-gen-hint');
+      if (hint) { hint.textContent = 'Choose A Style Or Tap Surprise Me To Generate.'; hint.classList.add('is-shown'); }
+      return;
+    }
 
     /* Task #38: sending consumes the surprise — the user has moved on
        from "should I keep these picks?" to "render them now". Dismiss
@@ -16189,7 +16193,12 @@
       } catch (_) {}
       var goal = document.getElementById('goal');
       var desc = ((goal && goal.value) || '').trim();
-      if (!desc) { alert('Describe the image you want first, then click Generate Image.'); return; }
+      if (!desc) {
+        var hint = document.getElementById('image-gen-hint');
+        if (hint) { hint.textContent = 'Add An Image Idea First.'; hint.classList.add('is-shown'); }
+        if (goal) goal.focus();
+        return;
+      }
 
       var sec = document.getElementById('imageResultSection');
       var wrap = document.getElementById('imageResultWrap');
@@ -16216,7 +16225,12 @@
         var res = await fetch('/api/image', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: desc, size: window.__pmgAspectRatio || '1024x1024' }) });
         var data = await res.json();
         if (!res.ok || !data.url) {
-          if (wrap) wrap.innerHTML = '<div class="pmg-img-loading"><span>\u26A0\uFE0F ' + (data.error || 'Failed. Try again.') + '</span></div>';
+          var errHint = document.getElementById('image-gen-hint');
+          var errMsg = data.error || 'Failed. Try again.';
+          if (res.status === 429) errMsg = 'Image Limit Reached Today.';
+          else if (res.status >= 500) errMsg = 'Image Generation Is Temporarily Unavailable.';
+          if (errHint) { errHint.textContent = errMsg; errHint.classList.add('is-shown'); }
+          if (wrap) wrap.innerHTML = '<div class="pmg-img-loading"><span>\u26A0\uFE0F ' + errMsg + '</span></div>';
           return;
         }
         if (wrap) {
@@ -16229,7 +16243,9 @@
         }
         if (dl) { dl.href = data.url; dl.style.display = 'inline-flex'; }
       } catch (e) {
-        if (wrap) wrap.innerHTML = '<div class="pmg-img-loading"><span>\u26A0\uFE0F Network error. Try again.</span></div>';
+        var netHint = document.getElementById('image-gen-hint');
+        if (netHint) { netHint.textContent = 'Image Generation Is Temporarily Unavailable.'; netHint.classList.add('is-shown'); }
+        if (wrap) wrap.innerHTML = '<div class="pmg-img-loading"><span>\u26A0\uFE0F Image Generation Is Temporarily Unavailable.</span></div>';
       } finally {
         if (btn) { btn.disabled = false; btn.innerHTML = '\uD83C\uDFA8 Generate Image'; }
         if (againBtn) { againBtn.disabled = false; againBtn.style.opacity = ''; }

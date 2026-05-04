@@ -278,7 +278,8 @@
   function onVariationsClick() {
     var prompt = readPromptForGeneration();
     if (!prompt) {
-      try { alert('Describe the image you want first, then tap Generate 4 Variations.'); } catch (_) {}
+      var hint = document.getElementById('image-gen-hint');
+      if (hint) { hint.textContent = 'Add An Image Idea First.'; hint.classList.add('is-shown'); }
       return;
     }
     /* Stash the about-to-be-replaced image as previous. */

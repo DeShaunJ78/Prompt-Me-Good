@@ -1,0 +1,164 @@
+Fix only the remaining PromptMeGood live-audit issues from the May 4 recheck.
+
+Goal:
+Move PromptMeGood from ~8.6/10 to 9+/10 by tightening post-generation action placement, image-generation feedback, and hidden-control accessibility.
+
+Do not redesign the site.
+Do not change pricing.
+Do not change SEO/policy copy.
+Do not remove working features.
+Do not add a large new tour.
+Do not add new paid claims.
+Keep the current first-use above-the-fold flow intact on desktop and mobile.
+
+Issue 1: Generated Prompt Action Hierarchy
+Problem:
+Fix My Prompt works, but when the generated prompt is long, the next actions can sit too far below the first result viewport.
+
+Fix:
+After a prompt is generated, keep these actions directly adjacent to the generated prompt:
+- Run With AI Here
+- Copy Prompt
+- Improve With AI / Refine It
+- Power Moves
+
+Implementation options:
+- Add a compact sticky action bar inside the generated prompt card.
+- Or place an action cluster immediately above and below the generated prompt.
+- Or cap the generated prompt preview height with “Show Full Prompt,” while keeping actions visible.
+
+Acceptance:
+- After Fix My Prompt completes, the viewport should show:
+  - Your Fixed Prompt
+  - generated prompt preview
+  - Run With AI Here
+  - Copy Prompt
+  - Power Moves or Improve/Refine controls
+- Long prompts must not push all actions far below the fold.
+
+Issue 2: AI Response Action Placement
+Problem:
+Run With AI works, but long AI responses can push Copy Response and Run Again below the fold.
+
+Fix:
+Keep response actions adjacent to the AI response header:
+- Copy Response
+- Run Again
+- Suggested Next Step
+
+Implementation options:
+- Put Copy Response and Run Again in the AI Response header row.
+- Keep a duplicate compact action row below the response if desired.
+- Suggested Next Step should appear after the response starts, but should not hide Copy Response or Run Again.
+
+Acceptance:
+- After Run With AI completes, the viewport should show:
+  - AI Response
+  - Copy Response
+  - Run Again
+  - beginning of the response
+- If the response is long, actions remain easy to reach.
+
+Issue 3: Image Generation Loading State
+Problem:
+Live audit did not verify the loading-state fix. After clicking Generate Image Here, the UI still showed placeholder copy and the button was not disabled.
+
+Fix:
+When Generate Image Here is clicked:
+- Immediately replace placeholder with:
+  “Generating Image”
+  “This Can Take A Few Moments.”
+- Show a spinner, skeleton, or progress visual.
+- Disable Generate Image Here while the request is in progress.
+- Prevent duplicate image-generation requests.
+- Keep the result panel in view.
+
+Acceptance:
+- Within 1 second of clicking Generate Image Here, “Generating Image” is visible.
+- Generate Image Here is disabled while loading.
+- Placeholder “Your Generated Image Will Appear Here” is not shown during active generation.
+- When complete, the result area shows “Your Image Is Ready.”
+- Final actions remain adjacent:
+  - Save Image To Your Device
+  - Generate Another
+  - Copy Prompt
+  - Send To Midjourney
+  - Use As Reference
+  - Generate 4 Variations
+
+Issue 4: Image Generation Request Reliability
+Problem:
+The live audit could not verify a clean /api/image request in the intended user flow.
+
+Fix:
+Audit the Generate Image Here click handler and gating logic.
+Make sure clicking Generate Image Here fires the intended image-generation request when:
+- an image prompt exists, and
+- required style/details are selected, or
+- Surprise Me has populated them.
+
+If generation is blocked, show a visible inline reason next to the button:
+- “Choose A Style Or Tap Surprise Me To Generate.”
+- “Add An Image Idea First.”
+- “Image Limit Reached Today.”
+- “Image Generation Is Temporarily Unavailable.”
+
+Acceptance:
+- Enabled Generate Image Here always triggers the image request.
+- Blocked Generate Image Here always explains why.
+- No silent no-op state.
+- Surprise Me clearly enables generation and shows what changed.
+
+Issue 5: Hidden Focusable Controls
+Problem:
+Live audit found hundreds of hidden or zero-size focusable controls on desktop and mobile.
+
+Fix:
+Audit all hidden/inactive UI:
+- closed mobile nav
+- hidden search
+- hidden tour steps
+- hidden modals
+- hidden photography wizard controls
+- hidden dropdown options
+- hidden duplicate buttons
+- closed drawers/panels
+- inactive image controls
+
+Any hidden, zero-size, offscreen inactive, or closed-panel element must not be keyboard-focusable.
+
+Use one of:
+- conditional rendering
+- hidden
+- display: none
+- inert
+- aria-hidden="true" plus tabindex="-1" for descendants
+- disabled for inactive buttons/inputs
+
+Do not rely only on opacity, transform, or zero width/height.
+
+Acceptance:
+- Keyboard Tab reaches only visible active controls.
+- Closed panels and hidden drawers are skipped by keyboard navigation.
+- Hidden zero-size buttons, links, inputs, and textareas are not focusable.
+- Visible controls still work normally.
+
+Final QA Required:
+Test desktop 1440x900:
+- Fresh load shows textarea and Fix My Prompt without scrolling.
+- No horizontal overflow.
+- Fix My Prompt generates a prompt.
+- Result area shows generated prompt plus Run With AI Here, Copy Prompt, and Power Moves nearby.
+- Run With AI produces AI Response.
+- AI Response header shows Copy Response and Run Again nearby.
+- Generate Image Here shows Generating Image within 1 second and disables while loading.
+
+Test mobile 390x844:
+- Fresh load shows textarea and Fix My Prompt without scrolling.
+- No horizontal overflow.
+- Prompt flow remains linear.
+- Result actions are close to the generated prompt.
+- AI response actions remain easy to find.
+- Closed menus/tours/drawers are not in tab order.
+
+Do not mark complete until the above acceptance tests pass.

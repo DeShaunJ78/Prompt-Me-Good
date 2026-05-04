@@ -1436,6 +1436,9 @@
       font-style: italic;
     }
     .ai-response-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .ai-response-actions-top { margin-top: 0; margin-bottom: 10px; }
+    .ai-response-actions-bottom { display: none; }
+    .ai-response-actions-bottom.is-visible { display: flex; }
     .ai-response-actions .btn { flex: 1; min-width: 140px; }
     @media (max-width: 480px) {
       .ai-response-actions .btn { flex: 1 1 100%; }
@@ -2989,6 +2992,16 @@
     /* result box: compact when empty */
     .result-box:empty, .result-box[data-empty] { min-height: 80px !important; max-height: 120px; }
     .result-panel:not(.has-result) .result-box { min-height: 80px !important; }
+    .result-box.is-clamped { max-height: 280px; overflow: hidden; position: relative; }
+    .result-box.is-clamped::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 48px; background: linear-gradient(to bottom, transparent, var(--color-surface-2)); pointer-events: none; }
+    .result-box-toggle { display: none; margin: 6px 0 0; padding: 6px 14px; font-size: 13px; font-weight: 600; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-primary); cursor: pointer; }
+    .result-box-toggle:hover { background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)); }
+    .result-box-toggle.is-visible { display: inline-flex; }
+    .ai-response-output.is-clamped { max-height: 320px; overflow: hidden; position: relative; }
+    .ai-response-output.is-clamped::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 48px; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--color-primary) 4%, var(--color-surface))); pointer-events: none; }
+    .ai-response-toggle { display: none; margin: 6px 0 0; padding: 6px 14px; font-size: 13px; font-weight: 600; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-primary); cursor: pointer; }
+    .ai-response-toggle:hover { background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)); }
+    .ai-response-toggle.is-visible { display: inline-flex; }
     
     /* History controls: compact row instead of full-width pills */
     .history-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
@@ -3461,7 +3474,7 @@
     </div>
   </header>
 
-  <div id="nudge-banner" class="nudge-banner" hidden>
+  <div id="nudge-banner" class="nudge-banner" hidden inert>
     <div class="container nudge-inner">
       <span class="nudge-icon" aria-hidden="true">💡</span>
       <div class="nudge-text">
@@ -3475,7 +3488,7 @@
     </div>
   </div>
 
-  <div id="tour-banner" class="tour-card-wrap" hidden>
+  <div id="tour-banner" class="tour-card-wrap" hidden inert>
     <div class="tour-card" role="region" aria-label="Welcome">
       <span class="tour-card-icon" aria-hidden="true">👋</span>
       <div class="tour-card-body">
@@ -3663,7 +3676,7 @@
                 <span class="tip-block-text">Ready? Tap <strong>Fix My Prompt</strong>, then review, refine, and copy it.</span>
                 <button type="button" class="tip-block-dismiss" data-action="dismiss-tips" aria-label="Hide all tips">Hide Tip</button>
               </p>
-              <p class="demo-helper" hidden style="display:none">Not Sure Where To Start? <button type="button" class="link-btn demo-helper-link" id="demo-helper-link">See It In Action</button> <button type="button" class="guidance-show-link" id="guidance-show-link" data-action="show-tips">Show Tips</button></p>
+              <p class="demo-helper" hidden inert style="display:none">Not Sure Where To Start? <button type="button" class="link-btn demo-helper-link" id="demo-helper-link">See It In Action</button> <button type="button" class="guidance-show-link" id="guidance-show-link" data-action="show-tips">Show Tips</button></p>
 
               <section id="settingsPanel" class="settings-panel pmg-prompt-tuning pmg-stack-card" aria-labelledby="settingsPanel-title">
                 <div class="pmg-stack-card-head">
@@ -3852,7 +3865,7 @@
                 <button id="expert-mode-link" type="button" class="expert-mode-link" aria-pressed="false">Switch To Expert Mode &rarr;</button>
               </div>
 
-              <div class="keyboard-hints" id="keyboard-hints" hidden aria-label="Keyboard shortcuts">
+              <div class="keyboard-hints" id="keyboard-hints" hidden inert aria-label="Keyboard shortcuts">
                 <span class="keyboard-hints-title">Keyboard Shortcuts</span>
                 <ul>
                   <li><kbd>G</kbd> — Generate prompt</li>
@@ -3887,6 +3900,7 @@
               <div class="pinned-note-source" id="pinned-note-source"></div>
             </div>
             <div class="result-box" id="resultBox" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Generated prompt (editable)">Your fixed prompt will appear here.</div>
+            <button type="button" class="result-box-toggle" id="resultBoxToggle" aria-expanded="false">Show Full Prompt ▾</button>
             <div class="result-edit-row">
               <span class="result-edit-indicator" id="result-edit-indicator" hidden>Edited manually</span>
             </div>
@@ -3981,10 +3995,15 @@
               <div class="run-section-divider"></div>
               <h3 class="run-section-title">AI Response</h3>
               <p class="run-section-helper">Generated from your prompt above.</p>
-              <div class="ai-response-output" id="aiResponseOutput" aria-live="polite" aria-atomic="false"></div>
-              <div class="ai-response-actions">
+              <div class="ai-response-actions ai-response-actions-top">
                 <button class="btn btn-secondary" type="button" id="copyResponseBtn" onclick="copyAIResponse()">Copy Response</button>
                 <button class="btn btn-secondary" type="button" id="runAgainBtn" onclick="runWithAI()">Run Again</button>
+              </div>
+              <div class="ai-response-output" id="aiResponseOutput" aria-live="polite" aria-atomic="false"></div>
+              <button type="button" class="ai-response-toggle" id="aiResponseToggle" aria-expanded="false">Show Full Response ▾</button>
+              <div class="ai-response-actions ai-response-actions-bottom">
+                <button class="btn btn-secondary" type="button" onclick="copyAIResponse()">Copy Response</button>
+                <button class="btn btn-secondary" type="button" onclick="runWithAI()">Run Again</button>
               </div>
             </div>
 
@@ -4444,7 +4463,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite">Copied to clipboard.</div>
 
-  <div class="post-tour-banner" id="post-tour-banner" role="status" aria-live="polite" hidden>
+  <div class="post-tour-banner" id="post-tour-banner" role="status" aria-live="polite" hidden inert>
     <span class="post-tour-banner-icon" aria-hidden="true">🎉</span>
     <span class="post-tour-banner-text">You&rsquo;re ready. Build A Prompt Below And Have Fun Prompting With PromptMeGood.</span>
     <button type="button" class="post-tour-banner-btn" id="post-tour-banner-dismiss" aria-label="Dismiss message">Got It</button>
@@ -7539,6 +7558,95 @@ Context:
         }, 1600);
       }
 
+      // --- Result box clamping: cap long prompts so actions stay visible ---
+      const RESULT_CLAMP_HEIGHT = 280;
+      const AI_CLAMP_HEIGHT = 320;
+      const resultBoxEl = document.getElementById('resultBox');
+      const resultBoxToggle = document.getElementById('resultBoxToggle');
+      const aiResponseToggle = document.getElementById('aiResponseToggle');
+      const aiResponseBottom = document.querySelector('.ai-response-actions-bottom');
+
+      function clampResultBox() {
+        if (!resultBoxEl || !resultBoxToggle) return;
+        window.setTimeout(function () {
+          if (resultBoxEl.scrollHeight > RESULT_CLAMP_HEIGHT + 40) {
+            resultBoxEl.classList.add('is-clamped');
+            resultBoxToggle.classList.add('is-visible');
+            resultBoxToggle.setAttribute('aria-expanded', 'false');
+            resultBoxToggle.textContent = 'Show Full Prompt \u25BE';
+          } else {
+            resultBoxEl.classList.remove('is-clamped');
+            resultBoxToggle.classList.remove('is-visible');
+          }
+        }, 60);
+      }
+
+      if (resultBoxToggle) {
+        resultBoxToggle.addEventListener('click', function () {
+          var expanded = resultBoxEl.classList.contains('is-clamped');
+          if (expanded) {
+            resultBoxEl.classList.remove('is-clamped');
+            resultBoxToggle.textContent = 'Collapse Prompt \u25B4';
+            resultBoxToggle.setAttribute('aria-expanded', 'true');
+          } else {
+            resultBoxEl.classList.add('is-clamped');
+            resultBoxToggle.textContent = 'Show Full Prompt \u25BE';
+            resultBoxToggle.setAttribute('aria-expanded', 'false');
+          }
+        });
+      }
+
+      function clampAiResponse() {
+        var output = document.getElementById('aiResponseOutput');
+        if (!output || !aiResponseToggle) return;
+        if (output.scrollHeight > AI_CLAMP_HEIGHT + 40) {
+          output.classList.add('is-clamped');
+          aiResponseToggle.classList.add('is-visible');
+          aiResponseToggle.setAttribute('aria-expanded', 'false');
+          aiResponseToggle.textContent = 'Show Full Response \u25BE';
+          if (aiResponseBottom) aiResponseBottom.classList.add('is-visible');
+        } else {
+          output.classList.remove('is-clamped');
+          aiResponseToggle.classList.remove('is-visible');
+          if (aiResponseBottom) aiResponseBottom.classList.remove('is-visible');
+        }
+      }
+
+      if (aiResponseToggle) {
+        aiResponseToggle.addEventListener('click', function () {
+          var output = document.getElementById('aiResponseOutput');
+          if (!output) return;
+          var expanded = output.classList.contains('is-clamped');
+          if (expanded) {
+            output.classList.remove('is-clamped');
+            aiResponseToggle.textContent = 'Collapse Response \u25B4';
+            aiResponseToggle.setAttribute('aria-expanded', 'true');
+          } else {
+            output.classList.add('is-clamped');
+            aiResponseToggle.textContent = 'Show Full Response \u25BE';
+            aiResponseToggle.setAttribute('aria-expanded', 'false');
+          }
+        });
+      }
+
+      window.__pmgClampResultBox = clampResultBox;
+      window.__pmgClampAiResponse = clampAiResponse;
+
+      // --- Inert sync: keep inert in sync with hidden for key panels ---
+      (function syncInert() {
+        var panelIds = ['nudge-banner', 'tour-banner', 'keyboard-hints', 'mobile-sticky-bar', 'post-tour-banner'];
+        panelIds.forEach(function (id) {
+          var el = document.getElementById(id);
+          if (!el) return;
+          if (el.hidden) el.inert = true;
+          if ('MutationObserver' in window) {
+            new MutationObserver(function () {
+              el.inert = !!el.hidden;
+            }).observe(el, { attributes: true, attributeFilter: ['hidden'] });
+          }
+        });
+      })();
+
       form.addEventListener('submit', function (event) {
         event.preventDefault();
         // NOTE: getFormData() must stay called SYNCHRONOUSLY here, before any
@@ -7585,6 +7693,7 @@ Context:
             window.__pmgStrengthScore.render(data, promptText);
           }
           scrollToResult();
+          clampResultBox();
           const generateBtnEl = document.getElementById('generateBtn');
           if (generateBtnEl) {
             const origLabel = generateBtnEl.dataset.origLabel || generateBtnEl.textContent;
@@ -7641,6 +7750,8 @@ Context:
         // if the upstream model takes a moment to start streaming. The first
         // streamed chunk replaces this seed (full text starts fresh).
         setPromptText('Generating your prompt…');
+        if (resultBoxEl) resultBoxEl.classList.remove('is-clamped');
+        if (resultBoxToggle) resultBoxToggle.classList.remove('is-visible');
         scrollToResult();
 
         let streamedText = '';
@@ -8296,6 +8407,7 @@ Context:
           if (shown) return;
           shown = true;
           banner.hidden = false;
+          banner.inert = false;
           // Force reflow so the transition runs from the hidden state.
           // eslint-disable-next-line no-unused-expressions
           banner.offsetWidth;
@@ -8345,7 +8457,7 @@ Context:
         if (!banner) return;
         window.clearTimeout(showPostTourBanner.autoTimer);
         banner.classList.remove('is-visible');
-        window.setTimeout(function () { banner.hidden = true; }, 260);
+        window.setTimeout(function () { banner.hidden = true; banner.inert = true; }, 260);
       }
       function obNextStep() {
         obInvokeStepLeave();
@@ -10304,7 +10416,11 @@ Context:
         const respSection = $('aiResponseSection');
         const out = $('aiResponseOutput');
         if (respSection) respSection.hidden = false;
-        if (out) out.textContent = '';
+        if (out) { out.textContent = ''; out.classList.remove('is-clamped'); }
+        var _artToggle = document.getElementById('aiResponseToggle');
+        var _artBottom = document.querySelector('.ai-response-actions-bottom');
+        if (_artToggle) _artToggle.classList.remove('is-visible');
+        if (_artBottom) _artBottom.classList.remove('is-visible');
         lastResponseText = '';
         setRunning(true);
 
@@ -10421,8 +10537,7 @@ Context:
             out.textContent = 'No response received from the AI service. Please try again.';
           }
           setRunning(false);
-          // Post-run tour invite: fire one time after the user's first
-          // successful Run With AI. Only on real, non-empty responses.
+          if (typeof window.__pmgClampAiResponse === 'function') window.__pmgClampAiResponse();
           if (lastResponseText && lastResponseText.trim() && typeof window.__pmgShowPostRunTourIntro === 'function') {
             // Small delay so the user sees the response settle before the invite appears.
             window.setTimeout(function () {
@@ -10918,7 +11033,7 @@ Context:
   }
 })();
 </script>
-  <div id="mobile-sticky-bar" class="mobile-sticky-bar" hidden role="region" aria-label="Quick prompt builder">
+  <div id="mobile-sticky-bar" class="mobile-sticky-bar" hidden inert role="region" aria-label="Quick prompt builder">
     <div class="mobile-sticky-inner">
       <input id="mobile-sticky-input" class="mobile-sticky-input" type="text" placeholder="What Do You Need Help With?" aria-label="Quick Goal" autocomplete="off" />
       <button id="mobile-sticky-btn" class="mobile-sticky-btn" type="button">Generate &#9889;</button>
