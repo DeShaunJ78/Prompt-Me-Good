@@ -16641,20 +16641,21 @@
   var STEPS = [
     {
       selector: '#goal',
-      title: 'Your Original Idea',
-      text: 'This is where it all starts. Type what you need in plain words — no jargon required.',
+      fallback: '#builder-panel',
+      title: 'Your Workstation',
+      text: 'This is your AI command center. Type what you need in plain words and let PromptMeGood do the heavy lifting.',
       prepare: null
     },
     {
       selector: '#result-title',
-      fallback: '#resultBox',
+      fallback: '[data-tour-target="fixed-prompt-output"]',
       title: 'Your Better Prompt',
       text: 'PromptMeGood rewrites your idea into a clear, structured prompt that AI actually understands.',
       prepare: null
     },
     {
       selector: '#runBtn',
-      fallback: '#run-section-title',
+      fallback: '#runSection',
       title: 'Run With AI',
       text: 'Execute your prompt and get an AI response right here — no copy-paste needed.',
       prepare: function () {
@@ -16675,27 +16676,8 @@
       }
     },
     {
-      selector: '#pmg-power-moves',
-      title: 'Power Moves',
-      text: 'Quick-action shortcuts: try image mode, save to vault, or check prompt quality — one tap each.',
-      prepare: function () {
-        var pm = document.getElementById('pmg-power-moves');
-        if (pm && getComputedStyle(pm).display === 'none') {
-          pm.style.setProperty('display', 'block', 'important');
-          pm.dataset.wsTourRevealed = '1';
-        }
-      },
-      cleanup: function () {
-        var pm = document.getElementById('pmg-power-moves');
-        if (pm && pm.dataset.wsTourRevealed === '1') {
-          pm.style.removeProperty('display');
-          delete pm.dataset.wsTourRevealed;
-        }
-      }
-    },
-    {
       selector: '#vault-title',
-      fallback: '#history',
+      fallback: '[data-tour-target="vault-title"]',
       title: 'Prompt Vault',
       text: 'Every prompt you generate is saved here on your device. Search, compare, export, or restore any time.',
       prepare: function () {
@@ -16710,7 +16692,7 @@
     },
     {
       selector: '#pmg-photo-suite-title',
-      fallback: '#photo-suite-section',
+      fallback: '[data-tour-target="photo-suite-title"]',
       title: 'Photography Suite',
       text: 'Switch to image mode and build DALL\u00B7E 3 prompts with style, lighting, and composition controls.',
       prepare: function () {
@@ -16718,6 +16700,26 @@
         if (el) {
           el.removeAttribute('hidden');
           el.style.removeProperty('display');
+        }
+      }
+    },
+    {
+      selector: '#replay-tour-btn',
+      fallback: '#guided-mode-btn',
+      title: 'Need Help? Replay Any Time',
+      text: 'Tap Replay Tour at the bottom of the page to revisit this walkthrough. Or use Help Me Start for a guided setup.',
+      prepare: function () {
+        var row = document.getElementById('guided-cta-row');
+        if (row && getComputedStyle(row).display === 'none') {
+          row.style.setProperty('display', 'flex', 'important');
+          row.dataset.wsTourRevealed = '1';
+        }
+      },
+      cleanup: function () {
+        var row = document.getElementById('guided-cta-row');
+        if (row && row.dataset.wsTourRevealed === '1') {
+          row.style.removeProperty('display');
+          delete row.dataset.wsTourRevealed;
         }
       }
     }
@@ -16871,15 +16873,30 @@
     return ov && ov.classList.contains('is-open');
   }
 
+  function resolveTarget(step) {
+    var target = document.querySelector(step.selector);
+    if (target) { var _r = target.getBoundingClientRect(); if (_r.width === 0 && _r.height === 0) target = null; }
+    if (!target && step.fallback) target = document.querySelector(step.fallback);
+    if (target) { var _r2 = target.getBoundingClientRect(); if (_r2.width === 0 && _r2.height === 0) target = null; }
+    return target;
+  }
+
   var _wsPositionSkipGuard = false;
   function positionStep(scrollAttempts) {
     if (!isOpen()) return;
     var step = STEPS[stepIndex];
     if (!step) { finish(); return; }
-    var target = document.querySelector(step.selector);
-    if (target) { var _r = target.getBoundingClientRect(); if (_r.width === 0 && _r.height === 0) target = null; }
-    if (!target && step.fallback) target = document.querySelector(step.fallback);
-    if (target) { var _r2 = target.getBoundingClientRect(); if (_r2.width === 0 && _r2.height === 0) target = null; }
+
+    var stepLabel = document.getElementById('pmg-ws-step-label');
+    var titleEl = document.getElementById('pmg-ws-title');
+    var textEl = document.getElementById('pmg-ws-text');
+    var nextBtn = document.getElementById('pmg-ws-next');
+    stepLabel.textContent = 'Stop ' + (stepIndex + 1) + ' of ' + STEPS.length;
+    titleEl.textContent = step.title;
+    textEl.textContent = step.text;
+    nextBtn.textContent = stepIndex === STEPS.length - 1 ? 'Done' : 'Next';
+
+    var target = resolveTarget(step);
     if (!target) {
       if (_wsPositionSkipGuard) return;
       _wsPositionSkipGuard = true;
@@ -16891,10 +16908,6 @@
     var overlay = document.getElementById(OVERLAY_ID);
     var highlight = document.getElementById('pmg-ws-highlight');
     var tooltip = document.getElementById('pmg-ws-tooltip');
-    var stepLabel = document.getElementById('pmg-ws-step-label');
-    var titleEl = document.getElementById('pmg-ws-title');
-    var textEl = document.getElementById('pmg-ws-text');
-    var nextBtn = document.getElementById('pmg-ws-next');
 
     var rect = target.getBoundingClientRect();
     var attempts = scrollAttempts || 0;
@@ -16929,22 +16942,6 @@
     tipLeft = Math.max(margin, Math.min(tipLeft, window.innerWidth - tipW - margin));
     tooltip.style.top = tipTop + 'px';
     tooltip.style.left = tipLeft + 'px';
-
-    var activeCount = STEPS.filter(function (s) {
-      var el = document.querySelector(s.selector);
-      if (!el && s.fallback) el = document.querySelector(s.fallback);
-      return !!el;
-    }).length;
-    var visibleIndex = 0;
-    for (var i = 0; i < stepIndex; i++) {
-      var el = document.querySelector(STEPS[i].selector);
-      if (!el && STEPS[i].fallback) el = document.querySelector(STEPS[i].fallback);
-      if (el) visibleIndex++;
-    }
-    stepLabel.textContent = 'Stop ' + (visibleIndex + 1) + ' of ' + activeCount;
-    titleEl.textContent = step.title;
-    textEl.textContent = step.text;
-    nextBtn.textContent = stepIndex === STEPS.length - 1 ? 'Done' : 'Next';
 
     if (overlay.classList.contains('is-transitioning')) {
       setTimeout(function () { overlay.classList.remove('is-transitioning'); }, isMobile ? 100 : 30);
@@ -17029,15 +17026,14 @@
     stepIndex++;
     var step = STEPS[stepIndex];
 
-    var target = document.querySelector(step.selector);
-    if (!target && step.fallback) target = document.querySelector(step.fallback);
+    if (step.prepare) { try { step.prepare(); } catch (e) {} }
+
+    var target = resolveTarget(step);
     if (!target && stepIndex < STEPS.length - 1) {
       nextStep();
       return;
     }
     if (!target) { finish(true); return; }
-
-    if (step.prepare) { try { step.prepare(); } catch (e) {} }
 
     var overlay = document.getElementById(OVERLAY_ID);
     overlay.classList.add('is-transitioning');
