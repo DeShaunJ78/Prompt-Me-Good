@@ -2060,7 +2060,7 @@
     .bk-hint { font-size: var(--text-xs); color: var(--color-text-muted); font-style: italic; }
     .bk-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-2); }
     .ob-overlay {
-      position: fixed; inset: 0; z-index: 60; pointer-events: none; display: none;
+      position: fixed; inset: 0; z-index: 10000; pointer-events: none; display: none;
     }
     .ob-overlay.is-open { display: block; }
     .ob-backdrop {
@@ -2098,10 +2098,10 @@
     .ob-skip { background: transparent; border: 0; color: var(--color-text-muted); cursor: pointer; font-size: var(--text-xs); padding: 8px 4px; text-decoration: underline; }
     .ob-skip:hover { color: var(--color-text); }
     @media (max-width: 640px) {
-      .ob-tooltip { max-width: calc(100vw - 24px); min-width: 0; left: 12px !important; right: 12px; }
-      /* Mobile: drop position transitions and use a clean opacity fade only — */
-      /* this kills the choppy look caused by simultaneous scroll + position animation. */
+      .ob-tooltip { max-width: calc(100vw - 28px); min-width: 0; left: 14px !important; right: 14px; }
       .ob-highlight, .ob-tooltip { transition: opacity 0.18s ease-out; }
+      .ob-title { font-size: 15px; line-height: 1.22; text-wrap: balance; }
+      .ob-text { font-size: 13px; }
     }
     @media (prefers-reduced-motion: reduce) {
       .ob-backdrop, .ob-highlight, .ob-tooltip { transition: none; }
@@ -3067,7 +3067,13 @@
     .workspace-header { margin: 0 0 var(--space-4); padding: 0 0 var(--space-3); border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); display: flex; flex-direction: column; gap: 4px; }
     .workspace-header-eyebrow { display: inline-block; font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-primary); }
     .workspace-header-sub { margin: 0; color: var(--color-text-muted); font-size: var(--text-sm); line-height: 1.5; }
-    @media (max-width: 640px) { .workspace-header { padding-bottom: var(--space-2); margin-bottom: var(--space-3); } }
+    @media (max-width: 640px) {
+      .workspace-header { padding-bottom: var(--space-2); margin-bottom: var(--space-3); }
+      #result-title, .run-section-title, #vault-title,
+      .what-you-get-title, .panel-head h2, .pmg-stack-card-head h2 {
+        text-wrap: balance; line-height: 1.22;
+      }
+    }
     .mode-switch{display:flex;gap:0;background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-full);padding:4px;margin-bottom:var(--space-5);width:100%;max-width:360px}
     .mode-switch-btn{flex:1;padding:10px 16px;border:none;border-radius:var(--radius-full);font-size:var(--text-sm);font-weight:600;cursor:pointer;background:transparent;color:var(--color-text-muted);transition:all 180ms ease;display:flex;align-items:center;justify-content:center;gap:6px}
     .mode-switch-btn.active{background:var(--color-primary);color:#fff;box-shadow:var(--shadow-sm)}
@@ -3880,7 +3886,7 @@
 
         <section class="panel" id="result-panel" aria-labelledby="result-title">
           <div class="panel-head">
-            <h2 id="result-title">Your Fixed Prompt</h2>
+            <h2 id="result-title" data-tour-target="fixed-prompt-output">Your Fixed Prompt</h2>
             <p>Run With AI right here, or copy it to use anywhere.</p>
             <p class="demo-next-step" id="demo-next-step" role="status" aria-live="polite" hidden>This is a sample prompt. Copy it, refine it, or go back and enter your own goal.</p>
           </div>
@@ -3985,7 +3991,7 @@
             <!-- RUN WITH AI — hidden until a prompt is generated -->
             <div class="run-section" id="runSection" hidden>
               <div class="run-section-divider"></div>
-              <h3 class="run-section-title">Run This Prompt With AI</h3>
+              <h3 class="run-section-title" id="run-section-title" data-tour-target="run-with-ai">Run This Prompt With AI</h3>
               <p class="run-section-helper">Execute this prompt and get your AI response — right here.</p>
               <button class="btn btn-secondary run-btn" type="button" id="imageBtn" onclick="generateImage()" style="display:none;">🎨 Generate Image</button>
               <button class="btn btn-primary run-btn" type="button" id="runBtn" onclick="runWithAI()">
@@ -4217,7 +4223,7 @@
           <div class="panel-head">
             <div class="panel-head-row">
               <div>
-                <h2>🔒 Prompt Vault</h2>
+                <h2 id="vault-title" data-tour-target="vault-title">🔒 Prompt Vault</h2>
                 <p>Stored on this device. Export anytime. Your last 25 prompts stay in your browser.</p>
               </div>
               <div class="panel-head-actions">
@@ -8357,30 +8363,52 @@ Context:
           text: "This is the main action. Tap it and we turn your idea into a structured prompt with role, context, tone, format, and next steps baked in. Your finished prompt appears in the output box below."
         },
         {
-          selector: '#resultBox',
-          fallbackSelector: '#tour-final-actions',
+          selector: '#result-title',
+          fallbackSelector: '#resultBox',
           title: 'Your prompt appears here',
           text: "This is your generated prompt. You can click inside to edit it, tap Copy Prompt to take it to any AI tool, or hit Run With AI to execute it right here and see the answer without leaving the app."
         },
         {
-          selector: '#runSection',
-          fallbackSelector: '#runBtn',
+          selector: '#runBtn',
+          fallbackSelector: '#run-section-title',
           title: 'Run With AI — get your answer instantly',
           text: "After generating a prompt, tap Run With AI to execute it against an AI model. The response streams right below — no copy-paste, no switching tabs. Use Run Again to iterate or Copy Response to save it.",
           onEnter: function () {
             var rs = document.getElementById('runSection');
-            if (rs && rs.hidden) { rs.hidden = false; rs.dataset.tourRevealed = '1'; }
+            if (rs) {
+              if (rs.hidden) { rs.hidden = false; rs.dataset.tourRevealedHidden = '1'; }
+              if (rs.classList.contains('pmg-t15-hide-dup')) { rs.classList.remove('pmg-t15-hide-dup'); rs.dataset.tourRevealedDup = '1'; }
+              if (getComputedStyle(rs).display === 'none') { rs.style.setProperty('display', 'block', 'important'); rs.dataset.tourRevealedDisplay = '1'; }
+            }
           },
           onLeave: function () {
             var rs = document.getElementById('runSection');
-            if (rs && rs.dataset.tourRevealed === '1') { rs.hidden = true; delete rs.dataset.tourRevealed; }
+            if (rs) {
+              if (rs.dataset.tourRevealedHidden === '1') { rs.hidden = true; delete rs.dataset.tourRevealedHidden; }
+              if (rs.dataset.tourRevealedDup === '1') { rs.classList.add('pmg-t15-hide-dup'); delete rs.dataset.tourRevealedDup; }
+              if (rs.dataset.tourRevealedDisplay === '1') { rs.style.removeProperty('display'); delete rs.dataset.tourRevealedDisplay; }
+            }
           }
         },
         {
           selector: '#modeSwitch',
           fallbackSelector: '#imageModeBtn',
           title: 'Write or create an image',
-          text: "Switch between Write Something for text prompts (emails, plans, scripts) and Create An Image for DALL\u00B7E 3 image generation. In image mode, the Photography Suite appears with Style, Camera, Lighting, Composition, and Color pills to shape your image."
+          text: "Switch between Write Something for text prompts (emails, plans, scripts) and Create An Image for DALL\u00B7E 3 image generation. In image mode, the Photography Suite appears with Style, Camera, Lighting, Composition, and Color pills to shape your image.",
+          onEnter: function () {
+            var ms = document.getElementById('modeSwitch');
+            if (ms && getComputedStyle(ms).display === 'none') {
+              ms.style.setProperty('display', 'flex', 'important');
+              ms.dataset.tourRevealed = '1';
+            }
+          },
+          onLeave: function () {
+            var ms = document.getElementById('modeSwitch');
+            if (ms && ms.dataset.tourRevealed === '1') {
+              ms.style.removeProperty('display');
+              delete ms.dataset.tourRevealed;
+            }
+          }
         },
         {
           selector: '#guided-mode-btn',
@@ -8406,23 +8434,31 @@ Context:
           }
         },
         {
-          selector: '#resultBox',
-          fallbackSelector: '#tour-final-actions',
+          selector: '#result-title',
+          fallbackSelector: '#resultBox',
           title: 'Step 3: Here is your finished prompt',
           text: "This is your generated prompt. You can click inside to edit the wording, use the refinement buttons (More Detailed, More Bold, Beginner Friendly) to upgrade it, or Fine-Tune it with a plain-English instruction."
         },
         {
-          selector: '#runSection',
-          fallbackSelector: '#copy-btn',
+          selector: '#runBtn',
+          fallbackSelector: '#run-section-title',
           title: 'Step 4: Run it or copy it',
           text: "Tap Run With AI to execute this prompt and see the AI\u2019s answer right here. Or use Copy Prompt to paste it into ChatGPT, Claude, or Perplexity — we highlight the best fit for your goal.",
           onEnter: function () {
             var rs = document.getElementById('runSection');
-            if (rs && rs.hidden) { rs.hidden = false; rs.dataset.tourRevealed = '1'; }
+            if (rs) {
+              if (rs.hidden) { rs.hidden = false; rs.dataset.tourRevealedHidden = '1'; }
+              if (rs.classList.contains('pmg-t15-hide-dup')) { rs.classList.remove('pmg-t15-hide-dup'); rs.dataset.tourRevealedDup = '1'; }
+              if (getComputedStyle(rs).display === 'none') { rs.style.setProperty('display', 'block', 'important'); rs.dataset.tourRevealedDisplay = '1'; }
+            }
           },
           onLeave: function () {
             var rs = document.getElementById('runSection');
-            if (rs && rs.dataset.tourRevealed === '1') { rs.hidden = true; delete rs.dataset.tourRevealed; }
+            if (rs) {
+              if (rs.dataset.tourRevealedHidden === '1') { rs.hidden = true; delete rs.dataset.tourRevealedHidden; }
+              if (rs.dataset.tourRevealedDup === '1') { rs.classList.add('pmg-t15-hide-dup'); delete rs.dataset.tourRevealedDup; }
+              if (rs.dataset.tourRevealedDisplay === '1') { rs.style.removeProperty('display'); delete rs.dataset.tourRevealedDisplay; }
+            }
           }
         },
         {
@@ -8498,8 +8534,16 @@ Context:
         const step = currentSteps[obIndex];
         if (!step) return;
         let target = document.querySelector(step.selector);
+        if (target) {
+          var _r = target.getBoundingClientRect();
+          if (_r.width === 0 && _r.height === 0) target = null;
+        }
         if (!target && step.fallbackSelector) target = document.querySelector(step.fallbackSelector);
-        if (!target) { obFinish(); return; }
+        if (target) {
+          var _r2 = target.getBoundingClientRect();
+          if (_r2.width === 0 && _r2.height === 0) target = null;
+        }
+        if (!target) { obNextStep(); return; }
         const rect = target.getBoundingClientRect();
         const attempts = scrollAttempts || 0;
         const isMobile = window.matchMedia('(max-width: 640px)').matches;
@@ -8514,9 +8558,11 @@ Context:
         }
         const pad = 6;
         const top = rect.top - pad;
-        const left = rect.left - pad;
-        const width = rect.width + pad * 2;
-        const height = rect.height + pad * 2;
+        const left = Math.max(0, rect.left - pad);
+        const width = Math.min(rect.width + pad * 2, window.innerWidth);
+        var rawH = rect.height + pad * 2;
+        const maxHL = isMobile ? Math.min(rawH, window.innerHeight * 0.35) : rawH;
+        const height = maxHL;
         obHighlight.style.top = top + 'px';
         obHighlight.style.left = left + 'px';
         obHighlight.style.width = width + 'px';
@@ -8633,11 +8679,11 @@ Context:
         obOverlay.setAttribute('aria-hidden', 'false');
         obOverlay.inert = false;
         obBindListeners();
+        obInvokeStepEnter();
         window.setTimeout(function () {
           obPositionStep();
           try { obNextBtn.focus({ preventScroll: true }); } catch (e) { obNextBtn.focus(); }
-          obInvokeStepEnter();
-        }, 50);
+        }, 100);
       }
       function obFinish(opts) {
         const completed = !!(opts && opts.completed);
@@ -8750,11 +8796,9 @@ Context:
         obInvokeStepLeave();
         if (obIndex >= currentSteps.length - 1) { obFinish({ completed: true }); return; }
         obIndex += 1;
-        // Pre-stage: fade highlight + tooltip out immediately so the user
-        // never sees them sliding to the next target during the scroll.
         obOverlay.classList.add('is-transitioning');
-        obPositionStep();
         obInvokeStepEnter();
+        window.setTimeout(function () { obPositionStep(); }, 80);
       }
       obNextBtn.addEventListener('click', obNextStep);
       obSkipBtn.addEventListener('click', function () { obFinish(); });

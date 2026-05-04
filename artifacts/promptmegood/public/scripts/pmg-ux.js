@@ -5616,7 +5616,7 @@
       '  <div class="pmg-stack-card" id="' + SUITE_ID + '">',
       '    <div class="pmg-stack-card-head">',
       '      <span class="pmg-eyebrow">Step 2</span>',
-      '      <h2 id="' + SUITE_ID + '-title">📸 Photography Suite</h2>',
+      '      <h2 id="' + SUITE_ID + '-title" data-tour-target="photo-suite-title">📸 Photography Suite</h2>',
       '    </div>',
       '    <p class="pmg-stack-helper">Pick a vibe in each group. We\'ll build the perfect photo prompt and send it straight to the image generator — no copy and paste needed.</p>',
       /* Task #35: empty container for the user-saved (My Combos) row.
@@ -16641,33 +16641,56 @@
       prepare: null
     },
     {
-      selector: '#resultBox',
+      selector: '#result-title',
+      fallback: '#resultBox',
       title: 'Your Better Prompt',
       text: 'PromptMeGood rewrites your idea into a clear, structured prompt that AI actually understands.',
       prepare: null
     },
     {
       selector: '#runBtn',
-      fallback: '#runSection',
+      fallback: '#run-section-title',
       title: 'Run With AI',
       text: 'Execute your prompt and get an AI response right here — no copy-paste needed.',
       prepare: function () {
         var rs = document.getElementById('runSection');
-        if (rs && rs.hidden) { rs.hidden = false; rs.dataset.wsTourRevealed = '1'; }
+        if (rs) {
+          if (rs.hidden) { rs.hidden = false; rs.dataset.wsTourRevH = '1'; }
+          if (rs.classList.contains('pmg-t15-hide-dup')) { rs.classList.remove('pmg-t15-hide-dup'); rs.dataset.wsTourRevD = '1'; }
+          if (getComputedStyle(rs).display === 'none') { rs.style.setProperty('display', 'block', 'important'); rs.dataset.wsTourRevS = '1'; }
+        }
       },
       cleanup: function () {
         var rs = document.getElementById('runSection');
-        if (rs && rs.dataset.wsTourRevealed === '1') { rs.hidden = true; delete rs.dataset.wsTourRevealed; }
+        if (rs) {
+          if (rs.dataset.wsTourRevH === '1') { rs.hidden = true; delete rs.dataset.wsTourRevH; }
+          if (rs.dataset.wsTourRevD === '1') { rs.classList.add('pmg-t15-hide-dup'); delete rs.dataset.wsTourRevD; }
+          if (rs.dataset.wsTourRevS === '1') { rs.style.removeProperty('display'); delete rs.dataset.wsTourRevS; }
+        }
       }
     },
     {
       selector: '#pmg-power-moves',
       title: 'Power Moves',
       text: 'Quick-action shortcuts: try image mode, save to vault, or check prompt quality — one tap each.',
-      prepare: null
+      prepare: function () {
+        var pm = document.getElementById('pmg-power-moves');
+        if (pm && getComputedStyle(pm).display === 'none') {
+          pm.style.setProperty('display', 'block', 'important');
+          pm.dataset.wsTourRevealed = '1';
+        }
+      },
+      cleanup: function () {
+        var pm = document.getElementById('pmg-power-moves');
+        if (pm && pm.dataset.wsTourRevealed === '1') {
+          pm.style.removeProperty('display');
+          delete pm.dataset.wsTourRevealed;
+        }
+      }
     },
     {
-      selector: '#history',
+      selector: '#vault-title',
+      fallback: '#history',
       title: 'Prompt Vault',
       text: 'Every prompt you generate is saved here on your device. Search, compare, export, or restore any time.',
       prepare: function () {
@@ -16681,8 +16704,8 @@
       }
     },
     {
-      selector: '#photo-suite-section',
-      fallback: '#pmg-photo-suite',
+      selector: '#pmg-photo-suite-title',
+      fallback: '#photo-suite-section',
       title: 'Photography Suite',
       text: 'Switch to image mode and build DALL\u00B7E 3 prompts with style, lighting, and composition controls.',
       prepare: function () {
@@ -16730,7 +16753,7 @@
       '#' + INVITE_ID + ' .ws-tour-dismiss:hover { color: var(--color-text); }',
 
       '#' + OVERLAY_ID + ' {',
-      '  position: fixed; inset: 0; z-index: 210; pointer-events: none; display: none;',
+      '  position: fixed; inset: 0; z-index: 10000; pointer-events: none; display: none;',
       '}',
       '#' + OVERLAY_ID + '.is-open { display: block; }',
       '#' + OVERLAY_ID + ' .ws-backdrop {',
@@ -16775,8 +16798,10 @@
       '#' + OVERLAY_ID + ' .ws-skip:hover { color: var(--color-text); }',
 
       '@media (max-width: 640px) {',
-      '  #' + OVERLAY_ID + ' .ws-tooltip { max-width: calc(100vw - 24px); min-width: 0; left: 12px !important; right: 12px; }',
+      '  #' + OVERLAY_ID + ' .ws-tooltip { max-width: calc(100vw - 28px); min-width: 0; left: 14px !important; right: 14px; }',
       '  #' + OVERLAY_ID + ' .ws-highlight, #' + OVERLAY_ID + ' .ws-tooltip { transition: opacity 0.18s ease-out; }',
+      '  #' + OVERLAY_ID + ' .ws-title { font-size: 15px; line-height: 1.22; text-wrap: balance; }',
+      '  #' + OVERLAY_ID + ' .ws-text { font-size: 13px; }',
       '  #' + INVITE_ID + ' { bottom: 12px; padding: 14px 16px; }',
       '}',
       '@media (prefers-reduced-motion: reduce) {',
@@ -16846,7 +16871,9 @@
     var step = STEPS[stepIndex];
     if (!step) { finish(); return; }
     var target = document.querySelector(step.selector);
+    if (target) { var _r = target.getBoundingClientRect(); if (_r.width === 0 && _r.height === 0) target = null; }
     if (!target && step.fallback) target = document.querySelector(step.fallback);
+    if (target) { var _r2 = target.getBoundingClientRect(); if (_r2.width === 0 && _r2.height === 0) target = null; }
     if (!target) { nextStep(); return; }
 
     var overlay = document.getElementById(OVERLAY_ID);
@@ -16870,10 +16897,14 @@
     }
 
     var pad = 6;
+    var hlLeft = Math.max(0, rect.left - pad);
+    var hlWidth = Math.min(rect.width + pad * 2, window.innerWidth);
+    var rawH = rect.height + pad * 2;
+    var hlHeight = isMobile ? Math.min(rawH, window.innerHeight * 0.35) : rawH;
     highlight.style.top = (rect.top - pad) + 'px';
-    highlight.style.left = (rect.left - pad) + 'px';
-    highlight.style.width = (rect.width + pad * 2) + 'px';
-    highlight.style.height = (rect.height + pad * 2) + 'px';
+    highlight.style.left = hlLeft + 'px';
+    highlight.style.width = hlWidth + 'px';
+    highlight.style.height = hlHeight + 'px';
 
     var tipW = tooltip.getBoundingClientRect().width || 280;
     var tipH = tooltip.getBoundingClientRect().height || 140;
@@ -16934,6 +16965,8 @@
     if (scrollRaf) { cancelAnimationFrame(scrollRaf); scrollRaf = 0; }
   }
 
+  function skipHandler() { finish(); }
+
   function startTour() {
     removeInvite();
     buildOverlay();
@@ -16952,10 +16985,14 @@
         var btn = document.getElementById('pmg-ws-next');
         if (btn) btn.focus({ preventScroll: true });
       } catch (e) {}
-    }, 50);
+    }, 100);
 
-    document.getElementById('pmg-ws-next').addEventListener('click', nextStep);
-    document.getElementById('pmg-ws-skip').addEventListener('click', function () { finish(); });
+    var nextBtn = document.getElementById('pmg-ws-next');
+    var skipBtn = document.getElementById('pmg-ws-skip');
+    nextBtn.removeEventListener('click', nextStep);
+    skipBtn.removeEventListener('click', skipHandler);
+    nextBtn.addEventListener('click', nextStep);
+    skipBtn.addEventListener('click', skipHandler);
     document.addEventListener('keydown', tourKeyHandler);
   }
 
@@ -16990,7 +17027,7 @@
 
     var overlay = document.getElementById(OVERLAY_ID);
     overlay.classList.add('is-transitioning');
-    positionStep();
+    setTimeout(function () { positionStep(); }, 80);
   }
 
   function finish(completed) {
@@ -17002,6 +17039,10 @@
     }
     detachListeners();
     document.removeEventListener('keydown', tourKeyHandler);
+    var nextBtn = document.getElementById('pmg-ws-next');
+    var skipBtn = document.getElementById('pmg-ws-skip');
+    if (nextBtn) nextBtn.removeEventListener('click', nextStep);
+    if (skipBtn) skipBtn.removeEventListener('click', skipHandler);
     var hl = document.getElementById('pmg-ws-highlight');
     if (hl) { hl.style.top = '-9999px'; hl.style.left = '-9999px'; hl.style.width = '0'; hl.style.height = '0'; }
     stepIndex = 0;
