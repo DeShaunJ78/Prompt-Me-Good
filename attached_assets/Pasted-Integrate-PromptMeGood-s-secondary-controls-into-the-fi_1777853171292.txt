@@ -1,0 +1,118 @@
+Integrate PromptMeGood’s secondary controls into the first-use flow using progressive disclosure and contextual “Power Moves.”
+
+Goal:
+Do not hide PromptMeGood’s powerful controls. Sequence them so new users first get value, then naturally discover the deeper workstation controls.
+
+Required UX Model:
+Use three layers:
+1. Instant Mode
+2. Power Moves
+3. Full Workstation
+
+Layer 1: Instant Mode
+Before the first prompt is generated, show only the essential first-use controls:
+- Your Goal
+- Fix My Prompt
+- Help Me Start
+- Customize Output collapsed
+- Optional Add File/Image collapsed or secondary
+
+The input and Fix My Prompt button must remain visible without scrolling on desktop and mobile.
+
+Layer 2: Power Moves
+After the first prompt is generated, reveal a compact “Power Moves” section near the generated prompt.
+
+Power Moves should include:
+- Improve With AI
+- Change Tone
+- Change Format
+- Add Rules Or Limits
+- Make More Detailed
+- Beginner Friendly
+- Try In Image Mode
+- Save To Vault
+- Check Prompt Strength
+
+Each Power Move should either:
+- run an existing preset,
+- open the relevant existing control,
+- scroll/focus the relevant existing control,
+- or apply the existing feature directly.
+
+Do not create fake buttons that do nothing.
+
+Mapping:
+- Improve With AI → existing Improve With AI flow
+- Change Tone → open/focus Tone control
+- Change Format → open/focus Output Format control
+- Add Rules Or Limits → open/focus “What Should AI Avoid?”
+- Make More Detailed → existing More Detailed preset
+- Beginner Friendly → existing Beginner Friendly preset or Experience Level control
+- Try In Image Mode → send or scroll to Photography Suite / image prompt flow
+- Save To Vault → existing save/vault behavior
+- Check Prompt Strength → existing Prompt Strength / quality check
+
+Layer 3: Full Workstation
+After the first AI response appears, show a non-blocking prompt:
+“Want To See The Full Workstation?”
+
+Buttons:
+- Show Me The Full Power
+- Not Now
+
+If the user chooses “Show Me The Full Power,” start a rewritten tour that walks through:
+- Original Idea
+- Better Prompt
+- Run With AI
+- AI Response
+- Power Moves
+- Customize Output
+- Prompt Strength
+- Suggested Changes
+- File/Image Upload
+- Photography Suite
+- Image Generator
+- Prompt Vault
+- Prompt History
+- Workspace
+
+Tour Rules:
+- Do not show the tour before the first AI response.
+- Do not block copying, saving, or running again.
+- Do not point to hidden controls unless the tour opens them first.
+- On mobile, keep overlays compact.
+
+Persistent Discovery:
+Add a small non-intrusive “PromptMeGood Can Also” rail or chip row.
+
+Desktop:
+- Right-side slim rail or compact card near the workstation.
+
+Mobile:
+- Horizontal chips below the first result.
+
+Suggested chips:
+- Tune Tone
+- Add Rules
+- Improve Prompt
+- Run With AI
+- Create Images
+- Save Work
+
+These chips should reveal or focus existing controls.
+
+Important:
+- Do not remove any existing power features.
+- Do not redesign the brand.
+- Do not change pricing.
+- Do not create nonfunctional controls.
+- Keep first-use speed intact.
+
+Acceptance Tests:
+- New user can still land, type, and click Fix My Prompt without scrolling.
+- Advanced controls do not overwhelm first view.
+- After prompt generation, Power Moves appear near the generated prompt.
+- Every Power Move maps to a real existing feature.
+- After AI response, user is invited into the full workstation tour.
+- Tour introduces secondary controls after value has been delivered.
+- Mobile remains linear and does not horizontally overflow.
