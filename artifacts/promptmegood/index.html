@@ -9020,13 +9020,34 @@ Context:
         var trigger = document.getElementById(triggerId);
         var menu = document.getElementById(menuId);
         if (!trigger || !menu) return;
+        trigger.addEventListener('pointerdown', function () {
+          trigger.__pmgSavedScroll = window.scrollY;
+        }, { passive: true });
         trigger.addEventListener('click', function (e) {
+          var savedScroll = typeof trigger.__pmgSavedScroll === 'number'
+            ? trigger.__pmgSavedScroll : window.scrollY;
+          delete trigger.__pmgSavedScroll;
+          var fired = false;
+          var guard = function () {
+            if (!fired && Math.abs(window.scrollY - savedScroll) > 10) {
+              fired = true;
+              window.scrollTo(0, savedScroll);
+            }
+            window.removeEventListener('scroll', guard);
+          };
+          window.addEventListener('scroll', guard, { passive: false });
           var isOpen = !menu.hidden;
           closeAllReplayMenus();
           if (!isOpen) {
             menu.hidden = false;
             trigger.setAttribute('aria-expanded', 'true');
           }
+          requestAnimationFrame(function () {
+            if (!fired && Math.abs(window.scrollY - savedScroll) > 10) {
+              window.scrollTo(0, savedScroll);
+            }
+            window.removeEventListener('scroll', guard);
+          });
         });
         menu.querySelectorAll('[data-tour]').forEach(function (btn) {
           btn.addEventListener('click', function () {

@@ -1,0 +1,51 @@
+Do a surgical UX polish patch only. Do not redesign the site.
+
+Goal:
+Fix small friction issues without disturbing the current high site rating, visual design, layout identity, or working tour behavior.
+
+Strict boundaries:
+- Do not change hero, branding, color system, fonts, pricing, footer, Photography Suite heading, or general page structure.
+- Do not remove Photography Suite.
+- Do not convert the whole page into tabs.
+- Do not rewrite tour logic.
+- Do not disturb Replay Tour dropdown behavior.
+- Do not make broad layout changes.
+
+Fix only these items:
+
+1. Generated Prompt Card polish
+- Make the generated prompt/result area more clearly labeled.
+- Keep the current visual style.
+- Add or strengthen the label “Your Fixed Prompt” directly on the result card.
+- Ensure the generated prompt body has a clear bordered/card container.
+- Empty state and generated state should both clearly belong to the same card.
+
+2. “Show Full Prompt” placement
+- Move or position the “Show Full Prompt” toggle so it appears directly attached to the actual generated prompt box it controls.
+- It should not appear above an unrelated small box or two boxes away.
+- Add aria-controls pointing to the generated prompt container.
+- Keep the toggle styling consistent with the current design.
+
+3. Missing labels only
+- Add non-visual or minimal labels/aria-labels for:
+  - #pmg-mmpro-intent
+  - #pmg-mmpro-platform
+  - #pmg-mmpro-style
+- Remove any accessibility label that says “mirror” and replace with user-facing text like “Auto Optimize.”
+
+4. Premature action polish
+- Do not hide major features.
+- Only disable or visually soften actions that cannot work yet.
+- If a button requires generated content first, add a small helper line like “Generate a prompt first.”
+- Do not remove the buttons permanently.
+
+Acceptance test:
+- Desktop still looks visually the same overall.
+- Mobile still looks visually the same overall.
+- Site rating/design impression should not drop.
+- Photography Suite heading remains fixed.
+- Replay Tour dropdown remains fixed.
+- Enter a prompt and click Fix My Prompt.
+- The generated prompt area is immediately obvious.
+- “Show Full Prompt” is visually attached to the correct generated prompt box.
+- No major layout shifts or redesigns.
