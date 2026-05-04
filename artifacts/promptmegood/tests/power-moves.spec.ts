@@ -5,8 +5,10 @@ test.setTimeout(90_000);
 const MOCK_PROMPT_CHUNK = "This is a generated prompt for testing purposes. " +
   "It contains enough text to be realistic and trigger post-generation UI.";
 
-async function mockApiAndGenerate(page: import("@playwright/test").Page, goalText: string) {
-  await page.route("**/api/generate-stream", async (route) => {
+const MOCK_IMPROVE_RESPONSE = "Improved prompt: This is a clearer, stronger, more specific version of your prompt for testing.";
+
+function mockGenerateStream(page: import("@playwright/test").Page) {
+  return page.route("**/api/generate-stream", async (route) => {
     const body =
       `data: ${JSON.stringify({ text: MOCK_PROMPT_CHUNK })}\n\n` +
       `data: [DONE]\n\n`;
@@ -20,6 +22,20 @@ async function mockApiAndGenerate(page: import("@playwright/test").Page, goalTex
       body,
     });
   });
+}
+
+function mockGenerateJson(page: import("@playwright/test").Page) {
+  return page.route("**/api/generate", async (route) => {
+    await route.fulfill({
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ success: true, output: MOCK_IMPROVE_RESPONSE }),
+    });
+  });
+}
+
+async function mockApiAndGenerate(page: import("@playwright/test").Page, goalText: string) {
+  await mockGenerateStream(page);
 
   await page.goto("/");
   await page.waitForLoadState("networkidle");
@@ -84,20 +100,10 @@ test.describe("Power Moves MVP", () => {
     const qualityChip = page.locator("#pm-quality");
     await qualityChip.click();
 
-    await page.waitForTimeout(1000);
-
-    const feedbackState = await page.evaluate(() => {
+    await page.waitForFunction(() => {
       const el = document.getElementById("quality-feedback");
-      if (!el) return { exists: false, hidden: true, hasContent: false };
-      return {
-        exists: true,
-        hidden: el.hidden,
-        hasContent: el.innerHTML.trim().length > 0,
-      };
-    });
-    expect(feedbackState.exists).toBe(true);
-    expect(feedbackState.hidden).toBe(false);
-    expect(feedbackState.hasContent).toBe(true);
+      return el && !el.hidden && el.innerHTML.trim().length > 0;
+    }, { timeout: 10000 });
   });
 
   test("Try Image Mode chip → body.image-mode class is applied", async ({ page }) => {
@@ -117,7 +123,7 @@ test.describe("Power Moves MVP", () => {
     await expect(historySection).toBeAttached({ timeout: 5000 });
 
     await page.locator("#pmg-power-moves").scrollIntoViewIfNeeded();
-    await page.waitForTimeout(300);
+    await page.waitForLoadState("domcontentloaded");
 
     const scrollBefore = await page.evaluate(() => window.scrollY);
 
@@ -144,12 +150,7 @@ test.describe("Power Moves MVP", () => {
     await expect(detailedBtn).toBeVisible({ timeout: 5000 });
     await detailedBtn.click();
 
-    await page.waitForTimeout(500);
-
-    const newText = await resultBox.textContent();
-    expect(newText).toBeTruthy();
-    expect(newText!.trim()).not.toBe(originalText!.trim());
-    expect(newText).toContain("Make the answer more detailed");
+    await expect(resultBox).toContainText("Make the answer more detailed", { timeout: 5000 });
   });
 
   test("Beginner Friendly → prompt contains beginner remix instruction", async ({ page }) => {
@@ -163,36 +164,12 @@ test.describe("Power Moves MVP", () => {
     await expect(beginnerBtn).toBeVisible({ timeout: 5000 });
     await beginnerBtn.click();
 
-    await page.waitForTimeout(500);
-
-    const newText = await resultBox.textContent();
-    expect(newText).toBeTruthy();
-    expect(newText!.trim()).not.toBe(originalText!.trim());
-    expect(newText).toContain("Make the answer beginner-friendly");
+    await expect(resultBox).toContainText("Make the answer beginner-friendly", { timeout: 5000 });
   });
 
   test("Improve With AI → #improve-status appears and resultBox text changes", async ({ page }) => {
-    await page.route("**/api/generate-stream", async (route) => {
-      const body =
-        `data: ${JSON.stringify({ text: MOCK_PROMPT_CHUNK })}\n\n` +
-        `data: [DONE]\n\n`;
-      await route.fulfill({
-        status: 200,
-        headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", "Connection": "keep-alive" },
-        body,
-      });
-    });
-
-    await page.route("**/api/generate", async (route) => {
-      await route.fulfill({
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          success: true,
-          output: "Improved prompt: This is a clearer, stronger, more specific version of your prompt for testing.",
-        }),
-      });
-    });
+    await mockGenerateStream(page);
+    await mockGenerateJson(page);
 
     await page.goto("/");
     await page.waitForLoadState("networkidle");
@@ -217,10 +194,7 @@ test.describe("Power Moves MVP", () => {
 
     await expect(improveBtn).toBeEnabled({ timeout: 30000 });
 
-    await page.waitForFunction(() => {
-      const el = document.getElementById("improve-status");
-      return !el || el.hidden;
-    }, undefined, { timeout: 10000 });
+    await expect(page.locator("#improve-status")).toBeHidden({ timeout: 10000 });
 
     const newText = await resultBox.textContent();
     expect(newText).toBeTruthy();
