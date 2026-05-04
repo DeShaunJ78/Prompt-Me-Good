@@ -383,7 +383,15 @@
       '#' + SHEET_ID + '-wrap{position:relative;width:100%;display:flex;justify-content:center}',
       '#pmg-share-btn-image{margin-left:0}',
       '@keyframes pmgShareFade{from{opacity:0}to{opacity:1}}',
-      '@keyframes pmgShareSlide{from{transform:translateY(20px);opacity:.4}to{transform:none;opacity:1}}'
+      '@keyframes pmgShareSlide{from{transform:translateY(20px);opacity:.4}to{transform:none;opacity:1}}',
+      '[data-theme="dark"] #' + SHEET_ID + '{background:var(--color-surface,#1c1b18);color:var(--color-text,#ece9e2)}',
+      '[data-theme="dark"] #' + SHEET_ID + ' p.pmg-share-sub{color:var(--color-text-muted,#b9b4ab)}',
+      '[data-theme="dark"] #' + SHEET_ID + ' .pmg-share-opt{background:var(--color-surface-2,#23211f);border-color:var(--color-border,#34312d);color:var(--color-text,#ece9e2)}',
+      '[data-theme="dark"] #' + SHEET_ID + ' .pmg-share-opt:hover{background:rgba(91,168,176,0.12);border-color:rgba(91,168,176,0.35)}',
+      '[data-theme="dark"] #' + SHEET_ID + ' .pmg-share-opt-title{color:var(--color-text,#ece9e2)}',
+      '[data-theme="dark"] #' + SHEET_ID + ' .pmg-share-opt-desc{color:var(--color-text-muted,#b9b4ab)}',
+      '[data-theme="dark"] #' + SHEET_ID + ' .pmg-share-close{color:var(--color-text-muted,#b9b4ab)}',
+      '[data-theme="dark"] #' + SHEET_ID + ' .pmg-share-close:hover{background:var(--color-surface-2,#23211f);color:var(--color-text,#ece9e2)}'
     ].join('');
     var style = document.createElement('style');
     style.id = 'pmg-share-styles';

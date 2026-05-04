@@ -204,7 +204,10 @@
       '@media (prefers-reduced-motion:reduce){',
       '  .pmg-wn-btn,.pmg-wn-btn.pmg-wn-primary,.pmg-wn-btn.pmg-wn-secondary{transition:none;}',
       '  .pmg-wn-highlight{transition:none;}',
-      '}'
+      '}',
+      '[data-theme="dark"] .pmg-wn-panel{background:var(--color-surface,#1c1b18);border-color:var(--color-border,#34312d);}',
+      '[data-theme="dark"] .pmg-wn-safety{background:#3d2807;border-color:#5a3d10;color:#fcd34d;}',
+      '[data-theme="dark"] .pmg-wn-safety strong{color:#fef3c7;}'
     ].join('\n');
     document.head.appendChild(s);
   }
