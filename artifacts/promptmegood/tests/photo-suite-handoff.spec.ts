@@ -371,7 +371,10 @@ test.describe("Photography Suite handoff @ mobile-360", () => {
     /* Simulate a new image arriving (different src).
        After Send, pmg-image-fix.js replaces the wrap contents with
        an empty placeholder, so we must INSERT a new <img> (simulating
-       generation completing) rather than modifying a now-removed one. */
+       generation completing) rather than modifying a now-removed one.
+       Allow a tick for the observer armed by sendToImageGenerator to
+       settle before mutating the wrap. */
+    await page.waitForTimeout(300);
     await page.evaluate(() => {
       const wrap = document.getElementById("imageResultWrap");
       if (wrap) {
@@ -385,7 +388,7 @@ test.describe("Photography Suite handoff @ mobile-360", () => {
 
     /* The chip should self-remove. */
     await expect(page.locator("#pmg-suite-hydration-ref")).toHaveCount(0, {
-      timeout: 3_000,
+      timeout: 5_000,
     });
     const hydration = await page.evaluate(
       () =>

@@ -851,6 +851,21 @@
   }
 
   /* Expose a tiny API for tests + debugging. */
+  var AVOID_RE_API = /\s*\.\s*Avoid:\s*[^.]*\.?\s*$/i;
+  function applyAvoidClause() {
+    var goal = document.getElementById('goal');
+    if (!goal || typeof goal.value !== 'string') return;
+    var base = goal.value.replace(AVOID_RE_API, '').replace(/\s+$/, '');
+    var negs = getNegativePills();
+    if (base && negs.length) {
+      var values = negs.map(function (p) { return p.value; });
+      var trimmed = base.replace(/[.\s]+$/, '');
+      goal.value = trimmed + '. Avoid: ' + values.join(', ') + '.';
+    } else if (base !== goal.value) {
+      goal.value = base;
+    }
+  }
+
   window.__pmgSuggestions = {
     version: SCRIPT_VERSION,
     compute: computeSuggestions,
@@ -858,6 +873,7 @@
     setAvoiding: setAvoiding,
     isAvoiding: isAvoiding,
     clearNegatives: clearAllNegatives,
-    refresh: refreshAll
+    refresh: refreshAll,
+    applyAvoidClause: applyAvoidClause
   };
 })();

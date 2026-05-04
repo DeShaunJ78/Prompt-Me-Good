@@ -16080,8 +16080,15 @@
   function patchImageGeneration() {
     var origRunImage = window.runImageGeneration;
     if (!origRunImage || origRunImage.__pmgT103Patched) return;
+    var genWasSame = (window.generateImage === origRunImage);
 
-    window.runImageGeneration = async function () {
+    var t103Wrapper = async function () {
+      try {
+        var sugApi = window.__pmgSuggestions;
+        if (sugApi && typeof sugApi.applyAvoidClause === 'function') {
+          sugApi.applyAvoidClause();
+        }
+      } catch (_) {}
       var goal = document.getElementById('goal');
       var desc = ((goal && goal.value) || '').trim();
       if (!desc) { alert('Describe the image you want first, then click Generate Image.'); return; }
@@ -16130,8 +16137,11 @@
         if (againBtn) { againBtn.disabled = false; againBtn.style.opacity = ''; }
       }
     };
-    window.runImageGeneration.__pmgT103Patched = true;
-    window.generateImage = window.runImageGeneration;
+    t103Wrapper.__pmgT103Patched = true;
+    window.runImageGeneration = t103Wrapper;
+    if (genWasSame) {
+      window.generateImage = t103Wrapper;
+    }
   }
 
   /* ── P4: Post-Response Conversion Nudge ── */
