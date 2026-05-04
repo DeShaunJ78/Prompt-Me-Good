@@ -1,0 +1,121 @@
+Fix the PromptMeGood mobile tours only: Intro Tour and Workstation Tour.
+
+Clarification:
+When fixing ugly/asymmetrical wrapping, I mean the actual site section titles/headings underneath the tour, not just the tour modal titles.
+
+Do not redesign the site.
+Do not break working prompt builder, Run With AI, image generation, pricing, legal pages, or desktop layout.
+Do not change pricing/legal/SEO copy.
+This is a surgical mobile tour alignment and mobile heading polish fix.
+
+Primary issues:
+1. Tour highlights are not pointing to the UI areas they describe.
+2. Some actual site headings/titles wrap awkwardly on mobile and look visually uneven.
+3. Prompt Vault and Photography Suite glitched during the tour; if those areas are too broad or unstable, highlight their titles/headers instead.
+
+Fix both:
+- Intro Tour
+- Workstation Tour
+
+Mobile target:
+390×844 and similar iPhone widths.
+
+Tour targeting rules:
+- Use stable selectors for every step.
+- Add explicit `data-tour-target` attributes to the actual elements being explained.
+- Do not target huge containers unless the whole container is truly the subject.
+- If a section is too tall, glitchy, hidden, collapsed, or unstable, target the title/header instead.
+- Scroll/open the correct area before measuring the highlight.
+- Use `scrollIntoView({ block: "center", inline: "nearest" })` or sticky-header-aware scrolling.
+- Recalculate highlight rectangle after scrolling and layout settles.
+- Clamp highlight box inside mobile viewport.
+- Add small padding around highlight, not huge boxes.
+
+Tour step target mapping:
+
+Intro Tour:
+- Start/New Prompt or welcome/command center:
+  highlight command center title/header or “Start A New Prompt” button.
+- Your prompt appears here / Your Better Prompt:
+  highlight the actual output card title/header or placeholder card title, such as “Your Fixed Prompt Will Appear Here.”
+- Run With AI:
+  highlight “Run This Prompt” section title or the “Run With AI Here” button.
+- Write or create an image:
+  highlight the Write/Create Image mode switch or “Photography Suite” title/header.
+- Help Me Start:
+  highlight the “Help Me Start” button only.
+
+Workstation Tour:
+- Your Better Prompt:
+  highlight output card title/header or fixed prompt placeholder title.
+- Run With AI:
+  highlight “Run This Prompt” title or “Run With AI Here” button.
+- Prompt Vault:
+  highlight the “Prompt Vault” title/header or Prompt Vault nav chip/pill, not the whole vault list.
+- Photography Suite:
+  highlight the “Photography Suite” title/header or first visible Photography Suite group title, not the full tall suite.
+- Any image-mode step:
+  highlight image mode toggle or “Photography Suite” title/header.
+
+Actual site title/mobile heading polish:
+Fix mobile wrapping/alignment for real page headings and section titles visible during the tours, especially:
+- “Your Fixed Prompt Will Appear Here”
+- “Run This Prompt”
+- “Power Moves”
+- “Why your wins worked”
+- “What Do You Want To Do?”
+- “Photography Suite”
+- “Prompt Vault”
+- “Need Ideas? Try An Example”
+- “Write or create an image” only if it exists as an actual site heading
+- any heading/title that wraps with a single orphan word or looks lopsided on 390px mobile.
+
+Do not rewrite the product meaning.
+You may make small copy/line-break adjustments only when needed for visual balance.
+
+Suggested CSS:
+- Apply mobile-only heading polish, not desktop changes.
+- Use `text-wrap: balance;` on section titles/headings where supported.
+- Use sensible max-width and centered alignment only where it improves the mobile layout.
+- Adjust line-height to around 1.15–1.28 for titles.
+- Slightly reduce font size on mobile if needed.
+- Avoid awkward orphan words.
+- Keep button labels readable and symmetrical.
+- Do not force every heading centered if the surrounding card is left-aligned; make it visually consistent with its container.
+
+Overlay/highlight behavior:
+- The dim overlay should make the highlighted target obvious.
+- Highlight ring should tightly wrap the target.
+- Tour card should not cover the target whenever possible.
+- If target is near top, place tour card lower.
+- If target is lower, place tour card higher.
+- If target cannot be found, highlight closest relevant section title instead of a random container.
+
+Acceptance tests on mobile 390×844:
+Run Intro Tour and Workstation Tour start to finish.
+
+For every step:
+1. Tour text matches the highlighted site element.
+2. Highlight surrounds the exact relevant title/button/card, not a random broad area.
+3. Target is visible and not hidden behind sticky header.
+4. Prompt Vault step highlights Prompt Vault title/header or nav chip.
+5. Photography Suite step highlights Photography Suite title/header or visible group title.
+6. Help Me Start step highlights Help Me Start button.
+7. Run With AI step highlights Run This Prompt title or Run With AI Here button.
+8. Actual site headings visible during the tour wrap cleanly and look good on mobile.
+9. No glitching/jumping during Prompt Vault or Photography Suite tour steps.
+10. No horizontal overflow.
+
+Regression checks:
+- Fix My Prompt still works.
+- Run With AI still works.
+- Image generation still works.
+- First-load mobile layout remains intact.
+- Hidden focusable controls do not regress.
+
+Return:
+- files changed
+- tour selectors added/updated
+- actual site headings adjusted
+- before/after summary for Intro Tour and Workstation Tour
+- confirmation tested at 390×844
