@@ -127,7 +127,7 @@ test.describe("Workstation tour compact overlay @ mobile-400x720", () => {
     await expect(overlay).toHaveAttribute("aria-hidden", "false");
 
     const info = await getStepInfo(page);
-    expect(info.title).toBe("Your Original Idea");
+    expect(info.title).toBe("Your Workstation");
     expect(info.label).toMatch(/Stop 1 of/);
     expect(info.nextText).toBe("Next");
   });
