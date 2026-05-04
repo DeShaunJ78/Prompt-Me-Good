@@ -404,7 +404,7 @@
     root.setAttribute('aria-labelledby', 'pmg-fix-diff-title');
     root.hidden = true;
     root.innerHTML =
-      '<div class="pfd-stale" role="status">The prompt above shows the AI rewrite. Toggle any change you don\'t want, then tap <strong>Re-apply</strong> to use only your accepted changes.</div>' +
+      '<div class="pfd-stale" role="status">The prompt above has changed since this review started. Your toggles below still work — tap <strong>Re-apply</strong> to update the prompt with only your accepted changes.</div>' +
       '<div class="pfd-head">' +
         '<div>' +
           '<h3 id="pmg-fix-diff-title" class="pfd-title">Review Changes</h3>' +
