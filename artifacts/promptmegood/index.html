@@ -10325,34 +10325,26 @@ Context:
           titleEl.textContent = 'What would you like to do?';
           bodyEl.hidden = true;
           bodyEl.textContent = '';
-          actionsEl.appendChild(makeBtn('Help Me Start', 'primary', function () {
-            dismissAssist(true);
-            clickById('guided-mode-btn');
-          }));
-          actionsEl.appendChild(makeBtn('Try A Demo', '', function () {
-            dismissAssist(true);
-            clickById('fill-demo');
-          }));
         } else {
           titleEl.textContent = 'Here are a few ways to get going';
           bodyEl.hidden = false;
           bodyEl.textContent = "Answer 4 quick questions with Help Me Start, see a working example with Try A Demo, or take the full guided tour.";
-          actionsEl.appendChild(makeBtn('Help Me Start', 'primary', function () {
-            dismissAssist(true);
-            clickById('guided-mode-btn');
-          }));
-          actionsEl.appendChild(makeBtn('Try A Demo', '', function () {
-            dismissAssist(true);
-            clickById('fill-demo');
-          }));
-          actionsEl.appendChild(makeBtn('Full Tour', '', function () {
-            dismissAssist(true);
-            if (typeof window.pmgStartReplayTour === 'function') { window.pmgStartReplayTour(); return; }
-            var replay = document.getElementById('replay-tour-btn-builder') || document.getElementById('replay-tour-btn');
-            if (replay && typeof replay.click === 'function') replay.click();
-          }));
-          actionsEl.appendChild(makeBtn('Dismiss', 'ghost', function () { dismissAssist(true); }));
         }
+        actionsEl.appendChild(makeBtn('Help Me Start', 'primary', function () {
+          dismissAssist(true);
+          clickById('guided-mode-btn');
+        }));
+        actionsEl.appendChild(makeBtn('Try A Demo', '', function () {
+          dismissAssist(true);
+          clickById('fill-demo');
+        }));
+        actionsEl.appendChild(makeBtn('Full Tour', '', function () {
+          dismissAssist(true);
+          if (typeof window.pmgStartReplayTour === 'function') { window.pmgStartReplayTour(); return; }
+          var replay = document.getElementById('replay-tour-btn-builder') || document.getElementById('replay-tour-btn');
+          if (replay && typeof replay.click === 'function') replay.click();
+        }));
+        actionsEl.appendChild(makeBtn('Dismiss', 'ghost', function () { dismissAssist(true); }));
         root.hidden = false;
         root.inert = false;
         ssSet(ASSIST_SHOWN_KEY, '1');
@@ -10377,7 +10369,12 @@ Context:
 
       function tryShowStage2Direct() {
         if (currentStage !== 0) return; // already showing
-        if (suppressionReason()) return;
+        if (suppressionReason()) {
+          if (!alreadyShown() && !alreadyDismissed()) {
+            stage2Timer = window.setTimeout(tryShowStage2Direct, 3000);
+          }
+          return;
+        }
         renderStage(2);
       }
 
