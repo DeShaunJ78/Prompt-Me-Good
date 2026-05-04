@@ -15522,7 +15522,18 @@
       '#' + SECTION_ID + ' .pmg-pm-chip:active {',
       '  transform: scale(0.97);',
       '}',
-      'body.image-mode #' + SECTION_ID + ' #pm-image { display: none; }'
+      'body.image-mode #' + SECTION_ID + ' #pm-image { display: none; }',
+      '@media (max-width: 320px) {',
+      '  #' + SECTION_ID + ' .pmg-pm-chip {',
+      '    font-size: 11px;',
+      '    padding: 8px 4px;',
+      '    gap: 2px;',
+      '    overflow: hidden;',
+      '    text-overflow: ellipsis;',
+      '    white-space: nowrap;',
+      '  }',
+      '  #' + SECTION_ID + ' .pmg-pm-grid { gap: 4px; }',
+      '}'
     ].join('\n');
     var s = document.createElement('style');
     s.id = STYLE_ID;
