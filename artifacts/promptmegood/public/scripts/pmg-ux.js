@@ -15442,12 +15442,12 @@
  *   list in the T01 visibility CSS above).
  *
  * Each button maps to an existing, working feature:
- *   Improve With AI   → clicks #improve-with-ai-btn
- *   More Detailed     → clicks [data-remix="detailed"]
- *   Beginner Friendly → clicks [data-remix="beginner"]
  *   Try In Image Mode → calls window.setMode('image')
  *   Save To Vault     → scrolls to #history, expands vault
  *   Check Quality     → clicks #check-quality-btn
+ *
+ * NOTE: "Improve With AI", "More Detailed", and "Beginner Friendly"
+ * were removed to avoid duplicating buttons already in #improve-block.
  *
  * Idempotent via window.__pmgT101Init.
  * ===================================================================== */
@@ -15459,9 +15459,6 @@
   var STYLE_ID  = 'pmg-t101-style';
 
   var MOVES = [
-    { id: 'pm-improve',   label: '✨ Improve With AI',   icon: '', action: 'improve'  },
-    { id: 'pm-detailed',  label: '📋 More Detailed',     icon: '', action: 'detailed' },
-    { id: 'pm-beginner',  label: '🎓 Beginner Friendly', icon: '', action: 'beginner' },
     { id: 'pm-image',     label: '🎨 Try Image Mode',    icon: '', action: 'image'    },
     { id: 'pm-vault',     label: '💾 Save To Vault',     icon: '', action: 'vault'    },
     { id: 'pm-quality',   label: '🔍 Check Quality',     icon: '', action: 'quality'  }
@@ -15539,19 +15536,7 @@
     try { return window.PMG_A11Y.scrollBehavior(); } catch (e) { return 'smooth'; }
   }
 
-  function scrollAndClick(el, block) {
-    if (!el) return;
-    el.scrollIntoView({ behavior: scrollBehavior(), block: block || 'center' });
-    setTimeout(function () { el.click(); }, 300);
-  }
-
-  /* Maps each action to a DOM selector (or function name) so we can
-     check at build-time whether the target exists and hide chips
-     whose wiring target is missing — no dead buttons, ever. */
   var TARGET_CHECKS = {
-    improve:  function () { return !!document.getElementById('improve-with-ai-btn'); },
-    detailed: function () { return !!document.querySelector('#improve-block [data-remix="detailed"]'); },
-    beginner: function () { return !!document.querySelector('#improve-block [data-remix="beginner"]'); },
     image:    function () { return typeof window.setMode === 'function'; },
     vault:    function () { return !!document.getElementById('history'); },
     quality:  function () { return !!document.getElementById('check-quality-btn'); }
@@ -15559,18 +15544,6 @@
 
   function handleAction(action) {
     switch (action) {
-      case 'improve': {
-        scrollAndClick(document.getElementById('improve-with-ai-btn'));
-        break;
-      }
-      case 'detailed': {
-        scrollAndClick(document.querySelector('#improve-block [data-remix="detailed"]'));
-        break;
-      }
-      case 'beginner': {
-        scrollAndClick(document.querySelector('#improve-block [data-remix="beginner"]'));
-        break;
-      }
       case 'image': {
         if (typeof window.setMode === 'function') window.setMode('image');
         var goal = document.getElementById('goal');
@@ -15592,7 +15565,11 @@
         break;
       }
       case 'quality': {
-        scrollAndClick(document.getElementById('check-quality-btn'));
+        var qBtn = document.getElementById('check-quality-btn');
+        if (qBtn) {
+          qBtn.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
+          setTimeout(function () { qBtn.click(); }, 300);
+        }
         break;
       }
     }
@@ -15618,7 +15595,7 @@
 
     var subtitle = document.createElement('p');
     subtitle.className = 'pmg-pm-subtitle';
-    subtitle.textContent = 'Make this prompt stronger, clearer, or more useful.';
+    subtitle.textContent = 'Go further — explore other ways to use your prompt.';
 
     var grid = document.createElement('div');
     grid.className = 'pmg-pm-grid';

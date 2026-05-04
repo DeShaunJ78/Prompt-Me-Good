@@ -23,9 +23,6 @@ test.describe("Power Moves MVP", () => {
     await expect(pm).toBeVisible({ timeout: 5000 });
 
     const buttons = [
-      { id: "pm-improve",  label: /Improve With AI/i },
-      { id: "pm-detailed", label: /More Detailed/i },
-      { id: "pm-beginner", label: /Beginner Friendly/i },
       { id: "pm-image",    label: /Try Image Mode/i },
       { id: "pm-vault",    label: /Save To Vault/i },
       { id: "pm-quality",  label: /Check Quality/i }
@@ -38,7 +35,7 @@ test.describe("Power Moves MVP", () => {
     }
 
     await expect(pm.locator(".pmg-pm-title")).toHaveText("Power Moves");
-    await expect(pm.locator(".pmg-pm-subtitle")).toContainText("stronger");
+    await expect(pm.locator(".pmg-pm-subtitle")).toContainText("further");
 
     const runSection = page.locator("#runSection");
     await expect(runSection).toBeAttached();
