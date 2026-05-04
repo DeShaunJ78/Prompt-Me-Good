@@ -1053,6 +1053,8 @@
       '.pmg-strength-pill[data-level="strong"] .pmg-strength-dot { background: #10b981; box-shadow: 0 0 0 4px color-mix(in srgb, #10b981 20%, transparent); }',
       '.pmg-strength-pill[data-level="strong"] { animation: pmgStrengthPulse 0.6s ease-out 1; }',
       '@keyframes pmgStrengthPulse { 0% { transform: scale(1); } 50% { transform: scale(1.06); } 100% { transform: scale(1); } }',
+      '[data-theme="dark"] .pmg-strength-pill[data-level="too-short"] .pmg-strength-dot { background: #6b7280; }',
+      '[data-theme="dark"] .pmg-strength-dot { background: #6b7280; }',
 
       '.pmg-what-next-block { display: none; margin: 16px 0; padding: 16px; background: color-mix(in srgb, var(--color-primary) 6%, transparent); border-left: 3px solid var(--color-primary); border-radius: var(--radius-md, 8px); }',
       'body.pmg-has-generated .pmg-what-next-block { display: block; }',
@@ -1827,6 +1829,11 @@
       '  color: #dc2626 !important;',
       '  border: 1px solid color-mix(in srgb, #dc2626 25%, var(--color-border)) !important;',
       '}',
+      '[data-theme="dark"] .btn-destructive, [data-theme="dark"] button[data-destructive], [data-theme="dark"] #clear-all-history-confirm, [data-theme="dark"] .btn-danger {',
+      '  color: #fca5a5 !important;',
+      '  background: color-mix(in srgb, #fca5a5 10%, var(--color-surface-2)) !important;',
+      '  border-color: color-mix(in srgb, #fca5a5 30%, var(--color-border)) !important;',
+      '}',
       '/* Upload "Choose File" label-as-button — secondary look */',
       '.upload-btn, label.btn[for="analyze-file"] {',
       '  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface-2)) !important;',
@@ -2255,6 +2262,7 @@
       '#clear-prompt-btn, #print-btn, .collapse-all-btn, #undo-last-change-btn, .skip-btn, #guided-skip, #guided-back, #guided-q-back { background: var(--color-surface-2) !important; color: var(--color-text-muted) !important; border: 1px solid var(--color-border) !important; }',
       /* DESTRUCTIVE */
       '.btn-destructive, [data-destructive="true"], #clear-history-btn { background: color-mix(in srgb, #dc2626 10%, var(--color-surface-2)) !important; color: #dc2626 !important; border: 1px solid color-mix(in srgb, #dc2626 25%, var(--color-border)) !important; }',
+      '[data-theme="dark"] .btn-destructive, [data-theme="dark"] [data-destructive="true"], [data-theme="dark"] #clear-history-btn { color: #fca5a5 !important; background: color-mix(in srgb, #fca5a5 10%, var(--color-surface-2)) !important; border-color: color-mix(in srgb, #fca5a5 30%, var(--color-border)) !important; }',
       /* No raw white anywhere */
       '.btn[style*="background:#fff"], .btn[style*="background: #fff"], button[style*="background:#fff"], button[style*="background: #fff"] { background: var(--color-surface-2) !important; }',
 
@@ -4778,6 +4786,11 @@
       '  border-color: #d04848;',
       '  color: #d04848;',
       '}',
+      '[data-theme="dark"] #' + SECONDARY_ROW_ID + ' .pmg-sec-btn.is-danger:hover {',
+      '  background: color-mix(in srgb, #f87171 12%, var(--color-surface));',
+      '  border-color: #f87171;',
+      '  color: #f87171;',
+      '}',
 
       /* ===== Tiny printer icon next to "Your Fixed Prompt" title ===== */
       '#' + TITLE_ICON_ID + ' {',
@@ -5202,6 +5215,7 @@
       '#' + SUITE_ID + ' .pmg-photo-surprise:hover, #' + SUITE_ID + ' .pmg-photo-preset:hover { border-color: var(--color-primary); color: var(--color-primary); }',
       '#' + SUITE_ID + ' .pmg-photo-clear { background: transparent; border-style: dashed; color: var(--color-text-muted); }',
       '#' + SUITE_ID + ' .pmg-photo-clear:hover { color: #d04848; border-color: #d04848; }',
+      '[data-theme="dark"] #' + SUITE_ID + ' .pmg-photo-clear:hover { color: #f87171; border-color: #f87171; }',
 
       /* Task #25: Quick-Style preset rows. Sits at the top of the
          affected group bodies (Style, Lighting & Mood, Composition).
@@ -5300,6 +5314,9 @@
       '.pmg-photo-recent-clear:hover, .pmg-photo-recent-clear:focus-visible {',
       '  color: #d04848; outline: none;',
       '}',
+      '[data-theme="dark"] .pmg-photo-recent-clear:hover, [data-theme="dark"] .pmg-photo-recent-clear:focus-visible {',
+      '  color: #f87171;',
+      '}',
       '@media (prefers-reduced-motion: reduce) {',
       '  .pmg-photo-recent-btn:hover { transform: none; }',
       '}',
@@ -5361,6 +5378,10 @@
       '.pmg-photo-saved-delete:hover, .pmg-photo-saved-delete:focus-visible {',
       '  background: color-mix(in srgb, #d04848 12%, transparent);',
       '  color: #d04848; outline: none;',
+      '}',
+      '[data-theme="dark"] .pmg-photo-saved-delete:hover, [data-theme="dark"] .pmg-photo-saved-delete:focus-visible {',
+      '  background: color-mix(in srgb, #f87171 12%, transparent);',
+      '  color: #f87171;',
       '}',
       /* Save This Combo button — sits next to Surprise Me / Clear in
          the actions row. Disabled until at least one pill is active. */
@@ -8372,6 +8393,7 @@
       '  text-align: left;',
       '}',
       '.pmg-help-secondary:hover { color: var(--color-primary-hover); }',
+      '[data-theme="dark"] .pmg-most-loved-inline { background: rgba(255,193,7,0.22) !important; color: #fbbf24 !important; }',
       '@media (max-width: 600px) {',
       '  #' + TEXT_HELP_ID + ' .pmg-help-actions { width: 100%; align-items: stretch; }',
       '  #' + TEXT_HELP_ID + ' .pmg-help-primary { width: 100%; }',
@@ -8754,7 +8776,7 @@
     row.id = TEXT_HELP_ID;
     row.innerHTML =
       '<div class="pmg-help-text">' +
-        '<strong>Help Me Start <span style="display:inline-block;margin-left:4px;padding:2px 7px;border-radius:999px;background:rgba(255,193,7,0.18);color:#a07000;font-size:10px;font-weight:700;letter-spacing:0.02em;vertical-align:middle;">★ Most Loved</span></strong>' +
+        '<strong>Help Me Start <span class="pmg-most-loved-inline" style="display:inline-block;margin-left:4px;padding:2px 7px;border-radius:999px;background:rgba(255,193,7,0.18);color:#a07000;font-size:10px;font-weight:700;letter-spacing:0.02em;vertical-align:middle;">★ Most Loved</span></strong>' +
         '<span>Answer 4 Quick Questions And We\'ll Build A Sharp Prompt For You.</span>' +
       '</div>' +
       '<div class="pmg-help-actions">' +
@@ -11968,6 +11990,17 @@
      reads as informational, not promotional. Renders only for free-plan
      users with an active trial; auto-removes itself at trial end or for
      paid users (their plan pill takes the same slot). */
+  (function injectPillDarkStyles() {
+    if (document.getElementById('pmg-pill-dark-styles')) return;
+    var s = document.createElement('style');
+    s.id = 'pmg-pill-dark-styles';
+    s.textContent =
+      '[data-theme="dark"] #pmg-header-trial-pill { border-color: rgba(255,255,255,0.12) !important; box-shadow: 0 1px 2px rgba(0,0,0,0.25) !important; }' +
+      '[data-theme="dark"] #pmg-header-plan-pill { border-color: rgba(255,255,255,0.12) !important; box-shadow: 0 1px 2px rgba(0,0,0,0.25) !important; }' +
+      '[data-theme="dark"] .' + 'pmg-hms-most-loved { box-shadow: 0 2px 6px rgba(0,0,0,0.5) !important; }';
+    (document.head || document.documentElement).appendChild(s);
+  })();
+
   var TRIAL_PILL_ID = 'pmg-header-trial-pill';
   function renderHeaderTrialPill(trial, plan) {
     try {

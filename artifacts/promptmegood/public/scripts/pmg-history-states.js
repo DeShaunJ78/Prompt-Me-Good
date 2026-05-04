@@ -91,7 +91,9 @@
     '.pmg-history-write-warning-text{margin:0;font-size:13px;color:var(--color-text);overflow-wrap:anywhere}',
     '.pmg-history-write-warning-dismiss{flex:0 0 auto;align-self:flex-start;background:transparent;border:0;color:var(--color-text-muted);font-size:18px;line-height:1;padding:4px 6px;cursor:pointer;border-radius:6px;min-width:32px;min-height:32px;display:inline-flex;align-items:center;justify-content:center}',
     '.pmg-history-write-warning-dismiss:hover{background:color-mix(in srgb, #dc2626 12%, transparent);color:#b91c1c}',
-    '.pmg-history-write-warning-dismiss:focus-visible{outline:2px solid #dc2626;outline-offset:2px}'
+    '.pmg-history-write-warning-dismiss:focus-visible{outline:2px solid #dc2626;outline-offset:2px}',
+    '[data-theme="dark"] .pmg-history-write-warning-dismiss:hover{color:#fca5a5;background:color-mix(in srgb, #fca5a5 12%, transparent)}',
+    '[data-theme="dark"] .pmg-history-write-warning-dismiss:focus-visible{outline-color:#fca5a5}'
   ].join(''));
 
   function escapeHtml(str) {

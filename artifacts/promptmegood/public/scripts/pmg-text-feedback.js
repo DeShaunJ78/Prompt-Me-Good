@@ -243,6 +243,8 @@
       'body.' + BODY_CLASS + ' #' + PANEL_ID + '[data-conf="weak"]   .pmg-tff-conf-label { color: #b94a4a; }',
       'body.' + BODY_CLASS + ' #' + PANEL_ID + '[data-conf="ok"]     .pmg-tff-conf-label { color: #a07a18; }',
       'body.' + BODY_CLASS + ' #' + PANEL_ID + '[data-conf="strong"] .pmg-tff-conf-label { color: var(--color-primary, #0f6e6a); }',
+      '[data-theme="dark"] body.' + BODY_CLASS + ' #' + PANEL_ID + '[data-conf="weak"]   .pmg-tff-conf-label { color: #fca5a5; }',
+      '[data-theme="dark"] body.' + BODY_CLASS + ' #' + PANEL_ID + '[data-conf="ok"]     .pmg-tff-conf-label { color: #fbbf24; }',
       /* Tuned-bands "i" badge — sits between the label and the
          bar. Hidden until the user has enough submit history to
          personalize. Reuses the primary color so it reads as
@@ -267,6 +269,7 @@
       'body.' + BODY_CLASS + ' #' + PANEL_ID + '.pmg-tff-tokens-warn .pmg-tff-tokens {',
       '  color: #b94a4a; font-weight: 700;',
       '}',
+      '[data-theme="dark"] body.' + BODY_CLASS + ' #' + PANEL_ID + '.pmg-tff-tokens-warn .pmg-tff-tokens { color: #fca5a5; }',
       /* Linter chips */
       'body.' + BODY_CLASS + ' #' + PANEL_ID + ' .pmg-tff-lint {',
       '  margin: 6px 0 10px;',
@@ -287,6 +290,7 @@
       '  border: 1px solid color-mix(in srgb, #d4a13a 35%, transparent);',
       '  color: #855e0a; font-size: 12px; font-weight: 600; cursor: default;',
       '}',
+      '[data-theme="dark"] body.' + BODY_CLASS + ' #' + PANEL_ID + ' .pmg-tff-lint-chip { color: #fbbf24; background: color-mix(in srgb, #d4a13a 20%, transparent); border-color: color-mix(in srgb, #d4a13a 40%, transparent); }',
       'body.' + BODY_CLASS + ' #' + PANEL_ID + ' .pmg-tff-lint-chip-word { font-weight: 700; }',
       'body.' + BODY_CLASS + ' #' + PANEL_ID + ' .pmg-tff-lint-chip-arrow { opacity: 0.7; }',
       /* Live preview */
