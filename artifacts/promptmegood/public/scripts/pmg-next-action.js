@@ -136,12 +136,16 @@
     if (current && current.classList) current.classList.add(CLASS);
   }
 
-  /* Recompute is the single entry point — every event handler calls it. */
+  /* Recompute is the single entry point — every event handler calls it.
+     Re-binds the photo-suite send observer if the button has appeared
+     or been re-rendered since the last pass. Cheap because it's
+     rAF-coalesced and only does a single querySelector. */
   var rafId = 0;
   function recompute() {
     if (rafId) return;
     rafId = window.requestAnimationFrame(function () {
       rafId = 0;
+      try { attachSend(); } catch (_) {}
       try { setGlow(chooseTarget()); } catch (_) { /* never throw from here */ }
     });
   }
@@ -211,38 +215,36 @@
     check();
   }
 
-  function observePhotoSuite() {
-    /* Recompute on send-button disabled toggle and on pill active changes.
-       The send button can be re-rendered by pmg-ux.js (T34/T94/T27 reframe
-       paths). To avoid retaining detached nodes, we track the currently
-       observed element and disconnect the previous observer before
-       attaching a new one. */
-    var moAttr = new MutationObserver(recompute);
-    var observedSend = null;
-    function attachSend() {
-      var send = document.querySelector('.pmg-photo-send');
-      if (!send) return;
-      if (send === observedSend) return;
-      try { moAttr.disconnect(); } catch (_) {}
-      if (observedSend && observedSend.dataset) {
-        try { delete observedSend.dataset.pmgNaBound; } catch (_) {}
-      }
-      observedSend = send;
-      send.dataset.pmgNaBound = '1';
-      moAttr.observe(send, { attributes: true, attributeFilter: ['disabled', 'aria-disabled', 'aria-busy', 'hidden'] });
+  /* Photo-suite send-button binder. Idempotent. The send button can be
+     re-rendered by pmg-ux.js (T34/T94/T27 reframe paths); we track the
+     currently observed element and disconnect the previous observer
+     before attaching a new one. Called from recompute() so re-renders
+     are caught without needing a broad body-subtree observer. */
+  var moPhotoSendAttr = null;
+  var observedSend = null;
+  function attachSend() {
+    var send = document.querySelector('.pmg-photo-send');
+    if (!send) return;
+    if (send === observedSend) return;
+    if (moPhotoSendAttr) { try { moPhotoSendAttr.disconnect(); } catch (_) {} }
+    if (observedSend && observedSend.dataset) {
+      try { delete observedSend.dataset.pmgNaBound; } catch (_) {}
     }
-    attachSend();
-    /* Photo suite is rendered dynamically by pmg-ux.js; re-scan on
-       broader DOM changes to bind the send button when it appears. */
-    var moDom = new MutationObserver(function () {
-      attachSend();
-      recompute();
-    });
-    var suiteContainer = document.body;
-    moDom.observe(suiteContainer, { childList: true, subtree: true });
+    observedSend = send;
+    send.dataset.pmgNaBound = '1';
+    moPhotoSendAttr = new MutationObserver(recompute);
+    moPhotoSendAttr.observe(send, { attributes: true, attributeFilter: ['disabled', 'aria-disabled', 'aria-busy', 'hidden'] });
+  }
 
-    /* Pill active class changes — observe the suite root for class mutations
-       on descendants. Cheap because we only care about .pmg-photo-pill. */
+  function observePhotoSuite() {
+    /* No body-subtree observer here — recompute() calls attachSend()
+       on every pass, so re-renders are detected naturally via the
+       existing recompute triggers (goal input, builder finalize,
+       AI response, photo-suite click, image-mode toggle, tour state
+       change, run-section unhide, resize, load, deferred passes). */
+    attachSend();
+
+    /* Pill active class changes — capture-phase click on the suite. */
     document.addEventListener('click', function (ev) {
       var t = ev.target;
       if (!(t && t.closest)) return;
