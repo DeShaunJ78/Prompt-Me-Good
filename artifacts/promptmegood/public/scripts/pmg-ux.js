@@ -16755,10 +16755,10 @@
       '#' + OVERLAY_ID + ' {',
       '  position: fixed; inset: 0; z-index: 10000; pointer-events: none; display: none;',
       '}',
-      '#' + OVERLAY_ID + '.is-open { display: block; }',
+      '#' + OVERLAY_ID + '.is-open { display: block; pointer-events: auto; }',
       '#' + OVERLAY_ID + ' .ws-backdrop {',
       '  position: absolute; inset: 0; background: color-mix(in srgb, #000 12%, transparent);',
-      '  pointer-events: none; opacity: 0; transition: opacity 0.18s ease-out;',
+      '  pointer-events: inherit; opacity: 0; transition: opacity 0.18s ease-out;',
       '}',
       '#' + OVERLAY_ID + '.is-open .ws-backdrop { opacity: 1; }',
       '#' + OVERLAY_ID + ' .ws-highlight {',
@@ -16866,6 +16866,7 @@
     return ov && ov.classList.contains('is-open');
   }
 
+  var _wsPositionSkipGuard = false;
   function positionStep(scrollAttempts) {
     if (!isOpen()) return;
     var step = STEPS[stepIndex];
@@ -16874,7 +16875,13 @@
     if (target) { var _r = target.getBoundingClientRect(); if (_r.width === 0 && _r.height === 0) target = null; }
     if (!target && step.fallback) target = document.querySelector(step.fallback);
     if (target) { var _r2 = target.getBoundingClientRect(); if (_r2.width === 0 && _r2.height === 0) target = null; }
-    if (!target) { nextStep(); return; }
+    if (!target) {
+      if (_wsPositionSkipGuard) return;
+      _wsPositionSkipGuard = true;
+      nextStep();
+      _wsPositionSkipGuard = false;
+      return;
+    }
 
     var overlay = document.getElementById(OVERLAY_ID);
     var highlight = document.getElementById('pmg-ws-highlight');
@@ -16974,6 +16981,8 @@
     var overlay = document.getElementById(OVERLAY_ID);
     overlay.classList.add('is-open');
     overlay.setAttribute('aria-hidden', 'false');
+    overlay.style.pointerEvents = '';
+    overlay.inert = false;
     attachListeners();
 
     var step = STEPS[stepIndex];
@@ -16985,7 +16994,7 @@
         var btn = document.getElementById('pmg-ws-next');
         if (btn) btn.focus({ preventScroll: true });
       } catch (e) {}
-    }, 100);
+    }, 150);
 
     var nextBtn = document.getElementById('pmg-ws-next');
     var skipBtn = document.getElementById('pmg-ws-skip');
@@ -17027,7 +17036,7 @@
 
     var overlay = document.getElementById(OVERLAY_ID);
     overlay.classList.add('is-transitioning');
-    setTimeout(function () { positionStep(); }, 80);
+    setTimeout(function () { positionStep(); }, 150);
   }
 
   function finish(completed) {
@@ -17036,6 +17045,8 @@
     if (overlay) {
       overlay.classList.remove('is-open');
       overlay.setAttribute('aria-hidden', 'true');
+      overlay.style.pointerEvents = 'none';
+      overlay.inert = true;
     }
     detachListeners();
     document.removeEventListener('keydown', tourKeyHandler);

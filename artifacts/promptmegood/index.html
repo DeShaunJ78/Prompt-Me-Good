@@ -2062,10 +2062,10 @@
     .ob-overlay {
       position: fixed; inset: 0; z-index: 10000; pointer-events: none; display: none;
     }
-    .ob-overlay.is-open { display: block; }
+    .ob-overlay.is-open { display: block; pointer-events: auto; }
     .ob-backdrop {
       position: absolute; inset: 0; background: color-mix(in srgb, #000 36%, transparent);
-      pointer-events: auto; opacity: 0; transition: opacity 0.18s ease-out;
+      pointer-events: inherit; opacity: 0; transition: opacity 0.18s ease-out;
     }
     .ob-overlay.is-open .ob-backdrop { opacity: 1; }
     .ob-highlight {
@@ -3071,7 +3071,10 @@
       .workspace-header { padding-bottom: var(--space-2); margin-bottom: var(--space-3); }
       #result-title, .run-section-title, #vault-title,
       .what-you-get-title, .panel-head h2, .pmg-stack-card-head h2 {
-        text-wrap: balance; line-height: 1.22;
+        text-wrap: balance; line-height: 1.22; font-size: clamp(16px, 4.5vw, var(--text-xl));
+      }
+      .pmg-stack-card-head h2 {
+        white-space: nowrap;
       }
     }
     .mode-switch{display:flex;gap:0;background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-full);padding:4px;margin-bottom:var(--space-5);width:100%;max-width:360px}
@@ -7902,11 +7905,19 @@ Context:
            'bk-overlay', 'ob-overlay', 'pmg-post-run-intro'].forEach(function (id) {
             var el = document.getElementById(id);
             if (el) {
+              var isOpen = el.classList.contains('is-open');
+              if (isOpen) return;
               var isHidden = el.hidden || getComputedStyle(el).display === 'none' || getComputedStyle(el).opacity === '0';
               el.style.pointerEvents = isHidden ? 'none' : '';
               if (isHidden) el.inert = true;
             }
           });
+          // WS tour overlay: same treatment
+          var wsOv = document.getElementById('pmg-ws-tour-overlay');
+          if (wsOv && !wsOv.classList.contains('is-open')) {
+            wsOv.style.pointerEvents = 'none';
+            wsOv.inert = true;
+          }
         }
 
         function debouncedSync() {
@@ -8529,6 +8540,7 @@ Context:
       function obIsOpen() {
         return obOverlay.classList.contains('is-open');
       }
+      var _obPositionSkipGuard = false;
       function obPositionStep(scrollAttempts) {
         if (!obIsOpen()) return;
         const step = currentSteps[obIndex];
@@ -8543,7 +8555,13 @@ Context:
           var _r2 = target.getBoundingClientRect();
           if (_r2.width === 0 && _r2.height === 0) target = null;
         }
-        if (!target) { obNextStep(); return; }
+        if (!target) {
+          if (_obPositionSkipGuard) return;
+          _obPositionSkipGuard = true;
+          obNextStep();
+          _obPositionSkipGuard = false;
+          return;
+        }
         const rect = target.getBoundingClientRect();
         const attempts = scrollAttempts || 0;
         const isMobile = window.matchMedia('(max-width: 640px)').matches;
@@ -8683,7 +8701,7 @@ Context:
         window.setTimeout(function () {
           obPositionStep();
           try { obNextBtn.focus({ preventScroll: true }); } catch (e) { obNextBtn.focus(); }
-        }, 100);
+        }, 150);
       }
       function obFinish(opts) {
         const completed = !!(opts && opts.completed);
@@ -8798,7 +8816,7 @@ Context:
         obIndex += 1;
         obOverlay.classList.add('is-transitioning');
         obInvokeStepEnter();
-        window.setTimeout(function () { obPositionStep(); }, 80);
+        window.setTimeout(function () { obPositionStep(); }, 150);
       }
       obNextBtn.addEventListener('click', obNextStep);
       obSkipBtn.addEventListener('click', function () { obFinish(); });

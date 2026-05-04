@@ -1,0 +1,210 @@
+The latest PromptMeGood mobile recheck still failed. Fix the tours again, but this time focus on the actual failures below.
+
+Do not redesign the site.
+Do not change pricing/legal/SEO copy.
+Do not break Fix My Prompt, Run With AI, image generation, first-load mobile layout, or desktop.
+This is a surgical fix for:
+1. Intro Tour later steps
+2. Workstation Tour
+3. Actual mobile site heading wrap
+4. Pointer/click interception
+
+Test viewport:
+Mobile 390×844.
+
+Latest live audit failures:
+
+FAILURE 1: Intro Tour gets stuck at “Write or create an image”
+
+Observed:
+- Intro Tour Step 1: OK, highlights goal textarea.
+- Intro Tour Step 2: OK, highlights Fix My Prompt.
+- Intro Tour Step 3: OK, highlights Your Fixed Prompt title.
+- Intro Tour Step 4: OK, highlights Run With AI.
+- Intro Tour Step 5: “Write or create an image” appears, but then Step 5 repeats.
+- Highlight becomes 0×0.
+- Tour does not progress cleanly to the final Help Me Start step / Done.
+
+Fix:
+- Inspect Intro Tour step array and state transitions.
+- Make sure step indexes, labels, and target selectors are correct and unique.
+- Step 5 must target a real visible element:
+  Preferred target: Write/Create Image mode switch.
+  Fallback target: Photography Suite title/header.
+- Step 6 must target the Help Me Start button.
+- Done button should appear only on the final step.
+- `Next` should advance Step 5 to Step 6, not reload/repeat Step 5.
+- No step should ever produce a 0×0 highlight.
+
+Intro Tour acceptance:
+At 390×844, run Intro Tour from start to finish:
+1. Step 1 highlights goal textarea.
+2. Step 2 highlights Fix My Prompt.
+3. Step 3 highlights Your Fixed Prompt title/card.
+4. Step 4 highlights Run With AI button or Run This Prompt header.
+5. Step 5 highlights Write/Create Image mode switch or Photography Suite title/header.
+6. Step 6 highlights Help Me Start button.
+7. Step 6 shows Done.
+8. Every step has a non-zero highlight rectangle.
+9. Next advances exactly one step each time.
+10. Tour closes after Done.
+
+FAILURE 2: Workstation Tour is broken from Step 1
+
+Observed:
+- Workstation Tour starts at “Step 1 of 6.”
+- Title is blank.
+- Highlight is 0×0.
+- Clicking Next keeps repeating Step 1.
+- It never progresses through Prompt Vault or Photography Suite correctly.
+
+Fix:
+- Inspect Workstation Tour step definitions separately from Intro Tour.
+- Make sure Workstation Tour is actually using the workstation step array, not an empty/default/broken step.
+- Each step must have:
+  - title
+  - body text
+  - valid selector or target resolver
+  - non-zero highlight target
+- Fix any naming mismatch between replay menu value and tour config key.
+- Fix any off-by-one or state reset issue that prevents `currentStep++`.
+
+Workstation Tour suggested steps:
+1. Workstation overview
+   Target: command center/workspace title, Open Workspace button, or visible workspace card header.
+2. Your Better Prompt
+   Target: `data-tour-target="fixed-prompt-output"` or result title.
+3. Run With AI
+   Target: Run With AI button or Run This Prompt title.
+4. Prompt Vault
+   Target: `data-tour-target="vault-title"` or Prompt Vault nav chip/pill.
+5. Photography Suite
+   Target: `data-tour-target="photo-suite-title"` or visible Photography Suite section title.
+6. Help / finishing step
+   Target: Help button, Replay Tour button, or Help Me Start button.
+
+Workstation Tour acceptance:
+At 390×844:
+1. Starts with real title, not blank.
+2. Step 1 highlight is non-zero.
+3. Next advances through all 6 steps.
+4. Prompt Vault step highlights the Prompt Vault title/header or nav pill, not the whole vault list.
+5. Photography Suite step highlights the Photography Suite title/header or a visible group title, not the full tall suite.
+6. Every step has a non-zero highlight rectangle.
+7. Final step shows Done and closes properly.
+
+FAILURE 3: Actual site heading wrap still ugly on mobile
+
+Observed:
+- The actual site heading “📸 Photography Suite” is still wrapping into about 3 lines at 390px mobile.
+- The user meant real site headings, not tour modal titles.
+
+Fix:
+Apply mobile-only CSS/polish to real site headings visible during tours.
+
+At minimum fix:
+- `#pmg-photo-suite-title`
+- `[data-tour-target="photo-suite-title"]`
+- any `.pmg-stack-card-head h2` containing Photography Suite
+- `#result-title`
+- `[data-tour-target="fixed-prompt-output"]`
+- `#vault-title`
+- headings inside Prompt Vault / result / image sections that visibly wrap awkwardly.
+
+Specific for Photography Suite:
+- The icon and words should not stack weirdly.
+- Keep “📸 Photography Suite” on one clean line if possible.
+- If width is tight, reduce mobile font size slightly or use flex/inline layout.
+- Do not allow icon alone on one line and text split underneath.
+- Use `white-space: nowrap` only if it does not create horizontal overflow.
+- Otherwise use a controlled layout:
+  icon inline with text,
+  centered or left-aligned consistently,
+  no orphan words.
+
+Suggested mobile CSS:
+- `text-wrap: balance;`
+- better `line-height: 1.15–1.25`
+- slightly smaller mobile h2 font size where needed
+- use `display: inline-flex; align-items: center; gap: 0.4rem;`
+- `max-width: 100%;`
+- no horizontal overflow.
+
+Heading acceptance:
+At 390×844:
+- “📸 Photography Suite” looks visually clean and intentional.
+- It should be one line if possible.
+- No heading has an icon isolated on one line.
+- No heading has lopsided/orphan wrapping.
+- No horizontal overflow.
+
+FAILURE 4: Pointer/click interception still exists
+
+Observed:
+During mobile regression, clicking the visible `Run With AI` button timed out because:
+- `#result-panel` intercepted pointer events, and/or
+- top beta banner link intercepted pointer events after scroll.
+
+This also previously happened with Photography Suite controls.
+
+Fix:
+Audit sticky/overlay/z-index/pointer-events layers:
+- `#pmg-t42-beta-banner`
+- `.topbar`
+- `#result-panel`
+- `.pmg-result-sticky`
+- closed tour overlay/backdrop
+- hidden replay/dropdown/menu layers
+- any fixed/sticky element with pointer-events enabled when not visually covering the target.
+
+Rules:
+- Hidden/closed overlays and dropdowns must use `pointer-events: none`.
+- Sticky banners/headers must not intercept clicks on elements they are not visually covering.
+- If scroll positioning places a target under a fixed banner/header, adjust scroll offset or use `scroll-margin-top`.
+- Active buttons inside result panel should be on top of panel background and clickable.
+- Do not set pointer-events:none on the whole result panel if it disables child buttons. If needed, set pointer-events on decorative overlay only.
+
+Click acceptance:
+At 390×844:
+- After Fix My Prompt, clicking the visible top `Run With AI` button works with a normal browser click.
+- No `#result-panel` or beta banner intercepts that click.
+- Photography Suite controls such as Surprise Me / photo controls can be clicked normally after scrolling.
+- No invisible tour/menu overlay intercepts clicks after tours are closed.
+
+Required QA script:
+After changes, run this style of check manually or in Playwright:
+
+Intro Tour:
+- Start Intro Tour.
+- For each step, log step number, title, highlight rect width/height.
+- Click Next.
+- Confirm 6 unique steps and no 0×0 highlight.
+
+Workstation Tour:
+- Start Workstation Tour.
+- For each step, log step number, title, highlight rect width/height.
+- Click Next.
+- Confirm 6 unique steps and no 0×0 highlight.
+
+Heading:
+- Mobile 390×844.
+- Inspect Photography Suite, Your Fixed Prompt, Prompt Vault.
+- Confirm wrapping looks clean.
+
+Click regression:
+- Fill goal.
+- Click Fix My Prompt.
+- Click visible Run With AI normally.
+- Confirm `/api/run` fires and response appears.
+- Scroll to Photography Suite.
+- Click Surprise Me or visible photo controls normally.
+- Confirm no pointer interception.
+
+Return:
+- files changed
+- exact cause of Intro Tour Step 5 repeating
+- exact cause of Workstation Tour blank Step 1 / 0×0 highlight
+- selectors fixed
+- heading CSS changed
+- pointer-events/z-index changes made
+- confirmation all QA acceptance checks passed at 390×844
