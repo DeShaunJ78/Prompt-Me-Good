@@ -314,6 +314,51 @@
     .post-tour-banner[hidden],
     .pmg-post-run-intro[hidden],
     #tour-banner[hidden] { pointer-events: none !important; }
+
+    /* ============================================================
+       "Next Best Action" glow — only ONE button glows at a time,
+       driven by pmg-next-action.js. Soft teal, slow gentle pulse,
+       no layout shift, respects prefers-reduced-motion. The
+       controller picks the target based on user state (typed text,
+       prompt finalized, AI responded, photo-suite ready); CSS
+       just renders the glow when the class is present.
+       ============================================================ */
+    .pmg-next-action {
+      position: relative;
+      box-shadow:
+        0 0 0 3px rgba(14, 165, 165, 0.14),
+        0 0 22px rgba(14, 165, 165, 0.30) !important;
+      transition: box-shadow 220ms ease;
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .pmg-next-action {
+        animation: pmgNextActionPulse 1.8s ease-in-out infinite;
+      }
+      @keyframes pmgNextActionPulse {
+        0%, 100% {
+          box-shadow:
+            0 0 0 3px rgba(14, 165, 165, 0.10),
+            0 0 18px rgba(14, 165, 165, 0.22);
+        }
+        50% {
+          box-shadow:
+            0 0 0 5px rgba(14, 165, 165, 0.18),
+            0 0 28px rgba(14, 165, 165, 0.36);
+        }
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .pmg-next-action { animation: none !important; }
+    }
+    /* Belt-and-braces: never glow under a tour overlay even if the
+       JS controller misses a beat. Two overlays exist: the intro
+       tour (#ob-overlay) and the workstation tour
+       (#pmg-ws-tour-overlay). Both use class `is-open`. */
+    body:has(#ob-overlay.is-open) .pmg-next-action,
+    body:has(#pmg-ws-tour-overlay.is-open) .pmg-next-action {
+      animation: none !important;
+      box-shadow: none !important;
+    }
   </style>
   <script>
     /* Theme accent bootstrap — runs synchronously in <head> before styles paint to avoid a flash
@@ -11697,6 +11742,7 @@ Context:
        fallback; the real source of truth is the backend route below. -->
   <script src="/api/pricing-config.js?v=task100" defer></script>
   <script src="/scripts/pmg-ux.js?v=task122" defer></script>
+  <script src="/scripts/pmg-next-action.js?v=2" defer></script>
   <script src="/scripts/post-spec.js" defer></script>
   <script src="/scripts/pmg-image-fix.js?v=img-progress-2" defer></script>
   <script src="/scripts/pmg-result-states.js?v=2-refocus" defer></script>
