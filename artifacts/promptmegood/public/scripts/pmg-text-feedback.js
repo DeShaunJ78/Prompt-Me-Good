@@ -235,7 +235,7 @@
       '  transition: width 220ms ease, background-color 220ms ease;',
       '}',
       'body.' + BODY_CLASS + ' #' + PANEL_ID + '[data-conf="weak"]   .pmg-tff-conf-fill { background: #d96b6b; }',
-      'body.' + BODY_CLASS + ' #' + PANEL_ID + '[data-conf="ok"]     .pmg-tff-conf-fill { background: #d4a13a; }',
+      'body.' + BODY_CLASS + ' #' + PANEL_ID + '[data-conf="ok"]     .pmg-tff-conf-fill { background: var(--color-warning-subtle); }',
       'body.' + BODY_CLASS + ' #' + PANEL_ID + '[data-conf="strong"] .pmg-tff-conf-fill { background: var(--color-primary, #0f6e6a); }',
       'body.' + BODY_CLASS + ' #' + PANEL_ID + ' .pmg-tff-conf-label {',
       '  font-size: 13px; font-weight: 700; color: var(--color-text, #1d2a32); min-width: 130px;',
@@ -243,8 +243,8 @@
       'body.' + BODY_CLASS + ' #' + PANEL_ID + '[data-conf="weak"]   .pmg-tff-conf-label { color: #b94a4a; }',
       'body.' + BODY_CLASS + ' #' + PANEL_ID + '[data-conf="ok"]     .pmg-tff-conf-label { color: #a07a18; }',
       'body.' + BODY_CLASS + ' #' + PANEL_ID + '[data-conf="strong"] .pmg-tff-conf-label { color: var(--color-primary, #0f6e6a); }',
-      '[data-theme="dark"] body.' + BODY_CLASS + ' #' + PANEL_ID + '[data-conf="weak"]   .pmg-tff-conf-label { color: #fca5a5; }',
-      '[data-theme="dark"] body.' + BODY_CLASS + ' #' + PANEL_ID + '[data-conf="ok"]     .pmg-tff-conf-label { color: #fbbf24; }',
+      '[data-theme="dark"] body.' + BODY_CLASS + ' #' + PANEL_ID + '[data-conf="weak"]   .pmg-tff-conf-label { color: var(--color-danger); }',
+      '[data-theme="dark"] body.' + BODY_CLASS + ' #' + PANEL_ID + '[data-conf="ok"]     .pmg-tff-conf-label { color: var(--color-warning); }',
       /* Tuned-bands "i" badge — sits between the label and the
          bar. Hidden until the user has enough submit history to
          personalize. Reuses the primary color so it reads as
@@ -269,7 +269,7 @@
       'body.' + BODY_CLASS + ' #' + PANEL_ID + '.pmg-tff-tokens-warn .pmg-tff-tokens {',
       '  color: #b94a4a; font-weight: 700;',
       '}',
-      '[data-theme="dark"] body.' + BODY_CLASS + ' #' + PANEL_ID + '.pmg-tff-tokens-warn .pmg-tff-tokens { color: #fca5a5; }',
+      '[data-theme="dark"] body.' + BODY_CLASS + ' #' + PANEL_ID + '.pmg-tff-tokens-warn .pmg-tff-tokens { color: var(--color-danger); }',
       /* Linter chips */
       'body.' + BODY_CLASS + ' #' + PANEL_ID + ' .pmg-tff-lint {',
       '  margin: 6px 0 10px;',
@@ -286,11 +286,11 @@
       'body.' + BODY_CLASS + ' #' + PANEL_ID + ' .pmg-tff-lint-chip {',
       '  display: inline-flex; align-items: center; gap: 4px;',
       '  padding: 2px 8px; border-radius: 999px;',
-      '  background: color-mix(in srgb, #d4a13a 15%, transparent);',
-      '  border: 1px solid color-mix(in srgb, #d4a13a 35%, transparent);',
+      '  background: color-mix(in srgb, var(--color-warning-subtle) 15%, transparent);',
+      '  border: 1px solid color-mix(in srgb, var(--color-warning-subtle) 35%, transparent);',
       '  color: #855e0a; font-size: 12px; font-weight: 600; cursor: default;',
       '}',
-      '[data-theme="dark"] body.' + BODY_CLASS + ' #' + PANEL_ID + ' .pmg-tff-lint-chip { color: #fbbf24; background: color-mix(in srgb, #d4a13a 20%, transparent); border-color: color-mix(in srgb, #d4a13a 40%, transparent); }',
+      '[data-theme="dark"] body.' + BODY_CLASS + ' #' + PANEL_ID + ' .pmg-tff-lint-chip { color: var(--color-warning); background: color-mix(in srgb, var(--color-warning-subtle) 20%, transparent); border-color: color-mix(in srgb, var(--color-warning-subtle) 40%, transparent); }',
       'body.' + BODY_CLASS + ' #' + PANEL_ID + ' .pmg-tff-lint-chip-word { font-weight: 700; }',
       'body.' + BODY_CLASS + ' #' + PANEL_ID + ' .pmg-tff-lint-chip-arrow { opacity: 0.7; }',
       /* Live preview */

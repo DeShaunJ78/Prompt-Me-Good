@@ -289,6 +289,15 @@
       --font-body: 'Satoshi', Inter, sans-serif;
       --content-default: 1120px;
       --content-narrow: 740px;
+
+      --color-danger: #b91c1c;
+      --color-danger-light: #fca5a5;
+      --color-danger-strong: #dc2626;
+      --color-danger-hover: #991b1b;
+      --color-danger-vivid: #d04848;
+      --color-warning: #fbbf24;
+      --color-warning-subtle: #d4a13a;
+      --color-muted: #9ca3af;
     }
 
     [data-theme="dark"] {
@@ -307,6 +316,15 @@
       --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
       --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.25);
       --shadow-lg: 0 18px 50px rgba(0, 0, 0, 0.35);
+
+      --color-danger: #fca5a5;
+      --color-danger-light: #fecaca;
+      --color-danger-strong: #f87171;
+      --color-danger-hover: #fecaca;
+      --color-danger-vivid: #f87171;
+      --color-warning: #fbbf24;
+      --color-warning-subtle: #d4a13a;
+      --color-muted: #6b7280;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -323,6 +341,15 @@
         --color-primary: #5ba8b0;
         --color-primary-hover: #73b8bf;
         --color-primary-highlight: #213438;
+
+        --color-danger: #fca5a5;
+        --color-danger-light: #fecaca;
+        --color-danger-strong: #f87171;
+        --color-danger-hover: #fecaca;
+        --color-danger-vivid: #f87171;
+        --color-warning: #fbbf24;
+        --color-warning-subtle: #d4a13a;
+        --color-muted: #6b7280;
       }
     }
 
@@ -714,37 +741,37 @@
     .btn.btn-destructive,
     button.btn-destructive {
       background: transparent !important;
-      color: #b91c1c !important;
-      border: 1.5px solid color-mix(in srgb, #b91c1c 38%, transparent) !important;
+      color: var(--color-danger) !important;
+      border: 1.5px solid color-mix(in srgb, var(--color-danger) 38%, transparent) !important;
       box-shadow: none !important;
     }
     .btn.btn-destructive:hover,
     button.btn-destructive:hover {
-      background: color-mix(in srgb, #b91c1c 10%, transparent) !important;
-      border-color: color-mix(in srgb, #b91c1c 65%, transparent) !important;
-      color: #991b1b !important;
+      background: color-mix(in srgb, var(--color-danger) 10%, transparent) !important;
+      border-color: color-mix(in srgb, var(--color-danger) 65%, transparent) !important;
+      color: var(--color-danger-hover) !important;
     }
     .btn.btn-destructive:focus-visible,
     button.btn-destructive:focus-visible {
-      outline: 2px solid #b91c1c !important;
+      outline: 2px solid var(--color-danger) !important;
       outline-offset: 2px !important;
-      background: color-mix(in srgb, #b91c1c 8%, transparent) !important;
+      background: color-mix(in srgb, var(--color-danger) 8%, transparent) !important;
     }
     [data-theme="dark"] .btn.btn-destructive,
     [data-theme="dark"] button.btn-destructive {
-      color: #fca5a5 !important;
-      border-color: color-mix(in srgb, #fca5a5 38%, transparent) !important;
+      color: var(--color-danger) !important;
+      border-color: color-mix(in srgb, var(--color-danger) 38%, transparent) !important;
     }
     [data-theme="dark"] .btn.btn-destructive:hover,
     [data-theme="dark"] button.btn-destructive:hover {
-      background: color-mix(in srgb, #fca5a5 10%, transparent) !important;
-      border-color: color-mix(in srgb, #fca5a5 60%, transparent) !important;
-      color: #fecaca !important;
+      background: color-mix(in srgb, var(--color-danger) 10%, transparent) !important;
+      border-color: color-mix(in srgb, var(--color-danger) 60%, transparent) !important;
+      color: var(--color-danger-light) !important;
     }
     [data-theme="dark"] .btn.btn-destructive:focus-visible,
     [data-theme="dark"] button.btn-destructive:focus-visible {
-      outline-color: #fca5a5 !important;
-      background: color-mix(in srgb, #fca5a5 10%, transparent) !important;
+      outline-color: var(--color-danger) !important;
+      background: color-mix(in srgb, var(--color-danger) 10%, transparent) !important;
     }
     @media (max-width: 600px) {
       .field-label-row { flex-wrap: wrap; row-gap: 4px; }
@@ -1257,7 +1284,7 @@
     .email-capture-form input[type="email"]:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 18%, transparent); }
     .email-capture-form .btn { flex: 0 0 auto; }
     .email-capture-success { margin: var(--space-3) 0 0; color: var(--color-primary); font-weight: 600; font-size: var(--text-sm); }
-    .email-capture-error { margin: var(--space-3) 0 0; color: #b91c1c; font-weight: 600; font-size: var(--text-sm); }
+    .email-capture-error { margin: var(--space-3) 0 0; color: var(--color-danger); font-weight: 600; font-size: var(--text-sm); }
     .email-capture-note { margin: var(--space-3) 0 0; color: var(--color-text-muted); font-size: var(--text-xs); opacity: 0.85; }
     [data-theme="dark"] .email-capture-card { background: var(--color-surface-2); }
     [data-theme="dark"] .email-capture-form input[type="email"] { background: var(--color-surface); color: var(--color-text); }
@@ -3168,7 +3195,7 @@
       color: var(--color-text-muted, #6b7280);
     }
     .upload-status.error {
-      color: #b91c1c;
+      color: var(--color-danger);
     }
     @media (max-width: 640px) {
       .upload-controls { gap: 8px; }
@@ -3264,7 +3291,7 @@
     .std-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); align-items: stretch; }
     .std-cell { background: var(--color-surface); border: 1px solid var(--color-divider); border-radius: 12px; padding: var(--space-4); font-size: var(--text-sm); line-height: 1.55; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
     .std-cell-label { display: inline-block; font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; margin-bottom: 8px; }
-    .std-before .std-cell-label { background: color-mix(in srgb, #b91c1c 15%, transparent); color: #b91c1c; }
+    .std-before .std-cell-label { background: color-mix(in srgb, var(--color-danger) 15%, transparent); color: var(--color-danger); }
     .std-after .std-cell-label { background: color-mix(in srgb, var(--color-primary) 15%, transparent); color: var(--color-primary); }
     .std-after { border-color: color-mix(in srgb, var(--color-primary) 35%, transparent); }
     .std-cell-text { color: var(--color-text); margin: 0; }
@@ -10105,7 +10132,7 @@ Context:
         if (!statusEl) return;
         statusEl.textContent = msg || '';
         statusEl.hidden = !msg;
-        statusEl.style.color = isError ? '#b91c1c' : '';
+        statusEl.style.color = isError ? 'var(--color-danger)' : '';
       }
 
       function showToastMsg(msg) {

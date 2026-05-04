@@ -26,7 +26,7 @@ The project utilizes a pnpm workspace monorepo for organizing various packages.
 This is a static HTML AI prompt builder (`index.html`) built with vanilla JavaScript and Vite, complemented by static pages for guides, pricing, reviews, privacy, and terms.
 
 ### UI/UX and Design Decisions
--   **Color Scheme:** CSS variables with a default teal palette.
+-   **Color Scheme:** CSS variables with a default teal palette. Shared semantic color tokens (`--color-danger`, `--color-danger-light`, `--color-danger-strong`, `--color-danger-hover`, `--color-danger-vivid`, `--color-warning`, `--color-warning-subtle`, `--color-muted`) are defined in light/dark theme blocks for single-point theme edits.
 -   **Responsive Design:** Optimized for mobile and desktop.
 -   **Form Layout:** Dedicated areas for prompt generation and an always-visible Prompt Tuning section.
 -   **Prompt Tuning Section:** Persistent `<section id="settingsPanel">` for controlling various prompt parameters.

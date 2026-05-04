@@ -69,31 +69,31 @@
     '.pmg-history-skeleton-status{margin:var(--space-2) 0 0;font-size:var(--text-sm);color:var(--color-text-muted);text-align:center}',
 
     /* Error banner — mirrors .pmg-result-error visuals. */
-    '.pmg-history-error-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-3);text-align:center;padding:clamp(var(--space-6),5vw,var(--space-8)) var(--space-5);min-height:180px;background:color-mix(in srgb, #dc2626 8%, var(--color-surface-2));border:1.5px dashed color-mix(in srgb, #dc2626 38%, var(--color-border));border-radius:var(--radius-lg)}',
+    '.pmg-history-error-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-3);text-align:center;padding:clamp(var(--space-6),5vw,var(--space-8)) var(--space-5);min-height:180px;background:color-mix(in srgb, var(--color-danger-strong) 8%, var(--color-surface-2));border:1.5px dashed color-mix(in srgb, var(--color-danger-strong) 38%, var(--color-border));border-radius:var(--radius-lg)}',
     '.pmg-history-error-icon{font-size:30px;line-height:1}',
-    '.pmg-history-error-title{margin:0;font-size:var(--text-base);font-weight:700;color:#b91c1c}',
-    '[data-theme="dark"] .pmg-history-error-title{color:#fca5a5}',
+    '.pmg-history-error-title{margin:0;font-size:var(--text-base);font-weight:700;color:var(--color-danger)}',
+    '[data-theme="dark"] .pmg-history-error-title{color:var(--color-danger)}',
     '.pmg-history-error-text{margin:0;font-size:var(--text-sm);color:var(--color-text);max-width:48ch;line-height:1.5}',
     '.pmg-history-error-actions{display:flex;gap:var(--space-2);flex-wrap:wrap;justify-content:center;margin-top:var(--space-1)}',
-    '.pmg-history-error-btn{min-height:44px;padding:10px 20px;border-radius:999px;background:#dc2626;color:#fff;font-weight:700;border:1.5px solid #dc2626;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;font-size:var(--text-sm)}',
+    '.pmg-history-error-btn{min-height:44px;padding:10px 20px;border-radius:999px;background:var(--color-danger-strong);color:#fff;font-weight:700;border:1.5px solid var(--color-danger-strong);cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;font-size:var(--text-sm)}',
     '.pmg-history-error-btn:hover{filter:brightness(1.05)}',
 
     /* Inline write-blocked warning banner — same color family as
      * .pmg-history-error-card but slim, dismissible, and meant to
      * sit ABOVE the existing list (we never destroy the list). */
-    '.pmg-history-write-warning{display:flex;align-items:flex-start;gap:var(--space-3);padding:12px 14px;margin:0 0 var(--space-3);background:color-mix(in srgb, #dc2626 8%, var(--color-surface-2));border:1.5px solid color-mix(in srgb, #dc2626 38%, var(--color-border));border-radius:var(--radius-lg);color:var(--color-text);font-size:var(--text-sm);line-height:1.45;animation:pmg-write-warn-in .22s ease-out both}',
+    '.pmg-history-write-warning{display:flex;align-items:flex-start;gap:var(--space-3);padding:12px 14px;margin:0 0 var(--space-3);background:color-mix(in srgb, var(--color-danger-strong) 8%, var(--color-surface-2));border:1.5px solid color-mix(in srgb, var(--color-danger-strong) 38%, var(--color-border));border-radius:var(--radius-lg);color:var(--color-text);font-size:var(--text-sm);line-height:1.45;animation:pmg-write-warn-in .22s ease-out both}',
     '@keyframes pmg-write-warn-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}',
     '@media (prefers-reduced-motion: reduce){.pmg-history-write-warning{animation:none}}',
     '.pmg-history-write-warning-icon{flex:0 0 auto;font-size:18px;line-height:1.2;margin-top:1px}',
     '.pmg-history-write-warning-body{flex:1 1 auto;min-width:0}',
-    '.pmg-history-write-warning-title{margin:0 0 2px;font-size:var(--text-sm);font-weight:700;color:#b91c1c}',
-    '[data-theme="dark"] .pmg-history-write-warning-title{color:#fca5a5}',
+    '.pmg-history-write-warning-title{margin:0 0 2px;font-size:var(--text-sm);font-weight:700;color:var(--color-danger)}',
+    '[data-theme="dark"] .pmg-history-write-warning-title{color:var(--color-danger)}',
     '.pmg-history-write-warning-text{margin:0;font-size:13px;color:var(--color-text);overflow-wrap:anywhere}',
     '.pmg-history-write-warning-dismiss{flex:0 0 auto;align-self:flex-start;background:transparent;border:0;color:var(--color-text-muted);font-size:18px;line-height:1;padding:4px 6px;cursor:pointer;border-radius:6px;min-width:32px;min-height:32px;display:inline-flex;align-items:center;justify-content:center}',
-    '.pmg-history-write-warning-dismiss:hover{background:color-mix(in srgb, #dc2626 12%, transparent);color:#b91c1c}',
-    '.pmg-history-write-warning-dismiss:focus-visible{outline:2px solid #dc2626;outline-offset:2px}',
-    '[data-theme="dark"] .pmg-history-write-warning-dismiss:hover{color:#fca5a5;background:color-mix(in srgb, #fca5a5 12%, transparent)}',
-    '[data-theme="dark"] .pmg-history-write-warning-dismiss:focus-visible{outline-color:#fca5a5}'
+    '.pmg-history-write-warning-dismiss:hover{background:color-mix(in srgb, var(--color-danger-strong) 12%, transparent);color:var(--color-danger)}',
+    '.pmg-history-write-warning-dismiss:focus-visible{outline:2px solid var(--color-danger-strong);outline-offset:2px}',
+    '[data-theme="dark"] .pmg-history-write-warning-dismiss:hover{color:var(--color-danger);background:color-mix(in srgb, var(--color-danger) 12%, transparent)}',
+    '[data-theme="dark"] .pmg-history-write-warning-dismiss:focus-visible{outline-color:var(--color-danger)}'
   ].join(''));
 
   function escapeHtml(str) {

@@ -85,10 +85,10 @@
     '.pmg-image-skeleton{width:100%;aspect-ratio:1;min-height:240px;border-radius:var(--radius-lg)}',
 
     /* Error banner with Try Again */
-    '.pmg-image-error{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-3);text-align:center;padding:clamp(var(--space-6),5vw,var(--space-8)) var(--space-5);min-height:240px;background:color-mix(in srgb, #dc2626 8%, var(--color-surface-2));border:1.5px dashed color-mix(in srgb, #dc2626 38%, var(--color-border));border-radius:var(--radius-lg)}',
+    '.pmg-image-error{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-3);text-align:center;padding:clamp(var(--space-6),5vw,var(--space-8)) var(--space-5);min-height:240px;background:color-mix(in srgb, var(--color-danger-strong) 8%, var(--color-surface-2));border:1.5px dashed color-mix(in srgb, var(--color-danger-strong) 38%, var(--color-border));border-radius:var(--radius-lg)}',
     '.pmg-image-error-icon{font-size:32px;line-height:1}',
-    '.pmg-image-error-title{margin:0;font-size:var(--text-base);font-weight:700;color:#b91c1c}',
-    '[data-theme="dark"] .pmg-image-error-title{color:#fca5a5}',
+    '.pmg-image-error-title{margin:0;font-size:var(--text-base);font-weight:700;color:var(--color-danger)}',
+    '[data-theme="dark"] .pmg-image-error-title{color:var(--color-danger)}',
     '.pmg-image-error-text{margin:0;font-size:var(--text-sm);color:var(--color-text);max-width:48ch;line-height:1.5}',
     '.pmg-image-error-btn{min-height:44px;padding:10px 20px;border-radius:999px;background:var(--color-primary);color:#fff;font-weight:700;border:1.5px solid var(--color-primary);cursor:pointer;display:inline-flex;align-items:center;gap:.4rem;font-size:var(--text-sm)}',
     '.pmg-image-error-btn:hover{filter:brightness(1.05)}',
