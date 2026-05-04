@@ -8434,7 +8434,21 @@ Context:
           selector: '#guided-mode-btn',
           fallbackSelector: '.guided-cta-row',
           title: "Not sure what to type? Use Help Me Start",
-          text: "Tap Help Me Start and we ask 4 short questions — what you need, who it's for, the outcome that matters, and any rules. Then we fill the builder for you. You can also use Surprise Me in the Photography Suite for random creative picks."
+          text: "Tap Help Me Start and we ask 4 short questions — what you need, who it's for, the outcome that matters, and any rules. Then we fill the builder for you. You can also use Surprise Me in the Photography Suite for random creative picks.",
+          onEnter: function () {
+            var row = document.getElementById('guided-cta-row');
+            if (row && getComputedStyle(row).display === 'none') {
+              row.style.setProperty('display', 'flex', 'important');
+              row.dataset.tourRevealed = '1';
+            }
+          },
+          onLeave: function () {
+            var row = document.getElementById('guided-cta-row');
+            if (row && row.dataset.tourRevealed === '1') {
+              row.style.removeProperty('display');
+              delete row.dataset.tourRevealed;
+            }
+          }
         }
       ];
       const DEMO_STEPS = [
@@ -8485,7 +8499,21 @@ Context:
           selector: '#guided-mode-btn',
           fallbackSelector: '.guided-cta-row',
           title: "Step 5: You\u2019re ready!",
-          text: "Clear the demo and type your own goal. If you get stuck, tap Help Me Start for a guided setup, or use Surprise Me in the Photography Suite for creative image ideas. Replay Tour is always at the bottom of the page."
+          text: "Clear the demo and type your own goal. If you get stuck, tap Help Me Start for a guided setup, or use Surprise Me in the Photography Suite for creative image ideas. Replay Tour is always at the bottom of the page.",
+          onEnter: function () {
+            var row = document.getElementById('guided-cta-row');
+            if (row && getComputedStyle(row).display === 'none') {
+              row.style.setProperty('display', 'flex', 'important');
+              row.dataset.tourRevealed = '1';
+            }
+          },
+          onLeave: function () {
+            var row = document.getElementById('guided-cta-row');
+            if (row && row.dataset.tourRevealed === '1') {
+              row.style.removeProperty('display');
+              delete row.dataset.tourRevealed;
+            }
+          }
         }
       ];
       const obOverlay = document.getElementById('ob-overlay');

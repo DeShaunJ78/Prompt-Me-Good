@@ -1,0 +1,138 @@
+URGENT: The live public site still fails the mobile tour audit.
+
+I confirmed against the LIVE URL with cache busting:
+https://www.promptmegood.com/?auditBust=TIMESTAMP
+
+The live page is loading current scripts including:
+- /scripts/pmg-ux.js?v=task122
+- /scripts/pmg-image-fix.js?v=img-progress-2
+
+So this is not a stale/local test issue. Fix the live mobile behavior.
+
+Do not redesign the site.
+Do not change pricing/legal/SEO copy.
+Do not break Fix My Prompt, Run With AI, image generation, first-load mobile layout, or desktop.
+This is a surgical mobile bug fix.
+
+Test viewport:
+390×844 mobile.
+
+LIVE FAILURES STILL PRESENT:
+
+1. Intro Tour still breaks after “Write or create an image”
+
+Observed live:
+- Step 1: “Start here — describe what you need” opens and highlights textarea.
+- Step 2: “Tap Fix My Prompt” highlights Fix My Prompt.
+- Step 3: “Your prompt appears here” highlights fixed prompt area.
+- Step 4: “Run With AI — get your answer instantly” appears.
+- Then “Write or create an image” appears as Step 5, but the next state is broken:
+  - overlay is not open / tour behaves closed
+  - title remains “Write or create an image”
+  - button still says “Next”
+  - highlight rect is 0×0
+  - it does not advance cleanly to final Help Me Start step / Done.
+
+Fix:
+- Fix Intro Tour step array and advancement logic.
+- Step 5 must have a valid visible target.
+- Step 6 must be Help Me Start and show Done.
+- Do not allow any step to render with a 0×0 highlight.
+- Do not close the tour before final Done.
+
+Required Intro Tour sequence:
+1. Goal textarea
+2. Fix My Prompt button
+3. Your Fixed Prompt title/card
+4. Run With AI button or Run This Prompt header
+5. Write/Create Image mode switch OR Photography Suite title/header
+6. Help Me Start button, with Done
+
+Acceptance:
+On live 390×844:
+- Six unique steps.
+- Step number progresses 1 → 6.
+- Step 6 says Done.
+- No blank title.
+- No 0×0 highlight.
+- Next never repeats a broken step.
+- Done closes tour.
+
+2. Workstation Tour still opens broken
+
+Observed live:
+- Clicking Workstation Tour opens a broken state:
+  - “Step 1 of 6”
+  - blank title
+  - blank body
+  - highlight rect 0×0
+  - overlay behaves closed / not open.
+
+Fix:
+- Workstation Tour is not resolving its config or target correctly.
+- Check the replay menu handler. It may be passing the wrong tour key/name.
+- Check for mismatch between:
+  - button text “Workstation Tour”
+  - tour config key
+  - step array name
+  - startTour/openTour function argument
+- Ensure Workstation Tour has a real step array with title/body/target.
+- Ensure step 1 target exists and is visible before measuring.
+- If target unavailable, fallback to command center header or Open Workspace button.
+
+Required Workstation Tour sequence:
+1. Workstation/command center overview
+2. Your Better Prompt / fixed prompt title
+3. Run With AI
+4. Prompt Vault title/header or nav pill
+5. Photography Suite title/header
+6. Help/replay/final step with Done
+
+Acceptance:
+On live 390×844:
+- Workstation Tour opens with a real title/body.
+- Step 1 highlight is non-zero.
+- All six steps advance.
+- Prompt Vault step targets title/header/nav pill, not the whole list.
+- Photography Suite step targets title/header, not the full tall form.
+- No 0×0 highlights.
+- Done closes tour.
+
+3. Photography Suite actual site heading still wraps badly
+
+Observed live:
+`#pmg-photo-suite-title` / `[data-tour-target="photo-suite-title"]`
+still measures roughly:
+- width ~188px
+- height ~88px
+- about 3 lines on 390px mobile.
+
+This is the actual site heading, not tour modal title.
+
+Fix:
+Make the real site heading “📸 Photography Suite” visually clean on mobile.
+
+Acceptance:
+At 390×844:
+- “📸 Photography Suite” should be one clean line if possible.
+- Icon must not sit alone or force awkward wrapping.
+- No 3-line title block.
+- No horizontal overflow.
+
+Suggested CSS:
+```css
+@media (max-width: 520px) {
+  #pmg-photo-suite-title,
+  [data-tour-target="photo-suite-title"] {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* or flex-start if that fits the card better */
+    gap: 0.4rem;
+    width: 100%;
+    max-width: 100%;
+    white-space: nowrap;
+    text-wrap: nowrap;
+    line-height: 1.15;
+    font-size: clamp(1.05rem, 5vw, 1.25rem);
+  }
+}
