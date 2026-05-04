@@ -253,12 +253,16 @@
       var realBtn = document.getElementById('runBtn');
       if (realBtn && typeof realBtn.click === 'function') {
         realBtn.click();
-        setTimeout(function () {
+        var scrollAttempts = 0;
+        var scrollInterval = setInterval(function () {
+          scrollAttempts++;
           var resp = document.getElementById('aiResponseSection');
-          if (resp) {
-            try { resp.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
+          if (resp && resp.offsetHeight > 0) {
+            clearInterval(scrollInterval);
+            try { resp.scrollIntoView({ behavior: window.PMG_A11Y ? window.PMG_A11Y.scrollBehavior() : 'smooth', block: 'start' }); } catch (_) {}
           }
-        }, 150);
+          if (scrollAttempts > 30) clearInterval(scrollInterval);
+        }, 200);
         return;
       }
       /* Fallback: try the global runWithAI() if exposed. */

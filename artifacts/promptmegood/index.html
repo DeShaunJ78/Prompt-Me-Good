@@ -455,7 +455,7 @@
     }
     .nav-toggle:hover { background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface)); }
     .hero {
-      padding: clamp(var(--space-12), 10vw, var(--space-20)) 0 var(--space-10);
+      padding: clamp(var(--space-8), 6vw, var(--space-12)) 0 var(--space-6);
     }
     .hero-grid {
       display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(340px, 0.7fr); gap: var(--space-8); align-items: center;
@@ -509,10 +509,10 @@
     .hero-subtext-box {
       background: color-mix(in srgb, var(--color-primary) 8%, transparent);
       border-left: 4px solid var(--color-primary);
-      padding: 14px 16px;
+      padding: 10px 14px;
       border-radius: 10px;
-      margin-top: 16px;
-      margin-bottom: 12px;
+      margin-top: 10px;
+      margin-bottom: 8px;
       max-width: 620px;
     }
     .hero .hero-subtext {
@@ -625,7 +625,7 @@
     }
     .panel-head h2 { font-size: var(--text-lg); line-height: 1.2; }
     .panel-head p { margin-top: var(--space-2); color: var(--color-text-muted); font-size: var(--text-sm); }
-    .form-wrap { padding: var(--space-5); }
+    .form-wrap { padding: var(--space-4) var(--space-5); }
     .form-grid { display: grid; gap: var(--space-4); }
     .field { display: grid; gap: var(--space-2); }
     .field label { font-size: var(--text-sm); font-weight: 700; }
@@ -4450,7 +4450,7 @@
     <button type="button" class="post-tour-banner-btn" id="post-tour-banner-dismiss" aria-label="Dismiss message">Got It</button>
   </div>
 
-  <div class="pmg-post-run-intro" id="pmg-post-run-intro" role="dialog" aria-modal="false" aria-labelledby="pmg-post-run-intro-title" aria-describedby="pmg-post-run-intro-body" hidden>
+  <div class="pmg-post-run-intro" id="pmg-post-run-intro" role="dialog" aria-modal="false" aria-labelledby="pmg-post-run-intro-title" aria-describedby="pmg-post-run-intro-body" hidden inert>
     <h3 class="pmg-post-run-intro-title" id="pmg-post-run-intro-title">Your First Prompt Is Done</h3>
     <p class="pmg-post-run-intro-body" id="pmg-post-run-intro-body">You just built a prompt, ran it with AI, and got your answer. Want a quick look at the rest of the workstation — image generation, the Photography Suite, Power Moves, and more?</p>
     <div class="pmg-post-run-intro-actions">
@@ -4459,14 +4459,14 @@
     </div>
   </div>
 
-  <div class="smart-assist" id="smart-assist" role="region" aria-live="polite" aria-labelledby="smart-assist-title" hidden>
+  <div class="smart-assist" id="smart-assist" role="region" aria-live="polite" aria-labelledby="smart-assist-title" hidden inert>
     <button type="button" class="smart-assist-close" id="smart-assist-close" aria-label="Dismiss helper">&times;</button>
     <h3 class="smart-assist-title" id="smart-assist-title">What would you like to do?</h3>
     <p class="smart-assist-body" id="smart-assist-body" hidden></p>
     <div class="smart-assist-actions" id="smart-assist-actions"></div>
   </div>
 
-  <div class="compare-overlay" id="compare-overlay" role="dialog" aria-modal="true" aria-labelledby="compare-title" aria-hidden="true">
+  <div class="compare-overlay" id="compare-overlay" role="dialog" aria-modal="true" aria-labelledby="compare-title" aria-hidden="true" inert>
     <div class="compare-modal">
       <div class="compare-head">
         <h3 id="compare-title">Compare Prompts</h3>
@@ -4497,7 +4497,7 @@
     </div>
   </div>
 
-  <div class="bk-overlay" id="bk-overlay" role="dialog" aria-modal="true" aria-labelledby="bk-title" aria-hidden="true">
+  <div class="bk-overlay" id="bk-overlay" role="dialog" aria-modal="true" aria-labelledby="bk-title" aria-hidden="true" inert>
     <div class="bk-modal">
       <div class="compare-head">
         <h3 id="bk-title">Backup / Restore</h3>
@@ -4537,7 +4537,7 @@
     <div class="print-footer">Generated with PromptMeGood</div>
   </div>
 
-  <div class="ob-overlay" id="ob-overlay" role="dialog" aria-modal="false" aria-labelledby="ob-title" aria-hidden="true">
+  <div class="ob-overlay" id="ob-overlay" role="dialog" aria-modal="false" aria-labelledby="ob-title" aria-hidden="true" inert>
     <div class="ob-backdrop" id="ob-backdrop"></div>
     <div class="ob-highlight" id="ob-highlight"></div>
     <div class="ob-tooltip" id="ob-tooltip">
@@ -7058,10 +7058,12 @@ Context:
         setBackupTab('backup');
         bkOverlay.classList.add('is-open');
         bkOverlay.setAttribute('aria-hidden', 'false');
+        bkOverlay.inert = false;
       }
       function closeBackupModal() {
         bkOverlay.classList.remove('is-open');
         bkOverlay.setAttribute('aria-hidden', 'true');
+        bkOverlay.inert = true;
       }
       function setBackupTab(name) {
         const isBackup = name === 'backup';
@@ -7525,9 +7527,7 @@ Context:
       function scrollToResult() {
         if (!resultPanel) return;
         try {
-          var resultBox = document.getElementById('resultBox');
-          var target = resultBox || resultPanel;
-          target.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'nearest' });
+          resultPanel.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
         } catch (e) {
           resultPanel.scrollIntoView();
         }
@@ -8233,6 +8233,7 @@ Context:
         }
         obOverlay.classList.add('is-open');
         obOverlay.setAttribute('aria-hidden', 'false');
+        obOverlay.inert = false;
         obBindListeners();
         window.setTimeout(function () {
           obPositionStep();
@@ -8250,6 +8251,7 @@ Context:
         if (typeof pmgMarkVisited === 'function') pmgMarkVisited();
         obOverlay.classList.remove('is-open');
         obOverlay.setAttribute('aria-hidden', 'true');
+        obOverlay.inert = true;
         obUnbindListeners();
         obHighlight.style.top = '-9999px';
         obHighlight.style.left = '-9999px';
@@ -8442,6 +8444,7 @@ Context:
         if (typeof obIsOpen === 'function' && obIsOpen()) return;
         pmgMarkPostRunIntroSeen();
         card.hidden = false;
+        card.inert = false;
         // Force reflow so the transition runs from hidden -> visible.
         // eslint-disable-next-line no-unused-expressions
         card.offsetWidth;
@@ -8450,7 +8453,7 @@ Context:
         const goBtn = document.getElementById('pmg-post-run-intro-go');
         const hide = function () {
           card.classList.remove('is-visible');
-          window.setTimeout(function () { card.hidden = true; }, 240);
+          window.setTimeout(function () { card.hidden = true; card.inert = true; }, 240);
         };
         if (skipBtn) {
           skipBtn.addEventListener('click', function () {
@@ -9205,6 +9208,7 @@ Context:
         compareRemixText.textContent = ctx.remix;
         compareOverlay.classList.add('is-open');
         compareOverlay.setAttribute('aria-hidden', 'false');
+        compareOverlay.inert = false;
       }
 
       /* Task #54: render N columns (2-5) for Compare Many. Each item
@@ -9238,11 +9242,13 @@ Context:
         compareGridEl.addEventListener('click', compareManyClick);
         compareOverlay.classList.add('is-open');
         compareOverlay.setAttribute('aria-hidden', 'false');
+        compareOverlay.inert = false;
       }
 
       function closeCompare() {
         compareOverlay.classList.remove('is-open');
         compareOverlay.setAttribute('aria-hidden', 'true');
+        compareOverlay.inert = true;
         compareCtx = null;
         tearDownCompareMany();
       }

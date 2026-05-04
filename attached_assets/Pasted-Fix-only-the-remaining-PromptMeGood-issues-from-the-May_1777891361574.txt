@@ -1,0 +1,155 @@
+Fix only the remaining PromptMeGood issues from the May 4 live verification.
+
+Goal:
+Move PromptMeGood closer to 9+/10 by fixing the last critical UX and accessibility issues without adding new features or changing the brand.
+
+Do not redesign the site.
+Do not change pricing.
+Do not remove existing functionality.
+Do not add new feature buttons.
+Do not break the working mobile first-use flow.
+Do not change SEO/policy copy unless needed for accessibility labels.
+
+Issue 1: Desktop First-Action Visibility
+Problem:
+At desktop 1440x900 with the banner open, the first textarea is fully visible, but the visible Fix My Prompt button ends at y=913, below the 900px viewport.
+
+Fix:
+- Recover at least 30px of vertical space in the top first-use area.
+- The visible Fix My Prompt button must be fully visible at 1440x900 with the banner open.
+- Do not remove the before/after proof block.
+- Acceptable fixes:
+  - reduce vertical gaps above the input,
+  - reduce top card padding,
+  - slightly reduce textarea height on desktop,
+  - move helper copy below the button,
+  - attach Fix My Prompt directly inside the input card,
+  - collapse nonessential proof/helper content behind “See Example.”
+- Keep mobile first-use intact.
+
+Acceptance:
+- Fresh load at 1440x900 with banner open shows:
+  - Your Goal textarea fully visible
+  - Fix My Prompt button fully visible
+- No horizontal overflow.
+- Mobile 390x844 still shows textarea and Fix My Prompt fully visible.
+
+Issue 2: Result Scroll Anchoring After Fix My Prompt
+Problem:
+After Fix My Prompt, the generated prompt exists, but the page does not anchor cleanly to the generated prompt/actions. Copy Prompt and Run With AI can be below the viewport.
+
+Fix:
+- After Fix My Prompt completes, scroll/anchor to the generated prompt result card.
+- The target viewport should show:
+  - Your Fixed Prompt
+  - generated prompt text
+  - Run With AI Here
+  - Copy Prompt
+  - Power Moves
+- Do not overshoot into unrelated builder sections.
+- Keep desktop and mobile behavior consistent.
+
+Acceptance:
+- After Fix My Prompt, user lands on the generated prompt result area.
+- Run With AI Here is visible or immediately adjacent without extra searching.
+- Copy Prompt and Power Moves are nearby.
+- Page movement feels intentional, not jumpy.
+
+Issue 3: Scroll Anchoring After Run With AI
+Problem:
+After Run With AI, the page jumps very far down and the response/nudge can feel disconnected.
+
+Fix:
+- After Run With AI completes, anchor to the AI response panel.
+- The target viewport should show:
+  - AI Response
+  - Copy Response
+  - Run Again
+  - Suggested Next Step
+  - post-response Founding Member nudge if visible
+- Do not overshoot into unrelated sections.
+- Keep the generated prompt and AI response visually connected when possible.
+
+Acceptance:
+- After Run With AI, the AI response is visible.
+- Copy Response and Run Again are visible.
+- The Founding Member nudge appears near the response.
+- The scroll position does not jump far past the response.
+
+Issue 4: Image Generation Loading State
+Problem:
+Image generation works, but after clicking Generate Image Here the panel still shows placeholder text during the wait. It does not show “Generating Image,” and duplicate clicks are not disabled.
+
+Fix:
+- Immediately when Generate Image Here is clicked:
+  - replace placeholder copy with:
+    “Generating Image”
+    “This Can Take A Few Moments.”
+  - show a spinner, skeleton, or animated loading visual.
+  - disable Generate Image Here while the request is in progress.
+  - prevent duplicate image-generation requests.
+- Keep the image result area in view.
+- When complete, replace loading state with:
+  “Your Image Is Ready”
+- Keep existing final actions:
+  - Save Image To Your Device
+  - Generate Another
+  - Copy Prompt
+  - Send To Midjourney
+  - Use As Reference
+  - Generate 4 Variations
+  - Write A Prompt About This
+
+Acceptance:
+- Click Generate Image Here.
+- Within 1 second, “Generating Image” is visible.
+- Generate Image Here is disabled during generation.
+- Final generated image still appears.
+- Save Image To Your Device becomes active after generation.
+
+Issue 5: Hidden Focusable Controls
+Problem:
+Audit found hundreds of zero-size hidden controls that are still focusable. This affects keyboard navigation, screen readers, and automated testing.
+
+Fix:
+- Audit hidden/inactive UI including:
+  - hidden tour controls
+  - hidden image wizard controls
+  - hidden prompt controls
+  - hidden search/menu controls
+  - hidden modal buttons
+  - hidden duplicate textareas
+- Any element that is hidden, zero-size, inactive, or offscreen because its panel/modal is closed should not be keyboard-focusable.
+- Use the appropriate approach:
+  - remove from DOM when not needed,
+  - `hidden`,
+  - `display: none`,
+  - `inert`,
+  - `aria-hidden="true"` plus `tabindex="-1"` for descendants,
+  - `disabled` for inactive buttons/inputs.
+- Do not use only opacity or transform to hide interactive controls if they remain focusable.
+- Ensure closed panels/modals/wizards are not in tab order.
+
+Acceptance:
+- Keyboard tab order only reaches visible active controls.
+- Hidden zero-size buttons, links, inputs, and textareas are not focusable.
+- Screen readers should not announce closed/inactive controls.
+- Visible controls still work.
+
+Final QA:
+- Test desktop 1440x900 with banner open.
+- Confirm textarea and Fix My Prompt are fully visible without scrolling.
+- Test mobile 390x844 with banner open.
+- Confirm textarea and Fix My Prompt remain fully visible.
+- Generate a prompt.
+- Confirm scroll anchors to result card.
+- Confirm Run With AI Here, Copy Prompt, and Power Moves are visible/adjacent.
+- Run With AI.
+- Confirm scroll anchors to AI Response.
+- Confirm Copy Response, Run Again, Suggested Next Step, and Founding Member nudge are visible.
+- Generate an image.
+- Confirm “Generating Image” appears within 1 second.
+- Confirm Generate Image Here is disabled while loading.
+- Confirm final image and actions still appear.
+- Use keyboard Tab from the top of the page.
+- Confirm focus does not enter hidden zero-size controls.
