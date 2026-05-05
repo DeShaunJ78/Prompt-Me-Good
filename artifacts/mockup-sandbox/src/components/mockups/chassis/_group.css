@@ -1,0 +1,87 @@
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,900&display=swap');
+
+.pmg-chassis {
+  --color-bg: #f7f6f2;
+  --color-bg-elev: #ffffff;
+  --color-bg-sunken: #efece5;
+  --color-text: #24211c;
+  --color-text-muted: #67655f;
+  --color-text-faint: #9a9892;
+  --color-text-inverse: #f8f7f4;
+  --color-primary: #01696f;
+  --color-primary-hover: #0c4e54;
+  --color-primary-highlight: #d7e5e2;
+  --color-border: rgba(36, 33, 28, 0.10);
+  --color-border-strong: rgba(36, 33, 28, 0.18);
+  --color-success: #15803d;
+  --color-warning: #b45309;
+  --color-danger: #b91c1c;
+
+  --font-display: 'Satoshi', Inter, system-ui, sans-serif;
+  --font-body: 'Satoshi', Inter, system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+
+  --shadow-sm: 0 1px 2px rgba(36, 33, 28, 0.04), 0 1px 1px rgba(36, 33, 28, 0.03);
+  --shadow-md: 0 4px 12px rgba(36, 33, 28, 0.06), 0 1px 3px rgba(36, 33, 28, 0.04);
+  --shadow-lg: 0 12px 32px rgba(36, 33, 28, 0.08), 0 4px 8px rgba(36, 33, 28, 0.04);
+
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'ss01', 'cv11';
+  letter-spacing: -0.011em;
+}
+
+.pmg-chassis h1, .pmg-chassis h2, .pmg-chassis h3, .pmg-chassis h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--color-text);
+}
+
+.pmg-chassis .pmg-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-weight: 600; font-size: 14px; line-height: 1;
+  padding: 10px 16px; border-radius: var(--radius-md);
+  border: 1px solid transparent; cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, transform 80ms ease;
+}
+.pmg-chassis .pmg-btn-primary { background: var(--color-primary); color: var(--color-text-inverse); }
+.pmg-chassis .pmg-btn-primary:hover { background: var(--color-primary-hover); }
+.pmg-chassis .pmg-btn-secondary {
+  background: var(--color-bg-elev); color: var(--color-text);
+  border-color: var(--color-border-strong);
+}
+.pmg-chassis .pmg-btn-secondary:hover { background: var(--color-bg-sunken); }
+.pmg-chassis .pmg-btn-ghost { background: transparent; color: var(--color-text-muted); }
+.pmg-chassis .pmg-btn-ghost:hover { color: var(--color-text); background: var(--color-bg-sunken); }
+
+.pmg-chassis .pmg-card {
+  background: var(--color-bg-elev);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.pmg-chassis .pmg-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 500;
+  background: var(--color-primary-highlight); color: var(--color-primary-hover);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+
+.pmg-chassis .pmg-mono { font-family: var(--font-mono); font-size: 13px; }
+
+.pmg-chassis .pmg-divider { height: 1px; background: var(--color-border); }
+
+.pmg-chassis .pmg-eyebrow {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--color-text-muted);
+}
