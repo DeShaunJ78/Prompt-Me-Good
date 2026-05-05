@@ -5,13 +5,21 @@
    feel guided, not gimmicky.
 
    Stages (monotonic; only the latest unfulfilled stage glows):
-     0  idle                — no glow
+     0  help-me-start       — #goal is empty (or < 10 trimmed chars)
+                              and the prompt hasn't been finalized
+                              yet. Glows #pmg-help-me-start-btn so
+                              the recommended path-from-zero is
+                              visible the instant the page loads.
      1  fix-my-prompt       — user typed >= 10 trimmed chars in #goal
                               and the prompt hasn't been finalized yet
      2  run-with-ai         — builder finalized (pmg:builder-finalized)
                               and no AI response yet
      3  run-again           — AI response received (one-shot;
                               de-glows after Run Again click)
+     4  improve-with-ai     — AI response received AND Run Again
+                              already consumed → glow Improve With AI
+                              so the user sees "now refine it" as the
+                              terminal next-step. One-shot.
 
    Photo Suite (independent override; takes priority when ready):
      -  generate-image-here — .pmg-photo-send is visible+enabled+
@@ -32,7 +40,8 @@
   var state = {
     builderFinalized: false,
     aiResponded: false,
-    runAgainConsumed: false
+    runAgainConsumed: false,
+    improveConsumed: false
   };
 
   function $(id) { return document.getElementById(id); }
@@ -74,6 +83,10 @@
     if (ov1 && ov1.classList.contains('is-open')) return true;
     var ov2 = $('pmg-ws-tour-overlay');
     if (ov2 && ov2.classList.contains('is-open')) return true;
+    /* Also suppress while ANY native <dialog> is open as a modal
+       (Help Me Start dialog, expert warning, privacy, terms, etc.) —
+       a glow underneath a backdrop is wasted motion and feels off. */
+    if (document.querySelector('dialog[open]')) return true;
     return false;
   }
 
@@ -108,6 +121,14 @@
     var photo = photoReadyTarget();
     if (photo) return photo;
 
+    /* Stage 4: AI responded AND Run Again consumed → glow Improve
+       With AI as the terminal "now refine it" cue. One-shot: drops
+       on click via bindGlowingClickConsumer. */
+    if (state.aiResponded && state.runAgainConsumed && !state.improveConsumed) {
+      var improve = $('improve-with-ai-btn');
+      if (isUsable(improve)) return improve;
+    }
+
     /* Stage 3: AI responded → glow Run Again (one-shot). */
     if (state.aiResponded && !state.runAgainConsumed) {
       var again = $('runAgainBtn');
@@ -124,6 +145,16 @@
     if (!state.builderFinalized && meaningfulGoal()) {
       var gen = $('generateBtn');
       if (isUsable(gen)) return gen;
+    }
+
+    /* Stage 0: pre-typing path-from-zero. Goal is empty (or < 10
+       trimmed chars) AND the prompt hasn't been finalized → glow
+       Help Me Start so the recommended kickoff is visible from
+       page load. Falls back gracefully if HMS isn't usable
+       (image mode hides it; T15 sometimes gates it). */
+    if (!state.builderFinalized && !meaningfulGoal()) {
+      var hms = $('pmg-help-me-start-btn');
+      if (isUsable(hms)) return hms;
     }
 
     return null;
@@ -158,6 +189,7 @@
     state.builderFinalized = true;
     state.aiResponded = false;
     state.runAgainConsumed = false;
+    state.improveConsumed = false;
     recompute();
   }
 
@@ -179,6 +211,7 @@
       if (!(t && t.nodeType === 1)) return;
       if (current === t || current.contains(t)) {
         if (current === $('runAgainBtn')) state.runAgainConsumed = true;
+        if (current === $('improve-with-ai-btn')) state.improveConsumed = true;
         setGlow(null);
         /* Re-evaluate after state events fire — small delay covers
            click → handler → DOM-update sequence. */

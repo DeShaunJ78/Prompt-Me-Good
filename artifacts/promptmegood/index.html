@@ -359,6 +359,54 @@
       animation: none !important;
       box-shadow: none !important;
     }
+
+    /* ============================================================
+       T99 — Builder/Result column friction fixes (CSS-only).
+       Three independent pieces, no DOM moves, no handler changes:
+
+       (A) Reorder #tour-final-actions so the next-step CTAs
+           (Run With AI section + in-result actions row) sit
+           ABOVE the Prompt Strength meter. The meter is a
+           status indicator, not the next action — it should
+           render after the action it scores.
+
+       (B) Most Loved badge clearance: give #pmg-help-me-start-btn
+           breathing room above so the gold "Most Loved" pill
+           (which sits at top:-22px via T97) has its own clear
+           visual neighborhood and is unambiguously bound to HMS.
+
+       (C) Hide the duplicate Run With AI button at the top of the
+           result panel once a result exists. With (A) above, the
+           dedicated #runSection now renders immediately after the
+           result box, so the top duplicate is redundant. Click
+           wiring stays intact — only the visual is suppressed.
+       ============================================================ */
+    #tour-final-actions { display: flex; flex-direction: column; }
+    #tour-final-actions > #runSection             { order: 1; }
+    #tour-final-actions > .pmg-result-actions-row { order: 2; }
+    #tour-final-actions > #strength-score         { order: 3; }
+    #tour-final-actions > #quality-row            { order: 3; }
+    #tour-final-actions > #aiResponseSection      { order: 4; }
+    #tour-final-actions > #imageResultSection     { order: 4; }
+    #tour-final-actions > #save-tip               { order: 5; }
+    #tour-final-actions > .open-in-block          { order: 6; }
+
+    /* Most Loved badge clearance — keep T97's top:-22px, just give
+       the button enough top margin so the badge doesn't crowd the
+       column header above it. Specificity bumped via duplicate
+       class qualifier to win against pmg-linear-flow.js rules. */
+    body #pmg-help-me-start-btn.pmg-help-me-start-btn.pmg-help-me-start-btn {
+      margin-top: 18px !important;
+    }
+
+    /* De-duplicate Run With AI in the result panel. The top
+       Copy/Run/Refine row stays for Copy + Refine It; only the
+       Run button hides once a result exists (the dedicated
+       #runSection — now reordered above the meter — owns the
+       Run path going forward). */
+    body.pmg-has-result #result-top-actions #result-top-run {
+      display: none !important;
+    }
   </style>
   <script>
     /* Theme accent bootstrap — runs synchronously in <head> before styles paint to avoid a flash
@@ -11773,7 +11821,7 @@ Context:
        fallback; the real source of truth is the backend route below. -->
   <script src="/api/pricing-config.js?v=task100" defer></script>
   <script src="/scripts/pmg-ux.js?v=task123" defer></script>
-  <script src="/scripts/pmg-next-action.js?v=3" defer></script>
+  <script src="/scripts/pmg-next-action.js?v=5" defer></script>
   <script src="/scripts/post-spec.js" defer></script>
   <script src="/scripts/pmg-image-fix.js?v=img-progress-2" defer></script>
   <script src="/scripts/pmg-result-states.js?v=2-refocus" defer></script>
