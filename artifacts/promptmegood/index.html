@@ -7750,6 +7750,54 @@ Context:
         window.setTimeout(function () {
           resultPanel.classList.remove('is-highlight');
         }, 1600);
+        // Follow up: ensure the generated prompt content is actually visible
+        // on screen. After generation the result panel renders top action
+        // buttons (Copy / Run With AI / Refine), a "Review Changes" diff UI,
+        // pill rows, pinned notes, etc. — all of which on mobile push the
+        // real prompt text below the fold even after the panel header scrolls
+        // to the top. We attempt several times over ~2.5s to win against
+        // competing scrolls (tour modals, post-gen panel insertions, focus
+        // management, smooth-scroll animations). Target the most-visible
+        // representation of the prompt: prefer the diff "Suggested" pane if
+        // shown, otherwise #resultBox itself.
+        var tries = 0;
+        var maxTries = 12;
+        function ensurePromptVisible() {
+          tries++;
+          var vh = window.innerHeight || document.documentElement.clientHeight;
+          // Prefer the diff Suggested pane (newly generated prompt content
+          // shown as the visible diff) when the diff UI is rendered.
+          var diff = document.getElementById('pmg-fix-diff');
+          var target = null;
+          if (diff && !diff.hidden) {
+            var sugg = diff.querySelector('.pfd-col.is-suggested');
+            if (sugg) {
+              var sr = sugg.getBoundingClientRect();
+              if (sr.width > 0 && sr.height > 0) target = sugg;
+            }
+          }
+          if (!target) {
+            var box = document.getElementById('resultBox');
+            if (box) {
+              var br = box.getBoundingClientRect();
+              if (br.width > 0 && br.height > 0) target = box;
+            }
+          }
+          if (!target) {
+            if (tries < maxTries) window.setTimeout(ensurePromptVisible, 200);
+            return;
+          }
+          var rect = target.getBoundingClientRect();
+          var inView = rect.top >= 0 && rect.top < vh - 80;
+          if (inView) return;
+          try {
+            target.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
+          } catch (_) {
+            try { target.scrollIntoView(); } catch (__) {}
+          }
+          if (tries < maxTries) window.setTimeout(ensurePromptVisible, 250);
+        }
+        window.setTimeout(ensurePromptVisible, 400);
       }
 
       // --- Result box clamping: cap long prompts so actions stay visible ---
@@ -7858,6 +7906,61 @@ Context:
           var ib = document.getElementById('improve-with-ai-btn');
           if (ib) { ib.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'center' }); ib.click(); }
         });
+      })();
+
+      // --- AI response visibility guarantee ---
+      // Observe #aiResponseSection so that whenever it becomes visible (the
+      // `hidden` attribute is removed by run() or any other code path), we
+      // bring it into view. This is the single, code-path-agnostic guarantee
+      // that the AI response is on screen when the user runs a prompt — it
+      // doesn't depend on which button was clicked, whether the click event
+      // reached our handler, or whether competing scrolls won earlier.
+      (function ensureAiResponseVisibleObserver() {
+        var sec = document.getElementById('aiResponseSection');
+        if (!sec || typeof MutationObserver !== 'function') return;
+        var pending = false;
+        function bringIntoView() {
+          if (pending) return;
+          pending = true;
+          // rAF + small delay so layout has settled and so we run after any
+          // synchronous scroll triggered by the same code path; then verify
+          // and re-scroll if anything has pushed us off-screen.
+          window.requestAnimationFrame(function () {
+            window.setTimeout(function () {
+              pending = false;
+              if (sec.hidden) return;
+              var doScroll = function () {
+                var r = sec.getBoundingClientRect();
+                var vh = window.innerHeight || document.documentElement.clientHeight;
+                if (r.top >= 0 && r.top < vh - 60) return;
+                try {
+                  var beh = (window.PMG_A11Y && typeof window.PMG_A11Y.scrollBehavior === 'function')
+                    ? window.PMG_A11Y.scrollBehavior() : 'smooth';
+                  sec.scrollIntoView({ behavior: beh, block: 'start' });
+                } catch (_) {
+                  try { sec.scrollIntoView(); } catch (__) {}
+                }
+              };
+              doScroll();
+              // Re-attempt twice to overcome competing scrollers (smooth-
+              // scroll animations, focus management, post-gen panels).
+              window.setTimeout(doScroll, 350);
+              window.setTimeout(doScroll, 900);
+            }, 30);
+          });
+        }
+        var mo = new MutationObserver(function (mutations) {
+          for (var i = 0; i < mutations.length; i++) {
+            if (mutations[i].attributeName === 'hidden' && !sec.hidden) {
+              bringIntoView();
+              return;
+            }
+          }
+        });
+        mo.observe(sec, { attributes: true, attributeFilter: ['hidden'] });
+        // If the section is already visible at install time (e.g. re-runs),
+        // ensure it's in view.
+        if (!sec.hidden) bringIntoView();
       })();
 
       // --- Broad inert for hidden containers (Issue 4) ---
@@ -11099,6 +11202,23 @@ Context:
         if (_artBottom) _artBottom.classList.remove('is-visible');
         lastResponseText = '';
         setRunning(true);
+
+        // Bring the AI response section into view so the user can actually
+        // watch the response stream in. Without this, clicking "Run With AI"
+        // from the top action buttons leaves the response invisible far below
+        // the fold (the response section sits at the bottom of #result-panel,
+        // beneath the result box, improve block, what-next, and final actions).
+        if (respSection) {
+          window.setTimeout(function () {
+            try {
+              var behavior = (window.PMG_A11Y && typeof window.PMG_A11Y.scrollBehavior === 'function')
+                ? window.PMG_A11Y.scrollBehavior() : 'smooth';
+              respSection.scrollIntoView({ behavior: behavior, block: 'start' });
+            } catch (_) {
+              try { respSection.scrollIntoView(); } catch (__) {}
+            }
+          }, 50);
+        }
 
         let res;
         try {
