@@ -1,8 +1,21 @@
 import './_group.css';
 import { Check, ChevronDown, Sparkles } from 'lucide-react';
 
+type Tier = {
+  name: string;
+  tagline: string;
+  price: string;
+  priceSuffix: string;
+  sub: string | null;
+  cta: string;
+  ctaStyle: 'primary' | 'secondary';
+  badge?: string;
+  features: string[];
+  highlight: boolean;
+};
+
 export function Pricing() {
-  const tiers = [
+  const tiers: Tier[] = [
     {
       name: 'Free',
       tagline: 'For your first goals',
@@ -172,7 +185,7 @@ export function Pricing() {
 
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 }}>
               <h3 style={{ fontSize: 18, margin: 0 }}>{t.name}</h3>
-              {(t as any).badge && (
+              {t.badge && (
                 <span
                   style={{
                     fontSize: 10,
@@ -185,7 +198,7 @@ export function Pricing() {
                     textTransform: 'uppercase',
                   }}
                 >
-                  {(t as any).badge}
+                  {t.badge}
                 </span>
               )}
             </div>
