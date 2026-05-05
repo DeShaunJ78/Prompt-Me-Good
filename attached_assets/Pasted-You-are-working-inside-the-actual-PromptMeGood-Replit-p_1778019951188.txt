@@ -1,0 +1,399 @@
+You are working inside the actual PromptMeGood Replit project.
+
+Goal:
+Integrate the Prompt Engine and Photography Suite into the new PromptMeGood workstation so they can each stand alone, but also work together through Master Link to create one premium Master Actionable Plan.
+
+Core Principle:
+Prompt Engine and Photography Suite must be independent first, linked when the user chooses.
+
+Do not force every user to use both.
+Do not make Photography Suite feel like random extra settings for the text prompt.
+Do not make Prompt Engine dependent on Photography Suite.
+Do not make Photography Suite dependent on Prompt Engine.
+
+Each tool must generate value on its own.
+Master Link is the optional synergy layer.
+
+Mental Model:
+
+Prompt Engine = The Soul
+- Idea
+- Goal
+- Audience
+- Tone
+- Story
+- Message
+- Instructions
+- Output format
+- Constraints
+- Strategic direction
+
+Photography Suite = The Body
+- Visual execution
+- Shot style
+- Lens
+- Lighting
+- Composition
+- Camera settings
+- Film stock
+- Mood
+- Color
+- Image/video direction
+
+Master Link = The Bridge
+- Combines the Soul and Body
+- Merges Prompt Engine data with Photography Suite data
+- Produces one unified professional creative blueprint
+
+Master Actionable Plan = The Premium Output
+- A structured plan that combines narrative direction and technical visual direction into one usable AI prompt/brief.
+
+Required Behavior:
+
+1. Prompt Engine Standalone
+If the user only uses Prompt Engine:
+- Generate a strong text prompt.
+- Allow Run With AI.
+- Allow Copy.
+- Allow Refine.
+- Allow Save to Vault.
+- Allow Expert Mode to analyze it.
+
+Example use:
+User wants a business plan, sales email, content idea, YouTube script, product description, or strategy prompt.
+
+Output:
+- Detailed text prompt.
+- Optional AI result if Run With AI is clicked.
+
+2. Photography Suite Standalone
+If the user only uses Photography Suite:
+- Generate a strong image/visual prompt.
+- Allow image prompt copy.
+- Allow Generate Image Here if current functionality supports it.
+- Allow Send To Midjourney if current functionality supports it.
+- Allow Save This Combo if current functionality supports it.
+- Allow Save to Vault/history if available.
+
+Example use:
+User wants product photography, cinematic portrait, thumbnail direction, lifestyle image, ad visual, or AI image prompt.
+
+Output:
+- Detailed image prompt.
+- Technical visual brief.
+- Optional image generation result.
+
+3. Master Link On
+If the user uses both Prompt Engine and Photography Suite and turns Master Link on:
+- Combine both sets of data.
+- Generate a Master Actionable Plan.
+- The output must feel unified, not pasted together.
+- The final AI Execution prompt should include both narrative intent and technical visual direction.
+
+4. Master Link Off
+If Master Link is off:
+- Keep Prompt Engine and Photography Suite outputs separate.
+- Do not confuse the user.
+- Show that each tool can generate independently.
+
+User-Facing Master Link Copy:
+
+Master Link Off:
+"Prompt Engine and Photography Suite are working separately."
+
+Master Link On:
+"Master Link is on. Prompt Engine and Photography Suite will combine into one professional AI blueprint."
+
+Short tooltip:
+"Link the Soul and Body of your prompt into one Master Actionable Plan."
+
+Required Output Format For Master Actionable Plan:
+
+## The Narrative
+[Generated from Prompt Engine. Explain the idea, goal, audience, tone, message, story, and creative direction.]
+
+## Technical Brief
+[Generated from Photography Suite. Explain camera settings, lens, lighting, composition, film stock, color, mood, and visual execution.]
+
+## AI Execution
+[The final usable prompt string that combines narrative direction and technical direction. Include AI parameters when appropriate, such as --ar 16:9 --v 6.0.]
+
+Example:
+
+## The Narrative
+Create a premium short-form video concept for a wearable fitness ring aimed at busy adults who want effortless health tracking. The tone should feel modern, confident, useful, and emotionally motivating. Focus on convenience, self-awareness, and daily performance without exaggerating medical claims.
+
+## Technical Brief
+Use a cinematic close-up of the ring on a hand gripping a gym bag. Shoot with an 85mm lens at f/1.8 for shallow depth of field. Use soft teal rim lighting, warm highlights, ISO 400, 1/125s shutter speed, and Kodak-inspired color treatment. Composition should feel premium, minimal, and tech-forward.
+
+## AI Execution
+Create a premium short-form video ad concept for a wearable fitness ring for busy adults who want effortless health tracking, modern confident tone, convenience and daily performance angle, cinematic close-up of ring on hand gripping gym bag, 85mm lens, f/1.8, shallow depth of field, soft teal rim light, warm highlights, ISO 400, 1/125s, Kodak-inspired color grade, premium minimal tech aesthetic --ar 16:9 --v 6.0
+
+Best Use Cases To Support:
+
+1. Product Ads
+Prompt Engine handles:
+- Hook
+- Audience
+- Pain point
+- Benefits
+- CTA
+- Script/copy direction
+
+Photography Suite handles:
+- Product shot
+- Lighting
+- Camera angle
+- Background
+- Visual style
+
+Master Plan outputs:
+- Ad concept
+- Visual prompt
+- Short-form video script
+- Image generation prompt
+- Production brief
+
+2. Social Media Content
+Prompt Engine handles:
+- Caption
+- Message
+- Story angle
+- Hashtags
+- CTA
+
+Photography Suite handles:
+- Visual scene
+- Mood
+- Lighting
+- Shot composition
+
+Master Plan outputs:
+- Post copy
+- Image prompt
+- Reel concept
+- Thumbnail idea
+
+3. YouTube Thumbnails
+Prompt Engine handles:
+- Video topic
+- Emotional hook
+- Title angle
+- Viewer curiosity
+
+Photography Suite handles:
+- Thumbnail composition
+- Subject placement
+- Face expression
+- Lighting
+- Color contrast
+
+Master Plan outputs:
+- Thumbnail prompt
+- Title ideas
+- Text overlay suggestions
+- Visual direction
+
+4. E-Commerce Product Pages
+Prompt Engine handles:
+- Product description
+- Benefits
+- Objection handling
+- FAQ
+- CTA
+
+Photography Suite handles:
+- Product image direction
+- Lifestyle shot prompt
+- Detail shot prompt
+- Background and lighting
+
+Master Plan outputs:
+- Product page copy
+- Image prompts
+- Hero section direction
+- Ad creative direction
+
+5. AI Video Generation
+Prompt Engine handles:
+- Scene objective
+- Story arc
+- Character action
+- Pacing
+
+Photography Suite handles:
+- Lens
+- Motion
+- Lighting
+- Camera movement
+- Cinematic style
+
+Master Plan outputs:
+- Runway/Kling/Sora-style video prompt
+- Scene breakdown
+- Camera direction
+- Visual continuity notes
+
+6. Brand Campaigns
+Prompt Engine handles:
+- Campaign idea
+- Message
+- Target customer
+- Tone
+- Channel
+
+Photography Suite handles:
+- Brand visuals
+- Color
+- Photo mood
+- Lighting
+- Shot list
+
+Master Plan outputs:
+- Campaign brief
+- Ad copy
+- Visual direction
+- AI image prompts
+- Content variations
+
+How This Should Feel To The User:
+
+Default:
+- User starts in the main composer.
+- They can generate a text prompt through Prompt Engine.
+- They can open Photography Suite when they need visual direction.
+- They can keep them separate or link them.
+
+Prompt Engine only:
+"Build a better text prompt."
+
+Photography Suite only:
+"Build a better image/visual prompt."
+
+Master Link on:
+"Combine the message and the shot into one Master Actionable Plan."
+
+Important UX Rules:
+
+- Do not show all Photography Suite controls by default in the main conversation.
+- Put Photography Suite in the right contextual tool panel or drawer.
+- Keep Prompt Engine simple in the main flow.
+- Keep Expert Mode as a drawer overlay.
+- Do not clutter the beginner flow.
+- Only one next action should feel visually dominant at a time.
+
+Suggested Controls:
+
+Prompt Engine:
+- Subject / Goal
+- Audience
+- Tone
+- Detail level
+- Output format
+- Constraints
+- Avoid rules
+- Extra context
+
+Photography Suite:
+- Style
+- Camera & Lens
+- Lighting
+- Composition
+- Color
+- Aperture: f/1.4 to f/22
+- Shutter Speed: 1/8000s to 30s
+- ISO: 100 to 12800
+- Lens: 14mm to 200mm
+- Film Stock: Kodak, Fuji, Ilford
+
+Master Link:
+- Toggle On/Off
+- Visible state label
+- Clear explanation
+- Generate Master Plan action
+
+Preserve Existing Features:
+
+Do not remove or break:
+- Fix My Prompt
+- Help Me Start
+- Run With AI
+- Improve With AI / Refine
+- Prompt Strength Meter
+- Prompt Vault
+- Local history
+- Best Prompts templates
+- Photography Suite vibe pickers
+- Image prompt generation
+- DALL-E/image generation if currently working
+- Send To Midjourney
+- Save This Combo
+- Expert Command Center
+- Theme color controls
+- Local-first storage behavior
+
+Storage Rule:
+Keep local-first storage.
+Do not add projects/sessions.
+Do not force login.
+Do not change database/storage unless absolutely necessary and approved.
+
+Implementation Guidance:
+
+1. Audit current implementation first.
+2. Identify where Prompt Engine data currently lives.
+3. Identify where Photography Suite data currently lives.
+4. Identify current output generation functions.
+5. Identify current save/vault/history behavior.
+6. Build the synergy without breaking standalone generation.
+7. Test standalone Prompt Engine.
+8. Test standalone Photography Suite.
+9. Test Master Link combined output.
+10. Test save/copy/run/refine actions.
+
+Manual Testing Checklist:
+
+Prompt Engine Standalone:
+- User can enter text.
+- User can generate a detailed prompt.
+- User can Run With AI.
+- User can Copy.
+- User can Refine.
+- User can Save.
+- Prompt Strength still works if applicable.
+
+Photography Suite Standalone:
+- User can choose visual settings.
+- User can generate an image prompt.
+- User can copy the image prompt.
+- User can generate an image if supported.
+- User can send to Midjourney if supported.
+- User can save the combo if supported.
+
+Master Link:
+- Off state keeps tools separate.
+- On state combines both.
+- Master Actionable Plan includes The Narrative, Technical Brief, and AI Execution.
+- Combined output feels cohesive.
+- No duplicate or contradictory instructions.
+
+Expert Mode:
+- Still opens as drawer overlay.
+- Can analyze current selected prompt if applicable.
+- Does not clutter the main flow.
+
+Vault:
+- Saved outputs still work.
+- Local history still works.
+- Import/export/backup still works if present.
+
+Final Response Required:
+When done planning or implementing, report:
+1. How Prompt Engine works standalone.
+2. How Photography Suite works standalone.
+3. How Master Link combines them.
+4. What files/components changed.
+5. What existing features were preserved.
+6. Whether storage/database was touched.
+7. What was tested.
+8. Any risks or follow-up decisions.
