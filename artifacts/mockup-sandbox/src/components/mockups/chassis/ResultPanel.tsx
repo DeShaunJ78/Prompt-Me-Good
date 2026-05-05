@@ -654,3 +654,4 @@ export function ResultPanel() {
     </div>
   );
 }
+export default ResultPanel;

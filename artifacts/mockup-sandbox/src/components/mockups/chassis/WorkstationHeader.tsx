@@ -397,3 +397,4 @@ export function WorkstationHeader() {
     </div>
   );
 }
+export default WorkstationHeader;
