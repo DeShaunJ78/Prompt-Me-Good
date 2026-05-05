@@ -1,0 +1,370 @@
+You are working inside the actual PromptMeGood Replit project.
+
+Goal:
+Migrate PromptMeGood away from the current busy linear homepage/tool format into a ChatGPT/Claude-style conversational AI workspace.
+
+The current site has strong features, but the current format creates mental overload because everything is stacked together: prompt builder, tuning, strength meter, photography tools, image generation, templates, vault, stats, Expert Mode, and marketing content.
+
+The new direction is:
+PromptMeGood should feel like an AI platform/workstation, not a long form page.
+
+Core Product Model:
+Users start with one clear input, PromptMeGood generates an extremely detailed powerful prompt, users can run it with AI, then they can refine, save, use Photography Suite, open Expert Mode, or generate a Master Actionable Plan.
+
+Important:
+Do not destroy existing work.
+Do not rebuild blindly.
+Do not remove working features.
+Do not change database/storage behavior unless explicitly approved.
+Do not introduce forced login.
+Do not introduce new projects/sessions storage in this first migration.
+Keep the current local-first Vault/history behavior.
+
+Before building anything:
+1. Inspect the current site structure.
+2. Identify existing files/components for each current feature.
+3. Map every current feature into the new ChatGPT-style chassis.
+4. Create a visual preview/mockup of the new chassis.
+5. Stop and wait for approval before implementing the full build.
+
+Approved Chassis Concept:
+
+Use a ChatGPT/Claude-style layout:
+
+Left Sidebar:
+- New Prompt / New Conversation
+- Local Vault
+- Recent prompts
+- Saved prompts
+- Favorites
+- Templates
+- Import / Export / Backup / Restore
+- Theme or Appearance access if appropriate
+
+Center Workspace:
+- Conversation-style thread
+- User messages
+- Generated Prompt cards
+- AI Result cards
+- Master Actionable Plan cards
+- Bottom composer/input bar
+
+Right Contextual Tool Panel:
+- Photography Suite
+- Master Link controls
+- Master Plan controls
+- Optional tool-specific settings
+
+Expert Command Center:
+- Keep as drawer overlay
+- Hidden by default
+- Opened intentionally by user
+- Do not place it permanently in the beginner flow
+
+Landing Page And App Split:
+
+Route `/`:
+- Landing page
+- Explains PromptMeGood
+- Handles education, examples, trust, pricing/waitlist, and conversion
+- Includes a powerful landing-page demo box
+- Lets users type a rough idea
+- Generates an extremely detailed high-quality prompt
+- Lets users run/process the prompt with AI right there to see the result
+- Then invites them into the full workstation
+
+Route `/app`:
+- Clean workstation
+- No popups
+- No forced onboarding
+- No interruptive nudges
+- No marketing clutter
+- Just the tool
+
+Landing Page Demo Requirements:
+The landing page demo should not be weak or toy-like.
+It should generate an extremely detailed, powerful prompt.
+It should allow the user to run the generated prompt with AI right there.
+After the AI result appears, show an inline CTA such as:
+
+"Good start. Now unlock the full workstation."
+"Open the full PromptMeGood Workstation to refine this prompt, shape the visual direction, generate a Master Actionable Plan, and save your work."
+
+Do not use a popup for this.
+Use an inline transition inside the result area.
+
+Workstation Default Flow:
+
+1. User opens `/app`.
+2. User sees one clear composer/input area.
+3. User types what they want.
+4. PromptMeGood generates a powerful detailed prompt.
+5. The generated prompt appears as a card in the conversation thread.
+6. The card includes:
+   - Run With AI
+   - Copy
+   - Save
+   - Refine
+   - Open Expert Mode if needed
+7. If the user clicks Run With AI, the AI result appears in the same thread.
+8. The user can improve, copy, save, or create a Master Actionable Plan.
+
+Preserve Existing Features By Mapping Them Into The New Chassis:
+
+Current Feature → New Location
+
+1. Your Goal input
+   → Bottom composer/main input in center workspace.
+
+2. Fix My Prompt
+   → Primary action on composer and prompt cards.
+
+3. Help Me Start
+   → One intentional button inside the composer when input is empty.
+   → Opens a conversational 4-question guided flow.
+   → Do not show duplicate Help Me Start buttons.
+
+4. Prompt Tuning / Step 1.5 controls
+   → Move into Tools / Tune Prompt drawer.
+   → Keep hidden/collapsed by default.
+   → Do not force users through 8 dropdowns before first generation.
+
+5. Prompt Strength Meter
+   → Attach to generated prompt cards as a small badge or feedback block.
+   → Do not make it a large interruptive section before the user acts.
+
+6. Live Preview
+   → Show as part of prompt generation or prompt card preview.
+
+7. Your Fixed Prompt
+   → Generated Prompt card in the conversation thread.
+
+8. Run With AI
+   → Primary action on generated prompt card.
+   → AI result appears below it in the same thread.
+
+9. Improve With AI / Refine
+   → Action on prompt cards and AI result cards.
+
+10. Photography Suite
+   → Right contextual tool panel.
+   → Can generate image/photography prompts independently.
+
+11. Image generation / DALL-E 3
+   → Action inside Photography Suite output card or right panel.
+
+12. Send To Midjourney / Use As Reference / Download
+   → Keep inside image output card actions.
+
+13. Master Link
+   → Toggle that connects Prompt Engine + Photography Suite.
+   → Optional, not forced.
+
+14. Master Actionable Plan
+   → Premium output card in the center thread or right panel output area.
+   → Must include:
+      ## The Narrative
+      ## Technical Brief
+      ## AI Execution
+
+15. Prompt Vault / local history
+   → Left sidebar.
+   → Preserve local-first behavior.
+   → Do not force login.
+
+16. Best Prompts templates
+   → Sidebar Templates area or Template drawer.
+   → Clicking a template loads it into the composer.
+
+17. Stats dashboard
+   → Move out of main first-use flow.
+   → Put in Vault/Insights area if preserved.
+
+18. Theme accent color picker
+   → Preserve existing color customization.
+   → It can stay in the footer on landing page and/or move into Appearance settings in `/app`.
+   → Do not break the existing theme/color system.
+
+19. Expert Command Center
+   → Drawer overlay.
+   → Hidden by default.
+   → Keep existing warning before entry if present.
+   → Add labels/helper copy if needed.
+
+Locked Architecture Decisions:
+
+- Prompt Engine and Photography Suite are independent first.
+- Each can generate individually.
+- Master Link combines them only when the user wants.
+- Main output/result area lives in the conversation workspace.
+- Expert Mode lives as a drawer overlay.
+- Storage remains local-first.
+- No new projects/sessions in this first version.
+- No forced login.
+- No first-visit popups or nudges.
+- Landing page explains; workstation executes.
+
+Design Requirements:
+
+- Keep current PromptMeGood brand coloring.
+- Preserve deep teal / warm off-white direction.
+- Preserve user ability to change site colors.
+- No dashed borders.
+- Use clean solid lines.
+- Use premium dark-mode-first design.
+- Use generous spacing.
+- Avoid visual clutter.
+- Only one next action should feel primary at a time.
+- Use familiar AI-platform layout patterns.
+
+No Popups / No Forced Onboarding:
+
+Remove or avoid:
+- First-visit popups.
+- Automatic onboarding modals.
+- Interruptive nudges.
+- Forced tutorials.
+- “Look here” overlays.
+
+Keep:
+- Help Me Start when user clicks it.
+- Expert Mode when user opens it.
+- Tooltips or small helper text if non-interruptive.
+- Empty states that guide without blocking.
+
+Recommended Desktop Layout:
+
+Left Sidebar:
+- Local Vault
+- Recent Work
+- Templates
+- Import/Export/Backup
+- Appearance access
+
+Center:
+- Prompt conversation thread
+- Generated prompt cards
+- AI result cards
+- Master Plan cards
+- Composer at bottom
+
+Right Tool Panel:
+- Photography Suite
+- Master Link
+- Master Plan controls
+- Generate Image Prompt
+- Generate Master Plan
+
+Recommended Mobile Layout:
+
+- No 3-column squeeze.
+- Center conversation becomes primary.
+- Sidebar opens as drawer.
+- Photography Suite opens as drawer.
+- Expert Mode opens as drawer.
+- Composer remains easy to access.
+- No horizontal overflow.
+
+Visual Preview Requirement:
+
+Before implementing the full migration, create a visual preview of the new `/app` chassis.
+
+The preview must show:
+1. Left sidebar.
+2. Center conversation workspace.
+3. Bottom composer.
+4. Right contextual tool panel.
+5. Photography Suite in the tool panel.
+6. Master Link.
+7. Generated Prompt card.
+8. Run With AI action.
+9. AI Result card.
+10. Expert Mode drawer entry.
+11. Theme/appearance access.
+12. Local Vault placement.
+
+Stop after the preview and report:
+- What the new layout looks like.
+- Where each existing feature maps.
+- What will be preserved.
+- What risks exist.
+- What the next implementation phases should be.
+
+Wait for owner approval before building.
+
+Implementation Phases After Approval:
+
+Phase 1: Chassis Only
+- Build `/app` shell.
+- Header, sidebar, conversation area, composer, right tool panel.
+- No major logic rewrites.
+
+Phase 2: Prompt Flow
+- Map current prompt generation into chat-style cards.
+- Fix My Prompt.
+- Generated Prompt card.
+- Prompt Strength badge.
+- Run With AI.
+- Save to Vault.
+
+Phase 3: Vault + Templates
+- Move local Vault/history/templates into sidebar.
+- Preserve import/export/backup/restore.
+- Preserve local-first storage.
+
+Phase 4: Photography Suite
+- Move image tools into right tool panel.
+- Preserve image prompt generation and image generation.
+- Keep Photography Suite able to generate independently.
+
+Phase 5: Master Link + Master Plan
+- Add Master Link.
+- Combine Prompt Engine + Photography Suite only when enabled.
+- Generate Master Actionable Plan with:
+  ## The Narrative
+  ## Technical Brief
+  ## AI Execution
+
+Phase 6: Expert Command Center
+- Map Expert Mode into drawer overlay.
+- Preserve Diagnose / Engineer / Tune / Variations / Save structure if present.
+- Add labels/helper copy without cluttering beginner flow.
+
+Phase 7: Landing Page Demo
+- Keep landing page separate.
+- Add powerful prompt demo.
+- Allow Run With AI on landing page.
+- Inline CTA to `/app`.
+
+Manual Testing Checklist:
+
+Test:
+- Landing page loads.
+- Landing page demo generates a detailed prompt.
+- Landing page Run With AI works.
+- CTA opens `/app`.
+- `/app` loads without popups.
+- Main composer works.
+- Fix My Prompt works.
+- Run With AI works.
+- Save to Vault works.
+- Local history still works.
+- Templates load into composer.
+- Photography Suite generates independently.
+- Master Link combines Prompt Engine + Photography Suite.
+- Master Plan output format is correct.
+- Expert Mode opens as drawer.
+- Theme color controls still work.
+- Mobile layout works.
+- No horizontal overflow.
+- No forced login.
+- No new database requirement.
+
+Final Delivery Summary Required:
+When done with preview or implementation, report:
+1. Files changed.
+2. Features preserved.
+3. Features moved and where they moved.
+4. Storage/database impact.
+5. What was tested.
+6. What still needs owner approval.
