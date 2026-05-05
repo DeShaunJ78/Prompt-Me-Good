@@ -161,3 +161,9 @@ id = "_luby10yB9V9cPYLU0Y-s"
 uri = "file://attached_assets/screenshots/MasterPlanWorkspace_v2.jpg"
 type = "image"
 title = "Power Mode — Master Plan Workspace (NEW: 01 Soul / 02 Body / 03 Output)"
+
+[[outputs]]
+id = "FWTalHwfpnootsrS44xY7"
+uri = "file://.local/CHASSIS_MAPPING.md"
+type = "text"
+title = "Chassis Mapping — every existing feature placed in the new shell"
