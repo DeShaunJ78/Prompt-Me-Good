@@ -1,0 +1,91 @@
+We are rebuilding the workstation onboarding flow around one principle:
+
+“Earn the workstation.”
+
+Do not show the full workstation immediately. First, the user must receive one useful result that proves the app understands their goal. After that result appears, the user clicks Next once, and the interface expands into the full workstation.
+
+Core UX philosophy:
+- The first screen should reduce overwhelm.
+- The first output must feel genuinely useful, not generic.
+- The full workstation should feel unlocked, not randomly navigated to.
+- The transition from simple mode to workstation is the emotional centerpiece of the experience.
+
+Quick Win Mode:
+Create a simplified first screen with one primary input and one clear action.
+
+The Quick Win should be defined as:
+A concise “Starter Blueprint” that gives the user immediate usable value.
+
+The Starter Blueprint should include:
+1. A refined version of the user’s original idea.
+2. A strong prompt or creative direction they can use immediately.
+3. A mini action plan with 3 practical next steps.
+4. A suggested mode for the full workstation, such as Prompt Engine, Photography Suite, or Master Link.
+
+Example:
+If the user enters “I need a product photo prompt for a smart watch,” the app should return:
+- A polished product photography prompt.
+- Recommended visual style.
+- 3 next steps for improving the result.
+- A suggestion to continue in Photography Suite or Master Link mode.
+
+Next button behavior:
+- The Next button should not be active until the Starter Blueprint is visible.
+- Once the Starter Blueprint appears, show a clear Next button.
+- The button label can be:
+  “Open Workstation”
+  “Build This in the Workstation”
+  or “Next: Full Workstation”
+- User clicks it exactly once.
+- The app transitions into the full workstation.
+
+Important safety valve:
+Do not trap the user if generation fails.
+If the quick win fails or takes too long, show:
+- A friendly retry option.
+- A subtle “Skip to Workstation” option.
+The skip option should be secondary, not the main CTA.
+
+Workstation reveal:
+The transition should feel like the app is expanding, not reloading.
+
+Preferred behavior:
+- The Starter Blueprint remains visible.
+- The layout expands around it.
+- The Prompt Engine, Photography Suite, and Master Actionable Plan panes appear.
+- The user’s Starter Blueprint should carry into the workstation as the first active project/input.
+- Avoid a hard page reload or jarring route change.
+
+Full workstation layout:
+Preserve the core architecture:
+- Pane 1: Prompt Engine / Soul layer.
+- Pane 2: Photography Suite / Body layer.
+- Pane 3: Master Actionable Plan / Blueprint output.
+- Master Link toggle connects Prompt Engine and Photography Suite.
+- Expert Command Center exists as a hidden or collapsible advanced drawer.
+
+Expert Command Center:
+- Keep it hidden by default.
+- Make it discoverable with a subtle “Advanced” label, command icon, or drawer trigger.
+- Do not expose advanced controls on first load.
+- Power users should find it easily, but new users should not be intimidated.
+
+Do not add:
+- Login
+- User accounts
+- Project databases
+- Sessions
+- Complex backend systems
+unless specifically requested later.
+
+Acceptance criteria:
+- First load shows Quick Win Mode only.
+- The user gets a concrete Starter Blueprint before the workstation reveal.
+- The Quick Win output is specific and useful.
+- Next appears only after the win is generated.
+- Clicking Next once opens the full workstation.
+- The transition feels like expansion/unlocking, not a page jump.
+- The Starter Blueprint carries into the workstation.
+- Full workstation includes Prompt Engine, Photography Suite, Master Actionable Plan, Master Link toggle, and hidden Expert Command Center.
+- Generation failure has retry and subtle skip fallback.
+- Existing app functionality is preserved.
