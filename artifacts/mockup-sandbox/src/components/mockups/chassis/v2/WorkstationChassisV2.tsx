@@ -53,11 +53,12 @@ export function WorkstationChassisV2() {
 
         /* === MAIN COLUMN === */
         .main { display:flex; flex-direction:column; min-height: 1100px; }
-        .mode-bar { display:flex; align-items:center; justify-content:space-between; padding: 18px 32px 12px; }
-        .modes { display:flex; gap:3px; padding:3px; background: rgba(240,232,216,0.04); border:1px solid rgba(240,232,216,0.06); border-radius:9px; }
-        .mode { font-size:12.5px; padding: 7px 16px; border-radius:7px; color: rgba(240,232,216,0.55); font-weight:500; cursor:pointer; display:inline-flex; gap:7px; align-items:center; }
-        .mode.active { background: rgba(229,124,74,0.15); color: #f4a574; box-shadow: inset 0 0 0 1px rgba(229,124,74,0.3); }
-        .mode .dot { width:5px; height:5px; border-radius:50%; background: currentColor; opacity:0.7; }
+        .mode-bar { display:flex; align-items:center; justify-content:space-between; padding: 18px 32px 12px; gap: 14px; }
+        .tpl-picker { display:inline-flex; align-items:center; gap:10px; padding: 7px 12px 7px 14px; background: rgba(229,124,74,0.08); border:1px solid rgba(229,124,74,0.32); border-radius:9px; cursor:pointer; min-width: 320px; }
+        .tpl-picker .tp-lab { font-family:'JetBrains Mono',monospace; font-size:9.5px; letter-spacing:0.14em; text-transform:uppercase; color: rgba(244,165,116,0.7); }
+        .tpl-picker .tp-name { font-size:13.5px; font-weight:600; color:#f0e8d8; margin-top:1px; }
+        .tpl-picker .tp-meta { font-family:'JetBrains Mono',monospace; font-size:10px; color: rgba(240,232,216,0.5); margin-left:auto; }
+        .tpl-picker .car { color:#f4a574; font-size:11px; margin-left:6px; }
         .session-meta { display:flex; gap:8px; }
         .pill { font-family:'JetBrains Mono', monospace; font-size:10.5px; padding: 4px 10px; background: rgba(240,232,216,0.05); border:1px solid rgba(240,232,216,0.08); border-radius:5px; color: rgba(240,232,216,0.7); letter-spacing:0.06em; text-transform:uppercase; }
         .pill.live { color:#f4a574; border-color: rgba(229,124,74,0.4); background: rgba(229,124,74,0.08); }
@@ -224,14 +225,16 @@ export function WorkstationChassisV2() {
             {/* === MAIN === */}
             <section className="main">
               <div className="mode-bar">
-                <div className="modes">
-                  <div className="mode active"><span className="dot" /> Prompt Engine</div>
-                  <div className="mode">Photography Suite</div>
-                  <div className="mode">Master Plan</div>
+                <div className="tpl-picker">
+                  <div>
+                    <div className="tp-lab">Template</div>
+                    <div className="tp-name">Direct-Response Video Ad</div>
+                  </div>
+                  <span className="tp-meta">Prompt + Photo · 28 templates</span>
+                  <span className="car">▾</span>
                 </div>
                 <div className="session-meta">
                   <span className="pill live">Session</span>
-                  <span className="pill">gpt-4o</span>
                   <span className="pill">Local-first</span>
                 </div>
               </div>
@@ -260,11 +263,22 @@ export function WorkstationChassisV2() {
                       Act as a senior <em>direct-response strategist</em>. Create a 30-second short-form video ad brief for a wearable fitness product. Include the hook, customer problem, transformation arc, three talking points, on-screen text cues, voiceover tone, CTA, and platform-specific cuts for <em>TikTok, Reels, and Shorts</em>. Avoid hype and fake urgency. Output as a structured brief with timestamps.
                     </div>
                     <div className="gp-actions">
-                      <button className="btn primary"><span className="ic" /> Run With AI</button>
-                      <button className="btn">Copy</button>
+                      <button className="btn primary">📋 Copy Prompt</button>
+                      <button className="btn primary" style={{ background: 'linear-gradient(135deg,#f4a574,#e57c4a)' }}>↗ Send to… ▾</button>
                       <button className="btn">Save to Vault</button>
                       <button className="btn">Refine · Fix My Prompt</button>
+                      <button className="btn">▷ Run with AI</button>
                       <button className="btn ghost" style={{ marginLeft: 'auto', color: '#f4a574' }}>Open in Expert Mode →</button>
+                    </div>
+                    <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px dashed rgba(240,232,216,0.06)', display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+                      <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 9.5, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(240,232,216,0.4)', marginRight: 4 }}>Send to:</span>
+                      <span className="chip">ChatGPT</span>
+                      <span className="chip">Claude</span>
+                      <span className="chip">Gemini</span>
+                      <span className="chip">Midjourney</span>
+                      <span className="chip">Sora</span>
+                      <span className="chip">Runway</span>
+                      <span className="chip">DALL·E</span>
                     </div>
                   </div>
                 </div>
@@ -312,7 +326,7 @@ export function WorkstationChassisV2() {
               <div className="tools-h">
                 <div>
                   <div className="t">Tool Panel</div>
-                  <div className="sub">Context · Prompt Engine</div>
+                  <div className="sub">Template · Direct-Response Ad</div>
                 </div>
                 <div className="ico" style={{ width: 26, height: 26, fontSize: 12 }}>⤢</div>
               </div>
@@ -320,8 +334,8 @@ export function WorkstationChassisV2() {
               {/* Master Link */}
               <div className="ml-toggle">
                 <div className="ml-l">
-                  <div className="lab">⛓ Master Link</div>
-                  <div className="desc">Combine Prompt + Photography</div>
+                  <div className="lab">⛓ Master Link · ON</div>
+                  <div className="desc">Soul + Body → one Master Plan</div>
                 </div>
                 <div className="switch" />
               </div>

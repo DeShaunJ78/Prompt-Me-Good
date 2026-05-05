@@ -149,3 +149,15 @@ id = "LSExTrL2cbRiEo7U89XBf"
 uri = "file://attached_assets/screenshots/09740139-e51a-49df-8619-b50846b97f1c-00-3lzasrgqhj8zj_janeway_replit_dev_mockup_preview_chassis_v2_WorkstationChassisV2.png"
 type = "image"
 title = "/app · Conversational Chassis (G theme) — preview"
+
+[[outputs]]
+id = "QTuTciD2wplg_2vT2lkXd"
+uri = "file://attached_assets/screenshots/WorkstationChassisV2_v2.jpg"
+type = "image"
+title = "Daily Driver — Conversational Chassis (updated: Template picker + Send-to actions)"
+
+[[outputs]]
+id = "_luby10yB9V9cPYLU0Y-s"
+uri = "file://attached_assets/screenshots/MasterPlanWorkspace_v2.jpg"
+type = "image"
+title = "Power Mode — Master Plan Workspace (NEW: 01 Soul / 02 Body / 03 Output)"
