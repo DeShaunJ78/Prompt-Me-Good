@@ -4583,17 +4583,33 @@
   }
 
   /* Add a small "Expert Mode" text link to the top nav. Drives the same
-     #expert-mode-toggle checkbox so existing handlers fire. */
+     #expert-mode-toggle checkbox so existing handlers fire.
+     IMPORTANT: We insert the button into `.topbar-inner` directly (NOT
+     into `.top-actions`). On mobile (<=860px) the `.top-actions` group
+     collapses into a hidden hamburger drawer, which would tuck Expert
+     Mode out of sight. By living in `.topbar-inner` next to the
+     hamburger, the Expert Mode button stays visible in the header on
+     every viewport. */
   function addNavExpertLink() {
-    if (document.getElementById('pmg-nav-expert-link')) return;
-    var nav = document.querySelector('.top-actions, .nav-toggle')
-      ? document.querySelector('.top-actions') || document.querySelector('.nav-toggle').parentNode
-      : null;
-    if (!nav) {
-      var fallback = document.querySelector('header nav, header .container, header');
-      nav = fallback || null;
+    var existing = document.getElementById('pmg-nav-expert-link');
+    var topbarInner = document.querySelector('.topbar-inner');
+    var navToggle = document.querySelector('.nav-toggle');
+    /* If it already exists but somehow isn't in the topbar-inner (e.g.
+       a previous version inserted it into .top-actions), relocate it. */
+    if (existing) {
+      if (topbarInner && existing.parentNode !== topbarInner) {
+        if (navToggle && navToggle.parentNode === topbarInner) {
+          topbarInner.insertBefore(existing, navToggle);
+        } else {
+          topbarInner.appendChild(existing);
+        }
+      }
+      return;
     }
-    if (!nav) return;
+    var host = topbarInner
+      || document.querySelector('header .container')
+      || document.querySelector('header');
+    if (!host) return;
     var btn = document.createElement('button');
     btn.id = 'pmg-nav-expert-link';
     btn.type = 'button';
@@ -4609,11 +4625,15 @@
         try { checkbox.dispatchEvent(new Event('change', { bubbles: true })); } catch (e) {}
       }
     });
-    /* Place at the very start of top-actions so it sits before the search/theme buttons. */
-    if (nav.firstChild) {
-      nav.insertBefore(btn, nav.firstChild);
+    /* Insert just before the hamburger so the header reads:
+       brand | search | … | Expert Mode | ☰ on mobile, and
+       brand | search | Expert Mode | [other nav links] on desktop. */
+    if (navToggle && navToggle.parentNode === host) {
+      host.insertBefore(btn, navToggle);
+    } else if (host.firstChild) {
+      host.appendChild(btn);
     } else {
-      nav.appendChild(btn);
+      host.appendChild(btn);
     }
   }
 
