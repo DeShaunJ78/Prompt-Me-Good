@@ -143,3 +143,9 @@ id = "vLBoAR5qVWV41SDutOLHY"
 uri = "file://screenshots/05-card-mobile.jpg"
 type = "image"
 title = "5. After — Card Upgrade (Mobile)"
+
+[[outputs]]
+id = "LSExTrL2cbRiEo7U89XBf"
+uri = "file://attached_assets/screenshots/09740139-e51a-49df-8619-b50846b97f1c-00-3lzasrgqhj8zj_janeway_replit_dev_mockup_preview_chassis_v2_WorkstationChassisV2.png"
+type = "image"
+title = "/app · Conversational Chassis (G theme) — preview"
