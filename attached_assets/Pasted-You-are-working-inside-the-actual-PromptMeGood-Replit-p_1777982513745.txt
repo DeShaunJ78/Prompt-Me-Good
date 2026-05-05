@@ -1,0 +1,135 @@
+You are working inside the actual PromptMeGood Replit project.
+
+IMPORTANT:
+This is an AUDIT ONLY.
+Do not edit files.
+Do not refactor.
+Do not rebuild.
+Do not rename functions.
+Do not change layout.
+Do not change database schema.
+Do not change API routes.
+Do not change existing behavior.
+
+Your job is to inspect the current implementation and produce a thorough friction audit and safe fix plan.
+
+Context:
+The page is busy, and users need a clearer guided path through the prompt builder. The visible issue that triggered this audit is:
+
+1. The primary action buttons appear below the “Getting There” Prompt Strength Meter.
+2. The “Most Loved” badge is hugging the Fix My Prompt button.
+3. Buttons do not glow or clearly indicate the recommended next step.
+4. The user needs the interface to guide them through the maze one step at a time.
+
+The intended user path is:
+Start → Fix → Run → Refine → Save
+
+Critical owner preference:
+All previous work is important. Do not break, rebuild, or change current functions. Any future implementation must be targeted, minimal, and only fix what is necessary.
+
+Audit Scope:
+Review the actual current implementation, including:
+
+1. Prompt builder layout.
+2. Prompt input state.
+3. Fix My Prompt behavior.
+4. Help Me Start behavior.
+5. Prompt Strength Meter behavior.
+6. “Getting There” strength state.
+7. Tip text behavior.
+8. “Most Loved” badge placement.
+9. Run With AI behavior.
+10. Improve With AI behavior.
+11. Save / Prompt Vault behavior.
+12. Any database or storage-connected state.
+13. Any local storage, Supabase, Replit DB, or backend storage logic.
+14. Any usage limits or user/account state that affects button behavior.
+15. Mobile layout and responsive behavior.
+
+Database-Aware Requirement:
+Because this project may use database, storage, account, prompt vault, prompt history, usage tracking, or saved workflow logic, you must identify whether the proposed UI changes could affect any stored data or database-connected workflows.
+
+Specifically check:
+
+- Does moving the action buttons affect form submission?
+- Does moving the buttons affect event listeners?
+- Does moving the buttons affect prompt state?
+- Does moving the buttons affect prompt strength calculation?
+- Does moving the buttons affect saved prompt/history behavior?
+- Does moving the buttons affect usage counters or daily limits?
+- Does moving the buttons affect Run With AI availability?
+- Does moving the buttons affect Help Me Start question flow?
+- Does adding next-step glow require only UI state, or would it touch backend/database logic?
+- Does the “Most Loved” badge have any analytics, tracking, or state tied to it?
+
+Audit Questions:
+
+1. What files/components control the prompt input and action buttons?
+2. What files/components control the Prompt Strength Meter?
+3. What files/components control the “Most Loved” badge?
+4. What state determines whether the input is empty, filled, fixed, run, refined, or saved?
+5. What state should control the next-step highlight?
+6. Are there existing CSS classes or design tokens that should be reused for a soft glow?
+7. Are there any database-connected side effects that must not be touched?
+8. What is the safest minimal change path?
+9. What could break if this is implemented carelessly?
+10. What manual tests are required before calling the fix complete?
+
+Required Audit Output:
+
+Return your findings in this structure:
+
+1. Current Flow Summary
+   - Describe the current order and behavior.
+
+2. Files And Components Involved
+   - List exact files and components.
+   - Briefly explain what each controls.
+
+3. State And Data Flow
+   - Explain how prompt input, fixed prompt, AI response, saved work, and strength state are tracked.
+   - Identify anything database-connected.
+
+4. User Friction Findings
+   - Explain the friction points in priority order.
+
+5. Database / Storage Risk Review
+   - State whether the proposed fixes require database changes.
+   - State what database/storage logic must not be touched.
+
+6. Safe Minimal Fix Plan
+   - Give the smallest set of changes needed.
+   - The plan must preserve existing behavior.
+   - Do not propose a rebuild.
+
+7. Next-Step Highlight Logic
+   - Define exact conditions:
+     - Empty input → Help Me Start highlighted.
+     - Input has text → Fix My Prompt highlighted.
+     - Fixed prompt exists → Run With AI highlighted.
+     - AI response exists → Improve With AI or Save highlighted.
+
+8. Badge Spacing Recommendation
+   - Recommend the safest placement for “Most Loved.”
+   - Ensure it does not hug, overlap, or crowd the button.
+
+9. Manual Test Checklist
+   - Empty input.
+   - Input with text.
+   - Help Me Start flow.
+   - Fix My Prompt flow.
+   - Prompt Strength Meter behavior.
+   - Run With AI flow.
+   - Improve With AI flow.
+   - Save / Prompt Vault flow.
+   - Mobile responsive layout.
+   - Any database-connected saved/history/usage behavior.
+
+10. Do-Not-Touch List
+   - List files, functions, routes, database logic, or behaviors that should not be modified for this fix.
+
+Important:
+Do not implement the fix yet.
+Only produce the audit and safe implementation plan.
+
+After the audit, wait for explicit approval before editing anything.
