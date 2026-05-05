@@ -1,0 +1,42 @@
+ABSOLUTE FINAL HANDOFF: PromptMeGood Workstation Redesign
+Instructions for Replit AI:
+“Perform a full architectural refactor of this project. Rehouse the existing 12,500 lines of logic into a professional 3-column ‘AI Prompt Workstation’ chassis. Maintain all existing localStorage keys, gating functions (pmgIsPro), and event handlers. The goal is to reduce friction while amplifying the power of the Prompt Engine and Photography Suite.”
+
+
+1. THE NEW CHASSIS (3-COLUMN LAYOUT)
+	•	LEFT RAIL: The “Vault” (Recent Saves, Templates, Import/Export, Theme Swatches).
+	•	CENTER COLUMN: The “Conversation Thread” (Composer at bottom, Prompt Cards and AI Results in the middle).
+	•	RIGHT PANEL: The “Photography Suite” (Persistent control panel for Style, Camera, Lighting, Composition, and Technical Knobs).
+
+2. WORKFLOW A: THE “IMAGE-ONLY” CREATOR
+	1.	Input: User types an idea in the Composer (e.g., “A futuristic city”).
+	2.	Shape: User selects professional settings in the Photography Suite (Aperture f/1.8, 35mm Lens, Golden Hour).
+	3.	Fix: User clicks “Fix My Prompt.”
+	4.	Result: A Prompt Card appears in the thread, combining the idea + the photography settings into a professional Midjourney/DALL-E prompt.
+	5.	Run: User clicks “▷ Run with AI” on the card. The generated image appears as the next card in the thread.
+
+3. WORKFLOW B: THE “SYNERGY” MASTER PLAN
+	1.	The Switch: User turns the “Master Link” Toggle ON (located between the center and right columns).
+	2.	The Logic: The Prompt Engine (Text) and Photography Suite (Visuals) are now “Linked.”
+	3.	The Output: Clicking “Make Master Plan” generates a unified Master Actionable Plan card in the thread, containing both the polished text and the matching visual assets/prompts.
+
+4. NEW PROFESSIONAL FEATURES
+	•	Aperture: f/1.4 to f/22 (Depth of Field).
+	•	Shutter Speed: 1/8000s to 30s (Motion).
+	•	ISO: 100 to 12800 (Sensitivity).
+	•	Lens: 14mm to 200mm (Focal Length).
+	•	Film Stock: Kodak, Fuji, Ilford presets.
+
+5. DESIGN & BRANDING
+	•	Theme: Warm-Dark Hybrid (#1a1410 background, #E2725B Terracotta accents).
+	•	Visual Cue: Use a Glowing Chain Icon in the gutter to visualize the “Master Link” when active.
+	•	Clean UI: Remove all dashed borders. Use solid lines and professional typography (Satoshi + Inter).
+
+6. REPLIT BUILD PHASES
+	•	Phase 1: Build the 3-column shell in `index.html`.
+	•	Phase 2: Move existing DOM nodes into the new containers (#prompt-form -> composer, #pmg-photo-suite -> right panel).
+	•	Phase 3: Implement the “Master Link” toggle and the “Thread” card logic.
+	•	Phase 4: Add the new Photography knobs and the “Master Brief” output format.
+
+
+Final Goal: Transform PromptMeGood into a world-class AI workstation that feels like a professional creative suite. Every “Run” should feel like a step forward in a creative conversation
