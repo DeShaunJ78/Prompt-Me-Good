@@ -4561,12 +4561,12 @@
 
     <dialog id="expert-warning-dialog" class="expert-warning-dialog" aria-labelledby="expert-warning-title">
       <div class="expert-warning-dialog-inner">
-        <div class="expert-warning-dialog-icon" aria-hidden="true">⚠️</div>
-        <h2 id="expert-warning-title">Turn on Expert Mode?</h2>
-        <p>Expert Mode removes most guidance and shows advanced controls. This may feel overwhelming if you're new.</p>
+        <div class="expert-warning-dialog-icon" aria-hidden="true">⚙</div>
+        <h2 id="expert-warning-title">Open Expert Command Center?</h2>
+        <p>You're about to open advanced prompt-engineering tools — Diagnose, Engineer, Tune, Variations, and Save. The main builder stays exactly as it is; the Command Center opens as a side drawer you can close any time.</p>
         <div class="expert-warning-dialog-actions">
-          <button type="button" class="btn btn-secondary" id="expert-warning-cancel">Stay In Guided Mode</button>
-          <button type="button" class="btn btn-primary" id="expert-warning-confirm">Enable Expert Mode</button>
+          <button type="button" class="btn btn-secondary" id="expert-warning-cancel">Not Right Now</button>
+          <button type="button" class="btn btn-primary" id="expert-warning-confirm">Open Command Center</button>
         </div>
       </div>
     </dialog>
@@ -6776,135 +6776,35 @@ Context:
         }
       })();
 
-      // ===== Expert Mode =====
+      // ===== Expert Mode → Expert Command Center =====
+      // The Expert Command Center (window.PMGExpertCenter, see
+      // /scripts/pmg-expert-center.js) is the SOLE owner of every
+      // Expert Mode entry point, the warning dialog, and all advanced
+      // behavior. The legacy body-class side effects (auto-opening
+      // Advanced/Settings, hiding keyboard hints, forcing Auto Optimize
+      // off, etc.) are intentionally gone — the main builder stays calm;
+      // the Command Center opens as a self-contained drawer.
+      //
+      // This stub now does ONE thing: a one-time migration that clears
+      // the old `is-expert-mode` body-class state on load. All click
+      // wiring (nav button, form button, hero link, warning dialog
+      // confirm/cancel) lives inside pmg-expert-center.js to avoid
+      // dual-handler races.
       (function setupExpertMode() {
         const EXPERT_KEY = 'promptmegood:expertMode:v1';
-        const ACTIVATIONS_KEY = 'promptmegood:expertModeActivations:v1';
-        const FIRST_N_WARNINGS = 3;
         const toggle = document.getElementById('expert-mode-toggle');
-        const toggleWrap = document.getElementById('expert-mode-toggle-wrap');
         const badge = document.getElementById('expert-mode-badge');
-        const advanced = document.getElementById('advanced-options');
         const keyboardHints = document.getElementById('keyboard-hints');
-        const heroLink = document.getElementById('hero-expert-link-btn');
-        const warningDialog = document.getElementById('expert-warning-dialog');
-        const warningCancel = document.getElementById('expert-warning-cancel');
-        const warningConfirm = document.getElementById('expert-warning-confirm');
-        const autoOptToggle = document.getElementById('auto-optimize-toggle');
-        if (!toggle || !badge) return;
 
-        let prevAdvancedOpen = null; // remember user's prior state to restore on disable
-
-        function getStoredEnabled() {
-          try { return localStorage.getItem(EXPERT_KEY) === '1'; } catch (e) { return false; }
-        }
-        function setStoredEnabled(on) {
-          try {
-            if (on) localStorage.setItem(EXPERT_KEY, '1');
-            else localStorage.removeItem(EXPERT_KEY);
-          } catch (e) {}
-        }
-        function getActivationCount() {
-          try { return parseInt(localStorage.getItem(ACTIVATIONS_KEY) || '0', 10) || 0; } catch (e) { return 0; }
-        }
-        function bumpActivationCount() {
-          try {
-            const n = getActivationCount() + 1;
-            localStorage.setItem(ACTIVATIONS_KEY, String(n));
-            return n;
-          } catch (e) { return 0; }
-        }
-
-        function applyExpertMode(enabled) {
-          document.body.classList.toggle('is-expert-mode', !!enabled);
-          toggle.checked = !!enabled;
-          if (badge) badge.hidden = !enabled;
-          if (keyboardHints) keyboardHints.hidden = !enabled;
-          const settingsPanel = document.getElementById('settingsPanel');
-          if (advanced) {
-            if (enabled) {
-              if (prevAdvancedOpen === null) prevAdvancedOpen = !!advanced.open;
-              advanced.open = true;
-              if (settingsPanel) settingsPanel.open = true;
-            } else if (prevAdvancedOpen !== null) {
-              advanced.open = prevAdvancedOpen;
-              prevAdvancedOpen = null;
-            }
-          }
-          // Auto Optimize is forced OFF when Expert Mode is on
-          if (enabled && autoOptToggle && autoOptToggle.checked) {
-            autoOptToggle.checked = false;
-            try {
-              autoOptToggle.dispatchEvent(new Event('change', { bubbles: true }));
-            } catch (e) {}
-          }
-        }
-
-        function commitEnable() {
-          bumpActivationCount();
-          setStoredEnabled(true);
-          applyExpertMode(true);
-        }
-        function commitDisable() {
-          setStoredEnabled(false);
-          applyExpertMode(false);
-        }
-
-        // Restore on load (no warning, no activation bump)
-        applyExpertMode(getStoredEnabled());
-
-        // Toggle change handler
-        toggle.addEventListener('change', function () {
-          const wantOn = toggle.checked;
-          if (!wantOn) { commitDisable(); return; }
-          const seen = getActivationCount();
-          if (seen < FIRST_N_WARNINGS && warningDialog && typeof warningDialog.showModal === 'function') {
-            // Revert visual until confirmed
-            toggle.checked = false;
-            try { warningDialog.showModal(); } catch (e) { commitEnable(); }
-          } else {
-            commitEnable();
-          }
-        });
-
-        if (warningCancel) {
-          warningCancel.addEventListener('click', function () {
-            try { warningDialog.close(); } catch (e) {}
-          });
-        }
-        if (warningConfirm) {
-          warningConfirm.addEventListener('click', function () {
-            try { warningDialog.close(); } catch (e) {}
-            commitEnable();
-          });
-        }
-        if (warningDialog) {
-          // Backdrop click closes (treated as cancel)
-          warningDialog.addEventListener('click', function (e) {
-            if (e.target === warningDialog) {
-              try { warningDialog.close(); } catch (err) {}
-            }
-          });
-        }
-
-        if (heroLink) {
-          heroLink.addEventListener('click', function () {
-            const builder = document.getElementById('builder');
-            if (builder && typeof builder.scrollIntoView === 'function') {
-              builder.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
-            }
-            // Pulse the toggle to draw attention
-            window.setTimeout(function () {
-              if (toggleWrap) {
-                toggleWrap.classList.remove('is-pulse');
-                // Force reflow so animation restarts
-                void toggleWrap.offsetWidth;
-                toggleWrap.classList.add('is-pulse');
-              }
-              try { toggle.focus({ preventScroll: true }); } catch (e) {}
-            }, 600);
-          });
-        }
+        // Migration: clear legacy stored Expert Mode flag and body class
+        // so returning users get a clean slate. The Command Center has
+        // its own settings storage (promptmegood:expertCenter:state:v1).
+        try { localStorage.removeItem(EXPERT_KEY); } catch (e) {}
+        document.body.classList.remove('is-expert-mode');
+        document.body.classList.remove('pmg-expert-mode');
+        if (toggle) toggle.checked = false;
+        if (badge) badge.hidden = true;
+        if (keyboardHints) keyboardHints.hidden = true;
       })();
 
       // ===== Prompt Strength Score =====
@@ -11900,6 +11800,11 @@ Context:
   <script src="/scripts/pmg-postgen-actions.js?v=task61-2" defer></script>
   <script src="/scripts/pmg-analytics.js?v=task93-1" defer></script>
   <script src="/scripts/pmg-whatnext.js?v=task94-1" defer></script>
+  <!-- Expert Command Center: hidden 5-tab drawer (Diagnose / Engineer / Tune /
+       Variations / Save) that owns every Expert Mode entry point. Loaded
+       AFTER pmg-analytics.js so window.__pmgTrack is available, and after
+       pmg-pro.js (above) so window.pmgIsPro() is available for paywall gating. -->
+  <script src="/scripts/pmg-expert-center.js?v=4" defer></script>
 
   <!-- UX Polish: persistent post-result actions (Download .txt, Saved To Vault indicator, Copy Image Prompt) -->
   <script>
