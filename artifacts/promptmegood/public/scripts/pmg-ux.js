@@ -821,8 +821,25 @@
   }
 
   function readHasGenerated() {
-    try { return localStorage.getItem(HAS_GENERATED_KEY) === 'true'; }
-    catch (e) { return false; }
+    /* INCOGNITO FIX: Some private/incognito modes (Brave shields, Firefox
+       strict tracker blocking, Safari ITP, third-party privacy extensions)
+       cause localStorage.setItem to throw or silently no-op. When that
+       happens, markHasResult() (in pmg-bugfix IIFE above) still adds the
+       'pmg-has-generated' body class — the localStorage write is wrapped
+       in try/catch and swallowed. But this function used to read ONLY
+       from localStorage, so it would return false right after markHasResult
+       set the body class, then applyGenerationGate() below would re-add
+       'pmg-pre-gen' and broadInert (in index.html) would set inert=true
+       on every .pmg-post-gen element — leaving the user unable to click
+       Run, Save, Improve, Power Moves chips, etc. after generation.
+
+       Mirroring the v4 IIFE pattern at line ~1020: if localStorage doesn't
+       have the flag, fall back to the body class set by markHasResult. */
+    try {
+      var v = localStorage.getItem(HAS_GENERATED_KEY);
+      if (v === 'true' || v === '1') return true;
+    } catch (e) {}
+    return !!(document.body && document.body.classList && document.body.classList.contains('pmg-has-generated'));
   }
 
   function applyGenerationGate() {
