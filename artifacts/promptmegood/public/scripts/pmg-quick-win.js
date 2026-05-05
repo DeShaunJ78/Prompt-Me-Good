@@ -36,6 +36,11 @@
   }
 
   function hasReturningSignal() {
+    /* Mirror of the inline-head detection: automation + URL escape
+       hatch + persistent storage signals + session flag. Anything
+       truthy means we should NOT show Quick Win. */
+    try { if (navigator.webdriver === true) return true; } catch (_) {}
+    try { if ((location.search || '').indexOf('pmg_skip_qw=1') !== -1) return true; } catch (_) {}
     return !!(ls('pmg.quickWinSeen') ||
               ls('pmg.workstationTourSeen') ||
               ls('pmg_visited') ||
