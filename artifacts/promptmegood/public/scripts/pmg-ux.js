@@ -16275,7 +16275,7 @@
           return;
         }
         if (wrap) {
-          wrap.innerHTML = '<p class="pmg-img-ready">Your Image Is Ready</p>';
+          wrap.innerHTML = '';
           var img = document.createElement('img');
           img.src = data.url;
           img.alt = 'AI generated image';
