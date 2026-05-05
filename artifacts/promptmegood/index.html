@@ -8168,15 +8168,23 @@ Context:
             else setTabReversible(el, false);
           });
 
-          // Overlays/banners: pointer-events:none when not visible
+          // Overlays/banners: pointer-events:none when not visible.
+          // BUG FIX: pmg-post-run-intro uses 'is-visible' (not 'is-open')
+          // as its open marker. The original audit only checked 'is-open',
+          // so when the "Your First Prompt Is Done" modal was shown, the
+          // audit didn't recognize it as open → kept inert=true → buttons
+          // ('Not Now' / 'Show Me Around') were unclickable. Treat both
+          // markers as "open" so any overlay using either convention works.
           ['nudge-banner', 'tour-banner', 'keyboard-hints', 'compare-overlay',
            'bk-overlay', 'ob-overlay', 'pmg-post-run-intro'].forEach(function (id) {
             var el = document.getElementById(id);
             if (el) {
-              var isOpen = el.classList.contains('is-open');
+              var isOpen = el.classList.contains('is-open') || el.classList.contains('is-visible');
               if (isOpen) {
                 el.style.pointerEvents = '';
                 el.inert = false;
+                if (el.hasAttribute('inert')) { try { el.removeAttribute('inert'); } catch (_) {} }
+                if (el.getAttribute('aria-hidden') === 'true') el.removeAttribute('aria-hidden');
                 return;
               }
               var isHidden = el.hidden || getComputedStyle(el).display === 'none' || getComputedStyle(el).opacity === '0';
@@ -11846,7 +11854,7 @@ Context:
        The static file at /scripts/pmg-pricing-config.js is kept only as a no-JS / api-down
        fallback; the real source of truth is the backend route below. -->
   <script src="/api/pricing-config.js?v=task100" defer></script>
-  <script src="/scripts/pmg-ux.js?v=task123-incognito-fix-2" defer></script>
+  <script src="/scripts/pmg-ux.js?v=task123-a11y-guard-quiet-v2" defer></script>
   <script src="/scripts/pmg-next-action.js?v=5" defer></script>
   <script src="/scripts/post-spec.js" defer></script>
   <script src="/scripts/pmg-image-fix.js?v=img-progress-2" defer></script>

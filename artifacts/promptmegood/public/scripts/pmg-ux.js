@@ -1098,6 +1098,301 @@
 })();
 
 /* ====================================================================
+ * pmg-global-accessibility-guard.js
+ * ====================================================================
+ * PERMANENT FIX FOR THE WHOLE BUG CLASS where state-driven `inert` /
+ * `aria-hidden="true"` marks fall out of sync with reality and freeze
+ * visible interactive elements.
+ *
+ * The original accessibility audit was correct in spirit (mark hidden
+ * components inaccessible so screen readers and keyboard users skip
+ * them), but several call sites decide "is this hidden?" based on
+ * fragile state flags (localStorage values, body classes that get
+ * stale in incognito / strict-storage browsers) instead of actual
+ * computed visibility. When those flags break, visible buttons get
+ * stuck inert.
+ *
+ * This guard is the system-wide safety net. It runs continuously and
+ * enforces one rule:
+ *
+ *   "If a button, link, or input is VISUALLY ON SCREEN right now
+ *    (has size, isn't display:none/visibility:hidden/opacity:0,
+ *    and no ancestor is genuinely hidden) but is marked inert or
+ *    aria-hidden=true, remove the mark."
+ *
+ * Truly hidden elements (closed dialogs, collapsed menus, off-screen
+ * drawers) keep their accessibility marks — screen-reader and
+ * keyboard-only users still benefit. Only visually-present-but-marked
+ * elements get unstuck.
+ *
+ * Triggers:
+ *   - Initial sweep + deferred (1s, 3s) for late-mounted DOM
+ *   - Heartbeat every 2s
+ *   - On `pmg:builder-finalized` (post-generation event)
+ *   - On body class mutations (narrow observer, no subtree)
+ *   - On pointerdown bubbling to document (pre-click sweep)
+ * ==================================================================== */
+(function pmgGlobalAccessibilityGuard() {
+  'use strict';
+  if (window.__PMG_A11Y_GUARD__) return;
+  window.__PMG_A11Y_GUARD__ = true;
+
+  var INTERACTIVE_SELECTOR =
+    'button, a[href], input:not([type="hidden"]), select, textarea, ' +
+    '[role="button"], [role="link"], [role="menuitem"], ' +
+    '[tabindex]:not([tabindex="-1"])';
+
+  function isVisuallyOnScreen(el) {
+    if (!el || !el.getBoundingClientRect) return false;
+    if (el.hidden) return false;
+    var cs;
+    try { cs = getComputedStyle(el); } catch (e) { return false; }
+    if (!cs) return false;
+    if (cs.display === 'none') return false;
+    if (cs.visibility === 'hidden' || cs.visibility === 'collapse') return false;
+    if (parseFloat(cs.opacity || '1') < 0.05) return false;
+    var r = el.getBoundingClientRect();
+    if (r.width <= 0 || r.height <= 0) return false;
+    /* Skip likely screen-reader-only elements (1px clip pattern). Real
+       buttons are at least a few pixels in each dimension; sr-only utilities
+       collapse to ~1px to remain in the a11y tree without taking layout. */
+    if (r.width <= 4 && r.height <= 4) return false;
+    /* Skip if a restrictive clip-path / clip pattern reveals nothing. */
+    if (cs.clipPath && cs.clipPath !== 'none' && /inset\(\s*100%/.test(cs.clipPath)) return false;
+    if (cs.clip && cs.clip !== 'auto' && /rect\(\s*0/.test(cs.clip) && cs.position === 'absolute') return false;
+    /* Must be within or near the viewport on BOTH axes (not scrolled or
+       transformed off-canvas). */
+    if (r.bottom < -100 || r.top > (window.innerHeight + 100)) return false;
+    if (r.right < -100 || r.left > (window.innerWidth + 100)) return false;
+    return true;
+  }
+
+  function ancestorIsGenuinelyHidden(el) {
+    var p = el.parentElement;
+    while (p && p !== document.body && p !== document.documentElement) {
+      if (p.hidden) return true;
+      try {
+        var cs = getComputedStyle(p);
+        if (!cs) { p = p.parentElement; continue; }
+        if (cs.display === 'none') return true;
+        if (cs.visibility === 'hidden') return true;
+      } catch (e) {}
+      p = p.parentElement;
+    }
+    return false;
+  }
+
+  function fixOne(el) {
+    var changed = false;
+    var hasInert = el.hasAttribute('inert');
+    var ariaHidden = el.getAttribute('aria-hidden') === 'true';
+
+    /* Walk up to find ancestor inert (inert is inheritable). */
+    var inertAncestor = null;
+    var p = el.parentElement;
+    while (p && p !== document.body && p !== document.documentElement) {
+      if (p.hasAttribute('inert')) { inertAncestor = p; break; }
+      p = p.parentElement;
+    }
+
+    if (!hasInert && !ariaHidden && !inertAncestor) return false;
+    if (!isVisuallyOnScreen(el)) return false;
+    if (ancestorIsGenuinelyHidden(el)) return false;
+
+    if (hasInert) {
+      try { el.inert = false; el.removeAttribute('inert'); changed = true; } catch (e) {}
+    }
+    if (ariaHidden) {
+      try { el.removeAttribute('aria-hidden'); changed = true; } catch (e) {}
+    }
+    /* If an ancestor is inert but is itself visible, clear that ancestor's
+       inert too — otherwise the descendant remains uninteractable. */
+    if (inertAncestor && isVisuallyOnScreen(inertAncestor)) {
+      try { inertAncestor.inert = false; inertAncestor.removeAttribute('inert'); changed = true; } catch (e) {}
+    }
+    return changed;
+  }
+
+  function sweep() {
+    if (!document.body) return;
+    var nodes;
+    try { nodes = document.querySelectorAll(INTERACTIVE_SELECTOR); }
+    catch (e) { return; }
+    var fixed = 0;
+    for (var i = 0; i < nodes.length; i++) {
+      if (fixOne(nodes[i])) fixed++;
+    }
+    if (fixed > 0 && window.__PMG_GUARD_DEBUG) {
+      try { console.log('[pmg-a11y-guard] unstuck ' + fixed + ' visible-but-inaccessible elements'); } catch (e) {}
+    }
+  }
+
+  /* Throttle sweeps to at most once per 250ms when triggered by events. */
+  var _sweepScheduled = false;
+  function scheduleSweep() {
+    if (_sweepScheduled) return;
+    _sweepScheduled = true;
+    setTimeout(function () { _sweepScheduled = false; sweep(); }, 250);
+  }
+
+  function init() {
+    sweep();
+    setTimeout(sweep, 1000);
+    setTimeout(sweep, 3000);
+
+    /* Heartbeat — light periodic sweep. */
+    setInterval(sweep, 2500);
+
+    /* Event triggers. */
+    document.addEventListener('pmg:builder-finalized', scheduleSweep);
+
+    /* Pointerdown: synchronous narrow fix on the click target + ancestors.
+       Running this BEFORE the throttled sweep prevents the "dead first
+       click, alive second click" oscillation the architect flagged —
+       the user's actual click target is unstuck before the click event
+       has a chance to fire. */
+    document.addEventListener('pointerdown', function (ev) {
+      try {
+        var t = ev.target;
+        if (!t || t.nodeType !== 1) return;
+        /* Walk from the target upward a few levels and clear inert /
+           aria-hidden=true on any visible ancestor. This is cheap (O(depth))
+           and runs synchronously in the same tick as the click. */
+        var node = t;
+        var depth = 0;
+        while (node && node !== document.body && depth < 8) {
+          if (node.hasAttribute && (node.hasAttribute('inert') || node.getAttribute('aria-hidden') === 'true')) {
+            if (isVisuallyOnScreen(node) && !ancestorIsGenuinelyHidden(node)) {
+              try { if (node.hasAttribute('inert')) { node.inert = false; node.removeAttribute('inert'); } } catch (e) {}
+              try { if (node.getAttribute('aria-hidden') === 'true') node.removeAttribute('aria-hidden'); } catch (e) {}
+            }
+          }
+          node = node.parentElement;
+          depth++;
+        }
+      } catch (e) {}
+      /* Also schedule a broader sweep for nearby siblings. */
+      scheduleSweep();
+    }, { passive: true, capture: true });
+
+    /* Body class mutation (narrow, attributes-only — cannot trip T26 guard). */
+    try {
+      if ('MutationObserver' in window) {
+        new MutationObserver(scheduleSweep)
+          .observe(document.body, { attributes: true, attributeFilter: ['class'] });
+      }
+    } catch (e) {}
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+})();
+
+/* ====================================================================
+ * pmg-quiet-onboarding.js
+ * ====================================================================
+ * Calms the post-first-generation popup storm.
+ *
+ * PROBLEM: When a user generates their first prompt, multiple nudges
+ * fire at once — the "Your First Prompt Is Done" modal, conversion
+ * nudges, tour banners, keyboard-hint banners, weekly-goal pin, etc.
+ * The user is bombarded and confused.
+ *
+ * POLICY: For 45 seconds after the FIRST successful generation in a
+ * session, suppress all non-essential nudges/banners. Only the single
+ * "Your First Prompt Is Done" intro modal is allowed. After 45 seconds
+ * (or as soon as the user dismisses the intro), normal behavior resumes.
+ *
+ * Detection: a generation is "first" if `body` did NOT have
+ * `pmg-has-result` or `pmg-has-generated` BEFORE the
+ * `pmg:builder-finalized` event fired.
+ *
+ * Implementation: adds `body.pmg-quiet-mode` for 45s. CSS rules below
+ * hide the noisy elements while quiet mode is active. Pure CSS
+ * suppression — does NOT interfere with the elements' own logic.
+ * ==================================================================== */
+(function pmgQuietOnboarding() {
+  'use strict';
+  if (window.__PMG_QUIET__) return;
+  window.__PMG_QUIET__ = true;
+
+  var QUIET_MS = 45000;
+
+  function injectStyles() {
+    if (document.getElementById('pmg-quiet-mode-style')) return;
+    var css = [
+      /* Suppress noisy nudges/banners during the first-gen quiet window.
+         Keep #pmg-post-run-intro (the priority popup) visible. */
+      'body.pmg-quiet-mode #nudge-banner,',
+      'body.pmg-quiet-mode #tour-banner,',
+      'body.pmg-quiet-mode #pmg-conversion-nudge,',
+      'body.pmg-quiet-mode #keyboard-hints,',
+      'body.pmg-quiet-mode #compare-banner,',
+      'body.pmg-quiet-mode #weekly-goal-pin,',
+      'body.pmg-quiet-mode #post-tour-banner,',
+      'body.pmg-quiet-mode .pmg-mkt-toggle-btn,',
+      'body.pmg-quiet-mode .pmg-promo-banner,',
+      'body.pmg-quiet-mode #pmg-mobile-sticky-tab,',
+      'body.pmg-quiet-mode #mobile-sticky-bar,',
+      'body.pmg-quiet-mode .pmg-floating-promo {',
+      '  display: none !important;',
+      '}',
+      /* Toasts are fine to allow (they auto-dismiss, contextual). */
+      /* Allow the priority intro: */
+      'body.pmg-quiet-mode #pmg-post-run-intro { display: block; }'
+    ].join('\n');
+    var style = document.createElement('style');
+    style.id = 'pmg-quiet-mode-style';
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  function endQuiet() {
+    try { document.body.classList.remove('pmg-quiet-mode'); } catch (e) {}
+  }
+
+  function enterQuiet() {
+    if (!document.body) return;
+    if (document.body.classList.contains('pmg-quiet-mode')) return;
+    document.body.classList.add('pmg-quiet-mode');
+    setTimeout(endQuiet, QUIET_MS);
+    /* Also end early if user dismisses the priority intro modal. */
+    var skipBtn = document.getElementById('pmg-post-run-intro-skip');
+    var goBtn = document.getElementById('pmg-post-run-intro-go');
+    if (skipBtn) skipBtn.addEventListener('click', endQuiet, { once: true });
+    if (goBtn) goBtn.addEventListener('click', endQuiet, { once: true });
+  }
+
+  function init() {
+    injectStyles();
+    /* Deterministic first-gen detection via session latch — independent
+       of body-class timing. The very first 'pmg:builder-finalized' event
+       in this session triggers quiet mode; subsequent events are ignored.
+       The architect flagged that checking pmg-has-result/pmg-has-generated
+       at event time was timing-dependent (markHasResult may have already
+       fired), causing nondeterministic misclassification. The latch is
+       race-free because the listener runs in event-loop order. */
+    var firstGenSeen = false;
+    document.addEventListener('pmg:builder-finalized', function () {
+      if (firstGenSeen) return;
+      firstGenSeen = true;
+      /* Defer slightly so the priority intro modal has a chance to mount
+         before our CSS suppression rules apply. */
+      setTimeout(enterQuiet, 50);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+})();
+
+/* ====================================================================
  * pmg-fixes-v4.js
  * ==================================================================== */
 (function () {
