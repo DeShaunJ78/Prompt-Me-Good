@@ -1,0 +1,194 @@
+PromptMeGood Expert Command Center Label Update
+
+Goal:
+Add clear labels, helper text, and short explanations to the Expert Command Center so users understand what each feature does.
+
+Important:
+Do not rebuild the Expert Command Center.
+Do not change database logic.
+Do not change API routes.
+Do not change how features work.
+Do not move Expert Mode into the beginner flow.
+Do not clutter the main homepage.
+Keep Expert Mode hidden behind the existing Expert Mode button.
+Preserve the current warning before entry.
+
+This is a targeted copy and UX clarity update only.
+
+Main Rule:
+Every Expert Command Center feature should answer:
+1. What is this?
+2. Why would I use it?
+3. What happens when I click it?
+
+Use short, plain-language labels. Avoid prompt-engineering jargon unless it is explained.
+
+Expert Command Center Tabs:
+
+1. Diagnose
+Label:
+“Diagnose”
+
+Helper Text:
+“Find what is weak, missing, or unclear before you run your prompt.”
+
+Feature Labels Inside Diagnose:
+
+Prompt Strength Analyzer
+Helper:
+“Scores your prompt and shows the biggest thing to fix.”
+
+Missing Context Detector
+Helper:
+“Finds missing details like audience, goal, tone, format, or examples.”
+
+Biggest Fix
+Helper:
+“The one change most likely to improve your result.”
+
+Risk Checker Lite
+Helper:
+“Flags vague, risky, confusing, or overbroad instructions.”
+
+2. Architect
+Label:
+“Architect”
+
+Helper Text:
+“Control how your prompt is structured before AI answers.”
+
+Feature Labels Inside Architect:
+
+Role
+Helper:
+“Tell AI what expert role to play.”
+
+Objective
+Helper:
+“Define the exact result you want.”
+
+Audience
+Helper:
+“Tell AI who the answer is for.”
+
+Context
+Helper:
+“Add background details AI needs to understand the task.”
+
+Constraints
+Helper:
+“Set rules, limits, or requirements AI must follow.”
+
+Tone
+Helper:
+“Choose how the answer should sound.”
+
+Output Format
+Helper:
+“Choose the shape of the answer, like checklist, table, email, or step-by-step plan.”
+
+Examples
+Helper:
+“Show AI what a good answer should resemble.”
+
+Avoid Rules
+Helper:
+“Tell AI what not to include.”
+
+Success Criteria
+Helper:
+“Define what a great answer must accomplish.”
+
+Clarifying Questions First
+Helper:
+“Ask questions before answering if important details are missing.”
+
+3. Variations
+Label:
+“Variations”
+
+Helper Text:
+“Create different versions of your prompt for different styles or goals.”
+
+Feature Labels Inside Variations:
+
+Fast Version
+Helper:
+“A shorter prompt for quick results.”
+
+Strategic Version
+Helper:
+“A more detailed prompt for stronger planning and execution.”
+
+Bold Version
+Helper:
+“A more direct prompt with stronger language and sharper instructions.”
+
+Compare Versions
+Helper:
+“See what changed and why one version may work better.”
+
+4. Save
+Label:
+“Save”
+
+Helper Text:
+“Save prompt setups you may want to reuse later.”
+
+Feature Labels Inside Save:
+
+Save As Workflow
+Helper:
+“Save this setup so you can reuse the same prompt structure again.”
+
+Brand Voice Profile
+Helper:
+“Save your tone, style, and writing preferences for future prompts.”
+
+Project Context Pack
+Helper:
+“Save reusable background information about a project, business, or audience.”
+
+Prompt Template
+Helper:
+“Save a reusable prompt with blanks you can fill in later.”
+
+UX Requirements:
+- Labels should be visible without overwhelming the page.
+- Helper text should be short.
+- Use tooltips, small subtext, info icons, or expandable help where appropriate.
+- Do not make the Expert Command Center feel crowded.
+- Do not add long paragraphs.
+- Keep the interface clean and premium.
+- Use Title Case for short UI labels if that matches the current app style.
+- Keep body helper text natural and readable.
+
+Do Not Touch:
+- Main beginner prompt flow.
+- Fix My Prompt behavior.
+- Help Me Start behavior.
+- Run With AI behavior.
+- Prompt Strength Meter calculation.
+- Prompt Vault or saved work logic.
+- Database schema.
+- API routes.
+- Pricing.
+- Homepage layout outside Expert Mode.
+
+Manual Test:
+After adding labels, verify:
+1. Expert Mode still opens from the same place.
+2. The warning before Expert Mode still appears.
+3. All existing Expert Mode controls still work.
+4. The main beginner flow is unchanged.
+5. Labels do not crowd the mobile layout.
+6. No button, tab, or control loses functionality.
+7. No database or saved-work behavior changed.
+
+Final Response Required:
+When finished, summarize:
+1. What labels/helper text were added.
+2. What files changed.
+3. What was preserved.
+4. What was tested.
+5. Any areas where labels still feel crowded or need future cleanup.

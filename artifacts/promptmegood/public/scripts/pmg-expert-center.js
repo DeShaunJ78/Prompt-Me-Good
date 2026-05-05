@@ -168,28 +168,40 @@
    * ===================================================================== */
   var ENGINEER_SECTIONS = [
     { key: 'role',        label: 'Role',                       placeholder: 'Senior brand copywriter with 10 years of B2B SaaS experience.',
+      helper: 'Tell AI what expert role to play.',
       auto: function () { return 'You are an expert assistant who reads the request below carefully and answers with the depth and craft a seasoned professional would bring.'; } },
     { key: 'objective',   label: 'Objective',                  placeholder: 'Write a 200-word landing page hero…',
+      helper: 'Define the exact result you want.',
       auto: function (goal) { return 'Deliver a complete answer to the request, prioritizing clarity and immediate usefulness over breadth.'; } },
     { key: 'audience',    label: 'Audience',                   placeholder: 'Busy founders evaluating tools in under 60 seconds.',
+      helper: 'Tell AI who the answer is for.',
       auto: function () { return 'Smart adult reader, no specific expertise required. Avoid jargon unless you define it.'; } },
     { key: 'context',     label: 'Context',                    placeholder: 'My product is …',
+      helper: 'Add background details AI needs to understand the task.',
       auto: function () { return 'Use only the information provided in the request. If anything important is missing, briefly state the assumption you made.'; } },
     { key: 'constraints', label: 'Constraints',                placeholder: 'Under 200 words. No emojis. American English.',
+      helper: 'Set rules, limits, or requirements AI must follow.',
       auto: function () { return 'Keep the response focused; cut anything that does not directly help the reader. No filler phrases.'; } },
     { key: 'tone',        label: 'Tone',                       placeholder: 'Direct, confident, lightly witty.',
+      helper: 'Choose how the answer should sound.',
       auto: function () { return 'Clear, confident, conversational. Sound like a trusted human expert, not a corporate PR statement.'; } },
     { key: 'format',      label: 'Output Format',              placeholder: '1) Hook 2) Subhead 3) 3 bullet benefits 4) CTA',
+      helper: 'Choose the shape of the answer, like checklist, table, email, or step-by-step plan.',
       auto: function () { return 'Use short paragraphs, bolded mini-headers if there is more than one section, and a numbered or bulleted list when items are parallel.'; } },
     { key: 'examples',    label: 'Examples',                   placeholder: 'Good: "Stripe for invoicing." Bad: "We help businesses succeed."',
+      helper: 'Show AI what a good answer should resemble.',
       auto: function () { return 'When useful, include one short example to illustrate the pattern you want.'; } },
     { key: 'avoid',       label: 'Avoid Rules',                placeholder: 'No clichés. No "leverage", "synergy", "unlock potential".',
+      helper: 'Tell AI what not to include.',
       auto: function () { return 'Avoid hype words ("revolutionary", "game-changing"), corporate clichés, generic disclaimers, and apologetic hedging.'; } },
     { key: 'next',        label: 'Next Steps',                 placeholder: 'After answering, suggest 2 ways to test it.',
+      helper: 'What AI should suggest after the main answer.',
       auto: function () { return 'After the main answer, suggest one concrete next step the reader can take in the next 10 minutes.'; } },
     { key: 'success',     label: 'Success Criteria',           placeholder: 'Reader can ship this in 5 minutes without edits.',
+      helper: 'Define what a great answer must accomplish.',
       auto: function () { return 'A great answer is specific, immediately actionable, and would not need a follow-up clarification round.'; } },
     { key: 'questions',   label: 'Clarifying Questions First', placeholder: 'Ask me up to 3 questions before drafting.',
+      helper: 'Ask questions before answering if important details are missing.',
       auto: function () { return 'Before drafting, list any 1-3 critical unknowns as a short numbered list and stop. Wait for my answers before producing the full response.'; } }
   ];
 
@@ -223,11 +235,11 @@
       text: function (v) { return v < 33 ? 'Keep the response under ~150 words.' : v > 66 ? 'Take the space you need — go deep where it adds value.' : null; } }
   ];
   var VARIATIONS = [
-    { id: 'fast',     label: 'Fast & Simple',         subtitle: 'Direct answer, minimum words',
+    { id: 'fast',     label: 'Fast & Simple',         subtitle: 'A shorter prompt for quick results.',
       wrap: function (p) { return p + '\n\nDeliver this in the fastest, simplest form: short paragraphs, plain language, no preamble. Lead with the answer. Skip pleasantries.'; } },
-    { id: 'detailed', label: 'Detailed & Strategic',  subtitle: 'Deep, structured, with reasoning',
+    { id: 'detailed', label: 'Detailed & Strategic',  subtitle: 'A more detailed prompt for stronger planning and execution.',
       wrap: function (p) { return p + '\n\nDeliver this with strategic depth: structured sections, key reasoning explained, edge cases addressed, and one concrete next step. Use bolded mini-headers and short paragraphs.'; } },
-    { id: 'bold',     label: 'Bold & Persuasive',     subtitle: 'Strong POV, no hedging',
+    { id: 'bold',     label: 'Bold & Persuasive',     subtitle: 'A more direct prompt with stronger language and sharper instructions.',
       wrap: function (p) { return p + '\n\nDeliver this with conviction: take a strong point of view, drop the hedging, name what is wrong about the obvious approach, and give the reader a single clear recommendation. Be persuasive without being a salesperson.'; } }
   ];
 
@@ -373,6 +385,9 @@
       '.pmg-ec-engineer-row{display:grid;grid-template-columns:1fr;gap:6px;padding:10px 12px;border:1px solid var(--color-border,#e2e8f0);border-radius:10px;margin-bottom:8px;background:var(--color-surface,#fff);}' +
       '.pmg-ec-engineer-row > header{display:flex;align-items:center;gap:8px;}' +
       '.pmg-ec-engineer-row label.pmg-ec-engineer-name{font-weight:600;flex:1;}' +
+      '.pmg-ec-engineer-helper{margin:0;color:var(--color-text-muted,#475569);font-size:.82rem;line-height:1.4;}' +
+      '.pmg-ec-intro{margin:0 0 14px;color:var(--color-text-muted,#475569);font-size:.92rem;line-height:1.45;}' +
+      '.pmg-ec-section-helper{margin:-4px 0 8px;color:var(--color-text-muted,#475569);font-size:.85rem;line-height:1.4;}' +
       '.pmg-ec-mode-group{display:inline-flex;border:1px solid var(--color-border,#e2e8f0);border-radius:999px;overflow:hidden;}' +
       '.pmg-ec-mode-group button{appearance:none;background:transparent;border:0;padding:4px 10px;font-size:.78rem;font-weight:600;color:var(--color-text-muted,#475569);cursor:pointer;}' +
       '.pmg-ec-mode-group button[aria-pressed="true"]{background:var(--color-primary,#0f766e);color:#fff;}' +
@@ -433,11 +448,11 @@
       el('button', { class: 'pmg-ec-close', type: 'button', 'aria-label': 'Close Expert Command Center', onclick: function () { closeDrawer(); } }, '×')
     ]);
     var TABS = [
-      { id: 'diagnose',   label: 'Diagnose' },
-      { id: 'engineer',   label: 'Engineer' },
-      { id: 'tune',       label: 'Tune' },
-      { id: 'variations', label: 'Variations' },
-      { id: 'save',       label: 'Save' }
+      { id: 'diagnose',   label: 'Diagnose',   help: 'Find what is weak, missing, or unclear before you run your prompt.' },
+      { id: 'engineer',   label: 'Architect',  help: 'Control how your prompt is structured before AI answers.' },
+      { id: 'tune',       label: 'Tune',       help: 'Dial in voice and depth with toggles and sliders.' },
+      { id: 'variations', label: 'Variations', help: 'Create different versions of your prompt for different styles or goals.' },
+      { id: 'save',       label: 'Save',       help: 'Save prompt setups you may want to reuse later.' }
     ];
     _tabs = el('div', { class: 'pmg-ec-tabs', role: 'tablist' });
     var body = el('div', { class: 'pmg-ec-body' });
@@ -447,6 +462,7 @@
         id: 'pmg-ec-tab-' + t.id, 'aria-controls': 'pmg-ec-pane-' + t.id,
         'aria-selected': t.id === _activeTab ? 'true' : 'false',
         tabindex: t.id === _activeTab ? '0' : '-1',
+        title: t.help || null,
         onclick: function () { switchTab(t.id); }
       }, t.label);
       _tabs.appendChild(btn);
@@ -544,6 +560,9 @@
       ]));
       return;
     }
+    pane.appendChild(el('p', { class: 'pmg-ec-intro' },
+      'Find what is weak, missing, or unclear before you run your prompt.'));
+
     var s = scorePrompt(goal);
     var card = el('div', { class: 'pmg-ec-score-card' }, [
       el('div', { class: 'pmg-ec-score-row' }, [
@@ -553,36 +572,50 @@
       ]),
       el('div', { class: 'pmg-ec-bar', 'aria-hidden': 'true' }, el('span', { style: 'width:' + s.score + '%' }))
     ]);
-    pane.appendChild(card);
+    pane.appendChild(el('div', { class: 'pmg-ec-section' }, [
+      el('h3', null, 'Prompt Strength Analyzer'),
+      el('p', { class: 'pmg-ec-section-helper' }, 'Scores your prompt and shows the biggest thing to fix.'),
+      card
+    ]));
 
     if (s.weakest) {
       pane.appendChild(el('div', { class: 'pmg-ec-section' }, [
-        el('h3', null, 'Biggest Weakness'),
+        el('h3', null, 'Biggest Fix'),
+        el('p', { class: 'pmg-ec-section-helper' }, 'The one change most likely to improve your result.'),
         el('p', { style: 'margin:0;color:var(--color-text-muted,#475569);' }, s.weakest.label)
       ]));
     }
     if (s.missing.length) {
       var ul = el('ul', { class: 'pmg-ec-list' });
       s.missing.slice(0, 6).forEach(function (m) { ul.appendChild(el('li', null, m.label)); });
-      pane.appendChild(el('div', { class: 'pmg-ec-section' }, [el('h3', null, 'What\'s Missing'), ul]));
+      pane.appendChild(el('div', { class: 'pmg-ec-section' }, [
+        el('h3', null, 'Missing Context Detector'),
+        el('p', { class: 'pmg-ec-section-helper' }, 'Finds missing details like audience, goal, tone, format, or examples.'),
+        ul
+      ]));
     }
 
     var status = el('div', { class: 'pmg-ec-status', 'aria-live': 'polite' });
     var actions = el('div', { class: 'pmg-ec-actions' });
-    function makeBtn(label, fn) {
-      var b = el('button', { type: 'button', onclick: fn }, label);
-      return b;
+    function makeBtn(label, fn, tip) {
+      var attrs = { type: 'button', onclick: fn };
+      if (tip) attrs.title = tip;
+      return el('button', attrs, label);
     }
-    actions.appendChild(makeBtn('Fix This Like A Prompt Engineer', function () { fixLikeEngineer(status); }));
-    actions.appendChild(makeBtn('Ask Me 5 Questions', function () { askFiveQuestions(status); }));
-    actions.appendChild(makeBtn('Auto-Fill Safe Defaults', function () { autoFillDefaults(); status.textContent = 'Default Engineer settings applied. Open the Engineer tab to fine-tune, or tap Apply To Main Prompt below.'; }));
-    actions.appendChild(makeBtn('Add Missing Context', function () { addMissingContext(status); }));
-    actions.appendChild(makeBtn('Pressure Test Prompt', function () { pressureTest(status); }));
-    pane.appendChild(el('div', { class: 'pmg-ec-section' }, [el('h3', null, 'One-Tap Fixes'), actions]));
+    actions.appendChild(makeBtn('Fix This Like A Prompt Engineer', function () { fixLikeEngineer(status); }, 'Rewrite your prompt with role, audience, format, tone, constraints, and a success criterion.'));
+    actions.appendChild(makeBtn('Ask Me 5 Questions', function () { askFiveQuestions(status); }, 'Generate 5 short clarifying questions to refine your goal before AI answers.'));
+    actions.appendChild(makeBtn('Auto-Fill Safe Defaults', function () { autoFillDefaults(); status.textContent = 'Default Architect settings applied. Open the Architect tab to fine-tune, or tap Apply To Main Prompt below.'; }, 'Pre-fill safe Architect defaults so you can fine-tune from a sensible starting point.'));
+    actions.appendChild(makeBtn('Add Missing Context', function () { addMissingContext(status); }, 'Inserts a checklist of details your prompt is missing, ready for you to fill in.'));
+    actions.appendChild(makeBtn('Pressure Test Prompt', function () { pressureTest(status); }, 'Risk Checker — flags vague, risky, confusing, or overbroad instructions.'));
+    pane.appendChild(el('div', { class: 'pmg-ec-section' }, [
+      el('h3', null, 'One-Tap Fixes'),
+      el('p', { class: 'pmg-ec-section-helper' }, 'Hover any button for a short description of what it does.'),
+      actions
+    ]));
     pane.appendChild(status);
 
     pane.appendChild(buildCtaRow([
-      { label: 'Switch To Engineer', primary: false, onclick: function () { switchTab('engineer'); } },
+      { label: 'Switch To Architect', primary: false, onclick: function () { switchTab('engineer'); } },
       { label: 'Apply To Main Prompt', primary: true, onclick: function () {
           var built = buildEngineeredPrompt(getGoalText().trim(), _state.engineer);
           var tuned = buildTunedPrompt(built, _state.tune);
@@ -662,8 +695,8 @@
    * ENGINEER pane
    * ===================================================================== */
   function renderEngineer(pane) {
-    pane.appendChild(el('p', { style: 'margin:0 0 12px;color:var(--color-text-muted,#475569);' },
-      'Build the prompt structurally. Set each section to Off, Auto (we fill it in), or Custom (your own text). The preview below updates live.'));
+    pane.appendChild(el('p', { class: 'pmg-ec-intro' },
+      'Control how your prompt is structured before AI answers. Set each section to Off, Auto (we fill it in), or Custom (your own text). The preview below updates live.'));
     ENGINEER_SECTIONS.forEach(function (def) { pane.appendChild(buildEngineerRow(def)); });
 
     var preview = el('pre');
@@ -716,6 +749,9 @@
       el('label', { class: 'pmg-ec-engineer-name' }, def.label),
       modes
     ]));
+    if (def.helper) {
+      row.appendChild(el('p', { class: 'pmg-ec-engineer-helper' }, def.helper));
+    }
     row.appendChild(el('div', { class: 'pmg-ec-engineer-auto-hint' },
       'Auto: ' + def.auto(getGoalText())));
     var ta = el('textarea', { placeholder: def.placeholder, rows: '3' });
@@ -734,7 +770,7 @@
    * TUNE pane
    * ===================================================================== */
   function renderTune(pane) {
-    pane.appendChild(el('p', { style: 'margin:0 0 12px;color:var(--color-text-muted,#475569);' },
+    pane.appendChild(el('p', { class: 'pmg-ec-intro' },
       'Dial in voice and depth. Toggles add specific behavior rules; sliders adjust style intensity (the middle position adds nothing).'));
     var togglesWrap = el('div');
     TUNE_TOGGLES.forEach(function (t) {
@@ -790,6 +826,8 @@
    * VARIATIONS pane
    * ===================================================================== */
   function renderVariations(pane) {
+    pane.appendChild(el('p', { class: 'pmg-ec-intro' },
+      'Create different versions of your prompt for different styles or goals. Each version is generated separately so you can compare and pick the one that fits.'));
     var goal = getGoalText().trim();
     if (!goal) {
       pane.appendChild(el('div', { class: 'pmg-ec-empty' }, 'Type a goal in the main prompt box first, then come back to generate three variations.'));
@@ -868,8 +906,8 @@
    * SAVE pane
    * ===================================================================== */
   function renderSave(pane) {
-    pane.appendChild(el('p', { style: 'margin:0 0 12px;color:var(--color-text-muted,#475569);' },
-      'Save the current prompt and Expert settings as a reusable workflow. Workflows are stored locally in your browser.'));
+    pane.appendChild(el('p', { class: 'pmg-ec-intro' },
+      'Save prompt setups you may want to reuse later. The current prompt plus your Architect and Tune settings get bundled into a reusable workflow stored locally in your browser.'));
     var nameInput = el('input', {
       type: 'text', placeholder: 'Workflow name (e.g., "Landing Page Hero")',
       style: 'width:100%;padding:10px 12px;border:1px solid var(--color-border,#e2e8f0);border-radius:8px;font-size:.95rem;margin-bottom:8px;'
@@ -901,7 +939,8 @@
       }
     }, 'Save Workflow');
     pane.appendChild(el('div', { class: 'pmg-ec-section' }, [
-      el('h3', null, 'Save Current Setup'),
+      el('h3', null, 'Save As Workflow'),
+      el('p', { class: 'pmg-ec-section-helper' }, 'Save this setup so you can reuse the same prompt structure again.'),
       nameInput,
       saveBtn,
       status
