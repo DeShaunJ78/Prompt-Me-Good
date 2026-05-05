@@ -19,5 +19,6 @@ export const modules: ModuleMap = {
   "./components/mockups/chassis/v2/HeroWarmDarkHybrid.tsx": () => import("../components/mockups/chassis/v2/HeroWarmDarkHybrid.tsx"),
   "./components/mockups/chassis/v2/MasterPlanWorkspace.tsx": () => import("../components/mockups/chassis/v2/MasterPlanWorkspace.tsx"),
   "./components/mockups/chassis/v2/WorkstationChassisV2.tsx": () => import("../components/mockups/chassis/v2/WorkstationChassisV2.tsx"),
+  "./components/mockups/chassis/v2/WorkstationChassisV3.tsx": () => import("../components/mockups/chassis/v2/WorkstationChassisV3.tsx"),
   "./components/mockups/chassis/v2/WorkstationG.tsx": () => import("../components/mockups/chassis/v2/WorkstationG.tsx")
 };

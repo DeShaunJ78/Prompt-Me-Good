@@ -167,3 +167,9 @@ id = "FWTalHwfpnootsrS44xY7"
 uri = "file://.local/CHASSIS_MAPPING.md"
 type = "text"
 title = "Chassis Mapping — every existing feature placed in the new shell"
+
+[[outputs]]
+id = "TG4A7bKeVqtt0DzFrVr9p"
+uri = "file://attached_assets/screenshots/WorkstationChassisV3_synergy.jpg"
+type = "image"
+title = "Workstation v3 — Master Link synergy preview"
