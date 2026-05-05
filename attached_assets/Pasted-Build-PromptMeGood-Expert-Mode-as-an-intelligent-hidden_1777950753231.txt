@@ -1,0 +1,506 @@
+Build PromptMeGood Expert Mode as an intelligent hidden “Expert Command Center.”
+
+IMPORTANT:
+Do not build this as a cluttered homepage section.
+Do not add new visible Expert Mode buttons.
+Do not add permanent advanced controls around the main prompt box.
+Use the existing current Expert Mode button/link already on the site as the single entry point.
+
+The current Expert Mode button should work like this:
+Current Expert Mode button
+→ Existing Expert Mode warning modal
+→ User chooses Stay In Guided Mode or Enter Expert Mode
+→ If Enter Expert Mode, open Expert Command Center
+
+Keep the current warning flow, but update the copy:
+
+Title:
+Enter Expert Mode?
+
+Body:
+Expert Mode unlocks advanced prompt controls, analysis, variations, and reusable workflows. If you just want a quick result, Guided Mode is faster.
+
+Buttons:
+Stay In Guided Mode
+Enter Expert Mode
+
+PRODUCT PRINCIPLE:
+Beginner Mode = fast first win.
+Expert Mode = senior prompt engineer playground.
+
+Expert Mode should be powerful, but hidden until requested. It should feel like a “tweak me” haven for advanced users, not a junk drawer of buttons.
+
+The normal site must stay clean:
+- Main prompt box stays primary.
+- Fix My Prompt stays primary.
+- Help Me Start stays intact.
+- Run With AI stays intact.
+- Photography Suite stays intact.
+- Prompt Vault stays intact.
+- Tours stay intact.
+- Pricing/waitlist links stay intact.
+- Mobile layout stays intact.
+
+INTELLIGENT HYBRID BEHAVIOR:
+Expert Mode should not be a 100% manual form or giant settings panel.
+
+It should behave like an intelligent prompt-engineering assistant using:
+- User input
+- Guided options
+- Smart recommendations
+- One-click expert fixes
+- Optional custom fields
+
+The goal is for Expert Mode to feel like:
+“I reviewed your prompt. Here is what’s missing. Here are the smartest upgrades. Pick what you want.”
+
+Do not force users to manually fill every section.
+
+Use three levels of intelligence:
+1. Guided choices:
+   Chips, toggles, sliders, presets, and Off / Auto / Custom states.
+
+2. Smart recommendations:
+   Expert Mode recommends missing context, better structure, output format, tone, constraints, or next steps based on the current prompt.
+
+3. One-click expert rewrites:
+   Buttons like “Fix This Like A Prompt Engineer” apply professional prompt-engineering upgrades automatically.
+
+UX CONTAINER:
+On mobile:
+- Expert Command Center opens as a full-screen drawer/overlay.
+- It should not shift the page.
+- It should have a clear X close button.
+- It should trap focus while open.
+- It should be scrollable inside the drawer.
+- It must not create horizontal overflow.
+
+On desktop:
+- Open as a right-side drawer or large overlay.
+- Keep the main page clean behind it.
+- Escape should close it.
+- Closing should return focus to the existing Expert Mode button.
+
+Do not create a separate full page unless absolutely necessary.
+
+TABS:
+Use 5 tabs inside Expert Command Center:
+
+1. Diagnose
+2. Engineer
+3. Tune
+4. Variations
+5. Save
+
+TAB 1: DIAGNOSE
+Purpose:
+Expert Mode analyzes the current prompt and tells the user what is weak, missing, risky, or vague.
+
+This tab should be mostly intelligent, not manual.
+
+Show:
+- Prompt Strength Score
+- Biggest Weakness
+- Missing Context
+- Risk Warnings
+- Recommended Upgrade
+- One-click fixes
+
+Score categories:
+- Clarity
+- Context
+- Specificity
+- Output Format
+- Constraints
+- Audience Fit
+- Actionability
+
+Example:
+Prompt Strength Score:
+72/100
+
+Biggest Weakness:
+Your prompt asks for marketing help but does not define the audience, offer, platform, or desired action.
+
+Recommended Upgrade:
+Add audience, platform, offer, and CTA structure.
+
+Buttons:
+- Fix This Like A Prompt Engineer
+- Ask Me 5 Questions
+- Auto-Fill Safe Defaults
+- Add Missing Context
+- Pressure Test Prompt
+
+Risk warnings to detect:
+- Too vague
+- Too broad
+- Too many goals
+- No audience
+- No output format
+- Weak constraints
+- Conflicting instructions
+- Likely generic answer
+- Needs source material
+- Should be split into a prompt chain
+
+Anti-vague language detection should live inside Diagnose.
+Detect phrases like:
+- maybe
+- kind of
+- something about
+- help me with
+- make it better
+- good
+- nice
+- interesting
+- professional
+- engaging
+
+Do not make Anti-Vague Language Cleaner a separate tab.
+
+TAB 2: ENGINEER
+Purpose:
+Let advanced users control the prompt DNA.
+
+This tab should be hybrid:
+- Guided controls for most users.
+- Optional custom fields for power users.
+
+Use Off / Auto / Custom states where possible.
+
+Prompt DNA sections:
+- Role
+- Objective
+- Audience
+- Context
+- Constraints
+- Tone
+- Output Format
+- Examples
+- Avoid Rules
+- Next Steps
+- Success Criteria
+- Clarifying Questions First
+
+Behavior:
+- Auto means PromptMeGood recommends and fills the section intelligently.
+- Custom lets the user type or edit.
+- Off removes the section from the final prompt.
+
+Include:
+- Prompt DNA Summary
+- Live optimized prompt preview
+- Apply This Structure button
+- Reset To Simple Prompt button
+
+Buttons:
+- Apply This Structure
+- Add Success Criteria
+- Add Avoid Rules
+- Ask Clarifying Questions First
+- Reset To Simple Prompt
+
+TAB 3: TUNE
+Purpose:
+Let users control how the AI behaves, writes, thinks, and responds.
+
+This tab should be guided, using toggles, chips, sliders, and presets.
+
+Behavior controls:
+- Ask Questions First
+- Assume Reasonable Defaults
+- Challenge My Assumptions
+- Give Direct Answer First
+- Show Reasoning Summary
+- Use Examples
+- Avoid Generic Advice
+- Prioritize Execution
+- Make It More Human
+- Make It Less Robotic
+
+Voice/depth controls:
+- Direct ↔ Warm
+- Simple ↔ Detailed
+- Casual ↔ Professional
+- Safe ↔ Bold
+- Plain ↔ Creative
+- Short ↔ Deep
+
+Each control must translate into actual prompt instructions behind the scenes.
+
+Examples:
+Bold:
+Use direct language. Avoid hedging. Lead with the strongest point.
+
+Simple:
+Explain plainly. Avoid jargon. Use short sentences.
+
+Detailed:
+Add useful context, examples, and practical next steps.
+
+Prioritize Execution:
+Focus on actions, decisions, and next steps instead of theory.
+
+Do not build meaningless sliders. Every control must affect the generated prompt instructions.
+
+TAB 4: VARIATIONS
+Purpose:
+Generate controlled alternate versions of the prompt.
+
+This tab should be mostly intelligent.
+
+Primary button:
+Create 3 Versions
+
+Initial variation cards:
+- Fast & Simple
+- Detailed & Strategic
+- Bold & Persuasive
+
+Each variation card should include:
+- Variation name
+- Short description
+- Prompt preview
+- Why use this version
+- Use This Version button
+
+Also include Compare Mode after a variation is selected:
+- Original Prompt
+- Optimized Prompt
+- What Was Added
+- What Was Removed
+- Why This Version Is Stronger
+
+Future categories can appear as disabled/premium teaser chips:
+- Sales
+- SEO
+- Social Media
+- Business Plan
+- Image Generation
+- Email
+- Research
+
+TAB 5: SAVE
+Purpose:
+Prepare for retention features without overbuilding or breaking the site.
+
+This tab should be hybrid:
+- Suggest names automatically.
+- Let the user edit names.
+- Show clean coming-soon or premium states if storage is not ready.
+
+Show:
+- Save This Setup
+- Save As Workflow
+- Save As Template
+- Save Brand Voice
+- Attach Project Context
+
+Suggested workflow name examples:
+- TikTok Hook Builder
+- Shopify Product Description Workflow
+- Research Brief Generator
+- Sales Email Workflow
+
+Premium teaser copy:
+Save reusable workflows, brand voices, templates, and context packs with Founding Member access.
+
+IMPORTANT:
+Do not fully build complex storage if it risks breaking the current site.
+It is okay for Save features to be polished teaser states for now.
+
+NORMAL FLOW INTEGRATION:
+Expert Mode must connect to the main prompt box without cluttering the normal site.
+
+When Expert Mode opens:
+- Read the current text from the main prompt box.
+- If the prompt box is empty, show empty state:
+
+Start With A Goal First
+Type what you want in the main box, then open Expert Mode to sharpen it.
+
+When the user applies expert changes:
+- Update the main prompt box or generated prompt preview.
+- Show only a small temporary status pill near the main prompt area:
+
+Expert Settings Applied
+Edit
+Clear
+
+This pill is the only normal-site indicator allowed.
+Do not add permanent Expert Mode controls to the main page.
+
+PRIMARY ACTIONS INSIDE EXPERT MODE:
+Primary:
+Apply To Main Prompt
+
+Secondary:
+Fix With Expert Settings
+Run With AI
+Copy Prompt
+Save Workflow
+
+Recommended behavior:
+- Apply To Main Prompt updates the main prompt and may close the drawer.
+- Fix With Expert Settings generates the improved prompt using selected expert controls.
+- Run With AI runs the current optimized prompt.
+- Copy Prompt copies the optimized prompt.
+- Save Workflow can be a premium teaser if storage is not ready.
+
+COPY:
+Header:
+Expert Command Center
+
+Subtitle:
+Diagnose, engineer, tune, and save stronger prompts like a pro.
+
+Empty state title:
+Start With A Goal First
+
+Empty state body:
+Type what you want in the main box, then open Expert Mode to sharpen it.
+
+Primary CTA:
+Apply To Main Prompt
+
+Secondary CTA:
+Fix With Expert Settings
+
+Advanced fix CTA:
+Fix This Like A Prompt Engineer
+
+Pressure test CTA:
+Pressure Test Prompt
+
+Split task CTA:
+Split Into Prompt Chain
+
+OPTIONAL FUTURE FEATURE TEASERS:
+These should not be fully built in this phase unless easy and safe:
+- Brand Voice Profiles
+- Project Context Packs
+- Variable Prompt Templates
+- Full Chain Builder
+- Prompt Testing Sandbox
+- Full Model Destination Optimizer
+- Power Workflows
+
+Do not hide them completely if teaser states help monetization, but do not let them clutter the MVP.
+
+DO NOT:
+- Do not add a homepage Expert Mode section.
+- Do not add new visible Expert Mode buttons.
+- Do not duplicate entry points.
+- Do not show Expert Mode tools unless Expert Mode is opened.
+- Do not make Expert Mode automatically open for new users.
+- Do not remove the warning modal.
+- Do not force users to choose Expert Mode before using the normal prompt flow.
+- Do not make it a giant manual form.
+- Do not make users fill every field.
+- Do not add meaningless sliders.
+- Do not break mobile layout.
+- Do not create horizontal overflow.
+- Do not break Fix My Prompt.
+- Do not break Run With AI.
+- Do not break Photography Suite.
+- Do not break Prompt Vault.
+- Do not break tours.
+- Do not break pricing or waitlist links.
+
+ANALYTICS EVENTS TO ADD IF ANALYTICS SYSTEM EXISTS:
+- expert_mode_warning_opened
+- expert_mode_entered
+- expert_mode_cancelled
+- expert_command_center_opened
+- expert_command_center_closed
+- expert_tab_selected
+- expert_prompt_analyzed
+- expert_fix_applied
+- expert_missing_context_used
+- expert_architect_section_toggled
+- expert_architect_state_changed
+- expert_tune_control_changed
+- expert_variation_generated
+- expert_variation_selected
+- expert_compare_opened
+- expert_apply_to_main_prompt
+- expert_run_with_ai
+- expert_copy_prompt
+- expert_save_workflow_clicked
+- expert_upgrade_clicked
+
+SEGMENTED BUILD PLAN:
+Build this in stages to prevent errors.
+
+Stage 1:
+- Wire existing Expert Mode button to warning modal.
+- Update warning copy.
+- Add Expert Command Center drawer/overlay.
+- Add tabs and empty states.
+- Ensure no clutter appears on the normal site.
+
+Stage 2:
+- Build Diagnose tab with prompt score, missing context, biggest weakness, and one-click fix placeholders.
+- Make it read current main prompt text.
+- Add Apply To Main Prompt.
+
+Stage 3:
+- Build Engineer tab with Off / Auto / Custom controls.
+- Add Prompt DNA Summary.
+- Add live optimized prompt preview.
+
+Stage 4:
+- Build Tune tab with behavior toggles and voice/depth controls.
+- Ensure each control adds real prompt instructions.
+
+Stage 5:
+- Build Variations tab with 3 versions.
+- Add Use This Version and Compare Mode.
+
+Stage 6:
+- Build Save tab as polished lightweight/premium teaser.
+- Do not overbuild storage yet.
+
+Stage 7:
+- Add analytics events if analytics exists.
+- Run regression testing.
+
+REGRESSION TESTING:
+Test on mobile 390px and desktop.
+
+Mobile test:
+1. Load homepage.
+2. Confirm no Expert Mode content is visible.
+3. Confirm no new Expert Mode buttons were added.
+4. Confirm the current Expert Mode button is the only entry point.
+5. Confirm main prompt box and Fix My Prompt remain primary.
+6. Tap Expert Mode.
+7. Confirm warning appears.
+8. Tap Stay In Guided Mode and confirm nothing changes.
+9. Open again and tap Enter Expert Mode.
+10. Confirm Expert Command Center opens full-screen.
+11. Confirm no horizontal overflow.
+12. Confirm X closes the drawer.
+13. Type a prompt in the main box.
+14. Open Expert Mode.
+15. Confirm Diagnose reads the prompt.
+16. Apply an expert fix.
+17. Confirm the main prompt updates.
+18. Confirm only the subtle Expert Settings Applied pill appears.
+19. Test each tab: Diagnose, Engineer, Tune, Variations, Save.
+20. Confirm Fix My Prompt still works.
+21. Confirm Run With AI still works.
+22. Confirm Photography Suite still works.
+23. Confirm tours still work.
+24. Confirm Prompt Vault still works.
+25. Confirm pricing and waitlist links still work.
+
+Desktop test:
+1. Confirm Expert Mode opens as drawer/overlay.
+2. Confirm Escape closes it.
+3. Confirm focus returns to the Expert Mode button.
+4. Confirm the main page stays clean.
+5. Confirm all existing flows still work.
+
+Build carefully and incrementally. Preserve the current site experience first.
