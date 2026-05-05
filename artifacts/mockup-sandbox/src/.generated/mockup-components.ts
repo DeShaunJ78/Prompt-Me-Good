@@ -11,6 +11,10 @@ export const modules: ModuleMap = {
   "./components/mockups/chassis/WelcomeBack.tsx": () => import("../components/mockups/chassis/WelcomeBack.tsx"),
   "./components/mockups/chassis/WorkstationHeader.tsx": () => import("../components/mockups/chassis/WorkstationHeader.tsx"),
   "./components/mockups/chassis/v2/HeroChatGPTDark.tsx": () => import("../components/mockups/chassis/v2/HeroChatGPTDark.tsx"),
+  "./components/mockups/chassis/v2/HeroChatGPTEditorial.tsx": () => import("../components/mockups/chassis/v2/HeroChatGPTEditorial.tsx"),
+  "./components/mockups/chassis/v2/HeroClaudeDark.tsx": () => import("../components/mockups/chassis/v2/HeroClaudeDark.tsx"),
   "./components/mockups/chassis/v2/HeroClaudeWarm.tsx": () => import("../components/mockups/chassis/v2/HeroClaudeWarm.tsx"),
-  "./components/mockups/chassis/v2/HeroLinearGlass.tsx": () => import("../components/mockups/chassis/v2/HeroLinearGlass.tsx")
+  "./components/mockups/chassis/v2/HeroEditorialPure.tsx": () => import("../components/mockups/chassis/v2/HeroEditorialPure.tsx"),
+  "./components/mockups/chassis/v2/HeroLinearGlass.tsx": () => import("../components/mockups/chassis/v2/HeroLinearGlass.tsx"),
+  "./components/mockups/chassis/v2/HeroWarmDarkHybrid.tsx": () => import("../components/mockups/chassis/v2/HeroWarmDarkHybrid.tsx")
 };
