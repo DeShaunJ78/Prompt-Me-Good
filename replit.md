@@ -40,7 +40,7 @@ This is a static HTML AI prompt builder (`index.html`) built with vanilla JavaSc
 -   **Guided Mode:** Structured modal for prompt formulation.
 -   **Refinement and Quality Check:** Tools for prompt refinement, undo, and a "Quality Checker."
 -   **Prompt Sharing:** Encodes prompt parameters into a URL hash.
--   **Expert Mode:** Opt-in mode with advanced controls, state persisted in `localStorage`.
+-   **Expert Mode → Expert Command Center (Paid):** The existing single ⚙ Expert Mode entry point opens a hidden, full-screen-on-mobile / right-side-on-desktop drawer with five tabs: **Diagnose** (prompt strength + weaknesses + one-tap fixes), **Engineer** (Off / Auto / Custom controls for role, audience, format, examples, success criteria, and more, with live preview), **Tune** (style/behavior toggles + 6 sliders), **Variations** (Fast & Simple / Detailed & Strategic / Bold & Persuasive rewrites), and **Save** (workflows + reusable presets). Drawer supports focus trap, ESC close, and a small "Expert Settings Applied" pill near the goal box. Expert Command Center is a **paid feature** (Founding Member + Pro tiers per `EXPERT_CENTER_PAID_TIERS` in `pmg-pricing-config.js` and `pricing-config.ts`); free during the open beta until `BETA_END` (2026-06-01), after which free-tier users see an upgrade paywall. Pricing/Terms/Guide all reflect this gating.
 -   **API Server Layout:** Cross-cutting middleware for rate limiting, sanitization, and cost guarding.
 -   **AI Routes (Backend):** Includes `POST /api/generate`, `POST /api/generate-stream` (SSE), `POST /api/run` (SSE for `gpt-4o`), and `GET /api/stats`.
 -   **Rate Limiting:** Per-IP rate limits for API calls.

@@ -24,6 +24,12 @@ export const PMG_PRICING = {
   FOUNDING_DAILY_CAPS: { run: 30, img: 15, analyze: 10 },
   PRO_DAILY_CAPS:      { run: 60, img: 30, analyze: 20 },
   PRICE_LOCK_TAGLINE: "price locked for life",
+  // Expert Command Center is a paid feature (Founding Member + Pro).
+  // During the open beta (free for everyone until BETA_END), free users
+  // can still open it; outside beta the gate kicks in. Mirrors the
+  // matching constants in pmg-pricing-config.js for the frontend.
+  EXPERT_CENTER_PAID_TIERS: ["founding", "pro_monthly", "pro_yearly"] as const,
+  BETA_END: "2026-06-01T05:00:00.000Z",
 } as const;
 
 export type PmgFeature = "run" | "img" | "analyze";
