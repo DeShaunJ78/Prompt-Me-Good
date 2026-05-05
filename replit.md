@@ -30,6 +30,7 @@ PromptMeGood is an AI prompt builder designed to enhance AI interactions and use
 *   `packages/shared/`: Shared utilities and types.
 *   `openapi.yaml`: OpenAPI Specification (API contracts).
 *   `artifacts/promptmegood/src/styles/`: Theme files (CSS variables).
+*   `artifacts/promptmegood/public/styles/pmg-g-theme.css`: G "Warm Dark Hybrid" override stylesheet (loaded after inline `<style>` so cascade wins).
 *   `artifacts/promptmegood/playwright.config.ts`: Frontend test configuration.
 
 ## Architecture decisions
@@ -39,6 +40,7 @@ PromptMeGood is an AI prompt builder designed to enhance AI interactions and use
 *   **Accessibility Guard:** A global, continuous accessibility check ensures all interactive elements are clickable and visible, mitigating state-flag-driven `inert`/`aria-hidden` bugs.
 *   **Quiet Onboarding:** Suppresses non-essential UI nudges for new sessions to provide a focused first-prompt experience.
 *   **Expert Command Center as Paid Feature:** Advanced prompt engineering tools are paywalled after beta, driving PRO tier conversions.
+*   **G theme overlay (Warm Dark Hybrid):** Visual language is layered on top of the legacy single-file `index.html` via a token+skin override stylesheet (`public/styles/pmg-g-theme.css`) — no markup rewrites. Forces warm dark (`#1a1410` bg, terracotta `#e57c4a/#f4a574` accent, Inter + JetBrains Mono) regardless of system preference. Re-skins the dynamically-injected T42 beta banner, Quick Win overlay, dialogs, scrollbars, and primary inputs.
 
 ## Product
 
