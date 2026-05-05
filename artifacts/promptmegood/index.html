@@ -7953,19 +7953,45 @@ Context:
             if (body) body.inert = card.classList.contains('pmg-photo-collapsed');
           });
 
-          // Post-gen elements: inert before first generation
-          document.querySelectorAll('.pmg-post-gen').forEach(function (el) { el.inert = isPreGen; });
+          // Post-gen elements: inert before first generation.
+          // INCOGNITO HARD-OVERRIDE: pmg-has-result is set directly by
+          // markHasResult() based on actual rendered prompt content
+          // (DOM observation), independent of localStorage. If it's set,
+          // the user HAS generated and these elements must be interactive
+          // — never inert — regardless of what isPreGen says. The previous
+          // accessibility-audit pass set inert based purely on isPreGen,
+          // and in incognito (where localStorage writes silently fail in
+          // Brave/Firefox-strict/Safari-ITP/privacy extensions), isPreGen
+          // could remain true after generation, freezing every Power Moves
+          // chip, Save, Improve, Run With AI button into an un-clickable
+          // state. This override breaks that race.
+          var hasResult = document.body.classList.contains('pmg-has-result') ||
+                          document.body.classList.contains('pmg-has-generated');
+          var shouldInertPostGen = isPreGen && !hasResult;
+          document.querySelectorAll('.pmg-post-gen').forEach(function (el) {
+            el.inert = shouldInertPostGen;
+            if (!shouldInertPostGen) {
+              try { el.removeAttribute('inert'); } catch (_) {}
+              if (el.getAttribute('aria-hidden') === 'true') el.removeAttribute('aria-hidden');
+            }
+          });
 
           // Result panel post-gen wrappers not tagged .pmg-post-gen
           ['result-wrap', 'actions-row', 'pmg-result-actions-row'].forEach(function (cls) {
             document.querySelectorAll('#result-panel .' + cls).forEach(function (el) {
-              if (!el.classList.contains('pmg-post-gen')) el.inert = isPreGen;
+              if (!el.classList.contains('pmg-post-gen')) {
+                el.inert = shouldInertPostGen;
+                if (!shouldInertPostGen) {
+                  try { el.removeAttribute('inert'); } catch (_) {}
+                  if (el.getAttribute('aria-hidden') === 'true') el.removeAttribute('aria-hidden');
+                }
+              }
             });
           });
           var fineRow = document.getElementById('tour-step-finalize');
-          if (fineRow) fineRow.inert = isPreGen;
+          if (fineRow) fineRow.inert = shouldInertPostGen;
           var qualRow = document.getElementById('quality-row');
-          if (qualRow) qualRow.inert = isPreGen;
+          if (qualRow) qualRow.inert = shouldInertPostGen;
 
           // Dialogs: inert when closed
           ['expert-warning-dialog', 'guided-mode-dialog', 'privacy-dialog', 'terms-dialog'].forEach(function (id) {
@@ -11820,7 +11846,7 @@ Context:
        The static file at /scripts/pmg-pricing-config.js is kept only as a no-JS / api-down
        fallback; the real source of truth is the backend route below. -->
   <script src="/api/pricing-config.js?v=task100" defer></script>
-  <script src="/scripts/pmg-ux.js?v=task123-incognito-fix" defer></script>
+  <script src="/scripts/pmg-ux.js?v=task123-incognito-fix-2" defer></script>
   <script src="/scripts/pmg-next-action.js?v=5" defer></script>
   <script src="/scripts/post-spec.js" defer></script>
   <script src="/scripts/pmg-image-fix.js?v=img-progress-2" defer></script>

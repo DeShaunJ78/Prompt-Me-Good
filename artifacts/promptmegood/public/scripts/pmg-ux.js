@@ -1002,10 +1002,83 @@
     if (bar) bar.classList.remove('is-collapsed');
   }
 
+  /* INCOGNITO POST-GEN ACCESSIBILITY WATCHDOG
+     ------------------------------------------
+     Belt-and-suspenders for the bug where post-generation buttons
+     (Power Moves chips, Save, Improve, Run With AI, Check Quality, etc.)
+     stop firing in incognito / strict-storage browsers. The original
+     accessibility audit set `inert` and `aria-hidden="true"` on
+     "out-of-focus" components. After generation those flags should
+     clear, but the clearing depends on signals (localStorage, body
+     class toggles via Storage.prototype monkey-patch) that can fail
+     silently in Brave shields, Firefox strict mode, Safari ITP, or
+     under privacy extensions.
+
+     This watchdog runs as a final safety net independent of any of
+     those signals. Whenever:
+       (a) the `pmg:builder-finalized` custom event fires (every script
+           that finishes a generation cycle dispatches it), or
+       (b) the body acquires `pmg-has-result` or `pmg-has-generated`
+           via any code path,
+     we force-clear `inert` / `aria-hidden="true"` from every
+     `.pmg-post-gen` element AND remove the `pmg-pre-gen` body class.
+     This makes post-gen interactivity authoritative and immune to
+     the storage-related races.
+
+     Uses a NARROW MutationObserver on document.body attributes only
+     (no subtree) to stay well below the T26 runaway-observer threshold. */
+  function installPostGenAccessibilityWatchdog() {
+    function clearPostGenInert() {
+      try {
+        if (document.body && document.body.classList.contains('pmg-pre-gen')) {
+          document.body.classList.remove('pmg-pre-gen');
+        }
+        var nodes = document.querySelectorAll(
+          '.pmg-post-gen, #result-panel .result-wrap, #result-panel .actions-row, ' +
+          '#result-panel .pmg-result-actions-row, #tour-step-finalize, #quality-row'
+        );
+        for (var i = 0; i < nodes.length; i++) {
+          var el = nodes[i];
+          if (el.inert) el.inert = false;
+          if (el.hasAttribute('inert')) el.removeAttribute('inert');
+          if (el.getAttribute('aria-hidden') === 'true') el.removeAttribute('aria-hidden');
+        }
+      } catch (e) {}
+    }
+
+    function hasGeneratedNow() {
+      if (!document.body || !document.body.classList) return false;
+      return document.body.classList.contains('pmg-has-result') ||
+             document.body.classList.contains('pmg-has-generated');
+    }
+
+    /* Trigger 1: explicit event from any script that finalizes a build. */
+    document.addEventListener('pmg:builder-finalized', clearPostGenInert);
+
+    /* Trigger 2: body class mutation (narrow observer, attributes-only,
+       no subtree — cannot trip T26 runaway guard). */
+    try {
+      if ('MutationObserver' in window) {
+        new MutationObserver(function () {
+          if (hasGeneratedNow()) clearPostGenInert();
+        }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+      }
+    } catch (e) {}
+
+    /* Trigger 3: initial state — if user is returning with persisted
+       has-generated already on body, clear immediately. */
+    if (hasGeneratedNow()) clearPostGenInert();
+
+    /* Trigger 4: deferred safety scans for late-mounted DOM. */
+    setTimeout(function () { if (hasGeneratedNow()) clearPostGenInert(); }, 1500);
+    setTimeout(function () { if (hasGeneratedNow()) clearPostGenInert(); }, 4000);
+  }
+
   function init() {
     injectStyles();
     applyGenerationGate();
     watchGenerationFlag();
+    installPostGenAccessibilityWatchdog();
     setupTourModalGate();
     addReplayTourToMenu();
     insertHelpMeStartLink();
