@@ -3664,8 +3664,456 @@
     body.pmg-workstation-promote .hero .hero-proof-bar,
     body.pmg-workstation-promote #weekly-goal-pin { display: none !important; }
   </style>
+
+  <!-- ====================================================================
+       QUICK WIN MODE ("Earn the workstation") — first-time visitor onboarding.
+
+       Inline detection script runs synchronously before first paint to
+       avoid any flash of the workstation. If no returning-user signal
+       is found in localStorage / sessionStorage / window state, we add
+       html.pmg-qw-pending which veils the rest of the page until the
+       Quick Win overlay JS removes the class on reveal.
+       ==================================================================== -->
+  <script>
+    (function () {
+      try {
+        var seen =
+          localStorage.getItem('pmg.quickWinSeen') ||
+          localStorage.getItem('pmg.workstationTourSeen') ||
+          localStorage.getItem('pmg_visited') ||
+          sessionStorage.getItem('pmg.quickWinShown');
+        if (!seen) document.documentElement.classList.add('pmg-qw-pending');
+      } catch (e) {
+        /* Storage blocked (incognito strict). Show Quick Win — incognito
+           sessions get the welcome mat each time, which is acceptable. */
+        document.documentElement.classList.add('pmg-qw-pending');
+      }
+    })();
+  </script>
+  <style>
+    /* Veil the workstation behind the overlay while Quick Win Mode is
+       active. Using visibility:hidden (not display:none) so the
+       workstation stays mounted and ready to reveal instantly. */
+    html.pmg-qw-pending body > *:not(#pmg-quick-win-overlay):not(script):not(style):not(noscript) {
+      visibility: hidden !important;
+    }
+    html.pmg-qw-pending body { overflow: hidden !important; }
+    html.pmg-qw-pending #pmg-quick-win-overlay { visibility: visible !important; }
+
+    #pmg-quick-win-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99998;
+      background: var(--color-bg, #fff);
+      overflow-y: auto;
+      display: none;
+      padding: max(20px, 5vh) 16px max(40px, 8vh);
+      animation: pmgQwFadeIn 320ms ease both;
+    }
+    html.pmg-qw-pending #pmg-quick-win-overlay { display: block; }
+    @keyframes pmgQwFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .pmg-qw-card {
+      max-width: 720px;
+      margin: 0 auto;
+      background: var(--color-surface, #fff);
+      border: 1px solid color-mix(in srgb, var(--color-text, #111) 8%, transparent);
+      border-radius: 18px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.08), 0 6px 20px rgba(0, 0, 0, 0.04);
+      padding: clamp(24px, 4vw, 40px);
+    }
+    [data-theme="dark"] .pmg-qw-card {
+      background: var(--color-surface, #11201f);
+      border-color: rgba(91, 168, 176, 0.25);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .pmg-qw-eyebrow {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-primary, #0f766e);
+      background: color-mix(in srgb, var(--color-primary, #0f766e) 10%, transparent);
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 14px;
+    }
+    .pmg-qw-title {
+      margin: 0 0 8px;
+      font-size: clamp(24px, 4vw, 34px);
+      font-weight: 800;
+      line-height: 1.2;
+      color: var(--color-text, #111);
+    }
+    .pmg-qw-subtitle {
+      margin: 0 0 22px;
+      font-size: var(--text-base, 15px);
+      color: var(--color-text-muted, #666);
+      line-height: 1.5;
+    }
+
+    .pmg-qw-input-wrap { margin-bottom: 14px; }
+    #pmg-qw-goal {
+      width: 100%;
+      box-sizing: border-box;
+      min-height: 110px;
+      padding: 14px 16px;
+      font-size: 16px;  /* ≥16px prevents iOS zoom-on-focus */
+      font-family: inherit;
+      line-height: 1.5;
+      color: var(--color-text, #111);
+      background: var(--color-bg, #fff);
+      border: 2px solid color-mix(in srgb, var(--color-text, #111) 12%, transparent);
+      border-radius: 12px;
+      resize: vertical;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    #pmg-qw-goal:focus {
+      outline: none;
+      border-color: var(--color-primary, #0f766e);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary, #0f766e) 18%, transparent);
+    }
+
+    .pmg-qw-examples-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-text-muted, #666);
+      margin: 0 0 8px;
+      letter-spacing: 0.02em;
+    }
+    .pmg-qw-examples {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .pmg-qw-chip {
+      background: var(--color-bg, #fff);
+      border: 1px solid color-mix(in srgb, var(--color-text, #111) 14%, transparent);
+      color: var(--color-text, #111);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      min-height: 36px;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    }
+    .pmg-qw-chip:hover {
+      background: color-mix(in srgb, var(--color-primary, #0f766e) 8%, transparent);
+      border-color: var(--color-primary, #0f766e);
+    }
+    .pmg-qw-chip:active { transform: translateY(1px); }
+
+    .pmg-qw-actions { display: flex; flex-direction: column; gap: 10px; }
+    #pmg-qw-generate {
+      width: 100%;
+      min-height: 52px;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 14px 24px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--color-primary, #0f766e);
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+    #pmg-qw-generate:hover:not(:disabled) { background: var(--color-primary-hover, #0d5e58); }
+    #pmg-qw-generate:active:not(:disabled) { transform: translateY(1px); }
+    #pmg-qw-generate:disabled { opacity: 0.55; cursor: wait; }
+
+    .pmg-qw-progress[hidden],
+    .pmg-qw-error[hidden],
+    .pmg-qw-blueprint[hidden] { display: none !important; }
+    .pmg-qw-progress {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 18px;
+      padding: 14px 16px;
+      background: color-mix(in srgb, var(--color-primary, #0f766e) 6%, transparent);
+      border-radius: 10px;
+    }
+    .pmg-qw-progress-spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid color-mix(in srgb, var(--color-primary, #0f766e) 25%, transparent);
+      border-top-color: var(--color-primary, #0f766e);
+      border-radius: 50%;
+      animation: pmgQwSpin 0.75s linear infinite;
+      flex: 0 0 auto;
+    }
+    @keyframes pmgQwSpin { to { transform: rotate(360deg); } }
+    .pmg-qw-progress-text { font-size: 14px; font-weight: 600; color: var(--color-text, #111); }
+    .pmg-qw-progress-step { font-size: 12px; color: var(--color-text-muted, #666); margin-left: auto; }
+
+    .pmg-qw-error {
+      margin-top: 18px;
+      padding: 14px 16px;
+      background: color-mix(in srgb, #c0392b 8%, transparent);
+      border: 1px solid color-mix(in srgb, #c0392b 25%, transparent);
+      border-radius: 10px;
+    }
+    .pmg-qw-error-text { margin: 0 0 10px; font-size: 14px; color: var(--color-text, #111); }
+    .pmg-qw-error-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    #pmg-qw-retry {
+      min-height: 38px;
+      padding: 8px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      background: var(--color-primary, #0f766e);
+      color: #fff;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .pmg-qw-link {
+      background: none;
+      border: 0;
+      padding: 4px 0;
+      color: var(--color-text-muted, #666);
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .pmg-qw-link:hover { color: var(--color-primary, #0f766e); }
+
+    .pmg-qw-blueprint {
+      margin-top: 26px;
+      padding-top: 26px;
+      border-top: 1px solid color-mix(in srgb, var(--color-text, #111) 10%, transparent);
+      animation: pmgQwBpIn 420ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+    }
+    @keyframes pmgQwBpIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .pmg-qw-blueprint-title {
+      margin: 0 0 18px;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--color-text, #111);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .pmg-qw-blueprint-title::before {
+      content: "✓";
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: var(--color-primary, #0f766e);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 16px;
+      font-weight: 800;
+    }
+    .pmg-qw-blueprint-section { margin-bottom: 18px; }
+    .pmg-qw-blueprint-section h3 {
+      margin: 0 0 6px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-text-muted, #666);
+    }
+    #pmg-qw-bp-refined { margin: 0; font-size: 16px; line-height: 1.55; color: var(--color-text, #111); font-weight: 500; }
+    .pmg-qw-prompt-box {
+      position: relative;
+      background: color-mix(in srgb, var(--color-text, #111) 4%, transparent);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    #pmg-qw-bp-prompt {
+      margin: 0;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--color-text, #111);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .pmg-qw-copy {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--color-bg, #fff);
+      border: 1px solid color-mix(in srgb, var(--color-text, #111) 14%, transparent);
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--color-text, #111);
+    }
+    .pmg-qw-copy:hover { background: var(--color-primary, #0f766e); color: #fff; border-color: var(--color-primary, #0f766e); }
+
+    #pmg-qw-bp-steps { margin: 0; padding: 0 0 0 22px; }
+    #pmg-qw-bp-steps li {
+      margin-bottom: 6px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--color-text, #111);
+    }
+
+    .pmg-qw-blueprint-mode { display: flex; align-items: center; gap: 10px; }
+    .pmg-qw-mode-label { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-muted, #666); }
+    .pmg-qw-mode-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      background: color-mix(in srgb, var(--color-primary, #0f766e) 14%, transparent);
+      color: var(--color-primary, #0f766e);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .pmg-qw-blueprint-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 22px;
+      padding-top: 22px;
+      border-top: 1px solid color-mix(in srgb, var(--color-text, #111) 8%, transparent);
+    }
+    #pmg-qw-open-workstation {
+      width: 100%;
+      min-height: 56px;
+      font-size: 17px;
+      font-weight: 800;
+      padding: 16px 24px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--color-primary, #0f766e);
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+      box-shadow: 0 6px 20px color-mix(in srgb, var(--color-primary, #0f766e) 30%, transparent);
+    }
+    #pmg-qw-open-workstation:hover {
+      background: var(--color-primary-hover, #0d5e58);
+      box-shadow: 0 8px 28px color-mix(in srgb, var(--color-primary, #0f766e) 40%, transparent);
+    }
+    #pmg-qw-open-workstation:active { transform: translateY(1px); }
+    .pmg-qw-blueprint-actions .pmg-qw-link { align-self: center; }
+
+    /* Reveal animation: workstation fades + slides in from below; overlay
+       fades out simultaneously. Reduced-motion respected. */
+    html.pmg-qw-revealing body > *:not(#pmg-quick-win-overlay):not(script):not(style):not(noscript) {
+      animation: pmgQwBodyIn 700ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+    }
+    @keyframes pmgQwBodyIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    #pmg-quick-win-overlay.pmg-qw-leaving {
+      animation: pmgQwFadeOut 700ms ease both;
+      pointer-events: none;
+    }
+    @keyframes pmgQwFadeOut {
+      from { opacity: 1; }
+      to   { opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #pmg-quick-win-overlay,
+      #pmg-quick-win-overlay.pmg-qw-leaving,
+      .pmg-qw-blueprint,
+      html.pmg-qw-revealing body > * { animation: none !important; }
+    }
+
+    /* Mobile polish: keep card edges off the screen edge. */
+    @media (max-width: 480px) {
+      #pmg-quick-win-overlay { padding: 18px 12px 32px; }
+      .pmg-qw-card { padding: 22px 18px; border-radius: 14px; }
+      .pmg-qw-title { font-size: 22px; }
+      #pmg-qw-open-workstation { font-size: 16px; min-height: 52px; }
+    }
+  </style>
 </head>
 <body class="pmg-workstation-promote">
+
+  <!-- Quick Win Mode overlay. Hidden unless html.pmg-qw-pending is set
+       by the inline detection script in <head>. Removed from DOM after
+       the user clicks "Open Workstation" or "Skip to Workstation". -->
+  <div id="pmg-quick-win-overlay" role="dialog" aria-modal="true" aria-labelledby="pmg-qw-title" aria-describedby="pmg-qw-subtitle">
+    <div class="pmg-qw-card">
+      <span class="pmg-qw-eyebrow">PromptMeGood</span>
+      <h1 class="pmg-qw-title" id="pmg-qw-title">What do you want to make?</h1>
+      <p class="pmg-qw-subtitle" id="pmg-qw-subtitle">Tell me your idea — I&rsquo;ll draft a starter blueprint you can use right now. One screen, one win, then the full workstation.</p>
+
+      <div class="pmg-qw-input-wrap">
+        <label class="visually-hidden" for="pmg-qw-goal">Your idea</label>
+        <textarea id="pmg-qw-goal" rows="4" placeholder="Example: I need a product photo prompt for a sleek smart watch on a marble surface."></textarea>
+      </div>
+
+      <p class="pmg-qw-examples-label">Or try one of these:</p>
+      <div class="pmg-qw-examples" role="group" aria-label="Example ideas">
+        <button type="button" class="pmg-qw-chip" data-pmg-qw-example="I need a product photo prompt for a sleek smart watch on a marble surface, soft natural light.">Smart watch product photo</button>
+        <button type="button" class="pmg-qw-chip" data-pmg-qw-example="Write a 3-day onboarding email sequence for a new SaaS user who just signed up for a free trial.">3-day onboarding email</button>
+        <button type="button" class="pmg-qw-chip" data-pmg-qw-example="Help me write a brand voice guide for a friendly, no-jargon fintech for first-time investors.">Brand voice guide</button>
+      </div>
+
+      <div class="pmg-qw-actions">
+        <button type="button" id="pmg-qw-generate">Generate Starter Blueprint</button>
+      </div>
+
+      <div class="pmg-qw-progress" id="pmg-qw-progress" hidden role="status" aria-live="polite">
+        <div class="pmg-qw-progress-spinner" aria-hidden="true"></div>
+        <div class="pmg-qw-progress-text">Drafting your starter blueprint…</div>
+        <div class="pmg-qw-progress-step" id="pmg-qw-progress-step">Refining your idea</div>
+      </div>
+
+      <div class="pmg-qw-error" id="pmg-qw-error" hidden role="alert">
+        <p class="pmg-qw-error-text" id="pmg-qw-error-text">Something went wrong drafting your blueprint.</p>
+        <div class="pmg-qw-error-actions">
+          <button type="button" id="pmg-qw-retry">Try Again</button>
+          <button type="button" id="pmg-qw-skip" class="pmg-qw-link">Skip to Workstation</button>
+        </div>
+      </div>
+
+      <div class="pmg-qw-blueprint" id="pmg-qw-blueprint" hidden>
+        <h2 class="pmg-qw-blueprint-title">Your Starter Blueprint</h2>
+
+        <div class="pmg-qw-blueprint-section">
+          <h3>Refined Idea</h3>
+          <p id="pmg-qw-bp-refined"></p>
+        </div>
+
+        <div class="pmg-qw-blueprint-section">
+          <h3>Strong Prompt</h3>
+          <div class="pmg-qw-prompt-box">
+            <pre id="pmg-qw-bp-prompt"></pre>
+            <button type="button" class="pmg-qw-copy" id="pmg-qw-bp-copy">Copy</button>
+          </div>
+        </div>
+
+        <div class="pmg-qw-blueprint-section">
+          <h3>Next Steps</h3>
+          <ol id="pmg-qw-bp-steps"></ol>
+        </div>
+
+        <div class="pmg-qw-blueprint-section pmg-qw-blueprint-mode">
+          <span class="pmg-qw-mode-label">Suggested mode:</span>
+          <span class="pmg-qw-mode-badge" id="pmg-qw-bp-mode">Prompt Engine</span>
+        </div>
+
+        <div class="pmg-qw-blueprint-actions">
+          <button type="button" id="pmg-qw-open-workstation">Open Workstation →</button>
+          <button type="button" id="pmg-qw-restart" class="pmg-qw-link">Try a different idea</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <a class="skip-link" href="#main">Skip to content</a>
 
   <header class="topbar">
@@ -11855,6 +12303,7 @@ Context:
        fallback; the real source of truth is the backend route below. -->
   <script src="/api/pricing-config.js?v=task100" defer></script>
   <script src="/scripts/pmg-ux.js?v=task123-a11y-guard-quiet-v2" defer></script>
+  <script src="/scripts/pmg-quick-win.js?v=task200-quick-win-3" defer></script>
   <script src="/scripts/pmg-next-action.js?v=5" defer></script>
   <script src="/scripts/post-spec.js" defer></script>
   <script src="/scripts/pmg-image-fix.js?v=img-progress-2" defer></script>
