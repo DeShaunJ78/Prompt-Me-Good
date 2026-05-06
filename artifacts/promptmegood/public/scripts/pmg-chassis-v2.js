@@ -1,12 +1,17 @@
-/* PromptMeGood — Chassis v2 bootstrap (Phase 0 + Phase 1)
-   Feature-flagged 3-column shell. Activates only when:
+/* PromptMeGood — Chassis v2 bootstrap
+   Feature-flagged 3-column workstation shell. Activates only when:
      - URL has ?chassis=v2  (also accepts &chassis=v2)
      - or localStorage.pmgChassisV2 === "true"
    Disable with ?chassis=off or by clearing localStorage.pmgChassisV2.
 
-   Phase 1 scope: render empty shell, hide existing content while flag on.
-   Phase 2 will move real DOM nodes into the slots; until then existing
-   site continues to work at the unflagged URL. */
+   Phases shipped in this file:
+     Phase 0 — feature flag + persistence + legacy "Try preview" pill
+     Phase 1 — render empty 3-column shell, hide legacy content when on
+     Phase 2 — relocate real legacy DOM nodes into chassis slots
+               (move-not-clone preserves listeners and IDs)
+     Phase 3 — Master Link toggle (Soul + Body bridge), chain animation
+               responds to ON/OFF state, persisted across reloads
+   Legacy site is bit-identical when the flag is off. */
 (function () {
   'use strict';
 
@@ -98,11 +103,9 @@
         '<aside class="pmgv2-rail" data-slot="vault">',
           '<button class="pmgv2-new-btn" type="button">+ New Prompt</button>',
           '<div class="pmgv2-rail-h">Local Vault</div>',
-          '<div class="pmgv2-slot-empty" data-pmgv2-target="vault">Vault loads here · Phase 2</div>',
+          '<div class="pmgv2-slot-empty" data-pmgv2-target="vault">Loading vault…</div>',
           '<div class="pmgv2-rail-h">Templates</div>',
-          '<div class="pmgv2-slot-empty" data-pmgv2-target="templates">Template grid · Phase 2</div>',
-          '<div class="pmgv2-rail-h">Vault Tools</div>',
-          '<div class="pmgv2-slot-empty">Import · Backup · Compare · Phase 2</div>',
+          '<div class="pmgv2-slot-empty" data-pmgv2-target="templates">Loading templates…</div>',
         '</aside>',
         '<section class="pmgv2-main" data-slot="thread">',
           '<div class="pmgv2-mode-bar">',
@@ -114,10 +117,10 @@
             '<div class="pmgv2-session-meta"><span class="pmgv2-pill pmgv2-pill-live">Session</span><span class="pmgv2-pill">Local-first</span></div>',
           '</div>',
           '<div class="pmgv2-thread">',
-            '<div class="pmgv2-slot-empty pmgv2-slot-thread" data-pmgv2-target="thread">Thread (User msg → Generated Prompt → AI Result) loads here · Phase 2</div>',
+            '<div class="pmgv2-slot-empty pmgv2-slot-thread" data-pmgv2-target="thread">Loading thread…</div>',
           '</div>',
           '<div class="pmgv2-composer-wrap">',
-            '<div class="pmgv2-slot-empty pmgv2-slot-composer" data-pmgv2-target="composer">Composer · Fix My Prompt loads here · Phase 2</div>',
+            '<div class="pmgv2-slot-empty pmgv2-slot-composer" data-pmgv2-target="composer">Loading composer…</div>',
             '<div class="pmgv2-composer-hint">Press ⌘K for commands · ⌘↵ to send · Local-first, no login required</div>',
           '</div>',
         '</section>',
@@ -128,19 +131,22 @@
           '<div class="pmgv2-chain-label pmgv2-chain-bot">BODY</div>',
         '</div>',
         '<aside class="pmgv2-tools" data-slot="suite">',
-          '<div class="pmgv2-tools-h"><div><div class="pmgv2-tools-t">📷 Visual Asset Engine</div><div class="pmgv2-tools-sub">Photography Suite · Phase 2</div></div></div>',
-          '<div class="pmgv2-ml-card">',
+          '<div class="pmgv2-tools-h"><div><div class="pmgv2-tools-t">📷 Visual Asset Engine</div><div class="pmgv2-tools-sub">Photography Suite</div></div></div>',
+          '<div class="pmgv2-ml-card" id="pmgv2-ml-card">',
             '<div class="pmgv2-ml-row">',
-              '<div><div class="pmgv2-ml-lab">⛓ Master Link · OFF</div><div class="pmgv2-ml-desc">Soul + Body → one Master Plan</div></div>',
-              '<button class="pmgv2-switch" type="button" aria-label="Toggle Master Link"></button>',
+              '<div><div class="pmgv2-ml-lab" id="pmgv2-ml-lab">⛓ Master Link · OFF</div><div class="pmgv2-ml-desc">Soul + Body → one Master Plan</div></div>',
+              '<button class="pmgv2-switch" type="button" id="pmgv2-ml-switch" aria-label="Toggle Master Link" aria-pressed="false"></button>',
             '</div>',
           '</div>',
-          '<div class="pmgv2-slot-empty" data-pmgv2-target="suite">Photography Suite (Style · Camera · Lighting · Composition · Color · Knobs) loads here · Phase 2</div>',
-          '<div class="pmgv2-slot-empty">✦ Master Actionable Plan loads here · Phase 2</div>',
+          '<div class="pmgv2-slot-empty" data-pmgv2-target="suite">Loading Photography Suite…</div>',
+          '<div class="pmgv2-plan-card" id="pmgv2-plan-card" data-state="idle">',
+            '<div class="pmgv2-plan-h">✦ Master Actionable Plan</div>',
+            '<div class="pmgv2-plan-body">Turn on <strong>Master Link</strong> to weave your written prompt (Soul) and your photo picks (Body) into one plan you can copy or run.</div>',
+          '</div>',
         '</aside>',
       '</div>',
       '<div class="pmgv2-statusbar">',
-        '<div class="pmgv2-statusbar-l"><span>● Saved locally</span><span>v2 chassis preview</span><span>Phase 1 of 5</span></div>',
+        '<div class="pmgv2-statusbar-l"><span>● Saved locally</span><span>v2 chassis preview</span><span>Phase 3 of 5</span></div>',
         '<div class="pmgv2-statusbar-r">',
           '<span class="pmgv2-personalize-lab">Accent</span>',
           '<span class="pmgv2-swatches" role="group" aria-label="Theme accent color">',
@@ -156,6 +162,41 @@
     ].join('');
     document.body.appendChild(root);
     wireSwatches(root);
+    wireMasterLink(root);
+  }
+
+  // ---- Phase 3: Master Link toggle ----
+  // Persists ON/OFF in localStorage and reflects state via:
+  //   <html data-pmgv2-master-link="on|off">  -> drives chain animation
+  //   #pmgv2-ml-switch[aria-pressed]          -> drives switch visual
+  //   #pmgv2-ml-lab text                       -> "ON" / "OFF"
+  //   #pmgv2-ml-card[data-state]               -> idle | active card border
+  //   #pmgv2-plan-card[data-state]             -> idle | active plan card
+  // Phase 4 will populate the plan card with the actual woven plan;
+  // for now the body stays as guidance copy and the card just lights up.
+  function wireMasterLink(root) {
+    var ML_KEY = 'pmgChassisV2:masterLink';
+    var sw = root.querySelector('#pmgv2-ml-switch');
+    var lab = root.querySelector('#pmgv2-ml-lab');
+    var card = root.querySelector('#pmgv2-ml-card');
+    var plan = root.querySelector('#pmgv2-plan-card');
+    if (!sw || !lab || !card || !plan) return;
+
+    function read() {
+      try { return localStorage.getItem(ML_KEY) === 'on'; } catch (e) { return false; }
+    }
+    function apply(on) {
+      sw.setAttribute('aria-pressed', on ? 'true' : 'false');
+      lab.textContent = on ? '⛓ Master Link · ON' : '⛓ Master Link · OFF';
+      card.setAttribute('data-state', on ? 'active' : 'idle');
+      plan.setAttribute('data-state', on ? 'active' : 'idle');
+      document.documentElement.setAttribute('data-pmgv2-master-link', on ? 'on' : 'off');
+      try { localStorage.setItem(ML_KEY, on ? 'on' : 'off'); } catch (e) {}
+    }
+    apply(read());
+    sw.addEventListener('click', function () {
+      apply(sw.getAttribute('aria-pressed') !== 'true');
+    });
   }
 
   // Accent swatches — drive the same data-accent + localStorage key

@@ -196,14 +196,27 @@ html.pmg-chassis-v2 body {
 .pmgv2-chain-stack { display: flex; flex-direction: column; align-items: center; }
 .pmgv2-chain-link {
   width: 16px; height: 24px;
-  border: 2px solid rgba(95,230,176,0.55);
+  border: 2px solid rgba(95,230,176,0.25);
   border-radius: 8px;
   position: relative; z-index: 1;
   background: rgba(10,36,32,0.8);
+  box-shadow: none;
+  transition: border-color .25s ease, box-shadow .25s ease;
+}
+.pmgv2-chain-link + .pmgv2-chain-link { margin-top: -8px; transform: rotate(90deg); }
+/* Master Link ON: chain glows + pulses to signal Soul ↔ Body bridge is live. */
+html[data-pmgv2-master-link="on"] .pmgv2-chain-link {
+  border-color: rgba(95,230,176,0.85);
   box-shadow: 0 0 10px rgba(62,224,160,0.4), inset 0 0 4px rgba(62,224,160,0.3);
   animation: pmgv2-pulse 2.4s ease-in-out infinite;
 }
-.pmgv2-chain-link + .pmgv2-chain-link { margin-top: -8px; transform: rotate(90deg); }
+html[data-pmgv2-master-link="on"] .pmgv2-chain-spine {
+  background: linear-gradient(180deg,
+    rgba(62,224,160,0.0),
+    rgba(95,230,176,0.75) 12%,
+    rgba(95,230,176,0.75) 88%,
+    rgba(62,224,160,0.0));
+}
 @keyframes pmgv2-pulse {
   0%, 100% { box-shadow: 0 0 10px rgba(62,224,160,0.4), inset 0 0 4px rgba(62,224,160,0.3); }
   50% { box-shadow: 0 0 20px rgba(95,230,176,0.8), inset 0 0 8px rgba(95,230,176,0.6); }
@@ -256,8 +269,36 @@ html.pmg-chassis-v2 body {
 }
 .pmgv2-switch[aria-pressed="true"] { background: rgba(62,224,160,0.5); }
 .pmgv2-switch[aria-pressed="true"]::after { left: 18px; background: #5fe6b0; box-shadow: 0 0 10px rgba(95,230,176,0.7); }
+.pmgv2-switch:focus-visible { outline: 2px solid rgba(95,230,176,0.6); outline-offset: 2px; }
+/* Master Link card lights up its border when active */
+.pmgv2-ml-card { transition: border-color .25s ease, background .25s ease; }
+.pmgv2-ml-card[data-state="active"] {
+  border-color: rgba(95,230,176,0.7);
+  background: linear-gradient(135deg, rgba(62,224,160,0.18), rgba(95,230,176,0.06));
+}
 
-/* === Slot placeholders (Phase 1) ====================================== */
+/* Master Actionable Plan card */
+.pmgv2-plan-card {
+  border: 1px dashed rgba(232,245,240,0.14);
+  background: rgba(10,36,32,0.5);
+  border-radius: 10px;
+  padding: 12px 13px;
+  transition: border-color .25s ease, background .25s ease;
+}
+.pmgv2-plan-card[data-state="active"] {
+  border: 1px solid rgba(95,230,176,0.55);
+  background: linear-gradient(135deg, rgba(62,224,160,0.14), rgba(95,230,176,0.04));
+}
+.pmgv2-plan-h {
+  font-size: 12px; font-weight: 600; color: #5fe6b0;
+  margin-bottom: 6px; letter-spacing: 0.02em;
+}
+.pmgv2-plan-body {
+  font-size: 11.5px; line-height: 1.55; color: rgba(232,245,240,0.65);
+}
+.pmgv2-plan-body strong { color: #5fe6b0; font-weight: 600; }
+
+/* === Slot placeholders (fallback only — relocation replaces these) ===== */
 .pmgv2-slot-empty {
   border: 1px dashed rgba(232,245,240,0.12);
   background: rgba(232,245,240,0.02);
