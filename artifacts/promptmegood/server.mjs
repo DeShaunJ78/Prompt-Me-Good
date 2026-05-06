@@ -104,6 +104,13 @@ const server = createServer(async (req, res) => {
   }
   if (urlPath.endsWith("/")) urlPath += "index.html";
 
+  // Route split: /app and /app/ both serve the workstation (app.html).
+  // Anything deeper under /app/* is a real asset request and falls through
+  // to the normal static handler.
+  if (urlPath === "/app" || urlPath === "/app/index.html") {
+    urlPath = "/app.html";
+  }
+
   const fsPath = normalize(join(ROOT, urlPath));
   if (!fsPath.startsWith(ROOT)) {
     res.writeHead(403).end();

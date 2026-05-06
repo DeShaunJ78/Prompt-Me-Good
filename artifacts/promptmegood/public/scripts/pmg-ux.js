@@ -5387,7 +5387,16 @@
       pills: [
         '85mm Portrait', '35mm Wide', '50mm Standard', 'Macro',
         'Telephoto', 'Fisheye', 'DSLR', 'Mirrorless',
-        'Film Grain', 'Drone Aerial', 'GoPro Action', 'iPhone Snap'
+        'Film Grain', 'Drone Aerial', 'GoPro Action', 'iPhone Snap',
+        /* Pro knobs (audit pass): explicit aperture / shutter / ISO /
+           extended focal lengths / film stocks. Free pills — they live
+           in the same Camera & Lens group so existing UI / Surprise Me
+           keeps working without a new collapsible section. */
+        'f/1.4 Bokeh', 'f/2.8 Soft', 'f/8 Sharp', 'f/16 Deep DOF',
+        '1/60 Motion Blur', '1/250 Sharp', '1/1000 Frozen Action',
+        'ISO 100 Clean', 'ISO 400 Daylight', 'ISO 1600 Low-Light',
+        '14mm Ultra-Wide', '24mm Wide', '200mm Telephoto',
+        'Kodak Portra 400', 'CineStill 800T', 'Tri-X B&W'
       ]
     },
     {
@@ -5470,7 +5479,12 @@
         { label: 'Portrait Lens',     values: ['85mm Portrait', 'DSLR'] },
         { label: 'Wide Landscape',    values: ['35mm Wide', 'Drone Aerial'] },
         { label: 'Macro Detail',      values: ['Macro', '50mm Standard'] },
-        { label: 'Telephoto Action',  values: ['Telephoto', 'GoPro Action'] }
+        { label: 'Telephoto Action',  values: ['Telephoto', 'GoPro Action'] },
+        /* Pro one-tap presets that combine the Pro knob pills above. */
+        { label: 'Pro Bokeh Portrait',  values: ['85mm Portrait', 'f/1.4 Bokeh', 'ISO 100 Clean'] },
+        { label: 'Pro Action Freeze',   values: ['200mm Telephoto', '1/1000 Frozen Action', 'ISO 400 Daylight'] },
+        { label: 'Pro Film Look',       values: ['35mm Wide', 'Kodak Portra 400', 'Film Grain'] },
+        { label: 'Pro Night Mood',      values: ['50mm Standard', 'CineStill 800T', 'ISO 1600 Low-Light'] }
       ]
     },
     palette: {

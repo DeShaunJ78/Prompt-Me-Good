@@ -29,6 +29,26 @@ if (!basePath) {
 export default defineConfig({
   base: basePath,
   plugins: [
+    // Dev-only middleware: rewrite /app and /app/ → /app.html so the dev
+    // experience matches production (server.mjs does the same rewrite).
+    {
+      name: "pmg-app-route-rewrite",
+      configureServer(server) {
+        server.middlewares.use((req, _res, next) => {
+          const u = req.url;
+          if (!u) return next();
+          if (u === "/app" || u === "/app/" || u === "/app/index.html") {
+            req.url = "/app.html";
+          } else if (u.startsWith("/app?")) {
+            req.url = "/app.html" + u.slice("/app".length);
+          } else if (u.startsWith("/app/?") || u.startsWith("/app/index.html?")) {
+            const qIdx = u.indexOf("?");
+            req.url = "/app.html" + u.slice(qIdx);
+          }
+          next();
+        });
+      },
+    },
     react(),
     tailwindcss(),
     runtimeErrorOverlay(),
@@ -59,7 +79,10 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
+        // `main` (index.html) is the marketing landing page. The workstation
+        // lives at `app.html` and is served at `/app` by server.mjs.
         main: path.resolve(import.meta.dirname, "index.html"),
+        app: path.resolve(import.meta.dirname, "app.html"),
         guide: path.resolve(import.meta.dirname, "guide.html"),
         pricing: path.resolve(import.meta.dirname, "pricing.html"),
         review: path.resolve(import.meta.dirname, "review.html"),

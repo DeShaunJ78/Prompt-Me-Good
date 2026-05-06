@@ -25,6 +25,8 @@ PromptMeGood is an AI prompt builder designed to enhance AI interactions and use
 ## Where things live
 
 *   `artifacts/promptmegood/`: Main static AI prompt builder (frontend).
+*   `artifacts/promptmegood/index.html`: Marketing **landing page** (lightweight, ~10kB). Auto-redirects returning users to `/app` based on localStorage signals (`pmg_visited`, `pmg_prompt_count`, `promptmegood:templates:v1`, `pmg.workstationTourSeen`, `pmg.quickWinSeen`); add `?stay=1` to view it on purpose.
+*   `artifacts/promptmegood/app.html`: The 12,700-line **workstation** (formerly `index.html`). Served at `/app` and `/app/` by `server.mjs` (rewrite to `/app.html`). Includes a `#pmg-splash` loader (dark teal bg, mint spinner, auto-fade on `window.load + 120ms`, 4s safety timeout, prefers-reduced-motion aware) painted before chassis JS runs so users never see a blank-workstation flash. **Dev caveat:** Vite dev server doesn't rewrite `/app` → `app.html`; in dev navigate to `/app.html` directly. Production (`server.mjs`) handles both.
 *   `packages/api/`: Backend API services.
 *   `packages/db/`: Database schema and migrations.
 *   `packages/shared/`: Shared utilities and types.
@@ -72,6 +74,7 @@ I prefer concise and direct communication. When making changes, prioritize itera
 *   **Saved-To-Vault indicator:** The `#pmg-vault-saved-indicator` pill is only shown by listening for the `pmg:vault-saved` DOM event. Any new code path that persists a prompt to the vault MUST `document.dispatchEvent(new Event('pmg:vault-saved'))` after a successful save — otherwise the user gets no confirmation.
 *   **Waitlist anchors:** `pricing.html` exposes three IDs at the single waitlist form (`#early-access`, `#founding-member-waitlist`, `#pro-early-access`). Tier CTAs link to the tier-specific anchor; the form itself is unified.
 *   **Adding new top-level HTML pages:** Register the file in `artifacts/promptmegood/vite.config.ts` `rollupOptions.input` or it won't be copied to `dist/public` during build.
+*   **Route split (`/` vs `/app`):** `/` serves the marketing landing (`index.html`); `/app` serves the workstation (`app.html`). The landing's inline script auto-redirects returning users to `/app` based on localStorage. If you add a new "first-time user" signal, register it in that detection list, and use `?stay=1` to bypass the redirect when testing the landing on a returning-user browser. **Never rename `app.html` back to `index.html`** — `server.mjs` and `vite.config.ts` both reference both filenames.
 
 ## Pointers
 
