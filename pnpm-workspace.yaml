@@ -157,3 +157,20 @@ overrides:
   # drizzle-kit uses esbuild internally on an older version that's vulnerable, this overrides it
   "@esbuild-kit/esm-loader": "npm:tsx@^4.21.0"
   esbuild: "0.27.3"
+  # ============================================================================
+  # SECURITY: Vulnerability fixes via version overrides
+  # ============================================================================
+  # picomatch ReDoS (GHSA-c2c7-rcm5-vvqj) + Method Injection (GHSA-3v7f-55p6-f55p)
+  # micromatch (fast-glob) needs 2.x; vite needs 4.x — pin each parent separately
+  "micromatch>picomatch": "^2.3.2"
+  "vite>picomatch": "^4.0.4"
+  # path-to-regexp DoS (GHSA-j3q9-mxjg-w52f, GHSA-27v5-c462-wpq7)
+  "path-to-regexp": "^8.4.0"
+  # lodash Code Injection + Prototype Pollution (GHSA-r5fr-rjxr-66jc, GHSA-f23m-r3pf-42rh)
+  "lodash": "^4.18.0"
+  # yaml Stack Overflow (GHSA-48c2-rrv3-qjmp)
+  "yaml": "^2.8.3"
+  # postcss XSS (GHSA-qx2v-qp2m-jg93)
+  "postcss": "^8.5.10"
+  # brace-expansion ReDoS (GHSA-f886-m6hf-6m8v)
+  "minimatch>brace-expansion": "^2.0.3"
