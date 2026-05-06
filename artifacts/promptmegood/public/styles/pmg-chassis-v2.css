@@ -365,6 +365,23 @@ html[data-pmgv2-master-link="on"] .pmgv2-chain-spine {
   html.pmg-chassis-v2 .pmgv2-statusbar { padding-bottom: 56px; }
 }
 
+/* === Footer links in status bar ======================================== */
+html.pmg-chassis-v2 .pmgv2-foot-links {
+  display: inline-flex; flex-wrap: wrap; gap: 12px; margin-left: 12px;
+}
+html.pmg-chassis-v2 .pmgv2-foot-links a {
+  font: 500 11px/1 Inter, system-ui, sans-serif;
+  color: rgba(232,245,240,0.55);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: color .15s ease;
+}
+html.pmg-chassis-v2 .pmgv2-foot-links a:hover { color: #5fe6b0; }
+@media (max-width: 700px) {
+  html.pmg-chassis-v2 .pmgv2-foot-links { gap: 8px; margin-left: 0; }
+  html.pmg-chassis-v2 .pmgv2-foot-links a { font-size: 10px; }
+}
+
 /* === Hero band (top of main column) ==================================== */
 html.pmg-chassis-v2 .pmgv2-hero {
   padding: 4px 0 14px 0;

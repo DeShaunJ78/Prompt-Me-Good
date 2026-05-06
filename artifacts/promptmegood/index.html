@@ -202,7 +202,10 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=4" />
   <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48.png?v=4" />
   <link rel="icon" type="image/png" href="/assets/pmg-logo.png?v=4" />
+  <link rel="shortcut icon" href="/favicon.ico" />
   <link rel="apple-touch-icon" href="/assets/pmg-logo.png?v=4" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#0a2420" />
   <script type="text/javascript">
     (function(c,l,a,r,i,t,y){
         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
@@ -4682,10 +4685,10 @@
             <h2 id="result-title" data-tour-target="fixed-prompt-output">Your Fixed Prompt</h2>
             <p class="demo-next-step" id="demo-next-step" role="status" aria-live="polite" hidden>This is a sample prompt. Copy it, refine it, or go back and enter your own goal.</p>
           </div>
-          <div class="result-top-actions pmg-post-gen" id="result-top-actions">
-            <button type="button" class="btn btn-primary result-top-btn" id="result-top-copy">Copy Prompt</button>
-            <button type="button" class="btn btn-primary result-top-btn" id="result-top-run">▶ Run With AI</button>
-            <button type="button" class="btn btn-secondary result-top-btn" id="result-top-refine">Refine It</button>
+          <div class="result-top-actions pmg-post-gen" id="result-top-actions" data-pmg-empty="1">
+            <button type="button" class="btn btn-primary result-top-btn" id="result-top-copy" disabled aria-disabled="true" title="Generate a prompt first to enable Copy.">Copy Prompt</button>
+            <button type="button" class="btn btn-primary result-top-btn" id="result-top-run" disabled aria-disabled="true" title="Generate a prompt first to run it with AI.">▶ Run With AI</button>
+            <button type="button" class="btn btn-secondary result-top-btn" id="result-top-refine" disabled aria-disabled="true" title="Generate a prompt first to refine it.">Refine It</button>
           </div>
           <div class="result-wrap">
             <div class="pill-row" aria-hidden="true">
@@ -4771,12 +4774,12 @@
               </div>
               <div class="quality-feedback" id="quality-feedback" hidden role="status" aria-live="polite"></div>
             </div>
-            <div class="actions-row pmg-result-actions-row">
-              <button class="btn btn-primary" type="button" id="copy-btn">Copy Prompt</button>
-              <button class="btn btn-secondary" type="button" id="download-prompt-btn" title="Download this prompt as a .txt file you can keep or share.">⬇ Download .txt</button>
+            <div class="actions-row pmg-result-actions-row" data-pmg-empty="1">
+              <button class="btn btn-primary" type="button" id="copy-btn" disabled aria-disabled="true" title="Generate a prompt first to enable Copy.">Copy Prompt</button>
+              <button class="btn btn-secondary" type="button" id="download-prompt-btn" disabled aria-disabled="true" title="Generate a prompt first to download it as .txt.">⬇ Download .txt</button>
               <button class="btn btn-secondary" type="button" id="share-btn" hidden>Copy Shareable Link</button>
-              <button class="btn btn-secondary" type="button" id="print-btn" title="Print Or Save As PDF" aria-label="Print or save fixed prompt as PDF">Print / Save PDF</button>
-              <button class="btn btn-secondary btn-clear btn-destructive" type="button" id="clear-prompt-btn" aria-label="Clear generated prompt">Clear Prompt</button>
+              <button class="btn btn-secondary" type="button" id="print-btn" disabled aria-disabled="true" title="Generate a prompt first to print or save as PDF.">Print / Save PDF</button>
+              <button class="btn btn-secondary btn-clear btn-destructive" type="button" id="clear-prompt-btn" disabled aria-disabled="true" title="Nothing to clear yet — generate a prompt first." aria-label="Clear generated prompt">Clear Prompt</button>
               <span class="pmg-vault-saved-indicator" id="pmg-vault-saved-indicator" role="status" aria-live="polite" hidden>✓ Saved To Vault</span>
             </div>
 
@@ -4852,7 +4855,7 @@
               <p class="post-prompt-footer-shortcuts">
                 Shortcuts: press <kbd>G</kbd> to fix your prompt, <kbd>C</kbd> to copy, <kbd>/</kbd> to search history.
               </p>
-              <p class="post-prompt-footer-pricing">Free tier with daily limits, no signup required. <a href="./pricing.html">Founding Member ($79 one-time, first 500, price locked)</a> unlocks lifetime access to core features. <strong>Checkout Opens Soon. Join The Waitlist To Be Notified.</strong> Fair use limits apply.</p>
+              <p class="post-prompt-footer-pricing">Free tier with daily limits, no signup required. <a href="./pricing.html">Founding Member ($79 one-time, first 500, price locked)</a> unlocks lifetime access to core features. Fair use limits apply.</p>
             </div>
           </div>
         </section>
@@ -5121,7 +5124,7 @@
         <p class="site-footer-tagline" style="font-weight:600;color:var(--color-text);margin:0 0 8px 0;">AI That Finally Does What You Ask. PromptMeGood Fixes That In Seconds.</p>
         <div class="site-footer-brand">&copy; 2026 PromptMeGood</div>
         <p class="site-footer-tagline">Built for people who want real results from AI &mdash; not fluff.</p>
-        <p class="site-footer-early-access">Free Tier With Daily Limits, No Signup Required. <a class="site-footer-link" href="./pricing.html">Founding Member ($79 One-Time, First 500, Price Locked)</a> Unlocks Lifetime Access To Core Features. <strong>Checkout Opens Soon. Join The Waitlist To Be Notified.</strong> Fair Use Limits Apply.</p>
+        <p class="site-footer-early-access">Free Tier With Daily Limits, No Signup Required. <a class="site-footer-link" href="./pricing.html">Founding Member ($79 One-Time, First 500, Price Locked)</a> Unlocks Lifetime Access To Core Features. Fair Use Limits Apply.</p>
         <p class="site-footer-contact"><a class="site-footer-link" href="mailto:support@promptmegood.com">support@promptmegood.com</a></p>
         <div class="site-footer-social" aria-label="Follow PromptMeGood on social media">
           <span class="site-footer-tagline site-footer-social-label" style="margin:0;">Follow PromptMeGood</span>
@@ -5248,7 +5251,7 @@
           <button type="button" class="legal-modal-close" data-legal-close aria-label="Close">&times;</button>
         </div>
         <div class="legal-modal-body legal-body">
-          <p><strong>The Service.</strong> PromptMeGood is an AI prompt workstation: a structured prompt builder, photography prompt suite, and DALL·E 3 image generator. There is a free tier with daily limits (currently <span data-pmg-cap="free:run">3</span> Run With AI, <span data-pmg-cap="free:img">1</span> image generation, and <span data-pmg-cap="free:analyze">1</span> file analysis per day, plus a 7-day boosted trial for new visitors at <span data-pmg-cap="trial:run">10</span>/<span data-pmg-cap="trial:img">5</span>/<span data-pmg-cap="trial:analyze">3</span> per day), plus a one-time Founding Member ($79, first 500, price locked) plan that unlocks lifetime access to core features (while PromptMeGood operates) with higher daily caps: <span data-pmg-cap="founding:run">30</span> Run With AI, <span data-pmg-cap="founding:img">15</span> image generations, and <span data-pmg-cap="founding:analyze">10</span> file analyses per day. <strong>Checkout Opens Soon. Join The Waitlist To Be Notified.</strong> The Founding Member offer ends July 1 or at 500 founding members, whichever comes first. A monthly Pro plan ($9/month) and yearly Pro plan ($79/year) launch soon at <span data-pmg-cap="pro:run">60</span>/<span data-pmg-cap="pro:img">30</span>/<span data-pmg-cap="pro:analyze">20</span> per day. Fair use limits apply to all paid tiers.</p>
+          <p><strong>The Service.</strong> PromptMeGood is an AI prompt workstation: a structured prompt builder, photography prompt suite, and DALL·E 3 image generator. There is a free tier with daily limits (currently <span data-pmg-cap="free:run">3</span> Run With AI, <span data-pmg-cap="free:img">1</span> image generation, and <span data-pmg-cap="free:analyze">1</span> file analysis per day, plus a 7-day boosted trial for new visitors at <span data-pmg-cap="trial:run">10</span>/<span data-pmg-cap="trial:img">5</span>/<span data-pmg-cap="trial:analyze">3</span> per day), plus a one-time Founding Member ($79, first 500, price locked) plan that unlocks lifetime access to core features (while PromptMeGood operates) with higher daily caps: <span data-pmg-cap="founding:run">30</span> Run With AI, <span data-pmg-cap="founding:img">15</span> image generations, and <span data-pmg-cap="founding:analyze">10</span> file analyses per day. The Founding Member offer ends July 1 or at 500 founding members, whichever comes first. A monthly Pro plan ($9/month) and yearly Pro plan ($79/year) launch soon at <span data-pmg-cap="pro:run">60</span>/<span data-pmg-cap="pro:img">30</span>/<span data-pmg-cap="pro:analyze">20</span> per day. Fair use limits apply to all paid tiers.</p>
           <p><strong>As-Is, No Warranty.</strong> PromptMeGood is provided as-is, without warranty of any kind. We do not guarantee uninterrupted availability, error-free output, or that it will meet your specific needs. Generated prompts, responses, and images are suggestions only — you are responsible for how you use them and for any decisions you make based on AI output.</p>
           <p><strong>Acceptable Use.</strong> Don't use the service for anything illegal, harmful, harassing, defamatory, or that violates the rights of others — including child sexual abuse material, terrorism, deepfakes of real people without consent, or anything that violates the policies of our underlying AI providers (such as the <a class="site-footer-link" href="https://openai.com/policies/usage-policies" target="_blank" rel="noopener noreferrer">OpenAI Usage Policies</a>).</p>
           <p><strong>AI Content &amp; Generated Images.</strong> AI features (Fix My Prompt, Run With AI, Help Me Start, Need Ideas, Photography Suite pipeline, file analysis, image generation) route your input to third-party AI providers. Outputs are generated automatically and may be inaccurate, biased, or inappropriate. You own the prompts you write and the outputs you generate, subject to OpenAI's content policies for DALL·E 3 generations. Review all output before relying on it or sharing it.</p>
@@ -12540,16 +12543,30 @@ Context:
     }
 
     function watchResultBox(){
+      /* Empty-state gating for action buttons. The "✓ Saved To Vault" pill
+         is intentionally NOT toggled here — it only shows on a real save
+         event (see pmg:vault-saved listener below) so it never gives a
+         false positive just because text is in the result box. */
       var rb = $('resultBox');
       if (!rb) return;
-      var lastShown = false;
+      var EMPTY_BTN_IDS = [
+        'result-top-copy','result-top-run','result-top-refine',
+        'copy-btn','download-prompt-btn','print-btn','clear-prompt-btn',
+        'check-quality-btn'
+      ];
+      var setEnabled = function(on){
+        for (var i=0; i<EMPTY_BTN_IDS.length; i++){
+          var b = $(EMPTY_BTN_IDS[i]);
+          if (!b) continue;
+          if (on){ b.disabled = false; b.removeAttribute('aria-disabled'); }
+          else   { b.disabled = true;  b.setAttribute('aria-disabled','true'); }
+        }
+      };
       var check = function(){
         var has = !!getPromptText();
-        if (has && !lastShown){
-          lastShown = true;
-          showVaultSaved();
-        } else if (!has && lastShown){
-          lastShown = false;
+        setEnabled(has);
+        /* If text was cleared, also drop the saved indicator */
+        if (!has){
           var ind = $('pmg-vault-saved-indicator');
           if (ind) ind.hidden = true;
         }
@@ -12559,11 +12576,12 @@ Context:
         mo.observe(rb, { childList: true, subtree: true, characterData: true });
       } catch(_) {}
       check();
-      /* Re-check after generate handler runs */
       var gb = $('generateBtn');
       if (gb) gb.addEventListener('click', function(){ setTimeout(check, 1500); });
       var cb = $('clear-prompt-btn');
       if (cb) cb.addEventListener('click', function(){ setTimeout(check, 100); });
+      /* Real save signal: any code that persists to vault dispatches this */
+      document.addEventListener('pmg:vault-saved', function(){ showVaultSaved(); });
     }
 
     function boot(){

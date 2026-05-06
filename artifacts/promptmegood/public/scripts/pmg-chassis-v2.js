@@ -42,7 +42,7 @@
         '<div class="pmgv2-tb-l">',
           '<div class="pmgv2-brand"><span class="pmgv2-brand-dot"></span><span>PromptMeGood</span></div>',
           '<div class="pmgv2-vbar"></div>',
-          '<div class="pmgv2-crumb">/<span>app</span> · workstation · chassis v2 preview</div>',
+          '<div class="pmgv2-crumb">PromptMeGood Workstation</div>',
         '</div>',
         '<div class="pmgv2-tb-r">',
           '<span class="pmgv2-kbd">⌘K Search</span>',
@@ -121,6 +121,13 @@
             '<button type="button" class="pmgv2-sw" data-accent="slate"  title="Slate"       aria-label="Slate"><span class="pmgv2-sw-d" style="background:#cbd5e1"></span></button>',
           '</span>',
           '<span class="pmgv2-statusbar-hint">Local-first · auto-saved</span>',
+          '<nav class="pmgv2-foot-links" aria-label="Site links">',
+            '<a href="./pricing.html">Pricing</a>',
+            '<a href="./guide.html">Guide</a>',
+            '<a href="./privacy.html">Privacy</a>',
+            '<a href="./terms.html">Terms</a>',
+            '<a href="mailto:support@promptmegood.com">Contact</a>',
+          '</nav>',
         '</div>',
       '</div>'
     ].join('');

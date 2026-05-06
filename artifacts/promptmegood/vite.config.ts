@@ -65,6 +65,8 @@ export default defineConfig({
         review: path.resolve(import.meta.dirname, "review.html"),
         privacy: path.resolve(import.meta.dirname, "privacy.html"),
         terms: path.resolve(import.meta.dirname, "terms.html"),
+        help: path.resolve(import.meta.dirname, "help.html"),
+        notfound: path.resolve(import.meta.dirname, "404.html"),
       },
     },
   },

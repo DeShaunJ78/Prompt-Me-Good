@@ -114,12 +114,23 @@ const server = createServer(async (req, res) => {
 
   if (!extname(urlPath)) {
     if (await tryServe(req, res, fsPath + ".html", urlPath + ".html")) return;
-    if (await tryServe(req, res, join(ROOT, "index.html"), "/index.html"))
-      return;
   }
 
-  res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
-  res.end("Not found");
+  // Branded 404 — serve dist/public/404.html with the 404 status code so
+  // SEO crawlers see the right signal but humans see a useful page.
+  try {
+    const body = await readFile(join(ROOT, "404.html"));
+    res.writeHead(404, {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-cache, must-revalidate",
+      "X-Content-Type-Options": "nosniff",
+    });
+    res.end(body);
+    return;
+  } catch {
+    res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end("Not found");
+  }
 });
 
 server.on("error", (err) => {

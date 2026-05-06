@@ -1,0 +1,296 @@
+You are working inside the actual PromptMeGood Replit project.
+
+Goal:
+Fix the highest-priority issues found in the live website audit without rebuilding the whole site or breaking existing functionality.
+
+IMPORTANT:
+Do not do a full rebuild.
+Do not refactor unrelated systems.
+Do not change database/storage behavior.
+Do not force login.
+Do not remove current working features.
+Do not change the core prompt generation logic.
+Do not change Run With AI logic unless needed for a broken link/state.
+Do not change Photography Suite logic unless needed for disabled-state helper text.
+Do not change Expert Mode logic.
+Do not remove local-first Vault/history.
+Do not remove theme color controls.
+
+This is a targeted cleanup pass based on the audit.
+
+Primary Objective:
+Make the site cleaner, more trustworthy, easier to navigate, and less broken before any bigger redesign or traffic push.
+
+Fix Priority Order:
+
+1. Fix broken /help.html route.
+2. Add a branded 404 page.
+3. Make waitlist CTAs clickable and tier-consistent.
+4. Disable or hide empty-state action buttons until content exists.
+5. Remove false "Saved To Vault" confirmation until an actual save occurs.
+6. Add app footer links to Privacy, Terms, Pricing, Guide, and Contact.
+7. Remove internal developer language from visible UI.
+8. Add helper text/tooltips for disabled Photography Suite buttons.
+9. Fix missing favicon and site manifest if assets are available or easy to generate.
+10. Reduce obvious pricing/waitlist copy confusion without changing pricing strategy.
+
+Issue 1 — Fix /help.html
+
+Problem:
+https://www.promptmegood.com/help.html returns a raw "Not found" page.
+
+Required fix:
+- Either redirect /help.html to /guide.html
+- Or create a branded Help page that links to the guide.
+
+Preferred:
+Redirect /help.html → /guide.html.
+
+Also:
+- Add a branded 404 page for any unknown route.
+- 404 page should include:
+  - PromptMeGood branding.
+  - Short message: "We couldn't find that page."
+  - Buttons/links to:
+    - Home
+    - App / Workstation
+    - Guide
+    - Pricing
+
+Issue 2 — Waitlist CTA Links
+
+Problem:
+Some waitlist text looks clickable but is not.
+Founding Member CTA may lead to a section labeled PRO Early Access, causing confusion.
+
+Required fix:
+- Make any visible "Join The Waitlist" or "Join Waitlist" text/button clickable.
+- If inside the app, link to /pricing.html#early-access or the correct waitlist anchor.
+- If separate anchors exist or can safely be added, use:
+  - #founding-member-waitlist
+  - #pro-early-access
+
+If only one waitlist form exists:
+- Rename the form heading to something tier-neutral:
+  "Join The PromptMeGood Waitlist"
+- Add helper text:
+  "Get notified when Founding Member checkout and Pro access open."
+
+Do not build checkout.
+Do not change payment logic.
+Do not change pricing amounts unless explicitly approved.
+
+Issue 3 — Empty-State Buttons
+
+Problem:
+Buttons such as Copy Prompt, Refine It, Check Quality, Start Over, or similar output actions appear active before a prompt exists.
+
+Required fix:
+- Disable or hide output actions until there is actual generated content.
+- Disabled buttons should:
+  - Use disabled attribute where possible.
+  - Have reduced opacity.
+  - Not trigger empty copy or empty action.
+  - Include accessible disabled state.
+
+Examples:
+- Copy Prompt disabled until fixed prompt exists.
+- Refine It disabled until fixed prompt exists.
+- Check Quality disabled until prompt exists.
+- Start Over can remain available only if there is input or output to clear.
+
+Issue 4 — False "Saved To Vault" Status
+
+Problem:
+"✓ Saved To Vault" appears even when nothing has been saved, while Vault says no saved prompts.
+
+Required fix:
+- Only show "Saved To Vault" after a confirmed save action.
+- Default state should be blank or neutral.
+- If something has not been saved, do not imply it is saved.
+
+Acceptable neutral copy:
+- "Not saved yet"
+- Or no message at all
+
+Do not change Vault storage logic unless necessary to fix the display state.
+
+Issue 5 — App Footer Links
+
+Problem:
+The app lacks easy links to Privacy, Terms, Pricing, Guide, and Contact.
+
+Required fix:
+Add footer or utility links inside the app/workstation UI:
+- Privacy → /privacy.html
+- Terms → /terms.html
+- Pricing → /pricing.html
+- Guide → /guide.html
+- Contact → mailto:support@promptmegood.com or a future /contact route if already present
+
+Keep this small and unobtrusive.
+Do not clutter the main tool.
+
+Issue 6 — Remove Internal Developer Language
+
+Problem:
+User-visible text like "chassis v2 preview" appears in the UI.
+
+Required fix:
+- Remove internal developer labels.
+- Replace with user-facing language only if needed.
+
+Acceptable replacements:
+- "Workstation Beta"
+- "PromptMeGood Workstation"
+- Or remove entirely.
+
+Do not expose implementation names to users.
+
+Issue 7 — Photography Suite Disabled-State Help
+
+Problem:
+Photography Suite buttons may be disabled with no explanation.
+
+Required fix:
+For disabled buttons like Copy Prompt, Generate Image Here, Save This Combo, or similar:
+- Add short helper text or tooltip explaining what is needed.
+
+Examples:
+- "Choose a style or camera setting to enable."
+- "Generate an image prompt first."
+- "Create a combo before saving."
+
+Do not change Photography Suite generation logic.
+Only improve explanation and disabled states.
+
+Issue 8 — Favicon And Site Manifest
+
+Problem:
+/favicon.ico and /site.webmanifest return 404.
+
+Required fix:
+- Add a favicon if asset exists.
+- If no asset exists, create a simple favicon based on the PromptMeGood mark or initials.
+- Add site.webmanifest if straightforward.
+
+Manifest should include:
+- name: PromptMeGood
+- short_name: PromptMeGood
+- theme_color: current brand teal/dark color
+- background_color: dark brand background
+- display: standalone
+- icons if available
+
+Do not over-engineer.
+This is a polish fix.
+
+Issue 9 — Pricing/Waitlist Copy Cleanup
+
+Problem:
+Pricing page repeats "Checkout Opens Soon" too many times and creates confusion between Founding Member and Pro.
+
+Required fix:
+- Reduce repeated "Checkout Opens Soon" language.
+- Keep one clear status message near the top or near the waitlist form.
+- Make Founding Member and Pro tier intent clearer.
+
+Suggested copy:
+
+For Founding Member:
+"Founding Member checkout is opening soon. Join the waitlist to be notified first."
+
+For Pro:
+"Pro plans are coming soon after the Founding Member launch."
+
+If there is one form:
+"Join the PromptMeGood Waitlist"
+"We'll notify you when Founding Member checkout and Pro access open."
+
+Do not change prices.
+Do not create checkout.
+Do not make claims that checkout is live.
+
+Issue 10 — Basic SEO/Polish Fixes
+
+If safe and low risk:
+- Fix duplicate H1s where practical.
+- Ensure the app route /app has app-appropriate title/meta or is handled intentionally.
+- Add favicon references in head.
+- Ensure Privacy/Terms/Guide/Pricing are linked.
+
+Do not redesign the whole landing page in this pass.
+The full / landing page vs /app split is a larger project and should be handled separately.
+
+Mobile/Layout Note:
+Do not attempt full responsive redesign in this cleanup pass unless there are small obvious overflow fixes.
+
+However:
+- If there is horizontal scrolling from a simple width issue, fix it.
+- Avoid new fixed-width containers that worsen mobile.
+- Ensure any added footer links wrap cleanly.
+- Ensure disabled-state helper text does not create overflow.
+
+Manual Testing Checklist:
+
+After fixes, manually test:
+
+Routing:
+- /help.html redirects or displays branded help.
+- Unknown route shows branded 404.
+- /pricing.html still works.
+- /guide.html still works.
+- /privacy.html still works.
+- /terms.html still works.
+
+Waitlist:
+- In-app waitlist text/button is clickable.
+- Pricing waitlist CTA goes to the correct section.
+- Founding Member and Pro language is not mismatched.
+
+Prompt App:
+- Empty output action buttons are disabled or hidden.
+- Copy Prompt cannot copy empty content.
+- Refine It cannot run on empty content.
+- Check Quality cannot run on empty content.
+- Start Over only works when there is something to clear.
+- Saved To Vault appears only after saving.
+- Vault still works as before.
+- Local-first behavior is unchanged.
+
+Photography Suite:
+- Disabled buttons explain what is needed.
+- Existing generation behavior still works.
+- Existing image prompt behavior still works.
+
+Footer/Legal:
+- Privacy link works.
+- Terms link works.
+- Pricing link works.
+- Guide link works.
+- Contact link works.
+
+Brand/Polish:
+- No "chassis v2 preview" or internal dev language visible.
+- Favicon loads.
+- No new horizontal scrolling.
+- Mobile remains usable.
+
+Do-Not-Touch List:
+- Local-first Vault/history storage.
+- Database/storage schema.
+- Prompt generation API.
+- Run With AI API.
+- Photography Suite generation logic.
+- Expert Mode logic.
+- Theme color control system.
+- Pricing amounts.
+- Checkout/payment logic.
+
+Final Response Required:
+When finished, summarize:
+1. Files changed.
+2. Issues fixed.
+3. What was preserved.
+4. What was tested.
+5. Anything that still needs a separate redesign phase.

@@ -1,0 +1,16 @@
+{
+  "name": "PromptMeGood",
+  "short_name": "PromptMeGood",
+  "description": "AI prompt builder with smart suggestions, auto-optimization, and quality checks.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0a2420",
+  "background_color": "#0a2420",
+  "icons": [
+    { "src": "/assets/favicon-32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "/assets/favicon-48.png", "sizes": "48x48", "type": "image/png" },
+    { "src": "/assets/pmg-logo.png", "sizes": "any", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
