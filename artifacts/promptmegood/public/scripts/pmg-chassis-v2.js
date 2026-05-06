@@ -38,6 +38,8 @@
     a.href = '?chassis=v2';
     a.textContent = '✨ Try new chassis (preview)';
     a.title = 'Preview the new 3-column workstation chassis';
+    // Hide on mobile widths so the pill doesn't overlap mobile sticky CTAs
+    if (window.matchMedia && window.matchMedia('(max-width: 700px)').matches) return;
     a.style.cssText = [
       'position:fixed', 'bottom:14px', 'right:14px', 'z-index:2147483646',
       'padding:8px 14px', 'border-radius:999px',
