@@ -834,17 +834,40 @@ html.pmg-chassis-v2 .pmgv2-composer-wrap {
   html.pmg-chassis-v2 .pmgv2-tb-r .pmgv2-av {
     min-width: 44px;
   }
-  /* Mobile: pin composer just above the fixed bottom dock (56px tall).
-     Sticky-bottom: 56px keeps the Goal + Fix My Prompt above the dock,
-     not under it. */
+  /* Mobile: pin composer to viewport bottom ALWAYS (ChatGPT-style).
+     position:fixed (not sticky) guarantees the Goal + Fix My Prompt
+     band is visible regardless of column height, scroll position, or
+     generation state. sticky-bottom only engages when natural position
+     is below the viewport — on a short fresh-load column the composer
+     would float in the middle, and the user perceives it as "missing"
+     because they expect it pinned to the bottom of the screen.
+     Sits above the 56px fixed dock. Width spans full viewport because
+     the rail and tools columns are display:none on mobile. */
   html.pmg-chassis-v2 .pmgv2-composer-wrap {
-    bottom: 56px;
-    padding-bottom: 14px;
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 56px !important;
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-bottom: 12px;
+    z-index: 60 !important;
+  }
+  /* Live Feedback + Live Preview panel (#pmg-tf-feedback, injected by
+     pmg-text-feedback.js) keeps re-mounting itself inside #prompt-form
+     via two MutationObservers — so the chassis lift function can't keep
+     it out of the composer. On mobile that bloats the fixed composer
+     band to ~720px and pushes Goal off-screen. Hide it entirely on
+     mobile chassis: the composer must stay slim. Desktop chassis still
+     shows it (sticky-bottom composer doesn't suffer from height bloat
+     because the column has room). */
+  html.pmg-chassis-v2 #pmg-tf-feedback {
+    display: none !important;
   }
   /* Reserve room at the bottom of the main column so the last lifted
-     aux item isn't permanently hidden behind the pinned composer. */
+     aux item isn't permanently hidden behind the fixed composer. */
   html.pmg-chassis-v2 .pmgv2-main {
-    padding-bottom: 240px;
+    padding-bottom: 260px;
   }
 }
 
