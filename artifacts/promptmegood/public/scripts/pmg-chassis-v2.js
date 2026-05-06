@@ -60,6 +60,7 @@
           '<div class="pmgv2-slot-empty" data-pmgv2-target="templates">Loading templates…</div>',
         '</aside>',
         '<section class="pmgv2-main" data-slot="thread">',
+          '<div class="pmgv2-hero" data-pmgv2-hero-slot></div>',
           '<div class="pmgv2-mode-bar">',
             '<button class="pmgv2-tpl-picker" type="button">',
               '<span><span class="pmgv2-tp-lab">Template</span><span class="pmgv2-tp-name">Choose a starting template…</span></span>',
@@ -377,7 +378,22 @@
     { srcs: ['photo-suite-section', 'pmg-photo-suite'], target: 'suite'   }
   ];
 
+  // Move the real hero headline + subtext from the legacy <main> into
+  // the chassis hero slot. Same node = preserved SEO value, no duplicate
+  // text in the DOM.
+  function relocateHero() {
+    var slot = document.querySelector('[data-pmgv2-hero-slot]');
+    if (!slot || slot.getAttribute('data-pmgv2-hero-filled') === '1') return;
+    var heading = document.querySelector('.hero-heading');
+    var sub = document.querySelector('.hero-subtext-box');
+    if (!heading) return;
+    slot.appendChild(heading);
+    if (sub) slot.appendChild(sub);
+    slot.setAttribute('data-pmgv2-hero-filled', '1');
+  }
+
   function relocateLegacy() {
+    relocateHero();
     var moved = 0;
     var pending = 0;
     RELOCATIONS.forEach(function (r) {

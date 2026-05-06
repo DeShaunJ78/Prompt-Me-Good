@@ -365,6 +365,36 @@ html[data-pmgv2-master-link="on"] .pmgv2-chain-spine {
   html.pmg-chassis-v2 .pmgv2-statusbar { padding-bottom: 56px; }
 }
 
+/* === Hero band (top of main column) ==================================== */
+html.pmg-chassis-v2 .pmgv2-hero {
+  padding: 4px 0 14px 0;
+  border-bottom: 1px solid rgba(232,245,240,0.06);
+  margin-bottom: 14px;
+}
+html.pmg-chassis-v2 .pmgv2-hero:empty { display: none; }
+html.pmg-chassis-v2 .pmgv2-hero .hero-heading {
+  font: 700 clamp(22px, 3.4vw, 34px)/1.15 Inter, system-ui, sans-serif !important;
+  color: #e8f5f0 !important;
+  margin: 0 0 8px 0 !important;
+  letter-spacing: -0.01em !important;
+}
+html.pmg-chassis-v2 .pmgv2-hero .hero-heading .highlight,
+html.pmg-chassis-v2 .pmgv2-hero .hero-heading .hero-heading-highlight {
+  color: #5fe6b0 !important;
+  background: transparent !important;
+  font-weight: 700 !important;
+}
+html.pmg-chassis-v2 .pmgv2-hero .hero-subtext-box { margin: 0 !important; padding: 0 !important; background: transparent !important; border: 0 !important; }
+html.pmg-chassis-v2 .pmgv2-hero .hero-subtext {
+  font: 400 14px/1.55 Inter, system-ui, sans-serif !important;
+  color: rgba(232,245,240,0.7) !important;
+  margin: 0 !important;
+}
+html.pmg-chassis-v2 .pmgv2-hero .hero-subtext strong {
+  color: #5fe6b0 !important;
+  font-weight: 600 !important;
+}
+
 /* === Slot placeholders (fallback only — relocation replaces these) ===== */
 .pmgv2-slot-empty {
   border: 1px dashed rgba(232,245,240,0.12);
