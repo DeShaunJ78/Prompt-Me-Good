@@ -43,6 +43,10 @@
           '<div class="pmgv2-brand"><span class="pmgv2-brand-dot"></span><span>PromptMeGood</span></div>',
         '</div>',
         '<div class="pmgv2-tb-r">',
+          '<button class="pmgv2-help-start" type="button" title="Help Me Start" aria-label="Help Me Start (Answer 4 Quick Questions)">',
+            '<span class="pmgv2-help-start-ico" aria-hidden="true">💡</span>',
+            '<span class="pmgv2-help-start-lab">Help Me Start</span>',
+          '</button>',
           '<button class="pmgv2-ico" type="button" title="Help" aria-label="Help">?</button>',
           '<div class="pmgv2-av" aria-label="Account">U</div>',
         '</div>',
@@ -159,6 +163,39 @@
     if (help) help.addEventListener('click', function () {
       try { window.location.href = './guide.html'; } catch (e) {}
     });
+    // Help Me Start in top bar mirrors the in-form #pmg-help-me-start-btn
+    // so we can hide the bulky chip from the slim mobile composer without
+    // losing the onboarding affordance. We programmatically click the
+    // legacy button so all of its existing handlers (guided-mode-dialog
+    // open, analytics, etc.) fire untouched. Falls back to
+    // #guided-mode-btn (the in-page "Help Me Start" CTA at the top of
+    // the marketing column, present on first paint) so an early tap
+    // before pmg-ux.js has injected the chip still opens the dialog.
+    var hms = root.querySelector('.pmgv2-help-start');
+    if (hms) hms.addEventListener('click', function () {
+      var target = document.getElementById('pmg-help-me-start-btn')
+                || document.getElementById('guided-mode-btn');
+      if (target) {
+        try { target.click(); }
+        catch (e) {}
+      }
+    });
+
+    // Accessibility: the mobile composer hides .field-label-row (which
+    // contains the visible <label for="goal">Your Goal</label>) so the
+    // textarea would otherwise rely on placeholder text only — weak for
+    // screen readers and disappears on input. We patch the textarea with
+    // an explicit aria-label so AT still announces the field correctly
+    // regardless of the label element's visibility. Idempotent: only
+    // sets aria-label if not already present so legacy non-chassis users
+    // are unaffected.
+    try {
+      var goalEl = document.getElementById('goal');
+      if (goalEl && !goalEl.getAttribute('aria-label')) {
+        goalEl.setAttribute('aria-label', 'Your goal — describe what you want');
+      }
+    } catch (e) {}
+
     var newBtn = root.querySelector('.pmgv2-new-btn');
     if (newBtn) newBtn.addEventListener('click', function () {
       try {

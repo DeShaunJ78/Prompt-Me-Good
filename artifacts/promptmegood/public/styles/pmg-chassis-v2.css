@@ -1246,4 +1246,58 @@ html.pmg-chassis-v2 #pmg-result-confirm {
     padding-top: 6px !important;
     padding-bottom: 6px !important;
   }
+  /* cv2-19 / Option B: drop the in-composer "Your Goal · 🎙 ▼ · Clear"
+     label row entirely on mobile. The textarea's placeholder ("Describe
+     what you want…") is self-explanatory; voice/dropdown/clear already
+     live in the lifted aux above. Saves another ~50px. */
+  html.pmg-chassis-v2 .pmgv2-composer-wrap .field.field-primary > .field-label-row {
+    display: none !important;
+  }
+  /* cv2-19: hide the in-composer Help Me Start chip on mobile. The new
+     top-bar "💡 Help Me Start" button (.pmgv2-help-start) takes over and
+     programmatically clicks the hidden legacy button so all of its
+     onboarding handlers still fire.
+
+     Specificity gotcha: pmg-linear-flow.js injects
+     `body:not(.image-mode) #pmg-help-me-start-btn[id] { display:
+     inline-flex !important }` AFTER this stylesheet loads — equal
+     specificity (0,1,1,1) and same !important so source order wins
+     (theirs). We out-specificity it by chaining the ID twice
+     (`#pmg-help-me-start-btn#pmg-help-me-start-btn`, specificity
+     0,2,0,1) — a well-known harmless trick for cases like this where
+     you cannot control source order of a competing injected style. */
+  html.pmg-chassis-v2 #pmg-help-me-start-btn#pmg-help-me-start-btn {
+    display: none !important;
+  }
+}
+
+/* cv2-19: top-bar "💡 Help Me Start" pill. Visible at all widths because
+   the in-composer chip is hidden on mobile (and on desktop the pill is a
+   nice-to-have shortcut so users don't have to scroll down to reach it). */
+html.pmg-chassis-v2 .pmgv2-help-start {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(95, 230, 176, 0.12);
+  color: var(--color-primary, #3ee0a0);
+  border: 1px solid rgba(95, 230, 176, 0.35);
+  border-radius: 999px;
+  padding: 6px 12px 6px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  margin-right: 6px;
+}
+html.pmg-chassis-v2 .pmgv2-help-start:hover,
+html.pmg-chassis-v2 .pmgv2-help-start:focus-visible {
+  background: rgba(95, 230, 176, 0.2);
+  outline: none;
+}
+html.pmg-chassis-v2 .pmgv2-help-start-ico { font-size: 14px; line-height: 1; }
+@media (max-width: 480px) {
+  /* On the narrowest phones, drop the label so just the lightbulb shows
+     — saves space for the brand on the left at 360-390px viewports. */
+  html.pmg-chassis-v2 .pmgv2-help-start-lab { display: none; }
+  html.pmg-chassis-v2 .pmgv2-help-start { padding: 8px 10px; }
 }

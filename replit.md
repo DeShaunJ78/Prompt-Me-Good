@@ -24,32 +24,25 @@ PromptMeGood is an AI prompt builder designed to enhance AI interactions and use
 
 ## Where things live
 
-*   `artifacts/promptmegood/`: Main static AI prompt builder (frontend).
-*   `artifacts/promptmegood/index.html`: Marketing landing page.
-*   `artifacts/promptmegood/app.html`: The main workstation UI, served at `/app`.
-*   `artifacts/promptmegood/guide.html`: Concise 60-second Quick Guide (links to manual).
-*   `artifacts/promptmegood/manual.html`: Detailed step-by-step user manual (TOC + 13 sections).
-*   `artifacts/promptmegood/help.html`: Lightweight help splash that links to both guide and manual.
-*   `artifacts/promptmegood/contact.html`: Email-routing contact page (linked from every footer).
+*   `artifacts/promptmegood/`: Main static AI prompt builder (frontend), includes `index.html` (marketing landing), `app.html` (workstation UI), `guide.html`, `manual.html`, `help.html`, `contact.html`, and `404.html`.
 *   `packages/api/`: Backend API services.
 *   `packages/db/`: Database schema and migrations.
 *   `packages/shared/`: Shared utilities and types.
 *   `openapi.yaml`: OpenAPI Specification (API contracts).
 *   `artifacts/promptmegood/src/styles/`: Theme files (CSS variables).
 *   `artifacts/promptmegood/public/styles/pmg-g-theme.css`: G "Warm Dark Hybrid" override stylesheet.
-*   `artifacts/promptmegood/public/styles/pmg-chassis-v2.css` + `public/scripts/pmg-chassis-v2.js`: Workstation chassis layout and styling, including mobile adaptations.
-*   `artifacts/promptmegood/404.html`: Branded not-found page.
+*   `artifacts/promptmegood/public/styles/pmg-chassis-v2.css` + `public/scripts/pmg-chassis-v2.js`: Workstation chassis layout and styling.
 *   `artifacts/promptmegood/playwright.config.ts`: Frontend test configuration.
 
 ## Architecture decisions
 
-*   **Monorepo with pnpm:** Facilitates shared code and consistent development across frontend and backend.
-*   **Client-side quick-win flow:** First-time user onboarding leverages sequential client-side API calls for immediate engagement.
-*   **Accessibility Guard:** A global, continuous accessibility check ensures interactive elements are clickable and visible.
-*   **Quiet Onboarding:** Suppresses non-essential UI nudges for new sessions to provide a focused first-prompt experience.
+*   **Monorepo with pnpm:** Facilitates shared code and consistent development.
+*   **Client-side quick-win flow:** First-time user onboarding uses sequential client-side API calls for immediate engagement.
+*   **Accessibility Guard:** Global, continuous accessibility check ensures interactive elements are clickable and visible.
+*   **Quiet Onboarding:** Suppresses non-essential UI nudges for new sessions for a focused first-prompt experience.
 *   **Expert Command Center as Paid Feature:** Advanced prompt engineering tools are paywalled after beta.
-*   **G theme overlay (Brand Teal):** Visual language is layered via a token+skin override stylesheet without markup rewrites.
-*   **Accent picker shared across legacy + chassis:** Both legacy and chassis accent pickers write to the same `localStorage` key, ensuring sync.
+*   **G theme overlay:** Visual language is layered via a token+skin override stylesheet without markup rewrites.
+*   **Accent picker sync:** Both legacy and chassis accent pickers write to the same `localStorage` key.
 
 ## Product
 
@@ -69,30 +62,30 @@ I prefer concise and direct communication. When making changes, prioritize itera
 
 ## Gotchas
 
-*   **Accessibility State:** Always verify `inert`/`aria-hidden` states, especially after complex DOM manipulations.
-*   **Quick Win Overlay:** Ensure `html.pmg-qw-pending` is applied correctly via inline script for first-time users.
+*   **Accessibility State:** Verify `inert`/`aria-hidden` states after DOM manipulations.
+*   **Quick Win Overlay:** Ensure `html.pmg-qw-pending` is applied via inline script for first-time users.
 *   **Expert Command Center Gating:** Expert Mode becomes a paid feature after `BETA_END`; ensure UI reflects this.
-*   **Empty-state action gating:** New post-result actions must have their IDs added to `EMPTY_BTN_IDS` in `index.html`'s `watchResultBox()` to be correctly disabled.
-*   **Saved-To-Vault indicator:** Any code path persisting a prompt to the vault MUST `document.dispatchEvent(new Event('pmg:vault-saved'))` for the user to receive confirmation.
-*   **Body-appended overlays:** New runtime overlays mounted directly under `<body>` must have `data-pmg-overlay-root` to be visible, as `pmg-chassis-v2.css` hides most direct `body >` children.
-*   **Waitlist anchors:** `pricing.html` uses three IDs (`#early-access`, `#founding-member-waitlist`, `#pro-early-access`) for its single waitlist form; CTAs link to tier-specific anchors.
-*   **Adding new top-level HTML pages:** Register new HTML files in `artifacts/promptmegood/vite.config.ts` `rollupOptions.input` for proper build output.
-*   **Guide vs Manual split:** `guide.html` is the short orientation; `manual.html` is the long-form reference. Cross-link both whenever changing nav, and keep `help.html` pointing to both.
-*   **Route split (`/` vs `/app`):** `/` serves the marketing landing, while `/app` serves the workstation. The landing page auto-redirects returning users to `/app`; use `?stay=1` to bypass this during testing. Do not rename `app.html` to `index.html`.
-*   **Chassis rail card wrapping:** Vault `.history-list` / `.templates-grid` are forced to a single 1fr column inside `html.pmg-chassis-v2 .pmgv2-rail` (overriding legacy `minmax(240px,1fr)`); card descendants get `overflow-wrap: anywhere` to prevent horizontal overflow. Buttons/SVGs/`.template-card-delete` are excluded from the wrap rule.
-*   **Cache-buster:** Bump `?v=cv2-N` on both `pmg-chassis-v2.css` and `pmg-chassis-v2.js` script/link tags in `app.html` whenever you change either file. Currently `cv2-18`.
-*   **Mobile composer height budget (cv2-18):** The fixed mobile composer must stay ≤ ~270px (≈ 32% of an 844px viewport) or it eats too much screen. Current trim list inside `@media (max-width: 900px) html.pmg-chassis-v2 .pmgv2-composer-wrap`: hide `.pmgv2-composer-hint` (the ⌘K hint), hide `[class*="most-loved"]` / `.pmg-most-loved-badge` (inset gold pill above Help Me Start adds ~22px clearance), `#generateBtn` capped at min-height 44px / 15px font, `#pmg-help-me-start-btn` chip 32px / 12px font with `margin-top: 0`, wrap padding 6px top/bottom. Do NOT add new buttons/badges/hints inside the composer-wrap on mobile without budgeting their height — the user has explicitly flagged "too big" twice.
-*   **Live Feedback panel hidden in chassis (cv2-17):** `pmg-text-feedback.js` injects `#pmg-tf-feedback` (Live Feedback + Live Preview) as a sibling of `#tour-step-generate` INSIDE `#prompt-form`, and runs TWO MutationObservers (lines ~702, 737) that **re-mount the panel back into `#prompt-form` whenever it's removed/moved**. This means `liftFormAuxIntoThread()` cannot keep it out — every time lift moves it to thread, the observer puts it back. On mobile that bloated the fixed composer-wrap from ~250px to ~720px (composer auto-sizes to children), pushing Goal off-screen at y≈138 instead of pinned at bottom. Fix: `html.pmg-chassis-v2 #pmg-tf-feedback { display: none !important; }` (CSS only — do NOT try to disconnect the observer, it's load-bearing for legacy users). Affects desktop chassis too, but that's fine — the legacy goal-helper text and tip-block already convey the same affordance.
-*   **Mobile composer is `position: fixed`, not sticky (cv2-16):** On `max-width:900px`, `.pmgv2-composer-wrap` uses `position: fixed; left: 0; right: 0; bottom: 56px; z-index: 60` so the Goal + Fix My Prompt band is ALWAYS pinned to the viewport bottom (just above the 56px dock) — true ChatGPT-style. Sticky-bottom failed because on a short fresh-load column the composer floated in the middle of the screen at its natural flow position (sticky only engages when natural position would be below the viewport). Mobile `.pmgv2-main` gets `padding-bottom: 260px` so the last lifted aux item isn't covered by the fixed composer. Desktop keeps `position: sticky; bottom: 0` because the multi-column grid makes a fixed-width composer brittle.
-*   **Hide `#pmg-result-confirm` in chassis:** `pmg-ux.js` injects a "✓ Your prompt is ready. Copy it, run it, or refine it." paragraph below the result text on every generation AND a MutationObserver re-injects it if removed. Chassis suppresses it with `html.pmg-chassis-v2 #pmg-result-confirm { display: none !important }` (CSS only — do NOT try to remove the node, the observer fights back). The Copy/Refine/Check Quality/Start Over buttons immediately above it already convey the same affordance.
-*   **Slim mobile sticky composer (cv2-13):** Inside `.pmgv2-composer-wrap` at `max-width:900px`, the long Goal helper (`.field.field-primary > .helper`), `#image-gen-hint`, `.demo-stack`, and `#random-prompt` are hidden, `#goal` shrinks to `min-height:48px / max-height:120px`, and `#pmg-help-me-start-btn` becomes a 38px chip. The hidden elements still exist in the DOM (handlers intact) — most are already lifted into `#pmgv2-form-aux` for the scrolling region. Do NOT hide `#image-generate-btn` itself — image-mode needs it as the primary CTA (see `demoteButtons()` gotcha).
-*   **Hero gutter must match column gutters:** `.pmgv2-hero` left/right padding MUST equal `.pmgv2-mode-bar` / `.pmgv2-thread` / `.pmgv2-composer-wrap` (28px desktop, 14px mobile) or the "Finally, AI That Understands You" heading sits flush left while the Template box / Fixed Prompt panel are indented, making the column look broken.
-*   **ChatGPT-style sticky composer (cv2-11/15):** `pmg-chassis-v2.js` `liftFormAuxIntoThread()` runs after relocation and moves every `#prompt-form` child OUT of the composer and INTO `<div id="pmgv2-form-aux">` at the top of `.pmgv2-thread`, EXCEPT `.field.field-primary` (Goal), `#tour-step-generate` (Fix My Prompt actions), `#pmg-help-me-start-btn`, and `#goal`. The composer-wrap then has `position: sticky; bottom: 0` (see "Composer is sticky-BOTTOM" gotcha) so the slim Goal band stays pinned at the viewport bottom while the lifted aux (Auto Optimize, Upload, Prompt Tuning Step 1, etc.) scrolls above it. Safe because nothing in the codebase calls `FormData(form)` or `form.elements` — every handler queries by ID. If you add a NEW form-related node that MUST live inside `<form>` (e.g., a hidden input read via FormData), update `KEEP_IN_COMPOSER` in the lift function.
-*   **Rail is its own scroll container:** `.pmgv2-rail` sets `max-height: calc(100vh - 100px); overflow-y: auto;` so vault/templates lists scroll inside the rail without dragging the main page. Anything that calls `scrollIntoView` on a rail descendant should use `block: 'nearest'` to avoid yanking the whole viewport.
-*   **Result panel hide signal is `body.pmg-has-result`:** Hiding `#result-panel` until generation completes uses `html.pmg-chassis-v2 body:not(.pmg-has-result) .pmgv2-thread #result-panel`. The class IS set by `pmg-ux.js:306` after a real generation. Do NOT use `.has-result` on the panel itself — that selector never matches, swallows generated prompts, and looks broken.
-*   **All `<dialog>`s under `<body>` need `data-pmg-overlay-root`:** chassis hides every direct body child not in the `body > *:not(...)` allow-list at line 21 of `pmg-chassis-v2.css`. `#guided-mode-dialog` lacking this attribute caused Help Me Start to "freeze" the app — the dialog opened but was display:none, leaving focus trapped on an invisible element. `#guided-mode-dialog`, `#privacy-dialog`, and `#terms-dialog` now all carry the attribute. Add it to any new top-level dialog/overlay.
-*   **Generated image visibility in chassis:** legacy `body:not(.image-mode) #imageResultSection` hides the result section. Chassis adds `html.pmg-chassis-v2 #imageResultSection:not([hidden]) { display: block !important; }` so generation handlers (which clear `[hidden]`) succeed regardless of `image-mode`.
-*   **`demoteButtons()` excludes image generators:** `pmg-ux.js` `demoteButtons()` intentionally OMITS `image-generate-btn` and `imageBtn` — they are the primary action in image mode, so the `.pmg-demoted` gray-out would make the free-tier Generate Image button look locked. Do not re-add them to the list.
+*   **Empty-state action gating:** New post-result actions need IDs added to `EMPTY_BTN_IDS` in `index.html`'s `watchResultBox()`.
+*   **Saved-To-Vault indicator:** Any code persisting a prompt to the vault MUST `document.dispatchEvent(new Event('pmg:vault-saved'))`.
+*   **Body-appended overlays:** New runtime overlays mounted directly under `<body>` must have `data-pmg-overlay-root`.
+*   **Waitlist anchors:** `pricing.html` uses three IDs (`#early-access`, `#founding-member-waitlist`, `#pro-early-access`) for its single waitlist form.
+*   **Adding new top-level HTML pages:** Register new HTML files in `artifacts/promptmegood/vite.config.ts` `rollupOptions.input`.
+*   **Guide vs Manual split:** `guide.html` is the short orientation; `manual.html` is the long-form reference. Cross-link both and keep `help.html` pointing to both.
+*   **Route split (`/` vs `/app`):** `/` is marketing landing, `/app` is workstation. Landing auto-redirects returning users to `/app`; use `?stay=1` to bypass.
+*   **Chassis rail card wrapping:** Vault `.history-list` / `.templates-grid` are forced to a single column in `.pmgv2-rail`.
+*   **Cache-buster:** Bump `?v=cv2-N` on `pmg-chassis-v2.css` and `pmg-chassis-v2.js` in `app.html` on changes. Currently `cv2-20`.
+*   **Slim mobile composer (cv2-19/20, Option B):** On `max-width:900px`, composer-wrap is reduced to textarea + Fix My Prompt only (~165px). Hides `.field.field-primary > .field-label-row` (drops "Your Goal · Clear" row) and `#pmg-help-me-start-btn` via doubled-ID selector `#pmg-help-me-start-btn#pmg-help-me-start-btn` (specificity 0,2,0,1) needed to beat `pmg-linear-flow.js`'s injected `body:not(.image-mode) #pmg-help-me-start-btn[id] { display: inline-flex !important }` (equal 0,1,1,1, loaded later). Help Me Start now lives in the chassis top bar as `.pmgv2-help-start` pill that programmatically `.click()`s the legacy button (with `#guided-mode-btn` fallback). User flagged "too big" three times — do NOT add new buttons/badges/hints inside composer-wrap on mobile.
+*   **Goal textarea aria-label (cv2-20):** Mobile chassis hides `.field-label-row` containing `<label for="goal">`, so `wireTopBarActions` patches `#goal` with `aria-label="Your goal — describe what you want"` (idempotent — only sets if absent) so screen readers still announce it. The in-row `#clear-goal-btn` is also hidden as collateral; rail's "+ New Prompt" covers the clear path.
+*   **Mobile composer:** Limited to textarea and "Fix My Prompt" button. Do NOT add new elements to composer-wrap on mobile.
+*   **Live Feedback panel:** Suppressed in chassis via CSS (`display: none !important`) due to re-mounting observers.
+*   **Mobile composer (`position: fixed`):** Pinned to viewport bottom; `.pmgv2-main` gets `padding-bottom` to prevent content overlap.
+*   **Hide `#pmg-result-confirm`:** Suppressed in chassis via CSS (`display: none !important`) due to re-injection.
+*   **Slim mobile sticky composer:** Elements hidden or shrunk within `.pmgv2-composer-wrap` at `max-width:900px`.
+*   **Hero gutter:** `.pmgv2-hero` left/right padding must match other column gutters.
+*   **ChatGPT-style sticky composer:** `pmg-chassis-v2.js` `liftFormAuxIntoThread()` moves most `#prompt-form` children out of the composer.
+*   **Rail scroll container:** `.pmgv2-rail` is its own scroll container with `overflow-y: auto;`.
+*   **Result panel hide signal:** Use `body.pmg-has-result` to hide `#result-panel` until generation completes.
+*   **`demoteButtons()` excludes image generators:** `pmg-ux.js` `demoteButtons()` intentionally OMITS `image-generate-btn` and `imageBtn`.
 
 ## Pointers
 
