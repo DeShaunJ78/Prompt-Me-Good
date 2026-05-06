@@ -191,3 +191,21 @@ id = "fNTjwS3dRQ-O34x-9w97j"
 uri = "file://attached_assets/screenshots/chassis_v3_teal.jpg"
 type = "image"
 title = "Option B — Brand Teal (matches your PMG logo)"
+
+[[outputs]]
+id = "lluTMr3fPFB46r8JPaSwg"
+uri = "file://screenshots/composer-a.jpg"
+type = "image"
+title = "Option A — ChatGPT single row (~110px)"
+
+[[outputs]]
+id = "wHI3kAoueDYxx1q7l1RR7"
+uri = "file://screenshots/composer-b.jpg"
+type = "image"
+title = "Option B — Drop label row, Help in top bar (~165px)"
+
+[[outputs]]
+id = "0wMEMVUS80wJDZtZOwezD"
+uri = "file://screenshots/composer-c.jpg"
+type = "image"
+title = "Option C — Auto-collapsing pill (~88px)"
