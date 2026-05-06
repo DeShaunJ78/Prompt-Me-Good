@@ -14,6 +14,10 @@
      Phase 4 — compress overlays: Quick Win suppressed in chassis (the
                chassis IS the workstation), legacy yellow beta banner
                hidden + mirrored into a compact status-bar pill
+     Phase 5 — polish: Export Plan button on the Master Plan card
+               (Soul + Body weave to clipboard, gated on Master Link),
+               mobile bottom dock with Vault / Workstation / Visual
+               tabs so phones don't revert to a long-scroll page
    Legacy site is bit-identical when the flag is off. */
 (function () {
   'use strict';
@@ -145,6 +149,10 @@
           '<div class="pmgv2-plan-card" id="pmgv2-plan-card" data-state="idle">',
             '<div class="pmgv2-plan-h">✦ Master Actionable Plan</div>',
             '<div class="pmgv2-plan-body">Turn on <strong>Master Link</strong> to weave your written prompt (Soul) and your photo picks (Body) into one plan you can copy or run.</div>',
+            '<div class="pmgv2-plan-actions">',
+              '<button type="button" class="pmgv2-plan-btn" id="pmgv2-plan-export" disabled>📋 Copy Plan</button>',
+              '<span class="pmgv2-plan-toast" id="pmgv2-plan-toast" hidden>Copied to clipboard</span>',
+            '</div>',
           '</div>',
         '</aside>',
       '</div>',
@@ -152,7 +160,7 @@
         '<div class="pmgv2-statusbar-l">',
           '<span>● Saved locally</span>',
           '<span>v2 chassis preview</span>',
-          '<span>Phase 4 of 5</span>',
+          '<span>Phase 5 of 5</span>',
           '<a class="pmgv2-beta-pill" id="pmgv2-beta-pill" href="./pricing.html" hidden>',
             '<span class="pmgv2-beta-dot"></span>',
             '<span class="pmgv2-beta-txt">BETA</span>',
@@ -171,10 +179,147 @@
         '</div>',
       '</div>'
     ].join('');
+    // Mobile dock for ≤900px viewports — keeps single-column from
+    // becoming a long-scroll page by tabbing between vault/main/tools.
+    var dock = document.createElement('nav');
+    dock.className = 'pmgv2-dock';
+    dock.setAttribute('aria-label', 'Workspace columns');
+    dock.innerHTML = [
+      '<button type="button" class="pmgv2-dock-btn" data-pmgv2-tab="vault">Vault</button>',
+      '<button type="button" class="pmgv2-dock-btn" data-pmgv2-tab="thread" aria-pressed="true">Workstation</button>',
+      '<button type="button" class="pmgv2-dock-btn" data-pmgv2-tab="suite">Visual</button>'
+    ].join('');
+    root.appendChild(dock);
+
     document.body.appendChild(root);
     wireSwatches(root);
     wireMasterLink(root);
     wireBetaPill(root);
+    wireExportPlan(root);
+    wireMobileDock(root);
+  }
+
+  // ---- Phase 5: Export Plan ----
+  // Weaves the user's goal (Soul) and the latest generated prompt (Body)
+  // into a markdown plan and copies it to clipboard. Gated on Master Link
+  // because the whole point of the bridge is the unified plan. Reads from
+  // the live DOM so it stays in sync with whatever the user has typed or
+  // generated — no shadow state.
+  function wireExportPlan(root) {
+    var btn = root.querySelector('#pmgv2-plan-export');
+    var toast = root.querySelector('#pmgv2-plan-toast');
+    if (!btn || !toast) return;
+
+    function syncEnabled() {
+      var on = document.documentElement.getAttribute('data-pmgv2-master-link') === 'on';
+      btn.disabled = !on;
+      btn.title = on
+        ? 'Copy a markdown plan combining your goal and generated prompt'
+        : 'Turn on Master Link to enable Copy Plan';
+    }
+    // Re-check whenever Master Link state changes.
+    var mo = new MutationObserver(syncEnabled);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-pmgv2-master-link'] });
+    syncEnabled();
+
+    function readGoal() {
+      var g = document.getElementById('goal');
+      return (g && g.value || '').trim();
+    }
+    function readResult() {
+      // Prefer the visible generated prompt copy area; fall back to the
+      // result panel's text content if the legacy markup changes.
+      var pre = document.querySelector('#result-panel pre, #result-panel .result-text, #result-panel textarea, #generatedPrompt');
+      if (pre) return (pre.value || pre.textContent || '').trim();
+      var rp = document.getElementById('result-panel');
+      return rp ? (rp.textContent || '').trim() : '';
+    }
+    function buildPlan() {
+      var goal = readGoal() || '_(empty — type a goal in the composer)_';
+      var prompt = readResult() || '_(empty — generate a prompt first)_';
+      var stamp = new Date().toISOString();
+      return [
+        '# PromptMeGood — Master Actionable Plan',
+        '',
+        '_Generated ' + stamp + '_',
+        '',
+        '## Soul (your goal)',
+        '',
+        goal,
+        '',
+        '## Body (generated prompt)',
+        '',
+        '```',
+        prompt,
+        '```',
+        '',
+        '## Next steps',
+        '',
+        '1. Paste the Body block into your AI tool of choice (ChatGPT, Claude, Gemini, Midjourney).',
+        '2. Iterate by editing the Soul and re-running.',
+        '3. Save winning variants to your Vault.',
+        ''
+      ].join('\n');
+    }
+    function flashToast(msg, ok) {
+      toast.textContent = msg;
+      toast.removeAttribute('hidden');
+      toast.setAttribute('data-ok', ok ? '1' : '0');
+      clearTimeout(toast._t);
+      toast._t = setTimeout(function () { toast.setAttribute('hidden', ''); }, 2200);
+    }
+    btn.addEventListener('click', function () {
+      if (btn.disabled) return;
+      var plan = buildPlan();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(plan).then(
+          function () { flashToast('Copied to clipboard', true); },
+          function () { fallbackCopy(plan); }
+        );
+      } else {
+        fallbackCopy(plan);
+      }
+    });
+    function fallbackCopy(text) {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        flashToast(ok ? 'Copied to clipboard' : 'Copy failed — select and ⌘C', ok);
+      } catch (e) {
+        flashToast('Copy failed — select and ⌘C', false);
+      }
+    }
+  }
+
+  // ---- Phase 5: Mobile dock ----
+  // On ≤900px the body grid collapses to single column. Without a
+  // switcher all three columns stack into one long page (the exact
+  // legacy problem we're fixing). The dock pins to the bottom of the
+  // viewport on mobile and toggles which column is visible by writing
+  // `<html data-pmgv2-mobile-tab>`. Hidden on ≥901px via CSS.
+  function wireMobileDock(root) {
+    var TAB_KEY = 'pmgChassisV2:mobileTab';
+    var dock = root.querySelector('.pmgv2-dock');
+    if (!dock) return;
+    var btns = dock.querySelectorAll('.pmgv2-dock-btn');
+    function setTab(tab) {
+      document.documentElement.setAttribute('data-pmgv2-mobile-tab', tab);
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].setAttribute('aria-pressed',
+          btns[i].getAttribute('data-pmgv2-tab') === tab ? 'true' : 'false');
+      }
+      try { localStorage.setItem(TAB_KEY, tab); } catch (e) {}
+    }
+    var initial;
+    try { initial = localStorage.getItem(TAB_KEY); } catch (e) {}
+    setTab(initial || 'thread');
+    dock.addEventListener('click', function (e) {
+      var b = e.target.closest('.pmgv2-dock-btn');
+      if (b) setTab(b.getAttribute('data-pmgv2-tab'));
+    });
   }
 
   // ---- Phase 4: Beta banner -> compact status-bar pill ----
