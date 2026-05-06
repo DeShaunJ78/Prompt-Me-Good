@@ -151,6 +151,223 @@
     wireMobileDock(root);
     wireTopBarActions(root);
     wireTemplatePicker(root);
+    initCollapsibleComposer(root);
+  }
+
+  // ---- Collapsible composer (cv2-21, mobile only) ----
+  // The composer was permanently pinned at the viewport bottom even though
+  // it's only useful during the *construct a prompt* activity. On mobile
+  // its slim form (~165px) still ate ~20% of an 844px viewport while the
+  // user was reading a result, browsing templates, etc. — pure dead
+  // weight. This module reduces it to a 44px "✏️ What do you want to
+  // build?" pill until the user signals construction intent, then expands
+  // back to the full composer; collapses again when construction ends.
+  //
+  // Hard rules:
+  //   - Mobile only. matchMedia('(max-width: 900px)') gate at entry AND
+  //     a `resize` listener that fully removes the collapsed state on
+  //     transition to desktop (so a phone -> tablet rotation can't leave
+  //     desktop users with a weird pill).
+  //   - Single source of truth: html.pmg-composer-collapsed class. CSS
+  //     toggles all visual state from this one class.
+  //   - Never destroy/remount #goal or #prompt-form — observers in
+  //     pmg-text-feedback.js, pmg-linear-flow.js, pmg-ux.js depend on
+  //     them existing in DOM. We only swap visibility on the wrap.
+  //   - Sticky-open guard: if #goal has any non-whitespace content, we
+  //     refuse to auto-collapse (user is mid-thought). Manual taps on
+  //     the pill while expanded still toggle.
+  function initCollapsibleComposer(root) {
+    var mq = window.matchMedia('(max-width: 900px)');
+    if (!mq.matches) return;
+
+    var main = root.querySelector('.pmgv2-main');
+    if (!main || root.querySelector('.pmgv2-composer-tab')) return;
+
+    var html = document.documentElement;
+    var COLLAPSED = 'pmg-composer-collapsed';
+
+    // Inject the collapsed-state pill. Position is fixed in CSS so it
+    // sits above the dock just like the composer-wrap does — same visual
+    // anchor, same z-index, just slimmer.
+    var tab = document.createElement('button');
+    tab.type = 'button';
+    tab.className = 'pmgv2-composer-tab';
+    tab.setAttribute('aria-expanded', 'false');
+    tab.setAttribute('aria-controls', 'prompt-form');
+    tab.setAttribute('aria-label', 'Open prompt composer');
+    tab.innerHTML =
+      '<span class="pmgv2-composer-tab-ico" aria-hidden="true">✏️</span>' +
+      '<span class="pmgv2-composer-tab-lab">What do you want to build?</span>' +
+      '<span class="pmgv2-composer-tab-car" aria-hidden="true">▲</span>';
+    main.appendChild(tab);
+
+    function goalHasContent() {
+      try {
+        var g = document.getElementById('goal');
+        return !!(g && g.value && g.value.trim().length > 0);
+      } catch (e) { return false; }
+    }
+
+    function expand(opts) {
+      html.classList.remove(COLLAPSED);
+      tab.setAttribute('aria-expanded', 'true');
+      if (opts && opts.focus) {
+        // Defer focus a tick so the wrap's display:none -> flex transition
+        // settles before iOS opens the keyboard (otherwise iOS sometimes
+        // refuses focus on a just-revealed element).
+        setTimeout(function () {
+          try {
+            var g = document.getElementById('goal');
+            if (g) g.focus();
+          } catch (e) {}
+        }, 60);
+      }
+    }
+
+    function collapse(opts) {
+      // Sticky-open guard. Manual collapse (opts.force) bypasses.
+      if (!(opts && opts.force) && goalHasContent()) return;
+      html.classList.add(COLLAPSED);
+      tab.setAttribute('aria-expanded', 'false');
+    }
+
+    // Default state on first paint: collapsed. Discoverable via the pill.
+    collapse({ force: true });
+
+    // ---- Expand triggers ----
+
+    // 1) Tap the pill. Toggle: tap-while-collapsed = expand+focus.
+    tab.addEventListener('click', function () {
+      if (html.classList.contains(COLLAPSED)) {
+        expand({ focus: true });
+      } else {
+        // Pill stays in DOM but hidden via CSS while expanded — the only
+        // way to reach this branch is keyboard nav, which we treat as
+        // an explicit toggle-to-collapse signal.
+        collapse({ force: true });
+      }
+    });
+
+    // 2) Focus on #goal (e.g., user tabs into it from a lifted aux
+    //    control). If the wrap was hidden, focus would fail — so this
+    //    listener only fires from non-hidden focus paths or after a
+    //    programmatic .focus() from inside expand(). Either way, we
+    //    keep the state in sync.
+    document.addEventListener('focusin', function (e) {
+      if (e.target && e.target.id === 'goal') {
+        expand({ focus: false });
+      }
+    });
+
+    // 3) "+ New Prompt" in the rail = "I want to construct now."
+    var newBtn = root.querySelector('.pmgv2-new-btn');
+    if (newBtn) {
+      newBtn.addEventListener('click', function () { expand({ focus: true }); });
+    }
+
+    // 4) Template picker tap = "I'm constructing from a template."
+    //    The existing wireTemplatePicker handler scrolls the rail panel
+    //    into view; we add an expand so the goal/preview becomes visible
+    //    too once the user picks a tile.
+    var tplBtn = root.querySelector('.pmgv2-tpl-picker');
+    if (tplBtn) {
+      tplBtn.addEventListener('click', function () { expand({ focus: false }); });
+    }
+
+    // 5) Help Me Start completion fills #goal programmatically. Hook the
+    //    top-bar pill click — after a short delay, if #goal got content,
+    //    expand. (Direct dialog hook would be brittle; a value-poll is
+    //    the cheapest robust option since the dialog is async.)
+    var hms = root.querySelector('.pmgv2-help-start');
+    if (hms) {
+      hms.addEventListener('click', function () {
+        var prev = goalHasContent();
+        var deadline = Date.now() + 30000; // 30s — long enough for a guided flow
+        var poll = setInterval(function () {
+          if (Date.now() > deadline) { clearInterval(poll); return; }
+          if (!prev && goalHasContent()) {
+            clearInterval(poll);
+            expand({ focus: false });
+          }
+        }, 400);
+      });
+    }
+
+    // 6) Vault history + template card clicks (delegated, since both are
+    //    rendered dynamically by legacy scripts). Resuming/applying any
+    //    of these is unambiguously construction intent — surface the
+    //    composer so the user sees what got loaded into #goal.
+    document.addEventListener('click', function (e) {
+      if (!mq.matches) return;
+      var t = e.target;
+      if (!t || !t.closest) return;
+      if (t.closest('.history-item') || t.closest('.template-card')) {
+        // Defer so the legacy click handler runs first and populates #goal.
+        setTimeout(function () { expand({ focus: false }); }, 0);
+      }
+    }, true);
+
+    // ---- Collapse triggers ----
+
+    // 7) Successful generation — body.pmg-has-result is the signal.
+    //    Only collapse on the transition (absent → present), not on any
+    //    body[class] mutation while the class happens to be present.
+    //    Other scripts mutate body classes constantly (theme, tab state,
+    //    image-mode, etc.); a naive contains() check would re-collapse
+    //    every time the user manually re-expands during result review.
+    try {
+      var hadResult = document.body.classList.contains('pmg-has-result');
+      var resultObs = new MutationObserver(function () {
+        var nowHas = document.body.classList.contains('pmg-has-result');
+        if (nowHas && !hadResult) {
+          // Transition: just generated. Force-collapse so result gets focus.
+          collapse({ force: true });
+        }
+        hadResult = nowHas;
+      });
+      resultObs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    } catch (e) {}
+
+    // 8) Blur from #goal with empty value — a 300ms grace prevents a
+    //    spurious collapse during iOS keyboard dismiss (which fires blur
+    //    transiently before refocus).
+    document.addEventListener('focusout', function (e) {
+      if (e.target && e.target.id === 'goal') {
+        setTimeout(function () {
+          if (document.activeElement && document.activeElement.id === 'goal') return;
+          if (!goalHasContent()) collapse();
+        }, 300);
+      }
+    });
+
+    // 9) Switching to a non-Workstation dock tab = "I'm not constructing
+    //    right now." Note: dock data-pmgv2-tab values are 'vault' |
+    //    'thread' | 'suite' (NOT 'workstation' — 'thread' IS the
+    //    workstation tab; see buildShell ~line 140). Collapse on the
+    //    leave-Workstation tabs only.
+    var dockBtns = root.querySelectorAll('.pmgv2-dock-btn');
+    var LEAVE_TABS = { vault: 1, suite: 1 };
+    for (var i = 0; i < dockBtns.length; i++) {
+      (function (btn) {
+        btn.addEventListener('click', function () {
+          var tab = btn.getAttribute('data-pmgv2-tab');
+          if (tab && LEAVE_TABS[tab]) collapse({ force: true });
+        });
+      })(dockBtns[i]);
+    }
+
+    // ---- Viewport guard ----
+    // If user rotates phone -> tablet (or resizes browser past 900px),
+    // remove the collapsed state entirely so desktop users never inherit
+    // a weird hidden composer.
+    function onMqChange() {
+      if (!mq.matches) {
+        html.classList.remove(COLLAPSED);
+        tab.setAttribute('aria-expanded', 'true');
+      }
+    }
+    if (mq.addEventListener) mq.addEventListener('change', onMqChange);
+    else if (mq.addListener) mq.addListener(onMqChange);
   }
 
   // ---- Top-bar action wiring ----

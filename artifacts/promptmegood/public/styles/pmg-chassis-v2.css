@@ -1271,6 +1271,101 @@ html.pmg-chassis-v2 #pmg-result-confirm {
   }
 }
 
+/* ============================================================
+   cv2-21: Collapsible composer (mobile only)
+   ------------------------------------------------------------
+   Single source of truth = `html.pmg-composer-collapsed`.
+     - When ABSENT: composer-wrap visible (current cv2-20 layout),
+       pill hidden.
+     - When PRESENT: composer-wrap fully hidden, pill visible at the
+       same anchor (fixed, bottom: 60px), .pmgv2-main padding-bottom
+       drops from 260px to ~110px so the user reclaims ~150px of
+       scroll real estate.
+   Desktop is unaffected: the pill is `display:none` outside the
+   mobile media query, and the JS gate prevents the class from ever
+   being applied at >900px (with a resize listener that strips the
+   class on phone-to-tablet rotations).
+   ============================================================ */
+
+/* Pill is hidden everywhere by default — only the mobile media
+   query reveals it. This guarantees zero desktop impact even if
+   the JS somehow injects the .pmgv2-composer-tab node on desktop. */
+html.pmg-chassis-v2 .pmgv2-composer-tab { display: none; }
+
+@media (max-width: 900px) {
+  /* COLLAPSED state — composer-wrap is hidden, pill takes over.
+     We hide the WHOLE wrap (not just children) so all of its fixed
+     positioning + padding collapses too — otherwise an empty 60px
+     fixed band would still cover content above the dock. */
+  html.pmg-chassis-v2.pmg-composer-collapsed .pmgv2-composer-wrap {
+    display: none !important;
+  }
+  /* Reclaim scroll room. The non-collapsed state inherits the cv2-16
+     260px budget elsewhere; this only applies while collapsed. */
+  html.pmg-chassis-v2.pmg-composer-collapsed .pmgv2-main {
+    padding-bottom: 110px !important;
+  }
+
+  /* Pill itself — same anchor as composer-wrap, slim 44px tall.
+     Always rendered in DOM but visibility is gated on the collapsed
+     class so we don't double up on screen. */
+  html.pmg-chassis-v2 .pmgv2-composer-tab {
+    display: none; /* hidden when expanded */
+    position: fixed;
+    left: 14px;
+    right: 14px;
+    bottom: 60px; /* 56px dock + 4px breathing room */
+    height: 44px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-primary, #3ee0a0) 14%, var(--color-bg-card, #0c1a17));
+    color: var(--color-text, #d6e4dc);
+    border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 38%, transparent);
+    padding: 0 18px;
+    font-size: 14px;
+    font-weight: 600;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    z-index: 60;
+    cursor: pointer;
+    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.32),
+                0 0 0 1px color-mix(in srgb, var(--color-primary, #3ee0a0) 8%, transparent);
+    -webkit-tap-highlight-color: transparent;
+    transition: background 160ms ease, transform 160ms ease;
+  }
+  html.pmg-chassis-v2.pmg-composer-collapsed .pmgv2-composer-tab {
+    display: flex !important;
+  }
+  html.pmg-chassis-v2 .pmgv2-composer-tab:hover,
+  html.pmg-chassis-v2 .pmgv2-composer-tab:focus-visible {
+    background: color-mix(in srgb, var(--color-primary, #3ee0a0) 22%, var(--color-bg-card, #0c1a17));
+    outline: none;
+  }
+  html.pmg-chassis-v2 .pmgv2-composer-tab:active {
+    transform: translateY(1px);
+  }
+  html.pmg-chassis-v2 .pmgv2-composer-tab-ico {
+    font-size: 16px;
+    line-height: 1;
+    flex: 0 0 auto;
+  }
+  html.pmg-chassis-v2 .pmgv2-composer-tab-lab {
+    flex: 1 1 auto;
+    text-align: left;
+    color: color-mix(in srgb, var(--color-text, #d6e4dc) 78%, transparent);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  html.pmg-chassis-v2 .pmgv2-composer-tab-car {
+    flex: 0 0 auto;
+    color: var(--color-primary, #3ee0a0);
+    font-size: 11px;
+    line-height: 1;
+    opacity: 0.85;
+  }
+}
+
 /* cv2-19: top-bar "💡 Help Me Start" pill. Visible at all widths because
    the in-composer chip is hidden on mobile (and on desktop the pill is a
    nice-to-have shortcut so users don't have to scroll down to reach it). */

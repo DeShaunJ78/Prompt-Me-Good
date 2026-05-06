@@ -1,0 +1,81 @@
+# The mobile composer area — design, current state, and your goal
+
+## Where it lives on screen
+
+On mobile (≤900px width) when you're on the **Workstation** tab, the bottom of your viewport is layered like this, from the very bottom up:
+
+```
+┌─────────────────────────────────────────┐
+│  ▒▒▒▒  (your scrollable content)  ▒▒▒▒  │  ← .pmgv2-main (the thread/results column)
+│                                         │
+├─────────────────────────────────────────┤
+│  [ Goal textarea — "Describe what…" ]   │  ← .pmgv2-composer-wrap
+│  [    Fix My Prompt (green button)   ]  │     position: fixed
+│                                         │     left: 0, right: 0
+│                                         │     bottom: 56px
+├─────────────────────────────────────────┤     z-index: 60
+│   Vault    │  Workstation  │   Visual   │  ← .pmgv2-dock (56px tall)
+└─────────────────────────────────────────┘     position: fixed, bottom: 0
+```
+
+## What's inside the composer right now (cv2-20)
+
+After all the trim work we did, the composer-wrap on mobile contains exactly two things:
+
+1. **`.field.field-primary`** — wraps the `<textarea id="goal">`. Originally also held a label row ("Your Goal" + voice mic + history dropdown + Clear button) but we hid the label row in cv2-19. The textarea is capped at `min-height: 48px`, `max-height: 120px`, and uses the placeholder *"Describe what you want — we'll build the perfect prompt"* as its visible affordance.
+
+2. **`#tour-step-generate`** — the "Fix My Prompt" primary green button (`#generateBtn`), capped at 44px tall, 15px font.
+
+Everything else that *used* to be in this area — Auto Optimize toggle, Upload File, Prompt Tuning, Voice mic, history dropdown, Help Me Start chip, Live Feedback panel, "⌘K commands" hint, "Most Loved" badge — has either been:
+- **Lifted into the scrolling thread above** (via `liftFormAuxIntoThread()` in `pmg-chassis-v2.js`) — this is where Auto Optimize, Upload, Prompt Tuning, and the voice/clear controls now live
+- **Hidden via CSS** (Live Feedback panel, ⌘K hint, Most Loved badge)
+- **Moved to the chassis top bar** (Help Me Start, just shipped in cv2-19)
+
+So conceptually, the composer-wrap on mobile is now a **slim "input footer"** — just enough to type a goal and tap Generate. Total height ≈ 165px, which is about 20% of an 844px viewport.
+
+## How it behaves
+
+- **Always pinned to the viewport bottom** (`position: fixed; bottom: 56px`). This means whether you've scrolled to the top of the page, are reading a long generated result, or are looking at the marketing hero — the composer is *always* sitting there above the dock.
+- **`.pmgv2-main` has `padding-bottom: 260px`** so the last item in your scrollable thread isn't hidden underneath the fixed composer.
+- **`z-index: 60`**, so it sits above everything except dialogs.
+- **Doesn't dismiss on iOS keyboard** — when the keyboard opens, the composer rides up with the keyboard naturally because it's pinned to the bottom of the visual viewport.
+
+## The chain of decisions that got us here (the why)
+
+This area has been redesigned three times in the last week, each time based on your feedback:
+
+| Version | What changed | Why |
+|---|---|---|
+| cv2-15 (sticky-bottom) | Composer was `position: sticky; bottom: 0` | First attempt at ChatGPT-style. Failed: on a short fresh-load column, sticky doesn't engage and the composer floated mid-screen. |
+| cv2-16 (fixed-bottom) | Switched to `position: fixed; bottom: 56px` | Now it's *always* at the bottom regardless of scroll position. Pin works. But composer was ~313px tall (37% of viewport). |
+| cv2-17 | Hid `#pmg-tf-feedback` (Live Feedback panel) | Root cause of the 313px bloat — a script kept re-mounting a Live Preview panel into `#prompt-form`, defeating the lift. Got us down to ~265px. You said: *"It works but it's too big!"* |
+| cv2-18 | Trimmed composer hint, MOST LOVED badge, Fix My Prompt height, Help Me Start chip, padding | Got to ~265px. You said: *"still huge."* |
+| cv2-19/20 (Option B) | Dropped the label row entirely, moved Help Me Start to the top bar, slimmed to textarea + Fix My Prompt only | ~165px. Where we are now. You're saying: *"It's still incredibly intrusive."* |
+
+## What you actually want (as I now understand it)
+
+Reading your last few messages together:
+
+> *"This thing is taking up too much of the screen for my current users it's in the way, so the objective is to try and figure out a way to have it out of the way when we don't need it we really only need it when we're constructing prompts. That's it otherwise it's it. It's not needed."*
+
+You're telling me three distinct things:
+
+1. **The composer is a tool, not a permanent fixture.** It's only relevant during one specific activity — *constructing a prompt*. When the user is doing anything else (reading a generated result, browsing templates, scrolling the marketing hero, picking from the vault, switching to the Visual tab), the composer is dead weight occupying ~20% of the screen for no reason.
+
+2. **Mobile real estate is too scarce to permanently dedicate a fifth of the screen** to a tool that's idle most of the time. On an 844px iPhone, after subtracting status bar (~47px), browser chrome (~50px), the dock (56px), and the composer (165px), only ~526px remain for actual content. That's a working area roughly the size of an iPhone SE 1st gen — not enough.
+
+3. **The pattern you want is "out of the way by default, summon when needed."** The user isn't penalized when reading; they get full screen. When they want to construct a prompt, they signal it (tap, focus, "+ New Prompt", click a template, etc.) and the composer materializes. When they're done (generate succeeds, blur with empty field, switch context), it tucks away again.
+
+4. **Desktop is fine as-is** — desktops have plenty of vertical space, the sticky-bottom composer there isn't intrusive. This is a mobile-only problem, mobile-only fix.
+
+## What "out of the way" probably means in practice
+
+There's still a discoverability requirement — a brand-new user opening `/app` for the first time must understand that they *can* construct a prompt. So "out of the way" almost certainly means **collapsed to a small, obvious tap-target**, not invisible. Something like a 40-44px pill that says *"✏️ Write a prompt…"* sitting above the dock — small enough to not steal attention, obvious enough that any user knows tapping it opens the composer.
+
+The composer itself only needs to materialize during the **active construction phase**, which spans roughly:
+- "I'm about to start typing" → expand
+- "I'm typing, refining, hitting Generate" → stay expanded
+- "Generate succeeded, here's the result" → collapse, get out of the way
+- "I want to refine or start over" → user taps the pill (or "+ New Prompt") → expand again
+
+That's the rhythm you're describing.
