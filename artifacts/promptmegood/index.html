@@ -4766,7 +4766,7 @@
             <div class="quality-row" id="quality-row">
               <p class="quality-row-context" style="margin:0 0 8px;font-size:13px;color:var(--color-text-muted);">Want To Know How Strong Your Prompt Is?</p>
               <div class="quality-row-btn-wrap">
-                <button class="btn btn-secondary" type="button" id="check-quality-btn">Check Prompt Quality</button>
+                <button class="btn btn-secondary" type="button" id="check-quality-btn" disabled aria-disabled="true" title="Generate a prompt first to check its quality.">Check Prompt Quality</button>
                 <span class="qa-tooltip-wrap">
                   <button type="button" class="qa-tooltip-trigger" id="check-quality-tip" aria-label="What does Check prompt quality do?" aria-describedby="check-quality-tip-text" aria-expanded="false">ⓘ</button>
                   <span class="qa-tooltip-bubble" id="check-quality-tip-text" role="tooltip">Analyzes your prompt for clarity, specificity, structure, and missing details.</span>
@@ -6494,6 +6494,9 @@ Context:
         }
         saveHistory(deduped);
         renderHistory();
+        /* Real save signal — drives the "✓ Saved To Vault" pill.
+           Listener lives in watchResultBox(); see Gotchas in replit.md. */
+        try { document.dispatchEvent(new Event('pmg:vault-saved')); } catch (_) {}
       }
 
       function restoreHistoryItem(item) {

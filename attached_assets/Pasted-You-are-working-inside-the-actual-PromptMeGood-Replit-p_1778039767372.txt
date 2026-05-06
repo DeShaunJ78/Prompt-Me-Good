@@ -1,0 +1,780 @@
+You are working inside the actual PromptMeGood Replit project.
+
+Assignment:
+Fix the critical and high-priority issues found in the live PromptMeGood audit.
+
+Live site audited:
+https://www.promptmegood.com
+
+Pages/routes referenced:
+- /
+- /app
+- /pricing.html
+- /guide.html
+- /help.html
+- /privacy.html
+- /terms.html
+- /robots.txt
+- /sitemap.xml
+- /favicon.ico
+- /site.webmanifest
+
+Core rule:
+This is NOT a full rebuild.
+This is NOT the full ChatGPT-style workstation migration yet.
+This is NOT the full landing-page redesign yet.
+
+This is a focused cleanup pass to make the newly published site more trustworthy, navigable, polished, and less broken before larger redesign work continues.
+
+Do not break current working product features.
+
+Do not touch without approval:
+- Local-first Vault/history behavior.
+- Database/storage schema.
+- Prompt generation API.
+- Run With AI API.
+- Photography Suite generation logic.
+- Image generation logic.
+- Expert Mode logic.
+- Theme color customization system.
+- Pricing amounts.
+- Checkout/payment logic.
+- Any production secrets or environment variables.
+
+Preserve:
+- Fix My Prompt.
+- Help Me Start.
+- Run With AI.
+- Improve/Refine behavior.
+- Prompt Strength Meter.
+- Prompt Vault.
+- Local history.
+- Best Prompts/templates.
+- Photography Suite.
+- Image prompt generation.
+- DALL-E/image generation if currently working.
+- Send To Midjourney if currently working.
+- Expert Command Center.
+- Footer/theme color controls.
+- Local-first, no-forced-login behavior.
+
+Audit Context:
+The live site has a strong product foundation, but the published version has several issues that make it feel unfinished or confusing:
+- Visitors can get dropped directly into a complex app without enough orientation.
+- Some routes are broken.
+- Some conversion text looks clickable but is not.
+- Some action buttons appear active before there is anything to act on.
+- A save confirmation appears when nothing has actually been saved.
+- Pricing/waitlist language is confusing.
+- Mobile layout risk is high.
+- Some visible text uses internal developer language.
+- Some legal/support/navigation links are missing from the app experience.
+- Missing favicon and manifest create polish issues.
+
+Fix these issues carefully and incrementally.
+
+========================================
+ISSUE 1 — /help.html RETURNS RAW NOT FOUND
+========================================
+
+Finding:
+The live audit found that:
+https://www.promptmegood.com/help.html
+returns a raw "Not found" response instead of a branded page, redirect, or useful help experience.
+
+Why this matters:
+- Users clicking Help get stranded.
+- Search engines or external links may surface this route.
+- A raw unbranded 404 makes the product feel unfinished.
+- This damages trust immediately.
+
+Required behavior:
+Option A, preferred:
+- Redirect /help.html to /guide.html.
+
+Option B:
+- Create a branded help page at /help.html that links to the full guide.
+
+Recommended implementation:
+- If routing supports redirects, route /help.html → /guide.html.
+- If static routing is simpler, create a /help.html page with PromptMeGood branding and a clear button to /guide.html.
+
+Acceptance criteria:
+- Visiting /help.html no longer shows raw "Not found."
+- User sees either the guide or a branded help page.
+- User has clear navigation to:
+  - Home
+  - App/Workstation
+  - Guide
+  - Pricing
+
+Manual test:
+- Open /help.html directly.
+- Confirm no raw/unbranded 404 appears.
+- Confirm route works after hard refresh.
+
+========================================
+ISSUE 2 — NO BRANDED 404 PAGE
+========================================
+
+Finding:
+Unknown routes can leave users on an unbranded not-found experience.
+
+Why this matters:
+- Broken links happen.
+- Users need a graceful recovery path.
+- A branded 404 is a basic trust and polish requirement.
+
+Required behavior:
+Create a branded 404 page/route.
+
+404 page should include:
+- PromptMeGood logo/name.
+- Friendly message:
+  "We couldn't find that page."
+- Short subtext:
+  "The page may have moved, but you can get back to PromptMeGood below."
+- Buttons/links:
+  - Home
+  - Open Workstation or App
+  - Guide
+  - Pricing
+
+Style requirements:
+- Use current PromptMeGood brand colors.
+- No generic browser-looking error page.
+- No raw monospace "Not found."
+
+Acceptance criteria:
+- Unknown routes show a branded page.
+- User can navigate out of the error state.
+
+Manual test:
+- Visit a fake route like /does-not-exist.
+- Confirm branded 404 appears.
+- Test all links on the 404.
+
+========================================
+ISSUE 3 — WAITLIST CTA TEXT LOOKS CLICKABLE BUT IS NOT
+========================================
+
+Finding:
+Inside the app, there is text similar to:
+"Checkout Opens Soon. Join The Waitlist To Be Notified."
+The "Join The Waitlist" phrase appears visually important, but the audit found it is not clickable.
+
+Why this matters:
+- This is a direct conversion blocker.
+- If a user is motivated inside the app, they need a direct path to the waitlist.
+- Text that looks clickable but is not creates frustration and reduces trust.
+
+Required behavior:
+Every visible "Join Waitlist" or "Join The Waitlist" CTA must be clickable if it looks like an action.
+
+Preferred link:
+- /pricing.html#early-access
+
+If you create clearer anchors:
+- /pricing.html#founding-member-waitlist
+- /pricing.html#pro-early-access
+
+If only one form exists:
+Use one general anchor:
+- /pricing.html#early-access
+
+Copy recommendation:
+Inside app:
+"Checkout opens soon. Join the waitlist to be notified."
+
+Make "Join the waitlist" an actual link.
+
+Acceptance criteria:
+- Any waitlist phrase styled like a CTA is clickable.
+- Link goes to a relevant pricing/waitlist section.
+- No CTA-looking text is dead text.
+
+Manual test:
+- Find all waitlist mentions in app and pricing.
+- Click them.
+- Confirm they navigate or scroll to the correct form.
+
+========================================
+ISSUE 4 — FOUNDING MEMBER CTA AND PRO WAITLIST COPY ARE MISMATCHED
+========================================
+
+Finding:
+The audit found a mismatch where the Founding Member CTA points users into an area labeled around PRO Early Access.
+
+Why this matters:
+- Founding Member and Pro are different buying decisions.
+- Founding Member is $79 one-time/lifetime style.
+- Pro Monthly/Yearly is subscription-based.
+- Mixing the language creates confusion at the point of conversion.
+
+Required behavior:
+Make waitlist language tier-neutral or tier-specific.
+
+Option A, preferred if simple:
+Create two separate waitlist sections:
+
+1. Founding Member Waitlist
+Anchor:
+#founding-member-waitlist
+Copy:
+"Founding Member checkout is opening soon. Join this list to be notified first."
+
+2. Pro Early Access
+Anchor:
+#pro-early-access
+Copy:
+"Pro plans are coming soon after the Founding Member launch. Join for updates."
+
+Option B, acceptable if only one form should remain:
+Rename the form heading to:
+"Join The PromptMeGood Waitlist"
+
+Subtext:
+"We'll notify you when Founding Member checkout and Pro access open."
+
+Acceptance criteria:
+- Founding Member CTA does not land on copy that sounds like a different tier.
+- Pro CTA does not sound like Founding Member checkout.
+- User understands what list they are joining.
+
+Do not:
+- Add checkout.
+- Change prices.
+- Say checkout is live.
+- Promise a date unless currently intended.
+
+Manual test:
+- Click Founding Member CTA.
+- Click Pro CTA.
+- Confirm destination copy matches intent.
+
+========================================
+ISSUE 5 — "CHECKOUT OPENS SOON" IS REPEATED TOO MANY TIMES
+========================================
+
+Finding:
+Pricing/waitlist copy repeats "Checkout Opens Soon" multiple times.
+
+Why this matters:
+- It overemphasizes that users cannot buy yet.
+- Repetition makes the pricing page feel blocked instead of exciting.
+- It can lower conversion motivation.
+
+Required behavior:
+Keep checkout status clear, but reduce repetition.
+
+Recommended approach:
+- One clear status message near the top.
+- One clear line near the waitlist form.
+- Remove redundant repeated phrases from every pricing card if they are excessive.
+
+Suggested top status copy:
+"Founding Member checkout is opening soon. Join the waitlist to be notified first."
+
+Suggested form copy:
+"We'll email you when Founding Member checkout and Pro access open."
+
+Acceptance criteria:
+- Status is still honest.
+- Page does not repeat "checkout opens soon" over and over.
+- Users know the next action is waitlist signup.
+
+Do not:
+- Create checkout.
+- Make checkout appear live.
+- Change plan prices.
+
+========================================
+ISSUE 6 — EMPTY-STATE ACTION BUTTONS ARE ACTIVE BEFORE CONTENT EXISTS
+========================================
+
+Finding:
+The audit found buttons like:
+- Copy Prompt
+- Refine It
+- Check Quality
+- Start Over
+appearing active before a prompt has been generated.
+
+Why this matters:
+- Users can click buttons that have nothing to act on.
+- Copying empty content feels broken.
+- This makes the tool feel unreliable.
+
+Required behavior:
+Output actions must only become available when relevant content exists.
+
+Rules:
+- Copy Prompt: disabled/hidden until a fixed prompt exists.
+- Refine It: disabled/hidden until a fixed prompt exists.
+- Check Quality: disabled/hidden until there is a prompt to check.
+- Start Over: disabled/hidden unless there is input or output to clear.
+- Copy Response: disabled/hidden until AI response exists.
+- Save: disabled/hidden until there is something saveable.
+
+Disabled state requirements:
+- Use native disabled attribute where possible.
+- Add aria-disabled if needed.
+- Lower opacity.
+- Cursor should indicate disabled.
+- Do not trigger empty actions.
+- Optional tooltip/helper:
+  "Generate a prompt first."
+
+Acceptance criteria:
+- No empty copy actions.
+- No empty refine actions.
+- No false quality checks.
+- Buttons become available after content exists.
+
+Manual tests:
+1. Load page fresh.
+2. Try output actions before generating.
+3. Confirm they are disabled/hidden.
+4. Generate a prompt.
+5. Confirm relevant actions become enabled.
+6. Click each enabled action.
+7. Confirm behavior still works.
+
+========================================
+ISSUE 7 — FALSE "SAVED TO VAULT" CONFIRMATION
+========================================
+
+Finding:
+The audit found a "✓ Saved To Vault" success message appearing even when the Vault says no saved prompts exist.
+
+Why this matters:
+- This is a serious trust issue.
+- Users may believe their work is saved when it is not.
+- False confirmation is worse than no confirmation.
+
+Required behavior:
+"Saved To Vault" should only appear after a confirmed save action.
+
+Default states:
+- If nothing is saved, show nothing.
+- Or show neutral text:
+  "Not saved yet"
+
+After save:
+- Show:
+  "✓ Saved To Vault"
+- Only after save event succeeds.
+- If save fails, show an error:
+  "Could not save. Please try again."
+
+Acceptance criteria:
+- Fresh page load does not show "Saved To Vault."
+- After generating content, status still does not claim saved unless save is clicked.
+- After save is clicked and succeeds, success appears.
+- Vault count/list matches the saved state.
+
+Manual tests:
+1. Fresh load.
+2. Confirm no false saved message.
+3. Generate prompt.
+4. Confirm no saved message unless save clicked.
+5. Click save.
+6. Confirm message appears and Vault updates.
+
+========================================
+ISSUE 8 — APP LACKS PRIVACY / TERMS / GUIDE / PRICING / CONTACT LINKS
+========================================
+
+Finding:
+The app experience does not expose key trust/navigation links clearly.
+
+Why this matters:
+- Users inside the app may need pricing, guide, privacy, or terms.
+- Legal/trust links should be easy to find.
+- Lack of links makes the app feel disconnected from marketing/legal pages.
+
+Required behavior:
+Add a small, unobtrusive utility footer or settings area inside the app with links:
+- Privacy → /privacy.html
+- Terms → /terms.html
+- Pricing → /pricing.html
+- Guide → /guide.html
+- Contact → mailto:support@promptmegood.com
+
+Style:
+- Small text links.
+- Do not clutter main workspace.
+- Must wrap cleanly on mobile.
+- Must not create horizontal scrolling.
+
+Acceptance criteria:
+- Links visible or accessible from app.
+- All links work.
+- App layout remains clean.
+
+Manual test:
+- Click each link from app.
+- Confirm correct page/mail action.
+- Test mobile wrapping.
+
+========================================
+ISSUE 9 — INTERNAL DEVELOPER LANGUAGE IS VISIBLE
+========================================
+
+Finding:
+The audit found visible language like:
+"chassis v2 preview"
+
+Why this matters:
+- Users should not see internal dev terminology.
+- It makes the product feel unfinished.
+- It weakens premium brand perception.
+
+Required behavior:
+Remove internal developer labels.
+
+Acceptable replacements:
+- "PromptMeGood Workstation"
+- "Workstation Beta"
+- "AI Prompt Workstation"
+
+Or remove the label entirely if not needed.
+
+Acceptance criteria:
+- No "chassis v2 preview" visible.
+- No internal implementation language visible to users.
+
+Manual test:
+- Search visible UI for:
+  "chassis"
+  "preview"
+  "v2"
+  "dev"
+  "test"
+  "debug"
+- Remove/replace any user-facing instances unless intentionally user-facing.
+
+========================================
+ISSUE 10 — PHOTOGRAPHY SUITE DISABLED BUTTONS LACK EXPLANATION
+========================================
+
+Finding:
+Photography Suite buttons may be disabled without explaining how to enable them.
+
+Why this matters:
+- Disabled controls without explanation make users feel stuck.
+- Users need to know what action unlocks the button.
+
+Required behavior:
+Disabled Photography Suite actions should explain requirements.
+
+Examples:
+- Copy Prompt disabled:
+  "Generate an image prompt first."
+- Generate Image Here disabled:
+  "Choose a style or create an image prompt first."
+- Save This Combo disabled:
+  "Select at least one style, camera, lighting, composition, or color option."
+
+Implementation options:
+- Inline helper text below the button group.
+- Tooltip on disabled controls.
+- Small explanatory text in the empty state.
+
+Acceptance criteria:
+- User can understand why each disabled Photography Suite button is disabled.
+- Explanations do not clutter the panel.
+- No generation logic changes.
+
+Manual test:
+- Fresh load Photography Suite.
+- Confirm disabled buttons include explanation.
+- Select required options.
+- Confirm buttons enable as expected.
+
+========================================
+ISSUE 11 — MISSING FAVICON AND SITE WEB MANIFEST
+========================================
+
+Finding:
+These return 404:
+- /favicon.ico
+- /site.webmanifest
+
+Why this matters:
+- Browser tab lacks proper brand identity.
+- Mobile save/install/share previews may look unfinished.
+- It is a simple polish and trust fix.
+
+Required behavior:
+Add favicon and manifest.
+
+If existing logo/mark exists:
+- Use it.
+
+If no asset exists:
+- Create a simple temporary favicon using PromptMeGood initials or brand mark.
+
+Manifest minimum:
+{
+  "name": "PromptMeGood",
+  "short_name": "PromptMeGood",
+  "theme_color": "#01696F",
+  "background_color": "#061719",
+  "display": "standalone",
+  "icons": [...]
+}
+
+Also add appropriate head links:
+- rel="icon"
+- rel="manifest"
+- apple-touch-icon if available
+
+Acceptance criteria:
+- /favicon.ico returns 200.
+- /site.webmanifest returns 200.
+- Browser tab shows favicon.
+
+Manual test:
+- Open /favicon.ico.
+- Open /site.webmanifest.
+- Hard refresh site and confirm icon.
+
+========================================
+ISSUE 12 — DUPLICATE H1S ON HOME/APP
+========================================
+
+Finding:
+Metadata check found two H1s on the current home/app page:
+- "What do you want to make?"
+- "Finally, AI That Understands You"
+
+Why this matters:
+- SEO and accessibility benefit from a clear primary H1.
+- Multiple H1s are not always fatal, but here it reflects a bigger issue: app UI and landing page content are mixed.
+
+Required behavior for this cleanup pass:
+If safe, change one H1 to H2/H3.
+
+Suggested:
+- If this page is currently acting as the app, keep "What do you want to make?" as the app's main H1.
+- Convert "Finally, AI That Understands You" to H2 until the true landing page is built.
+
+Do not attempt full landing page redesign in this cleanup pass unless already planned separately.
+
+Acceptance criteria:
+- Only one main H1 on the current page where practical.
+- Visual design remains the same or nearly the same.
+
+========================================
+ISSUE 13 — /APP METADATA MATCHES HOMEPAGE
+========================================
+
+Finding:
+/app returns the same title/meta/OG URL as the homepage.
+
+Why this matters:
+- If /app is a separate route, it should either be app-specific or intentionally noindexed.
+- Duplicate metadata weakens clarity.
+
+Required behavior:
+Choose the safest option based on current routing:
+
+Option A:
+Give /app app-specific metadata:
+Title:
+"PromptMeGood Workstation | AI Prompt Builder"
+Description:
+"Open the PromptMeGood AI Prompt Workstation to build, run, refine, and save better prompts."
+
+Option B:
+If metadata per route is difficult in current static setup, leave this for the larger / and /app split and document it as follow-up.
+
+Do not break routing.
+
+========================================
+ISSUE 14 — MOBILE OVERFLOW RISK
+========================================
+
+Finding:
+The current multi-panel app layout has high mobile risk.
+
+Why this matters:
+- Mobile users may experience horizontal scrolling, cramped controls, or buried panels.
+- The bigger redesign will solve this, but obvious overflow should still be prevented now.
+
+Required behavior in this cleanup pass:
+Do not attempt a full responsive app redesign unless already safe.
+
+But do fix simple issues:
+- Avoid new fixed widths.
+- Make added footer links wrap.
+- Ensure helper text wraps.
+- Ensure buttons do not overflow containers.
+- Add max-width: 100% where obvious.
+- Avoid horizontal scrolling introduced by this pass.
+
+Acceptance criteria:
+- This cleanup does not make mobile worse.
+- No new sideways scroll from added elements.
+
+Manual test:
+- Test around 375px and 430px width.
+- Confirm no new horizontal scroll from your changes.
+
+========================================
+ISSUE 15 — PRICING INTRO IS DENSE
+========================================
+
+Finding:
+Pricing intro tries to explain too many ideas at once:
+- Free tier
+- Photography Suite
+- AI run limits
+- Expert Command Center
+- Founding Member
+- Checkout timing
+- Pro Monthly
+- Pro Yearly
+
+Why this matters:
+- Pricing page should reduce friction, not create analysis paralysis.
+
+Required behavior:
+If safe, simplify the intro into 2–3 bullets.
+
+Suggested structure:
+
+"Start free. Upgrade when you need more power."
+
+Bullets:
+- Free: Build, refine, and run prompts with daily limits.
+- Founding Member: $79 one-time for early supporters and higher limits.
+- Pro: Monthly and yearly plans coming soon for heavier usage.
+
+Keep exact plan details in pricing cards and FAQ.
+
+Do not change pricing amounts.
+
+========================================
+ISSUE 16 — FAIR USE LIMITS ARE NOT EXPLAINED WHERE MENTIONED
+========================================
+
+Finding:
+"Fair Use Limits Apply" appears without enough explanation.
+
+Why this matters:
+- Users need to understand what they are buying.
+- Unexplained limits can feel vague or suspicious.
+
+Required behavior:
+Where "Fair Use Limits Apply" appears:
+- Link to a FAQ section if it exists.
+- Or add a tooltip/small helper:
+  "Fair use limits protect the service from abuse and keep AI costs sustainable. Exact limits are shown by plan."
+
+Do not invent exact limits unless already defined.
+
+========================================
+IMPLEMENTATION PHASES FOR THIS CLEANUP
+========================================
+
+Phase 1: Safety scan
+- Identify files/components for app shell, pricing page, guide/help routing, footer/legal links, favicon/manifest.
+- Do not edit until you know where each issue lives.
+
+Phase 2: Routing and trust fixes
+- Fix /help.html.
+- Add branded 404.
+- Add favicon/manifest.
+- Add app footer legal/support links.
+
+Phase 3: Conversion fixes
+- Make waitlist CTAs clickable.
+- Fix Founding Member vs Pro copy mismatch.
+- Reduce repeated checkout-opens-soon language.
+- Add privacy reassurance near waitlist form if missing.
+
+Phase 4: App state fixes
+- Disable empty-state actions.
+- Fix false Saved To Vault state.
+- Add Photography Suite disabled-state explanations.
+- Remove internal developer language.
+
+Phase 5: SEO/polish fixes
+- Fix duplicate H1 if safe.
+- Add/adjust /app metadata if safe.
+- Explain Fair Use Limits where mentioned.
+
+========================================
+REQUIRED MANUAL TEST CHECKLIST
+========================================
+
+Routing:
+- /help.html works or redirects.
+- Unknown route shows branded 404.
+- /pricing.html works.
+- /guide.html works.
+- /privacy.html works.
+- /terms.html works.
+- /app still works.
+
+Assets:
+- /favicon.ico returns 200.
+- /site.webmanifest returns 200.
+- Browser tab shows favicon.
+
+Waitlist:
+- In-app waitlist link works.
+- Founding Member CTA goes to matching Founding Member or neutral waitlist copy.
+- Pro CTA goes to matching Pro or neutral waitlist copy.
+- Copy no longer repeats "Checkout Opens Soon" excessively.
+
+Prompt app:
+- Fresh load does not show false "Saved To Vault."
+- Empty output buttons are disabled/hidden.
+- Generate prompt still works.
+- Copy works after prompt exists.
+- Refine works after prompt exists.
+- Check Quality works after prompt exists.
+- Start Over works only when there is content/input.
+- Save updates Vault and then shows "Saved To Vault."
+- Vault still local-first.
+
+Photography Suite:
+- Disabled buttons explain requirements.
+- Existing Photography Suite behavior still works.
+- Existing image prompt/image generation behavior still works.
+
+Legal/navigation:
+- App contains Privacy, Terms, Pricing, Guide, Contact links.
+- Links wrap on mobile.
+- Links do not clutter main workflow.
+
+UI polish:
+- No "chassis v2 preview."
+- No internal developer labels visible.
+- No new horizontal scrolling.
+- Added helper text is clean and not crowded.
+
+SEO:
+- If changed, H1 hierarchy still reads properly.
+- If changed, /app metadata is appropriate.
+
+========================================
+FINAL RESPONSE REQUIRED FROM REPLIT
+========================================
+
+When finished, report:
+
+1. Files changed.
+2. Exact issues fixed.
+3. Which audit issues remain for the larger redesign.
+4. What existing features were preserved.
+5. Whether storage/database was touched.
+6. Whether pricing amounts or checkout logic were touched.
+7. Manual tests performed and results.
+8. Any risks or recommended follow-up.
+
+End with:
+"This was a targeted cleanup pass, not the full workstation redesign."
