@@ -1122,3 +1122,53 @@ html.pmg-chassis-v2 .pmgv2-composer-wrap #goal:focus {
   border-color: var(--color-primary-hover, #5fe6b0) !important;
   box-shadow: 0 0 0 3px rgba(95, 230, 176, 0.18) !important;
 }
+
+/* === cv2-13: Slim mobile sticky composer ===============================
+   The sticky bar must NOT eat the user's workflow. On phones, keep only
+   the Goal textarea + Fix My Prompt button visible in the pinned bar
+   (~140-160px tall). Hide the long helper, "Try:" example, Use Demo
+   Values, Dice Idea Generator, and the image-gen helper text — all of
+   them already live in the scrolling aux above the bar via the
+   liftFormAuxIntoThread() relocation, OR they're nice-to-have copy that
+   reads fine on desktop but crowds a phone screen. Help Me Start stays
+   visible but shrinks to a compact chip so it doesn't dominate. */
+@media (max-width: 900px) {
+  html.pmg-chassis-v2 .pmgv2-composer-wrap {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+  }
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #prompt-form {
+    gap: 6px !important;
+  }
+  html.pmg-chassis-v2 .pmgv2-composer-wrap .field.field-primary > .helper {
+    display: none !important;
+  }
+  html.pmg-chassis-v2 .pmgv2-composer-wrap .field.field-primary > .field-label-row {
+    margin-bottom: 2px !important;
+  }
+  html.pmg-chassis-v2 .pmgv2-composer-wrap .field.field-primary > .field-label-row > label {
+    font-size: 13px !important;
+  }
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #goal {
+    min-height: 48px !important;
+    max-height: 120px !important;
+    padding: 8px 10px !important;
+  }
+  /* Inside Fix My Prompt actions row, hide the secondary noise but keep
+     the Fix My Prompt button (and Generate Image, which is the primary
+     CTA in image-mode — see demoteButtons gotcha). */
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #tour-step-generate {
+    gap: 6px !important;
+  }
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #tour-step-generate #image-gen-hint,
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #tour-step-generate .demo-stack,
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #tour-step-generate #random-prompt {
+    display: none !important;
+  }
+  /* Help Me Start: compact chip, not a hero button, in the sticky bar. */
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #pmg-help-me-start-btn {
+    font-size: 13px !important;
+    padding: 8px 12px !important;
+    min-height: 38px !important;
+  }
+}
