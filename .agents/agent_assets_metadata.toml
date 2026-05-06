@@ -209,3 +209,9 @@ id = "0wMEMVUS80wJDZtZOwezD"
 uri = "file://screenshots/composer-c.jpg"
 type = "image"
 title = "Option C — Auto-collapsing pill (~88px)"
+
+[[outputs]]
+id = "FyJVXUmjHvElxx30drGlJ"
+uri = "file://.local/notes/mobile-composer-design.md"
+type = "text"
+title = "Mobile Composer — Design & Goal"
