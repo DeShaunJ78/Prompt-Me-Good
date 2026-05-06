@@ -618,24 +618,26 @@ html.pmg-chassis-v2 .pmgv2-tools #pmg-photo-suite * {
 .pmgv2-beta-pill {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 4px 10px;
-  background: linear-gradient(135deg, rgba(255,209,102,0.18), rgba(255,184,77,0.12));
-  border: 1px solid rgba(255,209,102,0.45);
+  background: rgba(62,224,160,0.10);
+  border: 1px solid rgba(62,224,160,0.32);
   border-radius: 999px;
-  color: #ffd166 !important;
+  color: #5fe6b0 !important;
   text-decoration: none;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 9.5px; letter-spacing: 0.1em;
+  font-size: 10px; letter-spacing: 0.08em;
   text-transform: uppercase; font-weight: 600;
+  white-space: nowrap;
+  flex: 0 0 auto;
   transition: background .18s ease, border-color .18s ease;
 }
 .pmgv2-beta-pill:hover {
-  background: linear-gradient(135deg, rgba(255,209,102,0.28), rgba(255,184,77,0.2));
-  border-color: rgba(255,209,102,0.7);
+  background: rgba(62,224,160,0.18);
+  border-color: rgba(62,224,160,0.55);
 }
 .pmgv2-beta-dot {
   width: 6px; height: 6px; border-radius: 50%;
-  background: #ffd166;
-  box-shadow: 0 0 6px rgba(255,209,102,0.8);
+  background: #5fe6b0;
+  box-shadow: 0 0 6px rgba(95,230,176,0.8);
 }
 
 /* Hide the legacy yellow banner whenever chassis v2 is active. The pill

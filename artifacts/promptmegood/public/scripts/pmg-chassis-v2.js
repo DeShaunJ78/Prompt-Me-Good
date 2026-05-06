@@ -41,14 +41,10 @@
       '<div class="pmgv2-tb">',
         '<div class="pmgv2-tb-l">',
           '<div class="pmgv2-brand"><span class="pmgv2-brand-dot"></span><span>PromptMeGood</span></div>',
-          '<div class="pmgv2-vbar"></div>',
-          '<div class="pmgv2-crumb">PromptMeGood Workstation</div>',
         '</div>',
         '<div class="pmgv2-tb-r">',
-          '<span class="pmgv2-kbd">⌘K Search</span>',
-          '<button class="pmgv2-ico" type="button" title="Help">?</button>',
-          '<button class="pmgv2-expert" type="button">⚙ Expert Mode</button>',
-          '<div class="pmgv2-av">U</div>',
+          '<button class="pmgv2-ico" type="button" title="Help" aria-label="Help">?</button>',
+          '<div class="pmgv2-av" aria-label="Account">U</div>',
         '</div>',
       '</div>',
       '<div class="pmgv2-body">',
@@ -149,6 +145,65 @@
     wireBetaPill(root);
     wireExportPlan(root);
     wireMobileDock(root);
+    wireTopBarActions(root);
+    wireTemplatePicker(root);
+  }
+
+  // ---- Top-bar action wiring ----
+  // Help (?) jumps to the in-app guide. Avatar is a no-op placeholder
+  // (auth lives on the legacy account flow). + New Prompt clears #goal
+  // and #prompt-form. Without these handlers the chassis chrome looks
+  // alive but does nothing on tap, which feels broken on mobile.
+  function wireTopBarActions(root) {
+    var help = root.querySelector('.pmgv2-ico');
+    if (help) help.addEventListener('click', function () {
+      try { window.location.href = './guide.html'; } catch (e) {}
+    });
+    var newBtn = root.querySelector('.pmgv2-new-btn');
+    if (newBtn) newBtn.addEventListener('click', function () {
+      try {
+        var goal = document.getElementById('goal');
+        if (goal) { goal.value = ''; goal.focus(); }
+        var resultBox = document.getElementById('resultBox');
+        if (resultBox) resultBox.textContent = '';
+        var rp = document.getElementById('result-panel');
+        if (rp) rp.classList.remove('has-result');
+        // Resets the global "✓ Your prompt is ready…" confirm banner
+        // and the post-result button cluster gated on this body class.
+        document.body.classList.remove('pmg-has-result');
+      } catch (e) {}
+    });
+  }
+
+  // ---- Template picker ----
+  // The chassis mode-bar surfaces a "Choose a starting template…"
+  // button so the relocated #templates panel is reachable without
+  // hunting in the rail. Clicking it scrolls the relocated panel
+  // into view and focuses its first tile. On mobile we also flip
+  // the dock to the vault tab so the rail (which contains
+  // #templates) becomes visible.
+  function wireTemplatePicker(root) {
+    var btn = root.querySelector('.pmgv2-tpl-picker');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var isMobile = window.matchMedia('(max-width: 900px)').matches;
+      if (isMobile) {
+        try {
+          document.documentElement.setAttribute('data-pmgv2-mobile-tab', 'vault');
+          localStorage.setItem('pmgChassisV2:mobileTab', 'vault');
+          var dockBtns = root.querySelectorAll('.pmgv2-dock-btn');
+          for (var i = 0; i < dockBtns.length; i++) {
+            dockBtns[i].setAttribute('aria-pressed', dockBtns[i].getAttribute('data-pmgv2-tab') === 'vault' ? 'true' : 'false');
+          }
+        } catch (e) {}
+      }
+      var tpl = document.getElementById('templates');
+      if (tpl) {
+        try { tpl.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+        var first = tpl.querySelector('button, [role="button"], .template-card, .template-tile');
+        if (first) try { first.focus({ preventScroll: true }); } catch (e) {}
+      }
+    });
   }
 
   // ---- Phase 5: Export Plan ----
