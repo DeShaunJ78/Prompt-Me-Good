@@ -1,0 +1,927 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>
+    /* Apex -> www redirect. */
+    (function () {
+      try {
+        if (location.hostname === 'promptmegood.com') {
+          location.replace('https://www.promptmegood.com' + location.pathname + location.search + location.hash);
+        }
+      } catch (e) { /* no-op */ }
+    })();
+  </script>
+  <title>User Manual — PromptMeGood</title>
+  <meta name="description" content="The complete PromptMeGood user manual. Step-by-step instructions for every screen, every field, every shortcut. Builder, Photography Suite, Image Generator, Vault, Expert Command Center, and more." />
+  <meta name="keywords" content="PromptMeGood manual, AI prompt builder documentation, ChatGPT prompt how-to, DALL-E prompt manual, prompt engineering guide" />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
+  <meta property="og:title" content="User Manual — PromptMeGood" />
+  <meta property="og:description" content="Step-by-step instructions for every screen, every field, every shortcut." />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://www.promptmegood.com/manual.html" />
+  <meta property="og:image" content="https://www.promptmegood.com/opengraph.jpg?v=5" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="User Manual — PromptMeGood" />
+  <meta name="twitter:description" content="The complete reference for the PromptMeGood workstation." />
+  <meta name="twitter:image" content="https://www.promptmegood.com/opengraph.jpg?v=5" />
+  <link rel="canonical" href="https://www.promptmegood.com/manual.html" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=3" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48.png?v=3" />
+  <link rel="icon" type="image/png" href="/assets/pmg-logo.png?v=3" />
+  <link rel="apple-touch-icon" href="/assets/pmg-logo.png?v=3" />
+  <script>
+    /* Mirror of the index.html theme-accent bootstrap. */
+    (function () {
+      try {
+        var v = localStorage.getItem('promptmegood:themeAccent:v1');
+        if (v && /^(green|blue|purple|gold|slate)$/.test(v) && v !== 'green') {
+          document.documentElement.setAttribute('data-accent', v);
+        }
+        var t = localStorage.getItem('promptmegood:theme:v1');
+        if (t === 'dark' || t === 'light') {
+          document.documentElement.setAttribute('data-theme', t);
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --text-2xl: clamp(2rem, 1.2rem + 2.5vw, 3.5rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+      --space-12: 3rem; --space-16: 4rem;
+      --color-bg: #f7f6f2; --color-surface: #fbfbf9; --color-surface-2: #f1efea;
+      --color-border: #d8d4cd; --color-divider: #dfdcd5;
+      --color-text: #24211c; --color-text-muted: #67655f; --color-text-faint: #9a9892;
+      --color-text-inverse: #f8f7f4;
+      --color-primary: #01696f; --color-primary-hover: #0c4e54; --color-primary-highlight: #d7e5e2;
+      --radius-sm: 0.5rem; --radius-md: 0.875rem; --radius-lg: 1.25rem;
+      --radius-xl: 1.5rem; --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px rgba(18, 19, 18, 0.06);
+      --shadow-md: 0 10px 30px rgba(18, 19, 18, 0.08);
+      --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+      --font-body: 'Satoshi', Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      --content: 1080px;
+      --content-narrow: 760px;
+    }
+    /* Accent overrides — mirror the bootstrap in pricing.html so the
+       user's saved accent (promptmegood:themeAccent:v1) actually re-skins
+       this page's primary controls. Default 'green' uses the base tokens. */
+    [data-accent="blue"]   { --color-primary: #1e40af; --color-primary-hover: #1e3a8a; --color-primary-highlight: #dbeafe; }
+    [data-theme="dark"][data-accent="blue"]   { --color-primary: #93c5fd; --color-primary-hover: #bfdbfe; --color-primary-highlight: #1e3a8a; }
+    [data-accent="purple"] { --color-primary: #6d28d9; --color-primary-hover: #5b21b6; --color-primary-highlight: #ede9fe; }
+    [data-theme="dark"][data-accent="purple"] { --color-primary: #c4b5fd; --color-primary-hover: #ddd6fe; --color-primary-highlight: #4c1d95; }
+    [data-accent="gold"]   { --color-primary: #b45309; --color-primary-hover: #92400e; --color-primary-highlight: #fef3c7; }
+    [data-theme="dark"][data-accent="gold"]   { --color-primary: #fcd34d; --color-primary-hover: #fde68a; --color-primary-highlight: #78350f; }
+    [data-accent="slate"]  { --color-primary: #475569; --color-primary-hover: #334155; --color-primary-highlight: #e2e8f0; }
+    [data-theme="dark"][data-accent="slate"]  { --color-primary: #cbd5e1; --color-primary-hover: #e2e8f0; --color-primary-highlight: #1e293b; }
+    [data-theme="dark"] {
+      --color-bg: #151412; --color-surface: #1c1b18; --color-surface-2: #23211f;
+      --color-border: #34312d; --color-divider: #2b2926;
+      --color-text: #ece9e2; --color-text-muted: #b9b4ab; --color-text-faint: #8f8a81;
+      --color-text-inverse: #161513;
+      --color-primary: #5ba8b0; --color-primary-hover: #73b8bf; --color-primary-highlight: #213438;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+      --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.25);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme]) {
+        --color-bg: #151412; --color-surface: #1c1b18; --color-surface-2: #23211f;
+        --color-border: #34312d; --color-divider: #2b2926;
+        --color-text: #ece9e2; --color-text-muted: #b9b4ab; --color-text-faint: #8f8a81;
+        --color-text-inverse: #161513;
+        --color-primary: #5ba8b0; --color-primary-hover: #73b8bf; --color-primary-highlight: #213438;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    body {
+      min-height: 100dvh;
+      background:
+        radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 9%, transparent), transparent 26%),
+        var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-body); font-size: var(--text-base); line-height: 1.65;
+    }
+    img, svg { display: block; max-width: 100%; }
+    button { border: none; cursor: pointer; font: inherit; color: inherit; background: none; }
+    a { color: inherit; text-decoration: none; }
+    main a { color: var(--color-primary); text-decoration: underline; text-underline-offset: 2px; }
+    main a:hover { color: var(--color-primary-hover); }
+    :focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; border-radius: var(--radius-sm); }
+    .skip-link { position: absolute; left: var(--space-4); top: -3rem; background: var(--color-primary); color: var(--color-text-inverse); padding: var(--space-3) var(--space-4); border-radius: var(--radius-full); z-index: 100; }
+    .skip-link:focus { top: var(--space-4); }
+    .container { width: min(calc(100% - 2rem), var(--content)); margin-inline: auto; }
+
+    .topbar {
+      position: sticky; top: 0; z-index: 20;
+      backdrop-filter: blur(14px);
+      background: color-mix(in srgb, var(--color-bg) 84%, transparent);
+      border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+    }
+    .topbar-inner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) 0; }
+    .brand { display: inline-flex; align-items: center; gap: var(--space-3); font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.02em; color: var(--color-text); text-decoration: none; }
+    .logo { width: 38px; height: 38px; border-radius: 12px; object-fit: cover; }
+    .top-actions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; justify-content: flex-end; }
+    .pill {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      min-height: 44px; padding: 0 var(--space-4);
+      border-radius: var(--radius-full);
+      background: var(--color-surface);
+      border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+      color: var(--color-text); font-size: var(--text-sm); font-weight: 600;
+      transition: transform var(--transition), background var(--transition), border-color var(--transition);
+      text-decoration: none;
+    }
+    .pill:hover { transform: translateY(-1px); background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)); color: var(--color-text); }
+    .pill.is-primary { background: var(--color-primary); color: var(--color-text-inverse); border-color: var(--color-primary); }
+    .pill.is-primary:hover { background: var(--color-primary-hover); border-color: var(--color-primary-hover); color: var(--color-text-inverse); }
+
+    .hero { padding: clamp(var(--space-10), 8vw, var(--space-16)) 0 var(--space-6); }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: var(--space-2);
+      padding: 6px 14px; border-radius: var(--radius-full);
+      background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+      color: var(--color-primary); font-size: var(--text-xs); font-weight: 700;
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .hero h1 {
+      margin: var(--space-4) 0 var(--space-3);
+      font-size: var(--text-2xl); font-weight: 800; line-height: 1.1; letter-spacing: -0.01em;
+    }
+    .hero p.lede { color: var(--color-text-muted); font-size: var(--text-base); max-width: 700px; }
+
+    /* Layout: TOC + content */
+    .doc {
+      display: grid; gap: var(--space-8);
+      grid-template-columns: 1fr;
+      padding: var(--space-6) 0 var(--space-12);
+    }
+    @media (min-width: 980px) {
+      .doc { grid-template-columns: 240px 1fr; align-items: start; }
+      .toc { position: sticky; top: 80px; max-height: calc(100dvh - 100px); overflow: auto; padding-right: var(--space-3); }
+    }
+    .toc-card {
+      background: var(--color-surface);
+      border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4) var(--space-3);
+    }
+    .toc h2 { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); margin: 0 var(--space-3) var(--space-2); }
+    .toc ol { list-style: none; counter-reset: tocCount; padding: 0; margin: 0; }
+    .toc li { counter-increment: tocCount; }
+    .toc a {
+      display: block; padding: 8px 12px; border-radius: 8px;
+      font-size: var(--text-sm); color: var(--color-text); text-decoration: none;
+      line-height: 1.4;
+    }
+    .toc a::before { content: counter(tocCount) ". "; color: var(--color-text-faint); font-variant-numeric: tabular-nums; margin-right: 4px; }
+    .toc a:hover { background: color-mix(in srgb, var(--color-primary) 10%, transparent); color: var(--color-primary); }
+
+    .content section.chunk {
+      background: var(--color-surface);
+      border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      margin-bottom: var(--space-6);
+      scroll-margin-top: 80px;
+    }
+    .content section.chunk h2 {
+      display: flex; align-items: center; gap: var(--space-3);
+      font-size: var(--text-xl); font-weight: 800; letter-spacing: -0.01em;
+      margin-bottom: var(--space-3);
+    }
+    .content section.chunk h2 .ic {
+      flex: 0 0 40px; width: 40px; height: 40px; border-radius: var(--radius-md);
+      display: inline-flex; align-items: center; justify-content: center; font-size: 20px;
+      background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    }
+    .content section.chunk > p.intro { color: var(--color-text-muted); font-size: var(--text-sm); margin-bottom: var(--space-4); }
+
+    .content h3 {
+      font-size: var(--text-base); font-weight: 700; color: var(--color-text);
+      margin: var(--space-5) 0 var(--space-2);
+      padding-top: var(--space-3); border-top: 1px solid var(--color-divider);
+      scroll-margin-top: 80px;
+    }
+    .content section.chunk > h3:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+    .content p { margin: 0 0 var(--space-3); color: var(--color-text); }
+    .content ul, .content ol { margin: 0 0 var(--space-3) 1.25rem; }
+    .content li { margin: 4px 0; }
+
+    .steps { counter-reset: stepCount; list-style: none; margin-left: 0; }
+    .steps > li {
+      counter-increment: stepCount;
+      position: relative;
+      padding: 4px 0 4px 38px;
+      margin: 6px 0;
+    }
+    .steps > li::before {
+      content: counter(stepCount);
+      position: absolute; left: 0; top: 4px;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px; border-radius: var(--radius-full);
+      background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+      color: var(--color-primary); font-weight: 800; font-size: 13px;
+    }
+
+    .feature {
+      margin: var(--space-3) 0;
+      padding: var(--space-4);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+    }
+    [data-theme="dark"] .feature, .content section.chunk .feature {
+      background: color-mix(in srgb, var(--color-bg) 60%, var(--color-surface));
+    }
+    .feature h4 {
+      font-size: var(--text-sm); font-weight: 700; color: var(--color-primary);
+      margin-bottom: 6px;
+    }
+    .feature p { font-size: var(--text-sm); margin-bottom: 6px; }
+    .feature ul, .feature ol { font-size: var(--text-sm); margin-left: 1.25rem; }
+
+    .callout {
+      margin: var(--space-4) 0;
+      padding: var(--space-3) var(--space-4);
+      background: color-mix(in srgb, var(--color-primary) 7%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent);
+      border-left: 4px solid var(--color-primary);
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+    }
+    .callout strong { color: var(--color-primary); }
+
+    kbd {
+      display: inline-block; padding: 1px 6px; border-radius: 6px;
+      background: var(--color-surface-2); border: 1px solid var(--color-border);
+      font: 600 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--color-text);
+    }
+
+    table.kbd-table {
+      width: 100%; border-collapse: collapse; margin: var(--space-2) 0 var(--space-3);
+      font-size: var(--text-sm);
+    }
+    table.kbd-table th, table.kbd-table td {
+      text-align: left; padding: 8px 10px;
+      border-bottom: 1px solid var(--color-divider);
+    }
+    table.kbd-table th { color: var(--color-text-muted); font-weight: 600; font-size: var(--text-xs); text-transform: uppercase; letter-spacing: 0.04em; }
+    table.kbd-table td:first-child { width: 200px; }
+
+    .next-row {
+      display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center;
+      margin-top: var(--space-6); padding: var(--space-5);
+      background: var(--color-surface);
+      border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+      border-radius: var(--radius-lg);
+    }
+    .next-row p { margin: 0; font-size: var(--text-sm); flex: 1 1 auto; min-width: 220px; }
+
+    .site-footer {
+      padding: var(--space-12) 0;
+      border-top: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+      background: color-mix(in srgb, var(--color-bg) 92%, transparent);
+    }
+    .site-footer-inner { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); text-align: center; }
+    .site-footer-brand { font-weight: 700; font-size: var(--text-base); }
+    .site-footer-tag { color: var(--color-text-muted); font-size: var(--text-sm); max-width: 520px; }
+    .site-footer-links { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: center; margin-top: var(--space-3); }
+    .site-footer-link { font-size: var(--text-xs); color: var(--color-text-muted); text-decoration: none; }
+    .site-footer-link:hover { color: var(--color-primary); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#manual-main">Skip to manual</a>
+
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="./" aria-label="PromptMeGood home">
+        <img class="logo" src="/assets/pmg-logo.png?v=3" alt="PromptMeGood logo" width="38" height="38" decoding="async" />
+        <span>PromptMeGood</span>
+      </a>
+      <div class="top-actions">
+        <a class="pill" href="./guide.html">Quick Guide</a>
+        <a class="pill is-primary" href="/app">Open The App →</a>
+        <button class="pill" type="button" data-theme-toggle aria-label="Switch theme">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <span>Theme</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="manual-main">
+    <section class="hero">
+      <div class="container">
+        <span class="eyebrow">User manual</span>
+        <h1>Every screen, every button, every shortcut.</h1>
+        <p class="lede">This is the long-form reference for PromptMeGood. If you just want the 60-second tour, read the <a href="./guide.html">Quick Guide</a>. Otherwise, jump to a section below — each one is a step-by-step walkthrough of one part of the workstation.</p>
+      </div>
+    </section>
+
+    <div class="container doc">
+      <aside class="toc" aria-label="Table of contents">
+        <div class="toc-card">
+          <h2>Contents</h2>
+          <ol>
+            <li><a href="#sec-getting-started">Getting started</a></li>
+            <li><a href="#sec-layout">The workstation layout</a></li>
+            <li><a href="#sec-builder">Building a text prompt</a></li>
+            <li><a href="#sec-refining">Refining and running</a></li>
+            <li><a href="#sec-image">Image generation</a></li>
+            <li><a href="#sec-vault">The Prompt Vault</a></li>
+            <li><a href="#sec-templates">Templates</a></li>
+            <li><a href="#sec-expert">Expert Command Center</a></li>
+            <li><a href="#sec-settings">Settings &amp; personalization</a></li>
+            <li><a href="#sec-shortcuts">Keyboard shortcuts</a></li>
+            <li><a href="#sec-account">Account &amp; pricing</a></li>
+            <li><a href="#sec-privacy">Privacy &amp; data</a></li>
+            <li><a href="#sec-troubleshoot">Troubleshooting</a></li>
+          </ol>
+        </div>
+      </aside>
+
+      <div class="content">
+
+        <!-- 1. Getting started -->
+        <section class="chunk" id="sec-getting-started">
+          <h2><span class="ic" aria-hidden="true">🚀</span> 1. Getting started</h2>
+          <p class="intro">No signup. No download. The whole workstation runs in your browser, and your work stays on your device until you choose to send something to an AI provider.</p>
+
+          <h3>Open the app for the first time</h3>
+          <ol class="steps">
+            <li>Visit <a href="/">promptmegood.com</a> and click <strong>Open The App →</strong> in the top-right corner of the landing page.</li>
+            <li>The workstation opens at <code>/app</code>. The first time you visit, you'll see a short tour and a <strong>Use Demo Values</strong> button — accept it to walk through every part of the builder, or close it and start typing.</li>
+            <li>Pick your theme using the moon/sun toggle in the top bar. We mirror your OS preference by default.</li>
+          </ol>
+
+          <h3>Open the app as a returning user</h3>
+          <ol class="steps">
+            <li>Visit <a href="/">promptmegood.com</a> again. If you've used the app before, you'll be redirected straight to <code>/app</code>.</li>
+            <li>At the top of the workstation you'll see a <strong>Welcome Back</strong> panel with three primary actions: <strong>Continue Last Prompt</strong>, <strong>Start A New Prompt</strong>, and <strong>Open Workspace</strong>.</li>
+            <li>Six secondary links underneath jump straight into <strong>Full Builder</strong>, <strong>Image Prompt</strong>, <strong>Prompt Vault</strong>, <strong>Prompt History</strong>, and <strong>Templates</strong>.</li>
+          </ol>
+          <div class="callout"><strong>Want to bypass the redirect?</strong> Visit <code>/?stay=1</code> to view the marketing landing page even if you're a returning user.</div>
+        </section>
+
+        <!-- 2. Layout -->
+        <section class="chunk" id="sec-layout">
+          <h2><span class="ic" aria-hidden="true">🪟</span> 2. The workstation layout</h2>
+          <p class="intro">PromptMeGood arranges everything into a calm three-area chassis. Each area has one job.</p>
+
+          <div class="feature">
+            <h4>Top bar</h4>
+            <p>App brand on the left, navigation links in the center (Builder · Vault · Templates · Pricing · Guide), and your <strong>Theme</strong>, <strong>Accent</strong>, and <strong>Open Expert Command Center</strong> controls on the right. The top bar is always visible.</p>
+          </div>
+          <div class="feature">
+            <h4>Left rail — Vault &amp; Templates</h4>
+            <p>Your saved prompts, recent history, tags, and the templates picker all live here. On phones (under 900 px wide) the rail collapses into a bottom dock with two tabs: <strong>Vault</strong> and <strong>Templates</strong>.</p>
+          </div>
+          <div class="feature">
+            <h4>Center — Builder &amp; Conversation</h4>
+            <p>The main work surface. Top of column: the goal box, mode pills, settings, and the <strong>Generate Prompt</strong> button. Below: <strong>Step 1 — Prompt Tuning</strong>, then (after generation) <strong>Step 2 — Your Fixed Prompt</strong>, and the <strong>Run With AI</strong> response panel.</p>
+          </div>
+          <div class="feature">
+            <h4>Right — Visual Asset Engine</h4>
+            <p><strong>Step 3 — Photography Suite</strong> and <strong>Step 4 — Image Generator</strong> live here when you switch to Create-an-Image mode. On smaller screens this stacks below the builder.</p>
+          </div>
+          <div class="feature">
+            <h4>Status bar</h4>
+            <p>Bottom edge of the workstation. Shows the current mode, your accent color, and a small indicator that confirms when a prompt is auto-saved to the vault.</p>
+          </div>
+        </section>
+
+        <!-- 3. Builder -->
+        <section class="chunk" id="sec-builder">
+          <h2><span class="ic" aria-hidden="true">✍️</span> 3. Building a text prompt</h2>
+          <p class="intro">Text mode is the default. Switch to image mode any time using the pills at the top of the builder — your text and settings are kept across modes.</p>
+
+          <h3>Step 1: Type your goal</h3>
+          <ol class="steps">
+            <li>Click into the big text area labeled <strong>What do you want AI to help you with?</strong></li>
+            <li>Type one honest sentence. <em>"Help me write a cold email to a SaaS founder who ignored my last note."</em></li>
+            <li>Watch the <strong>strength pill</strong> above the box: it cycles through <em>Too Short → Getting There → Good → Strong ✓</em> as you add detail. You can generate at any strength.</li>
+          </ol>
+
+          <h3>Step 2: (Optional) Help Me Start</h3>
+          <ol class="steps">
+            <li>Tap the green <strong>Help Me Start</strong> button at the top of the builder.</li>
+            <li>Answer four short questions: <em>What you need help with · Who it's for · The outcome that matters most · Any rules or limits.</em></li>
+            <li>Use the <strong>Back</strong> link if you need to revisit any answer.</li>
+            <li>Tap <strong>Done</strong>. The Goal, Extra Details, and Rules Or Limits fields fill in automatically.</li>
+            <li>Review, tweak anything, then continue to Generate.</li>
+          </ol>
+
+          <h3>Step 3: Adjust the form fields</h3>
+          <p>All of these are optional. Skipping them is fine — defaults are reasonable.</p>
+
+          <div class="feature">
+            <h4>Category</h4>
+            <p>Tells the builder which kind of problem you're solving. Pick the closest fit; choose <strong>Other</strong> if nothing fits.</p>
+            <ul>
+              <li><strong>Business</strong> — strategy, sales, operations</li>
+              <li><strong>Money</strong> — income ideas, profit, fast action</li>
+              <li><strong>Content</strong> — hooks, scripts, storytelling</li>
+              <li><strong>Career</strong> — resumes, interviews, growth</li>
+              <li><strong>Personal</strong> — decisions, relationships, life</li>
+              <li><strong>Productivity</strong> — focus, habits, systems</li>
+              <li><strong>Learning</strong> — explanations, practice, skills</li>
+              <li><strong>Faith</strong> — Scripture-focused guidance</li>
+              <li><strong>Other</strong> — anything that doesn't fit</li>
+            </ul>
+          </div>
+
+          <div class="feature">
+            <h4>Experience Level</h4>
+            <p><strong>Beginner</strong> simplifies. <strong>Intermediate</strong> skips basics. <strong>Advanced</strong> goes deep on strategy.</p>
+          </div>
+
+          <div class="feature">
+            <h4>Tone</h4>
+            <p>Professional, Bold &amp; Direct, Casual, or Expert. Match it to where you'll use the answer — Bold reads great in marketing copy, Professional fits internal docs.</p>
+          </div>
+
+          <div class="feature">
+            <h4>Output Format</h4>
+            <p><strong>Step-by-step</strong> for action, <strong>List</strong> for fast scanning, <strong>Detailed Breakdown</strong> for deeper learning, <strong>Plain Paragraph</strong> for emails and copy.</p>
+          </div>
+
+          <div class="feature">
+            <h4>Output Language</h4>
+            <p>Pick the language for the AI's reply. The interface stays in English. Currently available: English, Spanish, Portuguese, Russian, French, German.</p>
+          </div>
+
+          <div class="feature">
+            <h4>Personality Mode</h4>
+            <p>Adds a specific voice to the AI's reply. Try a few to see what fits — they pair well with Tone.</p>
+            <ul>
+              <li><strong>No Personality Added</strong> — neutral baseline</li>
+              <li><strong>Direct &amp; Straightforward</strong> — no fluff</li>
+              <li><strong>Friendly &amp; Conversational</strong> — relaxed</li>
+              <li><strong>Bold &amp; Persuasive</strong> — convincing</li>
+              <li><strong>Professional &amp; Structured</strong> — polished</li>
+              <li><strong>Creative &amp; Expressive</strong> — imaginative</li>
+              <li><strong>Faith-Based &amp; Convicting</strong> — spiritual clarity</li>
+              <li><strong>Street-Smart &amp; Practical</strong> — real-world</li>
+              <li><strong>Luxury Brand Voice</strong> — premium</li>
+              <li><strong>Viral Social Media Voice</strong> — punchy</li>
+            </ul>
+          </div>
+
+          <div class="feature">
+            <h4>Extra Details</h4>
+            <p>Optional. Add budget, timeline, platform, audience, or constraints. Every extra detail sharpens the answer.</p>
+          </div>
+
+          <div class="feature">
+            <h4>Max Response Length</h4>
+            <p>Controls how long the AI's reply is. Pick a preset (100, 200, 300, or 500 words), choose <strong>Custom</strong> to type any number, or leave it on <em>No Limit</em> for full-length answers.</p>
+          </div>
+
+          <div class="feature">
+            <h4>Rules Or Limits</h4>
+            <p>Tell the AI what <em>not</em> to do. Examples: <em>"don't sound robotic"</em>, <em>"avoid jargon"</em>, <em>"don't recommend paid ads"</em>. These get added to the prompt as explicit limits.</p>
+          </div>
+
+          <div class="feature">
+            <h4>Optional boosts</h4>
+            <p>Toggle these on to shape the response. They stack — combine for stronger results.</p>
+            <ul>
+              <li><strong>Money Mode</strong> — biases toward profit, ROI, and conversion-focused angles</li>
+              <li><strong>Human Tone</strong> — strips out robotic AI patterns</li>
+              <li><strong>Clarity Boost</strong> — favors short sentences and concrete language</li>
+              <li><strong>Auto Optimize</strong> — runs an extra pass to refine the prompt before showing it</li>
+            </ul>
+          </div>
+
+          <h3>Step 4: Upload a file (optional)</h3>
+          <ol class="steps">
+            <li>Open the <strong>Upload A File Or Image For Smarter Results</strong> control inside the builder.</li>
+            <li>Tap <strong>Choose File</strong> and pick a PDF, JPG, or PNG (up to 10 MB).</li>
+            <li>Type a goal — for example, <em>"Summarise this contract in plain English."</em></li>
+            <li>Click <strong>Analyze My File</strong>. The AI's response appears underneath.</li>
+          </ol>
+          <div class="callout"><strong>Privacy:</strong> uploaded files plus your goal are sent to the AI provider for the request. We do not store the file on our servers after the request completes. See the <a href="./privacy.html">Privacy Policy</a>.</div>
+
+          <h3>Step 5: Generate the prompt</h3>
+          <ol class="steps">
+            <li>Click the big primary <strong>Generate Prompt</strong> button at the bottom of the builder.</li>
+            <li>Your structured prompt appears in the output box on the right (or below on mobile) within a couple of seconds.</li>
+            <li>If you want to see what a finished prompt looks like before typing anything yourself, hit <strong>Use Demo Values</strong> — it loads a sample goal and replays the guided tour.</li>
+          </ol>
+        </section>
+
+        <!-- 4. Refining -->
+        <section class="chunk" id="sec-refining">
+          <h2><span class="ic" aria-hidden="true">🔧</span> 4. Refining and running</h2>
+          <p class="intro">Once a prompt has been generated, the <strong>Step 2 — Your Fixed Prompt</strong> panel appears with refinement controls and the Run With AI button.</p>
+
+          <h3>Tone shifters &amp; Undo</h3>
+          <p>The featured row underneath the prompt shows the most-used refiners. Tap one and the prompt is rewritten in place.</p>
+          <ul>
+            <li><strong>More Detailed</strong> — adds context, audience, and constraints</li>
+            <li><strong>More Bold &amp; Direct</strong> — strips hedging language</li>
+            <li><strong>Beginner Friendly</strong> — simplifies the framing</li>
+            <li><strong>Undo Last Change</strong> — steps back any refinement</li>
+          </ul>
+          <p>Less-used refiners (More Casual, More Concise, Add Examples, etc.) live in a secondary pill row to keep things calm.</p>
+
+          <h3>Run With AI</h3>
+          <ol class="steps">
+            <li>With a prompt visible, tap the <strong>▶ Run With AI</strong> button.</li>
+            <li>The AI response streams into the panel labeled <em>AI Response</em> directly underneath your prompt.</li>
+            <li>When it finishes, use <strong>Copy Response</strong> to take it elsewhere or <strong>Run Again</strong> to retry.</li>
+          </ol>
+          <div class="callout"><strong>Privacy:</strong> only your optimized prompt text is sent to the AI provider. The response is shown only on your device.</div>
+
+          <h3>Check Prompt Quality</h3>
+          <ol class="steps">
+            <li>Look at the <strong>Prompt Strength</strong> score above the prompt — it grades structure, specificity, and constraints out of 100.</li>
+            <li>Tap <strong>Check Prompt Quality</strong> to see two or three concrete suggestions for tightening the prompt.</li>
+            <li>Apply any suggestion, then re-run.</li>
+          </ol>
+
+          <h3>Use the prompt elsewhere</h3>
+          <ol class="steps">
+            <li>Tap <strong>Copy Prompt</strong>.</li>
+            <li>The Send-to row underneath highlights the best-fit destination — ChatGPT, Claude, or Perplexity — and offers <strong>Open in ChatGPT</strong>, <strong>Open in Claude</strong>, etc.</li>
+            <li>Or tap the <strong>🖨 Print</strong> icon for an offline copy.</li>
+          </ol>
+
+          <h3>Save to Vault</h3>
+          <ol class="steps">
+            <li>Tap <strong>Save To Vault</strong>. A small toast confirms the save.</li>
+            <li>The prompt now appears in the left rail under <strong>Vault</strong>, with the goal as its title.</li>
+            <li>Add tags, pin, rename, or delete from the rail at any time.</li>
+          </ol>
+        </section>
+
+        <!-- 5. Image generation -->
+        <section class="chunk" id="sec-image">
+          <h2><span class="ic" aria-hidden="true">🎨</span> 5. Image generation</h2>
+          <p class="intro">Switch to image mode to compose a photographic brief and render it with DALL·E 3 — no copy-paste between tools.</p>
+
+          <h3>Switch into image mode</h3>
+          <ol class="steps">
+            <li>At the top of the builder, tap the <strong>🎨 Create An Image</strong> pill.</li>
+            <li>The goal label becomes <em>Your Image</em>, the Photography Suite appears, and the Generate button becomes <strong>Generate Image</strong>.</li>
+            <li>Type what you want to see in the goal box — subject, scene, mood. One sentence is enough.</li>
+          </ol>
+
+          <h3>Step 3 — Photography Suite</h3>
+          <p>Five collapsible groups of pills sit to the right of the builder. Tap pills to compose; only the <strong>Style</strong> group is open by default to save scroll space.</p>
+          <div class="feature">
+            <h4>Style</h4>
+            <p>Photographic, Cinematic, Editorial, Documentary, Studio Portrait, Product Hero, Street, Fine Art, and more. Pick one as the foundation.</p>
+          </div>
+          <div class="feature">
+            <h4>Camera &amp; Lens</h4>
+            <p>Body type (35mm, medium format, mirrorless), lens length (24mm wide, 85mm portrait, 200mm telephoto), and Pro knobs for aperture, shutter speed, ISO, and film stock.</p>
+          </div>
+          <div class="feature">
+            <h4>Lighting &amp; Mood</h4>
+            <p>Golden hour, blue hour, soft window light, hard side light, neon, candlelit, overcast, etc.</p>
+          </div>
+          <div class="feature">
+            <h4>Composition</h4>
+            <p>Rule of thirds, centered, leading lines, low angle, top-down, close crop, wide environmental, etc.</p>
+          </div>
+          <div class="feature">
+            <h4>Color Palette</h4>
+            <p>Warm earth tones, cool teal &amp; orange, monochrome, pastel, jewel tones, high contrast B&amp;W, and more.</p>
+          </div>
+
+          <h3>Surprise Me &amp; Clear Picks</h3>
+          <ol class="steps">
+            <li><strong>Surprise Me</strong> — rolls a random pick across all groups. Great for breaking out of a creative rut.</li>
+            <li><strong>Clear Picks</strong> — wipes every selection so you can start over.</li>
+          </ol>
+
+          <h3>Step 4 — Generate the image</h3>
+          <ol class="steps">
+            <li>Tap <strong>Send To Image Generator</strong> in the Photography Suite. We synthesize the photo brief and pass it to DALL·E 3 in one shot.</li>
+            <li>You'll see a <em>Generating Image — This Can Take A Few Moments</em> spinner. Both the generate and regenerate buttons disable while the request is in flight.</li>
+            <li>When the image arrives, the panel shows <em>Your Image Is Ready</em> above it.</li>
+          </ol>
+
+          <h3>Work with the image</h3>
+          <ul>
+            <li><strong>Download</strong> — saves the PNG to your device.</li>
+            <li><strong>Regenerate</strong> — runs the same brief again with a fresh seed.</li>
+            <li><strong>Use As Reference</strong> — copies a description of the image to your clipboard so you can paste it back into the Prompt Builder for follow-up work.</li>
+          </ul>
+        </section>
+
+        <!-- 6. Vault -->
+        <section class="chunk" id="sec-vault">
+          <h2><span class="ic" aria-hidden="true">🗂</span> 6. The Prompt Vault</h2>
+          <p class="intro">Every prompt you save lives in the left rail. The vault is local-first — it lives in your browser and never leaves unless you export it.</p>
+
+          <h3>Save a prompt</h3>
+          <ol class="steps">
+            <li>Generate a prompt.</li>
+            <li>Tap <strong>Save To Vault</strong>. A small toast confirms the save.</li>
+            <li>The prompt appears in the left rail with the goal as its title.</li>
+          </ol>
+
+          <h3>Find an old prompt</h3>
+          <ol class="steps">
+            <li>Open the rail (it's always open on desktop; tap the <strong>Vault</strong> tab on the bottom dock on phones).</li>
+            <li>Type into the search box at the top of the rail. Search runs across goal text, tags, and any extra details.</li>
+            <li>Or use <kbd>⌘</kbd>+<kbd>K</kbd> to open the global command palette and search vault items from anywhere.</li>
+          </ol>
+
+          <h3>Tag, pin, rename, or delete</h3>
+          <ol class="steps">
+            <li>Click any vault item to open it.</li>
+            <li>Use the small actions row in the rail item to <strong>Pin</strong>, <strong>Rename</strong>, <strong>Add Tag</strong>, or <strong>Delete</strong>.</li>
+            <li>Pinned items always sort to the top.</li>
+          </ol>
+
+          <h3>Compare two prompts</h3>
+          <ol class="steps">
+            <li>Open one prompt from the rail.</li>
+            <li>Use the rail item's <strong>Compare</strong> action on a second prompt — both open side-by-side in the center panel.</li>
+            <li>Use this to see exactly what a refinement changed.</li>
+          </ol>
+
+          <h3>Export your vault</h3>
+          <ol class="steps">
+            <li>Open the rail's <strong>⋯</strong> menu and choose <strong>Export Vault</strong>.</li>
+            <li>You'll get a JSON file containing every prompt, tag, and timestamp.</li>
+            <li>Use <strong>Import</strong> to load a previously-exported file on a new browser or device.</li>
+          </ol>
+        </section>
+
+        <!-- 7. Templates -->
+        <section class="chunk" id="sec-templates">
+          <h2><span class="ic" aria-hidden="true">📋</span> 7. Templates</h2>
+          <p class="intro">28+ starter templates cover the most common prompt jobs — cold emails, content briefs, study guides, product specs, and more.</p>
+
+          <h3>Open the templates picker</h3>
+          <ol class="steps">
+            <li>Click the <strong>Choose A Starting Template…</strong> picker at the top of the builder.</li>
+            <li>The templates panel opens in the left rail. On phones the bottom dock flips to the <strong>Vault</strong> tab so the picker is visible.</li>
+            <li>Search by name or scroll the list — categories are color-coded.</li>
+          </ol>
+
+          <h3>Apply a template</h3>
+          <ol class="steps">
+            <li>Click any template card. The picker label updates to show your selection.</li>
+            <li>The Goal, Extra Details, Tone, Format, and other fields fill in automatically.</li>
+            <li>Edit anything you want, then tap <strong>Generate Prompt</strong>.</li>
+          </ol>
+
+          <h3>Save your own template</h3>
+          <ol class="steps">
+            <li>Build any prompt the usual way.</li>
+            <li>Open the <strong>Expert Command Center</strong> and switch to the <strong>Save</strong> tab.</li>
+            <li>Give the template a name and short description, then save. It now appears in the picker under <em>My Templates</em>.</li>
+          </ol>
+        </section>
+
+        <!-- 8. Expert Command Center -->
+        <section class="chunk" id="sec-expert">
+          <h2><span class="ic" aria-hidden="true">⚙️</span> 8. Expert Command Center</h2>
+          <p class="intro">A right-side drawer with five tabs — Diagnose, Engineer, Tune, Variations, and Save. It's free for everyone during the open beta and a paid feature after.</p>
+
+          <h3>Open the Command Center</h3>
+          <ol class="steps">
+            <li>Click the <strong>⚙ Expert Mode</strong> toggle in the top bar of the workstation.</li>
+            <li>The first three times you open it, you'll see a quick warning explaining that Expert Mode unlocks deeper controls. Tap <strong>Open Anyway</strong> to confirm.</li>
+            <li>The drawer slides in from the right. Switch tabs along the top.</li>
+          </ol>
+
+          <div class="feature">
+            <h4>Diagnose</h4>
+            <p>Runs a structured analysis of your current prompt: clarity, specificity, persona, format, output length, and likely failure modes. Shows a numeric score and a short list of fixes.</p>
+          </div>
+          <div class="feature">
+            <h4>Engineer</h4>
+            <p>Step-by-step rewriting controls. Add a system message, tweak the persona, force JSON output, define few-shot examples, or chain multiple steps.</p>
+          </div>
+          <div class="feature">
+            <h4>Tune</h4>
+            <p>Adjust how creative or how strict the AI's answer should be, and cap the response length. Useful when you want a more imaginative reply or a tightly-bounded one.</p>
+          </div>
+          <div class="feature">
+            <h4>Variations</h4>
+            <p>Generates three or four parallel versions of the same prompt — short, long, formal, casual — so you can pick the strongest framing.</p>
+          </div>
+          <div class="feature">
+            <h4>Save</h4>
+            <p>Save the current prompt as a template, a workflow, or a brand voice profile (Pro). Workflows let you replay multi-step prompt chains with a single click.</p>
+          </div>
+
+          <div class="callout"><strong>Beta status.</strong> While the open beta is live, Expert Command Center is free for all users. After the beta ends, it becomes a paid feature included with Founding Member and Pro plans.</div>
+        </section>
+
+        <!-- 9. Settings -->
+        <section class="chunk" id="sec-settings">
+          <h2><span class="ic" aria-hidden="true">🎛</span> 9. Settings &amp; personalization</h2>
+          <p class="intro">Most preferences are one click away in the top bar. Everything is stored locally; nothing syncs to a server.</p>
+
+          <h3>Theme</h3>
+          <ol class="steps">
+            <li>Click the moon/sun toggle in the top bar.</li>
+            <li>Choose <strong>Light</strong> or <strong>Dark</strong>. Defaults to your OS preference.</li>
+          </ol>
+
+          <h3>Accent color</h3>
+          <ol class="steps">
+            <li>Open the accent picker in the top bar (small color dots).</li>
+            <li>Choose Green (default), Blue, Purple, Gold, or Slate.</li>
+            <li>The accent re-skins every primary control — picker pulses, buttons, focus rings — and is saved across pages and reloads.</li>
+          </ol>
+
+          <h3>Voice input</h3>
+          <ol class="steps">
+            <li>Click the microphone icon next to the goal box.</li>
+            <li>Grant microphone permission to your browser if prompted.</li>
+            <li>Choose your input language from the small dropdown next to the mic.</li>
+            <li>Speak naturally. The transcript fills the goal box live.</li>
+          </ol>
+
+          <h3>Brand voice profiles (Pro)</h3>
+          <ol class="steps">
+            <li>Open the <strong>Expert Command Center</strong> and switch to the <strong>Save</strong> tab.</li>
+            <li>Choose <strong>Save As Brand Voice</strong>.</li>
+            <li>Give the voice a name and a short description (tone, words to avoid, signature phrases).</li>
+            <li>Apply it later from the same tab before generating a prompt.</li>
+          </ol>
+
+          <h3>Mobile dock</h3>
+          <p>Below 900 px wide, the left rail collapses into a bottom dock with two tabs — <strong>Vault</strong> and <strong>Templates</strong>. Tap either to bring the rail content into view.</p>
+        </section>
+
+        <!-- 10. Shortcuts -->
+        <section class="chunk" id="sec-shortcuts">
+          <h2><span class="ic" aria-hidden="true">⌨️</span> 10. Keyboard shortcuts</h2>
+          <p class="intro">The command palette is the fastest way to find any action without leaving the keyboard. Press <kbd>?</kbd> inside the workstation to see the live, up-to-date list of shortcuts your install supports.</p>
+          <table class="kbd-table">
+            <thead>
+              <tr><th>Shortcut</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><kbd>⌘</kbd>+<kbd>K</kbd> &nbsp;/&nbsp; <kbd>Ctrl</kbd>+<kbd>K</kbd></td><td>Open the global command palette — search every command, mode, template, and vault item</td></tr>
+              <tr><td><kbd>Esc</kbd></td><td>Close any open drawer, dialog, or command palette</td></tr>
+              <tr><td><kbd>?</kbd></td><td>Show the full keyboard shortcuts overlay (live list for your install)</td></tr>
+            </tbody>
+          </table>
+          <div class="callout"><strong>Shortcut tip:</strong> we add new shortcuts regularly. The <kbd>?</kbd> overlay inside the app is always the source of truth — this section calls out only the universal ones.</div>
+        </section>
+
+        <!-- 11. Pricing -->
+        <section class="chunk" id="sec-account">
+          <h2><span class="ic" aria-hidden="true">💳</span> 11. Account &amp; pricing</h2>
+          <p class="intro">PromptMeGood is free during the open beta. There is no signup required to use the workstation.</p>
+
+          <div class="feature">
+            <h4>Free tier</h4>
+            <p>Builder, Photography Suite, Run With AI, Image Generator, Vault, Templates — all with daily fair-use limits. Limits reset every 24 hours.</p>
+          </div>
+          <div class="feature">
+            <h4>Founding Member — $79 one-time</h4>
+            <p>First 500 buyers only. Lifetime access to core features, higher daily caps on Run With AI / image generation / file analysis, the Expert Command Center, and the price is locked for life. Founding Member waitlist is open and checkout opens soon.</p>
+          </div>
+          <div class="feature">
+            <h4>Pro — monthly or yearly</h4>
+            <p>Highest daily caps, brand voice profiles, priority support, and everything in Founding Member. Cancel any time.</p>
+          </div>
+
+          <div class="next-row">
+            <p>See the full breakdown, fair-use limits, and the Founding Member waitlist on the Pricing page.</p>
+            <a class="pill is-primary" href="./pricing.html">Pricing →</a>
+          </div>
+        </section>
+
+        <!-- 12. Privacy -->
+        <section class="chunk" id="sec-privacy">
+          <h2><span class="ic" aria-hidden="true">🔒</span> 12. Privacy &amp; data</h2>
+          <p class="intro">Local-first by default. Your prompts, vault, settings, and theme live in your browser. Only the data you actively send to an AI provider ever leaves your device.</p>
+
+          <h3>What stays on your device</h3>
+          <ul>
+            <li>The Vault (every saved prompt, tag, and timestamp)</li>
+            <li>Templates you've created</li>
+            <li>Theme, accent, language, and other settings</li>
+            <li>Brand voice profiles</li>
+            <li>Workflow definitions</li>
+          </ul>
+
+          <h3>What gets sent to AI providers</h3>
+          <ul>
+            <li><strong>Generate Prompt</strong> — your goal text plus any settings you chose</li>
+            <li><strong>Run With AI</strong> — the optimized prompt text</li>
+            <li><strong>Analyze My File</strong> — the uploaded file plus your goal text</li>
+            <li><strong>Generate Image</strong> — the synthesized photo brief</li>
+            <li><strong>Expert Command Center</strong> tabs — the prompt content for the chosen analysis</li>
+          </ul>
+          <p>Files uploaded for analysis are not stored on our servers after the request completes. AI provider responses are returned only to your device. See the <a href="./privacy.html">Privacy Policy</a> for the full details, including GDPR / UK GDPR / CCPA rights, data retention, and AI-image copyright clarification.</p>
+        </section>
+
+        <!-- 13. Troubleshooting -->
+        <section class="chunk" id="sec-troubleshoot">
+          <h2><span class="ic" aria-hidden="true">🛠</span> 13. Troubleshooting</h2>
+
+          <h3>The page looks stale or styles look broken</h3>
+          <ol class="steps">
+            <li>Hard-refresh: <kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd> (Mac) or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd> (Windows / Linux).</li>
+            <li>If that doesn't help, open your browser settings and clear the cache for promptmegood.com.</li>
+            <li>Reload the page. Your vault and settings are unaffected — they live in localStorage, not the cache.</li>
+          </ol>
+
+          <h3>I'm a returning user but want to see the marketing page</h3>
+          <p>Visit <code>/?stay=1</code>. The redirect to <code>/app</code> is bypassed for that load.</p>
+
+          <h3>The Expert Command Center won't open</h3>
+          <ol class="steps">
+            <li>Confirm you're logged in to a paid plan if the open beta has ended (it's free during beta).</li>
+            <li>Check that no other dialog is open — close it with <kbd>Esc</kbd> first.</li>
+            <li>If the warning dialog appears for a moment and then disappears, hard-refresh once and try again.</li>
+          </ol>
+
+          <h3>Run With AI returns nothing or an error</h3>
+          <ol class="steps">
+            <li>Check that you haven't hit the daily fair-use limit. Free-tier limits reset every 24 hours.</li>
+            <li>Try shortening the prompt — extremely long prompts can time out.</li>
+            <li>If the error persists, copy the prompt and paste it into ChatGPT or Claude directly to confirm whether the prompt itself is the issue.</li>
+          </ol>
+
+          <h3>My vault is empty after switching browsers</h3>
+          <p>The vault is local-first and lives in your browser's localStorage. To move your vault between browsers or devices, use <strong>Export Vault</strong> on the original browser and <strong>Import</strong> on the new one. We're not able to recover vaults — please export periodically as a backup.</p>
+
+          <h3>My image won't generate</h3>
+          <ol class="steps">
+            <li>Confirm you're in image mode (the goal label should read <em>Your Image</em>).</li>
+            <li>Make sure you've described the image in the goal box. Empty briefs are rejected.</li>
+            <li>Try simplifying the brief — extremely complex Photography Suite combinations can occasionally fail. Use <strong>Clear Picks</strong> and try again.</li>
+          </ol>
+
+          <h3>Still stuck?</h3>
+          <p>Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a> with a screenshot and a brief description. We read every message.</p>
+        </section>
+
+        <div class="next-row">
+          <p>Done with the manual? Open the workstation and put it to work.</p>
+          <a class="pill is-primary" href="/app">Open The App →</a>
+          <a class="pill" href="./guide.html">Quick Guide</a>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container site-footer-inner">
+      <div class="site-footer-brand">PromptMeGood</div>
+      <p class="site-footer-tag">A calm, focused workstation for AI prompts. Local-first, no signup, yours forever.</p>
+      <nav class="site-footer-links" aria-label="Footer">
+        <a class="site-footer-link" href="/app">Open App</a>
+        <a class="site-footer-link" href="./guide.html">Quick Guide</a>
+        <a class="site-footer-link" href="./pricing.html">Pricing</a>
+        <a class="site-footer-link" href="./privacy.html">Privacy</a>
+        <a class="site-footer-link" href="./terms.html">Terms</a>
+        <a class="site-footer-link" href="mailto:support@promptmegood.com">Contact</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    /* Theme toggle — mirrors the main app key (promptmegood:theme:v1). */
+    (function () {
+      var btn = document.querySelector('[data-theme-toggle]');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        var cur = document.documentElement.getAttribute('data-theme');
+        var next = cur === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try { localStorage.setItem('promptmegood:theme:v1', next); } catch (e) {}
+      });
+    })();
+  </script>
+</body>
+</html>

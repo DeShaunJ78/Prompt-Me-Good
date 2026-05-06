@@ -27,6 +27,9 @@ PromptMeGood is an AI prompt builder designed to enhance AI interactions and use
 *   `artifacts/promptmegood/`: Main static AI prompt builder (frontend).
 *   `artifacts/promptmegood/index.html`: Marketing landing page.
 *   `artifacts/promptmegood/app.html`: The main workstation UI, served at `/app`.
+*   `artifacts/promptmegood/guide.html`: Concise 60-second Quick Guide (links to manual).
+*   `artifacts/promptmegood/manual.html`: Detailed step-by-step user manual (TOC + 13 sections).
+*   `artifacts/promptmegood/help.html`: Lightweight help splash that links to both guide and manual.
 *   `packages/api/`: Backend API services.
 *   `packages/db/`: Database schema and migrations.
 *   `packages/shared/`: Shared utilities and types.
@@ -73,6 +76,7 @@ I prefer concise and direct communication. When making changes, prioritize itera
 *   **Body-appended overlays:** New runtime overlays mounted directly under `<body>` must have `data-pmg-overlay-root` to be visible, as `pmg-chassis-v2.css` hides most direct `body >` children.
 *   **Waitlist anchors:** `pricing.html` uses three IDs (`#early-access`, `#founding-member-waitlist`, `#pro-early-access`) for its single waitlist form; CTAs link to tier-specific anchors.
 *   **Adding new top-level HTML pages:** Register new HTML files in `artifacts/promptmegood/vite.config.ts` `rollupOptions.input` for proper build output.
+*   **Guide vs Manual split:** `guide.html` is the short orientation; `manual.html` is the long-form reference. Cross-link both whenever changing nav, and keep `help.html` pointing to both.
 *   **Route split (`/` vs `/app`):** `/` serves the marketing landing, while `/app` serves the workstation. The landing page auto-redirects returning users to `/app`; use `?stay=1` to bypass this during testing. Do not rename `app.html` to `index.html`.
 
 ## Pointers

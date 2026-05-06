@@ -4,29 +4,32 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Help · PromptMeGood</title>
-  <meta name="description" content="The PromptMeGood help center. Redirecting you to the full guide." />
-  <meta http-equiv="refresh" content="0; url=./guide.html" />
-  <link rel="canonical" href="https://www.promptmegood.com/guide.html" />
+  <meta name="description" content="The PromptMeGood help center. Pick the Quick Guide for a 60-second tour or the Manual for the complete reference." />
+  <link rel="canonical" href="https://www.promptmegood.com/manual.html" />
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=4" />
   <style>
     html, body { margin: 0; padding: 0; background: #0a2420; color: #e8f5f0; font: 16px/1.5 Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; min-height: 100vh; }
-    .wrap { max-width: 480px; margin: 0 auto; padding: 80px 24px; text-align: center; }
+    .wrap { max-width: 520px; margin: 0 auto; padding: 80px 24px; text-align: center; }
     h1 { font-size: 24px; margin: 0 0 12px 0; color: #e8f5f0; }
     .accent { color: #5fe6b0; }
-    p { color: rgba(232,245,240,0.7); margin: 0 0 20px 0; }
-    a.btn { display: inline-block; padding: 10px 18px; border-radius: 8px; background: linear-gradient(135deg,#3ee0a0,#5fe6b0); color: #0a2420; font-weight: 600; text-decoration: none; }
+    p { color: rgba(232,245,240,0.75); margin: 0 0 20px 0; }
+    .row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+    a.btn { display: inline-block; padding: 12px 20px; border-radius: 10px; background: linear-gradient(135deg,#3ee0a0,#5fe6b0); color: #0a2420; font-weight: 700; text-decoration: none; min-height: 44px; }
+    a.btn.ghost { background: transparent; border: 1px solid rgba(95,230,176,0.55); color: #5fe6b0; }
     a.btn:hover { filter: brightness(1.05); }
-    .small { font-size: 13px; color: rgba(232,245,240,0.5); margin-top: 24px; }
+    .small { font-size: 13px; color: rgba(232,245,240,0.5); margin-top: 28px; }
     .small a { color: #5fe6b0; text-decoration: none; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1><span class="accent">PromptMeGood</span> Help</h1>
-    <p>Taking you to the full guide…</p>
-    <a class="btn" href="./guide.html">Open the guide</a>
-    <p class="small">Not redirected? <a href="./guide.html">Click here</a>.</p>
+    <p>Pick the level of detail you want. The Quick Guide is a 60-second tour; the Manual covers every screen and shortcut.</p>
+    <div class="row">
+      <a class="btn" href="./manual.html">Open The Full Manual</a>
+      <a class="btn ghost" href="./guide.html">Read The Quick Guide</a>
+    </div>
+    <p class="small">Need a human? Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.</p>
   </div>
-  <script>setTimeout(function(){ location.replace('./guide.html'); }, 50);</script>
 </body>
 </html>
