@@ -1,0 +1,118 @@
+Replit Polish Guide: PromptMeGood Workstation
+
+Date: May 6, 2026
+Auditor: Manus AI
+Target: The newly deployed Workstation Chassis (/app route)
+
+
+
+
+Executive Summary
+
+The new Workstation Chassis is live and represents a massive leap forward in usability and professional appeal. The three-column layout (Vault, Prompt Engine, Photography Suite) successfully organizes the previously overwhelming single-page app. The dark theme with teal accents looks premium.
+
+However, from a first-time user perspective, there are still several friction points and layout quirks that need polishing to achieve the "ChatGPT-style calm core" envisioned in the redesign brief. This guide provides actionable steps for Replit to refine the UI and UX.
+
+
+
+
+1. The "Calm Core" (Center Column) Polish
+
+The center column is the heart of the application, but it currently feels more like a form than a conversational thread.
+
+Findings
+
+•
+The "Fixed Prompt" Area is Static: The area labeled "Your Fixed Prompt Will Appear Here" takes up significant vertical space before the user has even typed anything. It feels like a placeholder rather than a dynamic chat interface.
+
+•
+The Composer is Buried: The main input area ("Describe What You Want") is pushed down by the "Help Me Start" button and the static output area. In a conversational UI, the composer should be anchored to the bottom.
+
+•
+Button Clutter: The action buttons (Copy, Refine, Check Quality, Start Over, Download) are permanently visible, even when there is no prompt to act upon.
+
+Actionable Polish for Replit
+
+1.
+Anchor the Composer: Move the main textarea (id="goal") and the "Fix My Prompt" button to the absolute bottom of the center column, making it sticky. This mimics the familiar ChatGPT/Claude input experience.
+
+2.
+Dynamic Threading: Remove the static "Your Fixed Prompt" placeholder box. The center column should be empty (or show a subtle welcome message) until the user submits a prompt. When a prompt is generated, it should appear as a new "Card" in the thread above the composer.
+
+3.
+Contextual Action Buttons: Move the action buttons (Copy, Refine, Run with AI) inside the generated Prompt Card. They should only exist in relation to a specific output, not as global page buttons.
+
+
+
+
+2. The Photography Suite (Right Panel) Polish
+
+The Photography Suite is powerful, but its current implementation feels disconnected from the main workflow unless the user explicitly knows to look for it.
+
+Findings
+
+•
+Master Link Visibility: The "Master Link" toggle is currently buried at the top of the Photography Suite under a small label. It does not feel like the "literal hero" or the bridge between the two engines.
+
+•
+Visual Hierarchy: The suite contains many collapsible sections (Style, Camera & Lens, etc.), which is good for organization, but the overall panel lacks a clear "Generate" or "Apply" CTA that connects back to the main thread.
+
+Actionable Polish for Replit
+
+1.
+Elevate the Master Link: Move the Master Link toggle out of the right panel and place it in the "gutter" between the center column and the right panel. Use the glowing chain icon concept to make it a prominent, interactive bridge.
+
+2.
+Clarify the Output: When the Master Link is ON, ensure that clicking "Fix My Prompt" in the center column clearly indicates that it is pulling data from the Photography Suite. The resulting card in the center thread should display both the text prompt and the visual parameters.
+
+
+
+
+3. The Vault & Navigation (Left Rail) Polish
+
+The left rail successfully houses the history and templates, but the visual execution needs refinement.
+
+Findings
+
+•
+Template Dropdown: The "Choose a starting template" dropdown is currently floating awkwardly above the center column, disconnected from the left rail where the actual template grid lives.
+
+•
+Visual Weight: The left rail feels slightly too wide, taking up valuable screen real estate that could be used for the center conversation thread.
+
+Actionable Polish for Replit
+
+1.
+Consolidate Templates: Move the Template selection logic entirely into the left rail or make it a prominent "Mode Switcher" at the very top of the center column (as specified in the redesign brief). Do not split template UI across multiple areas.
+
+2.
+Adjust Proportions: Slightly reduce the width of the left rail (e.g., from 25% to 20%) to give the center "Canvas" more breathing room. Ensure the left rail is easily collapsible on smaller screens.
+
+
+
+
+4. Global UI/UX Refinements
+
+Findings
+
+•
+The "Beta" Banner: The green text banner ("Free tier with daily limits...") is currently injected into the middle of the center column, disrupting the flow.
+
+•
+Inconsistent Spacing: There are varying margins and paddings between the different sections (e.g., the gap between the "Prompt Tuning" section and the main input).
+
+Actionable Polish for Replit
+
+1.
+Relocate the Banner: Move the Beta/Pricing banner to the very top of the screen as a slim, dismissible global notification, or move it to the bottom of the left rail. It should not interrupt the core workspace.
+
+2.
+Standardize Spacing: Apply a consistent spacing system (e.g., using CSS variables for gaps) across all three columns to ensure the layout feels tight and professional.
+
+
+
+
+Conclusion
+
+The structural foundation of the new Workstation is solid. By focusing this polish pass on anchoring the composer, making the center column a true dynamic thread, and elevating the Master Link, Replit can finalize the transition from a "complex form" to a "calm, professional conversational chassis."
+
