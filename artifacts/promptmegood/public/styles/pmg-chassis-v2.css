@@ -1323,12 +1323,11 @@ html.pmg-chassis-v2 .pmgv2-composer-tab { display: none; }
     bottom: 60px; /* 56px dock + 4px breathing room */
     height: 46px;
     border-radius: 999px;
-    /* cv2-25: lifted fill — cv2-22's 32% mint mix still read too dark on
-       OLED phones. Bumped to 55% so the pill body is clearly luminous
-       against the deep app surface. Text shifted to deep teal #0a2420
-       for AA contrast against the brighter mint fill. */
-    background: color-mix(in srgb, var(--color-primary, #3ee0a0) 55%, var(--color-bg-card, #0c1a17));
-    color: #0a2420;
+    /* cv2-27: solid white interior with black text per user request —
+       the mint-mix fills still read too dark on OLED phones. Mint halo
+       (box-shadow rings) is preserved so the pill stays on-brand. */
+    background: #ffffff;
+    color: #000000;
     border: 1.5px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 85%, transparent);
     padding: 0 20px;
     font-size: 15px;
@@ -1365,7 +1364,7 @@ html.pmg-chassis-v2 .pmgv2-composer-tab { display: none; }
   }
   html.pmg-chassis-v2 .pmgv2-composer-tab:hover,
   html.pmg-chassis-v2 .pmgv2-composer-tab:focus-visible {
-    background: color-mix(in srgb, var(--color-primary, #3ee0a0) 70%, var(--color-bg-card, #0c1a17));
+    background: #f4f4f4; /* cv2-27: subtle off-white on hover */
     animation-play-state: paused;
     outline: none;
   }
@@ -1384,9 +1383,8 @@ html.pmg-chassis-v2 .pmgv2-composer-tab { display: none; }
   html.pmg-chassis-v2 .pmgv2-composer-tab-lab {
     flex: 1 1 auto;
     text-align: left;
-    /* cv2-25: text now sits on bright mint fill, so we use deep teal
-       (same as --color-bg) for AA contrast instead of cream. */
-    color: #0a2420;
+    /* cv2-27: black text on white interior per user request. */
+    color: #000000;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1394,7 +1392,7 @@ html.pmg-chassis-v2 .pmgv2-composer-tab { display: none; }
   }
   html.pmg-chassis-v2 .pmgv2-composer-tab-car {
     flex: 0 0 auto;
-    color: #0a2420; /* match label so caret reads on bright fill */
+    color: #000000;
     font-size: 12px;
     line-height: 1;
     opacity: 0.85;
