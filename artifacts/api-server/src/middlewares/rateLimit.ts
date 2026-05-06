@@ -41,3 +41,4 @@ export const generateLimiter = makeRateLimiter({ windowMs: HOUR_MS, max: 20, lab
 export const runLimiter = makeRateLimiter({ windowMs: HOUR_MS, max: 5, label: "run" });
 export const rateLimit = makeRateLimiter({ windowMs: 60 * 1000, max: 10, label: "general" });
 export const imageLimiter = makeRateLimiter({ windowMs: HOUR_MS, max: 3, label: "image" }); // 3 images/hour per IP
+export const videoLimiter = makeRateLimiter({ windowMs: HOUR_MS, max: 2, label: "video" }); // 2 videos/hour per IP — Sora is expensive

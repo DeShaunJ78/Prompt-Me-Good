@@ -6,9 +6,10 @@ import { PDFParse } from "pdf-parse";
 import { openai } from "../lib/openai-client";
 import { logger } from "../lib/logger";
 import { clampString, sanitizeGoal } from "../middlewares/sanitize";
-import { generateLimiter, runLimiter, rateLimit, imageLimiter } from "../middlewares/rateLimit";
+import { generateLimiter, runLimiter, rateLimit, imageLimiter, videoLimiter } from "../middlewares/rateLimit";
 import { chargeCost, generateCostCheck, runCostCheck, imageCheck, imageCheckMulti, chargeImage } from "../middlewares/costGuard";
 import { userCapEnforce } from "../middlewares/userCaps";
+import type { PmgPlan } from "../lib/pricing-config";
 
 const router: IRouter = Router();
 
@@ -654,6 +655,91 @@ router.post("/image", imageLimiter, userCapEnforce("img", imageCostExtractor), a
       ok: false,
       error: "Image generation failed. Please try again.",
     });
+  }
+});
+
+// /api/video — generates a short video using OpenAI's Sora model.
+// Founding/Pro only — free and trial users get 402 with an upgrade CTA.
+// Rate-limited per IP and capped per-user-per-day via userCapEnforce.
+router.post("/video", videoLimiter, userCapEnforce("vid", 1), async (req, res) => {
+  const ctx = (req as Request & { pmgUser?: { plan: PmgPlan } }).pmgUser;
+  if (!ctx) {
+    res.status(401).json({
+      success: false,
+      ok: false,
+      error: "Sign in required for video generation.",
+      upgrade: true,
+    });
+    return;
+  }
+  if (ctx.plan !== "founding" && ctx.plan !== "pro") {
+    res.status(402).json({
+      success: false,
+      ok: false,
+      error: "🎬 Video generation is a Founding Member feature. Lock in lifetime access for $79.",
+      upgrade: true,
+    });
+    return;
+  }
+
+  const promptRaw = req.body?.prompt;
+  if (typeof promptRaw !== "string" || !promptRaw.trim()) {
+    res.status(400).json({ success: false, ok: false, error: "A prompt is required." });
+    return;
+  }
+  const prompt = promptRaw.trim().slice(0, 1500);
+
+  const VALID_RES = new Set(["480p", "720p", "1080p"]);
+  const resolution = VALID_RES.has(req.body?.resolution) ? req.body.resolution : "720p";
+  const VALID_DUR = new Set([5, 10]);
+  const nSecondsRaw = Number(req.body?.n_seconds ?? req.body?.nSeconds ?? 5);
+  const nSeconds = VALID_DUR.has(nSecondsRaw) ? nSecondsRaw : 5;
+
+  try {
+    // Sora API call. The OpenAI SDK does not yet expose `videos.generate` in
+    // the published TS types, so we hit the REST endpoint directly. Shape
+    // mirrors `POST /v1/video/generations` per the spec the user provided.
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      res.status(500).json({ success: false, ok: false, error: "Server misconfigured: missing API key." });
+      return;
+    }
+    const soraRes = await fetch("https://api.openai.com/v1/video/generations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({ model: "sora", prompt, resolution, n_seconds: nSeconds }),
+    });
+
+    if (!soraRes.ok) {
+      const errText = await soraRes.text().catch(() => "");
+      logger.error({ status: soraRes.status, body: errText.slice(0, 500) }, "sora generation failed");
+      const status = soraRes.status === 429 ? 429 : 502;
+      res.status(status).json({
+        success: false,
+        ok: false,
+        error: status === 429
+          ? "Sora is rate-limited right now. Try again in a few minutes."
+          : "Video generation failed. Please try again.",
+      });
+      return;
+    }
+
+    const data = (await soraRes.json()) as { url?: string; data?: Array<{ url?: string }> };
+    const url = data.url ?? data.data?.[0]?.url;
+    if (!url) {
+      res.status(502).json({ success: false, ok: false, error: "Sora returned no video URL." });
+      return;
+    }
+
+    bumpRunCount();
+    res.json({ success: true, ok: true, url, resolution, n_seconds: nSeconds });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Video generation failed.";
+    logger.error({ err: message }, "video generation failed");
+    res.status(502).json({ success: false, ok: false, error: "Video generation failed. Please try again." });
   }
 });
 

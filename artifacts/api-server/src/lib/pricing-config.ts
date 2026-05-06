@@ -19,10 +19,10 @@ export const PMG_PRICING = {
   // unlimited — they have generous fair-use caps so unit economics stay
   // predictable. Trial caps apply to free users in their first 7 days
   // since account creation; standard free caps apply afterward.
-  TRIAL_DAILY_CAPS:    { run: 10, img: 5,  analyze: 3 },
-  FREE_DAILY_CAPS:     { run: 3,  img: 1,  analyze: 1 },
-  FOUNDING_DAILY_CAPS: { run: 30, img: 15, analyze: 10 },
-  PRO_DAILY_CAPS:      { run: 60, img: 30, analyze: 20 },
+  TRIAL_DAILY_CAPS:    { run: 10, img: 5,  analyze: 3,  vid: 0 },
+  FREE_DAILY_CAPS:     { run: 3,  img: 1,  analyze: 1,  vid: 0 },
+  FOUNDING_DAILY_CAPS: { run: 30, img: 15, analyze: 10, vid: 5 },
+  PRO_DAILY_CAPS:      { run: 60, img: 30, analyze: 20, vid: 10 },
   PRICE_LOCK_TAGLINE: "price locked for life",
   // Expert Command Center is a paid feature (Founding Member + Pro).
   // During the open beta (free for everyone until BETA_END), free users
@@ -32,7 +32,7 @@ export const PMG_PRICING = {
   BETA_END: "2026-06-01T05:00:00.000Z",
 } as const;
 
-export type PmgFeature = "run" | "img" | "analyze";
+export type PmgFeature = "run" | "img" | "analyze" | "vid";
 export type PmgPlan = "free" | "founding" | "pro";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -52,6 +52,7 @@ export interface DailyCaps {
   run: number;
   img: number;
   analyze: number;
+  vid: number;
 }
 
 /** Returns the effective per-day caps for the user. No tier is unlimited:

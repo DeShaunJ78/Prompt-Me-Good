@@ -1,0 +1,345 @@
+/* ============================================================================
+   PromptMeGood — Visual Studio Modal (vs-1)
+   Full-screen image + video prompt builder.
+   Desktop: centered overlay 1100px x 90vh, two columns (Builder | Result).
+   Mobile (<=768px): full-screen bottom sheet, two-step flow toggled by
+   `.is-step-2` on `.pmg-modal-body`.
+   ============================================================================ */
+
+#pmg-visual-studio-modal.pmg-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(4, 16, 14, 0.78);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 9000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  animation: pmgVsFade 180ms ease-out;
+}
+#pmg-visual-studio-modal[hidden] { display: none !important; }
+@keyframes pmgVsFade { from { opacity: 0; } to { opacity: 1; } }
+
+#pmg-visual-studio-modal .pmg-modal-content {
+  background: var(--g2-teal-1, #0a2420);
+  border: 1px solid color-mix(in srgb, var(--g2-mint, #3ee0a0) 20%, transparent);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 1100px;
+  height: 90vh;
+  max-height: 900px;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.5),
+              0 0 0 1px rgba(62, 224, 160, 0.08);
+  color: var(--color-text, #e8f5f0);
+}
+
+#pmg-visual-studio-modal .pmg-modal-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid color-mix(in srgb, var(--g2-mint, #3ee0a0) 14%, transparent);
+  display: flex; justify-content: space-between; align-items: center;
+  background: color-mix(in srgb, var(--g2-mint, #3ee0a0) 4%, transparent);
+}
+#pmg-visual-studio-modal .pmg-modal-header h2 {
+  margin: 0; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.01em;
+  color: var(--g2-mint, #3ee0a0);
+}
+#pmg-close-visual-studio {
+  appearance: none; border: 0; background: transparent;
+  color: var(--color-text, #e8f5f0); font-size: 1.4rem; line-height: 1;
+  width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: background 140ms ease;
+}
+#pmg-close-visual-studio:hover,
+#pmg-close-visual-studio:focus-visible {
+  background: color-mix(in srgb, var(--g2-mint, #3ee0a0) 14%, transparent);
+  outline: none;
+}
+
+#pmg-visual-studio-modal .pmg-modal-body {
+  display: flex; flex: 1; overflow: hidden;
+}
+
+/* --- Builder column --- */
+#pmg-visual-studio-modal .pmg-modal-col-builder {
+  width: 42%;
+  padding: 20px 22px;
+  overflow-y: auto;
+  border-right: 1px solid color-mix(in srgb, var(--g2-mint, #3ee0a0) 14%, transparent);
+  background: color-mix(in srgb, #000 12%, var(--g2-teal-1, #0a2420));
+}
+
+.pmg-vs-tabs {
+  display: inline-flex;
+  background: color-mix(in srgb, #000 28%, transparent);
+  border-radius: 999px;
+  padding: 4px;
+  margin-bottom: 18px;
+  gap: 2px;
+}
+.pmg-vs-tab {
+  appearance: none; border: 0;
+  background: transparent;
+  color: color-mix(in srgb, var(--g2-mint, #3ee0a0) 70%, #fff);
+  font-weight: 600; font-size: 0.92rem;
+  padding: 8px 18px; border-radius: 999px; cursor: pointer;
+  transition: all 160ms ease;
+}
+.pmg-vs-tab:hover { color: #fff; }
+.pmg-vs-tab.active {
+  background: var(--g2-mint, #3ee0a0);
+  color: var(--g2-teal-1, #0a2420);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--g2-mint, #3ee0a0) 35%, transparent);
+}
+.pmg-vs-tab .pmg-vs-pro-tag {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 0.62rem; font-weight: 700;
+  padding: 1px 6px; border-radius: 4px;
+  background: rgba(255, 211, 99, 0.22);
+  color: #ffd363;
+  vertical-align: middle;
+}
+
+.pmg-vs-section { margin-bottom: 16px; }
+.pmg-vs-section > label {
+  display: block;
+  font-size: 0.78rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: color-mix(in srgb, var(--g2-mint, #3ee0a0) 80%, #fff);
+  margin-bottom: 6px;
+}
+.pmg-vs-section textarea,
+.pmg-vs-section input[type="text"] {
+  width: 100%; box-sizing: border-box;
+  background: color-mix(in srgb, #000 35%, transparent);
+  border: 1px solid color-mix(in srgb, var(--g2-mint, #3ee0a0) 18%, transparent);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--color-text, #fff);
+  font-family: inherit; font-size: 0.95rem; line-height: 1.45;
+  resize: vertical;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+.pmg-vs-section textarea:focus,
+.pmg-vs-section input[type="text"]:focus {
+  outline: none;
+  border-color: var(--g2-mint, #3ee0a0);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--g2-mint, #3ee0a0) 22%, transparent);
+}
+
+.pmg-vs-tuning {
+  background: color-mix(in srgb, #000 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--g2-mint, #3ee0a0) 12%, transparent);
+  border-radius: 10px;
+  padding: 0 12px;
+  margin-bottom: 16px;
+}
+.pmg-vs-tuning > summary {
+  list-style: none; cursor: pointer;
+  padding: 12px 0;
+  font-weight: 700; font-size: 0.9rem;
+  color: color-mix(in srgb, var(--g2-mint, #3ee0a0) 85%, #fff);
+  display: flex; align-items: center; gap: 8px;
+}
+.pmg-vs-tuning > summary::-webkit-details-marker { display: none; }
+.pmg-vs-tuning > summary::before {
+  content: "▸";
+  display: inline-block;
+  transition: transform 160ms ease;
+  color: var(--g2-mint, #3ee0a0);
+}
+.pmg-vs-tuning[open] > summary::before { transform: rotate(90deg); }
+.pmg-vs-tuning > div { padding: 4px 0 14px; }
+
+/* Sora tuning grid (Shot Type / Movement / Mood / Duration / Resolution / Style) */
+.pmg-vs-sora-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.pmg-vs-sora-grid label {
+  display: flex; flex-direction: column; gap: 4px;
+  font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+  color: color-mix(in srgb, var(--g2-mint, #3ee0a0) 70%, #fff);
+}
+.pmg-vs-sora-grid select {
+  appearance: none;
+  background: color-mix(in srgb, #000 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--g2-mint, #3ee0a0) 18%, transparent);
+  border-radius: 8px;
+  padding: 8px 28px 8px 10px;
+  color: var(--color-text, #fff);
+  font-family: inherit; font-size: 0.9rem;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path fill='%233ee0a0' d='M6 8.5L1.5 4h9z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  cursor: pointer;
+}
+.pmg-vs-sora-grid select:focus {
+  outline: none;
+  border-color: var(--g2-mint, #3ee0a0);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--g2-mint, #3ee0a0) 22%, transparent);
+}
+
+.pmg-vs-actions-row {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  margin-top: 12px;
+}
+
+.pmg-vs-btn {
+  appearance: none; border: 0; cursor: pointer;
+  font-family: inherit; font-weight: 700; font-size: 0.95rem;
+  padding: 12px 18px; border-radius: 12px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  transition: transform 120ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+.pmg-vs-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.pmg-vs-btn-primary {
+  background: var(--g2-mint, #3ee0a0);
+  color: var(--g2-teal-1, #0a2420);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--g2-mint, #3ee0a0) 35%, transparent);
+}
+.pmg-vs-btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 12px 28px color-mix(in srgb, var(--g2-mint, #3ee0a0) 45%, transparent); }
+.pmg-vs-btn-secondary {
+  background: color-mix(in srgb, var(--g2-mint, #3ee0a0) 14%, transparent);
+  color: var(--g2-mint, #3ee0a0);
+  border: 1px solid color-mix(in srgb, var(--g2-mint, #3ee0a0) 30%, transparent);
+}
+.pmg-vs-btn-secondary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--g2-mint, #3ee0a0) 22%, transparent);
+}
+.pmg-vs-full-width { width: 100%; }
+
+/* Refined output card */
+.pmg-vs-refined-output {
+  background: color-mix(in srgb, var(--g2-mint, #3ee0a0) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--g2-mint, #3ee0a0) 22%, transparent);
+  border-radius: 12px;
+  padding: 14px;
+  margin-top: 12px;
+}
+.pmg-vs-refined-output[hidden] { display: none !important; }
+.pmg-vs-refined-output > label {
+  display: block;
+  font-size: 0.78rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--g2-mint, #3ee0a0);
+  margin-bottom: 6px;
+}
+
+/* --- Result column --- */
+#pmg-visual-studio-modal .pmg-modal-col-result {
+  width: 58%;
+  padding: 20px 22px;
+  display: flex; flex-direction: column;
+  background: color-mix(in srgb, #000 22%, var(--g2-teal-1, #0a2420));
+}
+.pmg-vs-media-container {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px;
+  overflow: hidden;
+  background: color-mix(in srgb, #000 45%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--g2-mint, #3ee0a0) 18%, transparent);
+  margin-bottom: 14px;
+  min-height: 240px;
+}
+.pmg-vs-media-container img,
+.pmg-vs-media-container video {
+  max-width: 100%; max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+.pmg-media-placeholder {
+  text-align: center; padding: 24px;
+  color: color-mix(in srgb, var(--g2-mint, #3ee0a0) 70%, #fff);
+  font-size: 0.95rem; font-weight: 600;
+}
+.pmg-media-placeholder .pmg-vs-spinner {
+  width: 36px; height: 36px;
+  border: 3px solid color-mix(in srgb, var(--g2-mint, #3ee0a0) 22%, transparent);
+  border-top-color: var(--g2-mint, #3ee0a0);
+  border-radius: 50%;
+  margin: 0 auto 12px;
+  animation: pmgVsSpin 900ms linear infinite;
+}
+@keyframes pmgVsSpin { to { transform: rotate(360deg); } }
+.pmg-media-placeholder .pmg-vs-sub {
+  display: block; margin-top: 6px;
+  font-size: 0.78rem; font-weight: 500; opacity: 0.75;
+}
+
+#pmg-vs-back-to-builder {
+  appearance: none; border: 0; background: transparent;
+  color: var(--g2-mint, #3ee0a0);
+  font-weight: 600; font-size: 0.9rem;
+  padding: 8px 0;
+  align-self: flex-start; cursor: pointer;
+  margin-bottom: 8px;
+}
+.pmg-mobile-only { display: none; }
+
+/* --- Free-tier upgrade card (shown when video tab is locked) --- */
+.pmg-vs-upgrade-card {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--g2-mint, #3ee0a0) 14%, transparent),
+    color-mix(in srgb, #ffd363 8%, transparent));
+  border: 1px solid color-mix(in srgb, #ffd363 30%, transparent);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.pmg-vs-upgrade-card h4 {
+  margin: 0 0 6px; font-size: 1rem;
+  color: #ffd363;
+}
+.pmg-vs-upgrade-card p {
+  margin: 0 0 10px;
+  font-size: 0.88rem; line-height: 1.5;
+  color: color-mix(in srgb, #fff 88%, transparent);
+}
+
+/* --- Mobile: bottom sheet + two-step flow --- */
+@media (max-width: 768px) {
+  #pmg-visual-studio-modal.pmg-modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+  #pmg-visual-studio-modal .pmg-modal-content {
+    width: 100%; max-width: none;
+    height: 100vh; height: 100dvh;
+    max-height: none;
+    border-radius: 18px 18px 0 0;
+    border-left: 0; border-right: 0; border-bottom: 0;
+    animation: pmgVsSlideUp 220ms ease-out;
+  }
+  @keyframes pmgVsSlideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+
+  #pmg-visual-studio-modal .pmg-modal-body {
+    flex-direction: column;
+  }
+  #pmg-visual-studio-modal .pmg-modal-col-builder,
+  #pmg-visual-studio-modal .pmg-modal-col-result {
+    width: 100%; height: 100%;
+    border-right: 0;
+  }
+
+  .pmg-mobile-only { display: inline-flex; }
+
+  /* Step 1 (default): show builder, hide result */
+  #pmg-visual-studio-modal .pmg-modal-body:not(.is-step-2) .pmg-modal-col-result {
+    display: none;
+  }
+  /* Step 2: hide builder, show result */
+  #pmg-visual-studio-modal .pmg-modal-body.is-step-2 .pmg-modal-col-builder {
+    display: none;
+  }
+  #pmg-visual-studio-modal .pmg-modal-body.is-step-2 .pmg-modal-col-result {
+    display: flex;
+  }
+}
