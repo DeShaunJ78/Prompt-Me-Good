@@ -765,15 +765,20 @@ html.pmg-chassis-v2 .pmgv2-statusbar-hint { color: rgba(232,245,240,0.35); }
       while the page scrolls past tall content (long threads, refine UI).
       No scroll-container changes — purely opt-in via the stacking context. */
 html.pmg-chassis-v2 .pmgv2-composer-wrap {
-  /* ChatGPT-style: pin the slim composer to the TOP of the viewport
-     (just below the top bar) so the Goal box and Fix My Prompt button
-     stay visible while the user scrolls down through the lifted aux
-     content (Auto Optimize, Upload, Prompt Tuning Step 1) below.
-     Previously used bottom:0 which only helped when scrolling UP — but
-     the user's complaint is scrolling DOWN to read Prompt Tuning made
-     the goal box disappear. Sticky-top fixes that. */
+  /* cv2-15: sticky-BOTTOM is correct on the LAST child of the column.
+     It pins the slim composer to the viewport bottom whenever its
+     natural position is below the fold — so users see Goal + Fix My
+     Prompt on arrival even after a generation has stacked Result panel,
+     Run This Prompt, and Live Feedback above it.
+     The earlier sticky-TOP attempt failed because sticky-top on the
+     LAST child only engages once you scroll DOWN past it; on arrival
+     after generation, composer was pushed below the fold and the user
+     never saw it. Prompt Tuning concerns from sticky-bottom v1 no
+     longer apply because liftFormAuxIntoThread() moved Prompt Tuning
+     ABOVE the composer in DOM order — the user reaches it by scrolling
+     UP from the pinned composer, not down through it. */
   position: sticky;
-  top: 60px;
+  bottom: 0;
   background: linear-gradient(
     to bottom,
     rgba(10, 36, 32, 0.98) 0%,
@@ -829,11 +834,17 @@ html.pmg-chassis-v2 .pmgv2-composer-wrap {
   html.pmg-chassis-v2 .pmgv2-tb-r .pmgv2-av {
     min-width: 44px;
   }
-  /* Mobile: composer still sticks near the top of viewport. The dock
-     fixed at bottom doesn't conflict because composer is sticky-top now. */
+  /* Mobile: pin composer just above the fixed bottom dock (56px tall).
+     Sticky-bottom: 56px keeps the Goal + Fix My Prompt above the dock,
+     not under it. */
   html.pmg-chassis-v2 .pmgv2-composer-wrap {
-    top: 52px;
+    bottom: 56px;
     padding-bottom: 14px;
+  }
+  /* Reserve room at the bottom of the main column so the last lifted
+     aux item isn't permanently hidden behind the pinned composer. */
+  html.pmg-chassis-v2 .pmgv2-main {
+    padding-bottom: 240px;
   }
 }
 
