@@ -438,8 +438,36 @@ html.pmg-chassis-v2 .pmgv2-tools #pmg-photo-suite * {
   font-size: 10px; color: rgba(232,245,240,0.4);
   letter-spacing: 0.06em;
 }
-.pmgv2-statusbar-l { display: flex; gap: 14px; }
-.pmgv2-statusbar-l span { color: #5fe6b0; }
+.pmgv2-statusbar-l { display: flex; gap: 14px; align-items: center; }
+.pmgv2-statusbar-l > span { color: #5fe6b0; }
+
+/* Phase 4 beta pill — compact mirror of the legacy yellow banner */
+.pmgv2-beta-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, rgba(255,209,102,0.18), rgba(255,184,77,0.12));
+  border: 1px solid rgba(255,209,102,0.45);
+  border-radius: 999px;
+  color: #ffd166 !important;
+  text-decoration: none;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9.5px; letter-spacing: 0.1em;
+  text-transform: uppercase; font-weight: 600;
+  transition: background .18s ease, border-color .18s ease;
+}
+.pmgv2-beta-pill:hover {
+  background: linear-gradient(135deg, rgba(255,209,102,0.28), rgba(255,184,77,0.2));
+  border-color: rgba(255,209,102,0.7);
+}
+.pmgv2-beta-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #ffd166;
+  box-shadow: 0 0 6px rgba(255,209,102,0.8);
+}
+
+/* Hide the legacy yellow banner whenever chassis v2 is active. The pill
+   in the status bar carries the same information in a quieter form. */
+html.pmg-chassis-v2 #pmg-t42-beta-banner { display: none !important; }
 
 /* === Responsive ======================================================= */
 @media (max-width: 1100px) {

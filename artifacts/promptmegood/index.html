@@ -3688,6 +3688,20 @@
       try {
         if ((location.search || '').indexOf('pmg_skip_qw=1') !== -1) return;
       } catch (_) {}
+      /* Chassis v2 IS the workstation — there is nothing to "earn" because
+         the workstation is already on screen. Suppress the Quick Win
+         overlay entirely when the chassis flag is on, and mark it seen so
+         it never re-fires on subsequent visits in either chassis or legacy
+         mode. (Phase 4) */
+      try {
+        var qChassis = (location.search || '').match(/[?&]chassis=([^&]+)/);
+        var chassisOn = (qChassis && qChassis[1] === 'v2') ||
+                        localStorage.getItem('pmgChassisV2') === 'true';
+        if (chassisOn) {
+          try { localStorage.setItem('pmg.quickWinSeen', '1'); } catch (_) {}
+          return;
+        }
+      } catch (_) {}
       try {
         var seen =
           localStorage.getItem('pmg.quickWinSeen') ||

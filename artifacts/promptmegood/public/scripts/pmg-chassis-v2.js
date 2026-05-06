@@ -11,6 +11,9 @@
                (move-not-clone preserves listeners and IDs)
      Phase 3 — Master Link toggle (Soul + Body bridge), chain animation
                responds to ON/OFF state, persisted across reloads
+     Phase 4 — compress overlays: Quick Win suppressed in chassis (the
+               chassis IS the workstation), legacy yellow beta banner
+               hidden + mirrored into a compact status-bar pill
    Legacy site is bit-identical when the flag is off. */
 (function () {
   'use strict';
@@ -146,7 +149,15 @@
         '</aside>',
       '</div>',
       '<div class="pmgv2-statusbar">',
-        '<div class="pmgv2-statusbar-l"><span>● Saved locally</span><span>v2 chassis preview</span><span>Phase 3 of 5</span></div>',
+        '<div class="pmgv2-statusbar-l">',
+          '<span>● Saved locally</span>',
+          '<span>v2 chassis preview</span>',
+          '<span>Phase 4 of 5</span>',
+          '<a class="pmgv2-beta-pill" id="pmgv2-beta-pill" href="./pricing.html" hidden>',
+            '<span class="pmgv2-beta-dot"></span>',
+            '<span class="pmgv2-beta-txt">BETA</span>',
+          '</a>',
+        '</div>',
         '<div class="pmgv2-statusbar-r">',
           '<span class="pmgv2-personalize-lab">Accent</span>',
           '<span class="pmgv2-swatches" role="group" aria-label="Theme accent color">',
@@ -163,6 +174,38 @@
     document.body.appendChild(root);
     wireSwatches(root);
     wireMasterLink(root);
+    wireBetaPill(root);
+  }
+
+  // ---- Phase 4: Beta banner -> compact status-bar pill ----
+  // The legacy yellow #pmg-t42-beta-banner takes ~78px at the very top of
+  // the page and clashes with the calm teal palette. In chassis v2 we hide
+  // it via CSS (see pmg-chassis-v2.css) and mirror its message into a tiny
+  // pill in the status bar. Polls for the legacy banner because pmg-ux.js
+  // mounts it asynchronously after fetching paywall config.
+  function wireBetaPill(root) {
+    var pill = root.querySelector('#pmgv2-beta-pill');
+    var txt = root.querySelector('.pmgv2-beta-txt');
+    if (!pill || !txt) return;
+    var tries = 0;
+    var max = 25; // 5s @ 200ms
+    function tick() {
+      var legacy = document.getElementById('pmg-t42-beta-banner');
+      if (legacy) {
+        var raw = (legacy.textContent || '').trim();
+        // Extract date phrase: "Free Beta Access Until <date> — ..."
+        var m = raw.match(/Until\s+([^—–\-]+?)(?:\s*[—–\-]|$)/i);
+        var date = m ? m[1].trim() : '';
+        txt.textContent = date
+          ? 'BETA · free until ' + date
+          : 'BETA · founding waitlist open';
+        pill.removeAttribute('hidden');
+        pill.title = raw;
+        return;
+      }
+      if (++tries < max) setTimeout(tick, 200);
+    }
+    tick();
   }
 
   // ---- Phase 3: Master Link toggle ----
