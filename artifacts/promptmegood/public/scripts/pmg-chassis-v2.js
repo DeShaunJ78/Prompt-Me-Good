@@ -98,9 +98,9 @@
         '<aside class="pmgv2-rail" data-slot="vault">',
           '<button class="pmgv2-new-btn" type="button">+ New Prompt</button>',
           '<div class="pmgv2-rail-h">Local Vault</div>',
-          '<div class="pmgv2-slot-empty">Vault loads here · Phase 2</div>',
+          '<div class="pmgv2-slot-empty" data-pmgv2-target="vault">Vault loads here · Phase 2</div>',
           '<div class="pmgv2-rail-h">Templates</div>',
-          '<div class="pmgv2-slot-empty">Template grid · Phase 2</div>',
+          '<div class="pmgv2-slot-empty" data-pmgv2-target="templates">Template grid · Phase 2</div>',
           '<div class="pmgv2-rail-h">Vault Tools</div>',
           '<div class="pmgv2-slot-empty">Import · Backup · Compare · Phase 2</div>',
         '</aside>',
@@ -114,10 +114,10 @@
             '<div class="pmgv2-session-meta"><span class="pmgv2-pill pmgv2-pill-live">Session</span><span class="pmgv2-pill">Local-first</span></div>',
           '</div>',
           '<div class="pmgv2-thread">',
-            '<div class="pmgv2-slot-empty pmgv2-slot-thread">Thread (User msg → Generated Prompt → AI Result) loads here · Phase 2</div>',
+            '<div class="pmgv2-slot-empty pmgv2-slot-thread" data-pmgv2-target="thread">Thread (User msg → Generated Prompt → AI Result) loads here · Phase 2</div>',
           '</div>',
           '<div class="pmgv2-composer-wrap">',
-            '<div class="pmgv2-slot-empty pmgv2-slot-composer">Composer · Fix My Prompt loads here · Phase 2</div>',
+            '<div class="pmgv2-slot-empty pmgv2-slot-composer" data-pmgv2-target="composer">Composer · Fix My Prompt loads here · Phase 2</div>',
             '<div class="pmgv2-composer-hint">Press ⌘K for commands · ⌘↵ to send · Local-first, no login required</div>',
           '</div>',
         '</section>',
@@ -135,7 +135,7 @@
               '<button class="pmgv2-switch" type="button" aria-label="Toggle Master Link"></button>',
             '</div>',
           '</div>',
-          '<div class="pmgv2-slot-empty">Photography Suite (Style · Camera · Lighting · Composition · Color · Knobs) loads here · Phase 2</div>',
+          '<div class="pmgv2-slot-empty" data-pmgv2-target="suite">Photography Suite (Style · Camera · Lighting · Composition · Color · Knobs) loads here · Phase 2</div>',
           '<div class="pmgv2-slot-empty">✦ Master Actionable Plan loads here · Phase 2</div>',
         '</aside>',
       '</div>',
@@ -185,10 +185,75 @@
     });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', buildShell, { once: true });
-  } else {
+  // ---- Phase 2: relocate real DOM nodes into chassis slots ----
+  // We MOVE (not clone) so every existing event listener, ref, and
+  // dataset stays attached. Legacy code keeps querying #prompt-form,
+  // #result-panel, #pmg-photo-suite by ID — all still work since the
+  // node identity is preserved.
+  // Each entry tries `srcs` in order — first match wins. We prefer the
+  // wrapper (`photo-suite-section`) over the inner (`pmg-photo-suite`)
+  // because legacy scripts (pmg-suite-handoff scrollToSuite/pulseSection,
+  // pmg-ux navigation) call getElementById('photo-suite-section') first.
+  // Moving only the inner would orphan the wrapper as a hidden body
+  // child and the scroll/pulse logic would target the stale node.
+  var RELOCATIONS = [
+    { srcs: ['prompt-form'],                          target: 'composer'  },
+    { srcs: ['result-panel'],                         target: 'thread'    },
+    { srcs: ['history'],                              target: 'vault'     },
+    { srcs: ['templates'],                            target: 'templates' },
+    { srcs: ['photo-suite-section', 'pmg-photo-suite'], target: 'suite'   }
+  ];
+
+  function relocateLegacy() {
+    var moved = 0;
+    var pending = 0;
+    RELOCATIONS.forEach(function (r) {
+      var slot = document.querySelector('[data-pmgv2-target="' + r.target + '"]');
+      if (!slot) return; // already filled
+      var src = null;
+      for (var i = 0; i < r.srcs.length; i++) {
+        var n = document.getElementById(r.srcs[i]);
+        if (n && n.getAttribute('data-pmgv2-relocated') !== '1') { src = n; break; }
+      }
+      if (!src) { pending++; return; }
+      src.removeAttribute('hidden');
+      slot.replaceWith(src);
+      src.setAttribute('data-pmgv2-relocated', '1');
+      src.classList.add('pmgv2-relocated');
+      moved++;
+    });
+    return { moved: moved, pending: pending };
+  }
+
+  function bootChassis() {
     buildShell();
+    // Some legacy nodes (notably the photo-suite wrapper, built by T23)
+    // are created lazily, sometimes well after DOMContentLoaded.
+    // Strategy: try now, on window.load, then poll a few more times so
+    // late-mounted nodes still get relocated. Bounded retries (max ~3s)
+    // so we don't spin forever if a node never appears.
+    var attempts = 0;
+    var MAX_ATTEMPTS = 15; // 15 × 200ms = 3s after load
+    function tick() {
+      var r = relocateLegacy();
+      attempts++;
+      if (r.pending > 0 && attempts < MAX_ATTEMPTS) {
+        setTimeout(tick, 200);
+      }
+    }
+    tick();
+    if (document.readyState !== 'complete') {
+      window.addEventListener('load', function () {
+        attempts = 0; // reset retry budget after load
+        tick();
+      }, { once: true });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootChassis, { once: true });
+  } else {
+    bootChassis();
   }
 
   // Expose toggle helper for the console / future UI affordances.

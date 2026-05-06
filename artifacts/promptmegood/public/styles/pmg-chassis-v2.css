@@ -273,6 +273,81 @@ html.pmg-chassis-v2 body {
 .pmgv2-slot-thread { min-height: 280px; display: flex; align-items: center; justify-content: center; }
 .pmgv2-slot-composer { min-height: 96px; display: flex; align-items: center; justify-content: center; }
 
+/* === Phase 2: relocated legacy nodes ================================= */
+/* Goal: make legacy sections (prompt form, result panel, history, templates,
+   photo suite) fit inside their new chassis containers without rewriting
+   their internal markup. Conservative resets only — visual polish is Phase 5. */
+
+html.pmg-chassis-v2 .pmgv2-relocated {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  box-sizing: border-box;
+}
+
+/* Composer slot: collapse the form-grid to a tight vertical stack */
+html.pmg-chassis-v2 .pmgv2-composer-wrap #prompt-form.form-grid {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+}
+html.pmg-chassis-v2 .pmgv2-composer-wrap #prompt-form .form-row,
+html.pmg-chassis-v2 .pmgv2-composer-wrap #prompt-form .form-group {
+  display: flex; flex-direction: column; gap: 8px; min-width: 0;
+}
+html.pmg-chassis-v2 .pmgv2-composer-wrap #goal {
+  min-height: 64px; max-height: 180px; resize: vertical;
+}
+
+/* Thread = scrollable conversation column */
+html.pmg-chassis-v2 .pmgv2-thread {
+  overflow-y: auto; overflow-x: hidden;
+  padding-right: 4px;
+  display: block !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
+  min-height: 0;
+}
+html.pmg-chassis-v2 .pmgv2-thread #result-panel.panel {
+  background: rgba(14,58,54,0.4) !important;
+  border: 1px solid rgba(62,224,160,0.18) !important;
+  padding: 14px 16px !important;
+  border-radius: 10px !important;
+}
+
+/* Vault rail compaction — strip the big section chrome */
+html.pmg-chassis-v2 .pmgv2-rail #history.app-section,
+html.pmg-chassis-v2 .pmgv2-rail #templates.app-section {
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  display: block;
+}
+html.pmg-chassis-v2 .pmgv2-rail #history h2,
+html.pmg-chassis-v2 .pmgv2-rail #templates h2 {
+  display: none !important;
+}
+html.pmg-chassis-v2 .pmgv2-rail .history-list,
+html.pmg-chassis-v2 .pmgv2-rail .templates-grid {
+  max-height: 220px; overflow-y: auto;
+  font-size: 12px;
+}
+
+/* Right tools panel scrolls; photo suite shrinks to fit */
+html.pmg-chassis-v2 .pmgv2-tools {
+  overflow-y: auto;
+}
+html.pmg-chassis-v2 .pmgv2-tools #photo-suite-section,
+html.pmg-chassis-v2 .pmgv2-tools #pmg-photo-suite {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  font-size: 12px;
+}
+
 /* === Status bar ======================================================= */
 .pmgv2-statusbar {
   padding: 8px 22px;

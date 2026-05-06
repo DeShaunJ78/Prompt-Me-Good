@@ -31,7 +31,7 @@ PromptMeGood is an AI prompt builder designed to enhance AI interactions and use
 *   `openapi.yaml`: OpenAPI Specification (API contracts).
 *   `artifacts/promptmegood/src/styles/`: Theme files (CSS variables).
 *   `artifacts/promptmegood/public/styles/pmg-g-theme.css`: G "Warm Dark Hybrid" override stylesheet (loaded after inline `<style>` so cascade wins).
-*   `artifacts/promptmegood/public/styles/pmg-chassis-v2.css` + `public/scripts/pmg-chassis-v2.js`: 3-column workstation chassis (top bar / Vault rail / thread+composer / chain gutter / Visual Asset Engine / status bar). Activated by `?chassis=v2` URL param or `localStorage.pmgChassisV2 = "true"`. All CSS scoped under `html.pmg-chassis-v2`; legacy site is bit-identical when flag is off. Disable with `?chassis=off`.
+*   `artifacts/promptmegood/public/styles/pmg-chassis-v2.css` + `public/scripts/pmg-chassis-v2.js`: 3-column workstation chassis (top bar / Vault rail / thread+composer / chain gutter / Visual Asset Engine / status bar). Activated by `?chassis=v2` URL param or `localStorage.pmgChassisV2 = "true"`. All CSS scoped under `html.pmg-chassis-v2`; legacy site is bit-identical when flag is off. Disable with `?chassis=off`. Phase 2 wired: `relocateLegacy()` MOVES (not clones) `#prompt-form`, `#result-panel`, `#history`, `#templates`, `#pmg-photo-suite` into the chassis slots after DOMContentLoaded — preserves all legacy event listeners and IDs. Slots are marked with `data-pmgv2-target` attrs; relocated nodes get `data-pmgv2-relocated="1"` + `.pmgv2-relocated` class for scoped CSS overrides.
 *   `artifacts/promptmegood/playwright.config.ts`: Frontend test configuration.
 
 ## Architecture decisions
