@@ -625,9 +625,14 @@
     });
   }
 
-  /* ---------- S3: Demote non-Generate primary buttons ---------- */
+  /* ---------- S3: Demote non-Generate primary buttons ----------
+     Note: `image-generate-btn` and `imageBtn` are the PRIMARY action in
+     image mode (the user explicitly came here to make an image). They were
+     historically demoted alongside the secondary write-mode buttons, which
+     made the Generate Image button look gated/locked even on the free tier
+     where it works. Keep them at full primary weight. */
   function demoteButtons() {
-    var ids = ['runBtn', 'copy-btn', 'fine-tune-btn', 'guided-mode-btn', 'upload-analyze-btn', 'image-generate-btn', 'imageBtn'];
+    var ids = ['runBtn', 'copy-btn', 'fine-tune-btn', 'guided-mode-btn', 'upload-analyze-btn'];
     ids.forEach(function (id) {
       var el = document.getElementById(id);
       if (!el) return;

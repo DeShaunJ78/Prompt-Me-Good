@@ -84,6 +84,7 @@ I prefer concise and direct communication. When making changes, prioritize itera
 *   **Rail is its own scroll container:** `.pmgv2-rail` sets `max-height: calc(100vh - 100px); overflow-y: auto;` so vault/templates lists scroll inside the rail without dragging the main page. Anything that calls `scrollIntoView` on a rail descendant should use `block: 'nearest'` to avoid yanking the whole viewport.
 *   **Empty result panel is hidden, not dimmed:** `html.pmg-chassis-v2 .pmgv2-thread #result-panel:not(.has-result)` is `display: none` (desktop AND mobile). The composer is the focal point until generation populates the panel.
 *   **Generated image visibility in chassis:** legacy `body:not(.image-mode) #imageResultSection` hides the result section. Chassis adds `html.pmg-chassis-v2 #imageResultSection:not([hidden]) { display: block !important; }` so generation handlers (which clear `[hidden]`) succeed regardless of `image-mode`.
+*   **`demoteButtons()` excludes image generators:** `pmg-ux.js` `demoteButtons()` intentionally OMITS `image-generate-btn` and `imageBtn` — they are the primary action in image mode, so the `.pmg-demoted` gray-out would make the free-tier Generate Image button look locked. Do not re-add them to the list.
 
 ## Pointers
 
