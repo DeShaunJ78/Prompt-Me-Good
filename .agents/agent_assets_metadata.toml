@@ -173,3 +173,9 @@ id = "TG4A7bKeVqtt0DzFrVr9p"
 uri = "file://attached_assets/screenshots/WorkstationChassisV3_synergy.jpg"
 type = "image"
 title = "Workstation v3 — Master Link synergy preview"
+
+[[outputs]]
+id = "ULBQ7KHWqGwRUiCr3mihe"
+uri = "file://attached_assets/screenshots/promptmegood_chassis_v2_phase1.jpg"
+type = "image"
+title = "PromptMeGood — Phase 1 chassis live at /?chassis=v2"
