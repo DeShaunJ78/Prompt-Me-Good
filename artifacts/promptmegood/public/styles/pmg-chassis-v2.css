@@ -103,7 +103,7 @@ html.pmg-chassis-v2 body {
 /* === Body grid ======================================================== */
 .pmgv2-body {
   display: grid;
-  grid-template-columns: 240px 1fr 36px 320px;
+  grid-template-columns: 264px 1fr 36px 320px;
   flex: 1;
   min-height: calc(100vh - 100px);
 }
@@ -500,8 +500,51 @@ html.pmg-chassis-v2 .pmgv2-rail #templates h2 {
 }
 html.pmg-chassis-v2 .pmgv2-rail .history-list,
 html.pmg-chassis-v2 .pmgv2-rail .templates-grid {
-  max-height: 220px; overflow-y: auto;
+  max-height: 220px; overflow-y: auto; overflow-x: hidden;
   font-size: 12px;
+  /* Single-column stack so cards always span the full rail width and
+     never inherit the legacy 240px minmax track that pushes content past
+     the rail edge. Right padding reserves room for the scrollbar so the
+     card text never sits underneath it. */
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 8px !important;
+  padding: 4px 10px 4px 4px !important;
+}
+/* Vault/template cards: legacy padding (16px) plus no word-break makes
+   short words like "Outbound" or "SEO-friendly" spill past the right
+   edge of the narrow rail. Force every text node inside a card to wrap
+   and clamp the card's own width to its track. */
+html.pmg-chassis-v2 .pmgv2-rail .history-item,
+html.pmg-chassis-v2 .pmgv2-rail .template-card {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  padding: 10px 12px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+html.pmg-chassis-v2 .pmgv2-rail .history-item *:not(button):not(svg):not(.template-card-delete),
+html.pmg-chassis-v2 .pmgv2-rail .template-card *:not(button):not(svg):not(.template-card-delete) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+/* Tighten the title/desc/meta type so a 2-line title still fits the rail
+   without forcing horizontal scroll. */
+html.pmg-chassis-v2 .pmgv2-rail .template-card-title,
+html.pmg-chassis-v2 .pmgv2-rail .history-item-goal {
+  font-size: 12.5px !important; line-height: 1.3 !important;
+}
+html.pmg-chassis-v2 .pmgv2-rail .template-card-desc,
+html.pmg-chassis-v2 .pmgv2-rail .history-item-preview {
+  font-size: 11.5px !important; line-height: 1.4 !important;
+}
+html.pmg-chassis-v2 .pmgv2-rail .template-card-meta,
+html.pmg-chassis-v2 .pmgv2-rail .history-item-meta {
+  font-size: 10.5px !important;
 }
 
 /* Vault rail buttons: legacy padding/font is sized for a wider page, so in
@@ -662,7 +705,7 @@ html.pmg-chassis-v2 #pmg-t42-beta-banner { display: none !important; }
 /* Tablet: tighten the 4-column grid. Bounded BELOW by min-width:901px so
    it does not fight the Phase 5 mobile dock rules at ≤900px. */
 @media (min-width: 901px) and (max-width: 1100px) {
-  html.pmg-chassis-v2 .pmgv2-body { grid-template-columns: 200px 1fr 28px 280px; }
+  html.pmg-chassis-v2 .pmgv2-body { grid-template-columns: 220px 1fr 28px 280px; }
 }
 
 /* Status-bar accent picker */
