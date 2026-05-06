@@ -684,3 +684,96 @@ html.pmg-chassis-v2 .pmgv2-statusbar-hint { color: rgba(232,245,240,0.35); }
   html.pmg-chassis-v2 .pmgv2-personalize-lab,
   html.pmg-chassis-v2 .pmgv2-statusbar-hint { display: none; }
 }
+
+/* === Polish pass — May 2026 ============================================ */
+/* Goal: calmer "ChatGPT-style core" without breaking legacy markup or
+   generation logic. All rules scoped to html.pmg-chassis-v2. */
+
+/* 1) Sticky composer. The composer wrapper is the last child of the main
+      flex column. position:sticky bottom:0 pins it to the viewport bottom
+      while the page scrolls past tall content (long threads, refine UI).
+      No scroll-container changes — purely opt-in via the stacking context. */
+html.pmg-chassis-v2 .pmgv2-composer-wrap {
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(
+    to top,
+    rgba(10, 36, 32, 0.96) 0%,
+    rgba(10, 36, 32, 0.92) 70%,
+    rgba(10, 36, 32, 0.0) 100%
+  );
+  padding-top: 18px;
+  padding-bottom: max(22px, env(safe-area-inset-bottom, 22px));
+  z-index: 5;
+  /* belt-and-suspenders against accidental shrink in flex column */
+  flex: 0 0 auto;
+}
+
+/* 2) Quiet the empty result panel. The static "Your Fixed Prompt" card
+      with sample pills (Role Assignment / Clear Constraints / Useful
+      Output Format) and placeholder text dominates first paint. Existing
+      JS adds .has-result to #result-panel after generation — we just dim
+      the empty state so the composer feels like the focal point. */
+html.pmg-chassis-v2 .pmgv2-thread #result-panel:not(.has-result) {
+  opacity: 0.78;
+  transition: opacity .25s ease;
+}
+html.pmg-chassis-v2 .pmgv2-thread #result-panel:not(.has-result):hover,
+html.pmg-chassis-v2 .pmgv2-thread #result-panel:not(.has-result):focus-within {
+  opacity: 1;
+}
+html.pmg-chassis-v2 .pmgv2-thread #result-panel:not(.has-result) .pill-row {
+  opacity: 0.45;
+  filter: saturate(0.6);
+}
+/* The contenteditable placeholder "Your fixed prompt will appear here."
+   reads as if the box is broken. Tone it down so it doesn't shout. */
+html.pmg-chassis-v2 .pmgv2-thread #result-panel:not(.has-result) #resultBox {
+  color: rgba(232, 245, 240, 0.42) !important;
+  font-style: italic;
+}
+
+/* 3) Mobile a11y — Apple HIG / Material tap-target + iOS no-zoom inputs.
+      Scoped to chassis surfaces only so we don't break legacy compact UI. */
+@media (max-width: 900px) {
+  /* iOS: any input/textarea/select <16px font triggers auto-zoom on focus.
+     Apply across chassis-relocated form controls. */
+  html.pmg-chassis-v2 .pmgv2-main input,
+  html.pmg-chassis-v2 .pmgv2-main textarea,
+  html.pmg-chassis-v2 .pmgv2-main select,
+  html.pmg-chassis-v2 .pmgv2-rail input,
+  html.pmg-chassis-v2 .pmgv2-rail select,
+  html.pmg-chassis-v2 .pmgv2-tools input,
+  html.pmg-chassis-v2 .pmgv2-tools select,
+  html.pmg-chassis-v2 .pmgv2-tools textarea {
+    font-size: 16px !important;
+  }
+  /* 44px tap targets for the dock + chassis-controlled buttons. We do NOT
+     blanket-apply to legacy buttons inside relocated nodes (the photo-suite
+     pill grid would explode). */
+  html.pmg-chassis-v2 .pmgv2-dock-btn,
+  html.pmg-chassis-v2 .pmgv2-tb-r button,
+  html.pmg-chassis-v2 .pmgv2-tb-r .pmgv2-av,
+  html.pmg-chassis-v2 .pmgv2-new-btn,
+  html.pmg-chassis-v2 .pmgv2-tpl-picker,
+  html.pmg-chassis-v2 .pmgv2-switch {
+    min-height: 44px;
+  }
+  html.pmg-chassis-v2 .pmgv2-tb-r button,
+  html.pmg-chassis-v2 .pmgv2-tb-r .pmgv2-av {
+    min-width: 44px;
+  }
+  /* Composer breathing room above the dock */
+  html.pmg-chassis-v2 .pmgv2-composer-wrap {
+    padding-bottom: calc(56px + max(22px, env(safe-area-inset-bottom, 22px)));
+  }
+}
+
+/* 4) Standardize spacing inside chassis columns at narrow widths so the
+      relocated cards don't feel cramped against the column edges. */
+@media (max-width: 600px) {
+  html.pmg-chassis-v2 .pmgv2-thread { padding: 0 14px 12px; }
+  html.pmg-chassis-v2 .pmgv2-composer-wrap { padding-left: 14px; padding-right: 14px; }
+  html.pmg-chassis-v2 .pmgv2-mode-bar { padding: 12px 14px 10px; gap: 10px; }
+  html.pmg-chassis-v2 .pmgv2-tpl-picker { min-width: 0; flex: 1 1 auto; }
+}
