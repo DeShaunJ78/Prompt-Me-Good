@@ -545,7 +545,58 @@
       src.classList.add('pmgv2-relocated');
       moved++;
     });
+    liftFormAuxIntoThread();
     return { moved: moved, pending: pending };
+  }
+
+  // ChatGPT-style composer: keep ONLY [Help Me Start + Goal field + Fix My
+  // Prompt actions row] inside the composer-wrap so it stays a slim sticky
+  // bar at the viewport bottom. Everything else in #prompt-form (Auto
+  // Optimize toggle, Upload field, post-uc-guidance, tip-block, Prompt
+  // Tuning Step 1, etc.) gets lifted into the thread above so it scrolls
+  // naturally and never pushes the goal box off-screen.
+  //
+  // Safe because nothing in the codebase uses FormData(form) or
+  // form.elements — every handler queries by ID. Verified May 2026.
+  function liftFormAuxIntoThread() {
+    var form = document.getElementById('prompt-form');
+    if (!form) return;
+    if (form.getAttribute('data-pmgv2-lifted') === '1') return;
+    var thread = document.querySelector('.pmgv2-thread');
+    if (!thread) return;
+
+    // Build (or reuse) the lifted-aux container at the top of the thread.
+    var aux = document.getElementById('pmgv2-form-aux');
+    if (!aux) {
+      aux = document.createElement('div');
+      aux.id = 'pmgv2-form-aux';
+      aux.className = 'pmgv2-form-aux';
+      // Insert at the very top of the thread so the result-panel still
+      // appears below it (post-generation flow stays intact).
+      thread.insertBefore(aux, thread.firstChild);
+    }
+
+    // Anything that is NOT the goal field, the Fix My Prompt actions row,
+    // or the Help Me Start callout (when injected) gets lifted up.
+    var KEEP_IN_COMPOSER = function (el) {
+      if (!el || el.nodeType !== 1) return false;
+      if (el.id === 'pmg-help-me-start-btn') return true;
+      if (el.id === 'tour-step-generate') return true;
+      if (el.classList && el.classList.contains('field-primary')) return true;
+      // Goal field's parent .field.field-primary is the keep target. If
+      // someone inlines the goal directly under the form, also keep it.
+      if (el.id === 'goal') return true;
+      return false;
+    };
+
+    var children = Array.prototype.slice.call(form.children);
+    children.forEach(function (child) {
+      if (KEEP_IN_COMPOSER(child)) return;
+      // Move into aux; preserve original DOM order (append).
+      aux.appendChild(child);
+    });
+
+    form.setAttribute('data-pmgv2-lifted', '1');
   }
 
   function bootChassis() {

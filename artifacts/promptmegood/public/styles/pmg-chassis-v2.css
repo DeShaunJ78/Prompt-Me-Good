@@ -758,19 +758,31 @@ html.pmg-chassis-v2 .pmgv2-statusbar-hint { color: rgba(232,245,240,0.35); }
       while the page scrolls past tall content (long threads, refine UI).
       No scroll-container changes — purely opt-in via the stacking context. */
 html.pmg-chassis-v2 .pmgv2-composer-wrap {
+  /* ChatGPT-style: pin the slim composer to the TOP of the viewport
+     (just below the top bar) so the Goal box and Fix My Prompt button
+     stay visible while the user scrolls down through the lifted aux
+     content (Auto Optimize, Upload, Prompt Tuning Step 1) below.
+     Previously used bottom:0 which only helped when scrolling UP — but
+     the user's complaint is scrolling DOWN to read Prompt Tuning made
+     the goal box disappear. Sticky-top fixes that. */
   position: sticky;
-  bottom: 0;
+  top: 60px;
   background: linear-gradient(
-    to top,
-    rgba(10, 36, 32, 0.96) 0%,
-    rgba(10, 36, 32, 0.92) 70%,
-    rgba(10, 36, 32, 0.0) 100%
+    to bottom,
+    rgba(10, 36, 32, 0.98) 0%,
+    rgba(10, 36, 32, 0.96) 80%,
+    rgba(10, 36, 32, 0.92) 100%
   );
-  padding-top: 18px;
-  padding-bottom: max(22px, env(safe-area-inset-bottom, 22px));
-  z-index: 5;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding-top: 14px;
+  padding-bottom: 18px;
+  z-index: 50;
   /* belt-and-suspenders against accidental shrink in flex column */
   flex: 0 0 auto;
+  /* Soft separator between composer and the aux content scrolling below */
+  border-bottom: 1px solid rgba(95, 230, 176, 0.18);
+  box-shadow: 0 6px 18px -10px rgba(0, 0, 0, 0.4);
 }
 
 /* 2) [REVERTED] An earlier rule hid #result-panel:not(.has-result) to
@@ -810,9 +822,11 @@ html.pmg-chassis-v2 .pmgv2-composer-wrap {
   html.pmg-chassis-v2 .pmgv2-tb-r .pmgv2-av {
     min-width: 44px;
   }
-  /* Composer breathing room above the dock */
+  /* Mobile: composer still sticks near the top of viewport. The dock
+     fixed at bottom doesn't conflict because composer is sticky-top now. */
   html.pmg-chassis-v2 .pmgv2-composer-wrap {
-    padding-bottom: calc(56px + max(22px, env(safe-area-inset-bottom, 22px)));
+    top: 52px;
+    padding-bottom: 14px;
   }
 }
 
@@ -1046,4 +1060,57 @@ html.pmg-chassis-v2 .pmgv2-rail .panel-head-actions > button {
   min-width: 0 !important;
   align-self: stretch !important;
   flex: 1 1 100% !important;
+}
+
+/* ============================================================
+   T-UX-CHATGPT-COMPOSER — May 2026
+   ChatGPT-style: composer = always-visible slim bar at viewport bottom.
+   The chassis JS function liftFormAuxIntoThread() moves Auto Optimize,
+   Upload, post-uc guidance, tip block, and Prompt Tuning Step 1 OUT of
+   the composer (where they made it 700px+ tall and pushed the goal box
+   below the fold) into a #pmgv2-form-aux container at the top of the
+   thread, where they scroll naturally.
+   Composer now contains only: Help Me Start, Goal field, Fix My Prompt
+   actions row. Pinned to viewport bottom so users always see where to
+   type — same pattern as ChatGPT/Claude.
+   ============================================================ */
+
+/* Aux container — visual continuity with the rest of the thread. */
+html.pmg-chassis-v2 .pmgv2-thread .pmgv2-form-aux {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+html.pmg-chassis-v2 .pmgv2-thread .pmgv2-form-aux > * {
+  margin: 0 !important;
+}
+
+/* Composer-wrap is now slim — let it stay at the natural bottom of
+   .pmgv2-main without competing with the result thread. The earlier
+   sticky:bottom rule still applies and works correctly because the wrap
+   is now ~200px instead of 700px+. Add a strong visual anchor so users
+   immediately spot the input. */
+html.pmg-chassis-v2 .pmgv2-composer-wrap {
+  border-top: 1px solid rgba(95, 230, 176, 0.16);
+}
+html.pmg-chassis-v2 .pmgv2-composer-wrap #prompt-form {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+/* Make the Goal field POP — it's now the centerpiece. */
+html.pmg-chassis-v2 .pmgv2-composer-wrap .field.field-primary > label {
+  font-weight: 600;
+  color: var(--color-primary-hover, #5fe6b0);
+}
+html.pmg-chassis-v2 .pmgv2-composer-wrap #goal {
+  min-height: 72px !important;
+  max-height: 200px !important;
+  font-size: 15px !important;
+  border-color: rgba(95, 230, 176, 0.32) !important;
+}
+html.pmg-chassis-v2 .pmgv2-composer-wrap #goal:focus {
+  border-color: var(--color-primary-hover, #5fe6b0) !important;
+  box-shadow: 0 0 0 3px rgba(95, 230, 176, 0.18) !important;
 }
