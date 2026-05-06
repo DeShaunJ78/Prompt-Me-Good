@@ -1123,6 +1123,20 @@ html.pmg-chassis-v2 .pmgv2-composer-wrap #goal:focus {
   box-shadow: 0 0 0 3px rgba(95, 230, 176, 0.18) !important;
 }
 
+/* === cv2-13: Hide redundant "Your prompt is ready" confirm banner =====
+   `pmg-ux.js` injectConfirmLine() appends `#pmg-result-confirm`
+   ("✓ Your prompt is ready. Copy it, run it, or refine it.") below the
+   result text on every successful generation, AND a MutationObserver
+   keeps re-injecting it. In the chassis layout this banner sits directly
+   below a Copy Prompt / Refine It / Check Quality / Start Over button
+   cluster — every action it suggests is already a button on screen, so
+   the line is pure noise and pushes Run This Prompt below the fold. We
+   leave the JS alone (the observer would fight a removeChild) and just
+   keep the element visually suppressed in chassis with !important. */
+html.pmg-chassis-v2 #pmg-result-confirm {
+  display: none !important;
+}
+
 /* === cv2-13: Slim mobile sticky composer ===============================
    The sticky bar must NOT eat the user's workflow. On phones, keep only
    the Goal textarea + Fix My Prompt button visible in the pinned bar
