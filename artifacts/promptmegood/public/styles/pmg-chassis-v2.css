@@ -975,3 +975,75 @@ html.pmg-chassis-v2 #imageResultSection:not([hidden]) .image-result-wrap img {
     overflow-y: visible;
   }
 }
+
+/* ============================================================
+   T-UX-CLEAN-2 — round of fixes from user feedback after cv2-8:
+     A. Hide the giant "Finally, AI That Understands You" hero so the
+        composer (Goal box) is the first thing users see — they were
+        scrolling past the marketing copy looking for where to type.
+     B. Hide the empty Fixed-Prompt card until generation completes.
+        Uses `body.pmg-has-result` (the REAL signal set by pmg-ux.js:306),
+        not the wrong `.has-result` selector that broke cv2-7.
+     C. Left-align all action rows inside #result-panel — they were
+        center-aligned by legacy CSS and looked off vs. the rest of the
+        left-aligned column.
+     D. Force vault rail buttons to FULL rail width. The legacy
+        `.panel-head-actions` chain still constrained width despite the
+        existing rules; this strengthens the override at every level.
+   ============================================================ */
+
+/* (A) Hero is just marketing inside the workstation — kill it. */
+html.pmg-chassis-v2 .pmgv2-hero {
+  display: none !important;
+}
+
+/* (B) Empty result panel hide — CORRECT selector this time. */
+html.pmg-chassis-v2 body:not(.pmg-has-result) .pmgv2-thread #result-panel.panel {
+  display: none !important;
+}
+html.pmg-chassis-v2 body:not(.pmg-has-result) .pmgv2-thread #imageResultWrap:has(.image-placeholder) {
+  display: none !important;
+}
+
+/* (C) Left-align the result panel header + action rows. */
+html.pmg-chassis-v2 .pmgv2-thread #result-panel .result-top-actions,
+html.pmg-chassis-v2 .pmgv2-thread #result-panel .actions-row,
+html.pmg-chassis-v2 .pmgv2-thread #result-panel .panel-head {
+  justify-content: flex-start !important;
+  text-align: left !important;
+  align-items: flex-start !important;
+}
+html.pmg-chassis-v2 .pmgv2-thread #result-panel .result-top-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+
+/* (D) Vault rail buttons — force every wrapper to be a flush column so
+       the buttons can fill the rail width. The previous rules set the
+       buttons to width:100% but their wrapper (.panel-head, .panel-head-row,
+       .panel itself) still constrained or centered them. */
+html.pmg-chassis-v2 .pmgv2-rail .panel,
+html.pmg-chassis-v2 .pmgv2-rail .panel-head,
+html.pmg-chassis-v2 .pmgv2-rail .panel-head-row {
+  padding: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  align-items: stretch !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+html.pmg-chassis-v2 .pmgv2-rail .panel-head-actions {
+  width: 100% !important;
+  max-width: 100% !important;
+  align-items: stretch !important;
+}
+html.pmg-chassis-v2 .pmgv2-rail .panel-head-actions > .btn,
+html.pmg-chassis-v2 .pmgv2-rail .panel-head-actions > button {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  align-self: stretch !important;
+  flex: 1 1 100% !important;
+}
