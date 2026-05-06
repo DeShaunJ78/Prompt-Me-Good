@@ -179,3 +179,15 @@ id = "ULBQ7KHWqGwRUiCr3mihe"
 uri = "file://attached_assets/screenshots/promptmegood_chassis_v2_phase1.jpg"
 type = "image"
 title = "PromptMeGood — Phase 1 chassis live at /?chassis=v2"
+
+[[outputs]]
+id = "cjvrg3oNtO8A4isO8ieKC"
+uri = "file://attached_assets/screenshots/chassis_v3_terracotta.jpg"
+type = "image"
+title = "Option A — Terracotta (current shipped)"
+
+[[outputs]]
+id = "fNTjwS3dRQ-O34x-9w97j"
+uri = "file://attached_assets/screenshots/chassis_v3_teal.jpg"
+type = "image"
+title = "Option B — Brand Teal (matches your PMG logo)"
