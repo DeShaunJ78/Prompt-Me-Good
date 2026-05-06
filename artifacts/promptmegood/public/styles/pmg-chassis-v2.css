@@ -1215,8 +1215,35 @@ html.pmg-chassis-v2 #pmg-result-confirm {
   }
   /* Help Me Start: compact chip, not a hero button, in the sticky bar. */
   html.pmg-chassis-v2 .pmgv2-composer-wrap #pmg-help-me-start-btn {
-    font-size: 13px !important;
-    padding: 8px 12px !important;
-    min-height: 38px !important;
+    font-size: 12px !important;
+    padding: 6px 10px !important;
+    min-height: 32px !important;
+    margin-top: 0 !important;
+  }
+  /* cv2-18: shave more height off the fixed mobile composer so it doesn't
+     eat ~37% of the viewport. Cumulative savings ≈ 120px:
+       - hide the wordy ⌘K hint (saves ~40px)
+       - hide the inset "MOST LOVED" pill above Help Me Start (saves ~22px
+         vertical clearance — pill is positioned absolute top:-22px, and
+         pmg-ux.js gives the help button extra margin-top to clear it)
+       - shrink Fix My Prompt button height (saves ~14px)
+       - tighter wrap padding (saves ~6px) */
+  html.pmg-chassis-v2 .pmgv2-composer-wrap .pmgv2-composer-hint {
+    display: none !important;
+  }
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #pmg-help-me-start-btn::before,
+  html.pmg-chassis-v2 .pmgv2-composer-wrap .pmg-most-loved-badge,
+  html.pmg-chassis-v2 .pmgv2-composer-wrap [class*="most-loved"],
+  html.pmg-chassis-v2 .pmgv2-composer-wrap [data-pmg-most-loved] {
+    display: none !important;
+  }
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #generateBtn {
+    min-height: 44px !important;
+    padding: 10px 14px !important;
+    font-size: 15px !important;
+  }
+  html.pmg-chassis-v2 .pmgv2-composer-wrap {
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
   }
 }
