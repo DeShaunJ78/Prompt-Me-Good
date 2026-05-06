@@ -114,6 +114,11 @@ html.pmg-chassis-v2 body {
   padding: 18px 14px;
   display: flex; flex-direction: column;
   min-height: 0;
+  /* Self-contained scroll on desktop so clicking the template picker
+     (which scrollIntoViews #templates inside the rail) does NOT yank
+     the whole page upward and bury the goal box / hero. */
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
 }
 .pmgv2-new-btn {
   display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -768,28 +773,19 @@ html.pmg-chassis-v2 .pmgv2-composer-wrap {
   flex: 0 0 auto;
 }
 
-/* 2) Quiet the empty result panel. The static "Your Fixed Prompt" card
-      with sample pills (Role Assignment / Clear Constraints / Useful
-      Output Format) and placeholder text dominates first paint. Existing
-      JS adds .has-result to #result-panel after generation — we just dim
-      the empty state so the composer feels like the focal point. */
+/* 2) Hide the empty result panel entirely until generation populates
+      it. The static "Your Fixed Prompt" card with sample pills (Role
+      Assignment / Clear Constraints / Useful Output Format) and
+      placeholder text dominated first paint and pushed the goal
+      textarea below the fold on desktop. Existing JS adds .has-result
+      to #result-panel after generation — once that fires the panel
+      reappears in normal flow. (Mobile already hid this in section 1c
+      above; we now extend the same treatment to desktop.) */
 html.pmg-chassis-v2 .pmgv2-thread #result-panel:not(.has-result) {
-  opacity: 0.78;
-  transition: opacity .25s ease;
+  display: none !important;
 }
-html.pmg-chassis-v2 .pmgv2-thread #result-panel:not(.has-result):hover,
-html.pmg-chassis-v2 .pmgv2-thread #result-panel:not(.has-result):focus-within {
-  opacity: 1;
-}
-html.pmg-chassis-v2 .pmgv2-thread #result-panel:not(.has-result) .pill-row {
-  opacity: 0.45;
-  filter: saturate(0.6);
-}
-/* The contenteditable placeholder "Your fixed prompt will appear here."
-   reads as if the box is broken. Tone it down so it doesn't shout. */
-html.pmg-chassis-v2 .pmgv2-thread #result-panel:not(.has-result) #resultBox {
-  color: rgba(232, 245, 240, 0.42) !important;
-  font-style: italic;
+html.pmg-chassis-v2 .pmgv2-thread #imageResultWrap:has(.image-placeholder) {
+  display: none !important;
 }
 
 /* 3) Mobile a11y — Apple HIG / Material tap-target + iOS no-zoom inputs.
@@ -905,4 +901,94 @@ html.pmg-chassis-v2 .pmgv2-thread #result-panel:not(.has-result) #resultBox {
          scrolled past the dock. The composer itself sits sticky-bottom
          at z:5; the dock sits fixed at z:9000. */
   html.pmg-chassis-v2 .pmgv2-main { padding-bottom: 56px; }
+}
+
+/* ============================================================
+   T-UX-CLEAN — May 2026 user-feedback batch
+   ============================================================
+   1) Stack OPTIONAL eyebrow above the "Need Ideas? Try An Example"
+      headline (was wrapping inline next to the title — sloppy).
+   2) Photography Suite section title kept on a single line inside
+      the 320px right column (was breaking "Photography" + "Suite"
+      onto two lines on desktop).
+   3) Generated DALL·E image: override the legacy
+      `body:not(.image-mode) #imageResultSection { display:none }`
+      gate so the result section appears whenever the section's
+      `hidden` attribute is removed by the generation handler.
+   ============================================================ */
+
+/* (1) OPTIONAL chip on its own line above the headline */
+html.pmg-chassis-v2 #pmg-t34-surprise-top-row .pmg-t94-optional-eyebrow {
+  display: block !important;
+  width: max-content;
+  margin: 0 0 6px 0 !important;
+  vertical-align: baseline !important;
+}
+
+/* (2) Photography Suite heading: keep "Photography Suite" intact
+       inside the 320px right column. Earlier attempt with
+       white-space:nowrap + text-overflow:ellipsis truncated to
+       "Photography Sui…" because the STEP 3 pill in the same flex
+       row was eating ~80px. We now allow natural wrapping but
+       force-balance the wrap and shrink the font slightly so
+       "Photography Suite" stays on a single line whenever possible
+       and at worst breaks cleanly between the words (centered). */
+html.pmg-chassis-v2 .pmgv2-tools #pmg-photo-suite-title,
+html.pmg-chassis-v2 .pmgv2-tools [data-tour-target="photo-suite-title"] {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  width: auto;
+  max-width: 100%;
+  white-space: normal !important;
+  text-wrap: balance !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  font-size: clamp(13px, 0.95rem, 16px) !important;
+  line-height: 1.2 !important;
+  text-align: left;
+}
+/* If the heading sits in a flex row alongside a STEP pill, let the
+   pill wrap to its own line above the title so the title gets the
+   full column width — far cleaner than clipping the title. */
+html.pmg-chassis-v2 .pmgv2-tools .step-pill,
+html.pmg-chassis-v2 .pmgv2-tools [class*="step-"][class*="pill"] {
+  flex: 0 0 auto;
+}
+html.pmg-chassis-v2 .pmgv2-tools .pmg-stack-card-head,
+html.pmg-chassis-v2 .pmgv2-tools .what-you-get-head {
+  flex-wrap: wrap !important;
+  row-gap: 6px;
+}
+
+/* (3) Always show the generated-image result section in chassis once
+       the generation handler removes its [hidden] attribute. The
+       legacy `body:not(.image-mode) #imageResultSection { display:none
+       !important }` rule was burying every successful generation
+       because chassis users don't toggle into "image-mode". Selector
+       specificity (html.pmg-chassis-v2 + :not([hidden])) wins over
+       body:not(.image-mode) by source order + explicit !important. */
+html.pmg-chassis-v2 #imageResultSection:not([hidden]) {
+  display: block !important;
+}
+html.pmg-chassis-v2 #imageResultSection:not([hidden]) .image-result-wrap,
+html.pmg-chassis-v2 #imageResultSection:not([hidden]) .image-result-actions {
+  display: flex !important;
+}
+html.pmg-chassis-v2 #imageResultSection:not([hidden]) .image-result-wrap img {
+  display: block !important;
+  max-width: 100%;
+  height: auto;
+}
+
+/* (4) Mobile: undo the desktop rail self-scroll cap so the vault tab
+       scrolls with the page rather than fighting the fixed dock at
+       the bottom of the viewport. The rail is the only visible
+       column on mobile-vault, so page scroll is the right model. */
+@media (max-width: 900px) {
+  html.pmg-chassis-v2 .pmgv2-rail {
+    max-height: none;
+    overflow-y: visible;
+  }
 }

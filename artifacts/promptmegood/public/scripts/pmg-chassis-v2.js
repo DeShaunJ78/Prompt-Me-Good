@@ -239,10 +239,15 @@
         } catch (e) {}
       }
       // 3) Scroll the relocated panel into view and focus its first tile.
+      //    Use block:'nearest' so we never yank the whole page upward
+      //    when the rail's #templates is already onscreen (desktop) — the
+      //    rail is its own scroll container, the picker pulse + focus is
+      //    the actual signal. On mobile the dock flip above already
+      //    swapped the visible column so 'nearest' still lands correctly.
       var tpl = document.getElementById('templates');
       if (tpl) {
         var scrollBehavior = prefersReducedMotion() ? 'auto' : 'smooth';
-        try { tpl.scrollIntoView({ behavior: scrollBehavior, block: 'start' }); } catch (e) {}
+        try { tpl.scrollIntoView({ behavior: scrollBehavior, block: 'nearest' }); } catch (e) {}
         var first = tpl.querySelector('.template-card, .template-tile, button, [role="button"]');
         if (first) try { first.focus({ preventScroll: true }); } catch (e) {}
       }

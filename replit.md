@@ -79,7 +79,10 @@ I prefer concise and direct communication. When making changes, prioritize itera
 *   **Guide vs Manual split:** `guide.html` is the short orientation; `manual.html` is the long-form reference. Cross-link both whenever changing nav, and keep `help.html` pointing to both.
 *   **Route split (`/` vs `/app`):** `/` serves the marketing landing, while `/app` serves the workstation. The landing page auto-redirects returning users to `/app`; use `?stay=1` to bypass this during testing. Do not rename `app.html` to `index.html`.
 *   **Chassis rail card wrapping:** Vault `.history-list` / `.templates-grid` are forced to a single 1fr column inside `html.pmg-chassis-v2 .pmgv2-rail` (overriding legacy `minmax(240px,1fr)`); card descendants get `overflow-wrap: anywhere` to prevent horizontal overflow. Buttons/SVGs/`.template-card-delete` are excluded from the wrap rule.
-*   **Cache-buster:** Bump `?v=cv2-N` on both `pmg-chassis-v2.css` and `pmg-chassis-v2.js` script/link tags in `app.html` whenever you change either file.
+*   **Cache-buster:** Bump `?v=cv2-N` on both `pmg-chassis-v2.css` and `pmg-chassis-v2.js` script/link tags in `app.html` whenever you change either file. Currently `cv2-7`.
+*   **Rail is its own scroll container:** `.pmgv2-rail` sets `max-height: calc(100vh - 100px); overflow-y: auto;` so vault/templates lists scroll inside the rail without dragging the main page. Anything that calls `scrollIntoView` on a rail descendant should use `block: 'nearest'` to avoid yanking the whole viewport.
+*   **Empty result panel is hidden, not dimmed:** `html.pmg-chassis-v2 .pmgv2-thread #result-panel:not(.has-result)` is `display: none` (desktop AND mobile). The composer is the focal point until generation populates the panel.
+*   **Generated image visibility in chassis:** legacy `body:not(.image-mode) #imageResultSection` hides the result section. Chassis adds `html.pmg-chassis-v2 #imageResultSection:not([hidden]) { display: block !important; }` so generation handlers (which clear `[hidden]`) succeed regardless of `image-mode`.
 
 ## Pointers
 
