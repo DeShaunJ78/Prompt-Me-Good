@@ -1427,16 +1427,23 @@ html.pmg-chassis-v2 .pmgv2-composer-tab { display: none; }
     border-top: 1.5px solid color-mix(in srgb, #3ee0a0 55%, transparent) !important;
     backdrop-filter: none !important;
     box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.28);
-    padding: 8px 10px env(safe-area-inset-bottom, 8px);
-    gap: 6px;
+    /* cv2-26: slimmed back to match the original cv2-15 dock height —
+       cv2-23's 8px/10px + min-height:40px made the buttons read too
+       chunky. Now uses the same 6px/8px the legacy dock used. */
+    padding: 6px 8px env(safe-area-inset-bottom, 6px);
+    gap: 4px;
   }
   html.pmg-chassis-v2 .pmgv2-dock-btn {
     background: transparent;
     color: #0e3a36;
-    border: 1.5px solid transparent;
+    /* cv2-26: 1px border (was 1.5px) so inactive buttons take less
+       visual weight; active state still gets the mint border but the
+       0.5px difference vs cv2-25 is invisible. min-height removed —
+       padding alone defines height now. */
+    border: 1px solid transparent;
     font-weight: 600;
     letter-spacing: 0.01em;
-    min-height: 40px;
+    padding: 8px 6px;
     position: relative; /* anchor the separator pseudo */
   }
   /* cv2-24: brand-mint vertical separators between dock buttons.
