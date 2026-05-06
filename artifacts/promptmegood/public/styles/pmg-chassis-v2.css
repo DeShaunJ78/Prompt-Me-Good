@@ -400,11 +400,18 @@ html.pmg-chassis-v2 .pmgv2-foot-links a:hover { color: var(--color-primary-hover
   html.pmg-chassis-v2 .pmgv2-foot-links a { font-size: 10px; }
 }
 
-/* === Hero band (top of main column) ==================================== */
+/* === Hero band (top of main column) ====================================
+   Horizontal padding MUST match the .pmgv2-mode-bar / .pmgv2-thread /
+   .pmgv2-composer-wrap gutter (28px desktop, 14px mobile) so "Finally,"
+   lines up with the left edge of the Template box and the Fixed Prompt
+   panel below. Otherwise the heading sits flush at 0 and looks broken. */
 html.pmg-chassis-v2 .pmgv2-hero {
-  padding: 4px 0 14px 0;
+  padding: 4px 28px 14px 28px;
   border-bottom: 1px solid rgba(232,245,240,0.06);
   margin-bottom: 14px;
+}
+@media (max-width: 600px) {
+  html.pmg-chassis-v2 .pmgv2-hero { padding-left: 14px; padding-right: 14px; }
 }
 html.pmg-chassis-v2 .pmgv2-hero:empty { display: none; }
 html.pmg-chassis-v2 .pmgv2-hero .hero-heading {
@@ -1006,10 +1013,11 @@ html.pmg-chassis-v2 #imageResultSection:not([hidden]) .image-result-wrap img {
         existing rules; this strengthens the override at every level.
    ============================================================ */
 
-/* (A) Hero is just marketing inside the workstation — kill it. */
-html.pmg-chassis-v2 .pmgv2-hero {
-  display: none !important;
-}
+/* (A) [REVERTED cv2-12] The hero used to be hidden in the workstation,
+   but the user wants the brand line "Finally, AI That Understands You"
+   visible — they just want it indented to match the boxes below. The
+   alignment fix lives in the hero band rules above (28px gutter to
+   match mode-bar / thread / composer-wrap). */
 
 /* (B) Empty result panel hide — CORRECT selector this time. */
 html.pmg-chassis-v2 body:not(.pmg-has-result) .pmgv2-thread #result-panel.panel {
