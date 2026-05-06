@@ -377,9 +377,30 @@ html.pmg-chassis-v2 .pmgv2-rail .templates-grid {
   font-size: 12px;
 }
 
+/* Vault rail buttons: legacy padding/font is sized for a wider page, so in
+   the 240px rail the labels truncate or wrap mid-word. Tighten button
+   padding/font and force the toolbar to stack into a tidy vertical column
+   that always fits the rail. */
+html.pmg-chassis-v2 .pmgv2-rail #history .vault-toolbar,
+html.pmg-chassis-v2 .pmgv2-rail #history .history-actions,
+html.pmg-chassis-v2 .pmgv2-rail #history .vault-actions {
+  display: flex; flex-direction: column; gap: 6px; align-items: stretch;
+}
+html.pmg-chassis-v2 .pmgv2-rail #history button,
+html.pmg-chassis-v2 .pmgv2-rail #history .btn {
+  width: 100%;
+  padding: 7px 10px !important;
+  font-size: 12px !important;
+  white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+}
+
 /* Right tools panel scrolls; photo suite shrinks to fit */
 html.pmg-chassis-v2 .pmgv2-tools {
   overflow-y: auto;
+  min-width: 0;            /* allow grid track to actually constrain children */
 }
 html.pmg-chassis-v2 .pmgv2-tools #photo-suite-section,
 html.pmg-chassis-v2 .pmgv2-tools #pmg-photo-suite {
@@ -387,6 +408,25 @@ html.pmg-chassis-v2 .pmgv2-tools #pmg-photo-suite {
   border: none !important;
   padding: 0 !important;
   font-size: 12px;
+  max-width: 100%;
+  min-width: 0;
+}
+/* Cap legacy display headings inside the suite — the original h1/h2 sizes
+   were sized for a full-width hero and bleed past the 320px tool column. */
+html.pmg-chassis-v2 .pmgv2-tools #photo-suite-section h1,
+html.pmg-chassis-v2 .pmgv2-tools #photo-suite-section h2,
+html.pmg-chassis-v2 .pmgv2-tools #pmg-photo-suite h1,
+html.pmg-chassis-v2 .pmgv2-tools #pmg-photo-suite h2 {
+  font-size: 18px !important;
+  line-height: 1.25 !important;
+  margin: 4px 0 8px !important;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+html.pmg-chassis-v2 .pmgv2-tools #photo-suite-section *,
+html.pmg-chassis-v2 .pmgv2-tools #pmg-photo-suite * {
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* === Status bar ======================================================= */
