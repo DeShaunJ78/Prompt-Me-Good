@@ -41,19 +41,19 @@
     a.style.cssText = [
       'position:fixed', 'bottom:14px', 'right:14px', 'z-index:2147483646',
       'padding:8px 14px', 'border-radius:999px',
-      'background:linear-gradient(135deg,#e57c4a,#f4a574)',
-      'color:#1a1410', 'font:600 12px/1 Inter,system-ui,sans-serif',
+      'background:linear-gradient(135deg,#3ee0a0,#5fe6b0)',
+      'color:#0a2420', 'font:600 12px/1 Inter,system-ui,sans-serif',
       'letter-spacing:.02em', 'text-decoration:none',
-      'box-shadow:0 6px 20px rgba(229,124,74,.35),0 0 0 1px rgba(244,165,116,.4)',
+      'box-shadow:0 6px 20px rgba(62,224,160,.35),0 0 0 1px rgba(95,230,176,.4)',
       'cursor:pointer', 'transition:transform .15s ease,box-shadow .15s ease'
     ].join(';');
     a.addEventListener('mouseenter', function () {
       a.style.transform = 'translateY(-1px)';
-      a.style.boxShadow = '0 8px 24px rgba(229,124,74,.5),0 0 0 1px rgba(244,165,116,.6)';
+      a.style.boxShadow = '0 8px 24px rgba(62,224,160,.5),0 0 0 1px rgba(95,230,176,.6)';
     });
     a.addEventListener('mouseleave', function () {
       a.style.transform = '';
-      a.style.boxShadow = '0 6px 20px rgba(229,124,74,.35),0 0 0 1px rgba(244,165,116,.4)';
+      a.style.boxShadow = '0 6px 20px rgba(62,224,160,.35),0 0 0 1px rgba(95,230,176,.4)';
     });
     document.body.appendChild(a);
   }
@@ -139,10 +139,48 @@
       '</div>',
       '<div class="pmgv2-statusbar">',
         '<div class="pmgv2-statusbar-l"><span>● Saved locally</span><span>v2 chassis preview</span><span>Phase 1 of 5</span></div>',
-        '<div>Append ?chassis=off to revert to the original site</div>',
+        '<div class="pmgv2-statusbar-r">',
+          '<span class="pmgv2-personalize-lab">Accent</span>',
+          '<span class="pmgv2-swatches" role="group" aria-label="Theme accent color">',
+            '<button type="button" class="pmgv2-sw" data-accent="green"  title="PromptMeGood Mint (default)" aria-label="PromptMeGood Mint"><span class="pmgv2-sw-d" style="background:#3ee0a0"></span></button>',
+            '<button type="button" class="pmgv2-sw" data-accent="blue"   title="Deep Blue"   aria-label="Deep Blue"><span class="pmgv2-sw-d" style="background:#93c5fd"></span></button>',
+            '<button type="button" class="pmgv2-sw" data-accent="purple" title="Royal Purple" aria-label="Royal Purple"><span class="pmgv2-sw-d" style="background:#c4b5fd"></span></button>',
+            '<button type="button" class="pmgv2-sw" data-accent="gold"   title="Warm Gold"   aria-label="Warm Gold"><span class="pmgv2-sw-d" style="background:#fcd34d"></span></button>',
+            '<button type="button" class="pmgv2-sw" data-accent="slate"  title="Slate"       aria-label="Slate"><span class="pmgv2-sw-d" style="background:#cbd5e1"></span></button>',
+          '</span>',
+          '<span class="pmgv2-statusbar-hint">?chassis=off to revert</span>',
+        '</div>',
       '</div>'
     ].join('');
     document.body.appendChild(root);
+    wireSwatches(root);
+  }
+
+  // Accent swatches — drive the same data-accent + localStorage key
+  // the legacy footer picker uses, so both stay in sync.
+  function wireSwatches(root) {
+    var ACCENT_KEY = 'promptmegood:themeAccent:v1';
+    var VALID = ['green', 'blue', 'purple', 'gold', 'slate'];
+    var swatches = root.querySelectorAll('.pmgv2-sw[data-accent]');
+    if (!swatches.length) return;
+    function current() {
+      var saved = '';
+      try { saved = localStorage.getItem(ACCENT_KEY) || ''; } catch (e) {}
+      return VALID.indexOf(saved) === -1 ? 'green' : saved;
+    }
+    function apply(name) {
+      if (VALID.indexOf(name) === -1) name = 'green';
+      if (name === 'green') document.documentElement.removeAttribute('data-accent');
+      else document.documentElement.setAttribute('data-accent', name);
+      try { localStorage.setItem(ACCENT_KEY, name); } catch (e) {}
+      swatches.forEach(function (b) {
+        b.setAttribute('aria-pressed', b.getAttribute('data-accent') === name ? 'true' : 'false');
+      });
+    }
+    apply(current());
+    swatches.forEach(function (b) {
+      b.addEventListener('click', function () { apply(b.getAttribute('data-accent')); });
+    });
   }
 
   if (document.readyState === 'loading') {

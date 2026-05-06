@@ -4,8 +4,8 @@
    class selector + late position in cascade keep us safe from earlier rules. */
 
 html.pmg-chassis-v2 {
-  background: #1a1410;
-  color: #f0e8d8;
+  background: #0a2420;
+  color: #e8f5f0;
   color-scheme: dark;
 }
 
@@ -19,7 +19,7 @@ html.pmg-chassis-v2 body > *:not(#pmg-chassis-v2-root):not(script):not(style):no
 html.pmg-chassis-v2 body {
   margin: 0 !important;
   padding: 0 !important;
-  background: #1a1410 !important;
+  background: #0a2420 !important;
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   min-height: 100vh;
 }
@@ -30,8 +30,8 @@ html.pmg-chassis-v2 body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #1a1410;
-  color: #f0e8d8;
+  background: #0a2420;
+  color: #e8f5f0;
   overflow: hidden;
 }
 #pmg-chassis-v2-root::before {
@@ -39,15 +39,15 @@ html.pmg-chassis-v2 body {
   position: absolute; top: -280px; left: 50%;
   transform: translateX(-50%);
   width: 1500px; height: 760px;
-  background: radial-gradient(ellipse, rgba(229,124,74,0.10), transparent 70%);
+  background: radial-gradient(ellipse, rgba(62,224,160,0.10), transparent 70%);
   pointer-events: none;
 }
 #pmg-chassis-v2-root::after {
   content: '';
   position: absolute; inset: 0;
   background-image:
-    linear-gradient(rgba(240,232,216,0.012) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(240,232,216,0.012) 1px, transparent 1px);
+    linear-gradient(rgba(232,245,240,0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232,245,240,0.012) 1px, transparent 1px);
   background-size: 60px 60px;
   pointer-events: none;
 }
@@ -57,40 +57,40 @@ html.pmg-chassis-v2 body {
 .pmgv2-tb {
   display: flex; align-items: center; justify-content: space-between;
   padding: 14px 22px;
-  border-bottom: 1px solid rgba(240,232,216,0.06);
+  border-bottom: 1px solid rgba(232,245,240,0.06);
 }
 .pmgv2-tb-l { display: flex; align-items: center; gap: 14px; }
 .pmgv2-brand { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; letter-spacing: -0.01em; }
-.pmgv2-brand-dot { width: 24px; height: 24px; border-radius: 7px; background: linear-gradient(135deg, #e57c4a, #f4a574); box-shadow: 0 4px 14px rgba(229,124,74,0.3); display: inline-block; }
-.pmgv2-vbar { width: 1px; height: 18px; background: rgba(240,232,216,0.1); }
-.pmgv2-crumb { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; color: rgba(240,232,216,0.5); letter-spacing: 0.04em; }
-.pmgv2-crumb span { color: #f4a574; }
+.pmgv2-brand-dot { width: 24px; height: 24px; border-radius: 7px; background: linear-gradient(135deg, #3ee0a0, #5fe6b0); box-shadow: 0 4px 14px rgba(62,224,160,0.3); display: inline-block; }
+.pmgv2-vbar { width: 1px; height: 18px; background: rgba(232,245,240,0.1); }
+.pmgv2-crumb { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; color: rgba(232,245,240,0.5); letter-spacing: 0.04em; }
+.pmgv2-crumb span { color: #5fe6b0; }
 .pmgv2-tb-r { display: flex; align-items: center; gap: 10px; }
 .pmgv2-ico {
   width: 32px; height: 32px; border-radius: 8px;
-  background: rgba(240,232,216,0.04);
-  border: 1px solid rgba(240,232,216,0.06);
-  color: rgba(240,232,216,0.6); font-size: 14px;
+  background: rgba(232,245,240,0.04);
+  border: 1px solid rgba(232,245,240,0.06);
+  color: rgba(232,245,240,0.6); font-size: 14px;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
 }
 .pmgv2-kbd {
   font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 10.5px;
-  padding: 6px 10px; background: rgba(240,232,216,0.04);
-  border: 1px solid rgba(240,232,216,0.07); border-radius: 6px;
-  color: rgba(240,232,216,0.55);
+  padding: 6px 10px; background: rgba(232,245,240,0.04);
+  border: 1px solid rgba(232,245,240,0.07); border-radius: 6px;
+  color: rgba(232,245,240,0.55);
 }
 .pmgv2-expert {
   font-size: 12.5px; padding: 7px 13px;
-  background: rgba(229,124,74,0.1);
-  border: 1px solid rgba(229,124,74,0.32);
-  color: #f4a574; border-radius: 7px; font-weight: 500;
+  background: rgba(62,224,160,0.1);
+  border: 1px solid rgba(62,224,160,0.32);
+  color: #5fe6b0; border-radius: 7px; font-weight: 500;
   cursor: pointer;
 }
 .pmgv2-av {
   width: 30px; height: 30px; border-radius: 50%;
-  background: linear-gradient(135deg, #e57c4a, #f4a574);
-  color: #1a1410; font-weight: 700; font-size: 12px;
+  background: linear-gradient(135deg, #3ee0a0, #5fe6b0);
+  color: #0a2420; font-weight: 700; font-size: 12px;
   display: flex; align-items: center; justify-content: center;
 }
 
@@ -104,7 +104,7 @@ html.pmg-chassis-v2 body {
 
 /* === Left rail ======================================================== */
 .pmgv2-rail {
-  border-right: 1px solid rgba(240,232,216,0.06);
+  border-right: 1px solid rgba(232,245,240,0.06);
   padding: 18px 14px;
   display: flex; flex-direction: column;
   min-height: 0;
@@ -112,17 +112,17 @@ html.pmg-chassis-v2 body {
 .pmgv2-new-btn {
   display: flex; align-items: center; justify-content: center; gap: 8px;
   padding: 10px 12px;
-  background: linear-gradient(135deg, rgba(229,124,74,0.18), rgba(244,165,116,0.12));
-  border: 1px solid rgba(229,124,74,0.4);
+  background: linear-gradient(135deg, rgba(62,224,160,0.18), rgba(95,230,176,0.12));
+  border: 1px solid rgba(62,224,160,0.4);
   border-radius: 9px;
-  color: #f4a574; font-size: 13px; font-weight: 600;
+  color: #5fe6b0; font-size: 13px; font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 12px rgba(229,124,74,0.15);
+  box-shadow: 0 2px 12px rgba(62,224,160,0.15);
 }
 .pmgv2-rail-h {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
-  color: rgba(240,232,216,0.4);
+  color: rgba(232,245,240,0.4);
   margin: 16px 8px 8px;
 }
 
@@ -135,8 +135,8 @@ html.pmg-chassis-v2 body {
 .pmgv2-tpl-picker {
   display: inline-flex; align-items: center; gap: 10px;
   padding: 8px 14px;
-  background: rgba(229,124,74,0.08);
-  border: 1px solid rgba(229,124,74,0.32);
+  background: rgba(62,224,160,0.08);
+  border: 1px solid rgba(62,224,160,0.32);
   border-radius: 9px;
   cursor: pointer; min-width: 320px; text-align: left;
   color: inherit;
@@ -144,82 +144,82 @@ html.pmg-chassis-v2 body {
 .pmgv2-tp-lab {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase;
-  color: rgba(244,165,116,0.7); display: block;
+  color: rgba(95,230,176,0.7); display: block;
 }
-.pmgv2-tp-name { font-size: 13.5px; font-weight: 600; color: #f0e8d8; margin-top: 1px; display: block; }
+.pmgv2-tp-name { font-size: 13.5px; font-weight: 600; color: #e8f5f0; margin-top: 1px; display: block; }
 .pmgv2-tp-meta {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 10px; color: rgba(240,232,216,0.5); margin-left: auto;
+  font-size: 10px; color: rgba(232,245,240,0.5); margin-left: auto;
 }
-.pmgv2-car { color: #f4a574; font-size: 11px; margin-left: 6px; }
+.pmgv2-car { color: #5fe6b0; font-size: 11px; margin-left: 6px; }
 .pmgv2-session-meta { display: flex; gap: 8px; }
 .pmgv2-pill {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 10.5px; padding: 4px 10px;
-  background: rgba(240,232,216,0.05);
-  border: 1px solid rgba(240,232,216,0.08);
+  background: rgba(232,245,240,0.05);
+  border: 1px solid rgba(232,245,240,0.08);
   border-radius: 5px;
-  color: rgba(240,232,216,0.7);
+  color: rgba(232,245,240,0.7);
   letter-spacing: 0.06em; text-transform: uppercase;
 }
-.pmgv2-pill-live { color: #f4a574; border-color: rgba(229,124,74,0.4); background: rgba(229,124,74,0.08); }
+.pmgv2-pill-live { color: #5fe6b0; border-color: rgba(62,224,160,0.4); background: rgba(62,224,160,0.08); }
 .pmgv2-pill-live::before {
   content: ''; display: inline-block;
-  width: 5px; height: 5px; background: #e57c4a;
+  width: 5px; height: 5px; background: #3ee0a0;
   border-radius: 50%; margin-right: 6px; vertical-align: 1px;
-  box-shadow: 0 0 6px #e57c4a;
+  box-shadow: 0 0 6px #3ee0a0;
 }
 .pmgv2-thread { padding: 0 28px 12px; flex: 1; display: flex; flex-direction: column; gap: 18px; }
 .pmgv2-composer-wrap { padding: 0 28px 22px; }
 .pmgv2-composer-hint {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 10px; color: rgba(240,232,216,0.38);
+  font-size: 10px; color: rgba(232,245,240,0.38);
   margin-top: 8px; padding: 0 4px;
 }
 
 /* === Chain gutter (Master Link bridge) ================================ */
 .pmgv2-chain-gutter {
   position: relative;
-  border-left: 1px dashed rgba(229,124,74,0.18);
-  border-right: 1px dashed rgba(229,124,74,0.18);
+  border-left: 1px dashed rgba(62,224,160,0.18);
+  border-right: 1px dashed rgba(62,224,160,0.18);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   padding: 30px 0;
 }
 .pmgv2-chain-spine {
   position: absolute; top: 60px; bottom: 60px; width: 2px;
   background: linear-gradient(180deg,
-    rgba(229,124,74,0.0),
-    rgba(229,124,74,0.45) 12%,
-    rgba(229,124,74,0.45) 88%,
-    rgba(229,124,74,0.0));
+    rgba(62,224,160,0.0),
+    rgba(62,224,160,0.45) 12%,
+    rgba(62,224,160,0.45) 88%,
+    rgba(62,224,160,0.0));
 }
 .pmgv2-chain-stack { display: flex; flex-direction: column; align-items: center; }
 .pmgv2-chain-link {
   width: 16px; height: 24px;
-  border: 2px solid rgba(244,165,116,0.55);
+  border: 2px solid rgba(95,230,176,0.55);
   border-radius: 8px;
   position: relative; z-index: 1;
-  background: rgba(26,20,16,0.8);
-  box-shadow: 0 0 10px rgba(229,124,74,0.4), inset 0 0 4px rgba(229,124,74,0.3);
+  background: rgba(10,36,32,0.8);
+  box-shadow: 0 0 10px rgba(62,224,160,0.4), inset 0 0 4px rgba(62,224,160,0.3);
   animation: pmgv2-pulse 2.4s ease-in-out infinite;
 }
 .pmgv2-chain-link + .pmgv2-chain-link { margin-top: -8px; transform: rotate(90deg); }
 @keyframes pmgv2-pulse {
-  0%, 100% { box-shadow: 0 0 10px rgba(229,124,74,0.4), inset 0 0 4px rgba(229,124,74,0.3); }
-  50% { box-shadow: 0 0 20px rgba(244,165,116,0.8), inset 0 0 8px rgba(244,165,116,0.6); }
+  0%, 100% { box-shadow: 0 0 10px rgba(62,224,160,0.4), inset 0 0 4px rgba(62,224,160,0.3); }
+  50% { box-shadow: 0 0 20px rgba(95,230,176,0.8), inset 0 0 8px rgba(95,230,176,0.6); }
 }
 .pmgv2-chain-label {
   writing-mode: vertical-rl; transform: rotate(180deg);
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
-  color: #f4a574; padding: 12px 0;
+  color: #5fe6b0; padding: 12px 0;
 }
 .pmgv2-chain-top { margin-bottom: 12px; }
 .pmgv2-chain-bot { margin-top: 12px; }
 
 /* === Right tool panel ================================================= */
 .pmgv2-tools {
-  border-left: 1px solid rgba(240,232,216,0.06);
+  border-left: 1px solid rgba(232,245,240,0.06);
   padding: 18px 16px;
   display: flex; flex-direction: column; gap: 14px;
   min-height: 0;
@@ -229,20 +229,20 @@ html.pmg-chassis-v2 body {
 .pmgv2-tools-sub {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase;
-  color: rgba(240,232,216,0.4); margin-top: 3px;
+  color: rgba(232,245,240,0.4); margin-top: 3px;
 }
 .pmgv2-ml-card {
   padding: 11px 13px;
-  background: linear-gradient(135deg, rgba(229,124,74,0.1), rgba(244,165,116,0.04));
-  border: 1px solid rgba(229,124,74,0.35);
+  background: linear-gradient(135deg, rgba(62,224,160,0.1), rgba(95,230,176,0.04));
+  border: 1px solid rgba(62,224,160,0.35);
   border-radius: 10px;
 }
 .pmgv2-ml-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.pmgv2-ml-lab { font-size: 12.5px; font-weight: 600; color: #f4a574; }
-.pmgv2-ml-desc { font-size: 10.5px; color: rgba(240,232,216,0.55); margin-top: 3px; }
+.pmgv2-ml-lab { font-size: 12.5px; font-weight: 600; color: #5fe6b0; }
+.pmgv2-ml-desc { font-size: 10.5px; color: rgba(232,245,240,0.55); margin-top: 3px; }
 .pmgv2-switch {
   width: 36px; height: 20px;
-  background: rgba(240,232,216,0.1);
+  background: rgba(232,245,240,0.1);
   border-radius: 10px; position: relative;
   cursor: pointer; border: none; padding: 0;
 }
@@ -250,22 +250,22 @@ html.pmg-chassis-v2 body {
   content: ''; position: absolute;
   top: 2px; left: 2px;
   width: 16px; height: 16px;
-  background: rgba(240,232,216,0.5);
+  background: rgba(232,245,240,0.5);
   border-radius: 50%;
   transition: left .18s ease, background .18s ease;
 }
-.pmgv2-switch[aria-pressed="true"] { background: rgba(229,124,74,0.5); }
-.pmgv2-switch[aria-pressed="true"]::after { left: 18px; background: #f4a574; box-shadow: 0 0 10px rgba(244,165,116,0.7); }
+.pmgv2-switch[aria-pressed="true"] { background: rgba(62,224,160,0.5); }
+.pmgv2-switch[aria-pressed="true"]::after { left: 18px; background: #5fe6b0; box-shadow: 0 0 10px rgba(95,230,176,0.7); }
 
 /* === Slot placeholders (Phase 1) ====================================== */
 .pmgv2-slot-empty {
-  border: 1px dashed rgba(240,232,216,0.12);
-  background: rgba(240,232,216,0.02);
+  border: 1px dashed rgba(232,245,240,0.12);
+  background: rgba(232,245,240,0.02);
   border-radius: 8px;
   padding: 14px 16px;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 11px;
-  color: rgba(240,232,216,0.5);
+  color: rgba(232,245,240,0.5);
   letter-spacing: 0.04em;
   margin: 6px 0;
   text-align: center;
@@ -276,14 +276,14 @@ html.pmg-chassis-v2 body {
 /* === Status bar ======================================================= */
 .pmgv2-statusbar {
   padding: 8px 22px;
-  border-top: 1px solid rgba(240,232,216,0.05);
+  border-top: 1px solid rgba(232,245,240,0.05);
   display: flex; justify-content: space-between; align-items: center;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 10px; color: rgba(240,232,216,0.4);
+  font-size: 10px; color: rgba(232,245,240,0.4);
   letter-spacing: 0.06em;
 }
 .pmgv2-statusbar-l { display: flex; gap: 14px; }
-.pmgv2-statusbar-l span { color: #f4a574; }
+.pmgv2-statusbar-l span { color: #5fe6b0; }
 
 /* === Responsive ======================================================= */
 @media (max-width: 1100px) {
@@ -294,4 +294,40 @@ html.pmg-chassis-v2 body {
   html.pmg-chassis-v2 .pmgv2-rail,
   html.pmg-chassis-v2 .pmgv2-chain-gutter,
   html.pmg-chassis-v2 .pmgv2-tools { display: none; }
+}
+
+/* Status-bar accent picker */
+html.pmg-chassis-v2 .pmgv2-statusbar { gap: 14px; }
+html.pmg-chassis-v2 .pmgv2-statusbar-r {
+  display: inline-flex; align-items: center; gap: 12px;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: rgba(232, 245, 240, 0.45); letter-spacing: 0.06em;
+}
+html.pmg-chassis-v2 .pmgv2-personalize-lab {
+  text-transform: uppercase; letter-spacing: 0.14em; color: rgba(232,245,240,0.5);
+}
+html.pmg-chassis-v2 .pmgv2-swatches { display: inline-flex; align-items: center; gap: 6px; }
+html.pmg-chassis-v2 .pmgv2-sw {
+  width: 22px; height: 22px; padding: 0; border: 0; border-radius: 50%;
+  background: transparent; cursor: pointer; display: inline-flex;
+  align-items: center; justify-content: center;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+html.pmg-chassis-v2 .pmgv2-sw-d {
+  display: block; width: 14px; height: 14px; border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(232,245,240,0.2);
+  transition: box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1), transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+html.pmg-chassis-v2 .pmgv2-sw:hover .pmgv2-sw-d { transform: scale(1.18); }
+html.pmg-chassis-v2 .pmgv2-sw[aria-pressed="true"] .pmgv2-sw-d {
+  box-shadow: 0 0 0 2px #0a2420, 0 0 0 4px var(--color-primary, #3ee0a0);
+}
+html.pmg-chassis-v2 .pmgv2-sw:focus-visible { outline: none; }
+html.pmg-chassis-v2 .pmgv2-sw:focus-visible .pmgv2-sw-d {
+  box-shadow: 0 0 0 2px #0a2420, 0 0 0 4px var(--color-primary, #3ee0a0);
+}
+html.pmg-chassis-v2 .pmgv2-statusbar-hint { color: rgba(232,245,240,0.35); }
+@media (max-width: 700px) {
+  html.pmg-chassis-v2 .pmgv2-personalize-lab,
+  html.pmg-chassis-v2 .pmgv2-statusbar-hint { display: none; }
 }

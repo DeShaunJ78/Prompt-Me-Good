@@ -1,39 +1,39 @@
-/* PromptMeGood — G theme overlay (Warm Dark Hybrid)
-   Token + skin override. Loaded after inline <style>, wins cascade. */
+/* PromptMeGood — G theme overlay (Brand Teal / Warm Dark Hybrid)
+   Token + skin override. Loaded after inline <style>, wins cascade.
+   Palette pulled from the PMG logo: deep teal bg + mint accent.
+   Accent-picker friendly: --color-primary is left to per-accent rules so
+   the legacy footer swatches (blue/purple/gold/slate) still take effect. */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* === 1. Force-dark token palette (G language) === */
+/* === 1. Force-dark token palette (G language, teal) === */
 :root,
 :root.theme-light,
 :root.theme-dark,
 html[data-theme="light"],
 html[data-theme="dark"] {
-  --color-bg: #1a1410 !important;
-  --color-surface: #231b15 !important;
-  --color-surface-2: #2c2218 !important;
-  --color-border: rgba(240, 232, 216, 0.10) !important;
-  --color-divider: rgba(240, 232, 216, 0.06) !important;
-  --color-text: #f0e8d8 !important;
-  --color-text-muted: rgba(240, 232, 216, 0.65) !important;
-  --color-text-faint: rgba(240, 232, 216, 0.4) !important;
-  --color-text-inverse: #1a1410 !important;
-  --color-primary: #e57c4a !important;
-  --color-primary-hover: #f4a574 !important;
-  --color-primary-highlight: rgba(229, 124, 74, 0.12) !important;
+  --color-bg: #0a2420 !important;
+  --color-surface: #0e3a36 !important;
+  --color-surface-2: #103e3a !important;
+  --color-border: rgba(232, 245, 240, 0.10) !important;
+  --color-divider: rgba(232, 245, 240, 0.06) !important;
+  --color-text: #e8f5f0 !important;
+  --color-text-muted: rgba(232, 245, 240, 0.65) !important;
+  --color-text-faint: rgba(232, 245, 240, 0.4) !important;
+  --color-text-inverse: #0a2420 !important;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35) !important;
   --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
-  --shadow-lg: 0 24px 60px rgba(229, 124, 74, 0.18), 0 18px 50px rgba(0, 0, 0, 0.45) !important;
+  --shadow-lg: 0 24px 60px rgba(62, 224, 160, 0.18), 0 18px 50px rgba(0, 0, 0, 0.45) !important;
 
-  --color-danger: #f08a7a !important;
-  --color-danger-light: #f4a99e !important;
-  --color-danger-strong: #e85a45 !important;
-  --color-danger-hover: #f4a99e !important;
-  --color-danger-vivid: #e85a45 !important;
-  --color-warning: #f4b860 !important;
-  --color-warning-subtle: #c89048 !important;
-  --color-muted: rgba(240, 232, 216, 0.45) !important;
+  --color-danger: #ff8a8a !important;
+  --color-danger-light: #ffb0b0 !important;
+  --color-danger-strong: #ff5a5a !important;
+  --color-danger-hover: #ffb0b0 !important;
+  --color-danger-vivid: #ff5a5a !important;
+  --color-warning: #f4d574 !important;
+  --color-warning-subtle: #c8a848 !important;
+  --color-muted: rgba(232, 245, 240, 0.45) !important;
 
   --font-display: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
@@ -42,10 +42,27 @@ html[data-theme="dark"] {
   color-scheme: dark;
 }
 
+/* === 1b. Default brand mint accent (when no swatch picked / "green" picked).
+   Scoped so user-picked accents (blue / purple / gold / slate) still win
+   via the existing rules in index.html. === */
+html:not([data-accent]),
+html[data-accent="green"] {
+  --color-primary: #3ee0a0 !important;
+  --color-primary-hover: #5fe6b0 !important;
+  --color-primary-highlight: rgba(62, 224, 160, 0.14) !important;
+}
+
+/* === 1c. Re-affirm legacy non-green accents with !important so they win
+   over any hardcoded terracotta leftovers in the inline stylesheet. === */
+html[data-accent="blue"]    { --color-primary: #93c5fd !important; --color-primary-hover: #bfdbfe !important; --color-primary-highlight: rgba(147,197,253,0.16) !important; }
+html[data-accent="purple"]  { --color-primary: #c4b5fd !important; --color-primary-hover: #ddd6fe !important; --color-primary-highlight: rgba(196,181,253,0.16) !important; }
+html[data-accent="gold"]    { --color-primary: #fcd34d !important; --color-primary-hover: #fde68a !important; --color-primary-highlight: rgba(252,211,77,0.16) !important; }
+html[data-accent="slate"]   { --color-primary: #cbd5e1 !important; --color-primary-hover: #e2e8f0 !important; --color-primary-highlight: rgba(203,213,225,0.16) !important; }
+
 /* === 2. Body base + ambient G layers === */
 html, body {
-  background: #1a1410 !important;
-  color: #f0e8d8 !important;
+  background: #0a2420 !important;
+  color: #e8f5f0 !important;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
 }
 
@@ -57,8 +74,8 @@ body::before {
   position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(rgba(240, 232, 216, 0.012) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(240, 232, 216, 0.012) 1px, transparent 1px);
+    linear-gradient(rgba(232, 245, 240, 0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232, 245, 240, 0.012) 1px, transparent 1px);
   background-size: 60px 60px;
   pointer-events: none;
   z-index: -1;
@@ -72,12 +89,12 @@ body::after {
   width: 1400px;
   height: 800px;
   max-width: 100vw;
-  background: radial-gradient(ellipse at center, rgba(229, 124, 74, 0.10), transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(62, 224, 160, 0.10), transparent 70%);
   pointer-events: none;
   z-index: -1;
 }
 
-/* === 3. Surfaces, panels, cards (explicit selectors only) === */
+/* === 3. Surfaces, panels, cards === */
 .panel, .card, .hero-card, .workstation-promote, .pmg-panel,
 .workspace-panel, .pmg-card, .pmg-surface {
   background-color: var(--color-surface) !important;
@@ -87,42 +104,40 @@ body::after {
 
 /* Site header */
 .site-header, header.site-header, .pmg-site-header {
-  background: rgba(26, 20, 16, 0.85) !important;
+  background: rgba(10, 36, 32, 0.85) !important;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(240, 232, 216, 0.06) !important;
+  border-bottom: 1px solid rgba(232, 245, 240, 0.06) !important;
 }
 
 /* === 4. Inputs === */
 input[type="text"], input[type="email"], input[type="search"],
 input[type="number"], input[type="password"], input[type="url"],
 textarea, select {
-  background: #231b15 !important;
-  color: #f0e8d8 !important;
-  border-color: rgba(240, 232, 216, 0.12) !important;
+  background: #0e3a36 !important;
+  color: #e8f5f0 !important;
+  border-color: rgba(232, 245, 240, 0.12) !important;
   font-family: 'Inter', sans-serif !important;
 }
 input::placeholder, textarea::placeholder {
-  color: rgba(240, 232, 216, 0.4) !important;
+  color: rgba(232, 245, 240, 0.4) !important;
 }
 input:focus, textarea:focus, select:focus {
-  border-color: rgba(229, 124, 74, 0.55) !important;
+  border-color: color-mix(in srgb, var(--color-primary) 60%, transparent) !important;
   outline: none !important;
-  box-shadow: 0 0 0 3px rgba(229, 124, 74, 0.18) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 22%, transparent) !important;
 }
 
-/* Main goal textarea — G-style gradient shell */
+/* Main goal textarea */
 #goal {
   min-height: 120px !important;
   border-radius: 13px !important;
-  background: #231b15 !important;
+  background: #0e3a36 !important;
   font-size: 15px !important;
   line-height: 1.55 !important;
   padding: 16px 18px !important;
 }
-.goal-wrap, .goal-field {
-  position: relative;
-}
+.goal-wrap, .goal-field { position: relative; }
 
 /* === 5. Buttons === */
 .btn, button.btn, .cta, .primary-cta, button.primary {
@@ -130,41 +145,41 @@ input:focus, textarea:focus, select:focus {
   border-radius: 10px !important;
 }
 .btn-primary, .primary-cta, button.primary {
-  background: #e57c4a !important;
-  color: #1a1410 !important;
+  background: var(--color-primary) !important;
+  color: #0a2420 !important;
   border-color: transparent !important;
   font-weight: 600 !important;
-  box-shadow: 0 0 24px rgba(229, 124, 74, 0.28) !important;
+  box-shadow: 0 0 24px color-mix(in srgb, var(--color-primary) 32%, transparent) !important;
 }
 .btn-primary:hover, .primary-cta:hover, button.primary:hover {
-  background: #f4a574 !important;
-  color: #1a1410 !important;
-  box-shadow: 0 0 32px rgba(229, 124, 74, 0.45) !important;
+  background: var(--color-primary-hover) !important;
+  color: #0a2420 !important;
+  box-shadow: 0 0 32px color-mix(in srgb, var(--color-primary) 50%, transparent) !important;
 }
 
 /* Secondary / ghost */
 .btn-secondary, .btn-ghost, button.secondary {
   background: transparent !important;
-  color: rgba(240, 232, 216, 0.85) !important;
-  border: 1px solid rgba(240, 232, 216, 0.14) !important;
+  color: rgba(232, 245, 240, 0.85) !important;
+  border: 1px solid rgba(232, 245, 240, 0.14) !important;
 }
 .btn-secondary:hover, .btn-ghost:hover, button.secondary:hover {
-  background: rgba(240, 232, 216, 0.04) !important;
-  border-color: rgba(240, 232, 216, 0.22) !important;
+  background: rgba(232, 245, 240, 0.04) !important;
+  border-color: rgba(232, 245, 240, 0.22) !important;
 }
 
 /* === 6. Headings & display type === */
 h1, h2, h3, h4, .hero-heading, .panel-head h2, .hero-card-title {
   font-family: 'Inter', sans-serif !important;
-  color: #f5ecd9 !important;
+  color: #e8f5f0 !important;
   letter-spacing: -0.025em !important;
   font-weight: 600 !important;
 }
 .highlight, .accent, em.accent, .hero-heading-highlight {
-  color: #f4a574 !important;
+  color: var(--color-primary) !important;
 }
 .hero-heading {
-  background: linear-gradient(180deg, #f5ecd9 0%, #b8a892 100%);
+  background: linear-gradient(180deg, #e8f5f0 0%, #8aa8a0 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -173,81 +188,77 @@ h1, h2, h3, h4, .hero-heading, .panel-head h2, .hero-card-title {
 .hero-heading .highlight,
 .hero-heading .hero-heading-highlight {
   background: none;
-  -webkit-text-fill-color: #f4a574;
-  color: #f4a574 !important;
+  -webkit-text-fill-color: var(--color-primary);
+  color: var(--color-primary) !important;
 }
 
-/* Eyebrows / micro-labels → mono uppercase */
+/* Eyebrows / micro-labels */
 .eyebrow, .label, .step-label, .panel-eyebrow, .step-eyebrow, .kicker {
   font-family: 'JetBrains Mono', monospace !important;
   letter-spacing: 0.14em !important;
   text-transform: uppercase !important;
   font-size: 11px !important;
-  color: #f4a574 !important;
+  color: var(--color-primary) !important;
   font-weight: 500 !important;
 }
 
 /* === 7. Pills, chips, badges === */
 .pill, .chip, .badge, .tag {
-  background: rgba(240, 232, 216, 0.04) !important;
-  border: 1px solid rgba(240, 232, 216, 0.10) !important;
-  color: rgba(240, 232, 216, 0.8) !important;
+  background: rgba(232, 245, 240, 0.04) !important;
+  border: 1px solid rgba(232, 245, 240, 0.10) !important;
+  color: rgba(232, 245, 240, 0.8) !important;
 }
 .chip-primary, .badge-primary, .pill-primary {
-  background: rgba(229, 124, 74, 0.12) !important;
-  border-color: rgba(229, 124, 74, 0.35) !important;
-  color: #f4a574 !important;
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent) !important;
+  border-color: color-mix(in srgb, var(--color-primary) 38%, transparent) !important;
+  color: var(--color-primary) !important;
 }
 
 /* === 8. Links === */
-a, a:visited {
-  color: #f4a574;
-}
-a:hover { color: #f9bd8f; }
+a, a:visited { color: var(--color-primary); }
+a:hover { color: var(--color-primary-hover); }
 
-/* === 9. Promo / beta bar — handled per-id below (see #pmg-t42-beta-banner) === */
-
-/* === 10. Code & mono — keep semantic coloring intact, only swap font + bg === */
+/* === 10. Code & mono === */
 code, kbd, samp {
   font-family: 'JetBrains Mono', ui-monospace, monospace !important;
-  background: rgba(240, 232, 216, 0.06);
+  background: rgba(232, 245, 240, 0.06);
   border-radius: 4px;
 }
 pre {
-  background: #1f1812 !important;
-  border: 1px solid rgba(240, 232, 216, 0.06) !important;
-  color: #f0e8d8 !important;
+  background: #0d2d2a !important;
+  border: 1px solid rgba(232, 245, 240, 0.06) !important;
+  color: #e8f5f0 !important;
   padding: 14px 16px;
   font-family: 'JetBrains Mono', ui-monospace, monospace !important;
 }
 pre code { background: transparent !important; }
 
 /* === 11. Scrollbars === */
-* { scrollbar-color: rgba(229, 124, 74, 0.4) rgba(240, 232, 216, 0.04); }
+* { scrollbar-color: color-mix(in srgb, var(--color-primary) 45%, transparent) rgba(232, 245, 240, 0.04); }
 *::-webkit-scrollbar { width: 10px; height: 10px; }
-*::-webkit-scrollbar-track { background: rgba(240, 232, 216, 0.03); }
+*::-webkit-scrollbar-track { background: rgba(232, 245, 240, 0.03); }
 *::-webkit-scrollbar-thumb {
-  background: rgba(229, 124, 74, 0.35);
+  background: color-mix(in srgb, var(--color-primary) 38%, transparent);
   border-radius: 5px;
 }
-*::-webkit-scrollbar-thumb:hover { background: rgba(229, 124, 74, 0.55); }
+*::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--color-primary) 60%, transparent); }
 
-/* === 12. Dialogs / modals / overlays === */
+/* === 12. Dialogs / modals === */
 dialog, .modal, .overlay-card, [role="dialog"] {
-  background: #231b15 !important;
-  color: #f0e8d8 !important;
-  border: 1px solid rgba(240, 232, 216, 0.10) !important;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(229, 124, 74, 0.08) !important;
+  background: #0e3a36 !important;
+  color: #e8f5f0 !important;
+  border: 1px solid rgba(232, 245, 240, 0.10) !important;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px color-mix(in srgb, var(--color-primary) 12%, transparent) !important;
 }
 dialog::backdrop, .modal-backdrop {
-  background: rgba(10, 7, 5, 0.7) !important;
+  background: rgba(5, 18, 16, 0.7) !important;
   backdrop-filter: blur(4px);
 }
 
-/* === 13. Quick Win overlay (already-shipped feature) — restyled to G === */
+/* === 13. Quick Win overlay === */
 #pmg-quick-win-overlay {
-  background: #1a1410 !important;
-  color: #f0e8d8 !important;
+  background: #0a2420 !important;
+  color: #e8f5f0 !important;
 }
 #pmg-quick-win-overlay::before {
   content: '';
@@ -258,91 +269,79 @@ dialog::backdrop, .modal-backdrop {
   width: 1100px;
   height: 700px;
   max-width: 100vw;
-  background: radial-gradient(ellipse, rgba(229, 124, 74, 0.16), transparent 70%);
+  background: radial-gradient(ellipse, color-mix(in srgb, var(--color-primary) 18%, transparent), transparent 70%);
   pointer-events: none;
 }
 #pmg-quick-win-overlay .pmg-qw-card,
 #pmg-quick-win-overlay .pmg-qw-panel {
-  background: #231b15 !important;
-  border-color: rgba(240, 232, 216, 0.10) !important;
+  background: #0e3a36 !important;
+  border-color: rgba(232, 245, 240, 0.10) !important;
 }
 
-/* === 14. Reduced motion === */
 @media (prefers-reduced-motion: reduce) {
   body::after { display: none; }
 }
 
-/* === 15. Theme toggle button — repurpose as mode indicator only === */
 .theme-toggle, .pmg-theme-toggle, [aria-label*="theme" i] {
-  color: rgba(240, 232, 216, 0.5) !important;
+  color: rgba(232, 245, 240, 0.5) !important;
 }
 
-/* === 16. Workstation promote layout — keep grid but warm it === */
 .pmg-workstation-promote, body.pmg-workstation-promote {
-  background: #1a1410 !important;
+  background: #0a2420 !important;
 }
 
-/* === 17. Hero subtext box — tone down teal "fix it" callout === */
 .hero-subtext-box {
-  background: rgba(35, 27, 21, 0.7) !important;
-  border: 1px solid rgba(229, 124, 74, 0.22) !important;
+  background: rgba(14, 58, 54, 0.7) !important;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 24%, transparent) !important;
   border-radius: 12px !important;
 }
 .hero-subtext, .hero-subtext-box p {
-  color: #f0e8d8 !important;
+  color: #e8f5f0 !important;
   opacity: 1 !important;
 }
-.hero-subtext strong, .hero-subtext-box strong { color: #f4a574 !important; }
+.hero-subtext strong, .hero-subtext-box strong { color: var(--color-primary) !important; }
 
-/* === 18. Voice / utility row container text === */
-.field, .field-row, .pmg-voice-row, .utility-row {
-  color: #f0e8d8;
-}
+.field, .field-row, .pmg-voice-row, .utility-row { color: #e8f5f0; }
 
-/* === 19. Workspace eyebrow recolor (teal → terracotta) === */
 .workspace-eyebrow, .panel-eyebrow, .step-eyebrow {
-  color: #f4a574 !important;
+  color: var(--color-primary) !important;
 }
 
-/* === 20a. T42 Beta banner — was yellow, recolor warm dark === */
+/* T42 Beta banner */
 #pmg-t42-beta-banner {
-  background: linear-gradient(90deg, #2c2218 0%, #3a2a1c 50%, #2c2218 100%) !important;
-  color: #f4a574 !important;
-  border-bottom: 1px solid rgba(229, 124, 74, 0.28) !important;
-  box-shadow: 0 1px 0 rgba(229, 124, 74, 0.08), 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+  background: linear-gradient(90deg, #0e3a36 0%, #103e3a 50%, #0e3a36 100%) !important;
+  color: var(--color-primary) !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent) !important;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--color-primary) 10%, transparent), 0 8px 24px rgba(0, 0, 0, 0.35) !important;
 }
 #pmg-t42-beta-banner a {
-  color: #f4a574 !important;
-  text-decoration-color: rgba(244, 165, 116, 0.5) !important;
+  color: var(--color-primary) !important;
+  text-decoration-color: color-mix(in srgb, var(--color-primary) 50%, transparent) !important;
 }
-#pmg-t42-beta-banner a:hover { color: #ffb88a !important; }
-#pmg-t42-beta-banner button.pmg-t42-close {
-  color: #f0e8d8 !important;
-}
+#pmg-t42-beta-banner a:hover { color: var(--color-primary-hover) !important; }
+#pmg-t42-beta-banner button.pmg-t42-close { color: #e8f5f0 !important; }
 #pmg-t42-beta-banner button.pmg-t42-close:hover {
-  background: rgba(229, 124, 74, 0.14) !important;
+  background: color-mix(in srgb, var(--color-primary) 16%, transparent) !important;
 }
 
-/* === 20b. Global search empty input — render visibly on dark === */
 .global-search input,
 .site-search input,
 input[type="search"] {
-  background-color: #231b15 !important;
-  color: #f0e8d8 !important;
-  border: 1px solid rgba(240, 232, 216, 0.1) !important;
+  background-color: #0e3a36 !important;
+  color: #e8f5f0 !important;
+  border: 1px solid rgba(232, 245, 240, 0.1) !important;
 }
 .global-search input::placeholder,
 input[type="search"]::placeholder {
-  color: rgba(240, 232, 216, 0.4) !important;
+  color: rgba(232, 245, 240, 0.4) !important;
 }
 .global-search-label, .site-search-label {
-  color: rgba(240, 232, 216, 0.55) !important;
+  color: rgba(232, 245, 240, 0.55) !important;
 }
 
-/* === 20. Borders on key cards — soft terracotta glow on focused panels === */
 .workstation-promote .panel,
 .pmg-workstation-promote .panel,
 .hero-card,
 .workspace-panel {
-  box-shadow: 0 0 0 1px rgba(229, 124, 74, 0.18), 0 24px 60px rgba(0, 0, 0, 0.35) !important;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent), 0 24px 60px rgba(0, 0, 0, 0.35) !important;
 }
