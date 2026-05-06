@@ -90,6 +90,7 @@ export default defineConfig({
         privacy: path.resolve(import.meta.dirname, "privacy.html"),
         terms: path.resolve(import.meta.dirname, "terms.html"),
         help: path.resolve(import.meta.dirname, "help.html"),
+        contact: path.resolve(import.meta.dirname, "contact.html"),
         notfound: path.resolve(import.meta.dirname, "404.html"),
       },
     },

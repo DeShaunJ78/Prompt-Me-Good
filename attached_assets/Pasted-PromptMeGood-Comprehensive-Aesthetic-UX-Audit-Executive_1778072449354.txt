@@ -1,0 +1,120 @@
+PromptMeGood: Comprehensive Aesthetic & UX Audit
+Executive Summary
+PromptMeGood is a highly functional, local-first AI prompt workstation with a strong foundational design. However, there are several critical UX friction points, broken components, and mobile responsiveness issues that prevent it from being a “polished 10.” This audit identifies 11 specific non-functioning or problematic components and provides a direct handoff guide for a Replit developer to fix them.
+
+Overall Site Rating: 6.5 / 10
+The site has excellent bones and a great dark-mode aesthetic, but it suffers from severe UX blockers in the main app (hidden image outputs, forced scrolling past promotional banners) and layout bugs on mobile and the homepage.
+
+
+1. Critical UX Blockers & Friction Points
+1.1 App “Promote” Banner Blocks the Workspace (Forced Scrolling)
+Issue: In the main app (`/app`), the “Finally, AI That Understands You” promotional section (`.pmg-workstation-promote`) completely covers the top of the screen. Users are forced to scroll all the way to the bottom of the page just to interact with the program and type in their ideas.
+Cause: The promotional banner is injected into the layout in a way that disrupts the flex flow, pushing the actual workspace down. The actual workspace header (`#workspace-header`) is set to `display: none`.
+Friction: This is a massive barrier to entry. Users expect to start typing immediately upon opening a tool, not scroll past a giant ad.
+
+1.2 Generated Images Have No Display Destination
+Issue: When a user successfully generates an image using the Photography Suite, the image goes nowhere. There is no visible output destination on the site for the user to see the generated image.
+Cause: The image result container (`#imageResultSection`) has a `hidden` attribute applied to it, and its parent container (`#pmg-col-image`) has `height: 0` and `overflow: hidden`. The DOM structure exists, but it is completely invisible to the user.
+Friction: Users spend time building a prompt, click generate, and receive zero visual feedback or output, making the feature appear completely broken.
+
+1.3 Mode Switcher is Hidden & Inert
+Issue: The core navigation for the app (switching between “Write Something”, “Create An Image”, and “Vault”) is completely broken. The `#modeSwitch` container has `display: none` and the `inert` attribute applied.
+Impact: Users cannot switch modes. They are stuck in whatever the default view is.
+
+
+2. Aesthetic & Layout Issues
+2.1 Homepage Hero Section Gap
+Issue: There is a massive, unexplained empty space (approx. 380px) below the hero section content and above the feature grid on the homepage.
+Cause: The `<main class="hero">` element has `flex: 1 1 0%` applied within a flex column body that has `min-height: 1100px`. This forces the hero section to stretch to fill the viewport, leaving a huge gap below the `.wrap` container.
+Friction: Makes the site look broken or incomplete on desktop screens.
+
+2.2 Missing Mobile Footer
+Issue: On mobile viewports (e.g., iPhone 12 Pro size), the footer is either completely hidden or pushed off-screen in a way that makes it inaccessible.
+Cause: The mobile media queries (`@media (max-width: 420px)`) adjust the header and nav, but the overall layout structure (specifically the `min-height: 1100px` on the body and the flex layout) pushes the footer down unpredictably.
+Friction: Users cannot access essential links (Privacy, Terms, Contact) on mobile devices.
+
+
+3. Non-Functioning Components
+3.1 “Generate Image” Button is Locked
+Issue: In the Photography Suite, the primary action button (`#image-generate-btn`) has a lock icon (“🎨 Generate Image🔒”) and a `.pmg-demoted` class, making it appear disabled or gated, even though the free tier is supposed to allow 1 image generation per day.
+Impact: Prevents users from actually using the image generation feature they just built a prompt for.
+
+3.2 Contact Page is a 404
+Issue: The “Contact” link in the footer points to `/contact.html` (and `/contact`), both of which return a 404 Not Found page.
+Impact: Users have no way to reach support or ask questions, which is critical for a paid/beta product.
+
+3.3 “Waiting For Your First Image” CTA is Stuck
+Issue: The button `#pmg-suite-handoff-cta` is stuck in a “Waiting For Your First Image” state and does not seem to update or become clickable.
+Impact: Confuses users about the state of the application.
+
+3.4 “Build Image Prompt” Sticky CTA Does Nothing
+Issue: The `#pmg-photo-suite-sticky-cta` button appears to be a placeholder or is non-functional.
+Impact: Dead clicks lead to user frustration.
+
+3.5 “Send To Midjourney” Button is Broken
+Issue: The `#pmg-send-to-image-main` button (“→Send To Midjourney”) is present in the DOM but does not appear to have a functioning event listener or proper UI state.
+Impact: Breaks the promised multi-model functionality.
+
+3.6 “Use As Reference” & “Generate 4 Variations” Buttons are Broken
+Issue: The `.pmg-use-as-r` button (“🔗 Use As Reference”) and `#pmg-imgx-variations-btn` button (“📐 Generate 4 Variations”) are non-functional.
+Impact: Limits the utility of the image generation suite.
+
+3.7 “Compare Now” Button is Broken
+Issue: The `#compare-launch` button (“Compare Now”) is non-functional.
+Impact: Breaks the prompt comparison feature advertised on the homepage.
+
+
+Replit Developer Handoff Document
+To: Frontend Developer
+Project: PromptMeGood UX/UI Polish
+Goal: Fix layout bugs, restore broken functionality, and elevate the site to a 10/10 polished state.
+
+Task 1: Fix the App Layout Hierarchy (The “Forced Scroll” Bug)
+	•	File: `app.html` / `styles.css`
+	•	Issue: The promotional banner (`.pmg-workstation-promote`) dominates the top of the app, forcing users to scroll to the bottom to type their ideas.
+	•	Fix: Move the promotional banner to a less intrusive location (e.g., a dismissible toast or a sidebar widget). Restore `display: block` to `#workspace-header` so users know they are in the workspace. The input field (`#goal`) must be visible “above the fold” immediately upon page load.
+
+Task 2: Fix the Image Generation Display Bug
+	•	File: `app.html` / `app.js` / `styles.css`
+	•	Issue: Generated images have no visible output destination. The `#imageResultSection` has a `hidden` attribute, and its parent `#pmg-col-image` has `height: 0` and `overflow: hidden`.
+	•	Fix:
+	1.	Ensure that when an image is generated, the `hidden` attribute is removed from `#imageResultSection`.
+	2.	Ensure the parent container (`#pmg-col-image`) expands to fit the content (remove `height: 0` or set it to `auto` dynamically).
+	3.	Ensure the generated image `src` is properly injected into the `<img>` tag within the result section.
+
+Task 3: Restore the App Mode Switcher
+	•	File: `app.html` / `app.js`
+	•	Issue: The `#modeSwitch` container (which holds the “Write Something” and “Create An Image” buttons) has `display: none` and the `inert` attribute.
+	•	Fix: Remove `display: none` and `inert` from `#modeSwitch`. Ensure the JavaScript logic that toggles these modes is properly hooked up to the buttons (`#writeModeBtn`, `#imageModeBtn`).
+
+Task 4: Fix Homepage Layout (Desktop)
+	•	File: `index.html` / `styles.css`
+	•	Issue: The `<main class="hero">` has `flex: 1 1 0%` and the `<body>` has `min-height: 1100px`. This creates a massive ~380px gap below the hero text.
+	•	Fix: Remove `min-height: 1100px` from the body. Allow the body to size naturally based on content. Remove `flex: 1 1 0%` from `main.hero` or adjust the flex container so it doesn’t stretch the hero section unnecessarily.
+
+Task 5: Fix Mobile Footer Visibility
+	•	File: `styles.css` (Mobile Media Queries)
+	•	Issue: The footer is pushed off-screen or hidden on mobile devices.
+	•	Fix: Ensure the flex layout on the `<body>` allows the footer to sit naturally at the bottom of the document flow. Check for any `overflow: hidden` or fixed heights that might be clipping the footer on screens `< 420px`.
+
+Task 6: Fix the “Generate Image” Button Lock State
+	•	File: `app.html` / `app.js`
+	•	Issue: `#image-generate-btn` has a lock icon and `.pmg-demoted` class, confusing free users who should have 1 generation/day.
+	•	Fix: Update the UI logic. If the user has free generations remaining, remove the lock icon and the `.pmg-demoted` class. Only show the lock state if they have hit their daily cap.
+
+Task 7: Create the Missing Contact Page
+	•	File: `contact.html`
+	•	Issue: The footer links to `/contact.html`, which is currently a 404 page.
+	•	Fix: Create a simple `contact.html` page with a `mailto:support@promptmegood.com` link or a basic FormSubmit.co form (as referenced in the Privacy Policy).
+
+Task 8: Clean Up Broken App Buttons
+	•	File: `app.html` / `app.js`
+	•	Issue: Several buttons in the app are either stuck in loading states or have dead clicks.
+	•	Fix:
+	1.	Investigate `#pmg-suite-handoff-cta` (“Waiting For Your First Image”) and ensure it updates when an image is generated.
+	2.	Wire up or hide `#pmg-photo-suite-sticky-cta` (“Build Image Prompt”).
+	3.	Wire up or hide `#pmg-send-to-image-main` (“→Send To Midjourney”).
+	4.	Wire up or hide `.pmg-use-as-r` (“🔗 Use As Reference”).
+	5.	Wire up or hide `#pmg-imgx-variations-btn` (“📐 Generate 4 Variations”).
+	6.	Wire up or hide `#compare-launch` (“Compare Now”).
+Note: If these features are not yet built, they should be hidden or have a “Coming Soon” tooltip rather than being dead clicks.

@@ -30,6 +30,7 @@ PromptMeGood is an AI prompt builder designed to enhance AI interactions and use
 *   `artifacts/promptmegood/guide.html`: Concise 60-second Quick Guide (links to manual).
 *   `artifacts/promptmegood/manual.html`: Detailed step-by-step user manual (TOC + 13 sections).
 *   `artifacts/promptmegood/help.html`: Lightweight help splash that links to both guide and manual.
+*   `artifacts/promptmegood/contact.html`: Email-routing contact page (linked from every footer).
 *   `packages/api/`: Backend API services.
 *   `packages/db/`: Database schema and migrations.
 *   `packages/shared/`: Shared utilities and types.
