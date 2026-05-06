@@ -1,0 +1,73 @@
+MASTER ROADMAP: PromptMeGood Evolution (Phases 1-3)
+
+Instructions for Replit AI:
+"Please execute this roadmap in sequence. If a phase is too large for a single operation, break it into smaller sub-tasks but maintain the overall architectural goal. Do not break existing generation logic or localStorage keys."
+
+
+
+
+PHASE 1: IMMEDIATE FRICTION CLEANUP (The "Quick Wins")
+
+Goal: Fix the live site experience today.
+
+1.
+Instant Loader: Add a CSS/HTML splash screen in index.html (Brand dark #1a1410, "Loading PromptMeGood..." text).
+
+2.
+Empty States: Update "Your Fixed Prompt" panel to say "Your Optimized Prompt Will Appear Here" with clear instructions.
+
+3.
+Button Guards: Disable Copy/Refine/Save buttons until a prompt exists.
+
+4.
+Feedback: Add toasts to Expert Mode and Templates so they don't feel "dead."
+
+5.
+Banner CTA: Add a "Join Waitlist →" button to the Beta deadline banner.
+
+PHASE 2: ARCHITECTURAL REFACTOR (The "Chassis")
+
+Goal: Move to the 3-column professional workstation.
+
+1.
+Route Split: Create / for the Landing Page and /app for the Workstation.
+
+2.
+The 3-Pane Layout:
+
+•
+Left: Vault & Templates.
+
+•
+Center: Conversation Thread (Composer at bottom, Results in middle).
+
+•
+Right: Photography Suite (Persistent control panel).
+
+
+
+3.
+Theme Sync: Apply the Warm-Dark (#1a1410) and Terracotta (#E2725B) theme globally. Remove all dashed borders.
+
+PHASE 3: THE SYNERGY ENGINE (The "Master Plan")
+
+Goal: Implement the Master Link and Pro features.
+
+1.
+Master Link Toggle: Add the glowing chain icon between the Center and Right columns.
+
+2.
+Pro Photo Knobs: Add Aperture (f/1.4-f/22), Shutter Speed, ISO, Lens (14-200mm), and Film Stock.
+
+3.
+The Master Brief: Implement the logic to fuse the Prompt Engine (Text) and Photography Suite (Visuals) into a single "Master Actionable Plan" card.
+
+4.
+Run with AI: Ensure the "▷ Run with AI" button on any card triggers the in-house GPT-4o and appends the result to the thread.
+
+
+
+
+Developer Note:
+"Maintain all existing pmgIsPro gating and localStorage history. The user's 'Vault' must remain intact across this transition. Focus on a 'Hybrid' approach: simple conversational flow for daily use, and the 'Power Mode' 3-pane view for Master Planning."
+
