@@ -777,3 +777,73 @@ html.pmg-chassis-v2 .pmgv2-thread #result-panel:not(.has-result) #resultBox {
   html.pmg-chassis-v2 .pmgv2-mode-bar { padding: 12px 14px 10px; gap: 10px; }
   html.pmg-chassis-v2 .pmgv2-tpl-picker { min-width: 0; flex: 1 1 auto; }
 }
+
+/* === Mobile fixes — May 2026 (round 2) ================================ */
+/* Reality check after a real iPhone-width audit found four blockers:
+   - The dock is a direct child of #pmg-chassis-v2-root, and the
+     `#pmg-chassis-v2-root > * { position: relative }` rule at the top
+     of this file silently overrides the dock's `position: fixed`,
+     so the dock was rendering at y=2254 inline instead of pinned.
+   - Top bar overflowed: brand + crumb + ⌘K + ? + Expert Mode + avatar
+     extended to x=525 in a 390px viewport, clipping the right cluster.
+   - Empty #result-panel and the "Your Image Will Appear Here"
+     placeholder consumed ~1200px of vertical space, pushing the
+     composer (and the entire prompt entry) off-screen.
+   - Composer-wrap sticky:bottom never engaged because the wrapper
+     starts below viewport on mobile (sticky requires the element to
+     reach the viewport edge first). */
+@media (max-width: 900px) {
+  /* (a) Force dock to be a true fixed bottom bar. !important is
+         deliberate — it has to beat the root-children rule above. */
+  html.pmg-chassis-v2 .pmgv2-dock {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 9000 !important;
+    display: grid !important;
+  }
+
+  /* (b) Top bar: collapse to brand + (?) icon + avatar.
+         Crumb, vbar, ⌘K Search, and Expert Mode all hide on phones —
+         CMD-K is still bound to the ⌘K shortcut, and Expert Mode lives
+         on its own pricing page link in the status bar. */
+  html.pmg-chassis-v2 .pmgv2-tb {
+    padding: 10px 14px;
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  html.pmg-chassis-v2 .pmgv2-tb-l { gap: 8px; min-width: 0; flex: 1 1 auto; }
+  html.pmg-chassis-v2 .pmgv2-tb-r { gap: 6px; flex: 0 0 auto; }
+  html.pmg-chassis-v2 .pmgv2-crumb,
+  html.pmg-chassis-v2 .pmgv2-vbar,
+  html.pmg-chassis-v2 .pmgv2-kbd,
+  html.pmg-chassis-v2 .pmgv2-expert {
+    display: none !important;
+  }
+  /* Brand text shrinks gracefully; the green dot stays as the anchor. */
+  html.pmg-chassis-v2 .pmgv2-brand { font-size: 13px; min-width: 0; }
+  html.pmg-chassis-v2 .pmgv2-brand > span:not(.pmgv2-brand-dot) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* (c) Hide empty noise so the composer is the first interactive
+         surface after the hero. Both the static "Fixed Prompt" sample
+         card and the "Your Image Will Appear Here" placeholder add no
+         value before generation; existing JS adds .has-result /
+         populates #imageResultWrap on output, restoring visibility.
+         Scoped to mobile only — desktop keeps the full layout. */
+  html.pmg-chassis-v2 .pmgv2-thread #result-panel:not(.has-result) {
+    display: none !important;
+  }
+  html.pmg-chassis-v2 .pmgv2-thread #imageResultWrap:has(.image-placeholder) {
+    display: none !important;
+  }
+
+  /* (d) Thread bottom padding so content above the composer can be
+         scrolled past the dock. The composer itself sits sticky-bottom
+         at z:5; the dock sits fixed at z:9000. */
+  html.pmg-chassis-v2 .pmgv2-main { padding-bottom: 56px; }
+}
