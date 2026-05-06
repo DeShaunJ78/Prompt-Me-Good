@@ -1309,60 +1309,90 @@ html.pmg-chassis-v2 .pmgv2-composer-tab { display: none; }
   /* Pill itself — same anchor as composer-wrap, slim 44px tall.
      Always rendered in DOM but visibility is gated on the collapsed
      class so we don't double up on screen. */
+  /* cv2-22: brightened pill — user feedback was that the cv2-21 pill at
+     14% accent mix was too subtle to notice. Bumped to 32% mix, stronger
+     1.5px border in 70% accent, full-opacity label, and a soft accent
+     glow ring so it reads as a clear "tap me" affordance. Also added a
+     gentle 2.4s pulse cycle on the glow to draw the eye on first paint
+     without feeling animated-busy (paused on hover). */
   html.pmg-chassis-v2 .pmgv2-composer-tab {
     display: none; /* hidden when expanded */
     position: fixed;
     left: 14px;
     right: 14px;
     bottom: 60px; /* 56px dock + 4px breathing room */
-    height: 44px;
+    height: 46px;
     border-radius: 999px;
-    background: color-mix(in srgb, var(--color-primary, #3ee0a0) 14%, var(--color-bg-card, #0c1a17));
-    color: var(--color-text, #d6e4dc);
-    border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 38%, transparent);
-    padding: 0 18px;
-    font-size: 14px;
-    font-weight: 600;
+    background: color-mix(in srgb, var(--color-primary, #3ee0a0) 32%, var(--color-bg-card, #0c1a17));
+    color: var(--color-text, #f3fbf6);
+    border: 1.5px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 70%, transparent);
+    padding: 0 20px;
+    font-size: 15px;
+    font-weight: 700;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
     z-index: 60;
     cursor: pointer;
-    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.32),
-                0 0 0 1px color-mix(in srgb, var(--color-primary, #3ee0a0) 8%, transparent);
+    box-shadow:
+      0 -8px 28px rgba(0, 0, 0, 0.36),
+      0 0 0 4px color-mix(in srgb, var(--color-primary, #3ee0a0) 14%, transparent),
+      0 6px 22px color-mix(in srgb, var(--color-primary, #3ee0a0) 28%, transparent);
     -webkit-tap-highlight-color: transparent;
-    transition: background 160ms ease, transform 160ms ease;
+    transition: background 160ms ease, transform 160ms ease, box-shadow 200ms ease;
+    animation: pmgv2-tab-glow 2.4s ease-in-out infinite;
+  }
+  @keyframes pmgv2-tab-glow {
+    0%, 100% {
+      box-shadow:
+        0 -8px 28px rgba(0, 0, 0, 0.36),
+        0 0 0 4px color-mix(in srgb, var(--color-primary, #3ee0a0) 14%, transparent),
+        0 6px 22px color-mix(in srgb, var(--color-primary, #3ee0a0) 28%, transparent);
+    }
+    50% {
+      box-shadow:
+        0 -8px 28px rgba(0, 0, 0, 0.36),
+        0 0 0 6px color-mix(in srgb, var(--color-primary, #3ee0a0) 22%, transparent),
+        0 8px 32px color-mix(in srgb, var(--color-primary, #3ee0a0) 44%, transparent);
+    }
   }
   html.pmg-chassis-v2.pmg-composer-collapsed .pmgv2-composer-tab {
     display: flex !important;
   }
   html.pmg-chassis-v2 .pmgv2-composer-tab:hover,
   html.pmg-chassis-v2 .pmgv2-composer-tab:focus-visible {
-    background: color-mix(in srgb, var(--color-primary, #3ee0a0) 22%, var(--color-bg-card, #0c1a17));
+    background: color-mix(in srgb, var(--color-primary, #3ee0a0) 44%, var(--color-bg-card, #0c1a17));
+    animation-play-state: paused;
     outline: none;
   }
   html.pmg-chassis-v2 .pmgv2-composer-tab:active {
     transform: translateY(1px);
   }
+  /* Respect reduced-motion: kill the pulse for users who opted out. */
+  @media (prefers-reduced-motion: reduce) {
+    html.pmg-chassis-v2 .pmgv2-composer-tab { animation: none; }
+  }
   html.pmg-chassis-v2 .pmgv2-composer-tab-ico {
-    font-size: 16px;
+    font-size: 17px;
     line-height: 1;
     flex: 0 0 auto;
   }
   html.pmg-chassis-v2 .pmgv2-composer-tab-lab {
     flex: 1 1 auto;
     text-align: left;
-    color: color-mix(in srgb, var(--color-text, #d6e4dc) 78%, transparent);
+    color: var(--color-text, #f3fbf6);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    letter-spacing: 0.01em;
   }
   html.pmg-chassis-v2 .pmgv2-composer-tab-car {
     flex: 0 0 auto;
     color: var(--color-primary, #3ee0a0);
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1;
-    opacity: 0.85;
+    opacity: 1;
+    text-shadow: 0 0 8px color-mix(in srgb, var(--color-primary, #3ee0a0) 60%, transparent);
   }
 }
 
