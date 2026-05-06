@@ -155,22 +155,28 @@ html.pmg-chassis-v2 body {
 .pmgv2-tp-lab {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase;
-  color: rgba(95,230,176,0.7); display: block;
+  /* cv2-28: 0.7 → full mint for the eyebrow label so it reads as a
+     proper section tag, not a faded ghost. */
+  color: #5fe6b0; display: block;
 }
 .pmgv2-tp-name { font-size: 13.5px; font-weight: 600; color: #e8f5f0; margin-top: 1px; display: block; }
 .pmgv2-tp-meta {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 10px; color: rgba(232,245,240,0.5); margin-left: auto;
+  /* cv2-28: 0.5 → 0.85 so the "28 templates" count is legible. */
+  font-size: 10px; color: rgba(232,245,240,0.85); margin-left: auto;
 }
 .pmgv2-car { color: var(--color-primary-hover, #5fe6b0); font-size: 11px; margin-left: 6px; }
 .pmgv2-session-meta { display: flex; gap: 8px; }
 .pmgv2-pill {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 10.5px; padding: 4px 10px;
-  background: rgba(232,245,240,0.05);
-  border: 1px solid rgba(232,245,240,0.08);
+  /* cv2-28: bumped chip bg 0.05 → 0.10 and border 0.08 → 0.18 so the
+     SESSION / LOCAL-FIRST chips have a visible edge against the deep
+     teal surface. Text bumped 0.7 → 0.92. */
+  background: rgba(232,245,240,0.10);
+  border: 1px solid rgba(232,245,240,0.18);
   border-radius: 5px;
-  color: rgba(232,245,240,0.7);
+  color: rgba(232,245,240,0.92);
   letter-spacing: 0.06em; text-transform: uppercase;
 }
 .pmgv2-pill-live { color: var(--color-primary-hover, #5fe6b0); border-color: rgba(62,224,160,0.4); background: rgba(62,224,160,0.08); }
