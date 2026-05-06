@@ -25,38 +25,10 @@
   var KEY = 'pmgChassisV2';
   var CLASS = 'pmg-chassis-v2';
 
-  // Chassis v2 is now the DEFAULT experience. Legacy single-page view is
-  // available as an opt-out via `?chassis=off` (or localStorage flag set
-  // to "false"). Persists the user's choice across reloads either way.
-  function readFlag() {
-    try {
-      var url = new URL(window.location.href);
-      var q = url.searchParams.get('chassis');
-      if (q === 'off' || q === '0' || q === 'v1') {
-        try { localStorage.setItem(KEY, 'false'); } catch (e) {}
-        return false;
-      }
-      if (q === 'v2' || q === 'on' || q === '1') {
-        try { localStorage.removeItem(KEY); } catch (e) {}
-        return true;
-      }
-      try {
-        if (localStorage.getItem(KEY) === 'false') return false;
-      } catch (e) {}
-      return true;   // default ON
-    } catch (e) { return true; }
-  }
-
-  var FLAG_ON = readFlag();
-
-  if (!FLAG_ON) {
-    // User has explicitly opted out — load the legacy site, no chassis.
-    window.pmgChassisV2 = {
-      enable: function () { try { localStorage.removeItem(KEY); } catch (e) {} location.search = ''; },
-      disable: function () {}
-    };
-    return;
-  }
+  // Chassis v2 is the only experience. The legacy single-page view has
+  // been retired — there is no opt-out. Any stale localStorage entry from
+  // the old preview era is cleaned up on first run so nothing lingers.
+  try { localStorage.removeItem(KEY); } catch (e) {}
 
   // Add class as early as possible so CSS can hide existing body.
   document.documentElement.classList.add(CLASS);
@@ -132,8 +104,7 @@
       '<div class="pmgv2-statusbar">',
         '<div class="pmgv2-statusbar-l">',
           '<span>● Saved locally</span>',
-          '<span>v2 chassis preview</span>',
-          '<span>v2 workstation</span>',
+          '<span>Workstation</span>',
           '<a class="pmgv2-beta-pill" id="pmgv2-beta-pill" href="./pricing.html" hidden>',
             '<span class="pmgv2-beta-dot"></span>',
             '<span class="pmgv2-beta-txt">BETA</span>',
@@ -148,7 +119,7 @@
             '<button type="button" class="pmgv2-sw" data-accent="gold"   title="Warm Gold"   aria-label="Warm Gold"><span class="pmgv2-sw-d" style="background:#fcd34d"></span></button>',
             '<button type="button" class="pmgv2-sw" data-accent="slate"  title="Slate"       aria-label="Slate"><span class="pmgv2-sw-d" style="background:#cbd5e1"></span></button>',
           '</span>',
-          '<span class="pmgv2-statusbar-hint">?chassis=off for legacy view</span>',
+          '<span class="pmgv2-statusbar-hint">Local-first · auto-saved</span>',
         '</div>',
       '</div>'
     ].join('');
