@@ -5231,34 +5231,69 @@
     var row = document.createElement('div');
     row.id = SECONDARY_ROW_ID;
 
-    function addBtn(label, icon, danger, handler) {
+    function addBtn(label, icon, danger, handler, delegateId) {
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'pmg-sec-btn' + (danger ? ' is-danger' : '');
       b.innerHTML = '<span aria-hidden="true">' + icon + '</span><span>' + label + '</span>';
-      b.addEventListener('click', handler);
+      /* Mirror the delegate target's disabled state so the secondary
+         button doesn't appear active while clicking it would no-op
+         (the previous behaviour made these feel "broken" on first load). */
+      if (delegateId) {
+        b.setAttribute('data-pmg-delegate', delegateId);
+        var sync = function () {
+          var t = document.getElementById(delegateId);
+          var off = !t || t.disabled || t.getAttribute('aria-disabled') === 'true';
+          b.disabled = off;
+          if (off) {
+            b.setAttribute('aria-disabled', 'true');
+            b.title = 'Generate a prompt first to enable this.';
+          } else {
+            b.removeAttribute('aria-disabled');
+            b.removeAttribute('title');
+          }
+        };
+        sync();
+        var t0 = document.getElementById(delegateId);
+        if (t0 && window.MutationObserver) {
+          try {
+            new MutationObserver(sync).observe(t0, {
+              attributes: true,
+              attributeFilter: ['disabled', 'aria-disabled']
+            });
+          } catch (e) { /* ignore */ }
+        }
+        /* Re-sync once shortly after mount in case the delegate gets
+           gated by watchResultBox after we wired the observer. */
+        setTimeout(sync, 250);
+        setTimeout(sync, 1500);
+      }
+      b.addEventListener('click', function (ev) {
+        if (b.disabled) { ev.preventDefault(); ev.stopPropagation(); return; }
+        handler(ev);
+      });
       row.appendChild(b);
     }
 
     addBtn('Copy Prompt', '📋', false, function () {
       var b = document.getElementById('copy-btn');
       if (b) b.click();
-    });
+    }, 'copy-btn');
     addBtn('Refine It', '✏️', false, function () {
       var t = document.getElementById('fine-tune-input');
       if (t) {
         try { t.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'center' }); } catch (e) {}
         try { t.focus({ preventScroll: true }); } catch (e) { try { t.focus(); } catch (e2) {} }
       }
-    });
+    }, 'copy-btn');
     addBtn('Check Quality', '✓', false, function () {
       var b = document.getElementById('check-quality-btn');
       if (b) b.click();
-    });
+    }, 'check-quality-btn');
     addBtn('Start Over', '↺', true, function () {
       var b = document.getElementById('clear-prompt-btn');
       if (b) b.click();
-    });
+    }, 'clear-prompt-btn');
 
     runSection.parentNode.insertBefore(row, runSection.nextSibling);
   }

@@ -498,16 +498,26 @@ html.pmg-chassis-v2 .pmgv2-rail .templates-grid {
 }
 
 /* Vault rail buttons: legacy padding/font is sized for a wider page, so in
-   the 240px rail the labels truncate or wrap mid-word. Tighten button
-   padding/font and force the toolbar to stack into a tidy vertical column
-   that always fits the rail. */
+   the 240px rail the labels truncate or wrap mid-word and the row spills
+   horizontally. The real markup uses .panel-head-actions (not the legacy
+   .vault-toolbar names that previously lived here), and BOTH #history and
+   #templates need the same treatment. Force every action group inside the
+   rail into a tidy vertical column that always fits the rail width. */
+html.pmg-chassis-v2 .pmgv2-rail .panel-head-row {
+  display: flex; flex-direction: column; align-items: stretch; gap: 8px;
+}
+html.pmg-chassis-v2 .pmgv2-rail .panel-head-actions,
 html.pmg-chassis-v2 .pmgv2-rail #history .vault-toolbar,
 html.pmg-chassis-v2 .pmgv2-rail #history .history-actions,
-html.pmg-chassis-v2 .pmgv2-rail #history .vault-actions {
-  display: flex; flex-direction: column; gap: 6px; align-items: stretch;
+html.pmg-chassis-v2 .pmgv2-rail #history .vault-actions,
+html.pmg-chassis-v2 .pmgv2-rail #history .compare-banner-actions {
+  display: flex !important; flex-direction: column !important;
+  gap: 6px; align-items: stretch; width: 100%;
 }
 html.pmg-chassis-v2 .pmgv2-rail #history button,
-html.pmg-chassis-v2 .pmgv2-rail #history .btn {
+html.pmg-chassis-v2 .pmgv2-rail #history .btn,
+html.pmg-chassis-v2 .pmgv2-rail #templates button,
+html.pmg-chassis-v2 .pmgv2-rail #templates .btn {
   width: 100%;
   padding: 7px 10px !important;
   font-size: 12px !important;
@@ -515,6 +525,49 @@ html.pmg-chassis-v2 .pmgv2-rail #history .btn {
   overflow: hidden; text-overflow: ellipsis;
   writing-mode: horizontal-tb !important;
   text-orientation: mixed !important;
+  text-align: center;
+}
+/* Hide the section descriptions in the rail — the wider-page copy is too
+   long for a 240px column and creates the "scattered text" feel. The H2s
+   are already hidden above; killing the <p> blurbs leaves just the action
+   stack + list, matching the right column's compact rhythm. */
+html.pmg-chassis-v2 .pmgv2-rail #history .panel-head-row > div > p,
+html.pmg-chassis-v2 .pmgv2-rail #templates .panel-head-row > div > p {
+  display: none !important;
+}
+/* History search row: legacy inline `flex: 1 1 220px` on the search input
+   forces a min-width that exceeds the 212px content area of the rail. Wrap
+   it and let the input shrink. */
+html.pmg-chassis-v2 .pmgv2-rail #history .history-search {
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+}
+html.pmg-chassis-v2 .pmgv2-rail #history .history-search > * {
+  flex: 1 1 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+html.pmg-chassis-v2 .pmgv2-rail #history .history-search input,
+html.pmg-chassis-v2 .pmgv2-rail #history .history-search select {
+  width: 100% !important;
+}
+/* Tag bar can wrap; never let it scroll horizontally inside the rail. */
+html.pmg-chassis-v2 .pmgv2-rail #history-tag-bar {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 4px;
+  overflow: hidden !important;
+  max-width: 100%;
+}
+/* Belt-and-suspenders: stop ANY direct child of the rail from creating
+   horizontal scroll inside the 240px column. */
+html.pmg-chassis-v2 .pmgv2-rail,
+html.pmg-chassis-v2 .pmgv2-rail * {
+  min-width: 0;
+}
+html.pmg-chassis-v2 .pmgv2-rail {
+  overflow-x: hidden;
 }
 
 /* Right tools panel scrolls; photo suite shrinks to fit */
