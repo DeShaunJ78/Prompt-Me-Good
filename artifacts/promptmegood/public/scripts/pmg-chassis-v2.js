@@ -29,7 +29,47 @@
     } catch (e) { return false; }
   }
 
-  if (!readFlag()) return;
+  var FLAG_ON = readFlag();
+
+  function injectLegacyToggle() {
+    if (document.getElementById('pmg-chassis-v2-toggle')) return;
+    var a = document.createElement('a');
+    a.id = 'pmg-chassis-v2-toggle';
+    a.href = '?chassis=v2';
+    a.textContent = '✨ Try new chassis (preview)';
+    a.title = 'Preview the new 3-column workstation chassis';
+    a.style.cssText = [
+      'position:fixed', 'bottom:14px', 'right:14px', 'z-index:2147483646',
+      'padding:8px 14px', 'border-radius:999px',
+      'background:linear-gradient(135deg,#e57c4a,#f4a574)',
+      'color:#1a1410', 'font:600 12px/1 Inter,system-ui,sans-serif',
+      'letter-spacing:.02em', 'text-decoration:none',
+      'box-shadow:0 6px 20px rgba(229,124,74,.35),0 0 0 1px rgba(244,165,116,.4)',
+      'cursor:pointer', 'transition:transform .15s ease,box-shadow .15s ease'
+    ].join(';');
+    a.addEventListener('mouseenter', function () {
+      a.style.transform = 'translateY(-1px)';
+      a.style.boxShadow = '0 8px 24px rgba(229,124,74,.5),0 0 0 1px rgba(244,165,116,.6)';
+    });
+    a.addEventListener('mouseleave', function () {
+      a.style.transform = '';
+      a.style.boxShadow = '0 6px 20px rgba(229,124,74,.35),0 0 0 1px rgba(244,165,116,.4)';
+    });
+    document.body.appendChild(a);
+  }
+
+  if (!FLAG_ON) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', injectLegacyToggle, { once: true });
+    } else {
+      injectLegacyToggle();
+    }
+    window.pmgChassisV2 = {
+      enable: function () { try { localStorage.setItem(KEY, 'true'); } catch (e) {} location.search = '?chassis=v2'; },
+      disable: function () {}
+    };
+    return;
+  }
 
   // Add class as early as possible so CSS can hide existing body.
   document.documentElement.classList.add(CLASS);
