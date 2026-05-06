@@ -21,7 +21,7 @@ test.describe("Photography Suite mobile polish @ mobile-360", () => {
     await page.addInitScript(() => {
       sessionStorage.setItem("promptmegood:t42-banner-dismissed", "1");
     });
-    await page.goto(BASE_URL + "/", { waitUntil: "domcontentloaded" });
+    await page.goto(BASE_URL + "/app", { waitUntil: "domcontentloaded" });
     /* Wait for the polish module to register its test surface. */
     await page.waitForFunction(
       () =>

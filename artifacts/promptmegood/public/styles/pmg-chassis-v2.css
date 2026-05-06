@@ -12,7 +12,13 @@ html.pmg-chassis-v2 {
 /* Hide the legacy app shell while the chassis preview is on. We keep the
    nodes in the DOM so all existing JS, event handlers, and feature
    detection continue to work — Phase 2 will move them into the new slots. */
-html.pmg-chassis-v2 body > *:not(#pmg-chassis-v2-root):not(script):not(style):not(link) {
+/* Hide legacy body children, but allow runtime-appended overlays that mount
+   directly under <body>. We use a canonical allowlist of known overlay roots
+   instead of broad `[role=dialog]` matching, because the legacy app shell
+   contains static dialog nodes (quick-win, post-run-intro, compare, etc.)
+   that MUST stay hidden in chassis mode. New runtime overlays should either
+   add their root ID below or carry the `data-pmg-overlay-root` attribute. */
+html.pmg-chassis-v2 body > *:not(#pmg-chassis-v2-root):not(script):not(style):not(link):not(#pmg-splash):not(#pmg-cmdk-backdrop):not(#pmg-expert-center-root):not(#pmg-shortcuts-backdrop):not(#pmg-share-sheet-backdrop):not(#pmg-upgrade-overlay):not(#pmg-bv-overlay):not([data-pmg-overlay-root]):not(.pmg-toast-host) {
   display: none !important;
 }
 

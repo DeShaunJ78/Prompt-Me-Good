@@ -104,7 +104,7 @@ for (const vp of VIEWPORTS) {
       page,
     }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
-      await page.goto("/");
+      await page.goto("/app");
       await settle(page);
       await dismissOnboarding(page);
       await page.waitForTimeout(300);
@@ -167,7 +167,7 @@ for (const vp of VIEWPORTS) {
       page,
     }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
-      await page.goto("/");
+      await page.goto("/app");
       await settle(page);
       await dismissOnboarding(page);
       await page.waitForTimeout(300);
@@ -284,7 +284,7 @@ for (const vp of VIEWPORTS) {
       page,
     }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
-      await page.goto("/");
+      await page.goto("/app");
       await settle(page);
       await dismissOnboarding(page);
       await page.waitForTimeout(300);
@@ -329,7 +329,7 @@ for (const vp of VIEWPORTS) {
       page,
     }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
-      await page.goto("/");
+      await page.goto("/app");
       await settle(page);
       await dismissOnboarding(page);
       await page.waitForTimeout(300);

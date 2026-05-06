@@ -28,7 +28,7 @@ test('scan hidden focusable controls', async ({ browser }) => {
 
   const dCtx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const dPage = await dCtx.newPage();
-  await dPage.goto('/', { waitUntil: 'networkidle', timeout: 30000 });
+  await dPage.goto('/app', { waitUntil: 'networkidle', timeout: 30000 });
   await dPage.waitForTimeout(3000);
   const dResults = await dPage.evaluate(scanFn);
   console.log('=== DESKTOP (' + dResults.length + ') ===');
@@ -37,7 +37,7 @@ test('scan hidden focusable controls', async ({ browser }) => {
 
   const mCtx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const mPage = await mCtx.newPage();
-  await mPage.goto('/', { waitUntil: 'networkidle', timeout: 30000 });
+  await mPage.goto('/app', { waitUntil: 'networkidle', timeout: 30000 });
   await mPage.waitForTimeout(3000);
   const mResults = await mPage.evaluate(scanFn);
   console.log('=== MOBILE (' + mResults.length + ') ===');

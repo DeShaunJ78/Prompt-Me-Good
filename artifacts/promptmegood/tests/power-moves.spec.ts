@@ -37,7 +37,7 @@ function mockGenerateJson(page: import("@playwright/test").Page) {
 async function mockApiAndGenerate(page: import("@playwright/test").Page, goalText: string) {
   await mockGenerateStream(page);
 
-  await page.goto("/");
+  await page.goto("/app");
   await page.waitForLoadState("networkidle");
 
   const goal = page.locator("#goal");
@@ -171,7 +171,7 @@ test.describe("Power Moves MVP", () => {
     await mockGenerateStream(page);
     await mockGenerateJson(page);
 
-    await page.goto("/");
+    await page.goto("/app");
     await page.waitForLoadState("networkidle");
 
     const goal = page.locator("#goal");

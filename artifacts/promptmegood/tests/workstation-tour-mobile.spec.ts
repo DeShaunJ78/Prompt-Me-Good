@@ -14,7 +14,7 @@ async function gotoApp(page: Page) {
     sessionStorage.setItem("promptmegood:t42-banner-dismissed", "1");
     localStorage.removeItem("pmg.workstationTourSeen");
   });
-  await page.goto(BASE_URL + "/");
+  await page.goto(BASE_URL + "/app");
   await page.waitForLoadState("domcontentloaded");
   try {
     await page.waitForLoadState("networkidle", { timeout: 8000 });
@@ -240,7 +240,7 @@ test.describe("Workstation tour compact overlay @ mobile-400x720", () => {
       localStorage.setItem("promptmegood:tour:v1:done", "1");
       localStorage.removeItem("pmg.workstationTourSeen");
     });
-    await page.goto(BASE_URL + "/");
+    await page.goto(BASE_URL + "/app");
     await page.waitForLoadState("domcontentloaded");
     try {
       await page.waitForLoadState("networkidle", { timeout: 8000 });

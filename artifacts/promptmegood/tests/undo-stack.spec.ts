@@ -29,7 +29,7 @@ async function gotoApp(page: Page) {
       /* ignore */
     }
   });
-  await page.goto(BASE_URL + "/", { waitUntil: "domcontentloaded" });
+  await page.goto(BASE_URL + "/app", { waitUntil: "domcontentloaded" });
   await page.waitForFunction(
     () => !!(window as unknown as Win).__pmgUndo,
     undefined,

@@ -244,7 +244,7 @@ test.describe(`horizontal overflow @ ${VIEWPORT_WIDTH}px (homepage interactive s
   test("mobile nav open does not overflow viewport horizontally", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto("/app");
     await settle(page);
     await dismissOnboarding(page);
     await page.waitForTimeout(400);
@@ -266,7 +266,7 @@ test.describe(`horizontal overflow @ ${VIEWPORT_WIDTH}px (homepage interactive s
   test("Help Me Start modal open does not overflow viewport horizontally", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto("/app");
     await settle(page);
     await dismissOnboarding(page);
     await page.waitForTimeout(400);
@@ -301,7 +301,7 @@ test.describe(`horizontal overflow @ ${VIEWPORT_WIDTH}px (homepage interactive s
   test("Photography Suite expanded with busy pill selection does not overflow viewport horizontally", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto("/app");
     await settle(page);
     await dismissOnboarding(page);
     await page.waitForTimeout(400);

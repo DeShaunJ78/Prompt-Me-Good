@@ -45,7 +45,7 @@ async function gotoApp(page: Page): Promise<void> {
       /* ignore */
     }
   });
-  await page.goto(BASE_URL + "/", { waitUntil: "domcontentloaded" });
+  await page.goto(BASE_URL + "/app", { waitUntil: "domcontentloaded" });
   await page.waitForFunction(
     () => !!(window as unknown as Win).__pmgHandoff,
     undefined,

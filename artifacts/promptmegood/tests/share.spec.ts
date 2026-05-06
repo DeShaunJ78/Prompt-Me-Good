@@ -37,7 +37,7 @@ async function gotoApp(page: Page) {
       /* ignore */
     }
   });
-  await page.goto(BASE_URL + "/", { waitUntil: "domcontentloaded" });
+  await page.goto(BASE_URL + "/app", { waitUntil: "domcontentloaded" });
   await page.waitForFunction(
     () => !!(window as unknown as Win).__pmgShare,
     undefined,
@@ -176,7 +176,7 @@ test.describe("Unified Share button @ mobile-360", () => {
     const hash = link.slice(hashIndex);
 
     /* Navigate to a clean page first so localStorage is the only carry-over. */
-    await page.goto(BASE_URL + "/?t=" + Date.now(), { waitUntil: "domcontentloaded" });
+    await page.goto(BASE_URL + "/app?t=" + Date.now(), { waitUntil: "domcontentloaded" });
     await page.evaluate((h) => {
       window.location.hash = h;
     }, hash);
@@ -236,7 +236,7 @@ test.describe("Unified Share button @ mobile-360", () => {
     const hash = payloadHash.slice(payloadHash.indexOf("#pmgshare="));
 
     /* Now contaminate the recipient with extra builder state, then apply. */
-    await page.goto(BASE_URL + "/?t=" + Date.now(), { waitUntil: "domcontentloaded" });
+    await page.goto(BASE_URL + "/app?t=" + Date.now(), { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => !!(window as unknown as Win).__pmgShare,
       undefined,

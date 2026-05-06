@@ -38,7 +38,7 @@ test.describe("Photography Suite handoff @ mobile-360", () => {
     await page.addInitScript(() => {
       sessionStorage.setItem("promptmegood:t42-banner-dismissed", "1");
     });
-    await page.goto(BASE_URL + "/", { waitUntil: "domcontentloaded" });
+    await page.goto(BASE_URL + "/app", { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () =>
         !!(window as unknown as { __pmgSuiteHandoff?: unknown })

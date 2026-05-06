@@ -90,7 +90,7 @@ async function dismissOnboarding(page: Page) {
 }
 
 async function gotoHistory(page: Page) {
-  await page.goto(BASE_URL + "/", { waitUntil: "domcontentloaded" });
+  await page.goto(BASE_URL + "/app", { waitUntil: "domcontentloaded" });
   await page.waitForSelector("#history-list", { timeout: 10_000 });
   await dismissOnboarding(page);
   /* Give renderHistory a tick. */
@@ -258,7 +258,7 @@ test.describe("Smart Vault @ mobile-360", () => {
       },
       { key: HISTORY_KEY },
     );
-    await page.goto(BASE_URL + "/", { waitUntil: "domcontentloaded" });
+    await page.goto(BASE_URL + "/app", { waitUntil: "domcontentloaded" });
     await page.waitForSelector("#history-list");
     await dismissOnboarding(page);
     await page.waitForTimeout(150);
