@@ -1,0 +1,58 @@
+Replit Handoff: The Three Signature Features
+To: Frontend / Full-Stack Developer
+Project: PromptMeGood Signature Features Implementation
+Goal: Install three category-defining features that seamlessly integrate text, image, and video prompt building into the existing architecture.
+
+
+Feature 1: The Reverse Engine (Image → Prompt)
+The Concept: The user uploads an image, and the app reverse-engineers it into a structured text prompt AND pre-fills the Photography Suite settings.
+
+How to Install It:
+
+	1.	The UI Hook: Inside the new Visual Studio modal (Image tab), add a secondary button next to the “Describe Your Image” textarea: `[ 📸 Reverse Engineer an Image ]`.
+	2.	The Flow:
+	◦	Clicking the button opens a standard file picker (accepting `.jpg`, `.png`, `.webp`).
+	◦	On upload, show a loading state: “Analyzing image DNA…”
+	◦	Send the image to the GPT-4o Vision API (which you already use for the File Analyze feature).
+	3.	The API Prompt (System Instruction):
+	◦	“You are an expert prompt engineer. Analyze this image and return a JSON object with two keys: `prompt` (a highly detailed, plain-language description of the image that would recreate it in DALL-E 3) and `suite_settings` (an object mapping the image to our Photography Suite categories: Style, Camera & Lens, Lighting & Mood, Composition, Color Palette).”
+	4.	The Result:
+	◦	Populate the `#pmg-vs-image-goal` textarea with the returned `prompt` string.
+	◦	Programmatically select the matching dropdown values in the Photography Suite based on the `suite_settings` object.
+	◦	The user can now tweak the reverse-engineered prompt and hit Generate.
+
+
+Feature 2: Prompt DNA (Shareable Prompt Cards)
+The Concept: Every generated image is wrapped in a beautiful, shareable “DNA Card” that displays the image on top and the exact prompt that created it underneath.
+
+How to Install It:
+
+	1.	The UI Hook: In the Visual Studio modal (Step 2 / Result view), replace the standard `⬇ Save` button with two buttons: `[ ⬇ Save Image ]` and `[ 🧬 Download DNA Card ]`.
+	2.	The Flow:
+	◦	When the user clicks “Download DNA Card”, we generate a composite image on the fly using HTML Canvas.
+	3.	The Canvas Implementation:
+	◦	Create a hidden `<canvas>` element.
+	◦	Draw a background color (extract the dominant color from the generated image using a lightweight library like `color-thief`, or default to the dark theme background).
+	◦	Draw the generated image on the top half of the canvas.
+	◦	Draw the PromptMeGood logo in the corner.
+	◦	Draw the text of the final prompt (from `#pmg-vs-refined-prompt`) on the bottom half, using a clean monospace font.
+	◦	Convert the canvas to a data URL (`canvas.toDataURL('image/png')`) and trigger a download.
+	4.	The Social Loop: Add a `[ ↗ Share DNA ]` button that uses the Web Share API (`navigator.share()`) to let mobile users instantly post the composite card to Instagram/X/TikTok.
+
+
+Feature 3: Prompt Storyboard (Text → 5 Images → Video)
+The Concept: The user writes one text prompt, and the app generates a 5-panel visual storyboard, which can then be exported as a Sora video brief.
+
+How to Install It:
+
+	1.	The UI Hook: In the main text builder (Write Something mode), add a new button below “Fix My Prompt” called `[ 🎞️ Generate Storyboard ]`.
+	2.	The Flow (Step 1: Text to 5 Prompts):
+	◦	When clicked, send the user’s goal to GPT-4o with this instruction: “Take this concept and break it into a 5-shot cinematic storyboard. Return a JSON array of 5 highly visual image prompts.”
+	3.	The Flow (Step 2: 5 Prompts to 5 Images):
+	◦	Open a new full-screen modal called “Storyboard Studio”.
+	◦	Display the 5 prompts in a vertical list.
+	◦	Fire 5 parallel (or sequential, depending on rate limits) API calls to DALL-E 3.
+	◦	As each image returns, render it next to its prompt.
+	4.	The Flow (Step 3: Export to Video):
+	◦	At the bottom of the completed storyboard, add a button: `[ 🎬 Send to Video Studio ]`.
+	◦	Clicking this takes the 5 prompts, concatenates them into a single narrative sequence, and opens the Visual Studio modal (Video tab), pre-filling the Goal textarea with the full sequence, ready for Sora generation.
