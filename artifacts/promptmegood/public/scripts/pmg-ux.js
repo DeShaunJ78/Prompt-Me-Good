@@ -6048,7 +6048,7 @@
       '<div class="container">',
       '  <div class="pmg-stack-card" id="' + SUITE_ID + '">',
       '    <div class="pmg-stack-card-head">',
-      '      <span class="pmg-eyebrow">Step 2</span>',
+      '      <span class="pmg-eyebrow">Step 3</span>',
       '      <h2 id="' + SUITE_ID + '-title" data-tour-target="photo-suite-title">📸 Photography Suite</h2>',
       '    </div>',
       '    <p class="pmg-stack-helper">Pick a vibe in each group. We\'ll build the perfect photo prompt and send it straight to the image generator — no copy and paste needed.</p>',
@@ -7266,7 +7266,7 @@
     var head = document.createElement('div');
     head.className = 'pmg-stack-card-head';
     head.innerHTML =
-      '<span class="pmg-eyebrow">Step 3</span>' +
+      '<span class="pmg-eyebrow">Step 4</span>' +
       '<h2 id="' + IMG_GEN_HOST_ID + '-title">🖼️ Image Generator</h2>';
     card.appendChild(head);
 

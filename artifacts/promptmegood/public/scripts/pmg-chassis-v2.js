@@ -185,7 +185,48 @@
   function wireTemplatePicker(root) {
     var btn = root.querySelector('.pmgv2-tpl-picker');
     if (!btn) return;
+    var nameEl = btn.querySelector('.pmgv2-tp-name');
+
+    // Inject the pulse keyframes once so clicking the picker gives an
+    // unmistakable visual ack — without this the click felt "frozen"
+    // because the templates panel lives in the rail (off-screen on
+    // mobile, in peripheral vision on desktop) so the scroll alone
+    // wasn't perceptible.
+    if (!document.getElementById('pmgv2-tpl-pulse-css')) {
+      var s = document.createElement('style');
+      s.id = 'pmgv2-tpl-pulse-css';
+      s.textContent =
+        '@keyframes pmgv2TplPulse {' +
+        '  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary, #3ee0a0) 55%, transparent); }' +
+        '  70%  { box-shadow: 0 0 0 12px color-mix(in srgb, var(--color-primary, #3ee0a0) 0%, transparent); }' +
+        '  100% { box-shadow: 0 0 0 0 transparent; }' +
+        '}' +
+        'html.pmg-chassis-v2 .pmgv2-tpl-picker.is-pulse {' +
+        '  animation: pmgv2TplPulse 700ms ease-out;' +
+        '  border-color: var(--color-primary, #3ee0a0) !important;' +
+        '}';
+      document.head.appendChild(s);
+    }
+
+    var prefersReducedMotion = function () {
+      try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+      catch (e) { return false; }
+    };
+
     btn.addEventListener('click', function () {
+      // 1) Always pulse so user knows the click registered.
+      //    Skipped under prefers-reduced-motion — the border-color
+      //    swap on .is-pulse still gives a non-animated visual ack.
+      if (!prefersReducedMotion()) {
+        btn.classList.remove('is-pulse');
+        // Force reflow so the animation can replay on rapid clicks.
+        void btn.offsetWidth;
+        btn.classList.add('is-pulse');
+        setTimeout(function () { btn.classList.remove('is-pulse'); }, 750);
+      }
+
+      // 2) On mobile flip the dock to the vault tab so the rail
+      //    (which contains #templates) becomes visible.
       var isMobile = window.matchMedia('(max-width: 900px)').matches;
       if (isMobile) {
         try {
@@ -197,13 +238,39 @@
           }
         } catch (e) {}
       }
+      // 3) Scroll the relocated panel into view and focus its first tile.
       var tpl = document.getElementById('templates');
       if (tpl) {
-        try { tpl.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
-        var first = tpl.querySelector('button, [role="button"], .template-card, .template-tile');
+        var scrollBehavior = prefersReducedMotion() ? 'auto' : 'smooth';
+        try { tpl.scrollIntoView({ behavior: scrollBehavior, block: 'start' }); } catch (e) {}
+        var first = tpl.querySelector('.template-card, .template-tile, button, [role="button"]');
         if (first) try { first.focus({ preventScroll: true }); } catch (e) {}
       }
     });
+
+    // Sync the picker label when a template is actually applied so the
+    // box stops looking "frozen" on the same default text forever.
+    // Delegated listener scoped to #templates only — prevents future
+    // .template-card uses elsewhere from accidentally writing into
+    // the chassis picker label.
+    if (nameEl) {
+      document.addEventListener('click', function (ev) {
+        var card = ev.target && ev.target.closest && ev.target.closest('.template-card');
+        if (!card) return;
+        var scope = document.getElementById('templates');
+        if (!scope || !scope.contains(card)) return;
+        // Only respond to template-card clicks inside the templates panel
+        // (avoid the delete-card sub-button etc).
+        if (ev.target.closest('.template-card-delete')) return;
+        var titleEl = card.querySelector('.template-card-title');
+        var label = titleEl ? (titleEl.textContent || '').trim() : '';
+        if (label) {
+          // Truncate long titles so the picker chrome stays tidy.
+          nameEl.textContent = label.length > 38 ? label.slice(0, 36) + '…' : label;
+          nameEl.setAttribute('title', label);
+        }
+      }, true);
+    }
   }
 
   // ---- Phase 5: Export Plan ----

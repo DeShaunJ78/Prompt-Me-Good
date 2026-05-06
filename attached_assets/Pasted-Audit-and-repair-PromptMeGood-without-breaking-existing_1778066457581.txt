@@ -1,0 +1,121 @@
+Audit and repair PromptMeGood without breaking existing functionality.
+
+Site: www.promptmegood.com
+
+Goal:
+Fix the most important UX, interaction, and rendering issues found in the site audit. Preserve the existing brand style, pages, and app functionality.
+
+Before editing:
+1. Inspect the current codebase first.
+2. Identify how the homepage, pricing page, guide page, legal pages, and /app route are structured.
+3. Do not rewrite the entire project unless absolutely necessary.
+4. Make targeted fixes only.
+5. Preserve existing content, styling direction, and local-first app behavior.
+
+P0 fixes:
+1. Fix the /app first-render issue.
+   - The workstation must never load as a blank or nearly blank dark screen.
+   - Add a visible loading state if the app takes time to initialize.
+   - Ensure the main app UI appears reliably on desktop and mobile.
+   - Test /app directly, not only from homepage navigation.
+
+2. Stabilize pricing page interactions.
+   - Check all pricing toggles, Expert Mode controls, FAQ accordions, beta notice dismiss behavior, and CTA buttons.
+   - Fix any z-index, overlay, pointer-events, hydration, or event-listener issues.
+   - Every visible interactive item must fire when clicked or tapped.
+
+3. Fix Expert Command Center trigger behavior.
+   - The Expert Command Center button/CTA must always produce immediate visible feedback.
+   - If it opens a drawer, modal, panel, or section, make that state obvious.
+   - If the feature is not fully available yet, show a clear coming-soon or locked-state message instead of doing nothing.
+
+P1 fixes:
+1. Simplify the conversion path.
+   - Make the primary action consistent across the site.
+   - Prefer one clear CTA: “Open App,” “Try the App Free,” or “Start Building.”
+   - Avoid making users choose between too many concepts before using the app.
+
+2. Reduce terminology overload.
+   - Clarify or reduce competing labels like:
+     - Prompt Builder
+     - Prompt Engine
+     - Photography Suite
+     - Expert Mode
+     - Expert Command Center
+     - Founding Member
+     - Pro
+   - Keep advanced terminology hidden until the user needs it.
+
+3. Improve mobile layout density.
+   - Pricing, guide, and app pages should be easier to scan on mobile.
+   - Collapse secondary content where appropriate.
+   - Make tap targets comfortable.
+   - Avoid long stacks of tiny chips or crowded controls.
+
+4. Improve accessibility basics.
+   - Add accessible labels to icon-only buttons.
+   - Ensure focus states are visible.
+   - Ensure buttons have clear names.
+   - Avoid cryptic controls like “?” without accessible context.
+   - Make accordions, drawers, tabs, and toggles keyboard accessible.
+
+P2 fixes:
+1. Improve homepage trust and clarity.
+   - Add or improve examples, screenshots, or “who this is for” sections if existing structure allows.
+   - Do not add fake testimonials.
+
+2. Improve contact/support behavior.
+   - If contact is mailto-only, keep it working, but consider adding clearer support copy.
+   - Do not build a full support backend unless already present.
+
+Button and interaction QA:
+After fixes, test every visible interactive item on:
+- Homepage
+- Pricing page
+- Guide page
+- Privacy page
+- Terms page
+- /app route
+
+Test both:
+- Desktop viewport
+- Mobile viewport
+
+Required checks:
+- Header links
+- Footer links
+- Primary CTAs
+- Pricing toggles
+- Expert Mode controls
+- FAQ accordions
+- Dark mode toggles
+- Guide jump links
+- App tabs
+- Help button
+- New Prompt button
+- Template chooser
+- Prompt Vault controls
+- Show Archived
+- Compare
+- Export/Import/Backup
+- Collapse All
+- Hide Prompt Vault
+- Copy Prompt
+- Refine It
+- Check Quality
+- Help Me Start
+- Fix My Prompt
+- Expert Command Center
+
+Acceptance criteria:
+- No page loads blank.
+- /app renders reliably on direct load.
+- Every visible button or control either works or gives clear visible feedback.
+- No dead clicks.
+- No broken navigation.
+- No hidden overlay blocking clicks.
+- Mobile layout is usable and not cramped.
+- Existing design language remains intact.
+- Existing app functionality is preserved.
+- No login, database, sessions, or major backend system added unless already part of the project.
+- Provide a final summary of exactly what was changed and what was tested.
