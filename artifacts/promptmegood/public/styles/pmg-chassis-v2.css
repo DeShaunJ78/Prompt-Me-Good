@@ -773,20 +773,12 @@ html.pmg-chassis-v2 .pmgv2-composer-wrap {
   flex: 0 0 auto;
 }
 
-/* 2) Hide the empty result panel entirely until generation populates
-      it. The static "Your Fixed Prompt" card with sample pills (Role
-      Assignment / Clear Constraints / Useful Output Format) and
-      placeholder text dominated first paint and pushed the goal
-      textarea below the fold on desktop. Existing JS adds .has-result
-      to #result-panel after generation — once that fires the panel
-      reappears in normal flow. (Mobile already hid this in section 1c
-      above; we now extend the same treatment to desktop.) */
-html.pmg-chassis-v2 .pmgv2-thread #result-panel:not(.has-result) {
-  display: none !important;
-}
-html.pmg-chassis-v2 .pmgv2-thread #imageResultWrap:has(.image-placeholder) {
-  display: none !important;
-}
+/* 2) [REVERTED] An earlier rule hid #result-panel:not(.has-result) to
+      keep the empty Fixed-Prompt card from pushing the goal textarea
+      below the fold. The selector was wrong — existing JS sets
+      `body.pmg-has-result`, NOT `.has-result` on the panel — so once a
+      user generated a prompt, the result panel stayed hidden and they
+      could not see their output. The panel must always be visible. */
 
 /* 3) Mobile a11y — Apple HIG / Material tap-target + iOS no-zoom inputs.
       Scoped to chassis surfaces only so we don't break legacy compact UI. */
@@ -884,18 +876,9 @@ html.pmg-chassis-v2 .pmgv2-thread #imageResultWrap:has(.image-placeholder) {
     white-space: nowrap;
   }
 
-  /* (c) Hide empty noise so the composer is the first interactive
-         surface after the hero. Both the static "Fixed Prompt" sample
-         card and the "Your Image Will Appear Here" placeholder add no
-         value before generation; existing JS adds .has-result /
-         populates #imageResultWrap on output, restoring visibility.
-         Scoped to mobile only — desktop keeps the full layout. */
-  html.pmg-chassis-v2 .pmgv2-thread #result-panel:not(.has-result) {
-    display: none !important;
-  }
-  html.pmg-chassis-v2 .pmgv2-thread #imageResultWrap:has(.image-placeholder) {
-    display: none !important;
-  }
+  /* (c) [REVERTED] See section 2 above — the `.has-result` selector
+         never matched (JS sets `body.pmg-has-result`), so generated
+         prompts were invisible. The result panel must always be visible. */
 
   /* (d) Thread bottom padding so content above the composer can be
          scrolled past the dock. The composer itself sits sticky-bottom
