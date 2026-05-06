@@ -7947,7 +7947,7 @@
     var helper = suite.querySelector('.pmg-stack-helper');
     if (helper) {
       helper.textContent =
-        'Pick A Vibe In Each Group. When You\'re Ready, Either Copy The Prompt To Use In Another AI Tool — Or Generate The Image Right Here With DALL·E 3.';
+        'Pick a vibe in each group. When you\'re ready, either copy the prompt to use in another AI tool — or generate the image right here with DALL·E 3.';
     }
 
     var actions = suite.querySelector('.pmg-photo-actions');
