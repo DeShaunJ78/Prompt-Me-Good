@@ -1431,6 +1431,24 @@ html.pmg-chassis-v2 .pmgv2-composer-tab { display: none; }
     font-weight: 600;
     letter-spacing: 0.01em;
     min-height: 40px;
+    position: relative; /* anchor the separator pseudo */
+  }
+  /* cv2-24: brand-mint vertical separators between dock buttons.
+     Pseudo sits in the grid gap (right: -4px) so it never overlaps
+     the active button's border, and only renders for non-last
+     buttons so the right edge of the dock stays clean. Inset 9px
+     top/bottom for breathing room — separator is shorter than the
+     button height for a tabbed-button feel rather than a hard rule. */
+  html.pmg-chassis-v2 .pmgv2-dock-btn:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 9px;
+    bottom: 9px;
+    right: -4px;
+    width: 1.5px;
+    background: color-mix(in srgb, #3ee0a0 70%, transparent);
+    border-radius: 1px;
+    pointer-events: none;
   }
   html.pmg-chassis-v2 .pmgv2-dock-btn:hover {
     color: #0a5b50;
