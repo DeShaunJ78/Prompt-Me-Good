@@ -4245,6 +4245,82 @@
       </div>
     </section>
 
+    <!-- 5-second mental model: 3 labeled stripes between hero and workstation.
+         Teaches a brand-new visitor what the chassis is BEFORE they touch the form. -->
+    <style>
+      .pmg-seam { padding: 0 var(--space-4) var(--space-8); }
+      .pmg-seam-inner {
+        max-width: 1080px; margin: 0 auto;
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+      }
+      .pmg-seam-stripe {
+        position: relative;
+        background: color-mix(in srgb, var(--color-surface, #0e3a36) 88%, transparent);
+        border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 16%, transparent);
+        border-left: 3px solid var(--color-primary, #3ee0a0);
+        border-radius: 12px;
+        padding: 14px 16px 14px 18px;
+        text-align: left;
+        transition: border-color 200ms ease, transform 200ms ease;
+      }
+      .pmg-seam-stripe:hover {
+        border-left-color: var(--color-primary-hover, #5fe6b0);
+        transform: translateY(-1px);
+      }
+      .pmg-seam-num {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+        color: var(--color-primary, #3ee0a0); font-weight: 600;
+        display: inline-flex; align-items: center; gap: 6px;
+        margin-bottom: 6px;
+      }
+      .pmg-seam-num::before {
+        content: ''; width: 5px; height: 5px; border-radius: 999px;
+        background: var(--color-primary, #3ee0a0);
+        box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary, #3ee0a0) 70%, transparent);
+      }
+      .pmg-seam-title {
+        font-size: 15px; font-weight: 600; color: var(--color-text, #e8f5f0);
+        margin: 0 0 4px; letter-spacing: -0.01em;
+      }
+      .pmg-seam-desc {
+        font-size: 13px; line-height: 1.45; color: var(--color-text-muted, rgba(232,245,240,0.7));
+        margin: 0;
+      }
+      .pmg-seam-tag {
+        display: inline-block; margin-top: 8px;
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 10px; letter-spacing: 0.08em;
+        color: color-mix(in srgb, var(--color-text, #e8f5f0) 55%, transparent);
+      }
+      @media (max-width: 760px) {
+        .pmg-seam-inner { grid-template-columns: 1fr; gap: 10px; }
+        .pmg-seam { padding-bottom: var(--space-6); }
+      }
+    </style>
+    <section class="pmg-seam" aria-label="How PromptMeGood works">
+      <div class="pmg-seam-inner">
+        <article class="pmg-seam-stripe">
+          <span class="pmg-seam-num">01 · Talk</span>
+          <h3 class="pmg-seam-title">Conversation</h3>
+          <p class="pmg-seam-desc">Describe what you want in plain English. We turn it into a sharp, ready-to-use prompt.</p>
+          <span class="pmg-seam-tag">below ↓</span>
+        </article>
+        <article class="pmg-seam-stripe">
+          <span class="pmg-seam-num">02 · Lock</span>
+          <h3 class="pmg-seam-title">Master Link</h3>
+          <p class="pmg-seam-desc">When the wording is right, lock it as your Master Plan so every variation stays on-brief.</p>
+          <span class="pmg-seam-tag">center column</span>
+        </article>
+        <article class="pmg-seam-stripe">
+          <span class="pmg-seam-num">03 · Generate</span>
+          <h3 class="pmg-seam-title">Visual Asset Engine</h3>
+          <p class="pmg-seam-desc">Pair the locked prompt with style, camera, and lighting controls — then run it in DALL·E or any AI tool.</p>
+          <span class="pmg-seam-tag">right rail</span>
+        </article>
+      </div>
+    </section>
+
     <section class="app-section" id="builder">
       <div class="container app-shell">
         <section class="panel" id="builder-panel" aria-labelledby="builder-title">
