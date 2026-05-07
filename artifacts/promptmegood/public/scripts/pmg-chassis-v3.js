@@ -1,0 +1,491 @@
+/* PromptMeGood — Chassis v3 bootstrap
+   Implements the "Definitive Redesign Command" PDF.
+   Default ON. Opt out with ?chassis=v2 (legacy 3-col) or ?chassis=off (raw legacy).
+   Reparents existing #goal, #settingsPanel, #generateBtn, #resultBox, #strength-score,
+   #aiResponseSection into the new shell so all existing JS handlers keep working untouched.
+*/
+(function () {
+  'use strict';
+
+  var V3_CLASS = 'pmg-chassis-v3';
+  var qs = new URLSearchParams(window.location.search);
+  var modeOverride = qs.get('chassis');
+
+  if (modeOverride === 'v2' || modeOverride === 'off') {
+    return;
+  }
+
+  document.documentElement.classList.add(V3_CLASS);
+  window.__pmgChassisV3Active = true;
+
+  var rootEl = null;
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+
+  function boot() {
+    if (document.getElementById('pmg-chassis-v3-root')) return;
+    rootEl = buildShell();
+    document.body.appendChild(rootEl);
+    reparent();
+    // Kill stray clones that pmg-ux.js injects (generateBtnTop in particular)
+    var killTicks = 0;
+    var killClones = setInterval(function () {
+      killTicks++;
+      if (killTicks > 30) { clearInterval(killClones); return; }
+      var clones = document.querySelectorAll('#generateBtnTop, .pmg-t100-top-cta-row, [id^="generateBtnTop"]');
+      clones.forEach(function (n) {
+        if (n.parentNode) n.parentNode.removeChild(n);
+      });
+    }, 200);
+    // Force-hide collapsible sections + the generate button itself via inline style
+    // (beats any CSS conflict and any legacy script that may unhide the section).
+    ['tuning-panel', 'generate-section', 'prompt-output-box', 'ai-response-box'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.style.setProperty('display', 'none', 'important');
+    });
+    var genBtnHide = document.getElementById('generateBtn');
+    if (genBtnHide) genBtnHide.style.setProperty('display', 'none', 'important');
+    var settingsHide = document.getElementById('settingsPanel');
+    if (settingsHide) settingsHide.style.setProperty('display', 'none', 'important');
+    wireActions();
+    suppressLegacyChassisV2();
+    deleteTargets();
+    // Re-apply the hide on a short tick in case any late legacy script flips display
+    var hideTicks = 0;
+    var hideTick = setInterval(function () {
+      hideTicks++;
+      if (hideTicks > 20) { clearInterval(hideTick); return; }
+      if (document.body.classList.contains('pmgv3-analyzed')) { clearInterval(hideTick); return; }
+      var gb = document.getElementById('generateBtn');
+      if (gb) gb.style.setProperty('display', 'none', 'important');
+      var gs = document.getElementById('generate-section');
+      if (gs) gs.style.setProperty('display', 'none', 'important');
+      var sp = document.getElementById('settingsPanel');
+      if (sp) sp.style.setProperty('display', 'none', 'important');
+      var tp = document.getElementById('tuning-panel');
+      if (tp) tp.style.setProperty('display', 'none', 'important');
+    }, 200);
+  }
+
+  function buildShell() {
+    var root = document.createElement('div');
+    root.id = 'pmg-chassis-v3-root';
+    root.innerHTML = [
+      '<header class="pmgv3-topbar">',
+        '<div class="pmgv3-brand">',
+          '<img src="/pmg-logo.png?v=5" alt="" />',
+          '<span>PromptMeGood</span>',
+          '<span class="pmgv3-brand-beta">Beta</span>',
+        '</div>',
+        '<div class="pmgv3-tb-r">',
+          '<button class="pmgv3-ico" id="pmgv3-vault" type="button" title="Vault" aria-label="Vault">🗄️</button>',
+          '<button class="pmgv3-ico" id="pmgv3-settings" type="button" title="Settings" aria-label="Settings">⚙️</button>',
+          '<button class="pmgv3-upgrade" type="button" id="pmgv3-upgrade">Upgrade</button>',
+        '</div>',
+      '</header>',
+      '<nav class="pmgv3-tabs" role="tablist" aria-label="Module">',
+        '<button class="pmgv3-tab is-active" data-module="text" role="tab" aria-selected="true" type="button">✍️ Text Prompts</button>',
+        '<button class="pmgv3-tab" data-module="photography" role="tab" aria-selected="false" type="button">📸 Photography</button>',
+        '<button class="pmgv3-tab" data-module="video" role="tab" aria-selected="false" type="button">🎬 Video</button>',
+      '</nav>',
+      '<div class="pmgv3-body">',
+        '<div class="pmgv3-left">',
+          '<section class="idea-section">',
+            '<label class="pmgv3-section-label" for="goal">Your Idea</label>',
+            '<p class="pmgv3-section-hint">Describe what you want to create. Be as brief or detailed as you like.</p>',
+            '<div class="pmgv3-idea-host"></div>',
+            '<button id="analyze-btn" class="btn-analyze" type="button">→ Analyze My Idea</button>',
+          '</section>',
+          '<section class="tuning-section is-collapsed" id="tuning-panel" style="display:none !important">',
+            '<div class="tuning-header">',
+              '<span class="tuning-title">🎛️ Tune Your Prompt</span>',
+              '<span class="tuning-hint">We\'ve pre-selected settings based on your idea. Adjust if needed.</span>',
+            '</div>',
+            '<div class="pmgv3-tuning-host"></div>',
+          '</section>',
+          '<section class="generate-section is-collapsed" id="generate-section" style="display:none !important">',
+            '<div class="generate-divider"></div>',
+            '<div class="pmgv3-generate-host"></div>',
+          '</section>',
+        '</div>',
+        '<div class="pmgv3-right">',
+          '<div class="output-box is-collapsed" id="prompt-output-box" style="display:none !important">',
+            '<div class="strength-bar-container" id="pmgv3-strength-slot">',
+              '<div class="strength-header">',
+                '<span class="strength-label">Prompt Strength</span>',
+                '<span class="strength-score" id="strength-score-badge">--</span>',
+              '</div>',
+              '<div class="strength-track"><div class="strength-fill" id="strength-fill" style="width:0%"></div></div>',
+              '<div class="strength-status" id="strength-status">Analyzing…</div>',
+            '</div>',
+            '<label class="pmgv3-section-label" style="margin-top:12px;">Your Engineered Prompt</label>',
+            '<div class="pmgv3-output-host"></div>',
+            '<div class="prompt-actions">',
+              '<button class="btn-secondary" type="button" id="edit-prompt-btn">✏️ Edit</button>',
+              '<button class="btn-secondary" type="button" id="rewrite-btn">🔄 Rewrite</button>',
+              '<button class="btn-secondary" type="button" id="save-draft-btn">💾 Save Draft</button>',
+            '</div>',
+            '<div class="next-step-divider"><span>Happy with your prompt?</span></div>',
+            '<button class="btn-run-primary" type="button" id="run-with-ai-btn">▶ Run with AI to see your result</button>',
+            '<div class="send-to-row">',
+              '<button class="btn-send-to" data-platform="chatgpt" type="button">Send to ChatGPT</button>',
+              '<button class="btn-send-to" data-platform="claude" type="button">Send to Claude</button>',
+              '<button class="btn-send-to" data-platform="gemini" type="button">Send to Gemini</button>',
+            '</div>',
+          '</div>',
+          '<div class="output-box ai-response-box is-collapsed" id="ai-response-box" style="display:none !important">',
+            '<div class="pmgv3-air-host"></div>',
+          '</div>',
+        '</div>',
+      '</div>',
+      '<footer class="pmgv3-bottom">',
+        '<div class="quick-entry-pill">',
+          '<span class="quick-entry-icon">✏️</span>',
+          '<input type="text" id="quick-entry" placeholder="What do you want to build?" autocomplete="off" />',
+          '<button id="quick-entry-submit" class="quick-entry-btn" type="button" aria-label="Send">▲</button>',
+        '</div>',
+      '</footer>',
+    ].join('');
+    return root;
+  }
+
+  function reparent() {
+    // 1. Move #goal field into idea host
+    var goalEl = document.getElementById('goal');
+    if (goalEl) {
+      var goalField = goalEl.closest('.field') || goalEl;
+      var ideaHost = rootEl.querySelector('.pmgv3-idea-host');
+      if (ideaHost && goalField.parentNode !== ideaHost) {
+        ideaHost.appendChild(goalField);
+      }
+    }
+
+    // 2. Move #settingsPanel into tuning host
+    var settings = document.getElementById('settingsPanel');
+    if (settings) {
+      var tuningHost = rootEl.querySelector('.pmgv3-tuning-host');
+      if (tuningHost && settings.parentNode !== tuningHost) {
+        tuningHost.appendChild(settings);
+      }
+      settings.style.setProperty('display', 'none', 'important');
+      settings.setAttribute('data-pmgv3-collapsed', '1');
+    }
+
+    // 3. Move #generateBtn into generate-section. Keep it inside #prompt-form for submit semantics
+    //    by ALSO moving #prompt-form into the body so the button stays a form submit child.
+    var form = document.getElementById('prompt-form');
+    var genBtn = document.getElementById('generateBtn');
+    if (genBtn && form) {
+      // Move form to a hidden container so the form remains the parent of relocated children.
+      // The actual children (idea field, settings, generate button) are now physically nested
+      // inside our shell, but the form element wraps them via DOM ancestry through host slots.
+      // Simpler: move generateBtn into generate host; rely on form-attribute to keep submit.
+      genBtn.setAttribute('form', 'prompt-form');
+      genBtn.textContent = '✨ Done Tuning — Generate My Prompt';
+      var genHost = rootEl.querySelector('.pmgv3-generate-host');
+      if (genHost && genBtn.parentNode !== genHost) {
+        genHost.appendChild(genBtn);
+      }
+      // Hard-hide the button itself; analyze click will un-hide.
+      genBtn.style.setProperty('display', 'none', 'important');
+      genBtn.setAttribute('data-pmgv3-collapsed', '1');
+      // Same for #goal so submit on Enter still works
+      if (goalEl) goalEl.setAttribute('form', 'prompt-form');
+      // Ensure the form element still exists somewhere in the DOM so 'form' attribute resolves.
+      if (form && !document.body.contains(form)) {
+        document.body.appendChild(form);
+        form.style.display = 'none';
+      }
+    }
+
+    // 4. Move #resultBox into prompt output host
+    var resultBox = document.getElementById('resultBox');
+    if (resultBox) {
+      var outHost = rootEl.querySelector('.pmgv3-output-host');
+      if (outHost && resultBox.parentNode !== outHost) {
+        outHost.appendChild(resultBox);
+      }
+      // Spec uses #output as the textarea ID; provide an alias getter on the global so
+      // any spec-conformant code that tries document.getElementById('output') succeeds.
+      if (!document.getElementById('output')) {
+        try {
+          // Add an attribute so it can also be reached via [data-spec-id]
+          resultBox.setAttribute('data-spec-id', 'output');
+        } catch (e) {}
+      }
+    }
+
+    // 5. Move #strength-score into strength slot (replacing default markup)
+    var legacyStrength = document.getElementById('strength-score');
+    var strengthSlot = rootEl.querySelector('#pmgv3-strength-slot');
+    if (legacyStrength && strengthSlot) {
+      // Append legacy node alongside the spec markup so existing fill/pct updates still work
+      legacyStrength.classList.add('pmgv3-relocated');
+      legacyStrength.removeAttribute('hidden');
+      strengthSlot.appendChild(legacyStrength);
+    }
+
+    // 6. Move #aiResponseSection into Box 2 host
+    var air = document.getElementById('aiResponseSection');
+    if (air) {
+      var airHost = rootEl.querySelector('.pmgv3-air-host');
+      if (airHost && air.parentNode !== airHost) {
+        airHost.appendChild(air);
+      }
+      air.removeAttribute('hidden');
+    }
+  }
+
+  function wireActions() {
+    // Analyze: reveal tuning + generate
+    var analyzeBtn = document.getElementById('analyze-btn');
+    if (analyzeBtn) {
+      analyzeBtn.addEventListener('click', function () {
+        var t = document.getElementById('tuning-panel');
+        var g = document.getElementById('generate-section');
+        document.body.classList.add('pmgv3-analyzed');
+        if (t) { t.classList.remove('is-collapsed'); t.removeAttribute('hidden'); t.style.removeProperty('display'); }
+        if (g) { g.classList.remove('is-collapsed'); g.removeAttribute('hidden'); g.style.removeProperty('display'); }
+        var gbShow = document.getElementById('generateBtn');
+        if (gbShow) { gbShow.style.removeProperty('display'); gbShow.removeAttribute('data-pmgv3-collapsed'); }
+        var spShow = document.getElementById('settingsPanel');
+        if (spShow) { spShow.style.removeProperty('display'); spShow.removeAttribute('data-pmgv3-collapsed'); }
+        // Trigger existing auto-optimize logic if available so pills pre-fill
+        try {
+          var autoOpt = document.getElementById('auto-optimize-toggle');
+          if (autoOpt && !autoOpt.checked) autoOpt.click();
+        } catch (e) {}
+        try {
+          if (window.pmgAutoOptimize && typeof window.pmgAutoOptimize === 'function') {
+            window.pmgAutoOptimize();
+          }
+        } catch (e) {}
+        if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+
+    // Generate (legacy submit): reveal Box 1 after a tick
+    var genBtn = document.getElementById('generateBtn');
+    if (genBtn) {
+      genBtn.addEventListener('click', function () {
+        setTimeout(function () {
+          var box = document.getElementById('prompt-output-box');
+          if (box) { box.classList.remove('is-collapsed'); box.removeAttribute('hidden'); box.style.display = ''; }
+          // Mirror legacy strength-score-pct → spec strength-score-badge
+          mirrorStrength();
+        }, 350);
+      });
+    }
+    // Mirror strength on a polling tick so it stays current
+    setInterval(mirrorStrength, 1500);
+
+    // Re-assert generate button label on a tick — other scripts may overwrite text
+    var GEN_LABEL = '✨ Generate My Prompt';
+    setInterval(function () {
+      var b = document.getElementById('generateBtn');
+      if (b && rootEl.contains(b) && b.textContent.trim() !== GEN_LABEL) {
+        b.textContent = GEN_LABEL;
+      }
+    }, 800);
+
+    // Run with AI: reveal Box 2 + delegate to legacy #runBtn
+    var runBtn = document.getElementById('run-with-ai-btn');
+    if (runBtn) {
+      runBtn.addEventListener('click', function () {
+        var box = document.getElementById('ai-response-box');
+        if (box) { box.classList.remove('is-collapsed'); box.removeAttribute('hidden'); box.style.display = ''; }
+        var legacyRun = document.getElementById('runBtn');
+        if (legacyRun) {
+          legacyRun.click();
+        } else if (typeof window.runWithAI === 'function') {
+          window.runWithAI();
+        }
+        if (box) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+
+    // Edit / Rewrite / Save Draft — wire to existing handlers if present
+    bindIfPresent('edit-prompt-btn', function () {
+      var rb = document.getElementById('resultBox');
+      if (rb) { rb.focus(); document.execCommand && document.execCommand('selectAll', false, null); }
+    });
+    bindIfPresent('rewrite-btn', function () {
+      // Re-submit the form
+      var f = document.getElementById('prompt-form');
+      if (f) {
+        if (typeof f.requestSubmit === 'function') f.requestSubmit();
+        else f.submit();
+      }
+    });
+    bindIfPresent('save-draft-btn', function () {
+      // Best-effort: try common existing save handlers
+      var existing = document.querySelector('#save-vault-btn, #pmg-save-vault-btn, #savePromptBtn, [data-pmg-save-vault]');
+      if (existing) existing.click();
+      else {
+        try {
+          var rb = document.getElementById('resultBox');
+          var draft = (rb && rb.textContent || '').trim();
+          if (draft) {
+            localStorage.setItem('pmgv3:lastDraft', JSON.stringify({ text: draft, savedAt: Date.now() }));
+            flash('Draft saved locally');
+          }
+        } catch (e) {}
+      }
+    });
+
+    // Send-to-platform buttons (Step 5A)
+    var sendBtns = rootEl.querySelectorAll('.btn-send-to');
+    Array.prototype.forEach.call(sendBtns, function (btn) {
+      btn.addEventListener('click', function () {
+        var rb = document.getElementById('resultBox');
+        var prompt = (rb && rb.textContent || '').trim();
+        if (!prompt || prompt === 'Your fixed prompt will appear here.') {
+          flash('Generate a prompt first.');
+          return;
+        }
+        var encoded = encodeURIComponent(prompt);
+        var urls = {
+          chatgpt: 'https://chatgpt.com/?q=' + encoded,
+          claude: 'https://claude.ai/new?q=' + encoded,
+          gemini: 'https://gemini.google.com/app?q=' + encoded,
+        };
+        var platform = btn.dataset.platform;
+        try { navigator.clipboard.writeText(prompt); } catch (e) {}
+        if (urls[platform]) window.open(urls[platform], '_blank', 'noopener');
+      });
+    });
+
+    // Quick entry → mirror into #goal then trigger Analyze
+    var qe = document.getElementById('quick-entry');
+    var qsub = document.getElementById('quick-entry-submit');
+    function submitQuick() {
+      if (!qe) return;
+      var val = qe.value.trim();
+      if (!val) return;
+      var goal = document.getElementById('goal');
+      if (goal) {
+        goal.value = val;
+        goal.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      qe.value = '';
+      var a = document.getElementById('analyze-btn');
+      if (a) a.click();
+    }
+    if (qsub) qsub.addEventListener('click', submitQuick);
+    if (qe) {
+      qe.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); submitQuick(); }
+      });
+    }
+
+    // Module tabs
+    var tabs = rootEl.querySelectorAll('.pmgv3-tab');
+    Array.prototype.forEach.call(tabs, function (tab) {
+      tab.addEventListener('click', function () {
+        Array.prototype.forEach.call(tabs, function (t) {
+          t.classList.remove('is-active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        tab.classList.add('is-active');
+        tab.setAttribute('aria-selected', 'true');
+        var mod = tab.dataset.module;
+        if (mod === 'photography' && typeof window.openVisualStudio === 'function') {
+          window.openVisualStudio({ mode: 'image' });
+        } else if (mod === 'video' && typeof window.openVisualStudio === 'function') {
+          window.openVisualStudio({ mode: 'video' });
+        }
+      });
+    });
+
+    // Vault icon → trigger any existing vault toggle
+    bindIfPresent('pmgv3-vault', function () {
+      var existing = document.querySelector('#pmg-vault-toggle, [data-pmg-vault-toggle]');
+      if (existing) existing.click();
+    });
+    bindIfPresent('pmgv3-upgrade', function () {
+      window.location.href = '/pricing.html';
+    });
+  }
+
+  function mirrorStrength() {
+    var pct = document.getElementById('strength-score-pct');
+    var fill = document.getElementById('strength-fill');
+    var badge = document.getElementById('strength-score-badge');
+    var status = document.getElementById('strength-status');
+    if (!pct) return;
+    var val = parseInt(String(pct.textContent).replace(/[^0-9]/g, ''), 10);
+    if (isNaN(val)) return;
+    if (fill) fill.style.width = Math.min(100, Math.max(0, val)) + '%';
+    if (badge) badge.textContent = String(val);
+    if (status) {
+      if (val >= 80) status.textContent = '⚡ Strong — Ready to Run';
+      else if (val >= 50) status.textContent = '✓ Good — could be sharper';
+      else status.textContent = 'Needs more detail';
+    }
+  }
+
+  function bindIfPresent(id, fn) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('click', fn);
+  }
+
+  function flash(msg) {
+    var el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);' +
+      'background:#0a2218;color:#00c896;border:1px solid #00c896;padding:10px 16px;' +
+      'border-radius:10px;font-size:13px;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.4);';
+    document.body.appendChild(el);
+    setTimeout(function () { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; }, 1800);
+    setTimeout(function () { el.remove(); }, 2200);
+  }
+
+  function suppressLegacyChassisV2() {
+    // chassis-v2 may have already added pmg-chassis-v2 class. Strip it so v2 CSS deactivates.
+    document.documentElement.classList.remove('pmg-chassis-v2');
+    // Remove any existing v2 root if it slipped in before v3 booted
+    var v2root = document.getElementById('pmg-chassis-v2-root');
+    if (v2root) v2root.remove();
+  }
+
+  function deleteTargets() {
+    // Hard-remove a small set of nodes by ID so they cannot be revealed by other scripts
+    ['pmg-help-me-start-btn', 'guided-mode-dialog', 'guided-mode-btn',
+     'pmg-shortcuts-panel', 'pmg-result-confirm', 'pmg-t42-beta-banner',
+     'auto-optimize-row', 'post-uc-guidance']
+      .forEach(function (id) {
+        var n = document.getElementById(id);
+        if (n && n.parentNode) n.parentNode.removeChild(n);
+      });
+  }
+
+  // Re-suppress v2 if it boots later
+  var mo = new MutationObserver(function () {
+    if (document.documentElement.classList.contains('pmg-chassis-v2')) {
+      document.documentElement.classList.remove('pmg-chassis-v2');
+    }
+    var v2root = document.getElementById('pmg-chassis-v2-root');
+    if (v2root) v2root.remove();
+  });
+  mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  if (document.body) {
+    mo.observe(document.body, { childList: true });
+  } else {
+    document.addEventListener('DOMContentLoaded', function () {
+      mo.observe(document.body, { childList: true });
+    });
+  }
+
+  // Expose for debugging
+  window.pmgChassisV3 = {
+    rebuild: function () {
+      var existing = document.getElementById('pmg-chassis-v3-root');
+      if (existing) existing.remove();
+      boot();
+    },
+  };
+})();

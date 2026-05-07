@@ -1,0 +1,683 @@
+/* PromptMeGood — Chassis v3
+   "Definitive Redesign" shell per spec PDF.
+   Active when html.pmg-chassis-v3 is set (default ON; ?chassis=v2 reverts; ?chassis=off raw legacy).
+   Scoped under html.pmg-chassis-v3 so the legacy site is bit-identical when the flag is off.
+*/
+
+/* ============ HARD HIDE — DELETE TARGETS (Step 0) ============ */
+html.pmg-chassis-v3 #pmg-help-me-start-btn,
+html.pmg-chassis-v3 [data-pmg-help-me-start],
+html.pmg-chassis-v3 #guided-mode-btn,
+html.pmg-chassis-v3 #guided-mode-dialog,
+html.pmg-chassis-v3 #pmg-shortcuts-panel,
+html.pmg-chassis-v3 .pmg-shortcuts-trigger,
+html.pmg-chassis-v3 #pmg-result-confirm,
+html.pmg-chassis-v3 #demo-next-step,
+html.pmg-chassis-v3 .pmg-callout-slim,
+html.pmg-chassis-v3 .pmgv2-help-start,
+html.pmg-chassis-v3 .pmg-tier-banner,
+html.pmg-chassis-v3 .free-tier-copy,
+html.pmg-chassis-v3 [data-pmg-cap],
+html.pmg-chassis-v3 .run-section-meta,
+html.pmg-chassis-v3 #pmg-t42-beta-banner,
+html.pmg-chassis-v3 .auto-optimize-row,
+html.pmg-chassis-v3 .post-uc-guidance,
+html.pmg-chassis-v3 .tip-block,
+html.pmg-chassis-v3 .demo-helper,
+html.pmg-chassis-v3 .upload-field,
+html.pmg-chassis-v3 .pmg-stack-card-head,
+html.pmg-chassis-v3 .pmg-stack-helper,
+html.pmg-chassis-v3 #fill-demo,
+html.pmg-chassis-v3 .demo-stack,
+html.pmg-chassis-v3 .demo-microcopy,
+html.pmg-chassis-v3 .demo-loading,
+html.pmg-chassis-v3 #image-generate-btn,
+html.pmg-chassis-v3 #image-gen-hint,
+html.pmg-chassis-v3 #random-prompt,
+html.pmg-chassis-v3 #generateBtnTop,
+html.pmg-chassis-v3 .pmg-t100-top-cta-row,
+html.pmg-chassis-v3 [id^="generateBtnTop"] {
+  display: none !important;
+}
+
+/* Suppress chassis-v2 entirely when v3 is on */
+html.pmg-chassis-v3 #pmg-chassis-v2-root { display: none !important; }
+html.pmg-chassis-v3 body > *:not(#pmg-chassis-v3-root):not(script):not(style):not(noscript):not(#pmg-splash):not(template) {
+  display: none !important;
+  visibility: hidden !important;
+}
+/* Belt-and-suspenders: any element flagged as v3-collapsed must stay hidden */
+html.pmg-chassis-v3 [data-pmgv3-collapsed="1"] {
+  display: none !important;
+  visibility: hidden !important;
+}
+/* Splash fades on its own; force hide promptly */
+html.pmg-chassis-v3 #pmg-splash { display: none !important; }
+html.pmg-chassis-v3 body { overflow: hidden !important; }
+
+/* Honor [hidden] attribute even on flex/grid sections */
+html.pmg-chassis-v3 [hidden],
+html.pmg-chassis-v3 .is-collapsed,
+html.pmg-chassis-v3 .tuning-section.is-collapsed,
+html.pmg-chassis-v3 .generate-section.is-collapsed,
+html.pmg-chassis-v3 .output-box.is-collapsed,
+html.pmg-chassis-v3 .ai-response-box.is-collapsed {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* ============ SHELL (Step 1 — workstation chassis) ============ */
+html.pmg-chassis-v3 body.app-page,
+html.pmg-chassis-v3 body {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  background: #0d2b1e !important;
+  color: #fff !important;
+  font-family: var(--font-stack, -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif) !important;
+}
+
+#pmg-chassis-v3-root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background: #0d2b1e;
+  color: #fff;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- Topbar (Step 2) ---- */
+.pmgv3-topbar {
+  height: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: #0a2218;
+  border-bottom: 1px solid rgba(0, 200, 150, 0.15);
+  z-index: 50;
+}
+.pmgv3-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 16px;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+.pmgv3-brand img { width: 28px; height: 28px; border-radius: 6px; }
+.pmgv3-brand-beta {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #00c896;
+  border: 1px solid rgba(0, 200, 150, 0.4);
+  border-radius: 4px;
+  padding: 2px 5px;
+  text-transform: uppercase;
+}
+.pmgv3-tb-r {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pmgv3-ico {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 16px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.pmgv3-ico:hover { background: rgba(0, 200, 150, 0.08); color: #00c896; }
+.pmgv3-upgrade {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #00c896;
+  background: rgba(0, 200, 150, 0.12);
+  color: #00c896;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+.pmgv3-upgrade:hover { background: rgba(0, 200, 150, 0.22); }
+
+/* ---- Module tabs (Step 3) ---- */
+.pmgv3-tabs {
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 20px;
+  background: #0a2218;
+  border-bottom: 1px solid rgba(0, 200, 150, 0.1);
+}
+.pmgv3-tab {
+  padding: 8px 20px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.pmgv3-tab:hover { color: rgba(255, 255, 255, 0.85); }
+.pmgv3-tab.is-active {
+  background: rgba(0, 200, 150, 0.15);
+  border-color: #00c896;
+  color: #00c896;
+  font-weight: 600;
+}
+
+/* ---- Body grid 2-col ---- */
+.pmgv3-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 16px;
+  overflow: hidden;
+  min-height: 0;
+}
+.pmgv3-left,
+.pmgv3-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  min-height: 0;
+}
+.pmgv3-left { padding-right: 8px; }
+
+/* ---- Section labels ---- */
+.pmgv3-section-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(0, 200, 150, 0.85);
+  margin: 0 0 6px;
+}
+.pmgv3-section-hint {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0 0 10px;
+}
+
+/* ---- Idea section (Step 4A) ---- */
+.idea-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 200, 150, 0.18);
+  border-radius: 14px;
+  padding: 16px;
+}
+/* Re-style the legacy goal field once moved into idea-section */
+html.pmg-chassis-v3 .idea-section .field.field-primary { margin: 0; }
+html.pmg-chassis-v3 .idea-section .field-label-row { display: none; }
+html.pmg-chassis-v3 .idea-section .helper { display: none; }
+html.pmg-chassis-v3 .idea-section #goal {
+  width: 100%;
+  min-height: 100px;
+  max-height: 160px;
+  resize: vertical;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 200, 150, 0.3);
+  border-radius: 10px;
+  padding: 12px;
+  color: #fff;
+  font-size: 15px;
+  line-height: 1.5;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+html.pmg-chassis-v3 .idea-section #goal:focus {
+  outline: none;
+  border-color: #00c896;
+  box-shadow: 0 0 0 3px rgba(0, 200, 150, 0.15);
+}
+.btn-analyze {
+  width: 100%;
+  padding: 12px;
+  background: #00c896;
+  color: #0d2b1e;
+  font-weight: 700;
+  border-radius: 10px;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 12px;
+  font-family: inherit;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-analyze:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 200, 150, 0.25);
+}
+.btn-analyze:active { transform: translateY(0); }
+
+/* ---- Tuning section (Step 4B) ---- */
+.tuning-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 200, 150, 0.18);
+  border-radius: 14px;
+  padding: 16px;
+  animation: pmgv3-slide-in 0.35s ease-out;
+}
+@keyframes pmgv3-slide-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.tuning-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.tuning-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+}
+.tuning-hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+/* Re-style relocated #settingsPanel */
+html.pmg-chassis-v3 .tuning-section #settingsPanel {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
+}
+html.pmg-chassis-v3 .tuning-section .settings-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+html.pmg-chassis-v3 .tuning-section .field { margin: 0; }
+html.pmg-chassis-v3 .tuning-section .field > label,
+html.pmg-chassis-v3 .tuning-section .field-label-row label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(0, 200, 150, 0.7);
+  margin-bottom: 6px;
+}
+html.pmg-chassis-v3 .tuning-section .field-label-row .btn-clear { display: none; }
+html.pmg-chassis-v3 .tuning-section .pmg-tune-native { display: none; }
+html.pmg-chassis-v3 .tuning-section .pmg-tune-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+html.pmg-chassis-v3 .tuning-section .pmg-tune-pill,
+html.pmg-chassis-v3 .tuning-section .pmg-pill {
+  padding: 6px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 200, 150, 0.25);
+  background: rgba(0, 200, 150, 0.05);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+}
+html.pmg-chassis-v3 .tuning-section .pmg-tune-pill.is-active,
+html.pmg-chassis-v3 .tuning-section .pmg-pill.is-active {
+  background: rgba(0, 200, 150, 0.18);
+  border-color: #00c896;
+  color: #00c896;
+  font-weight: 600;
+}
+
+/* ---- Generate section (Step 4C) ---- */
+.generate-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: pmgv3-slide-in 0.35s ease-out;
+}
+.generate-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 200, 150, 0.25), transparent);
+  margin: 4px 0;
+}
+html.pmg-chassis-v3 .generate-section #generateBtn,
+html.pmg-chassis-v3 .btn-generate {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #00c896, #00a878);
+  color: #0d2b1e;
+  font-weight: 800;
+  font-size: 16px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 200, 150, 0.3);
+  transition: transform 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+html.pmg-chassis-v3 .generate-section #generateBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(0, 200, 150, 0.4);
+}
+
+/* ============ RIGHT COLUMN ============ */
+.output-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(0, 200, 150, 0.2);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+/* Strength bar (Step 5A) */
+.strength-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.strength-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.strength-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #00c896;
+}
+.strength-score {
+  font-size: 22px;
+  font-weight: 800;
+  color: #00c896;
+}
+.strength-track {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.strength-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f0c040, #00c896);
+  border-radius: 4px;
+  transition: width 0.8s ease;
+  width: 0%;
+}
+.strength-status {
+  font-size: 12px;
+  color: #00c896;
+  font-weight: 600;
+}
+
+/* Generated prompt textarea host */
+.prompt-output-textarea,
+html.pmg-chassis-v3 .pmgv3-output-host #resultBox {
+  width: 100%;
+  min-height: 140px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(0, 200, 150, 0.2);
+  border-radius: 10px;
+  padding: 12px;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  font-family: inherit;
+  box-sizing: border-box;
+  margin-top: 6px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  outline: none;
+}
+html.pmg-chassis-v3 .pmgv3-output-host #resultBox:focus {
+  border-color: #00c896;
+  box-shadow: 0 0 0 3px rgba(0, 200, 150, 0.15);
+}
+
+.prompt-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.btn-secondary {
+  flex: 1;
+  padding: 8px;
+  background: transparent;
+  border: 1px solid rgba(0, 200, 150, 0.4);
+  border-radius: 8px;
+  color: #00c896;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.btn-secondary:hover { background: rgba(0, 200, 150, 0.08); }
+
+.next-step-divider {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 13px;
+  margin: 14px 0 10px;
+  position: relative;
+}
+.next-step-divider::before,
+.next-step-divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 30%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+.next-step-divider::before { left: 0; }
+.next-step-divider::after { right: 0; }
+
+.btn-run-primary {
+  width: 100%;
+  padding: 14px;
+  background: #00c896;
+  color: #0d2b1e;
+  font-weight: 800;
+  font-size: 15px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-run-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(0, 200, 150, 0.35);
+}
+
+.send-to-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.btn-send-to {
+  flex: 1;
+  padding: 8px 6px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.btn-send-to:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  border-color: rgba(0, 200, 150, 0.4);
+}
+
+/* Box 2 — AI response */
+.ai-response-box { margin-top: 12px; }
+html.pmg-chassis-v3 .pmgv3-air-host #aiResponseSection {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+html.pmg-chassis-v3 .pmgv3-air-host .run-section-divider { display: none; }
+html.pmg-chassis-v3 .pmgv3-air-host .run-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #00c896;
+  margin: 0 0 6px;
+}
+html.pmg-chassis-v3 .pmgv3-air-host .run-section-helper {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 10px;
+}
+html.pmg-chassis-v3 .pmgv3-air-host .ai-response-output {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(0, 200, 150, 0.15);
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: pre-wrap;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+/* When right-column inherits #result-panel — strip duplicate chrome */
+html.pmg-chassis-v3 #result-panel {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
+}
+html.pmg-chassis-v3 #result-panel .panel-head,
+html.pmg-chassis-v3 #result-panel .pill-row,
+html.pmg-chassis-v3 #result-panel #pinned-note,
+html.pmg-chassis-v3 #result-panel .result-box-toggle,
+html.pmg-chassis-v3 #result-panel .improve-block,
+html.pmg-chassis-v3 #result-panel .what-next,
+html.pmg-chassis-v3 #result-panel .quality-row,
+html.pmg-chassis-v3 #result-panel .actions-row,
+html.pmg-chassis-v3 #result-panel .result-top-actions,
+html.pmg-chassis-v3 #result-panel .result-edit-row,
+html.pmg-chassis-v3 #result-panel #strength-score:not(.pmgv3-relocated),
+html.pmg-chassis-v3 #result-panel .run-section-meta {
+  display: none !important;
+}
+/* Re-show strength-score when relocated into pmgv3 strength slot */
+html.pmg-chassis-v3 .strength-bar-container #strength-score {
+  display: block !important;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-head { display: none; }
+html.pmg-chassis-v3 .strength-bar-container #strength-score #strength-score-insights { display: none; }
+html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0;
+}
+html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f0c040, #00c896);
+  border-radius: 4px;
+  transition: width 0.8s ease;
+}
+
+/* ============ BOTTOM BAR (Step 8) ============ */
+.pmgv3-bottom {
+  height: 64px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  background: #0a2218;
+  border-top: 1px solid rgba(0, 200, 150, 0.15);
+}
+.quick-entry-pill {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 200, 150, 0.2);
+  border-radius: 22px;
+  padding: 6px 10px 6px 16px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.quick-entry-icon { color: rgba(255, 255, 255, 0.4); font-size: 14px; }
+#quick-entry {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+}
+#quick-entry::placeholder { color: rgba(255, 255, 255, 0.4); }
+.quick-entry-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #00c896;
+  color: #0d2b1e;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.quick-entry-btn:hover { background: #00d8a3; }
+
+/* ============ MOBILE (Step 9) ============ */
+@media (max-width: 768px) {
+  .pmgv3-body {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+    padding-bottom: 120px;
+  }
+  .pmgv3-tabs {
+    overflow-x: auto;
+    padding: 0 12px;
+  }
+  .pmgv3-tab { white-space: nowrap; padding: 6px 14px; font-size: 13px; }
+  .pmgv3-topbar { padding: 0 12px; }
+  .pmgv3-brand { font-size: 14px; }
+  .pmgv3-upgrade { padding: 6px 10px; font-size: 12px; }
+}
