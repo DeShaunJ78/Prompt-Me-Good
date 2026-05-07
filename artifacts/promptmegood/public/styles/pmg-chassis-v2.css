@@ -897,11 +897,58 @@ html.pmg-chassis-v2 .pmgv2-composer-wrap {
        position:fixed pins the bottom — users couldn't reach Prompt
        Tuning controls. Now the composer becomes a scrollable drawer
        sized to the available viewport above the dock. */
-    max-height: calc(100vh - 68px) !important;
+    max-height: 40vh !important;
     overflow-y: auto !important;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
   }
+  /* cv2-38: Drawer must default to ~40% screen height showing ONLY:
+       1. Goal textarea (slim, 2–3 lines)
+       2. Collapsed Prompt Tuning row (header only, tap to expand)
+       3. Fix My Prompt button
+     Help Me Start is suppressed in the composer on mobile (still
+     reachable from the top of the form on desktop). When the user
+     taps the Tuning header, .pmg-tuning-expanded grows the drawer
+     to 80vh so they can scroll through the controls. */
+  html.pmg-chassis-v2.pmg-tuning-expanded .pmgv2-composer-wrap {
+    max-height: 80vh !important;
+  }
+  html.pmg-chassis-v2 body .pmgv2-composer-wrap #pmg-help-me-start-btn[id],
+  html.pmg-chassis-v2 body .pmgv2-composer-wrap .pmg-help-me-start-btn.pmg-help-me-start-btn {
+    display: none !important;
+  }
+  /* Collapse #settingsPanel to its header by default. Show the head,
+     hide everything else until .pmg-tuning-expanded toggles on. */
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #settingsPanel {
+    max-height: 64px;
+    overflow: hidden;
+    transition: max-height 240ms ease;
+    cursor: pointer;
+    position: relative;
+    padding-bottom: 14px;
+  }
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #settingsPanel.pmg-tuning-expanded {
+    max-height: none;
+    cursor: default;
+  }
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #settingsPanel .pmg-stack-card-head::after {
+    content: '▾';
+    position: absolute;
+    right: 14px;
+    top: 14px;
+    color: var(--color-primary, #3ee0a0);
+    font-size: 14px;
+    transition: transform 200ms ease;
+  }
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #settingsPanel.pmg-tuning-expanded .pmg-stack-card-head::after {
+    transform: rotate(180deg);
+  }
+  /* Force form order on mobile drawer: goal → tuning → fix-my-prompt */
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #prompt-form { display: flex !important; flex-direction: column !important; }
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #prompt-form .field-primary { order: 1 !important; }
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #prompt-form #settingsPanel { order: 2 !important; }
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #prompt-form .actions-row,
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #prompt-form #tour-step-generate { order: 3 !important; }
   /* Live Feedback + Live Preview panel (#pmg-tf-feedback, injected by
      pmg-text-feedback.js) keeps re-mounting itself inside #prompt-form
      via two MutationObservers — so the chassis lift function can't keep

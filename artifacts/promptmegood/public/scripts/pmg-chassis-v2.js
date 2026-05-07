@@ -148,6 +148,54 @@
     wireTopBarActions(root);
     wireTemplatePicker(root);
     initCollapsibleComposer(root);
+    initTuningAccordion(root);
+  }
+
+  // ---- Prompt Tuning accordion (cv2-38, mobile only) ----
+  // The drawer must default to ~40vh showing only goal + tuning header
+  // + Fix My Prompt. Tapping the Prompt Tuning head expands the section
+  // (and grows the drawer to 80vh via .pmg-tuning-expanded on <html>)
+  // so the user can scroll through Auto Optimize / Category / etc.
+  function initTuningAccordion(root) {
+    var mq = window.matchMedia('(max-width: 900px)');
+    if (!mq.matches) return;
+    function attach() {
+      var panel = document.getElementById('settingsPanel');
+      if (!panel || panel.dataset.pmgTuningWired === '1') return false;
+      var head = panel.querySelector('.pmg-stack-card-head');
+      if (!head) return false;
+      panel.dataset.pmgTuningWired = '1';
+      head.setAttribute('role', 'button');
+      head.setAttribute('tabindex', '0');
+      head.setAttribute('aria-expanded', 'false');
+      head.setAttribute('aria-controls', 'settingsPanel');
+      function toggle() {
+        var open = panel.classList.toggle('pmg-tuning-expanded');
+        document.documentElement.classList.toggle('pmg-tuning-expanded', open);
+        head.setAttribute('aria-expanded', open ? 'true' : 'false');
+      }
+      // Only toggle when the head itself is tapped — not children of an
+      // already-expanded body (so users can interact with toggles/pills
+      // inside without accidentally collapsing).
+      panel.addEventListener('click', function (e) {
+        if (panel.classList.contains('pmg-tuning-expanded')) {
+          // Allow re-collapse only via the head.
+          if (e.target === head || head.contains(e.target)) toggle();
+          return;
+        }
+        toggle();
+      });
+      head.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+      });
+      return true;
+    }
+    if (attach()) return;
+    // settingsPanel may not exist yet at chassis-build time on slow
+    // devices — observe until it appears.
+    var obs = new MutationObserver(function () { if (attach()) obs.disconnect(); });
+    obs.observe(document.body, { childList: true, subtree: true });
+    setTimeout(function () { obs.disconnect(); }, 8000);
   }
 
   // ---- Collapsible composer (cv2-21, mobile only) ----
