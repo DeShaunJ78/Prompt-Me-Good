@@ -1,6 +1,7 @@
 /* PromptMeGood — Chassis v3
    "Definitive Redesign" shell per spec PDF.
-   Active when html.pmg-chassis-v3 is set (default ON; ?chassis=v2 reverts; ?chassis=off raw legacy).
+   Active when html.pmg-chassis-v3 is set (default ON; ?chassis=off raw legacy).
+   Chassis v2 was removed in cv3-22 cleanup pass.
    Scoped under html.pmg-chassis-v3 so the legacy site is bit-identical when the flag is off.
 */
 
@@ -14,7 +15,6 @@ html.pmg-chassis-v3 .pmg-shortcuts-trigger,
 html.pmg-chassis-v3 #pmg-result-confirm,
 html.pmg-chassis-v3 #demo-next-step,
 html.pmg-chassis-v3 .pmg-callout-slim,
-html.pmg-chassis-v3 .pmgv2-help-start,
 html.pmg-chassis-v3 .pmg-tier-banner,
 html.pmg-chassis-v3 .free-tier-copy,
 html.pmg-chassis-v3 [data-pmg-cap],
@@ -40,8 +40,6 @@ html.pmg-chassis-v3 [id^="generateBtnTop"] {
   display: none !important;
 }
 
-/* Suppress chassis-v2 entirely when v3 is on */
-html.pmg-chassis-v3 #pmg-chassis-v2-root { display: none !important; }
 /* cv3-20 audit fix: exempt body-appended overlays (Visual Studio modal,
    Storyboard modal) from the universal hide. Both modals carry
    data-pmg-overlay-root="1" AND class="pmg-modal-overlay" — narrow

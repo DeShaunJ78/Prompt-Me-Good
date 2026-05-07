@@ -3694,16 +3694,13 @@
       try {
         if ((location.search || '').indexOf('pmg_skip_qw=1') !== -1) return;
       } catch (_) {}
-      /* Chassis v2 IS the workstation — there is nothing to "earn" because
-         the workstation is already on screen. Suppress the Quick Win
-         overlay entirely when the chassis flag is on, and mark it seen so
-         it never re-fires on subsequent visits in either chassis or legacy
-         mode. (Phase 4) */
+      /* Chassis v3 IS the workstation — the workstation is already on screen,
+         so there is nothing for Quick Win to "earn". Suppress the overlay
+         and mark it seen unless explicitly opted out via ?chassis=off. */
       try {
         var qChassis = (location.search || '').match(/[?&]chassis=([^&]+)/);
-        var chassisOn = (qChassis && qChassis[1] === 'v2') ||
-                        localStorage.getItem('pmgChassisV2') === 'true';
-        if (chassisOn) {
+        var chassisOff = qChassis && qChassis[1] === 'off';
+        if (!chassisOff) {
           try { localStorage.setItem('pmg.quickWinSeen', '1'); } catch (_) {}
           return;
         }
@@ -4073,12 +4070,10 @@
     }
   </style>
   <link rel="stylesheet" href="/styles/pmg-g-theme.css?v=g2-teal-2" />
-  <link rel="stylesheet" href="/styles/pmg-chassis-v2.css?v=cv2-44" />
-  <link rel="stylesheet" href="/styles/pmg-chassis-v3.css?v=cv3-21" />
+  <link rel="stylesheet" href="/styles/pmg-chassis-v3.css?v=cv3-22" />
   <link rel="stylesheet" href="/styles/pmg-visual-studio.css?v=vs-14" />
   <link rel="stylesheet" href="/styles/pmg-storyboard.css?v=sb-6" />
-  <script src="/scripts/pmg-chassis-v3.js?v=cv3-15"></script>
-  <script src="/scripts/pmg-chassis-v2.js?v=cv2-44"></script>
+  <script src="/scripts/pmg-chassis-v3.js?v=cv3-16"></script>
   <script src="/scripts/pmg-visual-studio.js?v=vs-14" defer></script>
   <script src="/scripts/pmg-storyboard.js?v=sb-6" defer></script>
   <style id="pmg-splash-css">
@@ -12471,14 +12466,10 @@ Context:
   <script src="/scripts/pmg-shortcuts.js?v=10-task55" defer></script>
   <script src="/scripts/pmg-undo.js?v=task55-2" defer></script>
   <script src="/scripts/pmg-text-flow-v2.js?v=7-refocus" defer></script>
-  <script src="/scripts/pmg-text-feedback.js?v=task48-5" defer></script>
   <script src="/scripts/pmg-fix-diff.js?v=task49-2" defer></script>
-  <script src="/scripts/pmg-improve-history.js?v=task50-1" defer></script>
-  <script src="/scripts/pmg-preset-thumbs.js?v=task51-2" defer></script>
   <script src="/scripts/pmg-suite-mobile-polish.js?v=task110-1" defer></script>
   <script src="/scripts/pmg-suite-handoff.js?v=task111-1" defer></script>
   <script src="/scripts/pmg-image-extras.js?v=task52-1" defer></script>
-  <script src="/scripts/pmg-command-palette.js?v=task53-6" defer></script>
   <script src="/scripts/pmg-share.js?v=task56-2" defer></script>
   <script src="/scripts/pmg-handoff.js?v=task57-3" defer></script>
   <script src="/scripts/pmg-suggestions.js?v=task58-5" defer></script>
@@ -12486,7 +12477,6 @@ Context:
   <script src="/scripts/pmg-image-actions-gate.js?v=task135-1" defer></script>
   <script src="/scripts/pmg-postgen-actions.js?v=task61-2" defer></script>
   <script src="/scripts/pmg-analytics.js?v=task93-1" defer></script>
-  <script src="/scripts/pmg-whatnext.js?v=task94-1" defer></script>
   <!-- Expert Command Center: hidden 5-tab drawer (Diagnose / Engineer / Tune /
        Variations / Save) that owns every Expert Mode entry point. Loaded
        AFTER pmg-analytics.js so window.__pmgTrack is available, and after
@@ -12645,10 +12635,6 @@ Context:
     }
   })();
   </script>
-  <script src="/scripts/pmg-ab-test.js?v=task61-3" defer></script>
-  <script src="/scripts/pmg-ab-export.js?v=task89-1" defer></script>
-  <script src="/scripts/pmg-voice.js?v=task91-1" defer></script>
-
 <script id="pmg-premium-polish-js">
 document.addEventListener("DOMContentLoaded", function () {
   const form = document.getElementById("prompt-form");

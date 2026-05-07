@@ -1,6 +1,7 @@
 /* PromptMeGood — Chassis v3 bootstrap
    Implements the "Definitive Redesign Command" PDF.
-   Default ON. Opt out with ?chassis=v2 (legacy 3-col) or ?chassis=off (raw legacy).
+   Default ON. Opt out with ?chassis=off (raw legacy). Chassis v2 was
+   removed in cv3-22 cleanup pass.
    Reparents existing #goal, #settingsPanel, #generateBtn, #resultBox, #strength-score,
    #aiResponseSection into the new shell so all existing JS handlers keep working untouched.
 */
@@ -11,7 +12,7 @@
   var qs = new URLSearchParams(window.location.search);
   var modeOverride = qs.get('chassis');
 
-  if (modeOverride === 'v2' || modeOverride === 'off') {
+  if (modeOverride === 'off') {
     return;
   }
 
@@ -52,7 +53,6 @@
     var settingsHide = document.getElementById('settingsPanel');
     if (settingsHide) settingsHide.style.setProperty('display', 'none', 'important');
     wireActions();
-    suppressLegacyChassisV2();
     deleteTargets();
     // Re-apply the hide on a short tick in case any late legacy script flips display
     var hideTicks = 0;
@@ -154,10 +154,11 @@
   }
 
   function reparent() {
-    // 0. RESCUE #prompt-form first. chassis-v2.js may have moved the form into
-    //    #pmg-chassis-v2-root, which suppressLegacyChassisV2() will delete —
-    //    taking the form (and its submit listener) with it. Move the form to
-    //    a stable body-level location so its event listeners remain reachable.
+    // 0. Move #prompt-form to a stable body-level location so its submit
+    //    listener (bound at app.html ~L8843) stays reachable after we
+    //    reparent the form's input children into the v3 shell. Form is
+    //    kept display:none — the visible inputs live inside v3 slots and
+    //    submit via the [form="prompt-form"] HTML5 attribute association.
     var rescueForm = document.getElementById('prompt-form');
     if (rescueForm && rescueForm.parentNode !== document.body) {
       document.body.appendChild(rescueForm);
@@ -298,7 +299,7 @@
         }
         // Explicitly fire submit on #prompt-form. The button was reparented out
         // of the form so HTML5 form-attribute association is unreliable; the
-        // form itself was rescued to <body> by rescueFormBeforeRemoval() so its
+        // form itself lives in body (moved by reparent() step 0) so its
         // submit listener (app.html ~L8843) is still bound. requestSubmit()
         // dispatches the submit event and the legacy handler runs as normal.
         var form = document.getElementById('prompt-form');
@@ -475,30 +476,6 @@
     setTimeout(function () { el.remove(); }, 2200);
   }
 
-  function rescueFormBeforeRemoval(container) {
-    // Before removing a container, evacuate #prompt-form (and its submit listener)
-    // to the body. Without this, killing the v2 root also kills the only form in
-    // the DOM, breaking generation entirely.
-    if (!container) return;
-    var form = container.querySelector ? container.querySelector('#prompt-form') : null;
-    if (form && form.parentNode !== document.body) {
-      document.body.appendChild(form);
-      form.style.setProperty('display', 'none', 'important');
-      form.setAttribute('data-pmgv3-rescued', '1');
-    }
-  }
-
-  function suppressLegacyChassisV2() {
-    // chassis-v2 may have already added pmg-chassis-v2 class. Strip it so v2 CSS deactivates.
-    document.documentElement.classList.remove('pmg-chassis-v2');
-    // Remove any existing v2 root if it slipped in before v3 booted
-    var v2root = document.getElementById('pmg-chassis-v2-root');
-    if (v2root) {
-      rescueFormBeforeRemoval(v2root);
-      v2root.remove();
-    }
-  }
-
   function deleteTargets() {
     // Hard-remove a small set of nodes by ID so they cannot be revealed by other scripts
     ['pmg-help-me-start-btn', 'guided-mode-dialog', 'guided-mode-btn',
@@ -510,19 +487,10 @@
       });
   }
 
-  // Re-suppress v2 if it boots later
+  // Defensive stray-form rescue: if any late-loading legacy script reparents
+  // #prompt-form out of body, move it back so its submit listener stays
+  // reachable. Form is display:none either way (visible inputs live in v3 slots).
   var mo = new MutationObserver(function () {
-    if (document.documentElement.classList.contains('pmg-chassis-v2')) {
-      document.documentElement.classList.remove('pmg-chassis-v2');
-    }
-    var v2root = document.getElementById('pmg-chassis-v2-root');
-    if (v2root) {
-      rescueFormBeforeRemoval(v2root);
-      v2root.remove();
-    }
-    // Defensive: if #prompt-form ever ends up outside body (e.g. v2 reparented it
-    // into a container that hasn't been deleted yet), rescue it to body so its
-    // submit listener stays reachable. Form is display:none either way.
     var stray = document.getElementById('prompt-form');
     if (stray && stray.parentNode !== document.body) {
       document.body.appendChild(stray);
@@ -530,7 +498,6 @@
       stray.setAttribute('data-pmgv3-rescued', '1');
     }
   });
-  mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
   if (document.body) {
     mo.observe(document.body, { childList: true });
   } else {
