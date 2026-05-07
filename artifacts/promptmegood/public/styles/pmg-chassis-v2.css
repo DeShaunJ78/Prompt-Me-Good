@@ -1516,9 +1516,18 @@ html.pmg-chassis-v2 .pmgv2-composer-tab { display: none; }
   }
 }
 
-/* cv2-19: top-bar "💡 Help Me Start" pill. Visible at all widths because
-   the in-composer chip is hidden on mobile (and on desktop the pill is a
-   nice-to-have shortcut so users don't have to scroll down to reach it). */
+/* cv2-31: On desktop the in-composer "💡 Help Me Start (MOST LOVED)"
+   button (right above the goal textarea) is the primary CTA, so the
+   duplicate top-bar pill is hidden to remove visual clutter. On mobile
+   the in-composer one is hidden (cv2-19 rule above) and the top-bar
+   pill takes over — the media query below re-enables it ≤900px. */
+html.pmg-chassis-v2 .pmgv2-help-start { display: none !important; }
+@media (max-width: 900px) {
+  html.pmg-chassis-v2 .pmgv2-help-start { display: inline-flex !important; }
+}
+
+/* cv2-19: top-bar "💡 Help Me Start" pill base styling (mobile-only
+   per cv2-31 above). */
 html.pmg-chassis-v2 .pmgv2-help-start {
   display: inline-flex;
   align-items: center;
