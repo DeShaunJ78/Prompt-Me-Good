@@ -725,18 +725,18 @@
     { srcs: ['photo-suite-section', 'pmg-photo-suite'], target: 'suite'   }
   ];
 
-  // Move the real hero headline + subtext from the legacy <main> into
-  // the chassis hero slot. Same node = preserved SEO value, no duplicate
-  // text in the DOM.
+  // cv2-34: Hero relocation disabled. The marketing pitch
+  // ("Finally, AI That Understands You") lives at /; on /app the user
+  // has already committed to using the workstation, so showing the
+  // same hero inside the chassis just eats ~180px of vertical space
+  // and pushes the goal input below the fold on small laptops. The
+  // `.pmgv2-hero:empty { display: none }` rule in the chassis CSS
+  // hides the empty slot automatically. The legacy `.hero-heading`
+  // node remains in its original DOM position (hidden by the chassis
+  // whitelist), so SEO is unaffected — same text, same DOM.
   function relocateHero() {
     var slot = document.querySelector('[data-pmgv2-hero-slot]');
-    if (!slot || slot.getAttribute('data-pmgv2-hero-filled') === '1') return;
-    var heading = document.querySelector('.hero-heading');
-    var sub = document.querySelector('.hero-subtext-box');
-    if (!heading) return;
-    slot.appendChild(heading);
-    if (sub) slot.appendChild(sub);
-    slot.setAttribute('data-pmgv2-hero-filled', '1');
+    if (slot) slot.setAttribute('data-pmgv2-hero-filled', '1');
   }
 
   function relocateLegacy() {
