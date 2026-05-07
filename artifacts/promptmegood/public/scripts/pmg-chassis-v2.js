@@ -43,10 +43,6 @@
           '<div class="pmgv2-brand"><span class="pmgv2-brand-dot"></span><span>PromptMeGood</span></div>',
         '</div>',
         '<div class="pmgv2-tb-r">',
-          '<button class="pmgv2-help-start" type="button" title="Help Me Start" aria-label="Help Me Start (Answer 4 Quick Questions)">',
-            '<span class="pmgv2-help-start-ico" aria-hidden="true">💡</span>',
-            '<span class="pmgv2-help-start-lab">Help Me Start</span>',
-          '</button>',
           '<button class="pmgv2-ico" type="button" title="Help" aria-label="Help">?</button>',
           '<div class="pmgv2-av" aria-label="Account">U</div>',
         '</div>',
@@ -84,10 +80,10 @@
           '<div class="pmgv2-chain-label pmgv2-chain-bot">BODY</div>',
         '</div>',
         '<aside class="pmgv2-tools" data-slot="suite">',
-          '<div class="pmgv2-tools-h"><div><div class="pmgv2-tools-t">🎨 Visual Asset Engine</div></div></div>',
+          '<div class="pmgv2-tools-h"><div><div class="pmgv2-tools-t">🎨 Image Prompt Builder</div></div></div>',
           '<div class="pmgv2-ml-card" id="pmgv2-ml-card">',
             '<div class="pmgv2-ml-row">',
-              '<div><div class="pmgv2-ml-lab" id="pmgv2-ml-lab">⛓ Master Link · OFF</div><div class="pmgv2-ml-desc">Soul + Body → one Master Plan</div></div>',
+              '<div><div class="pmgv2-ml-lab" id="pmgv2-ml-lab">⛓ Sync with Text Prompt · OFF</div><div class="pmgv2-ml-desc">Weave your text prompt + image picks into one plan</div></div>',
               '<button class="pmgv2-switch" type="button" id="pmgv2-ml-switch" aria-label="Toggle Master Link" aria-pressed="false"></button>',
             '</div>',
           '</div>',
@@ -274,26 +270,7 @@
       tplBtn.addEventListener('click', function () { expand({ focus: false }); });
     }
 
-    // 5) Help Me Start completion fills #goal programmatically. Hook the
-    //    top-bar pill click — after a short delay, if #goal got content,
-    //    expand. (Direct dialog hook would be brittle; a value-poll is
-    //    the cheapest robust option since the dialog is async.)
-    var hms = root.querySelector('.pmgv2-help-start');
-    if (hms) {
-      hms.addEventListener('click', function () {
-        var prev = goalHasContent();
-        var deadline = Date.now() + 30000; // 30s — long enough for a guided flow
-        var poll = setInterval(function () {
-          if (Date.now() > deadline) { clearInterval(poll); return; }
-          if (!prev && goalHasContent()) {
-            clearInterval(poll);
-            expand({ focus: false });
-          }
-        }, 400);
-      });
-    }
-
-    // 6) Vault history + template card clicks (delegated, since both are
+    // 5) Vault history + template card clicks (delegated, since both are
     //    rendered dynamically by legacy scripts). Resuming/applying any
     //    of these is unambiguously construction intent — surface the
     //    composer so the user sees what got loaded into #goal.
@@ -380,24 +357,6 @@
     if (help) help.addEventListener('click', function () {
       try { window.location.href = './guide.html'; } catch (e) {}
     });
-    // Help Me Start in top bar mirrors the in-form #pmg-help-me-start-btn
-    // so we can hide the bulky chip from the slim mobile composer without
-    // losing the onboarding affordance. We programmatically click the
-    // legacy button so all of its existing handlers (guided-mode-dialog
-    // open, analytics, etc.) fire untouched. Falls back to
-    // #guided-mode-btn (the in-page "Help Me Start" CTA at the top of
-    // the marketing column, present on first paint) so an early tap
-    // before pmg-ux.js has injected the chip still opens the dialog.
-    var hms = root.querySelector('.pmgv2-help-start');
-    if (hms) hms.addEventListener('click', function () {
-      var target = document.getElementById('pmg-help-me-start-btn')
-                || document.getElementById('guided-mode-btn');
-      if (target) {
-        try { target.click(); }
-        catch (e) {}
-      }
-    });
-
     // Accessibility: the mobile composer hides .field-label-row (which
     // contains the visible <label for="goal">Your Goal</label>) so the
     // textarea would otherwise rely on placeholder text only — weak for
@@ -708,7 +667,7 @@
     }
     function apply(on) {
       sw.setAttribute('aria-pressed', on ? 'true' : 'false');
-      lab.textContent = on ? '⛓ Master Link · ON' : '⛓ Master Link · OFF';
+      lab.textContent = on ? '⛓ Sync with Text Prompt · ON' : '⛓ Sync with Text Prompt · OFF';
       card.setAttribute('data-state', on ? 'active' : 'idle');
       plan.setAttribute('data-state', on ? 'active' : 'idle');
       document.documentElement.setAttribute('data-pmgv2-master-link', on ? 'on' : 'off');

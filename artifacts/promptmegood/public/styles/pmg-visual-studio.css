@@ -267,13 +267,10 @@
   padding: 0 !important;
 }
 
-/* Mobile: hide the in-main launcher row entirely — discovery is via
-   the topbar icons + the existing "Visual" dock tab. We deliberately do
-   NOT add a second sticky bottom bar on top of the composer pill +
-   dock. */
-@media (max-width: 900px) {
-  #pmg-vs-launch-composer-row { display: none !important; }
-}
+/* vs-12: launcher row is now visible on ALL viewports (was previously
+   hidden on mobile). Sits at the top of .pmgv2-main right after the
+   mode bar, so the three signature features are immediately
+   discoverable on first paint regardless of screen size. */
 
 .pmg-vs-reverse-status {
   margin-top: 10px;

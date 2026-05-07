@@ -692,15 +692,17 @@
       railBtn.id = 'pmg-vs-launch-rail';
       railBtn.className = 'pmg-vs-launch-rail';
       railBtn.setAttribute('data-pmg-open-visual-studio', '1');
-      railBtn.innerHTML = '🎨 Open Visual Studio';
+      railBtn.innerHTML = '🎨 Launch Image Studio';
       railBtn.title = 'Open the full Image + Video builder';
       railHeader.appendChild(railBtn);
     }
-    // Always-visible launcher dock — sits OUTSIDE .pmgv2-composer-wrap so
-    // it stays visible when the mobile composer collapses to a pill.
-    // CSS positions it as a fixed bar above the composer-tab/dock on
-    // mobile, and as an inline element inside .pmgv2-main on desktop.
+    // vs-12: Always-visible launcher row — moved to TOP of workstation
+    // (right after .pmgv2-mode-bar, above the thread + composer) per
+    // user request. Was previously appended to bottom of .pmgv2-main
+    // and hidden on mobile. Now visible on all viewports as the first
+    // discoverable feature gateway after the template picker.
     var main = document.querySelector('.pmgv2-main');
+    var modeBar = main && main.querySelector('.pmgv2-mode-bar');
     if (main && !document.getElementById('pmg-vs-launch-composer')) {
       var row = document.createElement('div');
       row.id = 'pmg-vs-launch-composer-row';
@@ -708,7 +710,11 @@
       row.innerHTML =
         '<button type="button" id="pmg-vs-launch-composer" class="pmg-vs-launch-pill" data-pmg-open-visual-studio="1" data-vs-mode="image">🎨 Image Studio</button>' +
         '<button type="button" id="pmg-vs-launch-composer-video" class="pmg-vs-launch-pill" data-pmg-open-visual-studio="1" data-vs-mode="video">🎬 Sora Video</button>';
-      main.appendChild(row);
+      if (modeBar && modeBar.parentNode === main) {
+        main.insertBefore(row, modeBar.nextSibling);
+      } else {
+        main.insertBefore(row, main.firstChild);
+      }
       // Adopt the storyboard button if it was already mounted elsewhere.
       var sbBtn = document.getElementById('pmg-generate-storyboard-btn');
       if (sbBtn && sbBtn.parentNode !== row) {
