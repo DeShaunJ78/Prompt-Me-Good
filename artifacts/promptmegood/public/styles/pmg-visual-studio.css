@@ -183,6 +183,26 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--g2-mint, #3ee0a0) 22%, transparent);
 }
 
+.pmg-vs-reverse-status {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  border: 1px solid color-mix(in srgb, var(--g2-mint, #3ee0a0) 18%, transparent);
+  background: color-mix(in srgb, var(--g2-mint, #3ee0a0) 8%, transparent);
+  color: var(--color-text, #e8f5f0);
+}
+.pmg-vs-reverse-status.pmg-vs-reverse-status--ok {
+  border-color: color-mix(in srgb, var(--g2-mint, #3ee0a0) 36%, transparent);
+  background: color-mix(in srgb, var(--g2-mint, #3ee0a0) 16%, transparent);
+}
+.pmg-vs-reverse-status.pmg-vs-reverse-status--err {
+  border-color: color-mix(in srgb, #ff5050 36%, transparent);
+  background: color-mix(in srgb, #ff5050 12%, transparent);
+  color: #ff8a8a;
+}
+
 .pmg-vs-actions-row {
   display: flex; flex-wrap: wrap; gap: 10px;
   margin-top: 12px;

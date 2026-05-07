@@ -743,6 +743,155 @@ router.post("/video", videoLimiter, userCapEnforce("vid", 1), async (req, res) =
   }
 });
 
+/* ============================================================================
+ * /api/vision-analyze — Reverse Engine.
+ * Accepts an uploaded image (jpg/png/webp, ≤10MB) and returns a JSON object
+ * with `prompt` (a recreatable description) and `suite_settings` (a mapping
+ * of Photography Suite categories: style, camera, lighting, composition,
+ * palette). Counts against the user's `analyze` daily cap because it IS
+ * an image analysis.
+ * ============================================================================ */
+const REVERSE_MAX_BYTES = 10 * 1024 * 1024;
+const REVERSE_ALLOWED_MIMES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const reverseUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: REVERSE_MAX_BYTES, files: 1 },
+  fileFilter: (_req, file, cb) => {
+    if (REVERSE_ALLOWED_MIMES.has(file.mimetype)) cb(null, true);
+    else cb(new Error("INVALID_MIMETYPE"));
+  },
+});
+function handleReverseUpload(req: Request, res: Response, next: NextFunction): void {
+  reverseUpload.single("image")(req, res, (err: unknown) => {
+    if (!err) { next(); return; }
+    const e = err as { code?: string; message?: string };
+    if (e?.code === "LIMIT_FILE_SIZE") {
+      res.status(400).json({ success: false, ok: false, error: "Image too large. Maximum size is 10MB." });
+      return;
+    }
+    if (e?.message === "INVALID_MIMETYPE") {
+      res.status(400).json({ success: false, ok: false, error: "Unsupported image type. Use JPG, PNG, or WEBP." });
+      return;
+    }
+    logger.warn({ err: e?.message }, "vision-analyze upload failed");
+    res.status(400).json({ success: false, ok: false, error: "Upload failed. Try a different image." });
+  });
+}
+
+router.post(
+  "/vision-analyze",
+  imageLimiter,
+  handleReverseUpload,
+  userCapEnforce("analyze", 1),
+  async (req: Request, res: Response) => {
+    const file = (req as Request & { file?: Express.Multer.File }).file;
+    if (!file) {
+      res.status(400).json({ success: false, ok: false, error: "Please attach an image." });
+      return;
+    }
+
+    const dataUrl = `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+
+    try {
+      const completion = await openai.chat.completions.create({
+        model: ANALYZE_VISION_MODEL,
+        max_completion_tokens: 1200,
+        response_format: { type: "json_object" },
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an expert prompt engineer. Analyze the image and return ONLY a JSON object with two keys: `prompt` (a highly detailed plain-language description that would recreate the image in DALL·E 3 — focus on subject, composition, lighting, mood, palette, and any photographic style; 60-180 words) and `suite_settings` (an object with these exact string keys, picking the SINGLE best-fit value or short comma-separated list per slot): { \"style\": \"e.g. Photorealistic, Cinematic, Editorial, Anime, 3D Render\", \"camera\": \"e.g. 35mm film, 85mm portrait, wide-angle, drone aerial\", \"lighting\": \"e.g. Golden hour, Studio softbox, Neon night, Overcast\", \"composition\": \"e.g. Rule of thirds, Centered, Wide establishing, Close-up portrait\", \"palette\": \"e.g. Warm sunset, Muted earth, Neon cyberpunk, Monochrome\" }. Return ONLY the JSON, no markdown.",
+          },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "Reverse engineer this image into a prompt + suite settings." },
+              { type: "image_url", image_url: { url: dataUrl } },
+            ] as never,
+          },
+        ],
+      });
+
+      const raw = completion.choices[0]?.message?.content?.trim() ?? "";
+      let parsed: { prompt?: string; suite_settings?: Record<string, string> };
+      try { parsed = JSON.parse(raw); } catch {
+        logger.warn({ raw: raw.slice(0, 200) }, "vision-analyze returned non-JSON");
+        res.status(502).json({ success: false, ok: false, error: "Vision model returned malformed output." });
+        return;
+      }
+      if (!parsed.prompt || typeof parsed.prompt !== "string") {
+        res.status(502).json({ success: false, ok: false, error: "Vision model returned no prompt." });
+        return;
+      }
+      bumpRunCount();
+      res.json({
+        success: true,
+        ok: true,
+        prompt: parsed.prompt,
+        suite_settings: parsed.suite_settings ?? {},
+      });
+    } catch (err) {
+      logger.error({ err: err instanceof Error ? err.message : "unknown" }, "vision-analyze failed");
+      res.status(502).json({ success: false, ok: false, error: "Could not analyze that image. Please try another." });
+    }
+  },
+);
+
+/* ============================================================================
+ * /api/storyboard — Prompt Storyboard.
+ * Accepts a single text concept and returns a 5-shot cinematic storyboard
+ * as a JSON array of image prompts. Each panel is then generated by the
+ * client through the existing /api/image endpoint (which enforces the `img`
+ * cap), so this route only counts against the per-IP rate limit.
+ * ============================================================================ */
+router.post("/storyboard", generateLimiter, async (req, res) => {
+  const goalRaw = typeof req.body?.goal === "string" ? req.body.goal : (typeof req.body?.prompt === "string" ? req.body.prompt : "");
+  const goal = clampString(goalRaw, 1500);
+  if (!goal) {
+    res.status(400).json({ success: false, ok: false, error: "Please provide a concept." });
+    return;
+  }
+  const sanitized = sanitizeGoal(goal);
+  if (!sanitized.ok) {
+    res.status(sanitized.status).json({ success: false, ok: false, error: sanitized.error });
+    return;
+  }
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      max_completion_tokens: 1500,
+      response_format: { type: "json_object" },
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a cinematic director. Take the user's concept and break it into a 5-shot cinematic storyboard. Return ONLY a JSON object with a single key `panels` whose value is a JSON array of EXACTLY 5 strings. Each string is a highly visual image prompt for DALL·E 3 (subject, framing, lighting, palette, mood) describing one consecutive shot. Maintain narrative continuity from panel 1 to panel 5. Do not include shot numbers or markdown — just the prompt text per array entry.",
+        },
+        { role: "user", content: goal },
+      ],
+    });
+
+    const raw = completion.choices[0]?.message?.content?.trim() ?? "";
+    let parsed: { panels?: unknown };
+    try { parsed = JSON.parse(raw); } catch {
+      logger.warn({ raw: raw.slice(0, 200) }, "storyboard returned non-JSON");
+      res.status(502).json({ success: false, ok: false, error: "Storyboard model returned malformed output." });
+      return;
+    }
+    const panels = Array.isArray(parsed.panels) ? parsed.panels.filter((p): p is string => typeof p === "string" && p.trim().length > 0) : [];
+    if (panels.length < 3) {
+      res.status(502).json({ success: false, ok: false, error: "Storyboard model returned too few panels." });
+      return;
+    }
+    res.json({ success: true, ok: true, panels: panels.slice(0, 5) });
+  } catch (err) {
+    logger.error({ err: err instanceof Error ? err.message : "unknown" }, "storyboard failed");
+    res.status(502).json({ success: false, ok: false, error: "Storyboard service is unavailable. Try again." });
+  }
+});
+
 router.get("/stats", (_req, res) => {
   const stats = readStats();
   res.json({ promptCount: stats.promptCount, runCount: stats.runCount });

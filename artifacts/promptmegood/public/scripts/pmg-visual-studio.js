@@ -63,6 +63,9 @@
                 '<div class="pmg-vs-section">' +
                   '<label for="pmg-vs-image-goal">Describe Your Image</label>' +
                   '<textarea id="pmg-vs-image-goal" rows="3" placeholder="A woman walking through rainy Tokyo at night, cinematic, neon reflections, 35mm film look…"></textarea>' +
+                  '<button type="button" id="pmg-vs-reverse-engineer-btn" class="pmg-vs-btn pmg-vs-btn-secondary" style="margin-top:10px;width:100%">📸 Reverse Engineer an Image</button>' +
+                  '<input type="file" id="pmg-vs-reverse-input" accept="image/jpeg,image/png,image/webp" hidden />' +
+                  '<div id="pmg-vs-reverse-status" class="pmg-vs-reverse-status" hidden></div>' +
                 '</div>' +
                 '<details class="pmg-vs-tuning" open>' +
                   '<summary>Photography Suite — style, lighting, camera</summary>' +
@@ -110,6 +113,8 @@
               '</div>' +
               '<div id="pmg-vs-post-gen-actions" class="pmg-vs-actions-row" hidden>' +
                 '<a id="pmg-vs-save-media" class="pmg-vs-btn pmg-vs-btn-secondary" download href="#">⬇ Save</a>' +
+                '<button type="button" id="pmg-vs-download-dna" class="pmg-vs-btn pmg-vs-btn-secondary">🧬 DNA Card</button>' +
+                '<button type="button" id="pmg-vs-share-dna" class="pmg-vs-btn pmg-vs-btn-secondary" hidden>↗ Share</button>' +
                 '<button type="button" id="pmg-vs-regenerate" class="pmg-vs-btn pmg-vs-btn-secondary">🔄 Regenerate</button>' +
               '</div>' +
             '</div>' +
@@ -445,6 +450,11 @@
     if (act) act.hidden = false;
     var save = $('pmg-vs-save-media');
     if (save) { save.href = url; save.setAttribute('download', 'promptmegood-image.png'); }
+    // DNA card only makes sense for images
+    var dna = $('pmg-vs-download-dna');
+    if (dna) dna.hidden = false;
+    var shareBtn = $('pmg-vs-share-dna');
+    if (shareBtn) shareBtn.hidden = !navigator.share;
   }
 
   function showVideoResult(url) {
@@ -458,6 +468,265 @@
     if (act) act.hidden = false;
     var save = $('pmg-vs-save-media');
     if (save) { save.href = url; save.setAttribute('download', 'promptmegood-video.mp4'); }
+    var dna = $('pmg-vs-download-dna');
+    if (dna) dna.hidden = true;
+    var shareBtn = $('pmg-vs-share-dna');
+    if (shareBtn) shareBtn.hidden = true;
+  }
+
+  // ---- Reverse Engine (Image → Prompt + Suite settings) ----
+  function pickReverseImage() {
+    var input = $('pmg-vs-reverse-input');
+    if (!input) return;
+    input.value = ''; // allow re-selecting the same file
+    input.click();
+  }
+
+  async function handleReverseImage(file) {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      setReverseStatus('⚠️ Image is over 10 MB. Please pick a smaller one.', 'err');
+      return;
+    }
+    var btn = $('pmg-vs-reverse-engineer-btn');
+    if (btn) { btn.disabled = true; btn.dataset.origLabel = btn.textContent; btn.textContent = '🔬 Analyzing image DNA…'; }
+    setReverseStatus('🔬 Analyzing image DNA — reading composition, light, palette…', 'info');
+    try {
+      var fd = new FormData();
+      fd.append('image', file, file.name);
+      // Auth header — re-use authHeaders() but drop Content-Type so the
+      // browser sets the multipart boundary itself.
+      var headers = authHeaders();
+      delete headers['Content-Type'];
+      var res = await fetch('/api/vision-analyze', { method: 'POST', body: fd, headers: headers });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok || !data.prompt) {
+        setReverseStatus('⚠️ ' + (data.error || 'Could not analyze that image.'), 'err');
+        return;
+      }
+      var ta = $('pmg-vs-image-goal');
+      if (ta) {
+        ta.value = data.prompt;
+        ta.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      applySuiteSettings(data.suite_settings || {});
+      setReverseStatus('✓ Reverse engineered. Tweak the prompt below, then Generate.', 'ok');
+    } catch (e) {
+      setReverseStatus('⚠️ Network error. Please try again.', 'err');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = btn.dataset.origLabel || '📸 Reverse Engineer an Image'; }
+    }
+  }
+
+  function setReverseStatus(msg, kind) {
+    var el = $('pmg-vs-reverse-status');
+    if (!el) return;
+    el.hidden = false;
+    el.textContent = msg;
+    el.className = 'pmg-vs-reverse-status pmg-vs-reverse-status--' + (kind || 'info');
+  }
+
+  // Best-effort programmatic select of Photography Suite pills/inputs based
+  // on the suite_settings object returned by the vision model. We try to
+  // match by visible text — if no exact match, we just leave the pill alone.
+  function applySuiteSettings(settings) {
+    var suite = document.getElementById('photo-suite-section')
+             || document.getElementById('pmg-photo-suite');
+    if (!suite || !settings) return;
+    var allPills = suite.querySelectorAll('.pmg-pill, [data-pmg-pill], button[role="option"]');
+    if (!allPills.length) return;
+    Object.keys(settings).forEach(function (cat) {
+      var raw = String(settings[cat] || '').trim();
+      if (!raw) return;
+      // Split comma-separated suggestions into individual phrases
+      var candidates = raw.split(/,|\u2022|\//).map(function (s) { return s.trim().toLowerCase(); }).filter(Boolean);
+      candidates.forEach(function (cand) {
+        for (var i = 0; i < allPills.length; i++) {
+          var p = allPills[i];
+          var t = (p.textContent || '').trim().toLowerCase();
+          if (!t) continue;
+          if (t === cand || t.indexOf(cand) >= 0 || cand.indexOf(t) >= 0) {
+            // Activate only if not already active
+            var already = p.getAttribute('aria-pressed') === 'true' || p.classList.contains('is-active') || p.classList.contains('is-selected');
+            if (!already) {
+              try { p.click(); } catch (_) {}
+            }
+            break; // one match per candidate is enough
+          }
+        }
+      });
+    });
+  }
+
+  // ---- Prompt DNA Card (canvas composite of image + prompt) ----
+  async function downloadDnaCard() {
+    var img = $('pmg-vs-generated-image');
+    if (!img || img.hidden || !img.src) return null;
+    var prompt = ($('pmg-vs-refined-prompt') && $('pmg-vs-refined-prompt').value) ||
+                 ($('pmg-vs-image-goal') && $('pmg-vs-image-goal').value) || '';
+    return composeDnaCard(img.src, prompt).then(function (dataUrl) {
+      if (!dataUrl) return null;
+      var a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = 'promptmegood-dna-card.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      return dataUrl;
+    });
+  }
+
+  async function shareDnaCard() {
+    if (!navigator.share) return;
+    var img = $('pmg-vs-generated-image');
+    if (!img || img.hidden || !img.src) return;
+    var prompt = ($('pmg-vs-refined-prompt') && $('pmg-vs-refined-prompt').value) ||
+                 ($('pmg-vs-image-goal') && $('pmg-vs-image-goal').value) || '';
+    var dataUrl = await composeDnaCard(img.src, prompt);
+    if (!dataUrl) return;
+    try {
+      var blob = await (await fetch(dataUrl)).blob();
+      var file = new File([blob], 'promptmegood-dna-card.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'My PromptMeGood DNA Card', text: prompt.slice(0, 200) });
+      } else {
+        await navigator.share({ title: 'My PromptMeGood DNA Card', text: prompt.slice(0, 200) });
+      }
+    } catch (_) { /* user cancel — fine */ }
+  }
+
+  // Compose a 1080x1350 portrait card: top 1080x1080 image, bottom 270 strip
+  // with the prompt text + brand stamp. Same DOM-side image is used so we
+  // already have CORS access (DALL·E URLs are public).
+  function composeDnaCard(imgSrc, promptText) {
+    return new Promise(function (resolve) {
+      var im = new Image();
+      im.crossOrigin = 'anonymous';
+      im.onload = function () {
+        var W = 1080, H = 1350, IMG_H = 1080;
+        var canvas = document.createElement('canvas');
+        canvas.width = W; canvas.height = H;
+        var ctx = canvas.getContext('2d');
+        if (!ctx) { resolve(null); return; }
+        // Background — deep teal to match brand
+        ctx.fillStyle = '#0a2420';
+        ctx.fillRect(0, 0, W, H);
+        // Image — fit-cover into 1080x1080
+        var iw = im.naturalWidth, ih = im.naturalHeight;
+        var scale = Math.max(W / iw, IMG_H / ih);
+        var dw = iw * scale, dh = ih * scale;
+        var dx = (W - dw) / 2, dy = (IMG_H - dh) / 2;
+        try {
+          ctx.drawImage(im, dx, dy, dw, dh);
+        } catch (e) {
+          // CORS taint — bail to a blank-image card
+          ctx.fillStyle = '#11342f';
+          ctx.fillRect(0, 0, W, IMG_H);
+          ctx.fillStyle = '#3ee0a0';
+          ctx.font = 'bold 28px system-ui, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('(Image preview unavailable for export)', W / 2, IMG_H / 2);
+        }
+        // Brand stamp overlay
+        ctx.fillStyle = 'rgba(10,36,32,0.78)';
+        ctx.fillRect(24, IMG_H - 64, 280, 44);
+        ctx.fillStyle = '#3ee0a0';
+        ctx.font = 'bold 22px system-ui, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('🧬 PromptMeGood', 40, IMG_H - 34);
+        // Prompt strip
+        ctx.fillStyle = '#0a2420';
+        ctx.fillRect(0, IMG_H, W, H - IMG_H);
+        ctx.strokeStyle = '#3ee0a0';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, IMG_H);
+        ctx.lineTo(W, IMG_H);
+        ctx.stroke();
+        ctx.fillStyle = '#3ee0a0';
+        ctx.font = 'bold 18px system-ui, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('THE PROMPT', 48, IMG_H + 36);
+        ctx.fillStyle = '#e8f5f0';
+        ctx.font = '20px ui-monospace, "SF Mono", Menlo, monospace';
+        wrapText(ctx, promptText.trim() || '(no prompt)', 48, IMG_H + 70, W - 96, 26, 7);
+        try { resolve(canvas.toDataURL('image/png')); }
+        catch (_) {
+          // Canvas is tainted (CORS denied at export time). Fall back to a
+          // brand-only card with the prompt text + an "image unavailable"
+          // notice so the user always gets a downloadable artefact.
+          resolve(composeFallbackDnaCard(promptText));
+        }
+      };
+      im.onerror = function () {
+        // Image failed to load — still produce a brand-only card.
+        resolve(composeFallbackDnaCard(promptText));
+      };
+      im.src = imgSrc;
+    });
+  }
+
+  function composeFallbackDnaCard(promptText) {
+    var W = 1080, H = 1350, IMG_H = 1080;
+    var canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    var ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    // Brand background
+    ctx.fillStyle = '#0a2420';
+    ctx.fillRect(0, 0, W, H);
+    // Top region — brand-only card
+    var grad = ctx.createLinearGradient(0, 0, 0, IMG_H);
+    grad.addColorStop(0, '#11342f'); grad.addColorStop(1, '#0a2420');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, IMG_H);
+    ctx.fillStyle = '#3ee0a0';
+    ctx.font = 'bold 64px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🧬 PromptMeGood', W / 2, IMG_H / 2 - 30);
+    ctx.fillStyle = 'rgba(232,245,240,0.7)';
+    ctx.font = '22px system-ui, sans-serif';
+    ctx.fillText('(Image preview unavailable for export)', W / 2, IMG_H / 2 + 18);
+    ctx.font = '18px system-ui, sans-serif';
+    ctx.fillText('The prompt that built this image is below.', W / 2, IMG_H / 2 + 50);
+    // Prompt strip
+    ctx.strokeStyle = '#3ee0a0';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0, IMG_H); ctx.lineTo(W, IMG_H); ctx.stroke();
+    ctx.fillStyle = '#3ee0a0';
+    ctx.font = 'bold 18px system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('THE PROMPT', 48, IMG_H + 36);
+    ctx.fillStyle = '#e8f5f0';
+    ctx.font = '20px ui-monospace, "SF Mono", Menlo, monospace';
+    wrapText(ctx, (promptText || '').trim() || '(no prompt)', 48, IMG_H + 70, W - 96, 26, 7);
+    try { return canvas.toDataURL('image/png'); } catch (_) { return null; }
+  }
+
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
+    var words = text.split(/\s+/);
+    var line = '', lines = [];
+    for (var i = 0; i < words.length; i++) {
+      var test = line ? line + ' ' + words[i] : words[i];
+      if (ctx.measureText(test).width > maxWidth && line) {
+        lines.push(line);
+        line = words[i];
+        if (lines.length >= maxLines - 1) {
+          // Last line — truncate with ellipsis
+          var rest = words.slice(i).join(' ');
+          while (ctx.measureText(rest + '…').width > maxWidth && rest.length) {
+            rest = rest.slice(0, -1);
+          }
+          lines.push(rest + '…');
+          line = '';
+          break;
+        }
+      } else {
+        line = test;
+      }
+    }
+    if (line) lines.push(line);
+    for (var j = 0; j < lines.length; j++) ctx.fillText(lines[j], x, y + j * lineHeight);
   }
 
   function authHeaders() {
@@ -513,6 +782,9 @@
       if (e.target.closest('#pmg-vs-build-video-prompt-btn')) { buildVideoPrompt(); return; }
       if (e.target.closest('#pmg-vs-generate-btn'))            { generate();         return; }
       if (e.target.closest('#pmg-vs-regenerate'))              { generate();         return; }
+      if (e.target.closest('#pmg-vs-reverse-engineer-btn'))    { pickReverseImage(); return; }
+      if (e.target.closest('#pmg-vs-download-dna'))            { downloadDnaCard();  return; }
+      if (e.target.closest('#pmg-vs-share-dna'))               { shareDnaCard();     return; }
       if (e.target.closest('#pmg-vs-copy-prompt')) {
         var ta = $('pmg-vs-refined-prompt');
         if (ta && navigator.clipboard) {
@@ -535,6 +807,14 @@
       if (!modal() || modal().hasAttribute('hidden')) return;
       if (e.key === 'Escape') { closeVisualStudio(); return; }
       trapFocus(e);
+    });
+
+    // Reverse-engine file input — fire on selection.
+    document.addEventListener('change', function (e) {
+      if (e.target && e.target.id === 'pmg-vs-reverse-input') {
+        var f = e.target.files && e.target.files[0];
+        if (f) handleReverseImage(f);
+      }
     });
 
     // Hook the chassis Visual dock tab. We can't replace the click handler
