@@ -890,6 +890,17 @@ html.pmg-chassis-v2 .pmgv2-composer-wrap {
     padding-right: 14px;
     padding-bottom: 12px;
     z-index: 60 !important;
+    /* cv2-36: Cap height to viewport-minus-dock and let the expanded
+       composer scroll internally. Without this, when the user expands
+       the composer (tap pill) and Prompt Tuning is in the form, the
+       2,300px-tall #settingsPanel extends UPWARD off-screen because
+       position:fixed pins the bottom — users couldn't reach Prompt
+       Tuning controls. Now the composer becomes a scrollable drawer
+       sized to the available viewport above the dock. */
+    max-height: calc(100vh - 68px) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
   /* Live Feedback + Live Preview panel (#pmg-tf-feedback, injected by
      pmg-text-feedback.js) keeps re-mounting itself inside #prompt-form
