@@ -27,7 +27,149 @@
     style:      ['Cinematic', 'Realistic', 'Animated', 'Documentary', 'Dreamy'],
   };
 
+  // ---------- Pro Layer config (Quick Starts + Boosts + Modes) ----------
+  // Each boost/mode has a `directive` string appended to the refined prompt
+  // when the toggle is active. Presets pre-activate a bundle of boosts/modes
+  // (and for video, also pre-press a set of Sora pills).
+  var PHOTO_BOOSTS = [
+    { id: 'sharp-focus',    label: 'Sharper Subject Focus', desc: 'Tack-sharp eyes & details', directive: 'razor-sharp subject focus, crisp eyes, tack-sharp details' },
+    { id: 'color-grade',    label: 'Richer Color Grade',    desc: 'Cinematic contrast & balance', directive: 'rich cinematic color grade, deep contrast, balanced highlights and shadows' },
+    { id: 'shallow-depth',  label: 'Shallow Depth (bokeh)', desc: 'f/1.8 creamy background',     directive: 'shallow depth of field, creamy bokeh background, f/1.8 aesthetic, subject separation' },
+    { id: 'atmospheric',    label: 'Atmospheric',           desc: 'Haze, god rays, mood',        directive: 'atmospheric haze, soft god rays, volumetric light, dreamy ambience' },
+    { id: 'film-grain',     label: 'Film Grain & Texture',  desc: 'Analog 35mm feel',            directive: 'subtle 35mm film grain, organic texture, analog Kodak Portra feel' },
+    { id: 'negative-space', label: 'Negative Space',        desc: 'Editorial breathing room',    directive: 'generous negative space, minimalist composition, breathing room around subject' },
+  ];
+  var PHOTO_MODES = [
+    { id: 'photoreal',         label: 'Photoreal Mode',       desc: 'Kills illustrative drift — pure photo.',         directive: 'hyperrealistic photographic style, no illustration, no painterly or CGI effects, real-camera capture' },
+    { id: 'magazine-polish',   label: 'Magazine Polish Mode', desc: 'Editorial finish — cover-worthy retouching.',    directive: 'editorial magazine quality, professional retouching, cover-worthy finish, Vogue-grade polish' },
+  ];
+  var PHOTO_PRESETS = [
+    { id: 'editorial-hero',  emoji: '📸', label: 'Editorial Hero',    desc: 'Magazine cover energy.',     boosts: ['sharp-focus', 'negative-space'], modes: ['magazine-polish'] },
+    { id: 'hero-product',    emoji: '🛍️', label: 'Hero Product Shot', desc: 'Crisp commercial lighting.', boosts: ['sharp-focus', 'color-grade'],    modes: ['photoreal'] },
+    { id: 'cinematic-portrait', emoji: '🎞️', label: 'Cinematic Portrait', desc: 'Film still vibes.',     boosts: ['shallow-depth', 'atmospheric', 'film-grain'], modes: [] },
+    { id: 'scroll-stopper',  emoji: '📱', label: 'Scroll-Stopper',    desc: 'Bold, social-first punch.',  boosts: ['color-grade', 'sharp-focus'],    modes: ['magazine-polish'] },
+  ];
+
+  var VIDEO_BOOSTS = [
+    { id: 'opening-beat',     label: 'Stronger Opening Beat',  desc: 'Hook in the first 0.5s.',         directive: 'open with a strong visual hook in the first 0.5 seconds, immediate attention grab' },
+    { id: 'smoother-motion',  label: 'Smoother Camera Motion', desc: 'Gimbal-stabilized feel.',         directive: 'ultra-smooth gimbal-stabilized camera motion, no jitter, fluid movement' },
+    { id: 'color-grade',      label: 'Richer Color Grade',     desc: 'Teal & orange cinema look.',      directive: 'rich cinematic color grade, teal and orange contrast, professional color science' },
+    { id: 'atmospheric',      label: 'Atmospheric FX',         desc: 'Dust, haze, volumetric light.',   directive: 'atmospheric particles, dust motes, light haze, volumetric lighting beams' },
+    { id: 'cleaner-framing',  label: 'Cleaner Subject Framing',desc: 'Centered, rule-of-thirds.',       directive: 'centered subject framing, balanced composition, rule-of-thirds, clean negative space' },
+    { id: 'time-of-day',      label: 'Time-of-Day Drama',      desc: 'Magic hour glow.',                directive: 'magic hour lighting, golden glow, long shadows, dramatic time-of-day' },
+  ];
+  var VIDEO_MODES = [
+    { id: 'photoreal', label: 'Photoreal Mode', desc: 'Kills animation drift — pure footage.',           directive: 'hyperrealistic photographic quality, no animation, real camera capture' },
+    { id: 'filmic',    label: 'Filmic Mode',    desc: 'Anamorphic lens, grain, lens flares.',            directive: 'anamorphic lens 2.39:1 aspect, subtle film grain, soft anamorphic lens flares, cinematic feel' },
+  ];
+  var VIDEO_PRESETS = [
+    { id: 'cinematic-trailer', emoji: '🎬', label: 'Cinematic Trailer', desc: 'Slow push, golden hour, big mood.',
+      pills: { shot: 'Wide', movement: 'Slow push in', mood: 'Golden hour', style: 'Cinematic' },
+      boosts: ['opening-beat', 'color-grade', 'time-of-day'], modes: ['filmic'] },
+    { id: 'tiktok-hook',       emoji: '📱', label: 'TikTok Hook',       desc: 'Close, handheld, neon punch.',
+      pills: { shot: 'Close-up', movement: 'Handheld', mood: 'Neon', duration: '5', style: 'Realistic' },
+      boosts: ['opening-beat'], modes: [] },
+    { id: 'product-reveal',    emoji: '🛍️', label: 'Product Reveal',    desc: 'Studio close-up, slow push.',
+      pills: { shot: 'Close-up', movement: 'Slow push in', mood: 'Studio', style: 'Realistic' },
+      boosts: ['cleaner-framing', 'color-grade'], modes: ['photoreal'] },
+    { id: 'broll-atmo',        emoji: '🌅', label: 'B-Roll Atmospheric',desc: 'Wide, still, magic hour.',
+      pills: { shot: 'Wide', movement: 'Static', mood: 'Golden hour', style: 'Cinematic' },
+      boosts: ['atmospheric', 'time-of-day'], modes: ['filmic'] },
+  ];
+
   function $(id) { return document.getElementById(id); }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+    });
+  }
+
+  // ---------- Pro Layer HTML ----------
+  function buildProLayerHtml(scope, presets, boosts, modes) {
+    var presetHtml = presets.map(function (p) {
+      return '<button type="button" class="pmg-vs-pro-preset" data-vs-pro-preset="' + p.id + '" data-vs-scope="' + scope + '">' +
+               '<span class="pmg-vs-pro-preset-emoji">' + p.emoji + '</span>' +
+               '<span class="pmg-vs-pro-preset-body">' +
+                 '<span class="pmg-vs-pro-preset-title">' + escapeHtml(p.label) + '</span>' +
+                 '<span class="pmg-vs-pro-preset-desc">' + escapeHtml(p.desc) + '</span>' +
+               '</span>' +
+             '</button>';
+    }).join('');
+    var boostHtml = boosts.map(function (b) {
+      return '<button type="button" class="pmg-vs-pro-boost" data-vs-pro-boost="' + b.id + '" data-vs-scope="' + scope + '" aria-pressed="false" title="' + escapeHtml(b.desc) + '">' +
+               '<span class="pmg-vs-pro-boost-title">' + escapeHtml(b.label) + '</span>' +
+               '<span class="pmg-vs-pro-boost-desc">' + escapeHtml(b.desc) + '</span>' +
+             '</button>';
+    }).join('');
+    var modeHtml = modes.map(function (m) {
+      return '<label class="pmg-vs-pro-mode">' +
+               '<input type="checkbox" data-vs-pro-mode="' + m.id + '" data-vs-scope="' + scope + '" />' +
+               '<span class="pmg-vs-pro-mode-body">' +
+                 '<span class="pmg-vs-pro-mode-title">' + escapeHtml(m.label) + '</span>' +
+                 '<span class="pmg-vs-pro-mode-desc">' + escapeHtml(m.desc) + '</span>' +
+               '</span>' +
+             '</label>';
+    }).join('');
+    return [
+      '<section class="pmg-vs-inline-section pmg-vs-pro-layer" data-vs-pro-scope="' + scope + '">',
+        '<label class="pmgv3-section-label">⚡ Pro Tuning</label>',
+        '<p style="margin:0 0 10px;font-size:12px;opacity:.65">Quick-start presets, optional boosts, and modes — exactly like Money Mode for text prompts.</p>',
+        '<div class="pmg-vs-pro-sublabel">Quick Start</div>',
+        '<div class="pmg-vs-pro-presets">' + presetHtml + '</div>',
+        '<div class="pmg-vs-pro-sublabel">Pro Boosts <span class="pmg-vs-pro-hint">(toggle on/off)</span></div>',
+        '<div class="pmg-vs-pro-boosts">' + boostHtml + '</div>',
+        '<div class="pmg-vs-pro-sublabel">Modes</div>',
+        '<div class="pmg-vs-pro-modes">' + modeHtml + '</div>',
+      '</section>',
+    ].join('');
+  }
+
+  // Read active boost/mode directives for a given scope ("photo" or "video")
+  function collectProDirectives(scope, boosts, modes) {
+    var out = [];
+    var root = document.querySelector('[data-vs-pro-scope="' + scope + '"]');
+    if (!root) return out;
+    boosts.forEach(function (b) {
+      var btn = root.querySelector('[data-vs-pro-boost="' + b.id + '"]');
+      if (btn && btn.getAttribute('aria-pressed') === 'true') out.push(b.directive);
+    });
+    modes.forEach(function (m) {
+      var cb = root.querySelector('[data-vs-pro-mode="' + m.id + '"]');
+      if (cb && cb.checked) out.push(m.directive);
+    });
+    return out;
+  }
+
+  // Apply a preset: press matching boosts/modes; for video, also press Sora pills.
+  function applyPreset(scope, preset) {
+    var root = document.querySelector('[data-vs-pro-scope="' + scope + '"]');
+    if (!root) return;
+    // Clear current boosts & modes in this scope first
+    root.querySelectorAll('[data-vs-pro-boost]').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+    root.querySelectorAll('[data-vs-pro-mode]').forEach(function (cb) { cb.checked = false; });
+    (preset.boosts || []).forEach(function (id) {
+      var btn = root.querySelector('[data-vs-pro-boost="' + id + '"]');
+      if (btn) btn.setAttribute('aria-pressed', 'true');
+    });
+    (preset.modes || []).forEach(function (id) {
+      var cb = root.querySelector('[data-vs-pro-mode="' + id + '"]');
+      if (cb) cb.checked = true;
+    });
+    // Mark active preset chip
+    root.querySelectorAll('[data-vs-pro-preset]').forEach(function (p) {
+      p.classList.toggle('is-active', p.getAttribute('data-vs-pro-preset') === preset.id);
+    });
+    // Video extras: press the Sora pills the preset specifies
+    if (scope === 'video' && preset.pills) {
+      Object.keys(preset.pills).forEach(function (group) {
+        var value = preset.pills[group];
+        document.querySelectorAll('#pmgv3-panel-video .pmg-vs-pill[data-vs-sora-group="' + group + '"]').forEach(function (sib) {
+          sib.setAttribute('aria-pressed', sib.getAttribute('data-vs-sora-value') === value ? 'true' : 'false');
+        });
+      });
+    }
+  }
 
   // ---------- Panel HTML builders ----------
   function buildPhotoLeft() {
@@ -45,6 +187,7 @@
           '<p style="margin:6px 0 0;font-size:.85rem;opacity:.7">Loading photo controls…</p>',
         '</div>',
       '</section>',
+      buildProLayerHtml('photo', PHOTO_PRESETS, PHOTO_BOOSTS, PHOTO_MODES),
       '<section class="pmg-vs-inline-section">',
         '<button type="button" id="pmg-vs-build-image-prompt-btn" class="pmg-vs-btn pmg-vs-btn-secondary pmg-vs-full-width">✨ Build My Image Prompt</button>',
       '</section>',
@@ -109,6 +252,7 @@
         '<p style="margin:0 0 8px;font-size:12px;opacity:.65">Pick a vibe in each group — we will compose the directives.</p>',
         '<div class="pmg-vs-sora-pills">' + soraPillsHtml + '</div>',
       '</section>',
+      buildProLayerHtml('video', VIDEO_PRESETS, VIDEO_BOOSTS, VIDEO_MODES),
       '<section class="pmg-vs-inline-section" id="pmgv3-storyboard-mount">',
         // Storyboard launcher button is injected here by pmg-storyboard.js
       '</section>',
@@ -210,6 +354,8 @@
       });
       if (picked.length) refined += ' — ' + picked.join(', ');
     }
+    var pro = collectProDirectives('photo', PHOTO_BOOSTS, PHOTO_MODES);
+    if (pro.length) refined += '. ' + pro.join('. ') + '.';
     var ta = $('pmg-vs-image-refined');
     if (ta) {
       ta.value = refined;
@@ -234,7 +380,9 @@
       else if (key === 'mood')     directives.push(v + ' lighting');
       else if (key === 'style')    directives.push(v + ' style');
     });
-    var refined = goal + (directives.length ? '. ' + directives.join('. ') + '.' : '');
+    var pro = collectProDirectives('video', VIDEO_BOOSTS, VIDEO_MODES);
+    var allDirectives = directives.concat(pro);
+    var refined = goal + (allDirectives.length ? '. ' + allDirectives.join('. ') + '.' : '');
     var ta = $('pmg-vs-video-refined');
     if (ta) {
       ta.value = refined;
@@ -654,6 +802,23 @@
         document.querySelectorAll('#pmgv3-panel-video .pmg-vs-pill[data-vs-sora-group="' + grp + '"]').forEach(function (sib) {
           sib.setAttribute('aria-pressed', sib === pill ? 'true' : 'false');
         });
+        return;
+      }
+      // Pro Boost toggle (multi-select on/off)
+      var boost = e.target.closest('[data-vs-pro-boost]');
+      if (boost) {
+        var on = boost.getAttribute('aria-pressed') === 'true';
+        boost.setAttribute('aria-pressed', on ? 'false' : 'true');
+        return;
+      }
+      // Pro Preset application
+      var preset = e.target.closest('[data-vs-pro-preset]');
+      if (preset) {
+        var scope = preset.getAttribute('data-vs-scope');
+        var pid = preset.getAttribute('data-vs-pro-preset');
+        var list = scope === 'video' ? VIDEO_PRESETS : PHOTO_PRESETS;
+        var match = list.filter(function (p) { return p.id === pid; })[0];
+        if (match) applyPreset(scope, match);
         return;
       }
     }, true);
