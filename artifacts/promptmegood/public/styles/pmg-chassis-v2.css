@@ -1696,3 +1696,66 @@ html.pmg-chassis-v2 .pmgv2-composer-tab { display: none; }
   html.pmg-chassis-v2 .pmgv2-composer-wrap #prompt-form .actions-row,
   html.pmg-chassis-v2 .pmgv2-composer-wrap #prompt-form #tour-step-generate { order: 4 !important; }
 }
+
+/* ---- cv2-40: Two-box output layout (📝 Prompt + ✨ Response) ----
+   When the AI Response section becomes visible after Run With AI,
+   #result-panel switches to a 2-column grid on desktop. Box 1
+   (everything except #aiResponseSection) stays in column 1; Box 2
+   (#aiResponseSection) jumps to column 2, row 1. On mobile (<768px)
+   they stack as before. When #aiResponseSection is hidden, the
+   panel reverts to single-column block flow (no wasted right gutter).
+   Pure CSS — no DOM moves, runWithAI streaming logic untouched. */
+@media (min-width: 768px) {
+  html.pmg-chassis-v2 #result-panel:has(#aiResponseSection:not([hidden])) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-auto-rows: auto;
+    column-gap: 20px;
+    row-gap: 0;
+    align-items: start;
+  }
+  html.pmg-chassis-v2 #result-panel:has(#aiResponseSection:not([hidden])) > * {
+    grid-column: 1;
+    min-width: 0;
+  }
+  html.pmg-chassis-v2 #result-panel:has(#aiResponseSection:not([hidden])) > #aiResponseSection {
+    grid-column: 2;
+    grid-row: 1 / span 99;
+    margin-top: 0;
+    align-self: stretch;
+    position: sticky;
+    top: 12px;
+  }
+  /* Hide the divider line above Box 2 in two-col mode (it was a
+     vertical separator in the stacked layout — visual noise here). */
+  html.pmg-chassis-v2 #result-panel:has(#aiResponseSection:not([hidden])) > #aiResponseSection > .run-section-divider {
+    display: none;
+  }
+  /* Container query fallback: collapse to single column if the panel
+     itself is narrower than ~640px (e.g. when squeezed by the rail). */
+  @media (max-width: 1100px) {
+    html.pmg-chassis-v2 .pmgv2-main #result-panel:has(#aiResponseSection:not([hidden])) {
+      grid-template-columns: 1fr;
+    }
+    html.pmg-chassis-v2 .pmgv2-main #result-panel:has(#aiResponseSection:not([hidden])) > #aiResponseSection {
+      grid-column: 1;
+      grid-row: auto;
+      position: static;
+    }
+  }
+}
+
+/* Box labels — small uppercase eyebrows added via JS sentinel divs
+   .pmgv2-box-label-prompt / .pmgv2-box-label-response prepended into
+   the panel and aiResponseSection respectively. */
+html.pmg-chassis-v2 .pmgv2-box-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted, rgba(232,245,240,0.65));
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

@@ -150,6 +150,42 @@
     initCollapsibleComposer(root);
     initTuningAccordion(root);
     initPhotoShortcut(root);
+    initTwoBoxLabels(root);
+  }
+
+  // ---- cv2-40: Two-box output labels ----
+  // The two-column output layout is pure CSS (see pmg-chassis-v2.css
+  // "Two-box output layout" block). This helper just prepends small
+  // eyebrow labels — "📝 Your Generated Prompt" above the prompt
+  // panel content, "✨ AI Response" above #aiResponseSection — so
+  // the two boxes read as a labeled pair when sitting side-by-side.
+  // Idempotent. Streaming logic in window.runWithAI is untouched.
+  function initTwoBoxLabels(root) {
+    function attach() {
+      var panel = document.getElementById('result-panel');
+      var resp = document.getElementById('aiResponseSection');
+      if (!panel || !resp) return false;
+      // Label A — above the result-wrap (under the existing h2).
+      var head = panel.querySelector('.panel-head');
+      if (head && !head.querySelector('.pmgv2-box-label-prompt')) {
+        var labA = document.createElement('div');
+        labA.className = 'pmgv2-box-label pmgv2-box-label-prompt';
+        labA.innerHTML = '<span aria-hidden="true">📝</span><span>Your Generated Prompt</span>';
+        head.appendChild(labA);
+      }
+      // Label B — first child of #aiResponseSection (above its h3).
+      if (!resp.querySelector('.pmgv2-box-label-response')) {
+        var labB = document.createElement('div');
+        labB.className = 'pmgv2-box-label pmgv2-box-label-response';
+        labB.innerHTML = '<span aria-hidden="true">✨</span><span>AI Response</span>';
+        resp.insertBefore(labB, resp.firstChild);
+      }
+      return true;
+    }
+    if (attach()) return;
+    var obs = new MutationObserver(function () { if (attach()) obs.disconnect(); });
+    obs.observe(document.body, { childList: true, subtree: true });
+    setTimeout(function () { obs.disconnect(); }, 8000);
   }
 
   // ---- cv2-40: Photography Suite shortcut card ----
