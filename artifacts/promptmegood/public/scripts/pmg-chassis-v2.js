@@ -227,8 +227,15 @@
       tab.setAttribute('aria-expanded', 'false');
     }
 
-    // Default state on first paint: collapsed. Discoverable via the pill.
-    collapse({ force: true });
+    // cv2-37: Default state on first paint = EXPANDED. The earlier
+    // "collapsed by default" caused users to land on Workstation and
+    // see only an empty middle + a tiny pill, perceiving the goal
+    // textarea / Fix My Prompt / Prompt Tuning as missing. The pill
+    // still appears after generation (body.pmg-has-result), after
+    // #goal blur with empty value, or when switching to a non-
+    // Workstation dock tab — all moments where collapsing is helpful
+    // because the user has shifted focus away from constructing.
+    // First-time visitors now immediately see the input surface.
 
     // ---- Expand triggers ----
 
