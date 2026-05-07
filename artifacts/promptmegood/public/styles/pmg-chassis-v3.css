@@ -701,7 +701,14 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
     gap: 8px;
   }
   .pmgv3-tab { white-space: nowrap; padding: 6px 16px; font-size: 14px; }
-  .pmgv3-brand { font-size: 14px; }
+  .pmgv3-brand { font-size: 14px; min-width: 0; overflow: hidden; }
+  .pmgv3-brand > span:first-of-type {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .pmgv3-tb-r { gap: 6px; flex-shrink: 0; }
   .pmgv3-upgrade { padding: 6px 10px; font-size: 12px; }
   /* cv3-17: Bottom bar entirely hidden on mobile. The Quick Entry pill is
      a desktop-only convenience — on mobile the main #goal textarea at the top
@@ -737,4 +744,17 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
     padding: 6px 12px !important;
     font-size: 13px;
   }
+}
+/* cv3-22 fix: at ≤400px the brand + 2 icons + Upgrade overflow the row.
+   Shrink the right cluster (icon size + button padding) and tighten the
+   topbar gutter so the row fits a 360px viewport without the
+   `overflow-x: hidden` band-aid the overflow-360 test forbids. */
+@media (max-width: 400px) {
+  .pmgv3-topbar { padding: 0 10px; }
+  .pmgv3-tb-r { gap: 4px; }
+  .pmgv3-ico { width: 32px; height: 32px; font-size: 14px; }
+  .pmgv3-upgrade { padding: 5px 8px; font-size: 11px; }
+  .pmgv3-brand { gap: 6px; font-size: 13px; }
+  .pmgv3-brand img { width: 24px; height: 24px; }
+  .pmgv3-brand-beta { display: none; }
 }
