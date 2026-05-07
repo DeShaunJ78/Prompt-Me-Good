@@ -42,7 +42,15 @@ html.pmg-chassis-v3 [id^="generateBtnTop"] {
 
 /* Suppress chassis-v2 entirely when v3 is on */
 html.pmg-chassis-v3 #pmg-chassis-v2-root { display: none !important; }
-html.pmg-chassis-v3 body > *:not(#pmg-chassis-v3-root):not(script):not(style):not(noscript):not(#pmg-splash):not(template) {
+/* cv3-20 audit fix: exempt body-appended overlays (Visual Studio modal,
+   Storyboard modal) from the universal hide. Both modals carry
+   data-pmg-overlay-root="1" AND class="pmg-modal-overlay" — narrow
+   exemption is intentional. Do NOT add :not([role="dialog"]) here:
+   legacy dialogs (#pmg-quick-win-overlay, #compare-overlay, #bk-overlay,
+   #ob-overlay) also use role="dialog" and must stay hidden in v3.
+   Any new overlay that needs to survive v3 hide must add
+   data-pmg-overlay-root="1" explicitly. */
+html.pmg-chassis-v3 body > *:not(#pmg-chassis-v3-root):not(script):not(style):not(noscript):not(#pmg-splash):not(template):not([data-pmg-overlay-root]):not(.pmg-modal-overlay) {
   display: none !important;
   visibility: hidden !important;
 }
