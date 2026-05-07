@@ -160,6 +160,116 @@
     }
     initTuneDrawer(root);
     initTwoBoxLabels(root);
+    initMockupTabs(root);
+  }
+
+  // ---- cv2-44: Mockup tabs strip ----
+  // Prominent segmented control at the top of .pmgv2-main:
+  //   [ Text Prompt | Photography | Image ]
+  // Wires to existing handlers — does NOT introduce new mode state.
+  //   • Text Prompt  → window.setMode('write') + close VS if open
+  //   • Photography  → openVisualStudio({mode:'image'}) (photo suite focus)
+  //   • Image        → openVisualStudio({mode:'image'})
+  // Active state mirrors body.image-mode + VS modal open. Idempotent.
+  function initMockupTabs(root) {
+    var main = root.querySelector('.pmgv2-main');
+    if (!main || main.querySelector('.pmgv2-mtabs')) return;
+    var bar = document.createElement('div');
+    bar.className = 'pmgv2-mtabs';
+    bar.setAttribute('role', 'tablist');
+    bar.setAttribute('aria-label', 'Prompt mode');
+    bar.innerHTML = [
+      '<button type="button" role="tab" class="pmgv2-mtab" data-mtab="text" aria-selected="true">',
+        '<span class="pmgv2-mtab-ico" aria-hidden="true">✍️</span>',
+        '<span class="pmgv2-mtab-lab">Text Prompt</span>',
+      '</button>',
+      '<button type="button" role="tab" class="pmgv2-mtab" data-mtab="photo" aria-selected="false">',
+        '<span class="pmgv2-mtab-ico" aria-hidden="true">📸</span>',
+        '<span class="pmgv2-mtab-lab">Photography</span>',
+      '</button>',
+      '<button type="button" role="tab" class="pmgv2-mtab" data-mtab="image" aria-selected="false">',
+        '<span class="pmgv2-mtab-ico" aria-hidden="true">🎨</span>',
+        '<span class="pmgv2-mtab-lab">Image</span>',
+      '</button>'
+    ].join('');
+    // Insert at the very top of main, above the hero/mode-bar.
+    main.insertBefore(bar, main.firstChild);
+
+    function activate(which) {
+      Array.prototype.forEach.call(bar.querySelectorAll('.pmgv2-mtab'), function (b) {
+        var on = b.getAttribute('data-mtab') === which;
+        b.setAttribute('aria-selected', on ? 'true' : 'false');
+        b.classList.toggle('is-active', on);
+      });
+    }
+
+    bar.addEventListener('click', function (e) {
+      var btn = e.target.closest('.pmgv2-mtab');
+      if (!btn) return;
+      e.preventDefault();
+      var which = btn.getAttribute('data-mtab');
+      activate(which);
+      try {
+        if (which === 'text') {
+          if (typeof window.setMode === 'function') window.setMode('write');
+          // Best-effort close of the Visual Studio modal if open.
+          var vsClose = document.querySelector('#pmg-vs-modal .pmg-modal-close, #pmg-vs-modal [data-pmg-vs-close]');
+          if (vsClose) vsClose.click();
+        } else {
+          // Both Photography and Image route into the Visual Studio
+          // image flow (the existing single source of truth for image
+          // generation). Photography focuses the photo-suite section.
+          if (typeof window.openVisualStudio === 'function') {
+            window.openVisualStudio({ mode: 'image' });
+          } else {
+            var img = document.getElementById('imageModeBtn');
+            if (img) img.click();
+          }
+          if (which === 'photo') {
+            // Scroll the photo suite container into view inside the modal.
+            setTimeout(function () {
+              var suite = document.querySelector('#pmg-vs-photo-suite-container, #photo-suite-section, #pmg-photo-suite');
+              if (suite && suite.scrollIntoView) {
+                try { suite.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {}
+              }
+            }, 160);
+          }
+        }
+      } catch (_) {}
+    });
+
+    // Reflect external mode changes (legacy mode bar, dock, modal close).
+    function syncFromState() {
+      var vsOpen = !!document.querySelector('#pmg-vs-modal.is-open, #pmg-vs-modal[aria-hidden="false"]');
+      var imgMode = document.body.classList.contains('image-mode');
+      if (vsOpen || imgMode) {
+        // Don't downgrade an explicit Photography selection back to Image.
+        var current = bar.querySelector('.pmgv2-mtab.is-active');
+        if (!current || current.getAttribute('data-mtab') === 'text') activate('image');
+      } else {
+        activate('text');
+      }
+    }
+    var mo = new MutationObserver(syncFromState);
+    mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    var vsModal = document.getElementById('pmg-vs-modal');
+    if (vsModal) {
+      var mo2 = new MutationObserver(syncFromState);
+      mo2.observe(vsModal, { attributes: true, attributeFilter: ['class', 'aria-hidden'] });
+    } else {
+      // VS modal mounts late; re-bind once available.
+      var vsWait = new MutationObserver(function () {
+        var m = document.getElementById('pmg-vs-modal');
+        if (m) {
+          var mo3 = new MutationObserver(syncFromState);
+          mo3.observe(m, { attributes: true, attributeFilter: ['class', 'aria-hidden'] });
+          vsWait.disconnect();
+        }
+      });
+      vsWait.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function () { vsWait.disconnect(); }, 8000);
+    }
+    syncFromState();
   }
 
   // ---- cv2-42: Tune It drawer ----

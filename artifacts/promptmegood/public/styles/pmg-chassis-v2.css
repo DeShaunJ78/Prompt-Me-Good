@@ -2015,3 +2015,56 @@ html.pmg-chassis-v2 .pmgv2-box-label {
   html.pmg-cv-42 .pmgv2-tune-backdrop,
   html.pmg-cv-42 .pmgv2-cb-actions { display: none !important; }
 }
+
+/* ---- cv2-44: Mockup tabs strip ----
+   Prominent segmented control at the top of .pmgv2-main matching the
+   user's mockups. Cream pill bg with white-ish active tile + brand
+   border, scaled to dark theme using surface tokens. Three tabs:
+   Text Prompt | Photography | Image. Wired in initMockupTabs(). */
+html.pmg-chassis-v2 .pmgv2-mtabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 6px;
+  margin: 0 0 14px 0;
+  background: var(--color-surface-2, #0d2b22);
+  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 18%, transparent);
+  border-radius: 14px;
+}
+html.pmg-chassis-v2 .pmgv2-mtab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  color: var(--color-text-muted, rgba(232,245,240,0.7));
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+html.pmg-chassis-v2 .pmgv2-mtab:hover,
+html.pmg-chassis-v2 .pmgv2-mtab:focus-visible {
+  color: var(--color-text, #e8f5f0);
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 8%, transparent);
+  outline: none;
+}
+html.pmg-chassis-v2 .pmgv2-mtab.is-active,
+html.pmg-chassis-v2 .pmgv2-mtab[aria-selected="true"] {
+  background: var(--color-surface, #0a1f19);
+  border-color: var(--color-primary, #3ee0a0);
+  color: var(--color-text, #e8f5f0);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--color-primary, #3ee0a0) 35%, transparent);
+}
+html.pmg-chassis-v2 .pmgv2-mtab-ico { font-size: 16px; line-height: 1; }
+html.pmg-chassis-v2 .pmgv2-mtab-lab { white-space: nowrap; }
+@media (max-width: 540px) {
+  html.pmg-chassis-v2 .pmgv2-mtab { padding: 8px 8px; font-size: 13px; gap: 6px; }
+  html.pmg-chassis-v2 .pmgv2-mtab-ico { font-size: 14px; }
+}
