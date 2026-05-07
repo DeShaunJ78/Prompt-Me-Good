@@ -222,29 +222,18 @@
   background: color-mix(in srgb, var(--g2-mint, #3ee0a0) 22%, transparent);
 }
 
-/* Mobile: pin launcher row above the composer-tab pill and bottom dock,
-   regardless of composer collapse state. Bottom offsets stack:
-   dock ~58px + composer-tab ~52px + breathing room ~8px ≈ 118px. */
+/* Topbar icon buttons — primary mobile entry points, no bottom chrome. */
+.pmg-vs-tb-ico {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+/* Mobile: hide the in-main launcher row entirely — discovery is via
+   the topbar icons + the existing "Visual" dock tab. We deliberately do
+   NOT add a second sticky bottom bar on top of the composer pill +
+   dock. */
 @media (max-width: 900px) {
-  #pmg-vs-launch-composer-row.pmg-vs-launch-row {
-    position: fixed;
-    left: 8px;
-    right: 8px;
-    bottom: calc(58px + 52px + 8px + env(safe-area-inset-bottom, 0px));
-    margin: 0;
-    z-index: 70; /* above composer-wrap (60) so it stays visible when expanded; below VS modal (~100) */
-    background: color-mix(in srgb, #0a2420 92%, transparent);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    padding: 6px;
-    border-radius: 12px;
-    border: 1px solid color-mix(in srgb, var(--g2-mint, #3ee0a0) 22%, transparent);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
-  }
-  .pmg-vs-launch-row .pmg-vs-launch-pill {
-    padding: 9px 8px;
-    font-size: 0.82rem;
-  }
+  #pmg-vs-launch-composer-row { display: none !important; }
 }
 
 .pmg-vs-reverse-status {
