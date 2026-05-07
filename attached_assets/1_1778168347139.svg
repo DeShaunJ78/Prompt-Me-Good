@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 980" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F4F7F6"/>
+      <stop offset="1" stop-color="#E7EDEB"/>
+    </linearGradient>
+    <linearGradient id="brandFill" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0F766E"/>
+      <stop offset="1" stop-color="#14857C"/>
+    </linearGradient>
+    
+      
+    
+  </defs>
+
+  
+  <rect width="1400" height="980" fill="url(#bg)"/>
+
+  
+  <text x="40" y="44" font-size="22" font-weight="800" fill="#0F2A2A">PromptMeGood Workstation — Layout Mockup (Desktop ≥ 900px)</text>
+  <text x="40" y="68" font-size="13" fill="#56706C">Two columns. Left = where you shape the prompt. Right = where you see the result. Three pipelines live as tabs inside the left column.</text>
+
+  
+  <rect x="40" y="92" width="1320" height="56" rx="14" fill="#FFFFFF" stroke="#D9E2DF"/>
+  <rect x="58" y="108" width="28" height="28" rx="6" fill="url(#brandFill)"/>
+  <text x="96" y="128" font-size="15" font-weight="800" fill="#0F2A2A">PromptMeGood</text>
+  <text x="222" y="128" font-size="13" fill="#56706C">Start Here · Guide · Pricing</text>
+  <rect x="1140" y="108" width="92" height="28" rx="14" fill="#FFFFFF" stroke="#D9E2DF"/>
+  <text x="1186" y="127" text-anchor="middle" font-size="12" fill="#0F2A2A">Replay Tour</text>
+  <rect x="1244" y="108" width="100" height="28" rx="14" fill="url(#brandFill)"/>
+  <text x="1294" y="127" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">Sign In</text>
+
+  
+  <rect x="40" y="170" width="780" height="730" rx="18" fill="#FFFFFF" stroke="#D9E2DF"/>
+
+  
+  <text x="60" y="200" font-size="11" font-weight="800" letter-spacing="2" fill="#0F766E">SHAPE YOUR PROMPT</text>
+  <text x="60" y="226" font-size="22" font-weight="800" fill="#0F2A2A">What are you making today?</text>
+
+  
+  <rect x="60" y="252" width="740" height="48" rx="12" fill="#F2F6F5" stroke="#D9E2DF"/>
+  <rect x="68" y="260" width="240" height="32" rx="8" fill="#FFFFFF" stroke="#0F766E" stroke-width="1.5"/>
+  <text x="188" y="281" text-anchor="middle" font-size="13" font-weight="700" fill="#0F2A2A">Text Prompt</text>
+  <text x="412" y="281" text-anchor="middle" font-size="13" fill="#56706C">Photography</text>
+  <text x="616" y="281" text-anchor="middle" font-size="13" fill="#56706C">Image</text>
+  <text x="752" y="281" text-anchor="middle" font-size="11" fill="#9AAFAB">(active = white pill)</text>
+
+  
+  <text x="60" y="332" font-size="12" font-weight="700" fill="#0F2A2A">Your Goal</text>
+  <rect x="60" y="342" width="740" height="92" rx="10" fill="#FAFCFB" stroke="#D9E2DF"/>
+  <text x="76" y="370" font-size="13" fill="#0F2A2A">Write a LinkedIn post about our new product launch — friendly, confident,</text>
+  <text x="76" y="390" font-size="13" fill="#0F2A2A">about 150 words, with one question at the end to start a conversation.</text>
+  <rect x="688" y="402" width="98" height="22" rx="11" fill="#0F766E"/>
+  <text x="737" y="417" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Strong ✓</text>
+
+  
+  <text x="60" y="464" font-size="12" font-weight="700" fill="#0F2A2A">Quick Actions</text>
+  <g font-size="12" fill="#0F2A2A">
+    <rect x="60" y="476" width="148" height="34" rx="17" fill="url(#brandFill)"/>
+    <text x="134" y="498" text-anchor="middle" fill="#FFFFFF" font-weight="700">Fix My Prompt</text>
+    <rect x="216" y="476" width="148" height="34" rx="17" fill="#FFFFFF" stroke="#0F766E"/>
+    <text x="290" y="498" text-anchor="middle" fill="#0F766E" font-weight="700">Help Me Start</text>
+    <rect x="372" y="476" width="148" height="34" rx="17" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="446" y="498" text-anchor="middle">More Detailed</text>
+    <rect x="528" y="476" width="148" height="34" rx="17" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="602" y="498" text-anchor="middle">Bold &amp; Direct</text>
+    <rect x="684" y="476" width="116" height="34" rx="17" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="742" y="498" text-anchor="middle">Beginner</text>
+  </g>
+
+  
+  <text x="60" y="544" font-size="12" font-weight="700" fill="#0F2A2A">Tuning</text>
+  <g font-size="11" fill="#56706C">
+    <rect x="60" y="556" width="86" height="30" rx="15" fill="#F2F6F5" stroke="#D9E2DF"/>
+    <text x="103" y="575" text-anchor="middle">Friendly</text>
+    <rect x="154" y="556" width="86" height="30" rx="15" fill="#0F766E"/>
+    <text x="197" y="575" text-anchor="middle" fill="#FFFFFF" font-weight="700">Confident</text>
+    <rect x="248" y="556" width="86" height="30" rx="15" fill="#F2F6F5" stroke="#D9E2DF"/>
+    <text x="291" y="575" text-anchor="middle">Concise</text>
+    <rect x="342" y="556" width="86" height="30" rx="15" fill="#F2F6F5" stroke="#D9E2DF"/>
+    <text x="385" y="575" text-anchor="middle">Detailed</text>
+    <rect x="436" y="556" width="120" height="30" rx="8" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="448" y="575" font-size="11" fill="#0F2A2A">Length: 150 ▾</text>
+  </g>
+
+  
+  <rect x="60" y="610" width="740" height="80" rx="12" fill="#0F2A2A"/>
+  <text x="80" y="640" font-size="12" font-weight="700" fill="#9AD1CB">RUN WITH AI</text>
+  <text x="80" y="666" font-size="14" fill="#FFFFFF">Send this prompt to ChatGPT, Claude, Perplexity, Gemini — or run it here.</text>
+  <rect x="640" y="630" width="140" height="40" rx="20" fill="url(#brandFill)"/>
+  <text x="710" y="655" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">Run With AI ▸</text>
+
+  
+  <rect x="60" y="708" width="740" height="172" rx="12" fill="#FAFCFB" stroke="#D9E2DF" stroke-dasharray="4 4"/>
+  <text x="76" y="734" font-size="11" font-weight="800" letter-spacing="2" fill="#0F766E">HIDDEN UNTIL TAB IS CLICKED</text>
+  <text x="76" y="760" font-size="13" fill="#0F2A2A"><tspan font-weight="700">Photography tab:</tspan> Style · Camera &amp; Lens · Lighting · Composition · Color Palette,</text>
+  <text x="76" y="780" font-size="13" fill="#0F2A2A">Surprise Me, Avoid pills, one-tap Send To Image Generator.</text>
+  <text x="76" y="816" font-size="13" fill="#0F2A2A"><tspan font-weight="700">Image tab:</tspan> DALL·E 3 generation, Regenerate, Use As Reference, Download.</text>
+  <text x="76" y="852" font-size="11" fill="#56706C">Same controls you have today — just one mode visible at a time, so the page stops feeling like a maze.</text>
+
+  
+  <rect x="840" y="170" width="520" height="730" rx="18" fill="#FFFFFF" stroke="#D9E2DF"/>
+  <text x="860" y="200" font-size="11" font-weight="800" letter-spacing="2" fill="#0F766E">SEE THE RESULT</text>
+  <text x="860" y="226" font-size="22" font-weight="800" fill="#0F2A2A">Live Output</text>
+
+  
+  <rect x="860" y="252" width="480" height="232" rx="12" fill="#FAFCFB" stroke="#D9E2DF"/>
+  <text x="876" y="276" font-size="11" font-weight="800" letter-spacing="2" fill="#56706C">AI RESPONSE</text>
+  <text x="876" y="300" font-size="13" fill="#0F2A2A">Big news — we just shipped something we've been quietly building</text>
+  <text x="876" y="320" font-size="13" fill="#0F2A2A">for months. It turns vague prompt ideas into clear instructions in</text>
+  <text x="876" y="340" font-size="13" fill="#0F2A2A">seconds, so the answer you get back actually matches what you</text>
+  <text x="876" y="360" font-size="13" fill="#0F2A2A">had in your head…</text>
+  <text x="876" y="396" font-size="12" fill="#56706C">[…response continues…]</text>
+  <g font-size="11" fill="#0F2A2A">
+    <rect x="876" y="430" width="76" height="30" rx="15" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="914" y="449" text-anchor="middle">Copy</text>
+    <rect x="958" y="430" width="92" height="30" rx="15" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="1004" y="449" text-anchor="middle">Save Prompt</text>
+    <rect x="1056" y="430" width="84" height="30" rx="15" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="1098" y="449" text-anchor="middle">Open In ▾</text>
+    <rect x="1146" y="430" width="76" height="30" rx="15" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="1184" y="449" text-anchor="middle">Share</text>
+    <rect x="1228" y="430" width="100" height="30" rx="15" fill="url(#brandFill)"/>
+    <text x="1278" y="449" text-anchor="middle" fill="#FFFFFF" font-weight="700">Run Again</text>
+  </g>
+
+  
+  <rect x="860" y="500" width="480" height="220" rx="12" fill="#FAFCFB" stroke="#D9E2DF"/>
+  <text x="876" y="524" font-size="11" font-weight="800" letter-spacing="2" fill="#56706C">IMAGE PREVIEW</text>
+  <rect x="876" y="538" width="180" height="170" rx="8" fill="#E7EDEB"/>
+  <text x="966" y="628" text-anchor="middle" font-size="12" fill="#9AAFAB">[ generated image ]</text>
+  <text x="1076" y="566" font-size="12" fill="#0F2A2A">Empty until you generate.</text>
+  <text x="1076" y="588" font-size="12" fill="#56706C">Switch to the Image tab on</text>
+  <text x="1076" y="606" font-size="12" fill="#56706C">the left to create one with</text>
+  <text x="1076" y="624" font-size="12" fill="#56706C">DALL·E 3.</text>
+  <rect x="1076" y="648" width="148" height="32" rx="16" fill="#FFFFFF" stroke="#0F766E"/>
+  <text x="1150" y="669" text-anchor="middle" font-size="12" font-weight="700" fill="#0F766E">Use As Reference</text>
+
+  
+  <rect x="860" y="736" width="480" height="148" rx="12" fill="#FAFCFB" stroke="#D9E2DF"/>
+  <text x="876" y="760" font-size="11" font-weight="800" letter-spacing="2" fill="#56706C">RECENT VAULT</text>
+  <text x="1308" y="760" text-anchor="end" font-size="11" fill="#0F766E" font-weight="700">View All ▸</text>
+  <line x1="876" y1="772" x2="1324" y2="772" stroke="#E7EDEB"/>
+  <text x="876" y="796" font-size="13" fill="#0F2A2A">LinkedIn launch post · friendly, confident</text>
+  <text x="1308" y="796" text-anchor="end" font-size="11" fill="#9AAFAB">just now</text>
+  <line x1="876" y1="810" x2="1324" y2="810" stroke="#F0F4F2"/>
+  <text x="876" y="832" font-size="13" fill="#0F2A2A">Cinematic golden-hour portrait brief</text>
+  <text x="1308" y="832" text-anchor="end" font-size="11" fill="#9AAFAB">14 min</text>
+  <line x1="876" y1="846" x2="1324" y2="846" stroke="#F0F4F2"/>
+  <text x="876" y="868" font-size="13" fill="#0F2A2A">Cold-email to enterprise lead</text>
+  <text x="1308" y="868" text-anchor="end" font-size="11" fill="#9AAFAB">2 hr</text>
+
+  
+  <g font-size="12" fill="#56706C">
+    <text x="40" y="932" font-weight="800" fill="#0F2A2A">Why this isn't more friction:</text>
+    <text x="40" y="952">①  Three pipelines collapse into three tabs in one column — user only sees one mode at a time.</text>
+    <text x="40" y="970">②  Result panel is always visible — no scrolling between "doing the work" and "seeing the answer."</text>
+    <text x="800" y="952">③  On phones the right column drops below the left — same as today's stacked feel.</text>
+    <text x="800" y="970">④  Existing buttons, vault, and shortcuts keep working — this is layout, not a feature rewrite.</text>
+  </g>
+</svg>

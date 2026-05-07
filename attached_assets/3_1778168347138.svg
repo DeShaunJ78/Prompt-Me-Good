@@ -1,0 +1,315 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1140" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F4F7F6"/>
+      <stop offset="1" stop-color="#E7EDEB"/>
+    </linearGradient>
+    <linearGradient id="brandFill" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0F766E"/>
+      <stop offset="1" stop-color="#14857C"/>
+    </linearGradient>
+    <linearGradient id="liveFill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFF8E1"/>
+      <stop offset="1" stop-color="#FCEFC2"/>
+    </linearGradient>
+    <linearGradient id="goldenSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFD89B"/>
+      <stop offset="0.45" stop-color="#FFB07A"/>
+      <stop offset="1" stop-color="#9C5A6E"/>
+    </linearGradient>
+    <linearGradient id="goldenGround" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7B4A55"/>
+      <stop offset="1" stop-color="#3A2530"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="0.75" cy="0.35" r="0.18">
+      <stop offset="0" stop-color="#FFF4D2" stop-opacity="1"/>
+      <stop offset="1" stop-color="#FFF4D2" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="magicCard" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#F4F7F6"/>
+    </linearGradient>
+    
+      
+    
+    
+      
+    
+    
+  </defs>
+
+  <rect width="1400" height="1140" fill="url(#bg)"/>
+
+  
+  <text x="40" y="44" font-size="22" font-weight="800" fill="#0F2A2A">PromptMeGood Workstation — Photography + Image Synergy (with Magic-Link Sign In)</text>
+  <text x="40" y="68" font-size="13" fill="#56706C">Pick photo controls on the left → the brief assembles live on the right → generate the image without leaving the page or switching tabs.</text>
+
+  
+  <rect x="40" y="92" width="1320" height="56" rx="14" fill="#FFFFFF" stroke="#D9E2DF"/>
+  <rect x="58" y="108" width="28" height="28" rx="6" fill="url(#brandFill)"/>
+  <text x="96" y="128" font-size="15" font-weight="800" fill="#0F2A2A">PromptMeGood</text>
+  <text x="222" y="128" font-size="13" fill="#56706C">Start Here · Guide · Pricing</text>
+  <rect x="1244" y="108" width="100" height="28" rx="14" fill="url(#brandFill)"/>
+  <text x="1294" y="127" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">Sign In</text>
+
+  
+  <g>
+    <rect x="1080" y="156" width="280" height="200" rx="14" fill="url(#magicCard)" stroke="#D9E2DF"/>
+    
+    <path d="M1290,156 L1300,144 L1310,156 Z" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="1100" y="184" font-size="11" font-weight="800" letter-spacing="2" fill="#0F766E">SIGN IN</text>
+    <text x="1100" y="208" font-size="16" font-weight="800" fill="#0F2A2A">Use a magic link</text>
+    <text x="1100" y="228" font-size="12" fill="#56706C">No password. We email you a one-tap link.</text>
+    <rect x="1100" y="244" width="240" height="38" rx="10" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="1112" y="268" font-size="13" fill="#9AAFAB">you@yourwork.com</text>
+    <rect x="1100" y="294" width="240" height="38" rx="10" fill="url(#brandFill)"/>
+    <text x="1220" y="318" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">Send Login Link</text>
+    <text x="1100" y="346" font-size="10" fill="#9AAFAB">Powered by Supabase Auth · already wired</text>
+  </g>
+
+  
+  <rect x="40" y="170" width="780" height="890" rx="18" fill="#FFFFFF" stroke="#D9E2DF"/>
+  <text x="60" y="200" font-size="11" font-weight="800" letter-spacing="2" fill="#0F766E">SHAPE YOUR PROMPT</text>
+  <text x="60" y="226" font-size="22" font-weight="800" fill="#0F2A2A">Photography Brief</text>
+
+  
+  <rect x="60" y="252" width="740" height="48" rx="12" fill="#F2F6F5" stroke="#D9E2DF"/>
+  <text x="188" y="281" text-anchor="middle" font-size="13" fill="#56706C">Text Prompt</text>
+  <rect x="316" y="260" width="240" height="32" rx="8" fill="#FFFFFF" stroke="#0F766E" stroke-width="1.5"/>
+  <text x="436" y="281" text-anchor="middle" font-size="13" font-weight="700" fill="#0F2A2A">Photography</text>
+  <text x="676" y="281" text-anchor="middle" font-size="13" fill="#56706C">Image</text>
+
+  
+  <rect x="60" y="316" width="740" height="44" rx="10" fill="#E6F4F1" stroke="#0F766E"/>
+  <text x="78" y="343" font-size="13" font-weight="800" fill="#0F2A2A">✨ Help Me Start</text>
+  <text x="200" y="343" font-size="12" fill="#0F2A2A">Not sure what you want to shoot? 3 quick questions.</text>
+  <rect x="660" y="324" width="124" height="28" rx="14" fill="url(#brandFill)"/>
+  <text x="722" y="343" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">Start In 3 Steps</text>
+
+  
+  <text x="60" y="386" font-size="12" font-weight="700" fill="#0F2A2A">Subject &amp; Scene</text>
+  <rect x="60" y="396" width="740" height="60" rx="10" fill="#FAFCFB" stroke="#D9E2DF"/>
+  <text x="76" y="424" font-size="13" fill="#0F2A2A">Portrait of a woman walking through a wheat field at golden hour,</text>
+  <text x="76" y="444" font-size="13" fill="#0F2A2A">soft warm tones, intimate and natural.</text>
+
+  
+  <g font-size="11">
+    
+    <text x="60" y="484" font-size="12" font-weight="700" fill="#0F2A2A">Style</text>
+    <text x="780" y="484" text-anchor="end" font-size="10" fill="#56706C">Surprise Me · Clear Picks</text>
+    <rect x="60" y="494" width="92" height="28" rx="14" fill="#0F766E"/>
+    <text x="106" y="512" text-anchor="middle" fill="#FFFFFF" font-weight="700">Cinematic</text>
+    <rect x="160" y="494" width="92" height="28" rx="14" fill="#F2F6F5" stroke="#D9E2DF"/>
+    <text x="206" y="512" text-anchor="middle" fill="#56706C">Editorial</text>
+    <rect x="260" y="494" width="92" height="28" rx="14" fill="#F2F6F5" stroke="#D9E2DF"/>
+    <text x="306" y="512" text-anchor="middle" fill="#56706C">Documentary</text>
+    <rect x="360" y="494" width="92" height="28" rx="14" fill="#F2F6F5" stroke="#D9E2DF"/>
+    <text x="406" y="512" text-anchor="middle" fill="#56706C">Fine Art</text>
+
+    
+    <text x="60" y="546" font-size="12" font-weight="700" fill="#0F2A2A">Camera &amp; Lens</text>
+    <rect x="60" y="556" width="92" height="28" rx="14" fill="#F2F6F5" stroke="#D9E2DF"/>
+    <text x="106" y="574" text-anchor="middle" fill="#56706C">85mm</text>
+    <rect x="160" y="556" width="92" height="28" rx="14" fill="#0F766E"/>
+    <text x="206" y="574" text-anchor="middle" fill="#FFFFFF" font-weight="700">35mm</text>
+    <rect x="260" y="556" width="92" height="28" rx="14" fill="#F2F6F5" stroke="#D9E2DF"/>
+    <text x="306" y="574" text-anchor="middle" fill="#56706C">50mm</text>
+    <rect x="360" y="556" width="116" height="28" rx="14" fill="#0F766E"/>
+    <text x="418" y="574" text-anchor="middle" fill="#FFFFFF" font-weight="700">Shallow Depth</text>
+
+    
+    <text x="60" y="608" font-size="12" font-weight="700" fill="#0F2A2A">Lighting &amp; Mood</text>
+    <rect x="60" y="618" width="116" height="28" rx="14" fill="#0F766E"/>
+    <text x="118" y="636" text-anchor="middle" fill="#FFFFFF" font-weight="700">Golden Hour</text>
+    <rect x="184" y="618" width="92" height="28" rx="14" fill="#F2F6F5" stroke="#D9E2DF"/>
+    <text x="230" y="636" text-anchor="middle" fill="#56706C">Backlit</text>
+    <rect x="284" y="618" width="92" height="28" rx="14" fill="#F2F6F5" stroke="#D9E2DF"/>
+    <text x="330" y="636" text-anchor="middle" fill="#56706C">Soft Studio</text>
+    <rect x="384" y="618" width="92" height="28" rx="14" fill="#0F766E"/>
+    <text x="430" y="636" text-anchor="middle" fill="#FFFFFF" font-weight="700">Warm Glow</text>
+
+    
+    <text x="60" y="670" font-size="12" font-weight="700" fill="#0F2A2A">Composition</text>
+    <rect x="60" y="680" width="116" height="28" rx="14" fill="#0F766E"/>
+    <text x="118" y="698" text-anchor="middle" fill="#FFFFFF" font-weight="700">Rule Of Thirds</text>
+    <rect x="184" y="680" width="92" height="28" rx="14" fill="#F2F6F5" stroke="#D9E2DF"/>
+    <text x="230" y="698" text-anchor="middle" fill="#56706C">Centered</text>
+    <rect x="284" y="680" width="92" height="28" rx="14" fill="#F2F6F5" stroke="#D9E2DF"/>
+    <text x="330" y="698" text-anchor="middle" fill="#56706C">Leading Lines</text>
+    <rect x="384" y="680" width="116" height="28" rx="14" fill="#F2F6F5" stroke="#D9E2DF"/>
+    <text x="442" y="698" text-anchor="middle" fill="#56706C">Wide Negative Space</text>
+
+    
+    <text x="60" y="732" font-size="12" font-weight="700" fill="#0F2A2A">Color Palette</text>
+    <rect x="60" y="742" width="92" height="28" rx="14" fill="#0F766E"/>
+    <text x="106" y="760" text-anchor="middle" fill="#FFFFFF" font-weight="700">Warm</text>
+    <rect x="160" y="742" width="92" height="28" rx="14" fill="#F2F6F5" stroke="#D9E2DF"/>
+    <text x="206" y="760" text-anchor="middle" fill="#56706C">Muted</text>
+    <rect x="260" y="742" width="92" height="28" rx="14" fill="#F2F6F5" stroke="#D9E2DF"/>
+    <text x="306" y="760" text-anchor="middle" fill="#56706C">Pastel</text>
+    <rect x="360" y="742" width="92" height="28" rx="14" fill="#F2F6F5" stroke="#D9E2DF"/>
+    <text x="406" y="760" text-anchor="middle" fill="#56706C">High Contrast</text>
+  </g>
+
+  
+  <rect x="60" y="788" width="740" height="36" rx="10" fill="#FAFCFB" stroke="#D9E2DF"/>
+  <text x="76" y="811" font-size="11" font-weight="800" letter-spacing="2" fill="#9C2E2E">AVOID</text>
+  <text x="124" y="811" font-size="12" fill="#0F2A2A">harsh shadows, oversaturated, heavy makeup</text>
+
+  
+  <rect x="60" y="844" width="740" height="84" rx="12" fill="#0F2A2A"/>
+  <text x="80" y="874" font-size="12" font-weight="700" fill="#9AD1CB">PHOTOGRAPHY → IMAGE</text>
+  <text x="80" y="900" font-size="14" fill="#FFFFFF">Your photo brief is ready. Send it straight to DALL·E 3 — no copy-pasting.</text>
+  <rect x="556" y="864" width="224" height="44" rx="22" fill="url(#brandFill)"/>
+  <text x="668" y="891" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">Send To Image Generator ▸</text>
+
+  
+  <rect x="60" y="944" width="740" height="98" rx="12" fill="#FAFCFB" stroke="#D9E2DF" stroke-dasharray="4 4"/>
+  <text x="76" y="970" font-size="11" font-weight="800" letter-spacing="2" fill="#0F766E">SYNERGY MOMENT</text>
+  <text x="76" y="996" font-size="13" fill="#0F2A2A">Pills selected here flow into the Live Prompt Preview on the right in real time. Click Send To Image</text>
+  <text x="76" y="1016" font-size="13" fill="#0F2A2A">Generator and the image appears in the right column too — you never leave the page.</text>
+  <text x="76" y="1034" font-size="11" fill="#56706C">Today this is two trips down the page. Tomorrow it's one glance.</text>
+
+  
+  <g>
+    <line x1="824" y1="500" x2="836" y2="500" stroke="#0F766E" stroke-width="2"/>
+    <line x1="824" y1="620" x2="836" y2="620" stroke="#0F766E" stroke-width="2"/>
+    <line x1="824" y1="740" x2="836" y2="740" stroke="#0F766E" stroke-width="2"/>
+    <line x1="824" y1="880" x2="836" y2="880" stroke="#0F766E" stroke-width="2.5"/>
+    <text x="830" y="540" text-anchor="middle" font-size="9" font-weight="700" letter-spacing="1" fill="#0F766E" transform="rotate(-90 830 540)">LIVE LINK</text>
+    <text x="830" y="900" text-anchor="middle" font-size="9" font-weight="700" letter-spacing="1" fill="#0F766E" transform="rotate(-90 830 900)">GENERATE</text>
+  </g>
+
+  
+  <rect x="840" y="170" width="520" height="890" rx="18" fill="#FFFFFF" stroke="#D9E2DF"/>
+  <text x="860" y="200" font-size="11" font-weight="800" letter-spacing="2" fill="#0F766E">SEE THE RESULT</text>
+  <text x="860" y="226" font-size="22" font-weight="800" fill="#0F2A2A">Adaptive Response</text>
+
+  
+  <g font-size="11">
+    <rect x="860" y="240" width="84" height="22" rx="11" fill="#0F766E"/>
+    <text x="902" y="255" text-anchor="middle" fill="#FFFFFF" font-weight="700">Cinematic</text>
+    <rect x="952" y="240" width="62" height="22" rx="11" fill="#0F766E"/>
+    <text x="983" y="255" text-anchor="middle" fill="#FFFFFF" font-weight="700">35mm</text>
+    <rect x="1022" y="240" width="98" height="22" rx="11" fill="#0F766E"/>
+    <text x="1071" y="255" text-anchor="middle" fill="#FFFFFF" font-weight="700">Golden Hour</text>
+    <rect x="1128" y="240" width="112" height="22" rx="11" fill="#0F766E"/>
+    <text x="1184" y="255" text-anchor="middle" fill="#FFFFFF" font-weight="700">Rule Of Thirds</text>
+    <rect x="1248" y="240" width="60" height="22" rx="11" fill="#0F766E"/>
+    <text x="1278" y="255" text-anchor="middle" fill="#FFFFFF" font-weight="700">Warm</text>
+  </g>
+  <text x="860" y="280" font-size="10" fill="#56706C">↑ these chips appear automatically as you toggle pills on the left. Visible proof the columns are linked.</text>
+
+  
+  <rect x="860" y="290" width="480" height="172" rx="12" fill="url(#liveFill)" stroke="#D4A82A"/>
+  <circle cx="876" cy="310" r="5" fill="#D4A82A">
+    
+  </circle>
+  <text x="892" y="314" font-size="11" font-weight="800" letter-spacing="2" fill="#8A6A0A">LIVE PROMPT PREVIEW · UPDATES AS YOU TYPE</text>
+  <text x="876" y="340" font-size="13" font-weight="700" fill="#0F2A2A">Cinematic portrait of a woman walking through a wheat</text>
+  <text x="876" y="358" font-size="13" font-weight="700" fill="#0F2A2A">field at golden hour. Shot on 35mm, shallow depth of</text>
+  <text x="876" y="376" font-size="13" font-weight="700" fill="#0F2A2A">field. Warm tones, soft golden glow, rule-of-thirds</text>
+  <text x="876" y="394" font-size="13" font-weight="700" fill="#0F2A2A">composition. Intimate and natural.</text>
+  <text x="876" y="416" font-size="12" fill="#9C2E2E">Avoid: harsh shadows, oversaturated, heavy makeup.</text>
+  <g font-size="11">
+    <rect x="876" y="430" width="76" height="24" rx="12" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="914" y="446" text-anchor="middle" fill="#0F2A2A">Copy</text>
+    <rect x="958" y="430" width="84" height="24" rx="12" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="1000" y="446" text-anchor="middle" fill="#0F2A2A">Open In ▾</text>
+    <text x="1052" y="446" font-size="10" fill="#56706C">~ 62 tokens · DALL·E-ready</text>
+  </g>
+
+  
+  <text x="860" y="490" font-size="11" font-weight="800" letter-spacing="2" fill="#56706C">GENERATED IMAGE</text>
+  <text x="1304" y="490" text-anchor="end" font-size="10" fill="#9AAFAB">DALL·E 3 · 1024×1024</text>
+
+  <g>
+    <clipPath id="imgClip">
+      <rect x="860" y="500" width="480" height="280" rx="12"/>
+    </clipPath>
+    <g clip-path="url(#imgClip)">
+      <rect x="860" y="500" width="480" height="170" fill="url(#goldenSky)"/>
+      <rect x="860" y="650" width="480" height="130" fill="url(#goldenGround)"/>
+      <rect x="860" y="500" width="480" height="280" fill="url(#sun)"/>
+      
+      <line x1="860" y1="650" x2="1340" y2="650" stroke="#5A3D45" stroke-width="0.5" opacity="0.4"/>
+      
+      <g stroke="#C9905A" stroke-width="0.7" opacity="0.55">
+        <line x1="870" y1="780" x2="874" y2="710"/>
+        <line x1="884" y1="780" x2="889" y2="700"/>
+        <line x1="900" y1="780" x2="906" y2="690"/>
+        <line x1="916" y1="780" x2="922" y2="705"/>
+        <line x1="936" y1="780" x2="942" y2="700"/>
+        <line x1="958" y1="780" x2="964" y2="710"/>
+        <line x1="980" y1="780" x2="986" y2="700"/>
+        <line x1="1004" y1="780" x2="1010" y2="695"/>
+        <line x1="1028" y1="780" x2="1034" y2="705"/>
+        <line x1="1056" y1="780" x2="1062" y2="700"/>
+        <line x1="1086" y1="780" x2="1092" y2="710"/>
+        <line x1="1118" y1="780" x2="1124" y2="705"/>
+        <line x1="1152" y1="780" x2="1158" y2="700"/>
+        <line x1="1190" y1="780" x2="1196" y2="710"/>
+        <line x1="1230" y1="780" x2="1236" y2="700"/>
+        <line x1="1272" y1="780" x2="1278" y2="705"/>
+        <line x1="1314" y1="780" x2="1320" y2="710"/>
+      </g>
+      
+      <g fill="#2C1A22" opacity="0.92">
+        
+        <path d="M1015 780 Q1010 720 1018 700 Q1022 685 1020 660 Q1018 645 1024 638 Q1028 632 1034 638 Q1040 645 1038 660 Q1036 685 1040 700 Q1048 720 1042 780 Z"/>
+        
+        <ellipse cx="1029" cy="618" rx="9" ry="11"/>
+        
+        <path d="M1023 612 Q1018 622 1020 632 L1024 628 Z"/>
+      </g>
+      
+      <radialGradient id="warmVig" cx="0.5" cy="0.6" r="0.7">
+        <stop offset="0" stop-color="#FFD89B" stop-opacity="0"/>
+        <stop offset="1" stop-color="#3A2030" stop-opacity="0.45"/>
+      </radialGradient>
+      <rect x="860" y="500" width="480" height="280" fill="url(#warmVig)"/>
+    </g>
+    <rect x="860" y="500" width="480" height="280" rx="12" fill="none" stroke="#D9E2DF"/>
+  </g>
+
+  
+  <g font-size="11">
+    <rect x="860" y="794" width="92" height="32" rx="16" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="906" y="814" text-anchor="middle" fill="#0F2A2A">Regenerate</text>
+    <rect x="960" y="794" width="116" height="32" rx="16" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="1018" y="814" text-anchor="middle" fill="#0F2A2A">Use As Reference</text>
+    <rect x="1084" y="794" width="92" height="32" rx="16" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="1130" y="814" text-anchor="middle" fill="#0F2A2A">Download</text>
+    <rect x="1184" y="794" width="76" height="32" rx="16" fill="#FFFFFF" stroke="#D9E2DF"/>
+    <text x="1222" y="814" text-anchor="middle" fill="#0F2A2A">Share</text>
+    <rect x="1268" y="794" width="72" height="32" rx="16" fill="url(#brandFill)"/>
+    <text x="1304" y="814" text-anchor="middle" fill="#FFFFFF" font-weight="700">Save</text>
+  </g>
+
+  
+  <rect x="860" y="844" width="480" height="180" rx="12" fill="#FAFCFB" stroke="#D9E2DF"/>
+  <text x="876" y="868" font-size="11" font-weight="800" letter-spacing="2" fill="#56706C">RECENT VAULT</text>
+  <text x="1308" y="868" text-anchor="end" font-size="11" fill="#0F766E" font-weight="700">View All ▸</text>
+  <line x1="876" y1="880" x2="1324" y2="880" stroke="#E7EDEB"/>
+  <text x="876" y="902" font-size="13" fill="#0F2A2A">Wheat-field golden-hour portrait · 35mm · warm</text>
+  <text x="1308" y="902" text-anchor="end" font-size="11" fill="#9AAFAB">just now</text>
+  <line x1="876" y1="916" x2="1324" y2="916" stroke="#F0F4F2"/>
+  <text x="876" y="938" font-size="13" fill="#0F2A2A">Cinematic café scene · backlit · muted</text>
+  <text x="1308" y="938" text-anchor="end" font-size="11" fill="#9AAFAB">38 min</text>
+  <line x1="876" y1="952" x2="1324" y2="952" stroke="#F0F4F2"/>
+  <text x="876" y="974" font-size="13" fill="#0F2A2A">Editorial product flat-lay · soft studio</text>
+  <text x="1308" y="974" text-anchor="end" font-size="11" fill="#9AAFAB">2 hr</text>
+  <line x1="876" y1="988" x2="1324" y2="988" stroke="#F0F4F2"/>
+  <text x="876" y="1010" font-size="13" fill="#0F2A2A">LinkedIn launch post · friendly, confident</text>
+  <text x="1308" y="1010" text-anchor="end" font-size="11" fill="#9AAFAB">today</text>
+
+  
+  <g font-size="12" fill="#56706C">
+    <text x="40" y="1090" font-weight="800" fill="#0F2A2A">What you're seeing:</text>
+    <text x="40" y="1110">①  Photography pills on the left = chips on the right. Same data, two views — the columns are visibly linked.</text>
+    <text x="40" y="1128">②  Live Prompt Preview rewrites itself with every pill click; no Run needed to see the brief take shape.</text>
+    <text x="800" y="1090" font-weight="800" fill="#0F2A2A">Magic-link sign in (top right):</text>
+    <text x="800" y="1110">③  One field, no password. Click → email → tap link → signed in. Account creation included.</text>
+    <text x="800" y="1128">④  Backed by Supabase, which you're already paying for. Hours of work, not weeks.</text>
+  </g>
+</svg>
