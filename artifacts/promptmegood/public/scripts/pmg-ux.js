@@ -16586,7 +16586,14 @@
       '  .panel { padding: 12px !important; }',
       '  .form-wrap { padding: 12px !important; }',
       '  #prompt-form .actions-row, #prompt-form #tour-step-generate { order: 2 !important; }',
-      '  #prompt-form #settingsPanel { order: 8 !important; display: none !important; }',
+      /* cv2-36: Restore Prompt Tuning on phones. The previous
+         display:none was a relic from before the collapsible
+         composer (cv2-21) — back then the panel made the form
+         a 2,000px wall. Now the composer is collapsed by default
+         on mobile, so Prompt Tuning only renders when the user
+         deliberately expands to type. Keep the order:8 so it
+         still sits at the bottom of the expanded composer. */
+      '  #prompt-form #settingsPanel { order: 8 !important; }',
       '  #prompt-form #upload-field { order: 7 !important; display: none !important; }',
       '  #prompt-form #pmg-help-me-start-btn { order: 3 !important; padding: 8px 14px !important; min-height: 40px !important; font-size: 13px !important; }',
       '  #prompt-form .pmg-t100-top-cta-row, #prompt-form #generateBtnTop { display: none !important; }',
