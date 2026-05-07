@@ -519,6 +519,22 @@
         t.setAttribute('aria-selected', active ? 'true' : 'false');
       });
     }
+    // Toggle legacy body.image-mode so the Photography Suite's gated
+    // pill groups, image-mode-only buttons, and helper text become
+    // visible while the Photo panel is active. Strip it for Text/Video.
+    try {
+      if (name === 'photography') {
+        document.body.classList.add('image-mode');
+        if (typeof window.setMode === 'function') { try { window.setMode('image'); } catch (_) {} }
+        // re-relocate in case suite (re)built since last switch
+        if (typeof window.relocatePhotoSuite === 'function') {
+          try { window.relocatePhotoSuite(); } catch (_) {}
+        }
+      } else {
+        document.body.classList.remove('image-mode');
+        if (typeof window.setMode === 'function') { try { window.setMode('write'); } catch (_) {} }
+      }
+    } catch (_) {}
   }
 
   // Mount Visual Studio inline panels once the chassis + VS script are both ready.

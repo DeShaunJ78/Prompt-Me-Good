@@ -78,23 +78,25 @@
   }
 
   function buildVideoLeft() {
-    var soraGridHtml = '';
+    var soraPillsHtml = '';
     [
       ['shot',       'Shot Type'],
-      ['movement',   'Movement'],
+      ['movement',   'Camera Movement'],
       ['mood',       'Mood & Lighting'],
+      ['style',      'Style'],
       ['duration',   'Duration (sec)'],
       ['resolution', 'Resolution'],
-      ['style',      'Style'],
     ].forEach(function (row) {
       var key = row[0], label = row[1];
-      var opts = SORA_OPTIONS[key]
-        .map(function (v) { return '<option value="' + v + '">' + v + '</option>'; })
-        .join('');
-      soraGridHtml +=
-        '<label>' + label +
-          '<select data-vs-sora="' + key + '">' + opts + '</select>' +
-        '</label>';
+      var pills = SORA_OPTIONS[key].map(function (v, i) {
+        var pressed = (i === 0) ? 'true' : 'false';
+        return '<button type="button" class="pmg-vs-pill" data-vs-sora-group="' + key + '" data-vs-sora-value="' + v + '" aria-pressed="' + pressed + '">' + v + '</button>';
+      }).join('');
+      soraPillsHtml +=
+        '<div class="pmg-vs-pill-group">' +
+          '<div class="pmg-vs-pill-label">' + label + '</div>' +
+          '<div class="pmg-vs-pill-row" role="radiogroup" aria-label="' + label + '">' + pills + '</div>' +
+        '</div>';
     });
 
     return [
@@ -103,8 +105,9 @@
         '<textarea id="pmg-vs-video-goal" rows="3" placeholder="A tracking shot of a vintage car driving through neon-lit Tokyo at night…"></textarea>',
       '</section>',
       '<section class="pmg-vs-inline-section">',
-        '<label class="pmgv3-section-label">Sora Tuning</label>',
-        '<div class="pmg-vs-sora-grid">' + soraGridHtml + '</div>',
+        '<label class="pmgv3-section-label">Sora Tuning Suite</label>',
+        '<p style="margin:0 0 8px;font-size:12px;opacity:.65">Pick a vibe in each group — we will compose the directives.</p>',
+        '<div class="pmg-vs-sora-pills">' + soraPillsHtml + '</div>',
       '</section>',
       '<section class="pmg-vs-inline-section" id="pmgv3-storyboard-mount">',
         // Storyboard launcher button is injected here by pmg-storyboard.js
@@ -127,8 +130,8 @@
     return [
       '<div class="pmg-vs-media-container">',
         '<div id="pmg-vs-video-placeholder" class="pmg-media-placeholder">',
-          '<span>🎬 Your video will appear here</span>',
-          '<span class="pmg-vs-sub">Sora generation runs 10–30 seconds.</span>',
+          '<span>🎬 Your video prompt will appear here soon</span>',
+          '<span class="pmg-vs-sub">Build your scene on the left, then Generate. Sora typically runs 10–30 seconds.</span>',
         '</div>',
         '<video id="pmg-vs-generated-video" controls playsinline hidden></video>',
       '</div>',
@@ -221,10 +224,10 @@
     var goal = goalEl && goalEl.value.trim();
     if (!goal) { goalEl && goalEl.focus(); return; }
     var directives = [];
-    document.querySelectorAll('#pmgv3-panel-video [data-vs-sora]').forEach(function (sel) {
-      var key = sel.getAttribute('data-vs-sora');
-      var v = sel.value;
-      if (!v) return;
+    document.querySelectorAll('#pmgv3-panel-video .pmg-vs-pill[aria-pressed="true"]').forEach(function (p) {
+      var key = p.getAttribute('data-vs-sora-group');
+      var v = p.getAttribute('data-vs-sora-value');
+      if (!key || !v) return;
       if (key === 'duration' || key === 'resolution') return;
       if (key === 'shot')          directives.push(v + ' shot');
       else if (key === 'movement') directives.push(v + ' camera movement');
@@ -321,10 +324,10 @@
     var origLabel = btn ? btn.textContent : '';
     if (btn) { btn.disabled = true; btn.textContent = '⏳ Generating…'; }
     showVideoLoading();
-    var resSel = document.querySelector('#pmgv3-panel-video [data-vs-sora="resolution"]');
-    var durSel = document.querySelector('#pmgv3-panel-video [data-vs-sora="duration"]');
-    var resolution = resSel ? resSel.value : '720p';
-    var nSeconds   = durSel ? Number(durSel.value) : 5;
+    var resPill = document.querySelector('#pmgv3-panel-video .pmg-vs-pill[data-vs-sora-group="resolution"][aria-pressed="true"]');
+    var durPill = document.querySelector('#pmgv3-panel-video .pmg-vs-pill[data-vs-sora-group="duration"][aria-pressed="true"]');
+    var resolution = resPill ? resPill.getAttribute('data-vs-sora-value') : '720p';
+    var nSeconds   = durPill ? Number(durPill.getAttribute('data-vs-sora-value')) : 5;
     try {
       var res = await fetch('/api/video', {
         method: 'POST',
@@ -644,6 +647,15 @@
       if (e.target.closest('#pmg-vs-share-dna'))               { shareDnaCard();     return; }
       if (e.target.closest('#pmg-vs-image-copy'))              { copyTextarea('pmg-vs-image-refined', 'pmg-vs-image-copy'); return; }
       if (e.target.closest('#pmg-vs-video-copy'))              { copyTextarea('pmg-vs-video-refined', 'pmg-vs-video-copy'); return; }
+      // Sora tuning pill toggle (single-select per group)
+      var pill = e.target.closest('.pmg-vs-pill[data-vs-sora-group]');
+      if (pill) {
+        var grp = pill.getAttribute('data-vs-sora-group');
+        document.querySelectorAll('#pmgv3-panel-video .pmg-vs-pill[data-vs-sora-group="' + grp + '"]').forEach(function (sib) {
+          sib.setAttribute('aria-pressed', sib === pill ? 'true' : 'false');
+        });
+        return;
+      }
     }, true);
 
     document.addEventListener('change', function (e) {

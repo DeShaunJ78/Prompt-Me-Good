@@ -59,6 +59,27 @@ html.pmg-chassis-v3 [data-pmgv3-collapsed="1"] {
 }
 /* Splash fades on its own; force hide promptly */
 html.pmg-chassis-v3 #pmg-splash { display: none !important; }
+
+/* Photography panel: ensure the relocated Photography Suite shows ALL of its
+   pill groups (Style, Camera, Lighting, Composition, Palette, Aspect) and
+   their headers regardless of legacy collapse / image-mode CSS that gates
+   visibility on the old layout. */
+html.pmg-chassis-v3 #pmgv3-panel-photo #photo-suite-section,
+html.pmg-chassis-v3 #pmgv3-panel-photo #pmg-photo-suite,
+html.pmg-chassis-v3 #pmgv3-panel-photo .pmg-photo-group,
+html.pmg-chassis-v3 #pmgv3-panel-photo .pmg-photo-group-head,
+html.pmg-chassis-v3 #pmgv3-panel-photo .pmg-photo-group-body,
+html.pmg-chassis-v3 #pmgv3-panel-photo .pmg-photo-pill {
+  display: revert !important;
+  visibility: visible !important;
+}
+html.pmg-chassis-v3 #pmgv3-panel-photo .pmg-photo-group.is-collapsed .pmg-photo-group-body {
+  display: block !important;
+}
+html.pmg-chassis-v3 #pmgv3-panel-photo #photo-suite-section[hidden],
+html.pmg-chassis-v3 #pmgv3-panel-photo #pmg-photo-suite[hidden] {
+  display: block !important;
+}
 html.pmg-chassis-v3 body { overflow: hidden !important; }
 
 /* Honor [hidden] attribute even on flex/grid sections */
