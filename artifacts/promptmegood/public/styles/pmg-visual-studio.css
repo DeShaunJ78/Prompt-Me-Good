@@ -222,6 +222,51 @@
   background: color-mix(in srgb, var(--g2-mint, #3ee0a0) 22%, transparent);
 }
 
+/* Inline-mounted Visual Studio (mobile page-swap). When Visual dock
+   tab is active on mobile, the modal node is moved into .pmgv2-tools
+   and given .pmg-vs-inline so it renders as a normal section (no
+   overlay, no backdrop, no close X). Desktop and other tabs keep the
+   modal as a real overlay. */
+.pmg-modal-overlay#pmg-visual-studio-modal.pmg-vs-inline {
+  position: static !important;
+  inset: auto !important;
+  background: transparent !important;
+  padding: 0 !important;
+  width: 100%;
+  height: auto;
+  z-index: auto;
+  display: block;
+}
+.pmg-modal-overlay#pmg-visual-studio-modal.pmg-vs-inline .pmg-modal-content {
+  position: static !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  transform: none !important;
+}
+.pmg-modal-overlay#pmg-visual-studio-modal.pmg-vs-inline .pmg-modal-header { display: none !important; }
+.pmg-modal-overlay#pmg-visual-studio-modal.pmg-vs-inline #pmg-close-visual-studio { display: none !important; }
+.pmg-modal-overlay#pmg-visual-studio-modal.pmg-vs-inline .pmg-modal-body {
+  display: block !important;
+  padding: 8px !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+.pmg-modal-overlay#pmg-visual-studio-modal.pmg-vs-inline #pmg-vs-step-1,
+.pmg-modal-overlay#pmg-visual-studio-modal.pmg-vs-inline #pmg-vs-step-2 {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block !important;
+  padding: 0 !important;
+}
+
 /* Topbar icon buttons — primary mobile entry points, no bottom chrome. */
 .pmg-vs-tb-ico {
   font-size: 1.05rem;

@@ -900,25 +900,51 @@
     });
     lcObs.observe(document.body, { childList: true, subtree: true });
 
-    // Hook the chassis Visual dock tab. We can't replace the click handler
-    // because the chassis wires its own delegation, so we listen for the
-    // chassis attribute change and open the modal when it flips to 'suite'.
+    // Mobile Visual dock-tab → INLINE-MOUNT the modal panel into the
+    // chassis .pmgv2-tools slot so it renders as a full page-swap (no
+    // overlay, no backdrop). When tab flips away, restore modal to body
+    // so the desktop "Open Visual Studio" button keeps working as a
+    // proper modal. Mobile-only via matchMedia.
     var lastTab = null;
     var html = document.documentElement;
+    var mql = window.matchMedia('(max-width: 900px)');
+    function inlineMount() {
+      var m = (typeof modal === 'function' ? modal() : null) || document.getElementById('pmg-visual-studio-modal');
+      if (!m) { buildModal(); m = document.getElementById('pmg-visual-studio-modal'); }
+      if (!m) return;
+      var slot = document.querySelector('.pmgv2-tools');
+      if (!slot) return;
+      if (m.parentNode === slot) return;
+      m.classList.add('pmg-vs-inline');
+      m.removeAttribute('hidden');
+      m.setAttribute('aria-modal', 'false');
+      slot.appendChild(m);
+      try { relocatePhotoSuite(); } catch (_) {}
+      try { setTab('image'); } catch (_) {}
+      // Don't lock body scroll — we're inline now.
+      try { delete html.dataset.vsOpen; } catch (_) {}
+      document.body.style.overflow = '';
+    }
+    function inlineUnmount() {
+      var m = document.getElementById('pmg-visual-studio-modal');
+      if (!m || !m.classList.contains('pmg-vs-inline')) return;
+      m.classList.remove('pmg-vs-inline');
+      m.setAttribute('aria-modal', 'true');
+      m.setAttribute('hidden', '');
+      try { restorePhotoSuite(); } catch (_) {}
+      document.body.appendChild(m);
+    }
     function checkTab() {
       var cur = html.getAttribute('data-pmgv2-mobile-tab');
       if (cur === lastTab) return;
       lastTab = cur;
-      if (cur === 'suite') {
-        // Open modal AND immediately route view back to thread so the user
-        // doesn't see an empty Photo Suite slot behind the modal.
-        openVisualStudio({ mode: 'image' });
-        // Restore visual to thread so closing modal lands them somewhere sane.
-        setTimeout(function () { html.setAttribute('data-pmgv2-mobile-tab', 'thread'); }, 0);
-      }
+      if (!mql.matches) { inlineUnmount(); return; }
+      if (cur === 'suite') inlineMount();
+      else inlineUnmount();
     }
     var mo = new MutationObserver(checkTab);
     mo.observe(html, { attributes: true, attributeFilter: ['data-pmgv2-mobile-tab'] });
+    if (mql.addEventListener) mql.addEventListener('change', function () { lastTab = null; checkTab(); });
     checkTab();
   }
 
