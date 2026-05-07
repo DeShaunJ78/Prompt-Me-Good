@@ -154,6 +154,17 @@
   }
 
   function reparent() {
+    // 0. RESCUE #prompt-form first. chassis-v2.js may have moved the form into
+    //    #pmg-chassis-v2-root, which suppressLegacyChassisV2() will delete —
+    //    taking the form (and its submit listener) with it. Move the form to
+    //    a stable body-level location so its event listeners remain reachable.
+    var rescueForm = document.getElementById('prompt-form');
+    if (rescueForm && rescueForm.parentNode !== document.body) {
+      document.body.appendChild(rescueForm);
+      rescueForm.style.setProperty('display', 'none', 'important');
+      rescueForm.setAttribute('data-pmgv3-rescued', '1');
+    }
+
     // 1. Move #goal field into idea host
     var goalEl = document.getElementById('goal');
     if (goalEl) {
@@ -273,6 +284,11 @@
     var genBtn = document.getElementById('generateBtn');
     if (genBtn) {
       genBtn.addEventListener('click', function (e) {
+        // Prevent native form-attribute submission — we explicitly call
+        // form.requestSubmit() below. Without this, browsers honoring the
+        // [form="prompt-form"] association would fire submit twice (one
+        // native, one from requestSubmit), causing duplicate API calls.
+        e.preventDefault();
         // Reveal Box 1 immediately so the user sees feedback
         var box = document.getElementById('prompt-output-box');
         if (box) {
@@ -280,28 +296,17 @@
           box.removeAttribute('hidden');
           box.style.display = '';
         }
-        // Diagnostic: log form state
-        var allForms = document.querySelectorAll('#prompt-form');
+        // Explicitly fire submit on #prompt-form. The button was reparented out
+        // of the form so HTML5 form-attribute association is unreliable; the
+        // form itself was rescued to <body> by rescueFormBeforeRemoval() so its
+        // submit listener (app.html ~L8843) is still bound. requestSubmit()
+        // dispatches the submit event and the legacy handler runs as normal.
         var form = document.getElementById('prompt-form');
-        console.log('[pmgv3] generateBtn click. forms found:', allForms.length,
-          'form contains genBtn:', form && form.contains(genBtn),
-          'genBtn.form (associated):', genBtn.form && genBtn.form.id,
-          'genBtn type:', genBtn.type,
-          'genBtn form attr:', genBtn.getAttribute('form'),
-          'goal value:', (document.getElementById('goal') || {}).value);
-        // Explicitly fire submit on #prompt-form
         if (form && typeof form.requestSubmit === 'function') {
-          try {
-            form.requestSubmit();
-            console.log('[pmgv3] requestSubmit() called');
-          } catch (err) {
-            console.error('[pmgv3] requestSubmit failed:', err);
-            try { form.submit(); } catch (e2) {}
-          }
+          try { form.requestSubmit(); }
+          catch (err) { try { form.submit(); } catch (e2) {} }
         } else if (form) {
-          var ev = new Event('submit', { bubbles: true, cancelable: true });
-          var notCancelled = form.dispatchEvent(ev);
-          console.log('[pmgv3] dispatched synthetic submit, cancelled:', !notCancelled);
+          form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
         }
         setTimeout(mirrorStrength, 350);
       });
@@ -470,12 +475,28 @@
     setTimeout(function () { el.remove(); }, 2200);
   }
 
+  function rescueFormBeforeRemoval(container) {
+    // Before removing a container, evacuate #prompt-form (and its submit listener)
+    // to the body. Without this, killing the v2 root also kills the only form in
+    // the DOM, breaking generation entirely.
+    if (!container) return;
+    var form = container.querySelector ? container.querySelector('#prompt-form') : null;
+    if (form && form.parentNode !== document.body) {
+      document.body.appendChild(form);
+      form.style.setProperty('display', 'none', 'important');
+      form.setAttribute('data-pmgv3-rescued', '1');
+    }
+  }
+
   function suppressLegacyChassisV2() {
     // chassis-v2 may have already added pmg-chassis-v2 class. Strip it so v2 CSS deactivates.
     document.documentElement.classList.remove('pmg-chassis-v2');
     // Remove any existing v2 root if it slipped in before v3 booted
     var v2root = document.getElementById('pmg-chassis-v2-root');
-    if (v2root) v2root.remove();
+    if (v2root) {
+      rescueFormBeforeRemoval(v2root);
+      v2root.remove();
+    }
   }
 
   function deleteTargets() {
@@ -495,7 +516,19 @@
       document.documentElement.classList.remove('pmg-chassis-v2');
     }
     var v2root = document.getElementById('pmg-chassis-v2-root');
-    if (v2root) v2root.remove();
+    if (v2root) {
+      rescueFormBeforeRemoval(v2root);
+      v2root.remove();
+    }
+    // Defensive: if #prompt-form ever ends up outside body (e.g. v2 reparented it
+    // into a container that hasn't been deleted yet), rescue it to body so its
+    // submit listener stays reachable. Form is display:none either way.
+    var stray = document.getElementById('prompt-form');
+    if (stray && stray.parentNode !== document.body) {
+      document.body.appendChild(stray);
+      stray.style.setProperty('display', 'none', 'important');
+      stray.setAttribute('data-pmgv3-rescued', '1');
+    }
   });
   mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
   if (document.body) {
