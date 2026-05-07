@@ -260,19 +260,26 @@
 
   function injectTrigger() {
     if ($(TRIGGER_ID)) return;
-    // Drop the button next to "Fix My Prompt" inside the legacy prompt-form.
-    var anchor = document.getElementById('fix-prompt-btn')
-              || document.querySelector('#prompt-form button[type="submit"]')
-              || document.querySelector('#prompt-form');
-    if (!anchor) return;
+    // PRIMARY: drop the button into the chassis composer-wrap so it sits
+    // directly under the Goal textarea on both desktop and mobile (always
+    // visible regardless of liftFormAuxIntoThread). FALLBACK: legacy form.
+    var composerWrap = document.querySelector('.pmgv2-composer-wrap');
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.id = TRIGGER_ID;
     btn.className = 'pmg-sb-btn pmg-sb-btn-secondary';
-    btn.style.cssText = 'margin-top:10px;width:100%';
+    btn.style.cssText = 'margin-top:8px;width:100%;font-size:.92rem;padding:10px 14px';
     btn.innerHTML = '🎞️ Generate Storyboard';
     btn.setAttribute('data-pmg-action', 'generate-storyboard');
-    if (anchor.parentNode) anchor.parentNode.insertBefore(btn, anchor.nextSibling);
+    if (composerWrap) {
+      composerWrap.appendChild(btn);
+      return;
+    }
+    var anchor = document.getElementById('fix-prompt-btn')
+              || document.querySelector('#prompt-form button[type="submit"]')
+              || document.querySelector('#prompt-form');
+    if (!anchor || !anchor.parentNode) return;
+    anchor.parentNode.insertBefore(btn, anchor.nextSibling);
   }
 
   function getGoalText() {

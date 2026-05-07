@@ -183,6 +183,40 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--g2-mint, #3ee0a0) 22%, transparent);
 }
 
+/* ----- Chassis launchers (vs-3) ----- */
+.pmg-vs-launch-rail {
+  appearance: none; border: 0; cursor: pointer;
+  margin-top: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--g2-mint, #3ee0a0);
+  color: var(--g2-teal-1, #0a2420);
+  font: 700 0.95rem/1 system-ui, sans-serif;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--g2-mint, #3ee0a0) 28%, transparent);
+}
+.pmg-vs-launch-rail:hover { transform: translateY(-1px); }
+
+.pmg-vs-launch-row {
+  display: flex; gap: 8px; margin-top: 8px;
+}
+.pmg-vs-launch-row .pmg-vs-launch-pill {
+  flex: 1;
+  appearance: none; cursor: pointer;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--g2-mint, #3ee0a0) 14%, transparent);
+  color: var(--g2-mint, #3ee0a0);
+  border: 1px solid color-mix(in srgb, var(--g2-mint, #3ee0a0) 36%, transparent);
+  font: 700 0.88rem/1 system-ui, sans-serif;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  white-space: nowrap;
+}
+.pmg-vs-launch-row .pmg-vs-launch-pill:hover {
+  background: color-mix(in srgb, var(--g2-mint, #3ee0a0) 22%, transparent);
+}
+
 .pmg-vs-reverse-status {
   margin-top: 10px;
   padding: 10px 12px;

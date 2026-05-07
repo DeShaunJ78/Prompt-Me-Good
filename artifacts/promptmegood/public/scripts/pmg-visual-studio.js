@@ -666,6 +666,35 @@
     });
   }
 
+  // ---- Chassis launchers (discoverability) ----
+  function injectChassisLaunchers() {
+    // Right-rail header — desktop primary entry point.
+    var railHeader = document.querySelector('.pmgv2-tools-h');
+    if (railHeader && !document.getElementById('pmg-vs-launch-rail')) {
+      var railBtn = document.createElement('button');
+      railBtn.type = 'button';
+      railBtn.id = 'pmg-vs-launch-rail';
+      railBtn.className = 'pmg-vs-launch-rail';
+      railBtn.setAttribute('data-pmg-open-visual-studio', '1');
+      railBtn.innerHTML = '🎨 Open Visual Studio';
+      railBtn.title = 'Open the full Image + Video builder';
+      railHeader.appendChild(railBtn);
+    }
+    // Composer area — mobile-visible entry point. Sits inside the
+    // composer-wrap which is the always-visible composer container on
+    // both desktop and mobile.
+    var composerWrap = document.querySelector('.pmgv2-composer-wrap');
+    if (composerWrap && !document.getElementById('pmg-vs-launch-composer')) {
+      var row = document.createElement('div');
+      row.id = 'pmg-vs-launch-composer-row';
+      row.className = 'pmg-vs-launch-row';
+      row.innerHTML =
+        '<button type="button" id="pmg-vs-launch-composer" class="pmg-vs-launch-pill" data-pmg-open-visual-studio="1" data-vs-mode="image">🎨 Image Studio</button>' +
+        '<button type="button" id="pmg-vs-launch-composer-video" class="pmg-vs-launch-pill" data-pmg-open-visual-studio="1" data-vs-mode="video">🎬 Sora Video</button>';
+      composerWrap.appendChild(row);
+    }
+  }
+
   function composeFallbackDnaCard(promptText) {
     var W = 1080, H = 1350, IMG_H = 1080;
     var canvas = document.createElement('canvas');
@@ -816,6 +845,20 @@
         if (f) handleReverseImage(f);
       }
     });
+
+    // Inject visible Visual Studio launchers into the chassis chrome so
+    // the modal actually has a discoverable entry point on both desktop
+    // (right-rail header) and mobile (composer area).
+    injectChassisLaunchers();
+    // Re-attempt as the chassis builds itself lazily.
+    var lcObs = new MutationObserver(function () {
+      injectChassisLaunchers();
+      if (document.querySelector('#pmg-vs-launch-rail') &&
+          document.querySelector('#pmg-vs-launch-composer')) {
+        lcObs.disconnect();
+      }
+    });
+    lcObs.observe(document.body, { childList: true, subtree: true });
 
     // Hook the chassis Visual dock tab. We can't replace the click handler
     // because the chassis wires its own delegation, so we listen for the
