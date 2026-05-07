@@ -392,13 +392,33 @@ html[data-pmgv2-master-link="on"] .pmgv2-chain-spine {
 
   /* Add bottom padding so dock doesn't cover content */
   html.pmg-chassis-v2 .pmgv2-statusbar { padding-bottom: 56px; }
-  /* Status bar is hidden on mobile: it sat behind the fixed dock
-     (z:9000) anyway, and its swatches + beta pill were spilling
-     off-screen (statusbar-r right=605 in a 430px viewport, and
-     statusbar-l right=407 in a 360px viewport). Accent picker is
-     still reachable from the legacy footer; the beta pill date
-     mirrors the legacy banner — neither is critical on phones. */
-  html.pmg-chassis-v2 .pmgv2-statusbar { display: none !important; }
+  /* Status bar on mobile: hide the swatch/pill spillover but KEEP the
+     footer links (Privacy · Terms · Contact) visible above the dock.
+     Statusbar sits above the 56px dock; its inner left/right groups are
+     suppressed so only the centered foot-links nav shows. */
+  html.pmg-chassis-v2 .pmgv2-statusbar {
+    display: flex !important;
+    justify-content: center !important;
+    padding: 8px 12px 64px !important;
+    border-top: none !important;
+    background: transparent !important;
+  }
+  html.pmg-chassis-v2 .pmgv2-statusbar-l,
+  html.pmg-chassis-v2 .pmgv2-statusbar-r > span,
+  html.pmg-chassis-v2 .pmgv2-statusbar-r > button { display: none !important; }
+  html.pmg-chassis-v2 .pmgv2-statusbar-r {
+    margin: 0 !important;
+    flex: 1 !important;
+    justify-content: center !important;
+  }
+  html.pmg-chassis-v2 .pmgv2-foot-links {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 14px !important;
+    width: 100%;
+    margin: 0 !important;
+  }
+  html.pmg-chassis-v2 .pmgv2-foot-links a { font-size: 12px !important; }
 }
 
 /* === Footer links in status bar ======================================== */

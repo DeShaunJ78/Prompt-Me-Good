@@ -126,7 +126,7 @@
             '<a href="./guide.html">Guide</a>',
             '<a href="./privacy.html">Privacy</a>',
             '<a href="./terms.html">Terms</a>',
-            '<a href="mailto:support@promptmegood.com">Contact</a>',
+            '<a href="./contact.html">Contact</a>',
           '</nav>',
         '</div>',
       '</div>'

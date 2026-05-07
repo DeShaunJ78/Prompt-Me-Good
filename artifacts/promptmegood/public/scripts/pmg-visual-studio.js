@@ -449,7 +449,16 @@
     if (ph)  ph.hidden = true;
     if (act) act.hidden = false;
     var save = $('pmg-vs-save-media');
-    if (save) { save.href = url; save.setAttribute('download', 'promptmegood-image.png'); }
+    if (save) {
+      // DALL-E URLs are CORS-restricted and block the browser's native
+      // download attribute — open in new tab so users can long-press /
+      // right-click → Save Image themselves.
+      save.href = url;
+      save.target = '_blank';
+      save.rel = 'noopener';
+      save.removeAttribute('download');
+      save.textContent = '⬇ Open Image';
+    }
     // DNA card only makes sense for images
     var dna = $('pmg-vs-download-dna');
     if (dna) dna.hidden = false;
