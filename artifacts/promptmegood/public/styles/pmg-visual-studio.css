@@ -198,11 +198,15 @@
 }
 .pmg-vs-launch-rail:hover { transform: translateY(-1px); }
 
-.pmg-vs-launch-row {
-  display: flex; gap: 8px; margin-top: 8px;
+/* Always-visible launcher row. Sits inside .pmgv2-main on desktop;
+   becomes a fixed bar above the composer-tab + dock on mobile so it
+   stays visible even when the composer collapses to a pill. */
+#pmg-vs-launch-composer-row.pmg-vs-launch-row {
+  display: flex; gap: 8px; margin: 12px 0 8px;
+  flex-wrap: wrap;
 }
 .pmg-vs-launch-row .pmg-vs-launch-pill {
-  flex: 1;
+  flex: 1 1 0;
   appearance: none; cursor: pointer;
   padding: 10px 12px;
   border-radius: 10px;
@@ -212,9 +216,35 @@
   font: 700 0.88rem/1 system-ui, sans-serif;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   white-space: nowrap;
+  min-width: 0;
 }
 .pmg-vs-launch-row .pmg-vs-launch-pill:hover {
   background: color-mix(in srgb, var(--g2-mint, #3ee0a0) 22%, transparent);
+}
+
+/* Mobile: pin launcher row above the composer-tab pill and bottom dock,
+   regardless of composer collapse state. Bottom offsets stack:
+   dock ~58px + composer-tab ~52px + breathing room ~8px ≈ 118px. */
+@media (max-width: 900px) {
+  #pmg-vs-launch-composer-row.pmg-vs-launch-row {
+    position: fixed;
+    left: 8px;
+    right: 8px;
+    bottom: calc(58px + 52px + 8px + env(safe-area-inset-bottom, 0px));
+    margin: 0;
+    z-index: 70; /* above composer-wrap (60) so it stays visible when expanded; below VS modal (~100) */
+    background: color-mix(in srgb, #0a2420 92%, transparent);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding: 6px;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--g2-mint, #3ee0a0) 22%, transparent);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  }
+  .pmg-vs-launch-row .pmg-vs-launch-pill {
+    padding: 9px 8px;
+    font-size: 0.82rem;
+  }
 }
 
 .pmg-vs-reverse-status {

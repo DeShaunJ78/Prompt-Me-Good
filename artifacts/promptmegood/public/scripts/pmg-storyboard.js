@@ -259,20 +259,37 @@
   }
 
   function injectTrigger() {
-    if ($(TRIGGER_ID)) return;
+    var existing = $(TRIGGER_ID);
+    var launcherRowEl = document.getElementById('pmg-vs-launch-composer-row');
+    if (existing) {
+      // Promote into the launcher row if it appeared after first injection.
+      if (launcherRowEl && existing.parentNode !== launcherRowEl) {
+        existing.classList.add('pmg-vs-launch-pill', 'pmg-sb-launch-pill');
+        existing.style.cssText = '';
+        existing.innerHTML = '🎞️ Storyboard';
+        launcherRowEl.appendChild(existing);
+      }
+      return;
+    }
     // PRIMARY: drop the button into the chassis composer-wrap so it sits
     // directly under the Goal textarea on both desktop and mobile (always
     // visible regardless of liftFormAuxIntoThread). FALLBACK: legacy form.
-    var composerWrap = document.querySelector('.pmgv2-composer-wrap');
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.id = TRIGGER_ID;
     btn.className = 'pmg-sb-btn pmg-sb-btn-secondary';
-    btn.style.cssText = 'margin-top:8px;width:100%;font-size:.92rem;padding:10px 14px';
-    btn.innerHTML = '🎞️ Generate Storyboard';
+    btn.innerHTML = '🎞️ Storyboard';
     btn.setAttribute('data-pmg-action', 'generate-storyboard');
-    if (composerWrap) {
-      composerWrap.appendChild(btn);
+    var launcherRow = document.getElementById('pmg-vs-launch-composer-row');
+    if (launcherRow) {
+      btn.classList.add('pmg-vs-launch-pill', 'pmg-sb-launch-pill');
+      launcherRow.appendChild(btn);
+      return;
+    }
+    var main = document.querySelector('.pmgv2-main');
+    if (main) {
+      btn.style.cssText = 'margin-top:8px;width:100%;font-size:.92rem;padding:10px 14px';
+      main.appendChild(btn);
       return;
     }
     var anchor = document.getElementById('fix-prompt-btn')

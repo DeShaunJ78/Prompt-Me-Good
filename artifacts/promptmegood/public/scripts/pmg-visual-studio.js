@@ -680,18 +680,27 @@
       railBtn.title = 'Open the full Image + Video builder';
       railHeader.appendChild(railBtn);
     }
-    // Composer area — mobile-visible entry point. Sits inside the
-    // composer-wrap which is the always-visible composer container on
-    // both desktop and mobile.
-    var composerWrap = document.querySelector('.pmgv2-composer-wrap');
-    if (composerWrap && !document.getElementById('pmg-vs-launch-composer')) {
+    // Always-visible launcher dock — sits OUTSIDE .pmgv2-composer-wrap so
+    // it stays visible when the mobile composer collapses to a pill.
+    // CSS positions it as a fixed bar above the composer-tab/dock on
+    // mobile, and as an inline element inside .pmgv2-main on desktop.
+    var main = document.querySelector('.pmgv2-main');
+    if (main && !document.getElementById('pmg-vs-launch-composer')) {
       var row = document.createElement('div');
       row.id = 'pmg-vs-launch-composer-row';
       row.className = 'pmg-vs-launch-row';
       row.innerHTML =
         '<button type="button" id="pmg-vs-launch-composer" class="pmg-vs-launch-pill" data-pmg-open-visual-studio="1" data-vs-mode="image">🎨 Image Studio</button>' +
         '<button type="button" id="pmg-vs-launch-composer-video" class="pmg-vs-launch-pill" data-pmg-open-visual-studio="1" data-vs-mode="video">🎬 Sora Video</button>';
-      composerWrap.appendChild(row);
+      main.appendChild(row);
+      // Adopt the storyboard button if it was already mounted elsewhere.
+      var sbBtn = document.getElementById('pmg-generate-storyboard-btn');
+      if (sbBtn && sbBtn.parentNode !== row) {
+        sbBtn.classList.add('pmg-vs-launch-pill', 'pmg-sb-launch-pill');
+        sbBtn.style.cssText = '';
+        sbBtn.innerHTML = '🎞️ Storyboard';
+        row.appendChild(sbBtn);
+      }
     }
   }
 
