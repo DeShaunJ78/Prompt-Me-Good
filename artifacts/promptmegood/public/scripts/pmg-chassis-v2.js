@@ -147,10 +147,154 @@
     wireMobileDock(root);
     wireTopBarActions(root);
     wireTemplatePicker(root);
-    initCollapsibleComposer(root);
-    initTuningAccordion(root);
-    initPhotoShortcut(root);
+    // cv2-42: Tune It drawer pattern. When active, the cv2-39 pill,
+    // cv2-40 ⚡ bottom-right button, cv2-40 photo shortcut card, and
+    // cv2-38 in-composer tuning accordion are all suppressed in favour
+    // of the new composer bar (textarea + inline ⚡ + 🎛️) and the
+    // 72vh slide-up Tune drawer. Set the class always — flag forward.
+    document.documentElement.classList.add('pmg-cv-42');
+    if (!document.documentElement.classList.contains('pmg-cv-42')) {
+      initCollapsibleComposer(root);
+      initTuningAccordion(root);
+      initPhotoShortcut(root);
+    }
+    initTuneDrawer(root);
     initTwoBoxLabels(root);
+  }
+
+  // ---- cv2-42: Tune It drawer ----
+  // Builds: (a) inline ⚡ Quick + 🎛️ Tune buttons next to the #goal
+  // textarea, (b) a 72vh slide-up Tune drawer appended INSIDE
+  // #prompt-form so its <select> children stay in form scope. Moves
+  // tuning .field divs out of #settingsPanel into the drawer's
+  // Quick Picks (tone, category) and Prompt Tuning (everything else)
+  // accordion sections — keeping the original DOM nodes intact so
+  // pmg-ux.js pill bindings continue to work. Drawer footer
+  // "Generate Prompt" delegates to #generateBtn (Fix My Prompt).
+  // Mobile-only (max-width: 900px). Idempotent.
+  function initTuneDrawer(root) {
+    var mq = window.matchMedia('(max-width: 900px)');
+    if (!mq.matches) return;
+    function attach() {
+      var form = document.getElementById('prompt-form');
+      if (!form || form.querySelector('.pmgv2-tune-drawer')) return false;
+      var fieldPrimary = form.querySelector('.field-primary');
+      var settings = form.querySelector('#settingsPanel');
+      if (!fieldPrimary || !settings) return false;
+      // (a) Inject inline action buttons into .field-primary, wrapping
+      // textarea + buttons in a flex row. The .field-primary already
+      // contains #goal — add a sibling .pmgv2-cb-actions column.
+      if (!fieldPrimary.querySelector('.pmgv2-cb-actions')) {
+        var actions = document.createElement('div');
+        actions.className = 'pmgv2-cb-actions';
+        actions.innerHTML =
+          '<button type="button" id="pmg-cb-quick" class="pmgv2-cb-btn pmgv2-cb-quick" aria-label="Quick generate" title="Quick Generate — skip tuning">⚡</button>' +
+          '<button type="button" id="pmg-cb-tune" class="pmgv2-cb-btn pmgv2-cb-tune" aria-label="Open tune drawer" title="Tune Your Prompt">🎛️</button>';
+        fieldPrimary.appendChild(actions);
+      }
+      // (b) Build drawer + backdrop. Drawer is a child of #prompt-form
+      // so its selects remain inside the form for FormData submission.
+      var backdrop = document.createElement('div');
+      backdrop.className = 'pmgv2-tune-backdrop';
+      backdrop.setAttribute('aria-hidden', 'true');
+      var drawer = document.createElement('div');
+      drawer.className = 'pmgv2-tune-drawer';
+      drawer.setAttribute('role', 'dialog');
+      drawer.setAttribute('aria-modal', 'false');
+      drawer.setAttribute('aria-label', 'Tune your prompt');
+      drawer.innerHTML =
+        '<div class="pmgv2-td-handle" aria-hidden="true"></div>' +
+        '<div class="pmgv2-td-header">' +
+          '<span class="pmgv2-td-title">🎛️ Tune Your Prompt</span>' +
+          '<button type="button" class="pmgv2-td-close" id="pmg-td-close" aria-label="Close drawer">✕</button>' +
+        '</div>' +
+        '<div class="pmgv2-td-body">' +
+          '<div class="pmgv2-acc-section open" data-section="quick">' +
+            '<button type="button" class="pmgv2-acc-toggle">' +
+              '<span>⚡ Quick Picks</span><span class="pmgv2-acc-chev">▾</span>' +
+            '</button>' +
+            '<div class="pmgv2-acc-body" data-acc-slot="quick"></div>' +
+          '</div>' +
+          '<div class="pmgv2-acc-section" data-section="tuning">' +
+            '<button type="button" class="pmgv2-acc-toggle">' +
+              '<span>✍️ Prompt Tuning</span><span class="pmgv2-acc-chev">▾</span>' +
+            '</button>' +
+            '<div class="pmgv2-acc-body" data-acc-slot="tuning"></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="pmgv2-td-footer">' +
+          '<button type="button" class="pmgv2-td-generate" id="pmg-td-generate">✨ Generate Prompt</button>' +
+        '</div>';
+      form.appendChild(backdrop);
+      form.appendChild(drawer);
+      // (c) Move tuning .field divs into the drawer accordion bodies.
+      // Quick Picks: tone, category. Prompt Tuning: everything else.
+      var quickSlot = drawer.querySelector('[data-acc-slot="quick"]');
+      var tuningSlot = drawer.querySelector('[data-acc-slot="tuning"]');
+      var quickIds = { tone: 1, category: 1 };
+      var fields = settings.querySelectorAll('.field');
+      fields.forEach(function (f) {
+        var sel = f.querySelector('select[id]');
+        var id = sel && sel.id;
+        if (id && quickIds[id]) {
+          quickSlot.appendChild(f);
+        } else {
+          tuningSlot.appendChild(f);
+        }
+      });
+      // (d) Wire interactions.
+      function open() {
+        drawer.classList.add('is-open');
+        backdrop.classList.add('is-open');
+        document.documentElement.classList.add('pmg-tune-drawer-open');
+      }
+      function close() {
+        drawer.classList.remove('is-open');
+        backdrop.classList.remove('is-open');
+        document.documentElement.classList.remove('pmg-tune-drawer-open');
+      }
+      var tuneBtn = document.getElementById('pmg-cb-tune');
+      var quickBtn = document.getElementById('pmg-cb-quick');
+      var closeBtn = drawer.querySelector('#pmg-td-close');
+      var genBtn = drawer.querySelector('#pmg-td-generate');
+      tuneBtn && tuneBtn.addEventListener('click', function (e) { e.preventDefault(); open(); });
+      closeBtn && closeBtn.addEventListener('click', function (e) { e.preventDefault(); close(); });
+      backdrop.addEventListener('click', close);
+      function fireGenerate() {
+        var g = document.getElementById('goal');
+        if (!g || !g.value || !g.value.trim()) {
+          try { g && g.focus(); } catch (e2) {}
+          return;
+        }
+        var gen = document.getElementById('generateBtn');
+        if (gen) gen.click();
+      }
+      quickBtn && quickBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        fireGenerate();
+      });
+      genBtn && genBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        close();
+        setTimeout(fireGenerate, 320);
+      });
+      // Accordion toggles.
+      drawer.querySelectorAll('.pmgv2-acc-toggle').forEach(function (t) {
+        t.addEventListener('click', function () {
+          var sec = t.closest('.pmgv2-acc-section');
+          if (sec) sec.classList.toggle('open');
+        });
+      });
+      // Esc closes.
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && drawer.classList.contains('is-open')) close();
+      });
+      return true;
+    }
+    if (attach()) return;
+    var obs = new MutationObserver(function () { if (attach()) obs.disconnect(); });
+    obs.observe(document.body, { childList: true, subtree: true });
+    setTimeout(function () { obs.disconnect(); }, 8000);
   }
 
   // ---- cv2-40: Two-box output labels ----
@@ -966,6 +1110,10 @@
       // Goal field's parent .field.field-primary is the keep target. If
       // someone inlines the goal directly under the form, also keep it.
       if (el.id === 'goal') return true;
+      // cv2-42: keep the Tune drawer + backdrop inside #prompt-form so
+      // the moved tuning <select>s remain in form scope for FormData.
+      if (el.classList && el.classList.contains('pmgv2-tune-drawer')) return true;
+      if (el.classList && el.classList.contains('pmgv2-tune-backdrop')) return true;
       return false;
     };
 

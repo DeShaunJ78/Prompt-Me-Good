@@ -1759,3 +1759,259 @@ html.pmg-chassis-v2 .pmgv2-box-label {
   align-items: center;
   gap: 6px;
 }
+
+/* =================================================================
+   cv2-42: Tune It drawer pattern (mobile only).
+   Replaces the cv2-39 pill + cv2-40 ⚡-next-to-pill + cv2-40 photo
+   shortcut card with a slim composer bar (textarea + inline ⚡ + 🎛️)
+   and a 72vh slide-up drawer hosting Quick Picks (Tone, Category)
+   and Prompt Tuning (Format, Length, Language, Skill Level)
+   accordion sections.
+   ================================================================= */
+@media (max-width: 900px) {
+  /* Suppress prior-iteration affordances when cv2-42 is on. */
+  html.pmg-cv-42 .pmgv2-composer-tab,
+  html.pmg-cv-42.pmg-composer-collapsed .pmgv2-composer-tab,
+  html.pmg-cv-42 .pmgv2-quick-generate-btn,
+  html.pmg-cv-42.pmg-composer-collapsed .pmgv2-quick-generate-btn,
+  html.pmg-cv-42 .pmgv2-photo-shortcut-row {
+    display: none !important;
+  }
+  /* Composer-wrap reverts to slim, never collapses, no internal
+     scroll — height is just textarea + buttons row. */
+  html.pmg-cv-42.pmg-chassis-v2 .pmgv2-composer-wrap {
+    max-height: none !important;
+    overflow: visible !important;
+    padding-bottom: 10px;
+  }
+  /* Hide the in-composer #settingsPanel (its .field children moved
+     into the drawer; only the empty header would remain). */
+  html.pmg-cv-42.pmg-chassis-v2 .pmgv2-composer-wrap #settingsPanel {
+    display: none !important;
+  }
+  /* Hide the legacy actions-row (Fix My Prompt + co.) inside the
+     composer — Generate is now reachable via ⚡ Quick (composer bar)
+     and ✨ Generate Prompt (drawer footer). */
+  html.pmg-cv-42.pmg-chassis-v2 .pmgv2-composer-wrap #prompt-form .actions-row,
+  html.pmg-cv-42.pmg-chassis-v2 .pmgv2-composer-wrap #prompt-form #tour-step-generate {
+    display: none !important;
+  }
+  /* .field-primary stays block-level; cb-actions absolute-positions
+     into the right gutter. Avoids fighting the textarea's width:100%
+     base style and the .field's display rules. Padding-right
+     reserves the 52px button column. */
+  html.pmg-cv-42.pmg-chassis-v2 .pmgv2-composer-wrap .field-primary {
+    position: relative !important;
+    padding-right: 56px !important;
+  }
+  html.pmg-cv-42.pmg-chassis-v2 .pmgv2-composer-wrap .field-primary > .field-label-row {
+    display: none !important; /* slim mobile composer per cv2-19 */
+  }
+  html.pmg-cv-42.pmg-chassis-v2 .pmgv2-composer-wrap .field-primary > #goal {
+    width: 100% !important;
+    min-height: 56px !important;
+    max-height: 140px !important;
+    font-size: 16px !important; /* prevents iOS zoom-on-focus */
+    box-sizing: border-box;
+  }
+  html.pmg-cv-42 .pmgv2-cb-actions {
+    position: absolute !important;
+    right: 0;
+    bottom: 0;
+    display: flex !important;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 2;
+  }
+  html.pmg-cv-42 .pmgv2-cb-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    border: 1.5px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 50%, transparent);
+    background: color-mix(in srgb, var(--color-primary, #3ee0a0) 10%, var(--color-surface-2, #0d2b22));
+    color: var(--color-primary, #3ee0a0);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 160ms ease, transform 160ms ease;
+  }
+  html.pmg-cv-42 .pmgv2-cb-tune {
+    background: var(--color-primary, #3ee0a0);
+    color: #0d2b22;
+    border-color: var(--color-primary, #3ee0a0);
+  }
+  html.pmg-cv-42 .pmgv2-cb-btn:hover,
+  html.pmg-cv-42 .pmgv2-cb-btn:focus-visible {
+    background: color-mix(in srgb, var(--color-primary, #3ee0a0) 22%, var(--color-surface-2, #0d2b22));
+    outline: none;
+  }
+  html.pmg-cv-42 .pmgv2-cb-tune:hover,
+  html.pmg-cv-42 .pmgv2-cb-tune:focus-visible {
+    background: color-mix(in srgb, var(--color-primary, #3ee0a0) 88%, white);
+  }
+  html.pmg-cv-42 .pmgv2-cb-btn:active { transform: translateY(1px); }
+
+  /* ---- The drawer + backdrop ---- */
+  html.pmg-cv-42 .pmgv2-tune-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 200ms ease, visibility 200ms ease;
+    z-index: 240;
+  }
+  html.pmg-cv-42 .pmgv2-tune-backdrop.is-open {
+    opacity: 1;
+    visibility: visible;
+  }
+  html.pmg-cv-42 .pmgv2-tune-drawer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 56px; /* above dock */
+    height: 72vh;
+    background: var(--color-surface-2, #0d2b22);
+    border-radius: 20px 20px 0 0;
+    border-top: 2px solid var(--color-primary, #3ee0a0);
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    z-index: 250;
+    transform: translateY(105%);
+    transition: transform 320ms cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-overflow-scrolling: touch;
+  }
+  html.pmg-cv-42 .pmgv2-tune-drawer.is-open { transform: translateY(0); }
+  html.pmg-cv-42 .pmgv2-td-handle {
+    width: 40px;
+    height: 4px;
+    margin: 10px auto 0;
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--color-primary, #3ee0a0) 35%, transparent);
+    flex-shrink: 0;
+  }
+  html.pmg-cv-42 .pmgv2-td-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    flex-shrink: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 20%, transparent);
+  }
+  html.pmg-cv-42 .pmgv2-td-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--color-text, #e8f5f0);
+  }
+  html.pmg-cv-42 .pmgv2-td-close {
+    background: none;
+    border: none;
+    color: var(--color-text-muted, rgba(232,245,240,0.6));
+    font-size: 18px;
+    cursor: pointer;
+    padding: 6px 10px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html.pmg-cv-42 .pmgv2-td-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 12px 14px 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overscroll-behavior: contain;
+  }
+  html.pmg-cv-42 .pmgv2-acc-section {
+    border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 22%, transparent);
+    border-radius: 12px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--color-primary, #3ee0a0) 4%, var(--color-surface-2, #0d2b22));
+  }
+  html.pmg-cv-42 .pmgv2-acc-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: transparent;
+    border: none;
+    color: var(--color-text, #e8f5f0);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html.pmg-cv-42 .pmgv2-acc-chev {
+    transition: transform 200ms ease;
+    color: var(--color-primary, #3ee0a0);
+    font-size: 12px;
+  }
+  html.pmg-cv-42 .pmgv2-acc-section.open .pmgv2-acc-chev { transform: rotate(180deg); }
+  html.pmg-cv-42 .pmgv2-acc-body {
+    display: none;
+    padding: 8px 14px 14px;
+    flex-direction: column;
+    gap: 14px;
+  }
+  html.pmg-cv-42 .pmgv2-acc-section.open .pmgv2-acc-body { display: flex; }
+  /* The .field nodes carry their own internal layout; just make sure
+     pills wrap and selects are full-width in the new container. */
+  html.pmg-cv-42 .pmgv2-acc-body .field { display: block; }
+  html.pmg-cv-42 .pmgv2-acc-body .field > label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-text-muted, rgba(232,245,240,0.65));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 8px;
+  }
+  html.pmg-cv-42 .pmgv2-acc-body .pmg-tune-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  html.pmg-cv-42 .pmgv2-td-footer {
+    flex-shrink: 0;
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 20%, transparent);
+    background: var(--color-surface-2, #0d2b22);
+  }
+  html.pmg-cv-42 .pmgv2-td-generate {
+    width: 100%;
+    min-height: 50px;
+    padding: 14px;
+    background: var(--color-primary, #3ee0a0);
+    color: #0d2b22;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 160ms ease, transform 120ms ease;
+  }
+  html.pmg-cv-42 .pmgv2-td-generate:hover,
+  html.pmg-cv-42 .pmgv2-td-generate:focus-visible {
+    background: color-mix(in srgb, var(--color-primary, #3ee0a0) 88%, white);
+    outline: none;
+  }
+  html.pmg-cv-42 .pmgv2-td-generate:active { transform: translateY(1px); }
+  /* Lock body scroll while drawer is open. */
+  html.pmg-cv-42.pmg-tune-drawer-open,
+  html.pmg-cv-42.pmg-tune-drawer-open body { overflow: hidden; }
+}
+/* Desktop: drawer + backdrop + composer-bar buttons stay hidden. */
+@media (min-width: 901px) {
+  html.pmg-cv-42 .pmgv2-tune-drawer,
+  html.pmg-cv-42 .pmgv2-tune-backdrop,
+  html.pmg-cv-42 .pmgv2-cb-actions { display: none !important; }
+}
