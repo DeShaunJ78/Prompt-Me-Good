@@ -92,7 +92,8 @@
         '<button class="pmgv3-tab" data-module="photography" role="tab" aria-selected="false" type="button">📸 Photography</button>',
         '<button class="pmgv3-tab" data-module="video" role="tab" aria-selected="false" type="button">🎬 Video</button>',
       '</nav>',
-      '<div class="pmgv3-body">',
+      '<div class="pmgv3-body" data-active-panel="text">',
+        '<div class="pmgv3-panel" id="pmgv3-panel-text">',
         '<div class="pmgv3-left">',
           '<section class="idea-section">',
             '<label class="pmgv3-section-label" for="goal">Your Idea</label>',
@@ -140,6 +141,15 @@
           '<div class="output-box ai-response-box is-collapsed" id="ai-response-box" style="display:none !important">',
             '<div class="pmgv3-air-host"></div>',
           '</div>',
+        '</div>',
+        '</div>', // /#pmgv3-panel-text
+        '<div class="pmgv3-panel" id="pmgv3-panel-photo">',
+          '<div class="pmgv3-left" id="pmgv3-photo-left"></div>',
+          '<div class="pmgv3-right" id="pmgv3-photo-right"></div>',
+        '</div>',
+        '<div class="pmgv3-panel" id="pmgv3-panel-video">',
+          '<div class="pmgv3-left" id="pmgv3-video-left"></div>',
+          '<div class="pmgv3-right" id="pmgv3-video-right"></div>',
         '</div>',
       '</div>',
       '<footer class="pmgv3-bottom">',
@@ -414,22 +424,11 @@
       });
     }
 
-    // Module tabs
+    // Module tabs — panel switcher (no modals)
     var tabs = rootEl.querySelectorAll('.pmgv3-tab');
     Array.prototype.forEach.call(tabs, function (tab) {
       tab.addEventListener('click', function () {
-        Array.prototype.forEach.call(tabs, function (t) {
-          t.classList.remove('is-active');
-          t.setAttribute('aria-selected', 'false');
-        });
-        tab.classList.add('is-active');
-        tab.setAttribute('aria-selected', 'true');
-        var mod = tab.dataset.module;
-        if (mod === 'photography' && typeof window.openVisualStudio === 'function') {
-          window.openVisualStudio({ mode: 'image' });
-        } else if (mod === 'video' && typeof window.openVisualStudio === 'function') {
-          window.openVisualStudio({ mode: 'video' });
-        }
+        setActivePanel(tab.dataset.module);
       });
     });
 
@@ -506,12 +505,76 @@
     });
   }
 
-  // Expose for debugging
+  function setActivePanel(name) {
+    if (!name) return;
+    var validNames = { text: 1, photography: 1, video: 1 };
+    if (!validNames[name]) return;
+    var body = rootEl && rootEl.querySelector('.pmgv3-body');
+    if (body) body.setAttribute('data-active-panel', name);
+    var tabs = rootEl && rootEl.querySelectorAll('.pmgv3-tab');
+    if (tabs) {
+      Array.prototype.forEach.call(tabs, function (t) {
+        var active = t.dataset.module === name;
+        t.classList.toggle('is-active', active);
+        t.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+    }
+  }
+
+  // Mount Visual Studio inline panels once the chassis + VS script are both ready.
+  function mountVSWhenReady() {
+    var attempts = 0;
+    var iv = setInterval(function () {
+      attempts++;
+      if (attempts > 40) { clearInterval(iv); return; }
+      if (typeof window.mountVisualStudioPanels !== 'function') return;
+      var pl = document.getElementById('pmgv3-photo-left');
+      var pr = document.getElementById('pmgv3-photo-right');
+      var vl = document.getElementById('pmgv3-video-left');
+      var vr = document.getElementById('pmgv3-video-right');
+      if (!pl || !pr || !vl || !vr) return;
+      window.mountVisualStudioPanels({
+        photoLeft: pl, photoRight: pr, videoLeft: vl, videoRight: vr,
+      });
+      clearInterval(iv);
+    }, 100);
+  }
+  // Kick off mount after boot; chassis-v3 runs first so VS may not be defined yet.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', mountVSWhenReady);
+  } else {
+    mountVSWhenReady();
+  }
+  // Allow ?panel=photography|video|text deep-linking (also useful for tests).
+  var initialPanel = qs.get('panel');
+  if (initialPanel === 'photography' || initialPanel === 'video') {
+    var panelTries = 0;
+    var panelInt = setInterval(function () {
+      panelTries++;
+      if (panelTries > 30) { clearInterval(panelInt); return; }
+      if (rootEl && rootEl.querySelector('.pmgv3-body')) {
+        setActivePanel(initialPanel);
+        clearInterval(panelInt);
+      }
+    }, 100);
+  }
+  // Re-attempt to relocate the photo suite as legacy mounts run.
+  var psTries = 0;
+  var psInt = setInterval(function () {
+    psTries++;
+    if (psTries > 30) { clearInterval(psInt); return; }
+    if (typeof window.relocatePhotoSuite === 'function') {
+      try { window.relocatePhotoSuite(); } catch (_) {}
+    }
+  }, 200);
+
+  // Expose for debugging + VS back-compat shim
   window.pmgChassisV3 = {
     rebuild: function () {
       var existing = document.getElementById('pmg-chassis-v3-root');
       if (existing) existing.remove();
       boot();
     },
+    setActivePanel: setActivePanel,
   };
 })();

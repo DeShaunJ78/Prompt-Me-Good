@@ -243,60 +243,45 @@
       return 'Shot ' + (i + 1) + ': ' + p.prompt;
     }).join(' → ');
     closeStoryboard();
-    if (typeof window.openVisualStudio === 'function') {
+    // Switch v3 chassis to the Video panel (no modal).
+    if (window.pmgChassisV3 && typeof window.pmgChassisV3.setActivePanel === 'function') {
+      window.pmgChassisV3.setActivePanel('video');
+    } else if (typeof window.openVisualStudio === 'function') {
       window.openVisualStudio({ mode: 'video' });
-      // Wait for the video builder textarea to mount, then pre-fill.
-      setTimeout(function () {
-        var ta = document.getElementById('pmg-vs-video-goal');
-        if (ta) {
-          ta.value = sequence;
-          ta.focus();
-          // Trigger any input listeners
-          ta.dispatchEvent(new Event('input', { bubbles: true }));
-        }
-      }, 60);
     }
+    setTimeout(function () {
+      var ta = document.getElementById('pmg-vs-video-goal');
+      if (ta) {
+        ta.value = sequence;
+        ta.focus();
+        ta.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    }, 80);
   }
 
   function injectTrigger() {
+    // Storyboard launcher belongs inside the v3 Video panel. If the mount
+    // slot doesn't exist yet, do nothing — the search observer will retry
+    // until v3 builds it.
+    var videoMount = document.getElementById('pmgv3-storyboard-mount');
+    if (!videoMount) return;
     var existing = $(TRIGGER_ID);
-    var launcherRowEl = document.getElementById('pmg-vs-launch-composer-row');
     if (existing) {
-      // Promote into the launcher row if it appeared after first injection.
-      if (launcherRowEl && existing.parentNode !== launcherRowEl) {
-        existing.classList.add('pmg-vs-launch-pill', 'pmg-sb-launch-pill');
+      if (existing.parentNode !== videoMount) {
+        existing.className = 'pmg-vs-btn pmg-vs-btn-secondary pmg-vs-full-width';
         existing.style.cssText = '';
-        existing.innerHTML = '🎞️ Storyboard';
-        launcherRowEl.appendChild(existing);
+        existing.innerHTML = '🎞️ Generate Storyboard from Idea';
+        videoMount.appendChild(existing);
       }
       return;
     }
-    // PRIMARY: drop the button into the chassis composer-wrap so it sits
-    // directly under the Goal textarea on both desktop and mobile (always
-    // visible regardless of liftFormAuxIntoThread). FALLBACK: legacy form.
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.id = TRIGGER_ID;
-    btn.className = 'pmg-sb-btn pmg-sb-btn-secondary';
-    btn.innerHTML = '🎞️ Storyboard';
     btn.setAttribute('data-pmg-action', 'generate-storyboard');
-    var launcherRow = document.getElementById('pmg-vs-launch-composer-row');
-    if (launcherRow) {
-      btn.classList.add('pmg-vs-launch-pill', 'pmg-sb-launch-pill');
-      launcherRow.appendChild(btn);
-      return;
-    }
-    var main = document.querySelector('.pmgv2-main');
-    if (main) {
-      btn.style.cssText = 'margin-top:8px;width:100%;font-size:.92rem;padding:10px 14px';
-      main.appendChild(btn);
-      return;
-    }
-    var anchor = document.getElementById('fix-prompt-btn')
-              || document.querySelector('#prompt-form button[type="submit"]')
-              || document.querySelector('#prompt-form');
-    if (!anchor || !anchor.parentNode) return;
-    anchor.parentNode.insertBefore(btn, anchor.nextSibling);
+    btn.className = 'pmg-vs-btn pmg-vs-btn-secondary pmg-vs-full-width';
+    btn.innerHTML = '🎞️ Generate Storyboard from Idea';
+    videoMount.appendChild(btn);
   }
 
   function getGoalText() {
