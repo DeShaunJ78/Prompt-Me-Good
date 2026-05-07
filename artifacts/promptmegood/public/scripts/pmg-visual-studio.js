@@ -44,7 +44,7 @@
     });
 
     var html =
-      '<div id="' + MODAL_ID + '" class="pmg-modal-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="pmg-vs-title">' +
+      '<div id="' + MODAL_ID + '" class="pmg-modal-overlay" data-pmg-overlay-root="1" hidden role="dialog" aria-modal="true" aria-labelledby="pmg-vs-title">' +
         '<div class="pmg-modal-content">' +
           '<div class="pmg-modal-header">' +
             '<h2 id="pmg-vs-title">Visual Studio</h2>' +

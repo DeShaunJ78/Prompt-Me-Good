@@ -84,7 +84,7 @@
           '<div class="pmgv2-chain-label pmgv2-chain-bot">BODY</div>',
         '</div>',
         '<aside class="pmgv2-tools" data-slot="suite">',
-          '<div class="pmgv2-tools-h"><div><div class="pmgv2-tools-t">📷 Visual Asset Engine</div><div class="pmgv2-tools-sub">Photography Suite</div></div></div>',
+          '<div class="pmgv2-tools-h"><div><div class="pmgv2-tools-t">🎨 Visual Asset Engine</div></div></div>',
           '<div class="pmgv2-ml-card" id="pmgv2-ml-card">',
             '<div class="pmgv2-ml-row">',
               '<div><div class="pmgv2-ml-lab" id="pmgv2-ml-lab">⛓ Master Link · OFF</div><div class="pmgv2-ml-desc">Soul + Body → one Master Plan</div></div>',

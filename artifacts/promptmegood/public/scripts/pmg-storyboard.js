@@ -16,7 +16,7 @@
   function buildModal() {
     if (modal()) return;
     var html =
-      '<div id="' + MODAL_ID + '" class="pmg-modal-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="pmg-sb-title">' +
+      '<div id="' + MODAL_ID + '" class="pmg-modal-overlay" data-pmg-overlay-root="1" hidden role="dialog" aria-modal="true" aria-labelledby="pmg-sb-title">' +
         '<div class="pmg-modal-content">' +
           '<div class="pmg-modal-header">' +
             '<h2 id="pmg-sb-title">🎞️ Storyboard Studio</h2>' +
