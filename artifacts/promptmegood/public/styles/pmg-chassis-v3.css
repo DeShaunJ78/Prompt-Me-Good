@@ -277,7 +277,13 @@ html.pmg-chassis-v3 .idea-section #goal:focus {
   border-radius: 14px;
   padding: 16px;
   animation: pmgv3-slide-in 0.35s ease-out;
+  max-height: 360px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 200, 150, 0.4) transparent;
 }
+.tuning-section::-webkit-scrollbar { width: 6px; }
+.tuning-section::-webkit-scrollbar-thumb { background: rgba(0, 200, 150, 0.4); border-radius: 3px; }
 @keyframes pmgv3-slide-in {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }

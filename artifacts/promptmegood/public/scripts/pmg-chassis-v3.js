@@ -268,16 +268,42 @@
       });
     }
 
-    // Generate (legacy submit): reveal Box 1 after a tick
+    // Generate (legacy submit): explicitly fire form submit since form-attribute
+    // association across reparented DOM is unreliable, then reveal Box 1.
     var genBtn = document.getElementById('generateBtn');
     if (genBtn) {
-      genBtn.addEventListener('click', function () {
-        setTimeout(function () {
-          var box = document.getElementById('prompt-output-box');
-          if (box) { box.classList.remove('is-collapsed'); box.removeAttribute('hidden'); box.style.display = ''; }
-          // Mirror legacy strength-score-pct → spec strength-score-badge
-          mirrorStrength();
-        }, 350);
+      genBtn.addEventListener('click', function (e) {
+        // Reveal Box 1 immediately so the user sees feedback
+        var box = document.getElementById('prompt-output-box');
+        if (box) {
+          box.classList.remove('is-collapsed');
+          box.removeAttribute('hidden');
+          box.style.display = '';
+        }
+        // Diagnostic: log form state
+        var allForms = document.querySelectorAll('#prompt-form');
+        var form = document.getElementById('prompt-form');
+        console.log('[pmgv3] generateBtn click. forms found:', allForms.length,
+          'form contains genBtn:', form && form.contains(genBtn),
+          'genBtn.form (associated):', genBtn.form && genBtn.form.id,
+          'genBtn type:', genBtn.type,
+          'genBtn form attr:', genBtn.getAttribute('form'),
+          'goal value:', (document.getElementById('goal') || {}).value);
+        // Explicitly fire submit on #prompt-form
+        if (form && typeof form.requestSubmit === 'function') {
+          try {
+            form.requestSubmit();
+            console.log('[pmgv3] requestSubmit() called');
+          } catch (err) {
+            console.error('[pmgv3] requestSubmit failed:', err);
+            try { form.submit(); } catch (e2) {}
+          }
+        } else if (form) {
+          var ev = new Event('submit', { bubbles: true, cancelable: true });
+          var notCancelled = form.dispatchEvent(ev);
+          console.log('[pmgv3] dispatched synthetic submit, cancelled:', !notCancelled);
+        }
+        setTimeout(mirrorStrength, 350);
       });
     }
     // Mirror strength on a polling tick so it stays current
