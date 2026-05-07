@@ -267,6 +267,35 @@
   padding: 0 !important;
 }
 
+/* vs-13 — Inline-mount mobile polish (Visual tab on ≤900px). When the
+   modal is inline-mounted into .pmgv2-tools, three friction points
+   appear: (1) the chassis tools-header "Launch Image Studio" button
+   collides with its own title and is redundant — the user IS in the
+   studio; (2) the Sync toggle + Master Plan cards eat the top of the
+   viewport pushing the actual creation tools below the fold; (3) the
+   describe-your-image textarea feels like a settings field, not the
+   primary creative surface. Fixes are scoped to mobile + suite tab so
+   desktop overlay behavior is untouched. */
+@media (max-width: 900px) {
+  /* (1) Hide redundant launch button when inline */
+  html.pmg-chassis-v2[data-pmgv2-mobile-tab="suite"] #pmg-vs-launch-rail {
+    display: none !important;
+  }
+  /* (2) Reorder .pmgv2-tools flex children: Header → Modal → Sync → Plan */
+  html.pmg-chassis-v2[data-pmgv2-mobile-tab="suite"] .pmgv2-tools > .pmgv2-tools-h { order: 0; }
+  html.pmg-chassis-v2[data-pmgv2-mobile-tab="suite"] .pmgv2-tools > #pmg-visual-studio-modal.pmg-vs-inline { order: 1; }
+  html.pmg-chassis-v2[data-pmgv2-mobile-tab="suite"] .pmgv2-tools > #pmgv2-ml-card { order: 2; margin-top: 16px; }
+  html.pmg-chassis-v2[data-pmgv2-mobile-tab="suite"] .pmgv2-tools > #pmgv2-plan-card { order: 3; }
+  /* (3) Elevate the primary input: bigger textarea, more padding */
+  html.pmg-chassis-v2[data-pmgv2-mobile-tab="suite"] #pmg-vs-image-goal,
+  html.pmg-chassis-v2[data-pmgv2-mobile-tab="suite"] #pmg-vs-video-goal {
+    min-height: 110px !important;
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+    padding: 14px !important;
+  }
+}
+
 /* vs-12: launcher row is now visible on ALL viewports (was previously
    hidden on mobile). Sits at the top of .pmgv2-main right after the
    mode bar, so the three signature features are immediately
