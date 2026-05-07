@@ -668,37 +668,13 @@
 
   // ---- Chassis launchers (discoverability) ----
   function injectChassisLaunchers() {
-    // Top-bar — primary mobile entry point. Two compact icon buttons
-    // injected into .pmgv2-tb-r BEFORE the help-start pill so they sit
-    // next to the avatar/help icons. Always visible, no bottom chrome.
-    var topbarRight = document.querySelector('.pmgv2-tb-r');
-    if (topbarRight && !document.getElementById('pmg-vs-tb-launch')) {
-      var helpStart = topbarRight.querySelector('.pmgv2-help-start');
-      var tbVs = document.createElement('button');
-      tbVs.type = 'button';
-      tbVs.id = 'pmg-vs-tb-launch';
-      tbVs.className = 'pmgv2-ico pmg-vs-tb-ico';
-      tbVs.setAttribute('data-pmg-open-visual-studio', '1');
-      tbVs.setAttribute('data-vs-mode', 'image');
-      tbVs.setAttribute('title', 'Open Visual Studio (Image + Sora Video)');
-      tbVs.setAttribute('aria-label', 'Open Visual Studio');
-      tbVs.textContent = '🎨';
-      var tbSb = document.createElement('button');
-      tbSb.type = 'button';
-      tbSb.id = 'pmg-sb-tb-launch';
-      tbSb.className = 'pmgv2-ico pmg-vs-tb-ico';
-      tbSb.setAttribute('data-pmg-action', 'generate-storyboard');
-      tbSb.setAttribute('title', 'Generate Storyboard (5-shot cinematic sequence)');
-      tbSb.setAttribute('aria-label', 'Generate Storyboard');
-      tbSb.textContent = '🎞️';
-      if (helpStart) {
-        topbarRight.insertBefore(tbVs, helpStart);
-        topbarRight.insertBefore(tbSb, helpStart);
-      } else {
-        topbarRight.appendChild(tbVs);
-        topbarRight.appendChild(tbSb);
-      }
-    }
+    // (Topbar icons removed — Visual lives on the dock tab; Storyboard
+    // lives in the workstation action row.) Also defensively remove any
+    // previously-injected topbar icons on cached page loads.
+    var oldTbVs = document.getElementById('pmg-vs-tb-launch');
+    if (oldTbVs && oldTbVs.parentNode) oldTbVs.parentNode.removeChild(oldTbVs);
+    var oldTbSb = document.getElementById('pmg-sb-tb-launch');
+    if (oldTbSb && oldTbSb.parentNode) oldTbSb.parentNode.removeChild(oldTbSb);
     // Right-rail header — desktop primary entry point.
     var railHeader = document.querySelector('.pmgv2-tools-h');
     if (railHeader && !document.getElementById('pmg-vs-launch-rail')) {

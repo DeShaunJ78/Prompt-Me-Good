@@ -267,12 +267,6 @@
   padding: 0 !important;
 }
 
-/* Topbar icon buttons — primary mobile entry points, no bottom chrome. */
-.pmg-vs-tb-ico {
-  font-size: 1.05rem;
-  line-height: 1;
-}
-
 /* Mobile: hide the in-main launcher row entirely — discovery is via
    the topbar icons + the existing "Visual" dock tab. We deliberately do
    NOT add a second sticky bottom bar on top of the composer pill +
