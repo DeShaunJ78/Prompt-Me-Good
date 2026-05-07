@@ -275,15 +275,13 @@
       tab.setAttribute('aria-expanded', 'false');
     }
 
-    // cv2-37: Default state on first paint = EXPANDED. The earlier
-    // "collapsed by default" caused users to land on Workstation and
-    // see only an empty middle + a tiny pill, perceiving the goal
-    // textarea / Fix My Prompt / Prompt Tuning as missing. The pill
-    // still appears after generation (body.pmg-has-result), after
-    // #goal blur with empty value, or when switching to a non-
-    // Workstation dock tab — all moments where collapsing is helpful
-    // because the user has shifted focus away from constructing.
-    // First-time visitors now immediately see the input surface.
+    // cv2-39: Default state on first paint = COLLAPSED (pill shown).
+    // User explicitly asked for the bottom-anchored "✏️ What do you
+    // want to build?" pill back as the entry point on mobile —
+    // tapping it expands the slim drawer (textarea + collapsed
+    // Prompt Tuning + Fix My Prompt, capped at 40vh by cv2-38).
+    // This reverts cv2-37's expanded-by-default.
+    collapse({ force: true });
 
     // ---- Expand triggers ----
 

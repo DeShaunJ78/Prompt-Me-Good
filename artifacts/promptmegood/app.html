@@ -4073,10 +4073,10 @@
     }
   </style>
   <link rel="stylesheet" href="/styles/pmg-g-theme.css?v=g2-teal-2" />
-  <link rel="stylesheet" href="/styles/pmg-chassis-v2.css?v=cv2-38" />
+  <link rel="stylesheet" href="/styles/pmg-chassis-v2.css?v=cv2-39" />
   <link rel="stylesheet" href="/styles/pmg-visual-studio.css?v=vs-14" />
   <link rel="stylesheet" href="/styles/pmg-storyboard.css?v=sb-6" />
-  <script src="/scripts/pmg-chassis-v2.js?v=cv2-38"></script>
+  <script src="/scripts/pmg-chassis-v2.js?v=cv2-39"></script>
   <script src="/scripts/pmg-visual-studio.js?v=vs-14" defer></script>
   <script src="/scripts/pmg-storyboard.js?v=sb-6" defer></script>
   <style id="pmg-splash-css">
@@ -4461,18 +4461,12 @@
             </div>
           </div>
           <div class="form-wrap">
-            <p class="build-cta-guidance" id="build-cta-guidance" role="status" aria-live="polite" hidden>
-              <span class="build-cta-guidance-icon" aria-hidden="true">✨</span>
-              <span class="build-cta-guidance-text">Start with <strong>Help Me Start</strong> if you want PromptMeGood to set things up for you.</span>
-            </p>
-            <div class="guided-cta-row" id="guided-cta-row">
-              <div class="guided-cta-text">
-                <span class="guided-cta-recommended-badge"></span>
-                <strong>Help Me Start</strong>
-                <span>Best for beginners — answer 4 quick questions and we&rsquo;ll build it with you. Skip if you already know what to type.</span>
-              </div>
-              <button type="button" class="btn btn-primary" id="guided-mode-btn">Help Me Start</button>
-            </div>
+            <!-- cv2-39: Help Me Start removed entirely per user request.
+                 The build-cta-guidance + guided-cta-row + #guided-mode-btn
+                 button (and the #guided-mode-dialog 4-step modal below)
+                 were deleted. The setupHelpMeStartButton() in pmg-ux.js
+                 is also early-returned so the dynamically-injected
+                 #pmg-help-me-start-btn never appears either. -->
             <div id="weekly-goal-pin" class="weekly-goal-pin pmg-post-gen" aria-label="This Week's Focus">
               <div class="weekly-goal-pin-head">
                 <span class="weekly-goal-pin-label">
@@ -5257,40 +5251,7 @@
       </div>
     </dialog>
 
-    <dialog id="guided-mode-dialog" class="guided-dialog" aria-labelledby="guided-mode-title" data-pmg-overlay-root>
-      <form method="dialog" class="guided-form" id="guided-mode-form">
-        <header class="guided-head">
-          <h3 id="guided-mode-title">Help Me Start</h3>
-          <p>Answer a few quick questions. We'll fill the builder for you.</p>
-        </header>
-        <div class="guided-step" data-guided-step="0">
-          <label for="guided-q-goal">What do you want help with?</label>
-          <textarea id="guided-q-goal" rows="3" placeholder="Example: I want to make $1,000 per month from a side hustle." required></textarea>
-        </div>
-        <div class="guided-step" data-guided-step="1" hidden>
-          <label for="guided-q-audience">Who is this for?</label>
-          <textarea id="guided-q-audience" rows="2" placeholder="Example: me, a complete beginner with no audience yet."></textarea>
-        </div>
-        <div class="guided-step" data-guided-step="2" hidden>
-          <label for="guided-q-outcome">What outcome matters most?</label>
-          <textarea id="guided-q-outcome" rows="2" placeholder="Example: a simple plan I can start this week with under $100."></textarea>
-        </div>
-        <div class="guided-step" data-guided-step="3" hidden>
-          <label for="guided-q-constraints">
-            <span class="guided-label-default">Anything The AI Must Follow?</span>
-            <span class="guided-label-expert">Constraints</span>
-          </label>
-          <textarea id="guided-q-constraints" rows="2" aria-describedby="guided-q-constraints-help" placeholder="Tell the AI any rules or limits (e.g., under 200 words, use bullet points, avoid jargon, make it beginner-friendly)"></textarea>
-          <p class="guided-helper" id="guided-q-constraints-help">This controls how the answer is written and what to avoid.</p>
-        </div>
-        <div class="guided-progress" id="guided-progress">Step 1 of 4</div>
-        <footer class="guided-actions">
-          <button type="button" class="btn btn-secondary" id="guided-back" disabled>Back</button>
-          <button type="button" class="btn btn-secondary" id="guided-cancel">Cancel</button>
-          <button type="button" class="btn btn-primary" id="guided-next">Next</button>
-        </footer>
-      </form>
-    </dialog>
+    <!-- cv2-39: #guided-mode-dialog (Help Me Start 4-step modal) removed. -->
 
     <dialog id="privacy-dialog" class="legal-modal" aria-labelledby="privacy-dialog-title" data-pmg-overlay-root>
       <div class="legal-modal-inner">

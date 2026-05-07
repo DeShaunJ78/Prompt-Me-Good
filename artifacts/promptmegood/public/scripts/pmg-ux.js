@@ -1762,22 +1762,13 @@
   }
 
   function setupHelpMeStartButton() {
-    var generateBtn = document.getElementById('generateBtn');
-    if (!generateBtn) return;
-    if (document.getElementById('pmg-help-me-start-btn')) return;
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.id = 'pmg-help-me-start-btn';
-    btn.className = 'btn btn-secondary pmg-help-me-start-btn';
-    btn.textContent = '💡 Help Me Start';
-    btn.addEventListener('click', function () {
-      var orig = document.getElementById('guided-mode-btn');
-      if (orig) orig.click();
-    });
-    var actionsRow = generateBtn.parentNode;
-    if (actionsRow && actionsRow.parentNode) {
-      actionsRow.parentNode.insertBefore(btn, actionsRow.nextSibling);
-    }
+    // cv2-39: Help Me Start removed entirely per user request. The
+    // dynamic #pmg-help-me-start-btn is no longer mounted; the
+    // #guided-mode-btn it proxied to was also deleted from app.html.
+    // All downstream code that looks up either ID will simply no-op
+    // because neither element exists. The function is kept as a stub
+    // so callers (T15, T16, FIX 5, etc.) don't throw.
+    return;
   }
 
   function setupWhatNextBlock() {
