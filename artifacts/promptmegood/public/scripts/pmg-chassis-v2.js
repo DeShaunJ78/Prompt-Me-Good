@@ -149,6 +149,45 @@
     wireTemplatePicker(root);
     initCollapsibleComposer(root);
     initTuningAccordion(root);
+    initPhotoShortcut(root);
+  }
+
+  // ---- cv2-40: Photography Suite shortcut card ----
+  // Surfaces the existing Visual Studio modal from inside the mobile
+  // drawer without duplicating any of its controls. Inserted into the
+  // .pmgv2-composer-wrap (above #settingsPanel via flex order).
+  function initPhotoShortcut(root) {
+    var mq = window.matchMedia('(max-width: 900px)');
+    if (!mq.matches) return;
+    function attach() {
+      var wrap = document.querySelector('.pmgv2-composer-wrap');
+      var form = wrap && wrap.querySelector('#prompt-form');
+      if (!form || form.querySelector('.pmgv2-photo-shortcut-row')) return false;
+      var card = document.createElement('div');
+      card.className = 'pmgv2-photo-shortcut-row';
+      card.innerHTML =
+        '<p class="pmgv2-photo-shortcut-title">📸 Photography Suite</p>' +
+        '<p class="pmgv2-photo-shortcut-note">Shape your image with professional camera, lighting and style controls.</p>' +
+        '<button type="button" class="pmgv2-photo-shortcut-btn" id="pmgv2-open-photo-suite">Open Photography Suite</button>';
+      form.appendChild(card);
+      var btn = card.querySelector('#pmgv2-open-photo-suite');
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (typeof window.openVisualStudio === 'function') {
+          try { window.openVisualStudio({ mode: 'image' }); return; } catch (err) {}
+        }
+        // Fallbacks: legacy image-mode toggle, or click any opener attr.
+        var opener = document.querySelector('[data-pmg-open-visual-studio], #pmg-open-visual-studio, .pmg-vs-open');
+        if (opener) { opener.click(); return; }
+        var img = document.getElementById('imageModeBtn');
+        if (img) img.click();
+      });
+      return true;
+    }
+    if (attach()) return;
+    var obs = new MutationObserver(function () { if (attach()) obs.disconnect(); });
+    obs.observe(document.body, { childList: true, subtree: true });
+    setTimeout(function () { obs.disconnect(); }, 8000);
   }
 
   // ---- Prompt Tuning accordion (cv2-38, mobile only) ----
@@ -244,6 +283,30 @@
       '<span class="pmgv2-composer-tab-lab">What do you want to build?</span>' +
       '<span class="pmgv2-composer-tab-car" aria-hidden="true">▲</span>';
     main.appendChild(tab);
+
+    // cv2-40: ⚡ Quick Generate button — sits to the right of the pill.
+    // Tapping fires the existing #generateBtn (Fix My Prompt) directly,
+    // skipping the drawer entirely. Pill shrinks via CSS to make room.
+    var quickBtn = document.createElement('button');
+    quickBtn.type = 'button';
+    quickBtn.id = 'pmg-quick-generate';
+    quickBtn.className = 'pmgv2-quick-generate-btn';
+    quickBtn.setAttribute('aria-label', 'Quick generate — skip tuning');
+    quickBtn.setAttribute('title', 'Quick Generate — skip tuning');
+    quickBtn.textContent = '⚡';
+    quickBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      var g = document.getElementById('goal');
+      // If textarea is empty, expand the drawer + focus so the user
+      // sees they need to type something first. Otherwise fire generate.
+      if (!g || !g.value || !g.value.trim()) {
+        expand({ focus: true });
+        return;
+      }
+      var gen = document.getElementById('generateBtn');
+      if (gen) gen.click();
+    });
+    main.appendChild(quickBtn);
 
     function goalHasContent() {
       try {

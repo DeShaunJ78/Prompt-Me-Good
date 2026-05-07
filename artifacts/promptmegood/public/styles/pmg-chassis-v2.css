@@ -1430,7 +1430,9 @@ html.pmg-chassis-v2 .pmgv2-composer-tab { display: none; }
     display: none; /* hidden when expanded */
     position: fixed;
     left: 14px;
-    right: 14px;
+    /* cv2-40: shrink right inset so the ⚡ Quick Generate button has
+       room to sit at the bottom-right. 60px = 44px button + 16px gap. */
+    right: 72px;
     bottom: 60px; /* 56px dock + 4px breathing room */
     height: 46px;
     border-radius: 999px;
@@ -1593,3 +1595,104 @@ html.pmg-chassis-v2 .pmgv2-composer-tab { display: none; }
 /* cv2-33: .pmgv2-help-start (top-bar Help Me Start pill) markup +
    styles removed entirely. The in-composer #pmg-help-me-start-btn is
    the single entry point on both desktop and mobile. */
+
+/* ---- cv2-40: ⚡ Quick Generate button ----
+   Sits at the bottom-right next to the cv2-39 pill on mobile. Pill
+   shrinks (right:72px) to make room. Hidden on desktop because the
+   pill itself is hidden there. Mirrors pill anchor + halo so the
+   pair reads as a single composer affordance. */
+@media (max-width: 900px) {
+  html.pmg-chassis-v2 .pmgv2-quick-generate-btn {
+    display: none; /* shown only when pill is shown */
+    position: fixed;
+    right: 14px;
+    bottom: 60px;
+    width: 46px;
+    height: 46px;
+    border-radius: 999px;
+    background: var(--color-primary, #3ee0a0);
+    color: #0d2b22;
+    border: 1.5px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 92%, transparent);
+    font-size: 22px;
+    line-height: 1;
+    align-items: center;
+    justify-content: center;
+    z-index: 60;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow:
+      0 -8px 28px rgba(0, 0, 0, 0.36),
+      0 6px 22px color-mix(in srgb, var(--color-primary, #3ee0a0) 38%, transparent);
+    transition: transform 160ms ease, background 160ms ease, box-shadow 200ms ease;
+    padding: 0;
+  }
+  html.pmg-chassis-v2.pmg-composer-collapsed .pmgv2-quick-generate-btn {
+    display: inline-flex !important;
+  }
+  html.pmg-chassis-v2 .pmgv2-quick-generate-btn:hover,
+  html.pmg-chassis-v2 .pmgv2-quick-generate-btn:focus-visible {
+    background: color-mix(in srgb, var(--color-primary, #3ee0a0) 88%, white);
+    outline: none;
+  }
+  html.pmg-chassis-v2 .pmgv2-quick-generate-btn:active {
+    transform: translateY(1px);
+  }
+}
+
+/* ---- cv2-40: 📸 Photography Suite shortcut card inside drawer ----
+   When user expands the drawer (textarea + Tuning + Fix My Prompt),
+   they also see a single CTA card that opens the existing Visual
+   Studio modal — surfacing the suite without duplicating its
+   controls. Injected by pmg-chassis-v2.js into .pmgv2-composer-wrap
+   above #settingsPanel. */
+@media (max-width: 900px) {
+  html.pmg-chassis-v2 .pmgv2-photo-shortcut-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 8px 0 12px;
+    padding: 14px;
+    background: color-mix(in srgb, var(--color-primary, #3ee0a0) 6%, var(--color-surface-2, #0d2b22));
+    border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 28%, transparent);
+    border-radius: 14px;
+    order: 2; /* between goal field-primary (1) and #settingsPanel (2) */
+  }
+  html.pmg-chassis-v2 .pmgv2-photo-shortcut-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-text, #e8f5f0);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+  }
+  html.pmg-chassis-v2 .pmgv2-photo-shortcut-note {
+    font-size: 12px;
+    color: var(--color-text-muted, rgba(232,245,240,0.6));
+    margin: 0;
+    line-height: 1.4;
+  }
+  html.pmg-chassis-v2 .pmgv2-photo-shortcut-btn {
+    margin-top: 4px;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--color-primary, #3ee0a0);
+    color: #0d2b22;
+    border: 1.5px solid var(--color-primary, #3ee0a0);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html.pmg-chassis-v2 .pmgv2-photo-shortcut-btn:hover,
+  html.pmg-chassis-v2 .pmgv2-photo-shortcut-btn:focus-visible {
+    background: color-mix(in srgb, var(--color-primary, #3ee0a0) 88%, white);
+    outline: none;
+  }
+  /* Bump #settingsPanel order so it lands AFTER the photo shortcut. */
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #prompt-form #settingsPanel { order: 3 !important; }
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #prompt-form .actions-row,
+  html.pmg-chassis-v2 .pmgv2-composer-wrap #prompt-form #tour-step-generate { order: 4 !important; }
+}
