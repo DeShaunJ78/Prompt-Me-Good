@@ -210,16 +210,18 @@
   appearance: none; cursor: pointer;
   padding: 10px 12px;
   border-radius: 10px;
-  background: color-mix(in srgb, var(--g2-mint, #3ee0a0) 14%, transparent);
+  /* vs-14: lighter, calmer fill per user request */
+  background: rgba(62, 224, 160, 0.08);
   color: var(--g2-mint, #3ee0a0);
-  border: 1px solid color-mix(in srgb, var(--g2-mint, #3ee0a0) 36%, transparent);
+  border: 1px solid rgba(62, 224, 160, 0.35);
   font: 700 0.88rem/1 system-ui, sans-serif;
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   white-space: nowrap;
   min-width: 0;
 }
 .pmg-vs-launch-row .pmg-vs-launch-pill:hover {
-  background: color-mix(in srgb, var(--g2-mint, #3ee0a0) 22%, transparent);
+  background: rgba(62, 224, 160, 0.16);
+  border-color: rgba(62, 224, 160, 0.55);
 }
 
 /* Inline-mounted Visual Studio (mobile page-swap). When Visual dock

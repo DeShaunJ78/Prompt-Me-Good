@@ -739,8 +739,23 @@
     if (slot) slot.setAttribute('data-pmgv2-hero-filled', '1');
   }
 
+  // cv2-35: Move the "Open Expert Command Center →" link out of the
+  // composer's tail (where it's buried below "Advanced Output
+  // Settings") to immediately after the Run This Prompt section.
+  // Users see the link at the moment they're deciding "what next?"
+  // — exactly the right context for going deeper. Idempotent: bails
+  // if the row is already in position or either node is missing.
+  function relocateExpertLink() {
+    var row = document.querySelector('.expert-mode-link-row');
+    var run = document.getElementById('runSection');
+    if (!row || !run) return;
+    if (row.previousElementSibling === run) return;
+    run.parentNode.insertBefore(row, run.nextSibling);
+  }
+
   function relocateLegacy() {
     relocateHero();
+    relocateExpertLink();
     var moved = 0;
     var pending = 0;
     RELOCATIONS.forEach(function (r) {

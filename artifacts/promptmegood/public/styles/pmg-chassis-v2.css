@@ -1319,6 +1319,32 @@ html.pmg-chassis-v2 #pmg-result-confirm {
    the JS somehow injects the .pmgv2-composer-tab node on desktop. */
 html.pmg-chassis-v2 .pmgv2-composer-tab { display: none; }
 
+/* cv2-35 — Mobile result-card slim-down (≤900px). The full-width
+   "Copy Prompt / ▶ Run With AI / Refine It" header buttons duplicate
+   the chip row below them and dominate the result card. The "Your
+   Fixed Prompt" h2 is redundant chrome (the prompt itself is the
+   feature). The Print / Save PDF chip is desktop-only behavior. Hide
+   all three on mobile so the chip row becomes the single action
+   surface, laid out as a 2-column grid for thumb-friendly tapping. */
+@media (max-width: 900px) {
+  /* Specificity must match the (C) chassis rule at ~line 1110 which
+     forces .result-top-actions to display:flex !important inside the
+     thread — otherwise our display:none loses the cascade. Mirror its
+     full chain (.pmgv2-thread #result-panel) to win cleanly. */
+  html.pmg-chassis-v2 .pmgv2-thread #result-panel #result-top-actions,
+  html.pmg-chassis-v2 .pmgv2-thread #result-panel #result-title,
+  html.pmg-chassis-v2 .pmgv2-thread #result-panel #print-btn { display: none !important; }
+  html.pmg-chassis-v2 .pmgv2-thread #result-panel .pmg-result-actions-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+  html.pmg-chassis-v2 .pmgv2-thread #result-panel .pmg-result-actions-row > .btn {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+}
+
 @media (max-width: 900px) {
   /* COLLAPSED state — composer-wrap is hidden, pill takes over.
      We hide the WHOLE wrap (not just children) so all of its fixed
@@ -1350,11 +1376,12 @@ html.pmg-chassis-v2 .pmgv2-composer-tab { display: none; }
     bottom: 60px; /* 56px dock + 4px breathing room */
     height: 46px;
     border-radius: 999px;
-    /* cv2-27: solid white interior with black text per user request —
-       the mint-mix fills still read too dark on OLED phones. Mint halo
+    /* cv2-35: dark green interior with mint border + mint label per
+       user request — flips back from cv2-27's solid-white because the
+       white pill clashed with the dark workstation chrome. Mint halo
        (box-shadow rings) is preserved so the pill stays on-brand. */
-    background: #ffffff;
-    color: #000000;
+    background: #0d2b22;
+    color: var(--color-primary, #3ee0a0);
     border: 1.5px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 85%, transparent);
     padding: 0 20px;
     font-size: 15px;
@@ -1391,7 +1418,7 @@ html.pmg-chassis-v2 .pmgv2-composer-tab { display: none; }
   }
   html.pmg-chassis-v2 .pmgv2-composer-tab:hover,
   html.pmg-chassis-v2 .pmgv2-composer-tab:focus-visible {
-    background: #f4f4f4; /* cv2-27: subtle off-white on hover */
+    background: #133b30; /* cv2-35: slightly lighter dark green on hover */
     animation-play-state: paused;
     outline: none;
   }
@@ -1410,8 +1437,8 @@ html.pmg-chassis-v2 .pmgv2-composer-tab { display: none; }
   html.pmg-chassis-v2 .pmgv2-composer-tab-lab {
     flex: 1 1 auto;
     text-align: left;
-    /* cv2-27: black text on white interior per user request. */
-    color: #000000;
+    /* cv2-35: mint label on dark-green interior. */
+    color: var(--color-primary, #3ee0a0);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1419,10 +1446,10 @@ html.pmg-chassis-v2 .pmgv2-composer-tab { display: none; }
   }
   html.pmg-chassis-v2 .pmgv2-composer-tab-car {
     flex: 0 0 auto;
-    color: #000000;
+    color: var(--color-primary, #3ee0a0);
     font-size: 12px;
     line-height: 1;
-    opacity: 0.85;
+    opacity: 0.9;
     text-shadow: none;
   }
 }
