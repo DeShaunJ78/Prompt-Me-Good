@@ -5492,6 +5492,20 @@
       ]
     },
     {
+      /* cv3-28: dedicated Camera Angle group — gives users explicit
+         perspective control beyond the implicit angles buried in
+         Composition. New angles (Eye Level / Low / High / Hero /
+         Over-the-Shoulder / Profile / Top-Down) sit alongside the
+         classic Bird's-Eye / Worm's-Eye / Dutch already in
+         Composition, so users can stack angle + framing freely. */
+      id: 'angle', label: 'Camera Angle', icon: '📐',
+      pills: [
+        'Eye Level', 'Low Angle', 'High Angle', 'Hero Angle',
+        'Over-The-Shoulder', 'Profile Side', 'Top-Down Flat Lay',
+        'Bird\'s-Eye View', 'Worm\'s-Eye View', 'Dutch Angle'
+      ]
+    },
+    {
       id: 'palette', label: 'Color Palette', icon: '🎨',
       pills: [
         'Warm Tones', 'Cool Blues', 'Monochrome', 'Pastel Soft',

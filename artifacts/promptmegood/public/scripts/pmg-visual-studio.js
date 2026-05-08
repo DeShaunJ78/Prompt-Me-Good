@@ -27,6 +27,7 @@
   // groups: focus (depth) and easing (movement intensity).
   var SORA_OPTIONS = {
     shot:       ['Wide', 'Medium', 'Close-up', 'Extreme close-up', 'Extreme wide', 'Aerial', 'POV', 'Tracking'],
+    angle:      ['Eye Level', 'Low Angle', 'High Angle', 'Hero Angle', 'Over-the-Shoulder', 'Bird\'s-Eye', 'Worm\'s-Eye', 'Dutch Angle', 'Top-Down'],
     movement:   ['Static', 'Slow push in', 'Pan left', 'Pan right', 'Tilt', 'Handheld', 'Dolly', 'Tracking', 'Orbit'],
     mood:       ['Golden hour', 'Midday', 'Twilight', 'Night', 'Overcast', 'Studio', 'Neon', 'Front lit', 'Side lit', 'Back lit', 'Top lit'],
     focus:      ['Deep focus', 'Cinematic Bokeh', 'Selective focus'],
@@ -233,6 +234,7 @@
     var soraPillsHtml = '';
     [
       ['shot',       'Shot Size'],
+      ['angle',      'Camera Angle'],
       ['movement',   'Camera Movement'],
       ['mood',       'Mood & Lighting'],
       ['focus',      'Focus Depth'],
@@ -387,6 +389,7 @@
       if (!key || !v) return;
       if (key === 'duration' || key === 'resolution') return;
       if (key === 'shot')          directives.push(v + ' shot');
+      else if (key === 'angle')    directives.push(v.toLowerCase() + ' camera angle');
       else if (key === 'movement') directives.push(v + ' camera movement');
       else if (key === 'mood')     directives.push(v + ' lighting');
       else if (key === 'focus')    directives.push(v.toLowerCase() + ' depth of field');
