@@ -824,29 +824,30 @@ html.pmg-chassis-v3 body.pmg-has-result #run-with-ai-btn {
   gap: 8px;
   margin-top: 10px;
 }
-/* Send-to buttons: primary action styling (mint gradient) so they read
-   as a clear next step, not as ghost buttons. Audit follow-up. */
+/* Send-to buttons: secondary ghost/outline styling — sit visually
+   below the primary Run with AI CTA so they read as alternative
+   destinations, not competing primaries. */
 .btn-send-to {
   flex: 1;
-  padding: 10px 8px;
-  background: linear-gradient(135deg, #00c896 0%, #3ee0a0 100%);
+  padding: 9px 8px;
+  background: transparent;
   border: 1px solid #00c896;
   border-radius: 8px;
-  color: #052a1f;
+  color: #00c896;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   font-family: inherit;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  box-shadow: 0 4px 14px rgba(0, 200, 150, 0.18);
-  transition: filter 0.15s ease, transform 0.05s ease;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.05s ease;
 }
 .btn-send-to:hover {
-  filter: brightness(1.06);
-  background: linear-gradient(135deg, #00d6a3 0%, #4be8aa 100%);
+  background: rgba(0, 200, 150, 0.08);
+  color: #3ee0a0;
+  border-color: #3ee0a0;
 }
 .btn-send-to:active { transform: translateY(1px); }
 

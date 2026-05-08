@@ -69,7 +69,7 @@ I prefer concise and direct communication. When making changes, prioritize itera
 
 ## Gotchas
 
-*   **Cache-buster:** `pmg-auto-boost.css` + `pmg-auto-boost.js` at `ab-2`. `pmg-chassis-v3.css` + `pmg-chassis-v3.js` at `cv3-34`. `pmg-visual-studio.css` + `pmg-visual-studio.js` at `vs-20-image-workshop`; `pmg-storyboard.css` at `sb-7`, `pmg-storyboard.js` at `sb-8`. `pmg-ux.js` at `cv3-28-camera-angle`. Brand assets (`pmg-logo.png`, `favicon-32.png`, `favicon-48.png`) use `?v=5`.
+*   **Cache-buster:** `pmg-auto-boost.css` + `pmg-auto-boost.js` at `ab-2`. `pmg-chassis-v3.css` at `cv3-35`, `pmg-chassis-v3.js` at `cv3-34`. `pmg-visual-studio.css` + `pmg-visual-studio.js` at `vs-20-image-workshop`; `pmg-storyboard.css` at `sb-7`, `pmg-storyboard.js` at `sb-8`. `pmg-ux.js` at `cv3-28-camera-angle`. Brand assets (`pmg-logo.png`, `favicon-32.png`, `favicon-48.png`) use `?v=5`.
 *   **Accessibility State:** Verify `inert`/`aria-hidden` states after DOM manipulations.
 *   **Quick Win Overlay:** Ensure `html.pmg-qw-pending` is applied via inline script for first-time users.
 *   **Expert Command Center Gating:** Expert Mode becomes a paid feature after `BETA_END`; ensure UI reflects this.
