@@ -215,3 +215,9 @@ id = "FyJVXUmjHvElxx30drGlJ"
 uri = "file://.local/notes/mobile-composer-design.md"
 type = "text"
 title = "Mobile Composer — Design & Goal"
+
+[[outputs]]
+id = "m1ORlbfhuCG0CZVbqADN3"
+uri = "file://screenshots/post-analyze.png"
+type = "image"
+title = "Text panel after \"Analyze My Idea\" — full prompt engineer tuning is live"
