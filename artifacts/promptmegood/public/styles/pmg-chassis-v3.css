@@ -174,6 +174,11 @@ html.pmg-chassis-v3 body {
   padding: 0;
 }
 .pmgv3-ico:hover { background: rgba(0, 200, 150, 0.08); color: #00c896; }
+/* Help icon is an <a> element so it opens /guide.html in a new tab; strip the
+   default link styling so it sits visually flush with the other 44x44 icons. */
+a.pmgv3-ico { text-decoration: none; }
+a.pmgv3-ico:visited { color: rgba(255, 255, 255, 0.7); }
+a.pmgv3-ico:hover { color: #00c896; }
 /* Topbar tap targets are now hard-set to 44x44 with !important on the
    base .pmgv3-ico rule above (no longer media-query-gated). */
 .pmgv3-upgrade {
