@@ -1,5 +1,35 @@
+# PromptMeGood — robots.txt
+# AI prompt builder for ChatGPT, Claude, DALL-E, Midjourney, and Sora video.
+
 User-agent: *
 Allow: /
 Disallow: /api/
+Disallow: /404.html
+
+# Major search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+# Allow well-behaved AI/LLM crawlers (helps us show up in answer engines)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
 
 Sitemap: https://www.promptmegood.com/sitemap.xml

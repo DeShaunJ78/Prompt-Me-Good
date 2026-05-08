@@ -1,0 +1,116 @@
+PromptMeGood — Comprehensive Site Audit & Action Plan
+
+Prepared by: Manus AI
+Date: May 2026
+
+This document provides a comprehensive audit of the PromptMeGood application across five key dimensions: UX & Layout, Mobile Responsiveness, Feature Completeness, Copy & Conversion, and Performance. Each dimension is rated out of 10, followed by a prioritized action plan.
+
+
+
+
+1. UX & Layout (Score: 6/10)
+
+The Good:
+The core "Text Prompts" flow is strong. The pattern of Input → Tune → Generate → Result is logical and matches user expectations for a prompt builder. The dark mode aesthetic is professional and clean.
+
+The Bad:
+The layout breaks down significantly outside the core text flow.
+
+•
+Visual Tabs: The Photography tab is overwhelming, presenting 157 individual pill buttons in a single view without clear hierarchy or a primary action button. The Video tab is currently empty/incomplete.
+
+•
+Inconsistent Patterns: The interaction model changes between tabs. Text Prompts uses a structured form, while Photography relies entirely on pill selection without a clear generation path.
+
+•
+Redundant Elements: There are multiple "Generate" buttons and "Help Me Start" buttons scattered throughout the DOM, leading to confusion and potential state conflicts.
+
+2. Mobile Responsiveness (Score: 4/10)
+
+The Good:
+The bottom navigation dock (Vault / Workstation / Visual) is a solid architectural choice for mobile, keeping core areas accessible.
+
+The Bad:
+The mobile execution is currently the weakest part of the application.
+
+•
+The "Collapsible Composer" Failure: The attempt to move the prompt builder into a fixed bottom pill on mobile has completely broken the Workstation tab. The input textarea disappears, and the result panel is left with massive empty space.
+
+•
+Overlapping Elements: Fixed elements (like the composer pill) overlap scrollable content, cutting off critical buttons like "Run With AI Here".
+
+•
+Endless Scrolling: The Photography tab on mobile requires scrolling past 80+ expanded pills before reaching any actionable area.
+
+3. Feature Completeness (Score: 7/10)
+
+The Good:
+The core value proposition — turning vague ideas into structured prompts — works well. The Vault system (history, templates, import/export) is surprisingly robust for a local-first app.
+
+The Bad:
+Several advertised features are either missing or broken.
+
+•
+Visual Studio Modal: The modal fails to open due to a CSS display: none !important override bug.
+
+•
+Video Suite: The Video tab is essentially a placeholder.
+
+•
+Signature Features: "Reverse Engineer", "Prompt DNA", and "Storyboard" are present in the UI but lack full backend implementation.
+
+4. Copy & Conversion (Score: 8/10)
+
+The Good:
+The copywriting is sharp, benefit-driven, and clear. "Finally, AI That Understands You" is a strong hook. The "Before/After" cat prompt example perfectly illustrates the product's value.
+
+The Bad:
+The monetization path is slightly buried. The "Upgrade" button exists, but the "Founding Member" offer and pricing details are not prominently featured in the core user flow, potentially leaving money on the table.
+
+5. Performance & Architecture (Score: 7/10)
+
+The Good:
+The local-first architecture (saving to browser storage) makes the app feel fast and respects user privacy. The DOM loads quickly.
+
+The Bad:
+The JavaScript architecture relies heavily on DOM manipulation (moving elements around, toggling classes) rather than state-driven rendering. This is the root cause of the mobile layout regressions — CSS and JS are fighting each other for control of element positioning.
+
+
+
+
+Prioritized Action Plan
+
+To elevate PromptMeGood to a 9/10 or 10/10 product, execute these fixes in strict order:
+
+Priority 1: Fix the Mobile Workstation Tab (Critical Blocker)
+
+•
+Action: Remove the position: fixed behavior from the mobile composer wrap. Restore the natural vertical stack: Textarea → Tuning (collapsed) → Generate Button → Result Panel.
+
+•
+Why: Users currently cannot type a prompt on mobile. This is a fatal flaw.
+
+Priority 2: Redesign the Visual Tabs (UX Standardization)
+
+•
+Action: Rebuild the Photography and Video tabs to mirror the Text Prompts pattern. Use a textarea for the core idea, place all pills inside a collapsed "Tuning" accordion, and provide a single "Build Prompt" button.
+
+•
+Why: Reduces cognitive load from 157 visible pills down to a simple, familiar input form.
+
+Priority 3: Fix Broken Features (Trust & Polish)
+
+•
+Action: Resolve the Visual Studio modal CSS bug. Implement the backend routes for the Storyboard and Reverse Engineer features.
+
+•
+Why: Broken buttons destroy user trust faster than bad design.
+
+Priority 4: Clean Up the DOM (Technical Debt)
+
+•
+Action: Remove duplicate buttons (e.g., the extra "Help Me Start" button). Stop using JS to physically move elements in the DOM for mobile layouts; use CSS Flexbox/Grid ordering instead.
+
+•
+Why: Prevents future layout regressions and makes the codebase maintainable.
+
