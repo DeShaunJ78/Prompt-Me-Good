@@ -1226,6 +1226,82 @@ router.post("/boost", rateLimit, async (req, res) => {
   }
 });
 
+/* ============================================================================
+ * /api/auto-tune — Audit 2.1: AI picks tuning defaults from the user's idea
+ * Reads a one-line idea and returns a set of recommended values for the
+ * 7 tuning groups in #settingsPanel. Each value is constrained to the
+ * allowed enum so the frontend can blindly set the <select>.value without
+ * sanitization. The model is asked for STRICT JSON; we hard-clamp to the
+ * known enum on the server in case it goes off-script.
+ * ============================================================================ */
+const TUNE_ENUMS = {
+  category: ["other", "business", "money", "content", "career", "personal", "productivity", "learning", "faith"],
+  skillLevel: ["beginner", "intermediate", "advanced"],
+  tone: ["professional", "bold-direct", "casual", "expert"],
+  outputFormat: ["step-by-step", "list", "detailed breakdown"],
+  maxLength: ["", "100", "200", "300", "500"],
+  outputLanguage: ["english", "spanish", "portuguese", "russian", "french", "german"],
+  personality: ["none", "direct", "friendly", "bold", "professional", "creative", "faith", "street", "luxury", "viral"],
+} as const;
+
+type TuneKey = keyof typeof TUNE_ENUMS;
+
+router.post("/auto-tune", rateLimit, async (req, res) => {
+  const idea = clampString(req.body?.idea, 2000);
+  if (!idea || idea.length < 4) {
+    res.status(400).json({ ok: false, error: "Provide an idea of at least 4 characters." });
+    return;
+  }
+  const enumLines = (Object.keys(TUNE_ENUMS) as TuneKey[])
+    .map((k) => `- ${k}: ${TUNE_ENUMS[k].map((v) => (v === "" ? '""' : v)).join(" | ")}`)
+    .join("\n");
+  try {
+    const completion = await openai.chat.completions.create({
+      model: TEXT_MODEL,
+      max_completion_tokens: 250,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are PromptMeGood's tuning autopilot. Given a one-line idea, pick the BEST default value from each enum so the user can hit Generate immediately. Output STRICT JSON only with this exact shape: " +
+            '{"category":"...","skillLevel":"...","tone":"...","outputFormat":"...","maxLength":"...","outputLanguage":"...","personality":"..."}. ' +
+            "Every value MUST be chosen from the allowed enum. Use the empty string \"\" for maxLength only if the idea suggests no length limit. Default outputLanguage to \"english\" unless the idea is clearly in another supported language. Default personality to \"none\" unless a strong voice fits.\n\n" +
+            "Allowed enums:\n" +
+            enumLines,
+        },
+        {
+          role: "user",
+          content: `Idea:\n${idea}`,
+        },
+      ],
+      response_format: { type: "json_object" },
+    });
+    const raw = completion.choices[0]?.message?.content?.trim() ?? "{}";
+    let parsed: Record<string, unknown> = {};
+    try { parsed = JSON.parse(raw); } catch { parsed = {}; }
+    const picks: Record<TuneKey, string> = {
+      category: "other",
+      skillLevel: "intermediate",
+      tone: "professional",
+      outputFormat: "detailed breakdown",
+      maxLength: "",
+      outputLanguage: "english",
+      personality: "none",
+    };
+    (Object.keys(TUNE_ENUMS) as TuneKey[]).forEach((k) => {
+      const v = parsed[k];
+      if (typeof v === "string") {
+        const allowed = TUNE_ENUMS[k] as readonly string[];
+        if (allowed.includes(v)) picks[k] = v;
+      }
+    });
+    res.json({ ok: true, picks });
+  } catch (err) {
+    logger.error({ err }, "auto-tune failed");
+    res.status(502).json({ ok: false, error: "AI service is unavailable. Try again." });
+  }
+});
+
 router.post("/refine-prompt", rateLimit, async (req, res) => {
   const prompt = clampString(req.body?.prompt);
   const instruction = clampString(req.body?.instruction, 1000);

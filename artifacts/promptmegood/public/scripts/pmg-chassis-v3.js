@@ -102,10 +102,14 @@
             '<button id="analyze-btn" class="btn-analyze" type="button">→ Analyze My Idea</button>',
           '</section>',
           '<section class="tuning-section is-collapsed" id="tuning-panel" style="display:none !important">',
-            '<div class="tuning-header">',
-              '<span class="tuning-title">🎛️ Tune Your Prompt</span>',
+            '<button type="button" class="tuning-header" id="tuning-mobile-toggle" aria-expanded="false" aria-controls="settingsPanel">',
+              '<span class="tuning-header-row">',
+                '<span class="tuning-title">🎛️ Tune Your Prompt</span>',
+                '<span class="tuning-pick-count" id="tuning-pick-count" aria-hidden="true"></span>',
+                '<span class="tuning-chevron" aria-hidden="true">▾</span>',
+              '</span>',
               '<span class="tuning-hint">We\'ve pre-selected settings based on your idea. Adjust if needed.</span>',
-            '</div>',
+            '</button>',
             '<div class="pmgv3-tuning-host"></div>',
           '</section>',
           '<section class="generate-section is-collapsed" id="generate-section" style="display:none !important">',
@@ -280,7 +284,20 @@
         var t = document.getElementById('tuning-panel');
         var g = document.getElementById('generate-section');
         document.body.classList.add('pmgv3-analyzed');
-        if (t) { t.classList.remove('is-collapsed'); t.removeAttribute('hidden'); t.style.removeProperty('display'); }
+        if (t) {
+          t.classList.remove('is-collapsed');
+          t.removeAttribute('hidden');
+          t.style.removeProperty('display');
+          // cv3-30 audit 3.1: on mobile, start the accordion CLOSED so the
+          // Generate CTA stays above the fold. Desktop CSS ignores this class.
+          try {
+            if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) {
+              t.classList.remove('is-mobile-open');
+            } else {
+              t.classList.add('is-mobile-open');
+            }
+          } catch (e) {}
+        }
         if (g) { g.classList.remove('is-collapsed'); g.removeAttribute('hidden'); g.style.removeProperty('display'); }
         var gbShow = document.getElementById('generateBtn');
         if (gbShow) { gbShow.style.removeProperty('display'); gbShow.removeAttribute('data-pmgv3-collapsed'); }
@@ -296,6 +313,12 @@
             window.pmgAutoOptimize();
           }
         } catch (e) {}
+        // cv3-30 audit 2.1: AI auto-picks tuning defaults so the user can hit
+        // Generate immediately. Calls /api/auto-tune with the idea text and
+        // sets each <select>.value + dispatches change so the existing pill
+        // sync repaints. Falls back silently on error — user can still tune
+        // manually. Disable hatches: ?noautotune or localStorage.pmg_autotune_disable.
+        try { autoTuneFromIdea(); } catch (e) {}
         if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     }
@@ -332,6 +355,107 @@
         setTimeout(mirrorStrength, 350);
       });
     }
+    // cv3-30 audit 2.1 helper: ask the server to pick the best tuning defaults
+    // for this idea and apply them. No-op if the user disabled it via
+    // ?noautotune or localStorage.pmg_autotune_disable='1', or if the idea is
+    // too short to be meaningful.
+    function autoTuneFromIdea() {
+      try {
+        var loc = (window.location && window.location.search) || '';
+        if (/[?&]noautotune\b/.test(loc)) return;
+        if (localStorage.getItem('pmg_autotune_disable') === '1') return;
+      } catch (e) {}
+      var goal = document.getElementById('goal');
+      var idea = goal && goal.value ? String(goal.value).trim() : '';
+      if (idea.length < 4) return;
+      var statusBadge = document.getElementById('tuning-pick-count');
+      var prevText = statusBadge ? statusBadge.textContent : '';
+      if (statusBadge) {
+        statusBadge.textContent = 'AI tuning…';
+        statusBadge.style.background = 'rgba(0, 200, 150, 0.2)';
+      }
+      var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var timeoutId = setTimeout(function () { if (ctrl) ctrl.abort(); }, 12000);
+      fetch('/api/auto-tune', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idea: idea }),
+        signal: ctrl ? ctrl.signal : undefined
+      })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+          if (!data || !data.ok || !data.picks) return;
+          var picks = data.picks;
+          var FIELDS = ['category', 'skillLevel', 'tone', 'outputFormat', 'maxLength', 'outputLanguage', 'personality'];
+          FIELDS.forEach(function (id) {
+            var sel = document.getElementById(id);
+            if (!sel) return;
+            var v = picks[id];
+            if (typeof v !== 'string') return;
+            // Verify the value exists as an <option> before assigning so we
+            // don't silently set an invalid select state.
+            var ok = false;
+            for (var i = 0; i < sel.options.length; i++) {
+              if (sel.options[i].value === v) { ok = true; break; }
+            }
+            if (!ok) return;
+            if (sel.value === v) return;
+            sel.value = v;
+            try { sel.dispatchEvent(new Event('change', { bubbles: true })); }
+            catch (err) {
+              var evt = document.createEvent('HTMLEvents');
+              evt.initEvent('change', true, false);
+              sel.dispatchEvent(evt);
+            }
+          });
+        })
+        .catch(function () {
+          // Silent fail — user can still tune manually.
+        })
+        .then(function () {
+          clearTimeout(timeoutId);
+          if (statusBadge) {
+            statusBadge.style.removeProperty('background');
+            statusBadge.textContent = prevText || '';
+          }
+        });
+    }
+
+    // cv3-30 audit 3.1: mobile accordion toggle for the text-panel tuning
+    // section. Tap the header → expand/collapse #settingsPanel. Desktop
+    // ignores the click handler effect because CSS doesn't gate visibility
+    // on .is-mobile-open above 768px.
+    var tuneToggle = document.getElementById('tuning-mobile-toggle');
+    if (tuneToggle) {
+      tuneToggle.addEventListener('click', function (e) {
+        var sec = document.getElementById('tuning-panel');
+        if (!sec) return;
+        var open = sec.classList.toggle('is-mobile-open');
+        tuneToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) {
+          // Smooth-scroll the now-expanded grid into view on mobile so the
+          // user doesn't lose visual context.
+          try {
+            var sp = document.getElementById('settingsPanel');
+            if (sp && sp.scrollIntoView) {
+              setTimeout(function () { sp.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 60);
+            }
+          } catch (err) {}
+        }
+      });
+    }
+    // Live pick-count badge so the collapsed header still tells the user
+    // how many tuning choices are active.
+    function updatePickCount() {
+      var badge = document.getElementById('tuning-pick-count');
+      if (!badge) return;
+      var sp = document.getElementById('settingsPanel');
+      if (!sp) { badge.textContent = ''; return; }
+      var n = sp.querySelectorAll('.pmg-tune-pill.is-active, .pmg-pill.is-active').length;
+      badge.textContent = n > 0 ? (n + ' pick' + (n === 1 ? '' : 's')) : '';
+    }
+    setInterval(updatePickCount, 1200);
+
     // Mirror strength on a polling tick so it stays current
     setInterval(mirrorStrength, 1500);
 

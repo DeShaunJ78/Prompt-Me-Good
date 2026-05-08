@@ -451,16 +451,51 @@ html.pmg-chassis-v3 .idea-section #goal:focus {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.tuning-header {
+/* cv3-30: tuning header is now a <button> so it can act as the mobile
+   accordion toggle. Reset native button styling and keep the original
+   stacked layout on desktop. */
+button.tuning-header {
   display: flex;
   flex-direction: column;
   gap: 4px;
   margin-bottom: 12px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: default;
+}
+.tuning-header-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
 }
 .tuning-title {
   font-size: 15px;
   font-weight: 700;
   color: #fff;
+}
+.tuning-pick-count {
+  font-size: 11px;
+  font-weight: 600;
+  color: #00c896;
+  background: rgba(0, 200, 150, 0.12);
+  border: 1px solid rgba(0, 200, 150, 0.3);
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+.tuning-pick-count:empty { display: none; }
+.tuning-chevron {
+  margin-left: auto;
+  color: rgba(0, 200, 150, 0.7);
+  font-size: 14px;
+  transition: transform 0.2s ease;
+  display: none; /* desktop hides chevron — section is always open */
 }
 .tuning-hint {
   font-size: 12px;
@@ -979,9 +1014,44 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
   #pmg-tf-feedback {
     display: none !important;
   }
-  /* Tighter tuning section on mobile so Generate stays close to thumb */
+  /* cv3-30 audit 3.1: tuning section is a tap-to-expand accordion on
+     mobile. Header stays visible (with pick-count badge + chevron) and
+     the dense pill grid only appears once the user opts in. Keeps
+     Generate above the fold on a 390px viewport. */
   .tuning-section {
-    max-height: 280px;
+    max-height: none;
+    overflow: visible;
+    padding: 12px 14px;
+  }
+  button.tuning-header {
+    cursor: pointer;
+    margin-bottom: 0;
+    padding: 4px 0;
+    -webkit-tap-highlight-color: rgba(0, 200, 150, 0.15);
+  }
+  button.tuning-header:active .tuning-chevron { opacity: 0.6; }
+  .tuning-chevron {
+    display: inline-block !important;
+  }
+  .tuning-section.is-mobile-open .tuning-chevron {
+    transform: rotate(180deg);
+  }
+  .tuning-section.is-mobile-open {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  .tuning-section.is-mobile-open button.tuning-header {
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(0, 200, 150, 0.18);
+    padding-bottom: 10px;
+  }
+  /* Hide the dense settings grid until the user expands the accordion.
+     The host wrapper holds the relocated #settingsPanel — hiding the
+     host (not #settingsPanel directly) avoids fighting the inline
+     `display: none` that gets stripped on Analyze. */
+  .tuning-section:not(.is-mobile-open) .pmgv3-tuning-host,
+  .tuning-section:not(.is-mobile-open) .tuning-hint {
+    display: none !important;
   }
   /* Tuning pills: shrink from 44px touch target to 36px so they fit comfortably */
   .pmg-prompt-tuning .pmg-tune-pills,
