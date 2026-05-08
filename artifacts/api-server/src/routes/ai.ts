@@ -722,7 +722,7 @@ router.post("/video", videoLimiter, userCapEnforce("vid", 1), async (req, res) =
         success: false,
         ok: false,
         error: status === 429
-          ? "Sora is rate-limited right now. Try again in a few minutes."
+          ? "Video generation is rate-limited right now. Try again in a few minutes."
           : "Video generation failed. Please try again.",
       });
       return;
@@ -731,7 +731,7 @@ router.post("/video", videoLimiter, userCapEnforce("vid", 1), async (req, res) =
     const data = (await soraRes.json()) as { url?: string; data?: Array<{ url?: string }> };
     const url = data.url ?? data.data?.[0]?.url;
     if (!url) {
-      res.status(502).json({ success: false, ok: false, error: "Sora returned no video URL." });
+      res.status(502).json({ success: false, ok: false, error: "Video generation returned no URL." });
       return;
     }
 

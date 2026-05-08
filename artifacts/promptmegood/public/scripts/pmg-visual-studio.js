@@ -266,7 +266,7 @@
         '<textarea id="pmg-vs-video-goal" rows="3" placeholder="A tracking shot of a vintage car driving through neon-lit Tokyo at night…"></textarea>',
       '</section>',
       '<section class="pmg-vs-inline-section">',
-        '<label class="pmgv3-section-label">Sora Tuning Suite</label>',
+        '<label class="pmgv3-section-label">Video Tuning Suite</label>',
         '<p style="margin:0 0 8px;font-size:12px;opacity:.65">Pick a vibe in each group — we will compose the directives.</p>',
         '<div class="pmg-vs-sora-pills">' + soraPillsHtml + '</div>',
       '</section>',
@@ -293,7 +293,7 @@
       '<div class="pmg-vs-media-container">',
         '<div id="pmg-vs-video-placeholder" class="pmg-media-placeholder">',
           '<span>🎬 Your video prompt will appear here soon</span>',
-          '<span class="pmg-vs-sub">Build your scene on the left, then Generate. Sora typically runs 10–30 seconds.</span>',
+          '<span class="pmg-vs-sub">Build your scene on the left, then Generate. Videos typically take 10–30 seconds.</span>',
         '</div>',
         '<video id="pmg-vs-generated-video" controls playsinline hidden></video>',
       '</div>',
@@ -429,7 +429,7 @@
     if (!ph) return;
     ph.hidden = false;
     ph.innerHTML = '<div class="pmg-vs-spinner" aria-hidden="true"></div>' +
-                   '<span>⏳ Generating video with Sora…</span>' +
+                   '<span>⏳ Generating your video…</span>' +
                    '<span class="pmg-vs-sub">This can take 10–30 seconds.</span>';
     var vid = $('pmg-vs-generated-video'); if (vid) vid.hidden = true;
     var act = $('pmg-vs-video-actions'); if (act) act.hidden = true;
