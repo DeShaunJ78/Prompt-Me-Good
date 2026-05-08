@@ -246,6 +246,9 @@
     }
     var t = document.createElement('div');
     t.className = 'pmg-send-to-toast';
+    /* sendto-4: required so the chassis `body > *:not(...)`
+       universal-hide rule doesn't make the toast invisible. */
+    t.setAttribute('data-pmg-overlay-root', '');
     t.textContent = msg;
     document.body.appendChild(t);
     setTimeout(function () { try { t.remove(); } catch (_) {} }, 3000);
@@ -407,42 +410,60 @@
     opts.setLast(destKey);
     if (typeof opts.afterSet === 'function') opts.afterSet();
 
-    /* Show the platform tip (if not dismissed for this dest)
-       BEFORE we open the new tab. This is purely DOM, so the
-       window.open below still happens inside the user-gesture
-       stack — popup blockers stay out of the way. The tip key
-       is namespaced (text:/image:) so the same brand listed in
-       both catalogs (e.g. ChatGPT vs DALL·E via ChatGPT) is
-       remembered independently. */
-    showTip((opts.tipNs || '') + destKey, dest.tip);
+    /* sendto-4: silent send. Per product spec, do NOT show any
+       toast or platform-tip banner when the tab opens — the prefill
+       (where it works) handles it for logged-in users and they
+       should never know the clipboard copy happened. We DO copy
+       to the clipboard regardless of whether the dest has a
+       prefill URL, so the user has a paste-fallback if the
+       destination ignores the param or signs them out.
 
-    if (typeof dest.prefill === 'function') {
-      try {
-        window.open(dest.prefill(text), '_blank', 'noopener');
-        toast('Opened ' + dest.label + ' with your prompt prefilled.');
-      } catch (_) {
-        toast('Could not open ' + dest.label + '.');
-      }
-      return;
-    }
+       Then arm a one-shot visibilitychange watcher: if the user
+       returns to PromptMeGood within 60s, that strongly suggests
+       the prefill didn't work (or they bounced). In that case we
+       show a single helpful toast: "✓ Your prompt is still on
+       your clipboard — paste it when you're ready." */
+    armReturnToast(dest.label);
 
-    /* No prefill: open the tab SYNCHRONOUSLY first (still inside
-       the user-gesture stack, so popup blockers leave it alone),
-       then run the async clipboard write. If the clipboard write
-       loses its user-gesture context (some browsers), the worst
-       case is the user just sees the destination opened with a
-       fallback toast — they never get a blocked popup. */
+    var prefillUrl = (typeof dest.prefill === 'function') ? dest.prefill(text) : null;
+    var openUrl = prefillUrl || dest.url;
+
+    /* Open the tab SYNCHRONOUSLY first so popup blockers leave it
+       alone (we're still inside the user-gesture stack). Clipboard
+       write follows — silent, no toast on success. */
     var win = null;
-    try { win = window.open(dest.url, '_blank', 'noopener'); } catch (_) {}
+    try { win = window.open(openUrl, '_blank', 'noopener'); } catch (_) {}
     copyText(text).then(function (ok) {
       if (!win) {
-        try { window.open(dest.url, '_blank', 'noopener'); } catch (_) {}
+        try { window.open(openUrl, '_blank', 'noopener'); } catch (_) {}
       }
-      if (ok) {
-        toast('Copied — paste it into ' + dest.label + ' (Ctrl/Cmd+V).');
-      } else {
-        toast('Opened ' + dest.label + ' — copy your prompt manually.');
-      }
+      // Silent. No success toast. The return-watcher handles the
+      // edge case where the user comes back without using it.
+    });
+  }
+
+  /* Return-toast watcher. Fires at most ONCE per launch, only if
+     the user returns within 60s. Uses a module-level latch so
+     repeated sends don't stack listeners. */
+  var _returnArmedAt = 0;
+  var _returnDestLabel = '';
+  var _returnHooked = false;
+  function armReturnToast(destLabel) {
+    _returnArmedAt = Date.now();
+    _returnDestLabel = destLabel || 'the destination';
+    if (_returnHooked) return;
+    _returnHooked = true;
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState !== 'visible') return;
+      if (!_returnArmedAt) return;
+      var elapsed = Date.now() - _returnArmedAt;
+      if (elapsed > 60000) { _returnArmedAt = 0; return; }
+      // Disarm immediately so a quick tab-switch loop doesn't spam.
+      _returnArmedAt = 0;
+      // Tiny delay so the toast layers above the tab-restore paint.
+      setTimeout(function () {
+        toast('\u2713 Your prompt is still on your clipboard \u2014 paste it when you\u2019re ready.');
+      }, 200);
     });
   }
 

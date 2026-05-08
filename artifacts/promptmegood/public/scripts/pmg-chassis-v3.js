@@ -444,6 +444,31 @@
     } catch (e) {}
   }
 
+  /* cv3-51 — Return-toast watcher for Send-to-platform clicks.
+     The send is silent (no toast when tab opens) so logged-in users
+     whose prefill works never see a useless message. If the user
+     returns to PMG within 60s, that strongly suggests the prefill
+     didn't take (or they bounced) — show a single helpful nudge:
+     "Your prompt is still on your clipboard — paste it when ready."
+     One-shot per launch, single shared visibilitychange listener. */
+  var _rtArmedAt = 0;
+  var _rtHooked = false;
+  function armReturnToast(/* destLabel */) {
+    _rtArmedAt = Date.now();
+    if (_rtHooked) return;
+    _rtHooked = true;
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState !== 'visible') return;
+      if (!_rtArmedAt) return;
+      var elapsed = Date.now() - _rtArmedAt;
+      if (elapsed > 60000) { _rtArmedAt = 0; return; }
+      _rtArmedAt = 0;
+      setTimeout(function () {
+        flash('\u2713 Your prompt is still on your clipboard \u2014 paste it when you\u2019re ready.');
+      }, 200);
+    });
+  }
+
   function wireActions() {
     // Analyze: reveal tuning + generate
     var analyzeBtn = document.getElementById('analyze-btn');
@@ -962,21 +987,26 @@
           return;
         }
         var encoded = encodeURIComponent(prompt);
-        /* cv3-50: Gemini does NOT honor ?q= on /app (verified in real
-           browser — the URL param is silently ignored and the input
-           stays empty). ChatGPT and Claude DO honor ?q=. So Gemini
-           opens bare and we rely on the clipboard copy below + the
-           toast/flash to tell the user to paste. */
+        /* cv3-51: Silent send. ChatGPT/Claude get real ?q= prefill;
+           Gemini ignores ?q= so opens bare. Either way, copy to
+           clipboard SILENTLY and arm a 60s return-toast — no toast
+           when the tab opens. If the user comes back to PMG within
+           60s (signal: prefill didn't take), the return-toast tells
+           them their prompt is still on the clipboard. */
         var urls = {
           chatgpt: 'https://chatgpt.com/?q=' + encoded,
           claude: 'https://claude.ai/new?q=' + encoded,
           gemini: 'https://gemini.google.com/app',
         };
         var platform = btn.dataset.platform;
+        var label = platform === 'chatgpt' ? 'ChatGPT'
+                  : platform === 'claude'  ? 'Claude'
+                  : platform === 'gemini'  ? 'Gemini'
+                  : platform;
         try { navigator.clipboard.writeText(prompt); } catch (e) {}
         if (urls[platform]) {
+          armReturnToast(label);
           window.open(urls[platform], '_blank', 'noopener');
-          if (platform === 'gemini') flash('Prompt copied — paste it into Gemini (Ctrl/Cmd+V).');
         }
       });
     });
@@ -1220,6 +1250,10 @@
   function flash(msg) {
     var el = document.createElement('div');
     el.textContent = msg;
+    /* MUST carry data-pmg-overlay-root so the chassis
+       `body > *:not(...)` universal-hide CSS rule doesn't make
+       the toast invisible (see pmg-chassis-v3.css line 51). */
+    el.setAttribute('data-pmg-overlay-root', '');
     el.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);' +
       'background:#0a2218;color:#00c896;border:1px solid #00c896;padding:10px 16px;' +
       'border-radius:10px;font-size:13px;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.4);';
