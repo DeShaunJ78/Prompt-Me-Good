@@ -675,6 +675,13 @@
     if (!drawer) {
       drawer = document.createElement('aside');
       drawer.id = 'pmgv3-vault-drawer';
+      /* MUST be set before append: the chassis `body > *:not(...)`
+         universal-hide rule hides anything appended directly under
+         <body> unless it carries `data-pmg-overlay-root`. The overlay
+         above already has it; the drawer was missing it, so the
+         drawer was added to the DOM with class `is-open` but
+         `display: none / visibility: hidden` — the user saw nothing. */
+      drawer.setAttribute('data-pmg-overlay-root', '');
       drawer.setAttribute('role', 'dialog');
       drawer.setAttribute('aria-modal', 'true');
       drawer.setAttribute('aria-label', 'Prompt Vault');
