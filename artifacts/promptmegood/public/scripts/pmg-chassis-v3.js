@@ -333,12 +333,23 @@
         // [form="prompt-form"] association would fire submit twice (one
         // native, one from requestSubmit), causing duplicate API calls.
         e.preventDefault();
-        // Reveal Box 1 immediately so the user sees feedback
+        // Reveal Box 1 immediately so the user sees feedback. The box
+        // is rendered with inline `style="display:none !important"` so
+        // we force-override with setProperty('display','block','important')
+        // — clearing the property string-style is unreliable across
+        // browsers when !important was set inline.
         var box = document.getElementById('prompt-output-box');
         if (box) {
           box.classList.remove('is-collapsed');
           box.removeAttribute('hidden');
-          box.style.display = '';
+          box.style.setProperty('display', 'block', 'important');
+        }
+        // Belt-and-braces: explicitly unhide the Run with AI button.
+        // Some legacy scripts have been seen leaving display:none on it.
+        var rwa = document.getElementById('run-with-ai-btn');
+        if (rwa) {
+          rwa.style.setProperty('display', 'block', 'important');
+          rwa.removeAttribute('hidden');
         }
         // Explicitly fire submit on #prompt-form. The button was reparented out
         // of the form so HTML5 form-attribute association is unreliable; the

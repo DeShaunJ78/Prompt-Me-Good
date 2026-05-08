@@ -154,8 +154,13 @@ html.pmg-chassis-v3 body {
   gap: 8px;
 }
 .pmgv3-ico {
-  width: 36px;
-  height: 36px;
+  /* 44x44 is the WCAG/Apple HIG minimum tap target. Forced with
+     !important so no narrower override (legacy ?v= stylesheet, mobile
+     compaction rule) can shrink the actual hit zone below it. */
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  min-height: 44px !important;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: transparent;
@@ -166,27 +171,11 @@ html.pmg-chassis-v3 body {
   align-items: center;
   justify-content: center;
   transition: background 0.15s, color 0.15s;
+  padding: 0;
 }
 .pmgv3-ico:hover { background: rgba(0, 200, 150, 0.08); color: #00c896; }
-/* Mobile bug fix #1: ensure topbar icon buttons (Vault, Settings) hit
-   the 44x44 minimum tap target on touch devices AND on small viewports.
-   Two media queries — one for real touch devices (pointer: coarse, the
-   most reliable signal on modern phones) and one for any viewport ≤768px
-   (catches devtools mobile emulation, narrow desktop windows, and any
-   browser that mis-reports pointer type). Visual glyph stays small;
-   only the hit area grows. */
-@media (hover: none) and (pointer: coarse) {
-  .pmgv3-ico {
-    min-width: 44px;
-    min-height: 44px;
-  }
-}
-@media (max-width: 768px) {
-  .pmgv3-ico {
-    min-width: 44px;
-    min-height: 44px;
-  }
-}
+/* Topbar tap targets are now hard-set to 44x44 with !important on the
+   base .pmgv3-ico rule above (no longer media-query-gated). */
 .pmgv3-upgrade {
   padding: 8px 14px;
   border-radius: 8px;
@@ -818,6 +807,13 @@ html.pmg-chassis-v3 .pmgv3-output-host #resultBox:focus {
   font-family: inherit;
   transition: transform 0.15s, box-shadow 0.15s;
 }
+/* Safety net: once a result exists, force the Run with AI button
+   visible. Defends against any legacy script that may stamp
+   `display:none` onto #run-with-ai-btn after generation. */
+body.pmg-has-result #run-with-ai-btn,
+html.pmg-chassis-v3 body.pmg-has-result #run-with-ai-btn {
+  display: block !important;
+}
 .btn-run-primary:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 24px rgba(0, 200, 150, 0.35);
@@ -1125,9 +1121,10 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
 @media (max-width: 400px) {
   .pmgv3-topbar { padding: 0 10px; }
   .pmgv3-tb-r { gap: 4px; }
-  /* Visual icon glyph stays small but min-width/min-height from the
-     touch-device rule above keeps the tap target ≥44x44. */
-  .pmgv3-ico { width: 32px; height: 32px; font-size: 14px; padding: 0; }
+  /* .pmgv3-ico stays at the 44x44 tap-target size set on the base
+     rule (with !important). Only shrink the visual glyph (font-size)
+     to keep the topbar visually tight on ≤400px. */
+  .pmgv3-ico { font-size: 14px; padding: 0; }
   .pmgv3-upgrade { padding: 5px 8px; font-size: 11px; }
   .pmgv3-brand { gap: 6px; font-size: 13px; }
   .pmgv3-brand img { width: 24px; height: 24px; }
