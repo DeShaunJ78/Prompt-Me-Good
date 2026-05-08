@@ -221,3 +221,15 @@ id = "m1ORlbfhuCG0CZVbqADN3"
 uri = "file://screenshots/post-analyze.png"
 type = "image"
 title = "Text panel after \"Analyze My Idea\" — full prompt engineer tuning is live"
+
+[[outputs]]
+id = "9auzO2TiKh24NLe-9_dKa"
+uri = "file://screenshots/photo-desktop.png"
+type = "image"
+title = "Photography Suite — Desktop (sub-grouped Camera & Lens + Quick Pick cards)"
+
+[[outputs]]
+id = "TyR2RXV-JutLMUISZG5K_"
+uri = "file://screenshots/photo-mobile.png"
+type = "image"
+title = "Photography Suite — Mobile (collapsed-by-default sections)"

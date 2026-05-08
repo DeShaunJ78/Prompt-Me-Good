@@ -5415,18 +5415,44 @@
     },
     {
       id: 'camera', label: 'Camera & Lens', icon: '📷',
+      /* cv3-26: Camera & Lens is sub-grouped into labeled rows so
+         28 mixed pills are no longer a flat blob. The flat `pills`
+         array below is kept as the union of all sub-group values
+         so Surprise Me, applyPreset, and any downstream code that
+         iterates g.pills keeps working unchanged. The renderer
+         prefers `subgroups` over `pills` when both are present. */
+      subgroups: [
+        { label: 'Focal Length', values: [
+          '14mm Ultra-Wide', '24mm Wide', '35mm Wide',
+          '50mm Standard', '85mm Portrait', '200mm Telephoto',
+          'Macro', 'Telephoto', 'Fisheye'
+        ] },
+        { label: 'Camera Body', values: [
+          'DSLR', 'Mirrorless', 'Film Grain',
+          'Drone Aerial', 'GoPro Action', 'iPhone Snap'
+        ] },
+        { label: 'Aperture', values: [
+          'f/1.4 Bokeh', 'f/2.8 Soft', 'f/8 Sharp', 'f/16 Deep DOF'
+        ] },
+        { label: 'Shutter Speed', values: [
+          '1/60 Motion Blur', '1/250 Sharp', '1/1000 Frozen Action'
+        ] },
+        { label: 'ISO', values: [
+          'ISO 100 Clean', 'ISO 400 Daylight', 'ISO 1600 Low-Light'
+        ] },
+        { label: 'Film Stock', values: [
+          'Kodak Portra 400', 'CineStill 800T', 'Tri-X B&W'
+        ] }
+      ],
       pills: [
-        '85mm Portrait', '35mm Wide', '50mm Standard', 'Macro',
-        'Telephoto', 'Fisheye', 'DSLR', 'Mirrorless',
-        'Film Grain', 'Drone Aerial', 'GoPro Action', 'iPhone Snap',
-        /* Pro knobs (audit pass): explicit aperture / shutter / ISO /
-           extended focal lengths / film stocks. Free pills — they live
-           in the same Camera & Lens group so existing UI / Surprise Me
-           keeps working without a new collapsible section. */
+        '14mm Ultra-Wide', '24mm Wide', '35mm Wide',
+        '50mm Standard', '85mm Portrait', '200mm Telephoto',
+        'Macro', 'Telephoto', 'Fisheye',
+        'DSLR', 'Mirrorless', 'Film Grain',
+        'Drone Aerial', 'GoPro Action', 'iPhone Snap',
         'f/1.4 Bokeh', 'f/2.8 Soft', 'f/8 Sharp', 'f/16 Deep DOF',
         '1/60 Motion Blur', '1/250 Sharp', '1/1000 Frozen Action',
         'ISO 100 Clean', 'ISO 400 Daylight', 'ISO 1600 Low-Light',
-        '14mm Ultra-Wide', '24mm Wide', '200mm Telephoto',
         'Kodak Portra 400', 'CineStill 800T', 'Tri-X B&W'
       ]
     },
@@ -5653,16 +5679,44 @@
          flex-wrap pill grid so the preset buttons never get crammed
          in alongside pills, and pills always start on a fresh row
          below — preventing horizontal overflow on mobile. */
+      /* cv3-26: Quick Pick presets are now visually distinct — sit
+         in their own tinted pill-strip "card" at the top of every
+         group body so users immediately see the fastest path. */
       '#' + SUITE_ID + ' .pmg-photo-presets {',
       '  flex: 0 0 100%; max-width: 100%;',
       '  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;',
-      '  padding-bottom: 10px; margin-bottom: 4px;',
-      '  border-bottom: 1px dashed color-mix(in srgb, var(--color-primary) 22%, var(--color-border));',
+      '  padding: 10px 12px; margin-bottom: 12px;',
+      '  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary) 28%, var(--color-border));',
+      '  border-radius: var(--radius-md);',
       '}',
       '#' + SUITE_ID + ' .pmg-photo-presets-label {',
-      '  font-size: 13px; font-weight: 700;',
+      '  flex: 0 0 100%;',
+      '  font-size: 11px; font-weight: 800; letter-spacing: 0.06em;',
+      '  text-transform: uppercase;',
+      '  color: var(--color-primary);',
+      '  margin-bottom: 4px;',
+      '}',
+      /* cv3-26: Sub-group rows inside Camera & Lens — labeled
+         vertical sections that turn the 28-pill blob into a
+         scannable grid. */
+      '#' + SUITE_ID + ' .pmg-photo-subgroup {',
+      '  flex: 0 0 100%; max-width: 100%;',
+      '  display: block; margin-top: 8px;',
+      '}',
+      '#' + SUITE_ID + ' .pmg-photo-subgroup:first-of-type { margin-top: 4px; }',
+      '#' + SUITE_ID + ' .pmg-photo-subgroup-label {',
+      '  display: block;',
+      '  font-size: 11px; font-weight: 700; letter-spacing: 0.05em;',
+      '  text-transform: uppercase;',
       '  color: var(--color-text-muted);',
-      '  margin-right: 4px;',
+      '  margin-bottom: 6px;',
+      '}',
+      '#' + SUITE_ID + ' .pmg-photo-subgroup-pills {',
+      '  display: flex; flex-wrap: wrap; gap: 8px;',
+      '}',
+      '@media (max-width: 640px) {',
+      '  #' + SUITE_ID + ' .pmg-photo-subgroup-pills { gap: 6px; }',
       '}',
       '#' + SUITE_ID + ' .pmg-photo-preset:hover { transform: translateY(-1px); }',
       '#' + SUITE_ID + ' .pmg-photo-preset.is-active {',
@@ -6073,7 +6127,7 @@
       var preset = PRESETS[g.id];
       if (preset && preset.items && preset.items.length) {
         html.push('    <div class="pmg-photo-presets" role="group" aria-label="' + escapeHtml(preset.title) + '">');
-        html.push('      <span class="pmg-photo-presets-label">' + escapeHtml(preset.title) + ':</span>');
+        html.push('      <span class="pmg-photo-presets-label"><span aria-hidden="true">⚡</span> ' + escapeHtml(preset.title) + ' — fastest path</span>');
         preset.items.forEach(function (it, idx) {
           html.push(
             '      <button type="button" class="pmg-photo-preset" ' +
@@ -6085,9 +6139,27 @@
         });
         html.push('    </div>');
       }
-      g.pills.forEach(function (p) {
-        html.push('    <button type="button" class="pmg-photo-pill" data-group="' + g.id + '" data-value="' + escapeHtml(p) + '">' + escapeHtml(p) + '</button>');
-      });
+      /* cv3-26: Sub-grouped pill rendering. When a group defines
+         `subgroups`, render each as a labeled row instead of one
+         flat pill blob. Pills themselves keep the same data-group
+         + data-value attrs so click handlers, applyPreset, Surprise
+         Me, and refreshSummary all keep working unchanged. */
+      if (g.subgroups && g.subgroups.length) {
+        g.subgroups.forEach(function (sg) {
+          html.push('    <div class="pmg-photo-subgroup">');
+          html.push('      <span class="pmg-photo-subgroup-label">' + escapeHtml(sg.label) + '</span>');
+          html.push('      <div class="pmg-photo-subgroup-pills">');
+          sg.values.forEach(function (p) {
+            html.push('        <button type="button" class="pmg-photo-pill" data-group="' + g.id + '" data-value="' + escapeHtml(p) + '">' + escapeHtml(p) + '</button>');
+          });
+          html.push('      </div>');
+          html.push('    </div>');
+        });
+      } else {
+        g.pills.forEach(function (p) {
+          html.push('    <button type="button" class="pmg-photo-pill" data-group="' + g.id + '" data-value="' + escapeHtml(p) + '">' + escapeHtml(p) + '</button>');
+        });
+      }
       html.push('  </div>');
       html.push('</div>');
     });
@@ -6132,6 +6204,20 @@
         h.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
       });
     });
+    /* cv3-26: On mobile (≤768px), collapse all groups by default so
+       the initial view is just 6 clean section headers — user picks
+       the one they care about, expands, picks, moves on. Desktop
+       keeps the current expanded-by-default behavior. */
+    try {
+      var isMobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+      if (isMobile) {
+        root.querySelectorAll('.pmg-photo-group').forEach(function (grp) {
+          grp.classList.add('is-collapsed');
+          var head = grp.querySelector('.pmg-photo-group-head');
+          if (head) head.setAttribute('aria-expanded', 'false');
+        });
+      }
+    } catch (_) {}
     /* Pill toggles. */
     root.querySelectorAll('.pmg-photo-pill').forEach(function (p) {
       p.addEventListener('click', function () {

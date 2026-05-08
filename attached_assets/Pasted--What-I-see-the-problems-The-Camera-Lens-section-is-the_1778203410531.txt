@@ -1,0 +1,27 @@
+
+What I see — the problems:
+The Camera & Lens section is the worst offender. It currently dumps 28 pills in a single undifferentiated blob: lens focal lengths, camera bodies, aperture values, shutter speeds, ISO values, and film stocks are all mixed together with no visual separation. A user staring at 85mm Portrait, DSLR, f/1.4 Bokeh, 1/60 Motion Blur, ISO 100 Clean, and Kodak Portra 400 side by side has no idea what they are choosing or why.
+The same problem exists in Style — Quick Snap presets (Cinematic, Editorial) are mixed in with the full style pill grid, so the hierarchy is unclear.
+The overall structure also has a cognitive load problem: every section is expanded by default, showing every pill at once. On mobile this is an endless scroll of 80+ pills with no clear starting point.
+My recommendation — three changes:
+1. Sub-group the Camera & Lens section into labeled rows.
+Instead of one flat blob, split it into clearly labeled sub-rows:
+Sub-group
+Pills
+Focal Length
+14mm Ultra-Wide, 24mm Wide, 35mm Wide, 50mm Standard, 85mm Portrait, 200mm Telephoto
+Camera Body
+DSLR, Mirrorless, Film Grain, Drone Aerial, GoPro Action, iPhone Snap
+Aperture
+f/1.4 Bokeh, f/2.8 Soft, f/8 Sharp, f/16 Deep DOF
+Shutter Speed
+1/60 Motion Blur, 1/250 Sharp, 1/1000 Frozen Action
+ISO
+ISO 100 Clean, ISO 400 Daylight, ISO 1600 Low-Light
+Film Stock
+Kodak Portra 400, CineStill 800T, Tri-X B&W
+Each sub-group gets a small grey label above it — just a text label, not another accordion. This turns 28 random pills into a scannable, logical grid.
+2. Move the Quick Snap presets above the pill grid in every section.
+The preset buttons (Cinematic, Editorial, Golden Hour etc.) are the fastest path for most users. They should sit in a clearly separated "Quick Pick" row at the top of each section, visually distinct from the individual pills below. Right now they blend in and get ignored.
+3. Collapse all sections to just their header by default on mobile.
+Show only the section header (e.g., "📷 Camera & Lens ▾") until the user taps to expand. This reduces the initial view to 5 clean section headers — the user picks the one they care about, expands it, makes their selection, and moves on. No endless scroll.
