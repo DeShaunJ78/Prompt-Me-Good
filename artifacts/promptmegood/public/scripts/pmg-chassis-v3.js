@@ -584,11 +584,20 @@
     // right-side drawer and reparent #history into it on first open).
     bindIfPresent('pmgv3-vault', function () { openVaultDrawer(); });
 
-    // Settings icon → switch to text panel, force-expand the mobile
-    // tuning accordion (so #settingsPanel is visible at any width), and
-    // scroll it into view. The settings panel is already reparented into
-    // the v3 tuning slot at boot, so it's always present in the DOM.
-    bindIfPresent('pmgv3-settings', function () { openSettings(); });
+    // Settings icon → open the Expert Command Center (Diagnose / Engineer /
+    // Tune / Variations / Save). The in-flow tuning accordion is still
+    // reachable via its own "🎛️ Tune Your Prompt" header, so the gear
+    // is reserved for the power-user surface. Falls back to the legacy
+    // tuning-panel scroll if the Expert Center script hasn't loaded.
+    bindIfPresent('pmgv3-settings', function () {
+      try {
+        if (window.PMGExpertCenter && typeof window.PMGExpertCenter.requestOpen === 'function') {
+          window.PMGExpertCenter.requestOpen();
+          return;
+        }
+      } catch (_e) {}
+      openSettings();
+    });
 
     bindIfPresent('pmgv3-upgrade', function () {
       window.location.href = '/pricing.html';
