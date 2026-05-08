@@ -52,7 +52,14 @@
         var rb = document.getElementById('resultBox');
         if (rb) rb.textContent = text;
       },
-      mountTarget: function () { return document.getElementById('copy-btn'); },
+      mountTarget: function () {
+        // Mount directly below the v3 strength bar (visible) instead of
+        // after the legacy #copy-btn (which lives inside .actions-row,
+        // hidden by chassis-v3 CSS). Falls back to #copy-btn for any
+        // non-v3 surface that may still load this script.
+        return document.getElementById('pmgv3-strength-slot')
+          || document.getElementById('copy-btn');
+      },
       cardHost: function () { return document.getElementById('resultBox'); },
       cardPosition: 'before',
     },

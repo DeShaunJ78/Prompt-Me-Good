@@ -169,10 +169,19 @@ html.pmg-chassis-v3 body {
 }
 .pmgv3-ico:hover { background: rgba(0, 200, 150, 0.08); color: #00c896; }
 /* Mobile bug fix #1: ensure topbar icon buttons (Vault, Settings) hit
-   the 44x44 minimum tap target on touch devices. Uses pointer: coarse
-   so the larger hit area only kicks in on real touch devices, leaving
-   desktop unchanged. */
+   the 44x44 minimum tap target on touch devices AND on small viewports.
+   Two media queries — one for real touch devices (pointer: coarse, the
+   most reliable signal on modern phones) and one for any viewport ≤768px
+   (catches devtools mobile emulation, narrow desktop windows, and any
+   browser that mis-reports pointer type). Visual glyph stays small;
+   only the hit area grows. */
 @media (hover: none) and (pointer: coarse) {
+  .pmgv3-ico {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+@media (max-width: 768px) {
   .pmgv3-ico {
     min-width: 44px;
     min-height: 44px;
@@ -819,26 +828,31 @@ html.pmg-chassis-v3 .pmgv3-output-host #resultBox:focus {
   gap: 8px;
   margin-top: 10px;
 }
+/* Send-to buttons: primary action styling (mint gradient) so they read
+   as a clear next step, not as ghost buttons. Audit follow-up. */
 .btn-send-to {
   flex: 1;
-  padding: 8px 6px;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 10px 8px;
+  background: linear-gradient(135deg, #00c896 0%, #3ee0a0 100%);
+  border: 1px solid #00c896;
   border-radius: 8px;
-  color: rgba(255, 255, 255, 0.7);
+  color: #052a1f;
   font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
   font-family: inherit;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
+  box-shadow: 0 4px 14px rgba(0, 200, 150, 0.18);
+  transition: filter 0.15s ease, transform 0.05s ease;
 }
 .btn-send-to:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: #fff;
-  border-color: rgba(0, 200, 150, 0.4);
+  filter: brightness(1.06);
+  background: linear-gradient(135deg, #00d6a3 0%, #4be8aa 100%);
 }
+.btn-send-to:active { transform: translateY(1px); }
 
 /* Box 2 — AI response */
 .ai-response-box { margin-top: 12px; }
