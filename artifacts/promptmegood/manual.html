@@ -227,26 +227,43 @@
         <p><strong>Generate Video</strong> calls the AI video endpoint. On the free tier this prompts an upgrade card pointing at the Founding Member waitlist; paid plans run the generation and embed the resulting clip on the right side.</p>
 
         <h2 id="vault">6. Prompt Vault</h2>
-        <p>Tap 🗄️ in the topbar to slide in the Vault drawer. Everything you save on this device — text prompts, image prompts, video prompts, and DNA cards — lives here, in your browser's <code>localStorage</code>.</p>
+        <p>Tap 🗄️ in the topbar to slide in the Vault drawer from the right. Everything you save on this device — text prompts, image prompts, video prompts, and DNA cards — lives here, in your browser's <code>localStorage</code>. No account is required for the free tier.</p>
+
+        <h3>6.1 Saving</h3>
+        <p>Each panel has its own save action: <strong>💾 Save Draft</strong> below the result on the Text panel, <strong>💾 Save</strong> in the post-generate row on the Photography and Video panels, plus <strong>🧬 DNA Card</strong> on Photography (which saves the image + originating prompt as a 1080×1350 share PNG). Saving fires a small "Saved to vault" pulse on the topbar so you have visual confirmation.</p>
+
+        <h3>6.2 Inside the drawer</h3>
         <ul>
-          <li><strong>Search</strong> across saved entries.</li>
-          <li><strong>Tag, favorite, and group</strong> entries.</li>
-          <li><strong>Compare</strong> two prompts side by side.</li>
-          <li><strong>Export / Import</strong> the whole Vault as a JSON file.</li>
+          <li><strong>Search</strong> across saved entries by keyword.</li>
+          <li><strong>Tag, favorite, and group</strong> entries to organize your library.</li>
+          <li><strong>Compare</strong> two prompts side by side to see what differs.</li>
+          <li><strong>Export / Import</strong> the whole Vault as a JSON file — your migration path between browsers and devices.</li>
           <li><strong>Clear</strong> a single entry or wipe everything.</li>
         </ul>
-        <p>If you sign in for a paid plan, you can opt in to cloud-backed account storage so the Vault follows you across devices.</p>
+
+        <h3>6.3 Open, close, and empty state</h3>
+        <p>Open with the 🗄️ topbar icon. Close with <kbd>Esc</kbd>, the × in the drawer header, or by tapping the dimmed area outside the drawer. If you have not saved anything yet, the drawer shows a friendly empty state ("Your Vault Is Empty — Generate a prompt and tap 💾 Save Draft to keep it here for later") so you know it opened correctly.</p>
+
+        <h3>6.4 Storage and portability</h3>
+        <p>Because storage is per-browser <code>localStorage</code>, switching browsers, switching devices, or clearing site data wipes the Vault. Use Export / Import to move it. If you sign in for a paid plan, you can opt in to cloud-backed account storage so the Vault follows you across devices automatically.</p>
 
         <h2 id="expert">7. Expert Command Center</h2>
-        <p>Tap ⚙️ in the topbar (or the in-flow Expert Mode button) to open the five-tab drawer:</p>
+        <p>Tap ⚙️ in the topbar at any time, on any panel, to open the Expert Command Center as a side drawer. The main builder stays exactly where it is — the Center sits on top so you can move between deep tools and your draft without losing state.</p>
+
+        <h3>7.1 The five tabs</h3>
         <ul>
-          <li><strong>Diagnose</strong> — strength score, weaknesses, missing context.</li>
-          <li><strong>Engineer</strong> — toggle role, audience, format, examples, success criteria, etc. as Off / Auto / Custom.</li>
-          <li><strong>Tune</strong> — fine-grained behavior sliders.</li>
-          <li><strong>Variations</strong> — generate Fast &amp; Simple, Detailed &amp; Strategic, and Bold &amp; Persuasive versions in one shot.</li>
-          <li><strong>Save</strong> — store reusable workflows and presets.</li>
+          <li><strong>Diagnose</strong> — strength score (0–100), word count, weaknesses, and a checklist of missing context (role, audience, format, examples, success criteria).</li>
+          <li><strong>Engineer</strong> — toggle role, audience, format, examples, success criteria, and other context fields as Off / Auto / Custom. Auto means the AI fills it in for you; Custom lets you write it yourself.</li>
+          <li><strong>Tune</strong> — fine-grained behavior sliders (verbosity, formality, creativity, etc.) plus tone presets.</li>
+          <li><strong>Variations</strong> — generate Fast &amp; Simple, Detailed &amp; Strategic, and Bold &amp; Persuasive versions of your prompt in one shot, side by side, so you can pick the strongest framing.</li>
+          <li><strong>Save</strong> — store reusable workflows and presets you can re-apply on future prompts.</li>
         </ul>
-        <p>The Expert Command Center is a paid feature for Founding Members and Pro subscribers. During the open beta, everyone can use it for free.</p>
+
+        <h3>7.2 Open, close, and re-entry</h3>
+        <p>The drawer opens from the ⚙️ gear, the in-flow "Expert Mode" link, or anywhere else that calls Expert Mode. Close it with <kbd>Esc</kbd>, the × in its header, or by clicking the dimmed area outside it. Re-opening always returns you to the tab you were last on. Apply changes back to your main draft with the "Apply" button on each tab — there is no auto-write, so you can experiment freely without disturbing the prompt in the builder.</p>
+
+        <h3>7.3 Pricing &amp; beta access</h3>
+        <p>The Expert Command Center is a paid feature for <strong>Founding Member</strong> ($79 one-time, lifetime, first 500 buyers) and <strong>Pro</strong> ($9/mo) plans. During the open beta — through <strong>June 1, 2026</strong> — everyone can use it for free. After that, free-tier users tapping the gear will see a paywall card with links to <a href="./pricing.html">Pricing</a>; the rest of the workstation remains free.</p>
 
         <h2 id="voice">8. Voice &amp; Brand Voice</h2>
         <ul>
