@@ -598,6 +598,23 @@
       } catch (_e) {}
       openSettings();
     });
+    /* Defense-in-depth: even if the gear button is re-rendered or
+       PMGExpertCenter loads after wireActions(), a document-level
+       capture-phase delegate guarantees the gear always opens the
+       Expert Center. Idempotent (no-op if already attached). */
+    if (!window.__pmgv3SettingsDelegate) {
+      window.__pmgv3SettingsDelegate = true;
+      document.addEventListener('click', function (e) {
+        var hit = e.target && e.target.closest && e.target.closest('#pmgv3-settings');
+        if (!hit) return;
+        try {
+          if (window.PMGExpertCenter && typeof window.PMGExpertCenter.requestOpen === 'function') {
+            e.preventDefault();
+            window.PMGExpertCenter.requestOpen();
+          }
+        } catch (_e) {}
+      }, true);
+    }
 
     bindIfPresent('pmgv3-upgrade', function () {
       window.location.href = '/pricing.html';

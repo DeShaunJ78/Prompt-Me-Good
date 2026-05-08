@@ -181,31 +181,43 @@
 }
 
 /* =================================================================
-   Send-to-AI button polish — make ChatGPT / Claude / Gemini /
-   Perplexity buttons stand out instead of blending into the dark
-   panel. Targets the existing pmg-send-to-shell classes added by
-   pmg-send-to.js without touching its JS.
+   Send-to-AI buttons — visually demoted to ghost/outline so they
+   read as alternative destinations beneath the primary
+   "▶ Run with AI" CTA, instead of competing with it. Targets the
+   pmg-send-to-shell classes added by pmg-send-to.js without
+   touching its JS.
    ================================================================= */
 .pmg-send-to-shell {
-  box-shadow: 0 4px 14px rgba(0, 200, 150, 0.18) !important;
+  box-shadow: none !important;
+  opacity: 0.92;
 }
 .pmg-send-to-shell button.pmg-send-to-main-btn,
 .pmg-send-to-shell button.pmg-send-to-caret-btn {
-  background: linear-gradient(135deg, #00c896 0%, #3ee0a0 100%) !important;
-  color: #052a1f !important;
-  border-color: #00c896 !important;
-  font-weight: 800 !important;
+  background: transparent !important;
+  color: rgba(0, 200, 150, 0.85) !important;
+  border-color: rgba(0, 200, 150, 0.35) !important;
+  font-weight: 600 !important;
 }
 .pmg-send-to-shell button.pmg-send-to-main-btn:hover,
 .pmg-send-to-shell button.pmg-send-to-caret-btn:hover {
-  filter: brightness(1.06);
-  background: linear-gradient(135deg, #00d6a3 0%, #4be8aa 100%) !important;
+  background: rgba(0, 200, 150, 0.08) !important;
+  color: #3ee0a0 !important;
+  border-color: rgba(0, 200, 150, 0.55) !important;
+  filter: none;
 }
 .pmg-send-to-shell .pmg-send-to-caret-btn {
-  border-left: 1px solid rgba(5, 42, 31, 0.35) !important;
+  border-left: 1px solid rgba(0, 200, 150, 0.25) !important;
 }
 .pmg-send-to-shell .pmg-send-to-icon {
-  opacity: 1 !important;
+  opacity: 0.85 !important;
+}
+
+/* Auto-Boost button: when no result yet, the mount slot should not
+   reserve vertical space. The button is only useful after generation,
+   so collapse the slot until populated. */
+.pmg-ab-btn[hidden] { display: none !important; }
+body:not(.pmg-has-result) #pmg-ab-btn-text {
+  display: none !important;
 }
 
 /* ----- Mobile tweaks ------------------------------------------- */

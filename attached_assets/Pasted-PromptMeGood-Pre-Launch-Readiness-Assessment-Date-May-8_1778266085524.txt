@@ -1,0 +1,61 @@
+PromptMeGood Pre-Launch Readiness Assessment
+Date: May 8, 2026
+Status: 🔴 NO-GO (with minor blockers)
+
+I have completed a full end-to-end sweep of the live site (`https://www.promptmegood.com/app`) across desktop and mobile viewports. The core architecture (segmented tabs, auto-tune, mobile layout) is solid and working well. However, there are a few critical functional and UX blockers that must be resolved before sending real traffic.
+
+Here is the honest, direct assessment of where things stand.
+
+
+🔴 Critical Blockers (Must Fix Before Launch)
+These items directly impact core functionality or create significant UX friction.
+
+1. Photography Tab: “Generate Image Here” Button is Hidden
+	•	Issue: The primary CTA to actually generate the image (`#pmg-build-image-btn`) is hidden (`display: none`, `visibility: hidden`). There is a visible button that says “🎨Generate Image Here”, but it has no click handler attached to it.
+	•	Impact: Users cannot generate images in the Photography suite.
+	•	Fix Required: Ensure the correct Generate button is visible and wired to the DALL-E generation function.
+
+2. Photography Tab: “Regenerate” Button is Broken
+	•	Issue: The `🔄 Regenerate` button (`#pmg-vs-image-regen`) has no `onclick` handler attached to it.
+	•	Impact: Users cannot regenerate an image if they don’t like the first result.
+	•	Fix Required: Wire the Regenerate button to re-trigger the image generation function with the current prompt.
+
+3. Expert Command Center is Inaccessible
+	•	Issue: The gear icon (⚙️ `#pmgv3-settings`) does not open the Expert Command Center. It currently has no click handler attached. Calling `window.PMGExpertCenter.requestOpen()` directly via console works and opens the drawer, but there is no UI entry point.
+	•	Impact: Power users cannot access the Expert Command Center (Diagnose, Engineer, Tune, Variations, Save).
+	•	Fix Required: Wire the gear icon (`#pmgv3-settings`) to call `window.PMGExpertCenter.requestOpen()`.
+
+
+🟡 UX Friction (Highly Recommended Before Launch)
+These items don’t break the app, but they degrade the perceived quality and polish.
+
+1. Text Prompts: Auto-Boost Button Placement
+	•	Issue: The `✨✨ Auto-Boost Prompt` button is currently hidden (`visibility: hidden`) before generation, but its container still takes up space.
+	•	Impact: Creates an awkward gap in the UI before the user generates their first prompt.
+	•	Fix Required: The button should be completely removed from the DOM flow (`display: none`) until the first prompt is generated.
+
+2. Text Prompts: Send Buttons Visual Hierarchy
+	•	Issue: The “Send to ChatGPT/Claude/Gemini” buttons are currently styled with a solid border and colored text, which competes visually with the primary “▶ Run With AI” button.
+	•	Impact: Dilutes the primary CTA.
+	•	Fix Required: Ensure the Send buttons use a true ghost/outline style (e.g., lower opacity border, muted text) so “Run With AI” stands out as the clear primary action.
+
+3. First Load Empty State
+	•	Issue: The goal textarea placeholder still says “What are you working on?” on fresh load, rather than the branded “Describe What You Want — We’ll Build The Perfect Prompt.” (This seems to only appear on mobile or after certain interactions).
+	•	Impact: Missed opportunity to guide the user immediately.
+	•	Fix Required: Ensure the branded placeholder text is present on initial desktop load.
+
+
+🟢 What’s Working Well (Ready to Go)
+The following major features are shipped and verified working:
+
+	•	Segmented Tab Architecture: The three tabs (Text Prompts, Photography, Video) successfully isolate their workspaces. Clicking between them works flawlessly.
+	•	Auto-Tune: Clicking “Analyze My Idea” successfully auto-selects the 7 tuning pills.
+	•	Mobile Layout: The tuning accordion collapses properly on mobile (390px viewport), keeping the Generate button above the fold.
+	•	Tap Targets: The Vault and Settings icons are properly sized at 44x44px.
+	•	Video Storyboard: The storyboard button correctly reads from the Video tab’s specific goal input (`#pmg-vs-video-goal`).
+
+
+Next Steps
+I recommend sending a targeted brief to the Replit agent to knock out the 3 critical blockers and the 3 UX friction items. Once those are confirmed fixed, the app will be ready for launch.
+
+Would you like me to draft that final Replit brief for you?
