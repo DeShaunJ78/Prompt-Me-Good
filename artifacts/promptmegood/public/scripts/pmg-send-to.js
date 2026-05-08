@@ -112,13 +112,14 @@
     gemini: {
       label: 'Gemini',
       url: 'https://gemini.google.com/app',
-      /* sendto-2: Gemini now supports ?q= prefill on /app. Without
-         this the user landed on a blank Gemini chat with no prompt
-         filled in — they had to paste from clipboard manually. */
-      prefill: function (text) {
-        return 'https://gemini.google.com/app?q=' + encodeURIComponent(text);
-      },
-      tip: 'Your prompt is prefilled in the Gemini input box and also copied to your clipboard as a backup.'
+      /* sendto-3: Verified in a real browser — Gemini /app does NOT
+         honor ?q=, ?text=, ?prompt=, or hash variants. The page loads
+         with an empty input regardless. Earlier attempts to prefill
+         via the URL were a lie (toast claimed "prefilled" while the
+         box stayed empty). Honest behavior: copy-to-clipboard + open
+         Gemini, with a tip that tells the user to paste. */
+      prefill: null,
+      tip: 'Gemini does not accept prefilled prompts — your prompt is on the clipboard, just paste it in (Ctrl/Cmd+V).'
     },
     perplexity: {
       label: 'Perplexity',

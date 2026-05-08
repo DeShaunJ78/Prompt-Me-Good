@@ -962,14 +962,22 @@
           return;
         }
         var encoded = encodeURIComponent(prompt);
+        /* cv3-50: Gemini does NOT honor ?q= on /app (verified in real
+           browser — the URL param is silently ignored and the input
+           stays empty). ChatGPT and Claude DO honor ?q=. So Gemini
+           opens bare and we rely on the clipboard copy below + the
+           toast/flash to tell the user to paste. */
         var urls = {
           chatgpt: 'https://chatgpt.com/?q=' + encoded,
           claude: 'https://claude.ai/new?q=' + encoded,
-          gemini: 'https://gemini.google.com/app?q=' + encoded,
+          gemini: 'https://gemini.google.com/app',
         };
         var platform = btn.dataset.platform;
         try { navigator.clipboard.writeText(prompt); } catch (e) {}
-        if (urls[platform]) window.open(urls[platform], '_blank', 'noopener');
+        if (urls[platform]) {
+          window.open(urls[platform], '_blank', 'noopener');
+          if (platform === 'gemini') flash('Prompt copied — paste it into Gemini (Ctrl/Cmd+V).');
+        }
       });
     });
 
