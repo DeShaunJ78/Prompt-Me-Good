@@ -1,0 +1,51 @@
+Replit Brief: CRO & UX Friction Fixes
+This brief outlines the highest-impact fixes based on the recent CRO and UX audit. The goal is to improve the first-time user experience, clarify navigation, and remove conversion blockers without undertaking a full redesign.
+
+1. First Load Experience
+Issue: The site shows a blank dark green screen for several seconds before the app renders, making it look broken.
+Fix: Implement an instant branded loading state.
+
+	•	Add a simple loading screen with the PromptMeGood brand color and logo/text (“Loading PromptMeGood…”).
+	•	Ensure it appears immediately and disappears once the app is fully rendered.
+	•	Include a `<noscript>` fallback: “PromptMeGood requires JavaScript to run the app.”
+
+2. Empty State Clarity
+Issue: The empty state in the right column says “Your Fixed Prompt” and confusingly tells users to fill details “on the left.” Output action buttons (Copy, Refine, etc.) appear active before any content exists.
+Fix:
+
+	•	Update the empty state headline to: “Your Optimized Prompt Will Appear Here”.
+	•	Update the body text to: “Type your goal below or choose a template to generate your first prompt.”
+	•	Disable all output action buttons (Copy Prompt, Refine It, Check Quality, Save) until a prompt is actually generated. Ensure disabled states are visually obvious.
+
+3. Navigation & Orientation
+Issue: The app lacks clear navigation to Pricing or the Guide, and the “?” help button does nothing.
+Fix:
+
+	•	Add small, unobtrusive navigation links in the app header or footer for: Guide, Pricing, Privacy, Terms, and Contact (`mailto:support@promptmegood.com`).
+	•	Wire the “?” help button to link directly to `/guide.html` (or open a help drawer if easier).
+
+4. Feature Feedback & Clarity
+Issue: Several features provide no feedback or use confusing jargon.
+Fix:
+
+	•	Expert Mode: Ensure clicking the Expert Mode button provides visible feedback. If it requires a prompt first, show a toast message. If it’s gated, show a waitlist/pricing modal.
+	•	Templates: Ensure the template dropdown actually opens and loads templates. If not ready, replace it with a “Templates coming soon” label.
+	•	Saved To Vault: Only show the “Saved To Vault” message after a successful save action, not by default.
+	•	Jargon: Remove internal developer terms like “chassis v2 preview” from user-facing UI. Replace “LOCAL-FIRST” with “Private: Saves On Your Device” and add a tooltip explaining local storage.
+
+5. Conversion & Pricing Clarity
+Issue: “Checkout Opens Soon” is repeated too often, creating a sense of unavailability. Waitlist CTAs are confusing.
+Fix:
+
+	•	Limit “Checkout Opens Soon” to a maximum of two appearances (e.g., top of Pricing page and near the waitlist form).
+	•	Replace other instances with actionable copy like “Join The Waitlist” or “Get Early Access”.
+	•	Ensure CTA destinations match their copy (e.g., “Join Founding Member Waitlist” should lead to Founding Member copy, not Pro).
+	•	Add a clear CTA (e.g., “Join Waitlist →”) to the Beta deadline banner.
+
+6. Photography Suite Polish
+Issue: Button labels are vague and instructions are unclear.
+Fix:
+
+	•	Rename the “Surprise” buttons to be more descriptive (e.g., “Auto-Fill Balanced”, “Auto-Fill Creative”).
+	•	Update the instruction copy to: “Choose your photo style, camera settings, lighting, composition, and color. Then copy the prompt or generate the image.”
+	•	Clarify the “Master Link” toggle label to “Link Prompt + Photo Settings” with clear on/off state descriptions.
