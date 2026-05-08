@@ -136,7 +136,20 @@ html.pmg-chassis-v3 body {
   font-size: 16px;
   color: #fff;
   letter-spacing: -0.01em;
+  /* cv3-48: brand is now a <button> acting as the global Home reset. */
+  background: transparent;
+  border: 0;
+  padding: 4px 6px;
+  margin: 0 -6px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.15s ease;
 }
+.pmgv3-brand:hover { background: rgba(0, 200, 150, 0.08); }
+.pmgv3-brand:active { background: rgba(0, 200, 150, 0.14); }
+.pmgv3-brand:focus-visible { outline: 2px solid rgba(0, 200, 150, 0.55); outline-offset: 2px; }
 .pmgv3-brand img { width: 28px; height: 28px; border-radius: 6px; }
 .pmgv3-brand-beta {
   font-size: 9px;
@@ -529,6 +542,73 @@ button.tuning-header { cursor: pointer; }
 /* cv3-47: small low-contrast "← Re-analyze" text link that replaces the
    green Analyze button after the user has analyzed. Intentionally NOT a
    button visually — it should never compete with Generate for attention. */
+/* cv3-48: ✕ clear-textarea button — small, low-contrast, tucked into the
+   top-right corner of the .pmgv3-idea-host (which is position:relative).
+   Only rendered when #goal has content (toggled by JS). */
+.pmgv3-idea-host { position: relative; }
+.pmgv3-goal-clear {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  z-index: 2;
+}
+.pmgv3-goal-clear[hidden] { display: none; }
+.pmgv3-goal-clear:hover {
+  color: #00c896;
+  background: rgba(0, 200, 150, 0.1);
+  border-color: rgba(0, 200, 150, 0.3);
+}
+/* cv3-48: ↺ Revert tuning link — sits inside the tuning section, just
+   below the header. Subtle text-link style; never competes with pills. */
+.pmgv3-revert-tuning {
+  display: inline-block;
+  background: none;
+  border: 0;
+  padding: 2px 0;
+  margin: 0 0 8px 0;
+  color: rgba(255, 255, 255, 0.5);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(255, 255, 255, 0.2);
+}
+.pmgv3-revert-tuning:hover { color: #00c896; text-decoration-color: rgba(0, 200, 150, 0.5); }
+/* cv3-48: ↩ Start Over text links — one under Generate, one at the
+   bottom of the result panel. Low-contrast; never competes with the
+   green Generate or "Run with AI" buttons. */
+.pmgv3-startover {
+  display: block;
+  background: none;
+  border: 0;
+  padding: 8px 0 2px 0;
+  margin: 0 auto;
+  color: rgba(255, 255, 255, 0.45);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(255, 255, 255, 0.2);
+  text-align: center;
+  width: 100%;
+}
+.pmgv3-startover:hover { color: #00c896; text-decoration-color: rgba(0, 200, 150, 0.5); }
+.pmgv3-startover-result { margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.06); }
 .pmgv3-reanalyze {
   display: inline-block;
   background: none;

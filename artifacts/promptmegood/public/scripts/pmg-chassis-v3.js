@@ -76,11 +76,11 @@
     root.id = 'pmg-chassis-v3-root';
     root.innerHTML = [
       '<header class="pmgv3-topbar">',
-        '<div class="pmgv3-brand">',
+        '<button type="button" class="pmgv3-brand" id="pmgv3-brand-home" title="Return to home — clears the current tab" aria-label="Return to home">',
           '<img src="/assets/pmg-logo.png?v=6" alt="PromptMeGood" />',
           '<span>PromptMeGood</span>',
           '<span class="pmgv3-brand-beta">Beta</span>',
-        '</div>',
+        '</button>',
         '<div class="pmgv3-tb-r">',
           '<a class="pmgv3-ico" id="pmgv3-help" href="/guide.html" target="_blank" rel="noopener" title="Quick Guide — opens in a new tab" aria-label="Open the PromptMeGood quick guide in a new tab">❓</a>',
           '<button class="pmgv3-ico" id="pmgv3-vault" type="button" title="Vault" aria-label="Vault">🗄️</button>',
@@ -99,8 +99,13 @@
           '<section class="idea-section">',
             '<label class="pmgv3-section-label" for="goal">Your Idea</label>',
             '<p class="pmgv3-section-hint">Describe what you want to create. Be as brief or detailed as you like.</p>',
-            '<div class="pmgv3-idea-host"></div>',
-            '<button id="analyze-btn" class="btn-analyze" type="button">→ Analyze My Idea</button>',
+            '<div class="pmgv3-idea-host">',
+              /* cv3-48 fix: clear ✕ MUST live inside .pmgv3-idea-host (the
+                 positioned ancestor) so its absolute placement anchors to
+                 the goal field, not to the chassis root. */
+              '<button type="button" id="pmgv3-goal-clear" class="pmgv3-goal-clear" title="Clear" aria-label="Clear what you typed" hidden>✕</button>',
+            '</div>',
+          '<button id="analyze-btn" class="btn-analyze" type="button">→ Analyze My Idea</button>',
           '</section>',
           '<section class="tuning-section is-collapsed" id="tuning-panel" style="display:none !important">',
             '<button type="button" class="tuning-header" id="tuning-mobile-toggle" aria-expanded="false" aria-controls="settingsPanel">',
@@ -422,6 +427,20 @@
         statusBadge.textContent = 'AI tuning…';
         statusBadge.style.background = 'rgba(0, 200, 150, 0.2)';
       }
+      /* cv3-48: snapshot the user's pre-analyze tuning state so we can
+         offer a "↺ Revert to my selections" link if the AI overwrites
+         picks. Only render the link when at least one field actually
+         changed AND the user had at least one non-default selection
+         before analyze (otherwise there's nothing meaningful to undo). */
+      var TUNE_FIELDS = ['category', 'skillLevel', 'tone', 'outputFormat', 'maxLength', 'outputLanguage', 'personality'];
+      var snapshot = {};
+      var hadManualSelection = false;
+      TUNE_FIELDS.forEach(function (id) {
+        var sel = document.getElementById(id);
+        if (!sel) return;
+        snapshot[id] = sel.value;
+        if (sel.value && sel.selectedIndex > 0) hadManualSelection = true;
+      });
       var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
       var timeoutId = setTimeout(function () { if (ctrl) ctrl.abort(); }, 12000);
       fetch('/api/auto-tune', {
@@ -434,8 +453,8 @@
         .then(function (data) {
           if (!data || !data.ok || !data.picks) return;
           var picks = data.picks;
-          var FIELDS = ['category', 'skillLevel', 'tone', 'outputFormat', 'maxLength', 'outputLanguage', 'personality'];
-          FIELDS.forEach(function (id) {
+          var anyChanged = false;
+          TUNE_FIELDS.forEach(function (id) {
             var sel = document.getElementById(id);
             if (!sel) return;
             var v = picks[id];
@@ -449,6 +468,7 @@
             if (!ok) return;
             if (sel.value === v) return;
             sel.value = v;
+            anyChanged = true;
             try { sel.dispatchEvent(new Event('change', { bubbles: true })); }
             catch (err) {
               var evt = document.createEvent('HTMLEvents');
@@ -456,6 +476,9 @@
               sel.dispatchEvent(evt);
             }
           });
+          if (anyChanged && hadManualSelection) {
+            try { mountRevertTuningLink(snapshot); } catch (e) {}
+          }
         })
         .catch(function () {
           // Silent fail — user can still tune manually.
@@ -467,6 +490,200 @@
             statusBadge.textContent = prevText || '';
           }
         });
+    }
+
+    /* cv3-48 — Reset & Navigation suite: Clear / Undo / Start Over / Home.
+       Spec: "PromptMeGood: Navigation & Reset Specification" (May 8, 2026).
+       Each function is independent and idempotent; safe to call repeatedly. */
+    function mountRevertTuningLink(snap) {
+      var hdr = document.getElementById('tuning-mobile-toggle');
+      if (!hdr) return;
+      var existing = document.getElementById('pmgv3-revert-tuning');
+      if (existing) existing.remove();
+      var link = document.createElement('button');
+      link.type = 'button';
+      link.id = 'pmgv3-revert-tuning';
+      link.className = 'pmgv3-revert-tuning';
+      link.textContent = '↺ Revert to my selections';
+      link.title = 'Restore the tuning you had selected before Analyze';
+      link.addEventListener('click', function (ev) {
+        // Header is a button — stop the click from bubbling and toggling
+        // the accordion open/close.
+        ev.stopPropagation();
+        ev.preventDefault();
+        Object.keys(snap).forEach(function (id) {
+          var sel = document.getElementById(id);
+          if (!sel) return;
+          if (sel.value === snap[id]) return;
+          sel.value = snap[id];
+          try { sel.dispatchEvent(new Event('change', { bubbles: true })); }
+          catch (err) {
+            var evt = document.createEvent('HTMLEvents');
+            evt.initEvent('change', true, false);
+            sel.dispatchEvent(evt);
+          }
+        });
+        link.remove();
+      });
+      // Insert AFTER the header button so it sits inside the tuning section
+      // but doesn't get swallowed by the header's click target.
+      hdr.parentNode.insertBefore(link, hdr.nextSibling);
+    }
+
+    function doStartOver() {
+      // 1. Clear the goal textarea
+      var goal = document.getElementById('goal');
+      if (goal) {
+        goal.value = '';
+        goal.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      // 2. Reset all tuning selects to their default (first option) and
+      //    notify listeners so the pill UI repaints.
+      var TUNE_FIELDS = ['category', 'skillLevel', 'tone', 'outputFormat', 'maxLength', 'outputLanguage', 'personality'];
+      TUNE_FIELDS.forEach(function (id) {
+        var sel = document.getElementById(id);
+        if (!sel) return;
+        if (sel.options && sel.options.length) {
+          sel.selectedIndex = 0;
+          try { sel.dispatchEvent(new Event('change', { bubbles: true })); } catch (e) {}
+        }
+      });
+      // 3. Hide result panel + AI response
+      document.body.classList.remove('pmg-has-result', 'pmgv3-analyzed');
+      var box = document.getElementById('prompt-output-box');
+      if (box) {
+        box.classList.add('is-collapsed');
+        box.style.setProperty('display', 'none', 'important');
+      }
+      var air = document.getElementById('aiResponseSection');
+      if (air) {
+        air.setAttribute('hidden', '');
+        air.style.setProperty('display', 'none', 'important');
+      }
+      /* cv3-48 fix: also collapse the v3 wrapper for the AI response
+         (#ai-response-box). #aiResponseSection is the legacy node; the
+         wrapper is what's actually visible after Run with AI. Without
+         this Start Over leaves an empty mint-bordered box on screen. */
+      var airBox = document.getElementById('ai-response-box');
+      if (airBox) {
+        airBox.classList.add('is-collapsed');
+        airBox.setAttribute('hidden', '');
+        airBox.style.setProperty('display', 'none', 'important');
+      }
+      // 4. Hide tuning + generate sections
+      ['tuning-panel', 'generate-section'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.classList.add('is-collapsed');
+        el.classList.remove('is-mobile-open');
+        el.style.setProperty('display', 'none', 'important');
+      });
+      // 5. Restore Analyze button + drop the post-analyze adornments
+      var aBtn = document.getElementById('analyze-btn');
+      if (aBtn) aBtn.style.removeProperty('display');
+      var rl = document.getElementById('pmgv3-reanalyze'); if (rl) rl.remove();
+      var rdy = document.getElementById('pmgv3-ready-label'); if (rdy) rdy.remove();
+      var rev = document.getElementById('pmgv3-revert-tuning'); if (rev) rev.remove();
+      // 6. Scroll to the top of the form
+      try {
+        var form = document.querySelector('.idea-section') || document.body;
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (e) {
+        try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (_e) {}
+      }
+      if (goal) { try { goal.focus(); } catch (e) {} }
+    }
+    // Expose so other scripts (or the home-button handler) can call it.
+    window.pmgChassisV3 = window.pmgChassisV3 || {};
+    window.pmgChassisV3.startOver = doStartOver;
+
+    function mountStartOverLinks() {
+      // (a) Below the Generate button, inside #generate-section.
+      var gen = document.getElementById('generate-section');
+      if (gen && !document.getElementById('pmgv3-startover-generate')) {
+        var l1 = document.createElement('button');
+        l1.type = 'button';
+        l1.id = 'pmgv3-startover-generate';
+        l1.className = 'pmgv3-startover';
+        l1.textContent = '↩ Start Over';
+        l1.addEventListener('click', doStartOver);
+        gen.appendChild(l1);
+      }
+      // (b) At the bottom of the result panel.
+      var box = document.getElementById('prompt-output-box');
+      if (box && !document.getElementById('pmgv3-startover-result')) {
+        var l2 = document.createElement('button');
+        l2.type = 'button';
+        l2.id = 'pmgv3-startover-result';
+        l2.className = 'pmgv3-startover pmgv3-startover-result';
+        l2.textContent = '↩ Start Over — build a new prompt';
+        l2.addEventListener('click', doStartOver);
+        box.appendChild(l2);
+      }
+    }
+    mountStartOverLinks();
+
+    // Goal-textarea ✕ (Clear) — only visible when the field has content.
+    function wireGoalClear() {
+      var clr = document.getElementById('pmgv3-goal-clear');
+      var goal = document.getElementById('goal');
+      if (!clr || !goal) return;
+      function sync() {
+        var hasText = goal.value && goal.value.length > 0;
+        if (hasText) clr.removeAttribute('hidden');
+        else clr.setAttribute('hidden', '');
+      }
+      sync();
+      goal.addEventListener('input', sync);
+      clr.addEventListener('click', function () {
+        goal.value = '';
+        goal.dispatchEvent(new Event('input', { bubbles: true }));
+        try { goal.focus(); } catch (e) {}
+        sync();
+      });
+    }
+    // Reparent runs after buildShell, so #goal lives inside .pmgv3-idea-host
+    // by the time wireActions fires. Poll briefly in case timing slips.
+    (function pollGoalClear(n) {
+      if (n > 30) return;
+      if (document.getElementById('goal') && document.getElementById('pmgv3-goal-clear')) {
+        wireGoalClear();
+      } else {
+        setTimeout(function () { pollGoalClear(n + 1); }, 200);
+      }
+    })(0);
+
+    // Logo → Home: hard reset. Closes overlays, switches to Text tab, then
+    // runs Start Over.
+    var brandHome = document.getElementById('pmgv3-brand-home');
+    if (brandHome) {
+      brandHome.addEventListener('click', function () {
+        // Close vault drawer if open
+        try {
+          var vd = document.getElementById('pmgv3-vault-drawer');
+          var vo = document.getElementById('pmgv3-vault-overlay');
+          if (vd) vd.classList.remove('is-open');
+          if (vo) { vo.classList.remove('is-open'); vo.style.setProperty('display', 'none', 'important'); }
+        } catch (e) {}
+        // Close Expert Command Center if open
+        try {
+          if (window.PMGExpertCenter && typeof window.PMGExpertCenter.close === 'function') {
+            window.PMGExpertCenter.close();
+          }
+        } catch (e) {}
+        // Close any storyboard / body-appended overlays
+        try {
+          var ovs = document.querySelectorAll('[data-pmg-overlay-root].is-open, [data-pmg-overlay-root][style*="display: flex"], [data-pmg-overlay-root][style*="display:flex"]');
+          Array.prototype.forEach.call(ovs, function (o) {
+            o.classList.remove('is-open');
+            o.style.setProperty('display', 'none', 'important');
+          });
+        } catch (e) {}
+        // Back to Text tab
+        try { setActivePanel('text'); } catch (e) {}
+        // Hard reset the active tab
+        doStartOver();
+      });
     }
 
     // cv3-30 audit 3.1: mobile accordion toggle for the text-panel tuning

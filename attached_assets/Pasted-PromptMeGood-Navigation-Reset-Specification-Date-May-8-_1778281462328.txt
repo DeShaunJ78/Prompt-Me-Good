@@ -1,0 +1,69 @@
+PromptMeGood: Navigation & Reset Specification
+Date: May 8, 2026
+Author: Manus AI
+Target: `promptmegood.com/app` (v3 layout)
+
+Overview
+The current PromptMeGood application lacks a cohesive navigation and reset system. Users who make mistakes, want to iterate, or get lost have no clear escape routes. This specification defines four distinct reset and navigation features that must be implemented to provide a clean, confident user experience.
+
+
+1. Clear (Textarea Reset)
+The Problem: Users who want to rewrite their goal from scratch must manually highlight and delete all text. This is high friction for a tool built around rapid iteration.
+
+The Solution: A surgical, single-field reset.
+
+Implementation:
+
+	•	Add a small, subtle `✕` (Clear) icon inside the `#goal` textarea, positioned in the top-right or bottom-right corner.
+	•	Visibility: The icon should only appear when the textarea contains text (`value.length > 0`).
+	•	Action: Clicking the icon clears the textarea value and immediately returns focus to the field so the user can start typing again.
+	•	Scope: This action only affects the textarea. It does not reset tuning selections or change the app state.
+
+
+2. Undo (Tuning Reversion)
+The Problem: When a user clicks “Analyze My Idea,” the AI automatically selects up to 7 tuning options (Category, Tone, Format, etc.). If the user had manually selected options prior to analysis, those selections are overwritten with no way to revert them.
+
+The Solution: A contextual undo specifically for AI-driven tuning changes.
+
+Implementation:
+
+	•	Inside the “Tune Your Prompt” accordion, add a small text link: `↺ Revert to my selections`.
+	•	Visibility: This link should only appear after the AI has applied auto-tuning, and only if the user had made manual selections prior to the analysis.
+	•	Action: Clicking the link restores the tuning pill selections to the exact state they were in immediately before the “Analyze My Idea” button was clicked.
+	•	Scope: This action only affects the tuning pills. It does not affect the textarea or the generated prompt.
+
+
+3. Start Over (Tab Reset)
+The Problem: After generating a prompt, users who want to build an entirely new prompt must manually clear the textarea, manually deselect tuning options, and manually clear the result panel.
+
+The Solution: A persistent, single-click full reset for the current tab.
+
+Implementation:
+
+	•	Add a text link: `↩ Start Over`.
+	•	Placement: This link should appear in two places:
+	1.	Directly below the “✨ Generate My Prompt” button.
+	2.	At the bottom of the result panel (e.g., `↩ Start Over — build a new prompt`).
+	•	Action: Clicking the link performs a complete reset of the current tab:
+	◦	Clears the `#goal` textarea.
+	◦	Resets all tuning pills to their default (unselected) state.
+	◦	Hides the result panel.
+	◦	Hides the tuning accordion and Generate button.
+	◦	Restores the “→ Analyze My Idea” button.
+	◦	Scrolls the viewport back to the top of the form.
+	•	Scope: This action resets the entire active tab (Text Prompts, Photography, or Video) to its initial blank state.
+
+
+4. Return To Beginning (Global Home)
+The Problem: There is no concept of “Home” in the application. Users who navigate deep into settings, the vault, or different tabs have no single anchor point to return to a known, clean state.
+
+The Solution: The application logo must function as a global reset anchor.
+
+Implementation:
+
+	•	The “PMG PromptMeGood” logo in the top-left corner of the top bar must be clickable.
+	•	Action: Clicking the logo acts as a hard reset for the entire application session:
+	◦	Closes all open drawers, modals, and overlays (Vault, Expert Command Center, etc.).
+	◦	Switches the active tab back to the default “Text Prompts” tab.
+	◦	Executes the “Start Over” logic (clearing textareas, resetting tuning, hiding results).
+	•	Scope: This is the ultimate escape hatch. No matter where the user is or what state the app is in, clicking the logo returns them to the clean, initial “Write Something” state.
