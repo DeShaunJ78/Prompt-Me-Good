@@ -112,8 +112,13 @@
     gemini: {
       label: 'Gemini',
       url: 'https://gemini.google.com/app',
-      prefill: null,
-      tip: 'Gemini does not accept prefilled prompts — your prompt is on the clipboard, just paste it in.'
+      /* sendto-2: Gemini now supports ?q= prefill on /app. Without
+         this the user landed on a blank Gemini chat with no prompt
+         filled in — they had to paste from clipboard manually. */
+      prefill: function (text) {
+        return 'https://gemini.google.com/app?q=' + encodeURIComponent(text);
+      },
+      tip: 'Your prompt is prefilled in the Gemini input box and also copied to your clipboard as a backup.'
     },
     perplexity: {
       label: 'Perplexity',

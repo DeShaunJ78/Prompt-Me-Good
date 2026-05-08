@@ -53,6 +53,7 @@
     var settingsHide = document.getElementById('settingsPanel');
     if (settingsHide) settingsHide.style.setProperty('display', 'none', 'important');
     wireActions();
+    wirePersistence();
     deleteTargets();
     // Re-apply the hide on a short tick in case any late legacy script flips display
     var hideTicks = 0;
@@ -280,6 +281,167 @@
       }
       air.removeAttribute('hidden');
     }
+  }
+
+  /* cv3-49 — Session persistence. Mobile Safari aggressively unloads
+     backgrounded tabs to free memory, so when a user taps "Send to
+     Gemini/ChatGPT" and then returns to PromptMeGood, the page reloads
+     fresh and the user's idea + tuning + generated prompt are gone.
+     This is a critical UX failure — losing work mid-task is one of
+     the fastest ways to lose a user. We persist the live session to
+     localStorage on every change and restore it on boot.
+
+     Storage:
+       pmgv3:session = { goal, tuning:{id:value}, prompt, ts }
+     TTL: 7 days. Disable hatches: ?fresh=1 in URL,
+     localStorage.pmgv3_persist_disable='1'. */
+  var SESSION_KEY = 'pmgv3:session';
+  var SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  var TUNE_FIELDS = ['category', 'skillLevel', 'tone', 'outputFormat', 'maxLength', 'outputLanguage', 'personality'];
+  var _persistTimer = null;
+  var _persistSuspended = false;
+  function persistDisabled() {
+    try {
+      if (/[?&]fresh\b/.test(window.location.search || '')) return true;
+      if (localStorage.getItem('pmgv3_persist_disable') === '1') return true;
+    } catch (e) {}
+    return false;
+  }
+  function readSession() {
+    try {
+      var raw = localStorage.getItem(SESSION_KEY);
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return null;
+      if (parsed.ts && (Date.now() - parsed.ts) > SESSION_TTL_MS) return null;
+      return parsed;
+    } catch (e) { return null; }
+  }
+  function writeSession() {
+    if (persistDisabled() || _persistSuspended) return;
+    try {
+      var goal = document.getElementById('goal');
+      var rb = document.getElementById('resultBox');
+      var tuning = {};
+      TUNE_FIELDS.forEach(function (id) {
+        var sel = document.getElementById(id);
+        if (sel && sel.value) tuning[id] = sel.value;
+      });
+      var promptText = (rb && rb.textContent || '').trim();
+      if (promptText === 'Your fixed prompt will appear here.') promptText = '';
+      var data = {
+        goal: goal ? goal.value : '',
+        tuning: tuning,
+        prompt: promptText,
+        ts: Date.now()
+      };
+      // Skip writes when there's no real user content. Tuning selects
+      // ALWAYS have a default value (e.g. "other"/"beginner") so we
+      // can't gate on tuning emptiness — only goal+prompt count as
+      // signal. Without this, pagehide on a cleared page re-persists
+      // a junk session right after Start Over.
+      if (!data.goal && !data.prompt) return;
+      localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+    } catch (e) {}
+  }
+  function schedulePersist() {
+    if (_persistTimer) clearTimeout(_persistTimer);
+    _persistTimer = setTimeout(writeSession, 400);
+  }
+  function clearSession() {
+    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+  }
+  // Expose for doStartOver / external callers.
+  window.pmgChassisV3 = window.pmgChassisV3 || {};
+  window.pmgChassisV3.clearSession = clearSession;
+  window.pmgChassisV3.saveSession = writeSession;
+
+  function wirePersistence() {
+    if (persistDisabled()) return;
+    // 1. Restore on boot (if any). Run after wireActions has bound handlers
+    //    so dispatched 'change' events refresh the pill UI.
+    var snap = readSession();
+    if (snap) restoreSession(snap);
+    // 2. Save on user input — debounced.
+    var goal = document.getElementById('goal');
+    if (goal) goal.addEventListener('input', schedulePersist);
+    TUNE_FIELDS.forEach(function (id) {
+      var sel = document.getElementById(id);
+      if (sel) sel.addEventListener('change', schedulePersist);
+    });
+    // 3. Save when the result text changes — #resultBox is updated
+    //    by the legacy form-submit handler so we observe it.
+    var rb = document.getElementById('resultBox');
+    if (rb && typeof MutationObserver !== 'undefined') {
+      try {
+        var mo = new MutationObserver(schedulePersist);
+        mo.observe(rb, { childList: true, characterData: true, subtree: true });
+      } catch (e) {}
+    }
+    // 4. Belt-and-braces: save on visibility change (user is about to
+    //    leave the tab — e.g. tapping "Send to Gemini").
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') writeSession();
+    });
+    window.addEventListener('pagehide', writeSession);
+    window.addEventListener('beforeunload', writeSession);
+  }
+
+  function restoreSession(snap) {
+    try {
+      var goal = document.getElementById('goal');
+      if (goal && snap.goal) {
+        goal.value = snap.goal;
+        goal.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      if (snap.tuning) {
+        TUNE_FIELDS.forEach(function (id) {
+          var sel = document.getElementById(id);
+          if (!sel) return;
+          var v = snap.tuning[id];
+          if (typeof v !== 'string') return;
+          var ok = false;
+          for (var i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value === v) { ok = true; break; }
+          }
+          if (!ok) return;
+          sel.value = v;
+          try { sel.dispatchEvent(new Event('change', { bubbles: true })); } catch (e) {}
+        });
+      }
+      if (snap.prompt) {
+        var rb = document.getElementById('resultBox');
+        if (rb) {
+          rb.textContent = snap.prompt;
+          // Reveal the result box + Run-with-AI button using the same
+          // sequence the Generate handler uses, so the restored prompt
+          // is visible immediately on reload.
+          var box = document.getElementById('prompt-output-box');
+          if (box) {
+            box.classList.remove('is-collapsed');
+            box.removeAttribute('hidden');
+            box.style.setProperty('display', 'block', 'important');
+          }
+          var rwa = document.getElementById('run-with-ai-btn');
+          if (rwa) {
+            rwa.style.setProperty('display', 'block', 'important');
+            rwa.removeAttribute('hidden');
+          }
+          document.body.classList.add('pmg-has-result');
+        }
+      }
+      // If there was a goal OR prompt, reveal the post-analyze surface
+      // so the user lands back where they left off.
+      if (snap.goal || snap.prompt) {
+        var t = document.getElementById('tuning-panel');
+        var g = document.getElementById('generate-section');
+        if (t) { t.classList.remove('is-collapsed'); t.removeAttribute('hidden'); t.style.removeProperty('display'); }
+        if (g) { g.classList.remove('is-collapsed'); g.removeAttribute('hidden'); g.style.removeProperty('display'); }
+        var aBtn = document.getElementById('analyze-btn');
+        if (aBtn) aBtn.style.display = 'none';
+        document.body.classList.add('pmgv3-analyzed');
+      }
+    } catch (e) {}
   }
 
   function wireActions() {
@@ -531,6 +693,17 @@
     }
 
     function doStartOver() {
+      // cv3-49: drop the persisted session AND suspend the persistence
+      // layer for ~700ms so the cascade of input/change events fired by
+      // the reset below doesn't immediately re-write a half-empty
+      // session (default-tuning-but-no-goal) back into localStorage.
+      _persistSuspended = true;
+      try { clearSession(); } catch (e) {}
+      setTimeout(function () {
+        _persistSuspended = false;
+        // Final clear in case anything slipped through.
+        try { clearSession(); } catch (e) {}
+      }, 700);
       // 1. Clear the goal textarea
       var goal = document.getElementById('goal');
       if (goal) {
