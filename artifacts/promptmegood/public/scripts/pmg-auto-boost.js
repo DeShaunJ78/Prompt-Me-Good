@@ -216,6 +216,16 @@
     title.innerHTML = '<span aria-hidden="true">💡</span> A couple quick questions to make this great';
     card.appendChild(title);
 
+    // Per-scope placeholder hints — concrete examples beat the old
+    // generic "Your answer (optional)" which left users guessing about
+    // expected length and format.
+    var PLACEHOLDERS = {
+      text:  "e.g., 'For a marketing email' or 'Casual, friendly tone'",
+      photo: "e.g., 'Dark and moody' or 'Bright and sunny'",
+      video: "e.g., '15 seconds, vertical' or 'Slow, dreamy pacing'",
+    };
+    var placeholder = PLACEHOLDERS[scope] || "e.g., a few words is plenty";
+
     var fieldEls = [];
     questions.forEach(function (q, i) {
       var wrap = document.createElement('label');
@@ -226,7 +236,7 @@
       var inp = document.createElement('input');
       inp.type = 'text';
       inp.className = 'pmg-ab-input';
-      inp.placeholder = 'Your answer (optional)';
+      inp.placeholder = placeholder;
       inp.dataset.pmgAbQuestion = q;
       inp.autocomplete = 'off';
       if (i === 0) setTimeout(function () { try { inp.focus(); } catch (_) {} }, 30);
@@ -235,6 +245,13 @@
       card.appendChild(wrap);
       fieldEls.push(inp);
     });
+
+    // Helper micro-copy: tells the user that short answers are fine
+    // and that skipping is a first-class option (not a failure path).
+    var helper = document.createElement('div');
+    helper.className = 'pmg-ab-card-helper';
+    helper.textContent = 'Short answers are fine — even a single word helps. You can also skip this step.';
+    card.appendChild(helper);
 
     var actions = document.createElement('div');
     actions.className = 'pmg-ab-card-actions';

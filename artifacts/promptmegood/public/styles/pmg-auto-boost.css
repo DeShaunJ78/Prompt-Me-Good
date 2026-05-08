@@ -102,37 +102,56 @@
   border-color: #3ee0a0;
   box-shadow: 0 0 0 3px color-mix(in srgb, #00c896 25%, transparent);
 }
+.pmg-ab-card-helper {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: color-mix(in srgb, #d6efe3 65%, transparent);
+}
 .pmg-ab-card-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-  margin-top: 8px;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
   flex-wrap: wrap;
 }
 .pmg-ab-card-go,
 .pmg-ab-card-skip {
-  padding: 8px 14px;
-  min-height: 40px;
   border-radius: 999px;
-  font-weight: 700;
-  font-size: 13px;
   cursor: pointer;
-  border: 1px solid transparent;
-  transition: filter 160ms ease, transform 160ms ease;
+  font-family: inherit;
+  transition: filter 160ms ease, transform 160ms ease, background 160ms ease;
 }
+/* Primary CTA — larger, filled mint, shadow lift, weightier type. */
 .pmg-ab-card-go {
+  padding: 11px 20px;
+  min-height: 44px;
+  font-weight: 800;
+  font-size: 14px;
   background: linear-gradient(135deg, #00c896 0%, #3ee0a0 100%);
   color: #052a1f;
-  border-color: #00c896;
+  border: 1px solid #00c896;
+  box-shadow: 0 4px 14px rgba(0, 200, 150, 0.28);
 }
 .pmg-ab-card-go:hover { filter: brightness(1.06); transform: translateY(-1px); }
+/* Secondary — subdued text-button style so it reads as "skip" not as
+   a competing action. No border, no shadow, smaller weight. */
 .pmg-ab-card-skip {
+  padding: 8px 12px;
+  min-height: 36px;
+  font-weight: 500;
+  font-size: 13px;
   background: transparent;
-  color: #c8e8da;
-  border-color: color-mix(in srgb, #c8e8da 30%, transparent);
+  color: color-mix(in srgb, #c8e8da 75%, transparent);
+  border: 1px solid transparent;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, #c8e8da 25%, transparent);
+  text-underline-offset: 3px;
 }
 .pmg-ab-card-skip:hover {
-  background: color-mix(in srgb, #c8e8da 8%, transparent);
+  color: #f0fbf5;
+  text-decoration-color: color-mix(in srgb, #c8e8da 60%, transparent);
 }
 
 /* ----- Strength card payoff pulse ------------------------------ */

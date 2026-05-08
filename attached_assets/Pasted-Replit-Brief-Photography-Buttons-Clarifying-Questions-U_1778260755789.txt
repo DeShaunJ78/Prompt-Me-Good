@@ -1,0 +1,26 @@
+Replit Brief: Photography Buttons & Clarifying Questions UX
+1. Photography Output Buttons Verification & Fixes
+The four output buttons in the Photography tab (`Open Image`, `DNA Card`, `Share`, `Regenerate`) have been audited. Here is the status and required fixes:
+
+	•	Open Image (`#pmg-vs-image-save`):
+	◦	Status: The button exists and correctly updates its `href` to the generated image URL and changes its text to “⬇ Open Image”.
+	◦	Fix Required: None. It is working as intended.
+	•	DNA Card (`#pmg-vs-download-dna`):
+	◦	Status: The button exists and the click handler is wired to `downloadDnaCard()`. The script correctly generates a 1080x1350 canvas with the image and prompt, and triggers a download.
+	◦	Fix Required: None. It is working as intended.
+	•	Share (`#pmg-vs-share-dna`):
+	◦	Status: The button exists and correctly uses the native `navigator.share` API if available. It is hidden if the API is not supported by the browser.
+	◦	Fix Required: None. It is working as intended.
+	•	Regenerate (`#pmg-vs-image-regen`):
+	◦	Status: The button exists, but its click handler is missing from the `wire()` function in `pmg-visual-studio.js`.
+	◦	Fix Required: Add the click handler for `#pmg-vs-image-regen` in the `wire()` function. It should trigger the same image generation flow as the primary “Generate Image” button, using the current prompt.
+
+2. Clarifying Questions UX Improvement
+The Problem: When the Auto-Boost feature asks clarifying questions, users are confused about how to respond because the input fields just say “Your answer (optional)”. They don’t know if they should write a full sentence, a single word, or what format is expected.
+
+The Fix:
+Improve the placeholder text and add micro-copy to guide the user.
+
+	•	Change the placeholder text from “Your answer (optional)” to something more instructive, like “e.g., ‘Dark and moody’ or ‘Bright and sunny’”.
+	•	Add a small helper text below the input fields: “Short answers are fine. You can also skip this step.”
+	•	Ensure the “Got it, now boost” and “Skip, boost anyway” buttons are visually distinct, with the primary action being more prominent
