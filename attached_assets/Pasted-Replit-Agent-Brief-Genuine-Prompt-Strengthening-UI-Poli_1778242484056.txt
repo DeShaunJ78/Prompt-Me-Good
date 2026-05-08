@@ -1,0 +1,34 @@
+Replit Agent Brief: Genuine Prompt Strengthening & UI Polish (All Suites)
+Context for Replit Agent:
+The user wants to implement a genuine, functional “Prompt Strength Booster” experience across all three suites (Text Prompts, Photography, Video). This is not a cosmetic animation — it must be a real AI-driven refinement pass that asks smart clarifying questions if needed, then restructures the prompt. Additionally, the “Send to [AI]” buttons need a UI polish to stand out.
+
+Your Task:
+Implement the following functional and UI updates.
+
+1. The “Auto-Boost” UX (Applies to Text, Photo, and Video Suites)
+In the output panel of each suite, next to or below the current strength indicator, add a primary action button: `✨ Auto-Boost Prompt` (or `✨ Auto-Boost Brief` for Photo/Video).
+
+When clicked, the system must execute the following flow:
+
+Step A: Smart Clarifying Questions (Pre-Check)
+	•	The Logic: Run a quick, lightweight AI pass on the current prompt/brief with this instruction: “Read this prompt. If there are 1 or 2 specific pieces of information that, if provided, would dramatically improve the quality of the AI’s response (e.g., missing target audience, tone, specific lighting, or camera angle), ask for them as short, friendly questions. If the prompt is already clear enough, return nothing.”
+	•	The UX: If the AI identifies a gap, surface a small, friendly inline card above the output box with the 1–2 questions.
+	•	User Interaction: The user can type a quick answer into a small text field on the card and click `Got it, now boost` — or they can click `Skip, boost anyway` to proceed without answering. (The Skip option must always be visible; never block the user).
+
+Step B: Genuine Strengthening Pass
+	•	The Logic: Run the main AI refinement pass. Fold in the user’s answers from Step A (if any). The strict instruction to the AI must be: “Do not change the core intent or subject matter of the user’s prompt. Only add the structural elements that are missing to make it perform better.”
+	◦	For Text: Add explicit Role, Context, Constraints, Tone, and Output Format.
+	◦	For Photo: Add explicit details for Style, Camera/Lens, Lighting, Composition, and Color Palette if missing.
+	◦	For Video: Add explicit scene descriptions, camera movement, and pacing.
+	•	The UX: While processing, show a loading state (e.g., “Adding expert structure…”). Once complete, update the prompt text in the output box with the newly structured version.
+
+Step C: The Payoff
+	•	The Strength Bar: Because the new prompt now contains the necessary structural elements, the strength score logic should naturally evaluate it higher. The progress bar should animate to full (green), and the status text should update to “Expert Level”.
+
+2. Make “Send to AI” Buttons Pop
+The three buttons at the bottom of the output panel (`Send to ChatGPT`, `Send to Claude`, `Send to Gemini`) are currently too dark and blend into the background.
+
+	•	Update Button Styling: Change the CSS for these specific buttons so they stand out as primary actions. Give them a solid background color that contrasts well with the dark theme, or a bright border with a distinct hover state.
+	•	Example CSS Adjustments:
+
+￼

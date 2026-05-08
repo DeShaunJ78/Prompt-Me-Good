@@ -1,0 +1,205 @@
+/* pmg-auto-boost.css — Auto-Boost button + clarifying card.
+   Also bumps Send-to-AI buttons so they pop on the dark theme. */
+
+/* ----- Auto-Boost button --------------------------------------- */
+.pmg-ab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  min-height: 44px;
+  border: 1px solid #00c896;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #00c896 0%, #3ee0a0 100%);
+  color: #052a1f;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 200, 150, 0.28);
+  transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+}
+.pmg-ab-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 6px 20px rgba(0, 200, 150, 0.42);
+}
+.pmg-ab-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+.pmg-ab-btn:disabled {
+  cursor: progress;
+  opacity: 0.85;
+  filter: saturate(0.7);
+}
+.pmg-ab-btn .pmg-ab-spark {
+  font-size: 16px;
+  display: inline-block;
+  animation: pmgAbSparkle 2.4s ease-in-out infinite;
+}
+.pmg-ab-btn[data-pmg-ab-state="thinking"] .pmg-ab-spark {
+  animation: pmgAbSparkleFast 0.9s linear infinite;
+}
+@keyframes pmgAbSparkle {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  50%      { transform: scale(1.15) rotate(12deg); opacity: 0.85; }
+}
+@keyframes pmgAbSparkleFast {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ----- Clarifying-question card -------------------------------- */
+.pmg-ab-card {
+  margin: 12px 0;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, #00c896 35%, transparent);
+  border-left: 3px solid #00c896;
+  border-radius: 12px;
+  background: color-mix(in srgb, #00c896 8%, #0d2b1e);
+  color: #e6f3ee;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.28);
+  animation: pmgAbCardIn 220ms ease-out;
+}
+@keyframes pmgAbCardIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.pmg-ab-card-title {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 10px;
+  color: #3ee0a0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pmg-ab-field {
+  display: block;
+  margin-bottom: 10px;
+}
+.pmg-ab-q {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #d6efe3;
+  line-height: 1.4;
+}
+.pmg-ab-input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid color-mix(in srgb, #00c896 25%, transparent);
+  border-radius: 8px;
+  background: rgba(5, 30, 22, 0.6);
+  color: #f0fbf5;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+.pmg-ab-input:focus {
+  outline: none;
+  border-color: #3ee0a0;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #00c896 25%, transparent);
+}
+.pmg-ab-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.pmg-ab-card-go,
+.pmg-ab-card-skip {
+  padding: 8px 14px;
+  min-height: 40px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: filter 160ms ease, transform 160ms ease;
+}
+.pmg-ab-card-go {
+  background: linear-gradient(135deg, #00c896 0%, #3ee0a0 100%);
+  color: #052a1f;
+  border-color: #00c896;
+}
+.pmg-ab-card-go:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.pmg-ab-card-skip {
+  background: transparent;
+  color: #c8e8da;
+  border-color: color-mix(in srgb, #c8e8da 30%, transparent);
+}
+.pmg-ab-card-skip:hover {
+  background: color-mix(in srgb, #c8e8da 8%, transparent);
+}
+
+/* ----- Strength card payoff pulse ------------------------------ */
+.pmg-ab-pulse {
+  animation: pmgAbPulse 0.9s ease-out 1;
+}
+@keyframes pmgAbPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(0, 200, 150, 0.55); }
+  60%  { box-shadow: 0 0 0 14px rgba(0, 200, 150, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 200, 150, 0); }
+}
+
+/* ----- Toast --------------------------------------------------- */
+.pmg-ab-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #00c896 0%, #3ee0a0 100%);
+  color: #052a1f;
+  font-weight: 800;
+  padding: 10px 18px;
+  border-radius: 999px;
+  z-index: 9999;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  font-size: 13px;
+}
+
+/* =================================================================
+   Send-to-AI button polish — make ChatGPT / Claude / Gemini /
+   Perplexity buttons stand out instead of blending into the dark
+   panel. Targets the existing pmg-send-to-shell classes added by
+   pmg-send-to.js without touching its JS.
+   ================================================================= */
+.pmg-send-to-shell {
+  box-shadow: 0 4px 14px rgba(0, 200, 150, 0.18) !important;
+}
+.pmg-send-to-shell button.pmg-send-to-main-btn,
+.pmg-send-to-shell button.pmg-send-to-caret-btn {
+  background: linear-gradient(135deg, #00c896 0%, #3ee0a0 100%) !important;
+  color: #052a1f !important;
+  border-color: #00c896 !important;
+  font-weight: 800 !important;
+}
+.pmg-send-to-shell button.pmg-send-to-main-btn:hover,
+.pmg-send-to-shell button.pmg-send-to-caret-btn:hover {
+  filter: brightness(1.06);
+  background: linear-gradient(135deg, #00d6a3 0%, #4be8aa 100%) !important;
+}
+.pmg-send-to-shell .pmg-send-to-caret-btn {
+  border-left: 1px solid rgba(5, 42, 31, 0.35) !important;
+}
+.pmg-send-to-shell .pmg-send-to-icon {
+  opacity: 1 !important;
+}
+
+/* ----- Mobile tweaks ------------------------------------------- */
+@media (max-width: 640px) {
+  .pmg-ab-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .pmg-ab-card-actions {
+    flex-direction: column-reverse;
+  }
+  .pmg-ab-card-go,
+  .pmg-ab-card-skip {
+    width: 100%;
+  }
+}
