@@ -1,0 +1,72 @@
+PromptMeGood UX Friction & Audit Report
+Date: May 8, 2026
+Author: Manus AI
+Scope: Full end-to-end UX audit of desktop and mobile experiences.
+
+This report documents every point of friction, confusion, or broken interaction a user experiences when navigating PromptMeGood. The findings are prioritized by severity.
+
+1. Critical Friction Points (Fix Immediately)
+These issues actively prevent users from understanding or using the core product.
+
+1.1 The “Empty Right Half” First Impression
+When a new user lands on the app, the left column is populated with the prompt builder, but the right column is completely empty dark space.
+
+	•	The Friction: It looks broken or unfinished. Users don’t know what the right side is for until they generate a prompt.
+	•	The Fix: The right column needs an empty state placeholder — e.g., a subtle graphic or text saying “Your engineered prompt will appear here.”
+
+1.2 Competing Input Boxes
+There are two text inputs visible simultaneously on load:
+
+	1.	The main `#goal` textarea (“What are you working on?”)
+	2.	The bottom bar input (“What do you want to build?”)
+
+	•	The Friction: Users don’t know which one to use. They serve the same purpose but are disconnected.
+	•	The Fix: Remove the bottom bar input entirely on desktop. The main textarea is sufficient and clearer.
+
+1.3 The “Invisible” Photography & Video Suites
+Clicking the Photography or Video tabs currently does not change the layout to a dedicated workspace. The Photography suite is buried inside a modal that is hidden by CSS, and the Video suite is similarly obscured.
+
+	•	The Friction: The segmented tab architecture is broken. Users click a tab and nothing appears to happen.
+	•	The Fix: Implement the segmented tab architecture (as outlined in the previous Replit brief) where each tab completely swaps the left and right column content to its respective suite.
+
+2. High Friction Points (Fix Soon)
+These issues cause confusion or slow down the user workflow.
+
+2.1 Cognitive Overload in the Tuning Panel
+After clicking “Analyze My Idea,” the user is presented with over 50 interactive buttons (Category, Experience Level, Tone, Format, Length, Language, Personality).
+
+	•	The Friction: This is overwhelming. A user who just wants a better prompt is suddenly asked to make 7 different micro-decisions before they can generate it.
+	•	The Fix: The AI should auto-select the best options based on the initial idea, allowing the user to just click “Generate” if they want, or tweak the selections if they prefer. (This aligns with the “Auto-Boost” logic we are implementing).
+
+2.2 “Send to AI” Buttons are Invisible
+The buttons to send the prompt to ChatGPT, Claude, or Gemini have a transparent background and a very faint border (`rgba(255, 255, 255, 0.15)`).
+
+	•	The Friction: They look disabled or like unclickable text. Users miss the handoff step.
+	•	The Fix: Apply the CSS polish outlined in the recent Replit brief to give them a solid background or bright border on hover.
+
+2.3 No Landing Page for Cold Traffic
+Navigating to `www.promptmegood.com` redirects immediately to `/app`.
+
+	•	The Friction: A user arriving from a link or ad has no context, no value proposition, and no onboarding. They are dropped straight into a tool they don’t know how to use.
+	•	The Fix: The root domain should serve a marketing landing page that explains the value (as seen in the extracted markdown content) before funneling users into the app.
+
+3. Mobile-Specific Friction (390px Viewport)
+The mobile experience suffers from layout stacking issues.
+
+3.1 The “Live Feedback” Panel Eats the Screen
+On mobile, the tuning panel and feedback sections take up massive vertical space, pushing the primary “Generate” button below the fold.
+
+	•	The Friction: Users have to scroll past dozens of tuning pills just to generate their prompt.
+	•	The Fix: On mobile, the tuning sections should be collapsed by default into an accordion or “Tune Settings” button, keeping the “Generate” button visible immediately below the input.
+
+3.2 Tuning Pills are Desktop-Sized
+The tuning pills (`.pmg-tune-pill`) inherit a `min-height: 44px` and wide padding from desktop.
+
+	•	The Friction: They wrap awkwardly and take up too much screen real estate on a 390px screen.
+	•	The Fix: Reduce padding and font size for these pills inside the `max-width: 768px` media query.
+
+Summary of Next Steps
+	1.	Execute the Segmented Tab Brief: Fix the broken Photography and Video tabs so they own their workspaces.
+	2.	Execute the Polish Brief: Implement the genuine Auto-Boost and fix the Send button styling.
+	3.	Clean up the First Impression: Add an empty state to the right column and remove the redundant bottom input bar.
+	4.	Mobile Layout Pass: Collapse tuning settings on mobile to keep the primary CTA above the fold.
