@@ -4074,7 +4074,7 @@
   <link rel="stylesheet" href="/styles/pmg-visual-studio.css?v=vs-22-photo-accordion" />
   <link rel="stylesheet" href="/styles/pmg-storyboard.css?v=sb-7" />
   <link rel="stylesheet" href="/styles/pmg-auto-boost.css?v=ab-3" />
-  <script src="/scripts/pmg-chassis-v3.js?v=cv3-34"></script>
+  <script src="/scripts/pmg-chassis-v3.js?v=cv3-37"></script>
   <script src="/scripts/pmg-visual-studio.js?v=vs-22-photo-accordion" defer></script>
   <script src="/scripts/pmg-storyboard.js?v=sb-9" defer></script>
   <style id="pmg-splash-css">
@@ -4122,8 +4122,14 @@
   <div id="pmg-splash" role="status" aria-live="polite" aria-label="Loading PromptMeGood">
     <div class="pmg-splash-mark">PromptMe<span>Good</span></div>
     <div class="pmg-splash-spinner" aria-hidden="true"></div>
-    <div class="pmg-splash-text">Loading your workstation…</div>
+    <div class="pmg-splash-text">Loading PromptMeGood…</div>
   </div>
+  <noscript>
+    <div style="position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#0d2b1e;color:#e6f7ee;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:24px;text-align:center;">
+      <div style="font-size:22px;font-weight:800;letter-spacing:0.02em;">PromptMe<span style="color:#5fe6b0">Good</span></div>
+      <div style="font-size:15px;max-width:420px;line-height:1.5;opacity:0.85;">PromptMeGood requires JavaScript to run the app. Please enable JavaScript in your browser and reload this page.</div>
+    </div>
+  </noscript>
   <script>
     /* Splash dismiss: fires on window.load + small grace, with a 4s safety
        cap so a stuck script never traps the user behind the splash. */
@@ -4748,7 +4754,7 @@
 
         <section class="panel" id="result-panel" aria-labelledby="result-title">
           <div class="panel-head">
-            <h2 id="result-title" data-tour-target="fixed-prompt-output">Your Fixed Prompt</h2>
+            <h2 id="result-title" data-tour-target="fixed-prompt-output">Your Optimized Prompt Will Appear Here</h2>
             <p class="demo-next-step" id="demo-next-step" role="status" aria-live="polite" hidden>This is a sample prompt. Copy it, refine it, or go back and enter your own goal.</p>
           </div>
           <div class="result-top-actions pmg-post-gen" id="result-top-actions" data-pmg-empty="1">
@@ -12584,14 +12590,23 @@ Context:
       var EMPTY_BTN_IDS = [
         'result-top-copy','result-top-run','result-top-refine',
         'copy-btn','download-prompt-btn','print-btn','clear-prompt-btn',
-        'check-quality-btn'
+        'check-quality-btn','improve-with-ai-btn','fine-tune-btn',
+        'edit-prompt-btn','rewrite-btn','run-with-ai-btn'
       ];
+      var EMPTY_REMIX_SEL = '#improve-block [data-remix]';
       var setEnabled = function(on){
         for (var i=0; i<EMPTY_BTN_IDS.length; i++){
           var b = $(EMPTY_BTN_IDS[i]);
           if (!b) continue;
-          if (on){ b.disabled = false; b.removeAttribute('aria-disabled'); }
-          else   { b.disabled = true;  b.setAttribute('aria-disabled','true'); }
+          if (on){ b.disabled = false; b.removeAttribute('aria-disabled'); b.removeAttribute('title'); }
+          else   { b.disabled = true;  b.setAttribute('aria-disabled','true'); b.setAttribute('title','Generate a prompt first to enable this action.'); }
+        }
+        // Remix preset buttons (More Detailed / Bold & Direct / Beginner)
+        var remix = document.querySelectorAll(EMPTY_REMIX_SEL);
+        for (var j=0; j<remix.length; j++){
+          var r = remix[j];
+          if (on){ r.disabled = false; r.removeAttribute('aria-disabled'); }
+          else   { r.disabled = true;  r.setAttribute('aria-disabled','true'); }
         }
       };
       var check = function(){
