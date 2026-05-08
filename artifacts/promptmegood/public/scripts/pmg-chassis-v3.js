@@ -578,14 +578,117 @@
       });
     });
 
-    // Vault icon → trigger any existing vault toggle
-    bindIfPresent('pmgv3-vault', function () {
-      var existing = document.querySelector('#pmg-vault-toggle, [data-pmg-vault-toggle]');
-      if (existing) existing.click();
-    });
+    // Vault icon → open the vault drawer overlay (chassis-v3 hides the
+    // legacy #history section via the body > * universal-hide rule, so a
+    // simple delegated click never surfaced anything; we lazily build a
+    // right-side drawer and reparent #history into it on first open).
+    bindIfPresent('pmgv3-vault', function () { openVaultDrawer(); });
+
+    // Settings icon → switch to text panel, force-expand the mobile
+    // tuning accordion (so #settingsPanel is visible at any width), and
+    // scroll it into view. The settings panel is already reparented into
+    // the v3 tuning slot at boot, so it's always present in the DOM.
+    bindIfPresent('pmgv3-settings', function () { openSettings(); });
+
     bindIfPresent('pmgv3-upgrade', function () {
       window.location.href = '/pricing.html';
     });
+  }
+
+  /* -------------------- Vault drawer overlay -------------------- */
+  function ensureVaultDrawerStyles() {
+    if (document.getElementById('pmgv3-vault-drawer-css')) return;
+    var s = document.createElement('style');
+    s.id = 'pmgv3-vault-drawer-css';
+    s.textContent = [
+      '#pmgv3-vault-overlay { position: fixed; inset: 0; z-index: 99990; background: rgba(0,0,0,0.55); opacity: 0; pointer-events: none; transition: opacity 0.18s ease; }',
+      '#pmgv3-vault-overlay.is-open { opacity: 1; pointer-events: auto; }',
+      '#pmgv3-vault-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(560px, 92vw); z-index: 99991; background: #0d2b1e; color: #e6f7ee; box-shadow: -8px 0 24px rgba(0,0,0,0.45); transform: translateX(100%); transition: transform 0.22s ease; display: flex; flex-direction: column; overflow: hidden; }',
+      '#pmgv3-vault-overlay.is-open + #pmgv3-vault-drawer, #pmgv3-vault-drawer.is-open { transform: translateX(0); }',
+      '.pmgv3-vault-drawer-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); flex: 0 0 auto; }',
+      '.pmgv3-vault-drawer-head h2 { margin: 0; font-size: 18px; color: #e6f7ee; }',
+      '.pmgv3-vault-drawer-close { width: 36px; height: 36px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); background: transparent; color: #e6f7ee; font-size: 18px; cursor: pointer; }',
+      '.pmgv3-vault-drawer-close:hover { background: rgba(0,200,150,0.08); color: #00c896; }',
+      '.pmgv3-vault-drawer-body { flex: 1 1 auto; overflow-y: auto; padding: 14px 18px 24px; }',
+      /* When #history is hosted inside the drawer it must override the chassis universal-hide. */
+      '#pmgv3-vault-drawer #history { display: block !important; visibility: visible !important; opacity: 1 !important; }',
+      '#pmgv3-vault-drawer #history .panel { background: transparent; box-shadow: none; border: 0; padding: 0; }',
+      '#pmgv3-vault-drawer #history .pmg-vault-toggle { display: none !important; }',
+      '@media (max-width: 480px) { #pmgv3-vault-drawer { width: 100vw; } }'
+    ].join('\n');
+    document.head.appendChild(s);
+  }
+  function openVaultDrawer() {
+    ensureVaultDrawerStyles();
+    var overlay = document.getElementById('pmgv3-vault-overlay');
+    var drawer  = document.getElementById('pmgv3-vault-drawer');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'pmgv3-vault-overlay';
+      overlay.setAttribute('data-pmg-overlay-root', '');
+      overlay.addEventListener('click', closeVaultDrawer);
+      document.body.appendChild(overlay);
+    }
+    if (!drawer) {
+      drawer = document.createElement('aside');
+      drawer.id = 'pmgv3-vault-drawer';
+      drawer.setAttribute('role', 'dialog');
+      drawer.setAttribute('aria-modal', 'true');
+      drawer.setAttribute('aria-label', 'Prompt Vault');
+      drawer.innerHTML = [
+        '<div class="pmgv3-vault-drawer-head">',
+          '<h2>🔒 Prompt Vault</h2>',
+          '<button type="button" class="pmgv3-vault-drawer-close" aria-label="Close vault">✕</button>',
+        '</div>',
+        '<div class="pmgv3-vault-drawer-body" id="pmgv3-vault-drawer-body"></div>'
+      ].join('');
+      drawer.querySelector('.pmgv3-vault-drawer-close').addEventListener('click', closeVaultDrawer);
+      document.body.appendChild(drawer);
+    }
+    var body = document.getElementById('pmgv3-vault-drawer-body');
+    var hist = document.getElementById('history');
+    if (hist && body && hist.parentNode !== body) {
+      body.appendChild(hist);
+      // Force-expand if a previous session left it collapsed.
+      var panel = hist.querySelector('.panel');
+      if (panel) panel.classList.remove('pmg-vault-collapsed');
+    }
+    // Trigger a render of vault contents if the legacy script exposes one.
+    try { if (typeof window.renderHistory === 'function') window.renderHistory(); } catch (_e) {}
+    overlay.classList.add('is-open');
+    drawer.classList.add('is-open');
+    document.addEventListener('keydown', vaultDrawerEsc);
+  }
+  function closeVaultDrawer() {
+    var overlay = document.getElementById('pmgv3-vault-overlay');
+    var drawer  = document.getElementById('pmgv3-vault-drawer');
+    if (overlay) overlay.classList.remove('is-open');
+    if (drawer)  drawer.classList.remove('is-open');
+    document.removeEventListener('keydown', vaultDrawerEsc);
+  }
+  function vaultDrawerEsc(e) { if (e.key === 'Escape') closeVaultDrawer(); }
+
+  /* -------------------- Settings opener -------------------- */
+  function openSettings() {
+    try { setActivePanel('text'); } catch (_e) {}
+    setTimeout(function () {
+      var panel = document.getElementById('tuning-panel');
+      if (panel) panel.classList.add('is-mobile-open');
+      // Settings panel itself ships with inline display:none; force visible.
+      var sp = document.getElementById('settingsPanel');
+      if (sp) {
+        sp.style.setProperty('display', 'block', 'important');
+        try { sp.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_e) { sp.scrollIntoView(); }
+        // Brief highlight pulse so the user sees where it landed.
+        sp.style.transition = 'box-shadow 0.6s ease';
+        sp.style.boxShadow = '0 0 0 3px rgba(0,200,150,0.45)';
+        setTimeout(function () { sp.style.boxShadow = ''; }, 1200);
+      } else {
+        // Last-ditch: if no settingsPanel exists, surface the theme toggle.
+        var theme = document.querySelector('[data-theme-toggle], .theme-toggle');
+        if (theme) theme.click();
+      }
+    }, 60);
   }
 
   function mirrorStrength() {
