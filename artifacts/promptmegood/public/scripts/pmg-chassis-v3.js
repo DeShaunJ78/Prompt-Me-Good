@@ -77,7 +77,7 @@
     root.innerHTML = [
       '<header class="pmgv3-topbar">',
         '<div class="pmgv3-brand">',
-          '<img src="/pmg-logo.png?v=5" alt="" />',
+          '<img src="/assets/pmg-logo.png?v=6" alt="PromptMeGood" />',
           '<span>PromptMeGood</span>',
           '<span class="pmgv3-brand-beta">Beta</span>',
         '</div>',
