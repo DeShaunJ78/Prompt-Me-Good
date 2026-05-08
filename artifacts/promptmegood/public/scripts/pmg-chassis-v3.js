@@ -618,7 +618,14 @@
         try { e.stopImmediatePropagation(); } catch (_e) {}
         try {
           if (window.PMGExpertCenter && typeof window.PMGExpertCenter.requestOpen === 'function') {
-            window.PMGExpertCenter.requestOpen();
+            /* skipWarning: the warning <dialog> lives deep inside the
+               legacy footer, which the chassis hides via the body > *
+               universal-hide rule. Calling showModal() on a hidden
+               dialog throws and the click gets silently swallowed.
+               The gear is a deliberate power-user click — go straight
+               to the drawer. Paywall gating still applies inside
+               requestOpen(). */
+            window.PMGExpertCenter.requestOpen({ skipWarning: true });
             return;
           }
         } catch (_e) {}

@@ -48,7 +48,7 @@ html.pmg-chassis-v3 [id^="generateBtnTop"] {
    #ob-overlay) also use role="dialog" and must stay hidden in v3.
    Any new overlay that needs to survive v3 hide must add
    data-pmg-overlay-root="1" explicitly. */
-html.pmg-chassis-v3 body > *:not(#pmg-chassis-v3-root):not(script):not(style):not(noscript):not(#pmg-splash):not(template):not([data-pmg-overlay-root]):not(.pmg-modal-overlay) {
+html.pmg-chassis-v3 body > *:not(#pmg-chassis-v3-root):not(script):not(style):not(noscript):not(#pmg-splash):not(template):not([data-pmg-overlay-root]):not(.pmg-modal-overlay):not(#pmg-expert-center-root) {
   display: none !important;
   visibility: hidden !important;
 }
