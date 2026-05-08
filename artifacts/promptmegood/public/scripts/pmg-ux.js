@@ -5431,18 +5431,18 @@
           'DSLR', 'Mirrorless', 'Film Grain',
           'Drone Aerial', 'GoPro Action', 'iPhone Snap'
         ] },
-        { label: 'Aperture', values: [
+        { label: 'Aperture (Depth Of Field)', values: [
           'f/1.4 Bokeh', 'f/2.8 Soft', 'f/8 Sharp', 'f/16 Deep DOF'
         ] },
-        { label: 'Shutter Speed', values: [
+        { label: 'Shutter Speed (Motion)', values: [
           '1/60 Motion Blur', '1/250 Sharp', '1/1000 Frozen Action'
         ] },
-        { label: 'ISO', values: [
+        { label: 'ISO (Low-Light Grain)', values: [
           'ISO 100 Clean', 'ISO 400 Daylight', 'ISO 1600 Low-Light'
         ] },
         /* cv3-27 (from Director Mode reference): expanded film
            stock with the analog formats users actually ask for. */
-        { label: 'Film Stock', values: [
+        { label: 'Film Stock (Analog Look)', values: [
           'Full Color', 'Black & White Film',
           'Kodak Portra 400', 'CineStill 800T', 'Tri-X B&W',
           'VHS', '16mm Film', '35mm Film', 'Digital Clean'

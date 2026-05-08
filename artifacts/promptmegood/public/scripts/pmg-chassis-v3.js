@@ -85,7 +85,7 @@
           '<a class="pmgv3-ico" id="pmgv3-help" href="/guide.html" target="_blank" rel="noopener" title="Quick Guide — opens in a new tab" aria-label="Open the PromptMeGood quick guide in a new tab">❓</a>',
           '<button class="pmgv3-ico" id="pmgv3-vault" type="button" title="Vault" aria-label="Vault">🗄️</button>',
           '<button class="pmgv3-ico" id="pmgv3-settings" type="button" title="Settings" aria-label="Settings">⚙️</button>',
-          '<button class="pmgv3-upgrade" type="button" id="pmgv3-upgrade" title="Unlock Pro: brand voices, advanced tuning, higher daily limits">Upgrade</button>',
+          '<button class="pmgv3-upgrade" type="button" id="pmgv3-upgrade" title="See pricing — $79 one-time Founding Member (first 500, lifetime access) or Pro $9/mo">Upgrade</button>',
         '</div>',
       '</header>',
       '<nav class="pmgv3-tabs" role="tablist" aria-label="Module">',
