@@ -168,6 +168,16 @@ html.pmg-chassis-v3 body {
   transition: background 0.15s, color 0.15s;
 }
 .pmgv3-ico:hover { background: rgba(0, 200, 150, 0.08); color: #00c896; }
+/* Mobile bug fix #1: ensure topbar icon buttons (Vault, Settings) hit
+   the 44x44 minimum tap target on touch devices. Uses pointer: coarse
+   so the larger hit area only kicks in on real touch devices, leaving
+   desktop unchanged. */
+@media (hover: none) and (pointer: coarse) {
+  .pmgv3-ico {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
 .pmgv3-upgrade {
   padding: 8px 14px;
   border-radius: 8px;
@@ -1101,7 +1111,9 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
 @media (max-width: 400px) {
   .pmgv3-topbar { padding: 0 10px; }
   .pmgv3-tb-r { gap: 4px; }
-  .pmgv3-ico { width: 32px; height: 32px; font-size: 14px; }
+  /* Visual icon glyph stays small but min-width/min-height from the
+     touch-device rule above keeps the tap target ≥44x44. */
+  .pmgv3-ico { width: 32px; height: 32px; font-size: 14px; padding: 0; }
   .pmgv3-upgrade { padding: 5px 8px; font-size: 11px; }
   .pmgv3-brand { gap: 6px; font-size: 13px; }
   .pmgv3-brand img { width: 24px; height: 24px; }
