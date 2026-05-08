@@ -4,152 +4,100 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script>
-    (function () {
-      try {
-        if (location.hostname === 'promptmegood.com') {
-          location.replace('https://www.promptmegood.com' + location.pathname + location.search + location.hash);
-        }
-      } catch (e) {}
-    })();
+    (function () { try { if (location.hostname === 'promptmegood.com') location.replace('https://www.promptmegood.com' + location.pathname + location.search + location.hash); } catch (e) {} })();
   </script>
   <title>Terms of Service — PromptMeGood</title>
   <meta property="og:title" content="Terms of Service — PromptMeGood" />
-  <meta property="og:description" content="The rules for using PromptMeGood — the free AI prompt generator, image prompt tools, paid Expert Command Center, Founding Member purchases, and Pro subscriptions." />
+  <meta property="og:description" content="The rules for using PromptMeGood — the free AI prompt builder, paid Expert Command Center, Founding Member purchases, and Pro subscriptions." />
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://www.promptmegood.com/terms.html" />
   <meta property="og:image" content="https://www.promptmegood.com/opengraph.jpg?v=5" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Terms of Service — PromptMeGood" />
-  <meta name="twitter:description" content="The rules for using PromptMeGood, including payments, refunds, and acceptable use." />
+  <meta name="twitter:description" content="The rules for using PromptMeGood." />
   <meta name="twitter:image" content="https://www.promptmegood.com/opengraph.jpg?v=5" />
-  <meta name="description" content="Terms of using PromptMeGood, including the free tier, the Founding Member ($79 one-time, price locked) purchase, the Pro Monthly subscription ($9/month), Pro Yearly ($79/year), the paid Expert Command Center, refunds, and acceptable use." />
+  <meta name="description" content="Terms for using PromptMeGood — the Free tier, Founding Member ($79 one-time, price locked), Pro Monthly ($9/mo) and Pro Yearly ($79/yr), the Expert Command Center, refunds, and acceptable use." />
   <link rel="canonical" href="https://www.promptmegood.com/terms.html" />
   <meta name="robots" content="index,follow" />
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=6" />
-  <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48.png?v=6" />
   <link rel="icon" type="image/png" href="/assets/pmg-logo.png?v=6" />
   <link rel="apple-touch-icon" href="/assets/pmg-logo.png?v=6" />
   <script>
     (function () {
       try {
-        var v = localStorage.getItem('promptmegood:themeAccent:v1');
-        if (v && /^(green|blue|purple|gold|slate)$/.test(v) && v !== 'green') {
-          document.documentElement.setAttribute('data-accent', v);
-        }
-      } catch (e) {}
-    })();
-    /* Light/dark theme bootstrap — honor the user's saved sitewide preference so
-       this legal page matches the theme they chose on index/pricing/guide. */
-    (function () {
-      try {
         var saved = localStorage.getItem('promptmegood:theme');
-        var theme;
-        if (saved === 'dark' || saved === 'light') {
-          theme = saved;
-        } else {
-          theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
+        var theme = (saved === 'dark' || saved === 'light') ? saved
+          : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         document.documentElement.setAttribute('data-theme', theme);
       } catch (e) {}
     })();
   </script>
   <style>
     :root, [data-theme="light"] {
-      --color-bg: #f7f6f2;
-      --color-surface: #fbfbf9;
-      --color-border: #d8d4cd;
-      --color-text: #24211c;
-      --color-text-muted: #67655f;
-      --color-primary: #01696f;
-      --color-primary-hover: #0c4e54;
-      --radius-md: 0.875rem;
-      --radius-lg: 1.25rem;
-      --shadow-md: 0 10px 30px rgba(18, 19, 18, 0.08);
-      --font-body: 'Satoshi', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --bg: #f7f6f2; --surface: #fbfbf9; --border: #d8d4cd;
+      --text: #24211c; --muted: #67655f;
+      --primary: #01696f; --primary-hover: #0c4e54;
+      --radius-md: 0.875rem; --radius-lg: 1.25rem;
+      --shadow: 0 10px 30px rgba(18,19,18,0.08);
+      --font: 'Satoshi', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
     [data-theme="dark"] {
-      --color-bg: #151412;
-      --color-surface: #1c1b18;
-      --color-border: #34312d;
-      --color-text: #ece9e2;
-      --color-text-muted: #b9b4ab;
-      --color-primary: #5ba8b0;
-      --color-primary-hover: #73b8bf;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root:not([data-theme]) {
-        --color-bg: #151412;
-        --color-surface: #1c1b18;
-        --color-border: #34312d;
-        --color-text: #ece9e2;
-        --color-text-muted: #b9b4ab;
-        --color-primary: #5ba8b0;
-      }
+      --bg: #151412; --surface: #1c1b18; --border: #34312d;
+      --text: #ece9e2; --muted: #b9b4ab;
+      --primary: #5ba8b0; --primary-hover: #73b8bf;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
-    body {
-      min-height: 100dvh;
-      background: var(--color-bg);
-      color: var(--color-text);
-      font-family: var(--font-body);
-      font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
-      line-height: 1.65;
-      display: flex;
-      flex-direction: column;
-    }
-    .container { max-width: 740px; margin: 0 auto; padding: 0 1.25rem; width: 100%; }
-    .site-header { padding: 1.25rem 0; border-bottom: 1px solid var(--color-border); background: var(--color-surface); }
+    body { min-height: 100dvh; background: var(--bg); color: var(--text); font-family: var(--font); font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem); line-height: 1.65; display: flex; flex-direction: column; }
+    .container { max-width: 760px; margin: 0 auto; padding: 0 1.25rem; width: 100%; }
+    .site-header { padding: 1.25rem 0; border-bottom: 1px solid var(--border); background: var(--surface); }
     .site-header-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-    .site-header-brand { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; color: var(--color-text); font-weight: 700; font-size: 1.05rem; }
+    .site-header-brand { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; color: var(--text); font-weight: 700; font-size: 1.05rem; }
     .site-header-brand img { width: 28px; height: 28px; border-radius: 6px; }
-    .site-header-back { color: var(--color-primary); text-decoration: none; font-weight: 600; font-size: 0.95rem; }
+    .site-header-back { color: var(--primary); text-decoration: none; font-weight: 600; font-size: 0.95rem; }
     .site-header-back:hover { text-decoration: underline; }
-    main { flex: 1; padding: 3rem 0; }
-    .legal-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 2.25rem 2rem; box-shadow: var(--shadow-md); }
-    .legal-card h1 { font-size: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem); margin-bottom: 0.5rem; }
-    .legal-meta { color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
-    .legal-card p { margin-bottom: 1.1rem; color: var(--color-text); }
-    .legal-card a { color: var(--color-primary); }
-    .legal-card a:hover { color: var(--color-primary-hover); }
-    .back-bottom { margin-top: 2rem; text-align: center; }
-    .back-bottom a { color: var(--color-primary); text-decoration: none; font-weight: 600; }
-    .back-bottom a:hover { text-decoration: underline; }
-    .site-footer { padding: 1.5rem 0; border-top: 1px solid var(--color-border); background: var(--color-surface); margin-top: auto; }
-    .site-footer-inner { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center; }
-    .site-footer-brand { font-weight: 600; }
-    .site-footer-tagline { color: var(--color-text-muted); font-size: 0.9rem; }
-    .site-footer-back { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; align-items: center; }
-    .site-footer-link { color: var(--color-primary); text-decoration: none; font-size: 0.9rem; }
+    main { flex: 1; padding: 2.5rem 0 3rem; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2.25rem 1.85rem; box-shadow: var(--shadow); }
+    h1 { font-size: clamp(1.75rem, 1.3rem + 1.5vw, 2.4rem); margin: 0 0 0.4rem; }
+    .meta { color: var(--muted); font-size: 0.9rem; margin: 0 0 1.5rem; }
+    h2 { font-size: 1.15rem; margin: 1.5rem 0 0.5rem; color: var(--primary); }
+    p, ul { margin: 0 0 1rem; }
+    ul { padding-left: 1.25rem; }
+    li { margin-bottom: 0.3rem; }
+    a { color: var(--primary); }
+    a:hover { color: var(--primary-hover); }
+    .site-footer { padding: 1.5rem 0; border-top: 1px solid var(--border); background: var(--surface); margin-top: auto; text-align: center; }
+    .site-footer-tagline { color: var(--muted); font-size: 0.9rem; }
+    .site-footer-link { color: var(--primary); text-decoration: none; font-size: 0.9rem; margin: 0 6px; }
     .site-footer-link:hover { text-decoration: underline; }
-    .site-footer-divider { color: var(--color-text-muted); }
-    @media (max-width: 480px) { .legal-card { padding: 1.5rem 1.25rem; } main { padding: 1.5rem 0; } }
+    @media (max-width: 480px) { .card { padding: 1.5rem 1.1rem; } main { padding: 1.5rem 0; } }
   </style>
 </head>
 <body>
   <header class="site-header">
     <div class="container site-header-inner">
-      <a class="site-header-brand" href="/">
-        <img src="/assets/pmg-logo.png?v=6" alt="" />
-        <span>PromptMeGood</span>
-      </a>
-      <a class="site-header-back" href="/app">← Back to App</a>
+      <a class="site-header-brand" href="/"><img src="/assets/pmg-logo.png?v=6" alt="" /><span>PromptMeGood</span></a>
+      <a class="site-header-back" href="/app">Open The App →</a>
     </div>
   </header>
 
   <main>
     <div class="container">
-      <article class="legal-card">
+      <article class="card">
         <h1>Terms of Service</h1>
-        <p class="legal-meta">Last updated: May 8, 2026.</p>
+        <p class="meta">Last updated: May 8, 2026.</p>
 
-        <p><strong>1. The service.</strong> PromptMeGood is a browser-based AI prompt workstation with three inline panels: (a) a <strong>Text Prompts</strong> panel with a structured Prompt Builder for ChatGPT, Claude, Perplexity, and Gemini, including a returning-user <strong>Welcome Back Command Center</strong> and a paid-tier <strong>Expert Command Center</strong> drawer (Diagnose, Engineer, Tune, Variations, Save); (b) a <strong>Photography</strong> panel with Style, Camera &amp; Lens, Camera Angle, Lighting &amp; Mood, Composition, and Color Palette pickers, an <strong>Image Generator</strong> (OpenAI DALL·E 3 / gpt-image-1), an <strong>Image Workshop</strong> photo enhancer (gpt-image-1), and a <strong>Reverse Engine</strong> image-to-prompt analyzer (GPT-4o vision); and (c) a <strong>Video</strong> panel with a director's tuning suite (Shot Size, Camera Angle, Camera Movement, Mood &amp; Lighting, Style, Focus Depth, Movement Easing, Duration, Resolution) that builds AI video prompts and, on paid plans, generates short clips. A 5-shot <strong>Storyboard</strong> generator and a 1080×1350 <strong>Prompt DNA Card</strong> exporter ship across the Photography and Video panels. There is a free tier with daily limits on AI features (currently 3 Run With AI executions, 1 image generation, and 1 file analysis per day, subject to change). The Expert Command Center is a <strong>paid feature</strong> reserved for Founding Members and Pro subscribers and is offered to free users only during the open beta period (subject to change without notice once Stripe checkout opens). Paid plans — a one-time <strong>Founding Member</strong> purchase ($79, first 500 buyers, price locked for life; offer ends July 1 or at 500 founding members, whichever comes first) and a monthly <strong>Pro</strong> subscription ($9/month, with a $79/year yearly option, launching soon) — unlock the Expert Command Center plus higher daily caps on AI features (Founding Member: <span data-pmg-cap="founding:run">30</span> Run With AI, <span data-pmg-cap="founding:img">15</span> image generations, and <span data-pmg-cap="founding:analyze">10</span> file analyses per day; Pro Monthly &amp; Yearly: <span data-pmg-cap="pro:run">60</span>/<span data-pmg-cap="pro:img">30</span>/<span data-pmg-cap="pro:analyze">20</span> per day), plus additional features. Paid plans are subject to fair use limits, provider availability, and the lifetime of the service.</p>
+        <h2>1. The service</h2>
+        <p>PromptMeGood is a browser-based AI prompt workstation with three inline panels — <strong>Text Prompts</strong>, <strong>Photography</strong>, and <strong>Video</strong> — plus the <strong>Image Workshop</strong> photo enhancer (gpt-image-1), the <strong>Reverse Engine</strong> image-to-prompt analyzer (GPT-4o vision), the 5-shot <strong>Storyboard</strong> generator, the <strong>Prompt DNA Card</strong> exporter, the <strong>Prompt Vault</strong>, and the paid <strong>Expert Command Center</strong> (Diagnose, Engineer, Tune, Variations, Save). The free tier has small daily caps on AI features (currently 3 Run With AI executions, 1 image generation, and 1 file analysis per day, subject to change). Paid plans — <strong>Founding Member</strong> ($79 one-time, first 500 buyers, price locked for life) and <strong>Pro</strong> ($9/mo or $79/yr at launch) — unlock the Expert Command Center and higher daily caps.</p>
 
-        <p><strong>2. As-is, no warranty.</strong> PromptMeGood is provided as-is, without warranty of any kind, express or implied. We do not guarantee uninterrupted availability, error-free output, or that the service will meet your specific needs. The prompts and outputs generated are suggestions only — you are responsible for how you use them and for any decisions you make based on AI tool responses.</p>
+        <h2>2. As-is, no warranty</h2>
+        <p>PromptMeGood is provided as-is, without warranty of any kind, express or implied. We do not guarantee uninterrupted availability, error-free output, or that the service will meet your specific needs. Generated prompts and outputs are suggestions only; you are responsible for how you use them and for any decisions you make based on AI tool responses.</p>
 
-        <p><strong>3. Accounts.</strong> An account is optional. You only need one if you (a) purchase Founding Member, (b) subscribe to Pro Monthly, or (c) opt into any future account-storage feature for saved prompts. Authentication is provided by Supabase. You are responsible for keeping your sign-in credentials secure and for all activity that occurs under your account. You may delete your account at any time by emailing <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>; deletion does not by itself entitle you to a refund (see section 7).</p>
+        <h2>3. Accounts</h2>
+        <p>An account is optional. You only need one to (a) buy Founding Member, (b) subscribe to Pro Monthly or Pro Yearly, or (c) opt into account-backed Vault storage. Authentication is provided by Supabase. You are responsible for keeping your sign-in credentials secure and for all activity that occurs under your account. You may delete your account at any time by emailing <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>; deletion does not by itself entitle you to a refund (see §7).</p>
 
-        <p><strong>4. Acceptable use.</strong> By using PromptMeGood you agree not to use the service to generate, request, or transmit content that:</p>
+        <h2>4. Acceptable use</h2>
+        <p>You agree not to use PromptMeGood to generate, request, or transmit content that:</p>
         <ul>
           <li>Is illegal, harmful, harassing, defamatory, or violates the rights of others.</li>
           <li>Promotes violence, self-harm, child sexual abuse material, or terrorism.</li>
@@ -160,55 +108,64 @@
         </ul>
         <p>We may rate-limit, suspend, or terminate access for any user who appears to be abusing the service.</p>
 
-        <p><strong>5. AI content, image generation, photo enhancement, video generation &amp; the Photography Suite.</strong> AI features &mdash; Fix My Prompt, Run With AI, Help Me Start, Need Ideas, the Photography Suite (Style, Camera &amp; Lens, Camera Angle, Lighting &amp; Mood, Composition, Color Palette) and its <em>Build Image Prompt → Generate Image</em> pipeline, the <em>Image Workshop</em> photo enhancer, the <em>Reverse Engine</em> image-to-prompt analyzer, the Video panel's <em>Build Video Prompt → Generate Video</em> pipeline, the 5-shot Storyboard generator, file analysis, and DALL·E 3 / gpt-image-1 image generation &mdash; route your input to third-party AI providers (currently OpenAI). Outputs are generated automatically and may be inaccurate, biased, or inappropriate. You are responsible for reviewing all AI output before relying on it, publishing it, or sharing it. Generated images and videos are subject to the content policies of the underlying provider; requests that violate those policies will be rejected.</p>
+        <h2>5. AI content, image generation, photo enhancement &amp; video generation</h2>
+        <p>AI features — Generate My Prompt, Run With AI, Auto-Tune, Auto-Boost, the Photography Suite (Style, Camera &amp; Lens, Camera Angle, Lighting &amp; Mood, Composition, Color Palette) and its Build Image Prompt → Generate Image pipeline (DALL·E 3 / gpt-image-1), the Image Workshop photo enhancer (gpt-image-1), the Reverse Engine image-to-prompt analyzer (GPT-4o vision), the Video panel's Build Video Prompt → Generate Video pipeline, and the 5-shot Storyboard generator — route your input to third-party AI providers (currently OpenAI). Outputs are generated automatically and may be inaccurate, biased, or inappropriate. You are responsible for reviewing all AI output before relying on it, publishing it, or sharing it. Generated images and videos are subject to the content policies of the underlying provider; requests that violate those policies will be rejected.</p>
 
-        <p><strong>6. File uploads, your content &amp; ownership.</strong> When you upload a file or reference image &mdash; for file analysis, for the <em>Image Workshop</em> photo enhancer, or for the <em>Reverse Engine</em> image-to-prompt analyzer &mdash; you confirm that you have the right to share its contents and that it does not contain confidential personal information of others, regulated health or financial data, or material protected by laws you don't have permission to disclose. Uploaded files and reference images are sent to our AI provider to process your request and are not retained on our servers beyond what is needed to return a result. You retain ownership of the prompts you write and, to the maximum extent permitted by applicable law and the terms of our underlying AI providers, the AI outputs, images, and videos you generate. <em>However:</em> AI-generated content may not qualify for copyright protection under the laws of some jurisdictions (for example, U.S. Copyright Office guidance), and similar prompts can produce visually similar outputs for other users — we make no exclusivity, originality, or copyrightability guarantees. You grant us a limited, non-exclusive license to process your inputs strictly to operate the service (for example, sending them to AI providers and returning the result, or storing them in your Cloud Vault if you have opted in). We do not claim ownership of your prompts or generated outputs and we do not use your inputs to train AI models.</p>
+        <h2>6. File uploads, your content &amp; ownership</h2>
+        <p>When you upload a file or reference image — for the Image Workshop, the Reverse Engine, or any analysis feature — you confirm that you have the right to share its contents and that it does not contain confidential personal information of others, regulated health or financial data, or material protected by laws you don't have permission to disclose. Uploaded files are sent to our AI provider to process the request and are not retained on our servers beyond what is needed to return a result. You retain ownership of the prompts you write and, to the maximum extent permitted by applicable law and the terms of our underlying AI providers, the AI outputs, images, and videos you generate. AI-generated content may not qualify for copyright protection under the laws of some jurisdictions (for example, U.S. Copyright Office guidance), and similar prompts can produce visually similar outputs for other users — we make no exclusivity, originality, or copyrightability guarantees. You grant us a limited, non-exclusive license to process your inputs strictly to operate the service. We do not claim ownership of your prompts or generated outputs, and we do not use your inputs to train AI models.</p>
 
-        <p><strong>7. Payments, plans &amp; refunds.</strong></p>
+        <h2>7. Payments, plans &amp; refunds</h2>
         <ul>
-          <li><strong>Free tier.</strong> No payment information required. Daily limits apply to AI features as described in section 1 and may change. The Expert Command Center is not included on the Free tier outside of the open beta period.</li>
-          <li><strong>Founding Member ($79, one-time, price locked for life).</strong> A single payment that grants lifetime access to core features for the account that purchased it, including the <strong>Expert Command Center</strong> drawer (Diagnose, Engineer, Tune, Variations, Save) and higher daily caps (<span data-pmg-cap="founding:run">30</span> Run With AI, <span data-pmg-cap="founding:img">15</span> image generations, and <span data-pmg-cap="founding:analyze">10</span> file analyses per day). Limited to the first 500 buyers. There is no recurring billing. "Lifetime" means lifetime access to core features for as long as PromptMeGood continues to operate; we do not guarantee the service will exist forever, do not promise that every future Pro feature will be included, and are not liable for refunds if the service is discontinued for reasons outside our reasonable control. Fair use limits apply.</li>
-          <li><strong>Pro Monthly ($9/month) and Pro Yearly ($79/year), starting at launch.</strong> A recurring subscription that includes the <strong>Expert Command Center</strong> drawer plus higher daily caps (<span data-pmg-cap="pro:run">60</span> Run With AI, <span data-pmg-cap="pro:img">30</span> image generations, and <span data-pmg-cap="pro:analyze">20</span> file analyses per day) and additional features. You authorize us (through Stripe) to charge your payment method each billing cycle until you cancel. You can cancel any time from your account settings or by emailing support; cancellation takes effect at the end of the current billing period and you keep access until then. Fair use limits apply.</li>
-          <li><strong>Refund policy.</strong> Founding Member purchases are refundable within <strong>14 days</strong> of purchase if you have not used more than $5 worth of AI generations during that window (we reserve the right to deny refund requests in cases of suspected abuse). Pro Monthly subscriptions are non-refundable for the current billing period after the period has begun, but you can cancel future renewals at any time. Refund requests: email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.</li>
+          <li><strong>Free tier.</strong> No payment information required. Daily limits apply to AI features as described in §1 and may change.</li>
+          <li><strong>Founding Member ($79, one-time, price locked for life).</strong> A single payment that grants lifetime access to core features for the account that purchased it, including the Expert Command Center and higher daily caps (<span data-pmg-cap="founding:run">30</span> Run With AI, <span data-pmg-cap="founding:img">15</span> image generations, <span data-pmg-cap="founding:analyze">10</span> file analyses per day). Limited to the first 500 buyers. There is no recurring billing. "Lifetime" means access to core features for as long as PromptMeGood operates; we do not guarantee the service will exist forever, do not promise that every future Pro feature will be included, and are not liable for refunds if the service is discontinued for reasons outside our reasonable control. Fair use limits apply.</li>
+          <li><strong>Pro Monthly ($9/month) and Pro Yearly ($79/year).</strong> Recurring subscriptions that include the Expert Command Center plus higher daily caps (<span data-pmg-cap="pro:run">60</span> Run With AI, <span data-pmg-cap="pro:img">30</span> image generations, <span data-pmg-cap="pro:analyze">20</span> file analyses per day). You authorize us (through Stripe) to charge your payment method each billing cycle until you cancel. You can cancel any time from your account settings or by emailing support; cancellation takes effect at the end of the current billing period and you keep access until then. Fair use limits apply.</li>
+          <li><strong>Refund policy.</strong> Founding Member purchases are refundable within <strong>14 days</strong> of purchase if you have not used more than $5 worth of AI generations during that window (we reserve the right to deny refund requests in cases of suspected abuse). Pro Monthly and Pro Yearly subscriptions are non-refundable for the current billing period after the period has begun, but you can cancel future renewals at any time. Refund requests: email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.</li>
           <li><strong>Taxes.</strong> Prices listed are exclusive of any applicable sales tax, VAT, or GST, which may be added at checkout based on your billing location.</li>
-          <li><strong>Price changes.</strong> We may change the price of the Pro Monthly and Pro Yearly plans with at least 30 days' notice; changes will not affect the period you have already paid for. The Founding Member price ($79 one-time) is locked for life for anyone who has already purchased it — even if Pro prices rise later, the Founding tier never does.</li>
+          <li><strong>Price changes.</strong> We may change the price of the Pro plans with at least 30 days' notice; changes will not affect the period you have already paid for. The Founding Member price ($79 one-time) is locked for life for anyone who has already purchased it.</li>
           <li><strong>Payment processor.</strong> All payments are processed by Stripe under their <a href="https://stripe.com/legal/ssa" target="_blank" rel="noopener noreferrer">Services Agreement</a>. Their terms apply to anything they collect or process.</li>
         </ul>
 
-        <p><strong>8. Privacy.</strong> Your use of PromptMeGood is also subject to our <a href="/privacy.html">Privacy Policy</a>, which explains what is stored locally on your device, what is stored on our servers (for signed-in users), what is sent to AI providers, how Stripe payments work, and how pseudonymous analytics (Microsoft Clarity) are collected.</p>
+        <h2>8. Privacy</h2>
+        <p>Your use of PromptMeGood is also subject to our <a href="./privacy.html">Privacy Policy</a>, which explains what is stored locally on your device, what is stored on our servers (for signed-in users), what is sent to AI providers, how Stripe payments work, and how pseudonymous analytics (Microsoft Clarity) are collected.</p>
 
-        <p><strong>9. Limitation of liability.</strong> To the maximum extent permitted by law, PromptMeGood and its operators are not liable for any indirect, incidental, consequential, or punitive damages arising from your use of the service, including loss of profits, data, or business opportunities — even if advised of the possibility of such damages. Our total aggregate liability for any direct damages is limited to the greater of (a) the amount you have actually paid to PromptMeGood in the 12 months immediately before the event giving rise to the claim, or (b) USD $50. Some jurisdictions do not allow the exclusion or limitation of certain damages, so parts of this section may not apply to you.</p>
+        <h2>9. Limitation of liability</h2>
+        <p>To the maximum extent permitted by law, PromptMeGood and its operators are not liable for any indirect, incidental, consequential, or punitive damages arising from your use of the service, including loss of profits, data, or business opportunities — even if advised of the possibility of such damages. Our total aggregate liability for any direct damages is limited to the greater of (a) the amount you have actually paid to PromptMeGood in the 12 months immediately before the event giving rise to the claim, or (b) USD $50. Some jurisdictions do not allow the exclusion or limitation of certain damages, so parts of this section may not apply to you.</p>
 
-        <p><strong>10. Changes to the service.</strong> We may update, change, suspend, or discontinue features at any time. For material changes that reduce the value of a paid plan you currently hold, we will give reasonable advance notice and, where required, a pro-rata refund. Continued use of the site after a change to these terms means you accept the updated terms.</p>
+        <h2>10. Changes to the service</h2>
+        <p>We may update, change, suspend, or discontinue features at any time. For material changes that reduce the value of a paid plan you currently hold, we will give reasonable advance notice and, where required, a pro-rata refund. Continued use of the site after a change to these terms means you accept the updated terms.</p>
 
-        <p><strong>11. Termination.</strong> You can stop using PromptMeGood at any time, clear your local data from the Prompt Vault, cancel a subscription, or request account deletion. We may suspend or terminate access for violations of these terms; in cases of serious or repeated abuse we may do so without refund.</p>
+        <h2>11. Termination</h2>
+        <p>You can stop using PromptMeGood at any time, clear your local data from the Vault drawer, cancel a subscription, or request account deletion. We may suspend or terminate access for violations of these terms; in cases of serious or repeated abuse we may do so without refund.</p>
 
-        <p><strong>12. Indemnification.</strong> You agree to defend, indemnify, and hold harmless PromptMeGood and its operators from any third-party claims, damages, or costs (including reasonable legal fees) arising from your use of the service, your submitted content, or your violation of these terms or any applicable law.</p>
+        <h2>12. Indemnification</h2>
+        <p>You agree to defend, indemnify, and hold harmless PromptMeGood and its operators from any third-party claims, damages, or costs (including reasonable legal fees) arising from your use of the service, your submitted content, or your violation of these terms or any applicable law.</p>
 
-        <p><strong>13. Copyright &amp; intellectual-property complaints.</strong> If you believe content generated, displayed, or transmitted through PromptMeGood infringes a copyright, trademark, or other intellectual-property right you own or are authorized to enforce, please email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a> with: (a) your contact details, (b) a description of the work you believe is infringed, (c) the URL or specific location of the alleged infringement, (d) a good-faith statement that the use is not authorized, and (e) a statement, under penalty of perjury, that the information is accurate and you are the rights holder or authorized to act on their behalf. We will review and respond to valid notices in a reasonable timeframe.</p>
+        <h2>13. Copyright &amp; intellectual-property complaints</h2>
+        <p>If you believe content generated, displayed, or transmitted through PromptMeGood infringes a copyright, trademark, or other intellectual-property right, please email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a> with: (a) your contact details, (b) a description of the work you believe is infringed, (c) the URL or specific location of the alleged infringement, (d) a good-faith statement that the use is not authorized, and (e) a statement, under penalty of perjury, that the information is accurate and you are the rights holder or authorized to act on their behalf. We will review and respond to valid notices in a reasonable timeframe.</p>
 
-        <p><strong>14. Governing law &amp; venue.</strong> These terms are governed by the laws of the United States and, where state law applies, the State of Delaware, without regard to conflict-of-law principles. Any dispute arising from or relating to the service or these terms will be resolved exclusively in the state or federal courts located in Delaware, and you consent to the personal jurisdiction of those courts. If you access PromptMeGood from outside the United States, you are responsible for compliance with your local laws.</p>
+        <h2>14. Governing law &amp; venue</h2>
+        <p>These terms are governed by the laws of the United States and, where state law applies, the State of Delaware, without regard to conflict-of-law principles. Any dispute arising from or relating to the service or these terms will be resolved exclusively in the state or federal courts located in Delaware, and you consent to the personal jurisdiction of those courts. If you access PromptMeGood from outside the United States, you are responsible for compliance with your local laws.</p>
 
-        <p><strong>15. Severability.</strong> If any provision of these terms is held unenforceable, the remaining provisions will remain in full force and effect.</p>
+        <h2>15. Severability</h2>
+        <p>If any provision of these terms is held unenforceable, the remaining provisions will remain in full force and effect.</p>
 
         <p>Questions? Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.</p>
-        <div class="back-bottom"><a href="/app">← Back to the App</a></div>
+        <p style="margin-top: 1.25rem;"><a href="/app">← Back to the App</a></p>
       </article>
     </div>
   </main>
 
   <footer class="site-footer">
-    <div class="container site-footer-inner">
-      <div class="site-footer-brand">&copy; 2026 PromptMeGood</div>
-      <p class="site-footer-tagline">Built for people who want real results from AI — not fluff.</p>
-      <div class="site-footer-back" aria-label="Navigation">
-        <a class="site-footer-link" href="/">Home</a>
-        <span class="site-footer-divider" aria-hidden="true">|</span>
-        <a class="site-footer-link" href="/guide.html">Guide</a>
-        <span class="site-footer-divider" aria-hidden="true">|</span>
-        <a class="site-footer-link" href="/pricing.html">Pricing</a>
-        <span class="site-footer-divider" aria-hidden="true">|</span>
-        <a class="site-footer-link" href="/privacy.html">Privacy Policy</a>
+    <div class="container">
+      <div>&copy; 2026 PromptMeGood</div>
+      <p class="site-footer-tagline">A structured prompt builder for people who want real results from AI.</p>
+      <div>
+        <a class="site-footer-link" href="/">Home</a>|
+        <a class="site-footer-link" href="./guide.html">Guide</a>|
+        <a class="site-footer-link" href="./manual.html">Manual</a>|
+        <a class="site-footer-link" href="./pricing.html">Pricing</a>|
+        <a class="site-footer-link" href="./contact.html">Contact</a>|
+        <a class="site-footer-link" href="./privacy.html">Privacy</a>
       </div>
     </div>
   </footer>

@@ -4,32 +4,22 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script>
-    /* Apex -> www redirect. Runs before any other resource so we don't waste a request on the wrong host. */
-    (function () {
-      try {
-        if (location.hostname === 'promptmegood.com') {
-          location.replace('https://www.promptmegood.com' + location.pathname + location.search + location.hash);
-        }
-      } catch (e) { /* no-op */ }
-    })();
+    (function () { try { if (location.hostname === 'promptmegood.com') location.replace('https://www.promptmegood.com' + location.pathname + location.search + location.hash); } catch (e) {} })();
   </script>
-  <title>Quick Start Guide — How to Use PromptMeGood for ChatGPT, Claude, DALL·E, Midjourney &amp; AI Video</title>
-  <meta name="description" content="60-second quick start guide for PromptMeGood. Learn the three panels (Text, Photography, Video), the Image Workshop AI photo enhancer, Reverse Engine (image-to-prompt), the Prompt DNA Card, the 5-shot Storyboard generator, and Pro Tuning presets — all free, no signup." />
-  <meta name="keywords" content="PromptMeGood guide, how to write better ChatGPT prompts, AI prompt builder tutorial, image to prompt generator tutorial, AI photo enhancer guide, AI video prompt tutorial, AI storyboard generator, DALL-E 3 prompt how-to, Midjourney prompt builder, Sora video prompt guide" />
+  <title>Quick Start Guide — PromptMeGood</title>
+  <meta name="description" content="A 60-second tour of PromptMeGood: three inline panels for Text, Photography, and Video prompts; the Image Workshop photo enhancer; Reverse Engine image-to-prompt; the 5-shot Storyboard generator; the Prompt DNA Card; and the Expert Command Center." />
+  <meta name="keywords" content="PromptMeGood guide, AI prompt builder tutorial, ChatGPT prompt how-to, image to prompt, AI photo enhancer, AI video prompt, AI storyboard, DALL-E prompt, Midjourney prompt builder" />
   <meta name="robots" content="index,follow,max-image-preview:large" />
   <meta name="theme-color" content="#0a2420" />
   <meta property="og:site_name" content="PromptMeGood" />
   <meta property="og:title" content="Quick Start Guide — PromptMeGood" />
-  <meta property="og:description" content="A 60-second tour of PromptMeGood: three panels for text, image, and AI video prompts; Image Workshop photo enhancer; Reverse Engine; Prompt DNA Card; 5-shot Storyboard." />
+  <meta property="og:description" content="60 seconds to a great prompt — for ChatGPT, Claude, DALL·E, Midjourney, and AI video. Free. No signup." />
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://www.promptmegood.com/guide.html" />
   <meta property="og:image" content="https://www.promptmegood.com/opengraph.jpg?v=5" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:locale" content="en_US" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Quick Start Guide — PromptMeGood" />
-  <meta name="twitter:description" content="60 seconds to a great AI prompt — for ChatGPT, Claude, DALL·E, Midjourney, and AI video. Free. No signup." />
+  <meta name="twitter:description" content="60 seconds to a great AI prompt." />
   <meta name="twitter:image" content="https://www.promptmegood.com/opengraph.jpg?v=5" />
   <link rel="canonical" href="https://www.promptmegood.com/guide.html" />
   <script type="application/ld+json">
@@ -37,504 +27,173 @@
     "@context": "https://schema.org",
     "@type": "FAQPage",
     "mainEntity": [
-      {"@type":"Question","name":"How do I write better ChatGPT prompts with PromptMeGood?","acceptedAnswer":{"@type":"Answer","text":"Open the app, type one honest sentence describing what you want, then tap Generate Prompt. PromptMeGood rewrites it into a structured prompt with role, context, constraints, tone, format, and next steps — ready to paste into ChatGPT, Claude, Perplexity, or Gemini, or run instantly with the in-app Run With AI button (GPT-4o)."}},
-      {"@type":"Question","name":"What is the Image Workshop?","acceptedAnswer":{"@type":"Answer","text":"The Image Workshop lives inside the Photography panel. Drop a JPG, PNG, or WEBP (up to 10 MB), pick one or more enhancement chips — Upscale, Color Pop, Cinematic Grade, Remove Background, Restore Old Photo, Day↔Night, Vector Style, Anime, Oil Painting, Watercolor, B&W Film, 35mm Grain, Studio Lighting, Clean BG, HDR — add an optional note, and hit Enhance Photo. Powered by OpenAI gpt-image-1."}},
-      {"@type":"Question","name":"What is Reverse Engine?","acceptedAnswer":{"@type":"Answer","text":"Reverse Engine is image-to-prompt. Upload any reference image and PromptMeGood reads it with GPT-4o vision and returns a usable AI image prompt plus matching Photography Suite settings (style, camera, lighting, composition, palette). Then tweak and regenerate."}},
-      {"@type":"Question","name":"What is the Prompt DNA Card?","acceptedAnswer":{"@type":"Answer","text":"After you generate an image, the DNA Card button composes a shareable 1080×1350 PNG that pairs the image with the exact prompt that made it — perfect for Twitter/X, Instagram, and Pinterest. Built entirely on your device."}},
-      {"@type":"Question","name":"How does the Storyboard generator work?","acceptedAnswer":{"@type":"Answer","text":"Type a story concept in the Video panel and the Storyboard generator returns a 5-shot cinematic storyboard. Each panel renders as an image, and a Send to Video button hands the shot list to the Video panel as a multi-shot video prompt."}},
-      {"@type":"Question","name":"Is PromptMeGood free?","acceptedAnswer":{"@type":"Answer","text":"Yes. The free tier has daily limits and needs no signup. Founding Member ($79 one-time, lifetime, first 500 buyers, price locked for life) unlocks the Expert Command Center and higher caps. Pro Monthly $9 or Pro Yearly $79 launch soon. Fair use applies."}}
+      {"@type":"Question","name":"How do I write a good prompt with PromptMeGood?","acceptedAnswer":{"@type":"Answer","text":"Type one honest sentence describing what you want, then tap Generate My Prompt. PromptMeGood rewrites it into a structured prompt with role, context, constraints, tone, and format — ready to paste into ChatGPT, Claude, Perplexity, or Gemini, or run instantly in-app with Run With AI (GPT-4o)."}},
+      {"@type":"Question","name":"What does the Image Workshop do?","acceptedAnswer":{"@type":"Answer","text":"Inside the Photography panel, drop a JPG/PNG/WEBP up to 10 MB, pick from 15 enhancement chips (Upscale, Color Pop, Cinematic Grade, Remove Background, Restore, Day↔Night, Vector Style, Anime, Oil, Watercolor, B&W Film, 35mm Grain, Studio Lighting, Clean BG, HDR), add an optional note, and hit Enhance. Powered by OpenAI gpt-image-1."}},
+      {"@type":"Question","name":"What is Reverse Engine?","acceptedAnswer":{"@type":"Answer","text":"Reverse Engine is image-to-prompt. Upload any reference and PromptMeGood reads it with GPT-4o vision and returns a usable image prompt plus matching Photo Suite picks (style, camera, lighting, composition, palette)."}},
+      {"@type":"Question","name":"What is the Prompt DNA Card?","acceptedAnswer":{"@type":"Answer","text":"After you generate an image, the DNA Card composes a shareable 1080×1350 PNG that pairs the image with the exact prompt that made it — perfect for X, Instagram, and Pinterest. Built entirely on your device."}},
+      {"@type":"Question","name":"How does Storyboard work?","acceptedAnswer":{"@type":"Answer","text":"In the Video panel, type a story concept and tap Generate Storyboard. PromptMeGood returns a 5-shot cinematic storyboard with rendered frames, then a Send to Video button hands the shot list back to the Video panel as a multi-shot video prompt."}},
+      {"@type":"Question","name":"Is PromptMeGood free?","acceptedAnswer":{"@type":"Answer","text":"Yes. The free tier needs no signup and has small daily caps on AI features. Founding Member is $79 one-time (first 500 buyers, lifetime, price locked). Pro Monthly is $9/mo and Pro Yearly is $79/yr at launch. Fair use applies."}}
     ]
   }
   </script>
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=6" />
-  <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48.png?v=6" />
   <link rel="icon" type="image/png" href="/assets/pmg-logo.png?v=6" />
   <link rel="apple-touch-icon" href="/assets/pmg-logo.png?v=6" />
   <script>
-    /* Mirror of the index.html theme-accent bootstrap so users keep their accent across pages. */
     (function () {
       try {
-        var v = localStorage.getItem('promptmegood:themeAccent:v1');
-        if (v && /^(green|blue|purple|gold|slate)$/.test(v) && v !== 'green') {
-          document.documentElement.setAttribute('data-accent', v);
-        }
-        var t = localStorage.getItem('promptmegood:theme:v1');
-        if (t === 'dark' || t === 'light') {
-          document.documentElement.setAttribute('data-theme', t);
-        }
+        var saved = localStorage.getItem('promptmegood:theme');
+        var theme = (saved === 'dark' || saved === 'light') ? saved
+          : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
       } catch (e) {}
     })();
   </script>
   <style>
     :root, [data-theme="light"] {
-      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
-      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
-      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
-      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
-      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
-      --text-2xl: clamp(2rem, 1.2rem + 2.5vw, 3.5rem);
-      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
-      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
-      --space-12: 3rem; --space-16: 4rem;
-      --color-bg: #f7f6f2;
-      --color-surface: #fbfbf9;
-      --color-surface-2: #f1efea;
-      --color-border: #d8d4cd;
-      --color-text: #24211c;
-      --color-text-muted: #67655f;
-      --color-text-faint: #9a9892;
-      --color-text-inverse: #f8f7f4;
-      --color-primary: #01696f;
-      --color-primary-hover: #0c4e54;
-      --color-primary-highlight: #d7e5e2;
-      --radius-sm: 0.5rem;  --radius-md: 0.875rem;
-      --radius-lg: 1.25rem; --radius-xl: 1.5rem; --radius-full: 9999px;
-      --shadow-sm: 0 1px 2px rgba(18, 19, 18, 0.06);
-      --shadow-md: 0 10px 30px rgba(18, 19, 18, 0.08);
-      --shadow-lg: 0 18px 50px rgba(18, 19, 18, 0.12);
-      --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
-      --font-body: 'Satoshi', Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      --content: 1080px;
-      --content-narrow: 720px;
+      --bg: #f7f6f2; --surface: #fbfbf9; --border: #d8d4cd;
+      --text: #24211c; --muted: #67655f;
+      --primary: #01696f; --primary-hover: #0c4e54;
+      --radius-md: 0.875rem; --radius-lg: 1.25rem;
+      --shadow: 0 10px 30px rgba(18,19,18,0.08);
+      --font: 'Satoshi', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
-    /* Accent overrides — mirror the bootstrap in pricing.html so the
-       user's saved accent (promptmegood:themeAccent:v1) actually re-skins
-       this page's primary controls. Default 'green' uses the base tokens. */
-    [data-accent="blue"]   { --color-primary: #1e40af; --color-primary-hover: #1e3a8a; --color-primary-highlight: #dbeafe; }
-    [data-theme="dark"][data-accent="blue"]   { --color-primary: #93c5fd; --color-primary-hover: #bfdbfe; --color-primary-highlight: #1e3a8a; }
-    [data-accent="purple"] { --color-primary: #6d28d9; --color-primary-hover: #5b21b6; --color-primary-highlight: #ede9fe; }
-    [data-theme="dark"][data-accent="purple"] { --color-primary: #c4b5fd; --color-primary-hover: #ddd6fe; --color-primary-highlight: #4c1d95; }
-    [data-accent="gold"]   { --color-primary: #b45309; --color-primary-hover: #92400e; --color-primary-highlight: #fef3c7; }
-    [data-theme="dark"][data-accent="gold"]   { --color-primary: #fcd34d; --color-primary-hover: #fde68a; --color-primary-highlight: #78350f; }
-    [data-accent="slate"]  { --color-primary: #475569; --color-primary-hover: #334155; --color-primary-highlight: #e2e8f0; }
-    [data-theme="dark"][data-accent="slate"]  { --color-primary: #cbd5e1; --color-primary-hover: #e2e8f0; --color-primary-highlight: #1e293b; }
     [data-theme="dark"] {
-      --color-bg: #151412; --color-surface: #1c1b18; --color-surface-2: #23211f;
-      --color-border: #34312d; --color-text: #ece9e2; --color-text-muted: #b9b4ab;
-      --color-text-faint: #8f8a81; --color-text-inverse: #161513;
-      --color-primary: #5ba8b0; --color-primary-hover: #73b8bf; --color-primary-highlight: #213438;
-      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
-      --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.25);
-      --shadow-lg: 0 18px 50px rgba(0, 0, 0, 0.35);
+      --bg: #151412; --surface: #1c1b18; --border: #34312d;
+      --text: #ece9e2; --muted: #b9b4ab;
+      --primary: #5ba8b0; --primary-hover: #73b8bf;
     }
-    @media (prefers-color-scheme: dark) {
-      :root:not([data-theme]) {
-        --color-bg: #151412; --color-surface: #1c1b18; --color-surface-2: #23211f;
-        --color-border: #34312d; --color-text: #ece9e2; --color-text-muted: #b9b4ab;
-        --color-text-faint: #8f8a81; --color-text-inverse: #161513;
-        --color-primary: #5ba8b0; --color-primary-hover: #73b8bf; --color-primary-highlight: #213438;
-      }
-    }
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
-    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-    body {
-      min-height: 100dvh;
-      background:
-        radial-gradient(circle at top right, color-mix(in srgb, var(--color-primary) 9%, transparent), transparent 26%),
-        var(--color-bg);
-      color: var(--color-text);
-      font-family: var(--font-body);
-      font-size: var(--text-base);
-      line-height: 1.6;
-    }
-    img, svg { display: block; max-width: 100%; }
-    button { border: none; cursor: pointer; font: inherit; color: inherit; background: none; }
-    a { color: inherit; text-decoration: none; }
-    :focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; border-radius: var(--radius-sm); }
-    .skip-link { position: absolute; left: var(--space-4); top: -3rem; background: var(--color-primary); color: var(--color-text-inverse); padding: var(--space-3) var(--space-4); border-radius: var(--radius-full); z-index: 100; }
-    .skip-link:focus { top: var(--space-4); }
-    .container { width: min(calc(100% - 2rem), var(--content)); margin-inline: auto; }
-    .narrow { max-width: var(--content-narrow); }
-
-    .topbar {
-      position: sticky; top: 0; z-index: 20;
-      backdrop-filter: blur(14px);
-      background: color-mix(in srgb, var(--color-bg) 84%, transparent);
-      border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
-    }
-    .topbar-inner { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) 0; }
-    .brand { display: inline-flex; align-items: center; gap: var(--space-3); font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.02em; }
-    .logo { width: 38px; height: 38px; border-radius: 12px; object-fit: cover; }
-    .top-actions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; justify-content: flex-end; }
-    .pill {
-      display: inline-flex; align-items: center; gap: var(--space-2);
-      min-height: 44px; padding: 0 var(--space-4);
-      border-radius: var(--radius-full);
-      background: var(--color-surface);
-      border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
-      color: var(--color-text); font-size: var(--text-sm); font-weight: 600;
-      transition: transform var(--transition), background var(--transition), border-color var(--transition);
-    }
-    .pill:hover { transform: translateY(-1px); background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)); }
-    .pill.is-primary { background: var(--color-primary); color: var(--color-text-inverse); border-color: var(--color-primary); }
-    .pill.is-primary:hover { background: var(--color-primary-hover); border-color: var(--color-primary-hover); }
-
-    .hero { padding: clamp(var(--space-10), 8vw, var(--space-16)) 0 var(--space-8); }
-    .eyebrow {
-      display: inline-flex; align-items: center; gap: var(--space-2);
-      padding: 6px 14px; border-radius: var(--radius-full);
-      background: color-mix(in srgb, var(--color-primary) 12%, transparent);
-      color: var(--color-primary); font-size: var(--text-xs); font-weight: 700;
-      letter-spacing: 0.04em; text-transform: uppercase;
-    }
-    .hero h1 {
-      margin: var(--space-4) 0 var(--space-3);
-      font-size: var(--text-2xl); font-weight: 800; line-height: 1.1;
-      letter-spacing: -0.01em;
-    }
-    .hero p.lede { color: var(--color-text-muted); font-size: var(--text-base); max-width: 640px; }
-    .hero-cta { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-top: var(--space-6); }
-
-    section.block { padding: var(--space-6) 0 var(--space-12); }
-    section.block h2 { font-size: var(--text-xl); font-weight: 800; letter-spacing: -0.01em; margin-bottom: var(--space-2); }
-    section.block > .container > p.sub { color: var(--color-text-muted); font-size: var(--text-sm); margin-bottom: var(--space-6); max-width: 640px; }
-
-    .step-grid { display: grid; gap: var(--space-4); grid-template-columns: 1fr; }
-    @media (min-width: 720px) { .step-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (min-width: 980px) { .step-grid { grid-template-columns: repeat(3, 1fr); } }
-
-    .step {
-      background: var(--color-surface);
-      border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
-      border-radius: var(--radius-lg);
-      padding: var(--space-5);
-      box-shadow: var(--shadow-sm);
-      display: flex; flex-direction: column; gap: var(--space-2);
-    }
-    .step-num {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 32px; height: 32px; border-radius: var(--radius-full);
-      background: color-mix(in srgb, var(--color-primary) 14%, transparent);
-      color: var(--color-primary); font-weight: 800; font-size: var(--text-sm);
-    }
-    .step h3 { font-size: var(--text-base); font-weight: 700; }
-    .step p { color: var(--color-text-muted); font-size: var(--text-sm); }
-    .step kbd {
-      display: inline-block; padding: 1px 6px; border-radius: 6px;
-      background: var(--color-surface-2); border: 1px solid var(--color-border);
-      font: 600 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
-      color: var(--color-text);
-    }
-
-    .modes { display: grid; gap: var(--space-4); grid-template-columns: 1fr; }
-    @media (min-width: 820px) { .modes { grid-template-columns: repeat(3, 1fr); } }
-    .mode {
-      background: var(--color-surface);
-      border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
-      border-radius: var(--radius-lg);
-      padding: var(--space-5);
-      display: flex; flex-direction: column; gap: var(--space-2);
-    }
-    .mode .ic {
-      width: 44px; height: 44px; border-radius: var(--radius-md);
-      display: inline-flex; align-items: center; justify-content: center; font-size: 22px;
-      background: color-mix(in srgb, var(--color-primary) 12%, transparent);
-    }
-    .mode h3 { font-size: var(--text-base); font-weight: 700; }
-    .mode p { color: var(--color-text-muted); font-size: var(--text-sm); }
-    .mode ul { margin: 4px 0 0 1.1rem; font-size: var(--text-sm); color: var(--color-text); }
-    .mode li + li { margin-top: 4px; }
-
-    .feat-grid { display: grid; gap: var(--space-3); grid-template-columns: 1fr; }
-    @media (min-width: 720px) { .feat-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (min-width: 1000px) { .feat-grid { grid-template-columns: repeat(3, 1fr); } }
-    .feat {
-      background: var(--color-surface);
-      border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
-      border-radius: var(--radius-md);
-      padding: var(--space-4);
-    }
-    .feat h4 { font-size: var(--text-sm); font-weight: 700; color: var(--color-primary); margin-bottom: 4px; }
-    .feat p { font-size: var(--text-sm); color: var(--color-text); line-height: 1.55; }
-
-    .callout {
-      margin-top: var(--space-4);
-      padding: var(--space-4) var(--space-5);
-      background: color-mix(in srgb, var(--color-primary) 7%, transparent);
-      border: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent);
-      border-left: 4px solid var(--color-primary);
-      border-radius: var(--radius-lg);
-      font-size: var(--text-sm); color: var(--color-text);
-    }
-    .callout strong { color: var(--color-primary); }
-
-    .next-row {
-      display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center;
-      margin-top: var(--space-8); padding: var(--space-5);
-      background: var(--color-surface);
-      border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
-      border-radius: var(--radius-lg);
-    }
-    .next-row p { font-size: var(--text-sm); color: var(--color-text); flex: 1 1 auto; min-width: 220px; }
-
-    .site-footer {
-      padding: var(--space-12) 0;
-      border-top: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
-      background: color-mix(in srgb, var(--color-bg) 92%, transparent);
-    }
-    .site-footer-inner { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); text-align: center; }
-    .site-footer-brand { font-weight: 700; font-size: var(--text-base); }
-    .site-footer-tag { color: var(--color-text-muted); font-size: var(--text-sm); max-width: 520px; }
-    .site-footer-links { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: center; margin-top: var(--space-3); }
-    .site-footer-link { font-size: var(--text-xs); color: var(--color-text-muted); }
-    .site-footer-link:hover { color: var(--color-primary); }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-      }
-    }
+    body { min-height: 100dvh; background: var(--bg); color: var(--text); font-family: var(--font); font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem); line-height: 1.65; display: flex; flex-direction: column; }
+    .container { max-width: 760px; margin: 0 auto; padding: 0 1.25rem; width: 100%; }
+    .site-header { padding: 1.25rem 0; border-bottom: 1px solid var(--border); background: var(--surface); }
+    .site-header-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .site-header-brand { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; color: var(--text); font-weight: 700; font-size: 1.05rem; }
+    .site-header-brand img { width: 28px; height: 28px; border-radius: 6px; }
+    .site-header-back { color: var(--primary); text-decoration: none; font-weight: 600; font-size: 0.95rem; }
+    .site-header-back:hover { text-decoration: underline; }
+    main { flex: 1; padding: 2.5rem 0 3rem; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2rem 1.75rem; box-shadow: var(--shadow); }
+    h1 { font-size: clamp(1.75rem, 1.3rem + 1.5vw, 2.4rem); margin: 0 0 0.5rem; }
+    .lede { color: var(--muted); margin: 0 0 1.5rem; }
+    h2 { font-size: clamp(1.25rem, 1.05rem + 0.6vw, 1.5rem); margin: 1.75rem 0 0.5rem; }
+    h3 { font-size: 1.05rem; margin: 1.25rem 0 0.4rem; color: var(--primary); }
+    p, ul, ol { margin: 0 0 1rem; }
+    ul, ol { padding-left: 1.25rem; }
+    li { margin-bottom: 0.4rem; }
+    code, kbd { background: color-mix(in srgb, var(--primary) 8%, transparent); padding: 1px 6px; border-radius: 4px; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92em; }
+    a { color: var(--primary); }
+    a:hover { color: var(--primary-hover); }
+    .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary); font-size: 0.82em; font-weight: 600; }
+    .step-grid { display: grid; gap: 14px; margin: 1rem 0 1.5rem; }
+    .step { display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-md); background: color-mix(in srgb, var(--primary) 4%, transparent); }
+    .step-num { width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; }
+    .cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 1.25rem 0 0.5rem; }
+    .btn { display: inline-block; padding: 12px 20px; border-radius: 10px; background: var(--primary); color: #fff; font-weight: 700; text-decoration: none; }
+    .btn:hover { background: var(--primary-hover); color: #fff; }
+    .btn.ghost { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+    .toc { background: color-mix(in srgb, var(--primary) 5%, transparent); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px 18px; margin: 0 0 1.5rem; }
+    .toc strong { display: block; margin-bottom: 6px; color: var(--text); }
+    .toc a { display: inline-block; margin-right: 12px; }
+    .site-footer { padding: 1.5rem 0; border-top: 1px solid var(--border); background: var(--surface); margin-top: auto; text-align: center; }
+    .site-footer-inner { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+    .site-footer-tagline { color: var(--muted); font-size: 0.9rem; }
+    .site-footer-link { color: var(--primary); text-decoration: none; font-size: 0.9rem; margin: 0 6px; }
+    .site-footer-link:hover { text-decoration: underline; }
+    @media (max-width: 480px) { .card { padding: 1.5rem 1.1rem; } main { padding: 1.5rem 0; } }
   </style>
 </head>
 <body>
-  <a class="skip-link" href="#guide-main">Skip to guide</a>
-
-  <header class="topbar">
-    <div class="container topbar-inner">
-      <a class="brand" href="./" aria-label="PromptMeGood home">
-        <img class="logo" src="/assets/pmg-logo.png?v=6" alt="PromptMeGood logo" width="38" height="38" decoding="async" />
-        <span>PromptMeGood</span>
-      </a>
-      <div class="top-actions">
-        <a class="pill" href="./manual.html">Full Manual</a>
-        <a class="pill is-primary" href="/app">Open The App →</a>
-        <button class="pill" type="button" data-theme-toggle aria-label="Switch theme">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-          </svg>
-          <span>Theme</span>
-        </button>
-      </div>
+  <header class="site-header">
+    <div class="container site-header-inner">
+      <a class="site-header-brand" href="/"><img src="/assets/pmg-logo.png?v=6" alt="" /><span>PromptMeGood</span></a>
+      <a class="site-header-back" href="/app">Open The App →</a>
     </div>
   </header>
 
-  <main id="guide-main">
-    <section class="hero">
-      <div class="container narrow">
-        <span class="eyebrow">Quick start · 60 seconds</span>
-        <h1>Better prompts for ChatGPT, Claude, DALL·E, Midjourney &amp; AI video — in one tab.</h1>
-        <p class="lede">PromptMeGood is the AI prompt workstation. Type one honest sentence, get a structured, model-ready prompt back. Three panels — <strong>Text</strong>, <strong>Photography</strong>, <strong>Video</strong> — share one calm canvas. Free, no signup, local-first. This page is the speed-run; the <a href="./manual.html" style="color:var(--color-primary); font-weight:700;">full Manual</a> covers every button.</p>
-        <div class="hero-cta">
-          <a class="pill is-primary" href="/app">Open The App →</a>
-          <a class="pill" href="./manual.html">Read The Full Manual</a>
-        </div>
-      </div>
-    </section>
+  <main>
+    <div class="container">
+      <article class="card">
+        <h1>Quick Start Guide</h1>
+        <p class="lede">PromptMeGood turns one honest sentence into a structured AI prompt — for text, image, or video. No signup, no install. Here is a 60-second tour.</p>
 
-    <section class="block">
-      <div class="container">
-        <h2>The 60-second flow</h2>
-        <p class="sub">Five small steps. Anything you skip, the app fills in for you.</p>
+        <div class="toc">
+          <strong>On this page</strong>
+          <a href="#three-panels">The three panels</a>
+          <a href="#text">Text</a>
+          <a href="#photo">Photography</a>
+          <a href="#video">Video</a>
+          <a href="#topbar">Topbar</a>
+          <a href="#expert">Expert mode</a>
+          <a href="#vault">Vault</a>
+        </div>
+
+        <h2 id="three-panels">The three panels</h2>
+        <p>The workstation has three inline panels. Tap the tabs at the top to switch — they all share the same canvas, so your work is one thumb-tap away.</p>
+        <ul>
+          <li><strong>Text Prompts</strong> — turn an idea into a structured prompt for ChatGPT, Claude, Perplexity, or Gemini. Or run it in-app with GPT-4o.</li>
+          <li><strong>Photography</strong> — design photo briefs for DALL·E, Midjourney, gpt-image-1, and friends. Includes the Image Workshop photo enhancer and Reverse Engine image-to-prompt.</li>
+          <li><strong>Video</strong> — direct AI video prompts for Sora-class models. Includes the 5-shot Storyboard generator.</li>
+        </ul>
+
+        <h2 id="text">Text Prompts in 30 seconds</h2>
         <div class="step-grid">
-          <div class="step">
-            <span class="step-num">1</span>
-            <h3>Pick a panel</h3>
-            <p>Three tabs at the top: <strong>Text Prompts</strong>, <strong>Photography</strong>, <strong>Video</strong>. Each is a self-contained workspace. Switch any time — your work stays put.</p>
-          </div>
-          <div class="step">
-            <span class="step-num">2</span>
-            <h3>Type your goal</h3>
-            <p>One honest sentence in the goal box. The strength badge turns green when you've added enough context — but you can build at any strength.</p>
-          </div>
-          <div class="step">
-            <span class="step-num">3</span>
-            <h3>Tune (optional)</h3>
-            <p>Tap pills to dial in tone, format, camera angle, lighting, shot size, mood. Or hit a <strong>Pro Tuning</strong> preset (Editorial Hero, Cinematic Trailer, TikTok Hook…) for an instant pro bundle.</p>
-          </div>
-          <div class="step">
-            <span class="step-num">4</span>
-            <h3>Generate</h3>
-            <p>One button — <strong>Generate Prompt</strong>, <strong>Build Image Prompt</strong>, or <strong>Build Video Prompt</strong>. A structured, model-ready prompt appears in the output panel in seconds.</p>
-          </div>
-          <div class="step">
-            <span class="step-num">5</span>
-            <h3>Run, copy, save</h3>
-            <p>Hit <strong>▶ Run With AI</strong> for an instant answer (GPT-4o), <strong>Generate Image</strong> (DALL·E 3 / gpt-image-1), or <strong>Generate Video</strong> (AI video). Then <strong>Copy</strong>, <strong>Save To Vault</strong>, or <strong>🧬 DNA Card</strong> for a shareable image.</p>
-          </div>
-          <div class="step">
-            <span class="step-num">★</span>
-            <h3>On mobile? Pull to refresh</h3>
-            <p>Swipe down from the top of the workstation to refresh — the same gesture you already know from native apps.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="block">
-      <div class="container">
-        <h2>Three panels, one workstation</h2>
-        <p class="sub">Tabs at the top swap which panel is active. Your text, picks, and history persist across all three.</p>
-        <div class="modes">
-          <div class="mode">
-            <span class="ic" aria-hidden="true">✍️</span>
-            <h3>Text Prompts</h3>
-            <p>Plain English in, structured prompt out for ChatGPT, Claude, Perplexity, Gemini — anything that takes text. Run it in-app with GPT-4o or copy and paste anywhere.</p>
-            <ul>
-              <li>Tone, length, format, language, and reading-level controls</li>
-              <li>Money Mode presets and Pro Boosts (chain-of-thought, role assign, examples, edge cases)</li>
-              <li>Upload a PDF or image and ask the AI about it</li>
-            </ul>
-          </div>
-          <div class="mode">
-            <span class="ic" aria-hidden="true">📸</span>
-            <h3>Photography</h3>
-            <p>Six pill groups — Style, Camera &amp; Lens, Camera Angle, Lighting &amp; Mood, Composition, Color Palette — plus the <strong>Image Workshop</strong> AI photo enhancer and <strong>Reverse Engine</strong> image-to-prompt. DALL·E 3 / gpt-image-1 powered.</p>
-            <ul>
-              <li>Pro knobs: focal length, aperture, shutter, ISO, film stock</li>
-              <li>Quick Pick presets and Pro Tuning bundles (Editorial Hero, Cinematic Portrait, Scroll-Stopper)</li>
-              <li>Save as PNG, save as SVG, regenerate, or build a Prompt DNA Card</li>
-            </ul>
-          </div>
-          <div class="mode">
-            <span class="ic" aria-hidden="true">🎬</span>
-            <h3>Video</h3>
-            <p>Build AI video prompts with a director's tuning suite — Shot Size, Camera Angle, Camera Movement, Mood &amp; Lighting, Style, Focus Depth, Movement Easing, Duration, Resolution. Generate full clips in-app (paid plans) or copy the prompt to any video model.</p>
-            <ul>
-              <li>10 camera angles (Eye Level, Hero, Dutch, Bird's-Eye…) and 10 movements</li>
-              <li>Pro Tuning presets: Cinematic Trailer · TikTok Hook · Product Reveal · B-Roll Atmospheric</li>
-              <li>Storyboard launcher: turn a concept into a 5-shot scene in one click</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="block">
-      <div class="container">
-        <h2>Image Workshop — your AI photo lab</h2>
-        <p class="sub">Inside the Photography panel. Drop a JPG, PNG, or WEBP (up to 10 MB), pick enhancement chips, hit Enhance Photo. Powered by OpenAI <code>gpt-image-1</code>.</p>
-        <div class="feat-grid">
-          <div class="feat">
-            <h4>15 enhancement chips</h4>
-            <p>Upscale · Color Pop · Cinematic Grade · Remove Background · Restore Old Photo · Day↔Night · Vector Style · Anime · Oil Painting · Watercolor · B&amp;W Film · 35mm Grain · Studio Lighting · Clean BG · HDR. Stack as many as you want.</p>
-          </div>
-          <div class="feat">
-            <h4>Drag, drop, done</h4>
-            <p>Drag a photo straight onto the dropzone, or click to pick. Add an optional free-form note ("make the sky more dramatic") and the model honors it.</p>
-          </div>
-          <div class="feat">
-            <h4>Save as PNG <em>or</em> SVG</h4>
-            <p>One-click PNG download, plus a Save as SVG option that wraps the result in a vector container — pair it with the Vector Style chip for flat, logo-friendly output.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="block">
-      <div class="container">
-        <h2>Three signature features</h2>
-        <p class="sub">Each lives one tap away from the panel it belongs to. Free, no signup.</p>
-        <div class="feat-grid">
-          <div class="feat">
-            <h4>📸 Reverse Engine — image-to-prompt</h4>
-            <p>Upload any reference image. PromptMeGood reads it with GPT-4o vision and returns a usable AI image prompt <em>plus</em> matching Photography Suite picks (style, camera, lighting, composition, palette). Then tweak and regenerate.</p>
-          </div>
-          <div class="feat">
-            <h4>🧬 Prompt DNA Card</h4>
-            <p>After you generate an image, the DNA Card composes a shareable 1080×1350 PNG that pairs the image with the exact prompt that made it. Perfect for X, Instagram, Pinterest. Built entirely on your device.</p>
-          </div>
-          <div class="feat">
-            <h4>🎞️ Storyboard generator</h4>
-            <p>Type a story concept; get a 5-shot cinematic storyboard with rendered images for the first two panels. <strong>Send To Video</strong> hands the shot list to the Video panel as a multi-shot prompt — instant scene plan.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="block">
-      <div class="container">
-        <h2>Pro Tuning — pre-engineered bundles</h2>
-        <p class="sub">Each panel has a Pro Tuning section with <strong>Quick Start presets</strong>, <strong>Pro Boosts</strong>, and <strong>Modes</strong>. One click loads a fully-engineered prompt scaffold — same trick the pros use, no PhD required.</p>
-        <div class="feat-grid">
-          <div class="feat">
-            <h4>Photo presets</h4>
-            <p>Editorial Hero · Hero Product Shot · Cinematic Portrait · Scroll-Stopper. Plus modes: Photoreal · Magazine Polish.</p>
-          </div>
-          <div class="feat">
-            <h4>Video presets</h4>
-            <p>Cinematic Trailer · TikTok Hook · Product Reveal · B-Roll Atmospheric. Plus modes: Photoreal · Filmic.</p>
-          </div>
-          <div class="feat">
-            <h4>Text Money Mode</h4>
-            <p>Stack chain-of-thought, role assignment, examples-first, edge-case sweeps, output schema, and refusal guardrails into a single super-prompt.</p>
-          </div>
+          <div class="step"><span class="step-num">1</span><div><strong>Type one honest sentence.</strong> "Write a cold email to a SaaS director about our new analytics tool." That is enough.</div></div>
+          <div class="step"><span class="step-num">2</span><div><strong>Tap "Analyze My Idea."</strong> PromptMeGood reads it, auto-tunes the tuning panel (category, skill level, tone, format, length, language, personality), and shows the picks so you can adjust.</div></div>
+          <div class="step"><span class="step-num">3</span><div><strong>Hit "Generate My Prompt."</strong> You get a structured prompt with role, context, constraints, tone, format, and next steps — plus a strength score.</div></div>
+          <div class="step"><span class="step-num">4</span><div><strong>Use it.</strong> Copy/paste into your AI of choice, or hit <strong>Run With AI</strong> to execute it in-app with GPT-4o. Or tap <strong>✨ Auto-Boost</strong> to rewrite it once more for the strongest version.</div></div>
         </div>
 
-        <div class="callout">
-          <strong>Local-first.</strong> Your prompts, vault, picks, and theme live in your browser. Only the text you send to the AI ever leaves your device. We never train models on your inputs. Read the <a href="./privacy.html" style="text-decoration: underline;">Privacy Policy</a> for the details.
-        </div>
-      </div>
-    </section>
+        <h2 id="photo">Photography in 30 seconds</h2>
+        <p>Switch to the Photography tab. The left side is your builder, the right side is the result.</p>
+        <ul>
+          <li><strong>Image Workshop</strong> — drop a JPG/PNG/WEBP (≤10 MB), pick from 15 enhancement chips (Upscale, Color Pop, Cinematic Grade, Remove BG, Restore, Day↔Night, Vector Style, Anime, Oil, Watercolor, B&amp;W Film, 35mm Grain, Studio Lighting, Clean BG, HDR), and tap <em>Enhance</em>. Download as PNG or save as SVG.</li>
+          <li><strong>Reverse Engine</strong> <span class="pill">image → prompt</span> — drop any reference image and PromptMeGood writes the prompt that would recreate it, then auto-fills the Photo Suite picks.</li>
+          <li><strong>Photo Suite</strong> — tune Style, Camera &amp; Lens (focal length, aperture, shutter, ISO, film stock), Lighting &amp; Mood, Composition, Camera Angle, Color Palette, and Aspect with one-tap pills.</li>
+          <li><strong>⚡ Pro Tuning</strong> — Quick-Start presets, Pro Boosts, and Modes for instant cinematic looks.</li>
+          <li><strong>Generate Image</strong> — runs gpt-image-1. After the result lands, tap <strong>🧬 DNA Card</strong> to export a 1080×1350 share card that pairs the image with its exact prompt.</li>
+        </ul>
 
-    <section class="block">
-      <div class="container">
-        <h2>What's free and what's paid</h2>
-        <p class="sub">Free tier with daily fair-use limits. The Expert Command Center, brand voices, and the highest caps are paid.</p>
-        <div class="feat-grid">
-          <div class="feat">
-            <h4>Free</h4>
-            <p>All three panels, Image Workshop, Reverse Engine, DNA Card, Storyboard, Vault, and Templates — with daily limits and no signup.</p>
-          </div>
-          <div class="feat">
-            <h4>Founding Member — $79 lifetime</h4>
-            <p>First 500 buyers. Lifetime core access, the Expert Command Center (Diagnose · Engineer · Tune · Variations · Save), higher caps, AI video generation, price locked for life. Offer ends July 1 or at 500 founders, whichever first.</p>
-          </div>
-          <div class="feat">
-            <h4>Pro — $9/mo or $79/yr</h4>
-            <p>Highest caps, brand voices, priority support, everything in Founding. Cancel any time. Launching soon.</p>
-          </div>
-        </div>
-        <div class="next-row">
-          <p>Want to lock in the lifetime price before the 500-seat cap closes? Join the Founding Member waitlist.</p>
-          <a class="pill is-primary" href="./pricing.html">See Pricing →</a>
-        </div>
-      </div>
-    </section>
+        <h2 id="video">Video in 30 seconds</h2>
+        <p>Switch to the Video tab. Type your video idea on the left, tune the Sora-style controls (shot type, camera movement, mood, style, duration, resolution), and hit <em>Generate</em>. Or tap <strong>🎞️ Generate Storyboard</strong> to turn your concept into a 5-shot cinematic sequence with rendered frames — then send the whole shot list back to the Video panel as a multi-shot prompt.</p>
 
-    <section class="block">
-      <div class="container narrow">
-        <h2>Want every detail?</h2>
-        <p class="sub">The Manual walks through every panel, every chip group, every keyboard shortcut, and every troubleshooting tip. Bookmark it.</p>
-        <div class="hero-cta">
-          <a class="pill is-primary" href="./manual.html">Open The Full Manual →</a>
-          <a class="pill" href="/app">Or Just Open The App</a>
+        <h2 id="topbar">The topbar</h2>
+        <ul>
+          <li><strong>❓ Help</strong> — opens this guide.</li>
+          <li><strong>🗄️ Vault</strong> — slide-in drawer with everything you have saved on this device.</li>
+          <li><strong>⚙️ Settings</strong> — opens the <strong>Expert Command Center</strong> (Diagnose · Engineer · Tune · Variations · Save).</li>
+          <li><strong>Upgrade</strong> — Founding Member ($79 one-time, first 500, lifetime) or Pro ($9/mo).</li>
+        </ul>
+
+        <h2 id="expert">Expert mode</h2>
+        <p>The gear icon opens the <strong>Expert Command Center</strong>, a five-tab drawer for power users. <strong>Diagnose</strong> tells you what your prompt is missing. <strong>Engineer</strong> lets you toggle role, audience, format, examples, and success criteria as Off / Auto / Custom. <strong>Tune</strong> gives you behavior sliders. <strong>Variations</strong> generates Fast &amp; Simple, Detailed &amp; Strategic, and Bold &amp; Persuasive versions. <strong>Save</strong> stores reusable workflows. It is a paid feature; everyone can use it for free during the open beta.</p>
+
+        <h2 id="vault">Your Prompt Vault</h2>
+        <p>Everything you save lives in the 🗄️ Vault drawer — on your device, in your browser. No account required for the free tier. You can export and import the whole vault, or wipe it any time. If you sign in for a paid plan, you can also opt in to cloud-backed storage.</p>
+
+        <div class="cta-row">
+          <a class="btn" href="/app">Open The App</a>
+          <a class="btn ghost" href="./manual.html">Read The Full Manual</a>
+          <a class="btn ghost" href="./pricing.html">See Pricing</a>
         </div>
-      </div>
-    </section>
+      </article>
+    </div>
   </main>
 
   <footer class="site-footer">
     <div class="container site-footer-inner">
-      <div class="site-footer-brand">PromptMeGood</div>
-      <p class="site-footer-tag">A calm, focused workstation for AI prompts. Local-first, no signup, yours forever.</p>
-      <nav class="site-footer-links" aria-label="Footer">
-        <a class="site-footer-link" href="/app">Open App</a>
-        <a class="site-footer-link" href="./manual.html">Manual</a>
-        <a class="site-footer-link" href="./pricing.html">Pricing</a>
-        <a class="site-footer-link" href="./privacy.html">Privacy</a>
+      <div>&copy; 2026 PromptMeGood</div>
+      <p class="site-footer-tagline">A structured prompt builder for people who want real results from AI.</p>
+      <div>
+        <a class="site-footer-link" href="/">Home</a>|
+        <a class="site-footer-link" href="./manual.html">Manual</a>|
+        <a class="site-footer-link" href="./pricing.html">Pricing</a>|
+        <a class="site-footer-link" href="./contact.html">Contact</a>|
+        <a class="site-footer-link" href="./privacy.html">Privacy</a>|
         <a class="site-footer-link" href="./terms.html">Terms</a>
-        <a class="site-footer-link" href="/contact.html">Contact</a>
-      </nav>
+      </div>
     </div>
   </footer>
-
-  <script>
-    /* Theme toggle — mirrors the main app key (promptmegood:theme:v1). */
-    (function () {
-      var btn = document.querySelector('[data-theme-toggle]');
-      if (!btn) return;
-      btn.addEventListener('click', function () {
-        var cur = document.documentElement.getAttribute('data-theme');
-        var next = cur === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', next);
-        try { localStorage.setItem('promptmegood:theme:v1', next); } catch (e) {}
-      });
-    })();
-  </script>
 </body>
 </html>

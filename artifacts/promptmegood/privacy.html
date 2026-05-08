@@ -4,18 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script>
-    (function () {
-      try {
-        if (location.hostname === 'promptmegood.com') {
-          location.replace('https://www.promptmegood.com' + location.pathname + location.search + location.hash);
-        }
-      } catch (e) {}
-    })();
+    (function () { try { if (location.hostname === 'promptmegood.com') location.replace('https://www.promptmegood.com' + location.pathname + location.search + location.hash); } catch (e) {} })();
   </script>
   <title>Privacy Policy — PromptMeGood</title>
-  <meta name="description" content="How PromptMeGood handles your data. Local-first by default, optional account for Founding Members and account storage, payments via Stripe, never sold or used to train AI." />
+  <meta name="description" content="How PromptMeGood handles your data. Local-first by default, optional account for paid plans, payments via Stripe, never sold or used to train AI models." />
   <meta property="og:title" content="Privacy Policy — PromptMeGood" />
-  <meta property="og:description" content="Local-first by default. Optional account for Founding Members. Payments via Stripe. We never sell your data and never train AI on your inputs." />
+  <meta property="og:description" content="Local-first by default. Optional account for paid plans. Payments via Stripe. We never sell your data and never train AI on your inputs." />
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://www.promptmegood.com/privacy.html" />
   <meta property="og:image" content="https://www.promptmegood.com/opengraph.jpg?v=5" />
@@ -26,192 +20,159 @@
   <link rel="canonical" href="https://www.promptmegood.com/privacy.html" />
   <meta name="robots" content="index,follow" />
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=6" />
-  <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48.png?v=6" />
   <link rel="icon" type="image/png" href="/assets/pmg-logo.png?v=6" />
   <link rel="apple-touch-icon" href="/assets/pmg-logo.png?v=6" />
   <script>
     (function () {
       try {
-        var v = localStorage.getItem('promptmegood:themeAccent:v1');
-        if (v && /^(green|blue|purple|gold|slate)$/.test(v) && v !== 'green') {
-          document.documentElement.setAttribute('data-accent', v);
-        }
-      } catch (e) {}
-    })();
-    /* Light/dark theme bootstrap — honor the user's saved sitewide preference so
-       this legal page matches the theme they chose on index/pricing/guide. */
-    (function () {
-      try {
         var saved = localStorage.getItem('promptmegood:theme');
-        var theme;
-        if (saved === 'dark' || saved === 'light') {
-          theme = saved;
-        } else {
-          theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
+        var theme = (saved === 'dark' || saved === 'light') ? saved
+          : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         document.documentElement.setAttribute('data-theme', theme);
       } catch (e) {}
     })();
   </script>
   <style>
     :root, [data-theme="light"] {
-      --color-bg: #f7f6f2;
-      --color-surface: #fbfbf9;
-      --color-border: #d8d4cd;
-      --color-text: #24211c;
-      --color-text-muted: #67655f;
-      --color-primary: #01696f;
-      --color-primary-hover: #0c4e54;
-      --radius-md: 0.875rem;
-      --radius-lg: 1.25rem;
-      --shadow-md: 0 10px 30px rgba(18, 19, 18, 0.08);
-      --font-body: 'Satoshi', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --bg: #f7f6f2; --surface: #fbfbf9; --border: #d8d4cd;
+      --text: #24211c; --muted: #67655f;
+      --primary: #01696f; --primary-hover: #0c4e54;
+      --radius-md: 0.875rem; --radius-lg: 1.25rem;
+      --shadow: 0 10px 30px rgba(18,19,18,0.08);
+      --font: 'Satoshi', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
     [data-theme="dark"] {
-      --color-bg: #151412;
-      --color-surface: #1c1b18;
-      --color-border: #34312d;
-      --color-text: #ece9e2;
-      --color-text-muted: #b9b4ab;
-      --color-primary: #5ba8b0;
-      --color-primary-hover: #73b8bf;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root:not([data-theme]) {
-        --color-bg: #151412;
-        --color-surface: #1c1b18;
-        --color-border: #34312d;
-        --color-text: #ece9e2;
-        --color-text-muted: #b9b4ab;
-        --color-primary: #5ba8b0;
-      }
+      --bg: #151412; --surface: #1c1b18; --border: #34312d;
+      --text: #ece9e2; --muted: #b9b4ab;
+      --primary: #5ba8b0; --primary-hover: #73b8bf;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
-    body {
-      min-height: 100dvh;
-      background: var(--color-bg);
-      color: var(--color-text);
-      font-family: var(--font-body);
-      font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
-      line-height: 1.65;
-      display: flex;
-      flex-direction: column;
-    }
-    .container { max-width: 740px; margin: 0 auto; padding: 0 1.25rem; width: 100%; }
-    .site-header { padding: 1.25rem 0; border-bottom: 1px solid var(--color-border); background: var(--color-surface); }
+    body { min-height: 100dvh; background: var(--bg); color: var(--text); font-family: var(--font); font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem); line-height: 1.65; display: flex; flex-direction: column; }
+    .container { max-width: 760px; margin: 0 auto; padding: 0 1.25rem; width: 100%; }
+    .site-header { padding: 1.25rem 0; border-bottom: 1px solid var(--border); background: var(--surface); }
     .site-header-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-    .site-header-brand { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; color: var(--color-text); font-weight: 700; font-size: 1.05rem; }
+    .site-header-brand { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; color: var(--text); font-weight: 700; font-size: 1.05rem; }
     .site-header-brand img { width: 28px; height: 28px; border-radius: 6px; }
-    .site-header-back { color: var(--color-primary); text-decoration: none; font-weight: 600; font-size: 0.95rem; }
+    .site-header-back { color: var(--primary); text-decoration: none; font-weight: 600; font-size: 0.95rem; }
     .site-header-back:hover { text-decoration: underline; }
-    main { flex: 1; padding: 3rem 0; }
-    .legal-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 2.25rem 2rem; box-shadow: var(--shadow-md); }
-    .legal-card h1 { font-size: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem); margin-bottom: 0.5rem; }
-    .legal-meta { color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
-    .legal-card p { margin-bottom: 1.1rem; color: var(--color-text); }
-    .legal-card a { color: var(--color-primary); }
-    .legal-card a:hover { color: var(--color-primary-hover); }
-    .back-bottom { margin-top: 2rem; text-align: center; }
-    .back-bottom a { color: var(--color-primary); text-decoration: none; font-weight: 600; }
-    .back-bottom a:hover { text-decoration: underline; }
-    .site-footer { padding: 1.5rem 0; border-top: 1px solid var(--color-border); background: var(--color-surface); margin-top: auto; }
-    .site-footer-inner { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center; }
-    .site-footer-brand { font-weight: 600; }
-    .site-footer-tagline { color: var(--color-text-muted); font-size: 0.9rem; }
-    .site-footer-back { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; align-items: center; }
-    .site-footer-link { color: var(--color-primary); text-decoration: none; font-size: 0.9rem; }
+    main { flex: 1; padding: 2.5rem 0 3rem; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2.25rem 1.85rem; box-shadow: var(--shadow); }
+    h1 { font-size: clamp(1.75rem, 1.3rem + 1.5vw, 2.4rem); margin: 0 0 0.4rem; }
+    .meta { color: var(--muted); font-size: 0.9rem; margin: 0 0 1.5rem; }
+    h2 { font-size: 1.15rem; margin: 1.5rem 0 0.5rem; color: var(--primary); }
+    p, ul { margin: 0 0 1rem; }
+    ul { padding-left: 1.25rem; }
+    li { margin-bottom: 0.3rem; }
+    a { color: var(--primary); }
+    a:hover { color: var(--primary-hover); }
+    .summary { background: color-mix(in srgb, var(--primary) 7%, transparent); border-left: 4px solid var(--primary); padding: 14px 18px; border-radius: 8px; margin: 0 0 1.5rem; }
+    .site-footer { padding: 1.5rem 0; border-top: 1px solid var(--border); background: var(--surface); margin-top: auto; text-align: center; }
+    .site-footer-tagline { color: var(--muted); font-size: 0.9rem; }
+    .site-footer-link { color: var(--primary); text-decoration: none; font-size: 0.9rem; margin: 0 6px; }
     .site-footer-link:hover { text-decoration: underline; }
-    .site-footer-divider { color: var(--color-text-muted); }
-    @media (max-width: 480px) { .legal-card { padding: 1.5rem 1.25rem; } main { padding: 1.5rem 0; } }
+    @media (max-width: 480px) { .card { padding: 1.5rem 1.1rem; } main { padding: 1.5rem 0; } }
   </style>
 </head>
 <body>
   <header class="site-header">
     <div class="container site-header-inner">
-      <a class="site-header-brand" href="/">
-        <img src="/assets/pmg-logo.png?v=6" alt="" />
-        <span>PromptMeGood</span>
-      </a>
-      <a class="site-header-back" href="/app">← Back to App</a>
+      <a class="site-header-brand" href="/"><img src="/assets/pmg-logo.png?v=6" alt="" /><span>PromptMeGood</span></a>
+      <a class="site-header-back" href="/app">Open The App →</a>
     </div>
   </header>
 
   <main>
     <div class="container">
-      <article class="legal-card">
+      <article class="card">
         <h1>Privacy Policy</h1>
-        <p class="legal-meta">Last updated: May 8, 2026.</p>
+        <p class="meta">Last updated: May 8, 2026.</p>
 
-        <p><strong>The short version.</strong> PromptMeGood is local-first by default. The free tier requires no account and stores your prompts in your browser. If you buy Founding Member access (or sign up so we can remember your plan), a small profile is stored on our servers. We never sell your data, never share it with advertisers, and never use your inputs to train AI models. Payments are processed by Stripe — we never see your card details.</p>
+        <div class="summary"><strong>The short version.</strong> PromptMeGood is local-first. The free tier needs no account and stores everything in your browser. If you buy a paid plan, a small profile is stored on our servers. We never sell your data, never share it with advertisers, and never use your inputs to train AI models. Payments are processed by Stripe — we never see your card details.</div>
 
-        <p><strong>1. What stays on your device (free tier).</strong> Your prompt history, vault, templates, favorites, tags, notes, theme preference, Photography Suite picks, Video panel picks, Image Workshop picks, returning-user state (such as prompt count and last-used panel), and other in-app settings are stored locally in your browser using localStorage. Features like the Welcome Back Command Center and the Before/After proof block read this local data to personalize your experience — none of it is sent to our servers. We do not require an account to use the free tier and we do not keep a copy of free-tier prompts on our servers.</p>
+        <h2>1. What stays on your device</h2>
+        <p>The free tier stores your prompt history, Vault, picks, theme preference, and other in-app settings in your browser's <code>localStorage</code>. None of this is sent to our servers. We do not require an account for the free tier and we do not keep a copy of your free-tier prompts.</p>
 
-        <p><strong>2. What gets sent to AI providers when you use AI features.</strong> When you use any AI-powered feature — <em>Fix My Prompt</em>, <em>Run With AI</em>, <em>Help Me Start</em>, <em>Need Ideas</em>, <em>Build Image Prompt</em> &rarr; <em>Generate Image</em> (DALL·E 3 / gpt-image-1), <em>Image Workshop</em> photo enhancement (gpt-image-1), <em>Reverse Engine</em> image-to-prompt analysis (GPT-4o vision), <em>Build Video Prompt</em> &rarr; <em>Generate Video</em> (AI video), the 5-shot <em>Storyboard</em> generator, or file analysis — your submitted text, panel selections, and any uploaded content are sent securely over HTTPS to our AI service providers (currently OpenAI) to process your request. Inputs and outputs are not permanently stored on PromptMeGood's servers beyond what is required to fulfil your request. AI providers may retain inputs and outputs in accordance with their own policies (see <a href="https://openai.com/policies/privacy-policy" target="_blank" rel="noopener noreferrer">OpenAI's Privacy Policy</a>). We do not use your inputs to train AI models, and we have configured our API access so that our provider does not train on them either.</p>
+        <h2>2. What goes to AI providers when you use AI features</h2>
+        <p>When you use any AI feature — Generate My Prompt, Run With AI, Auto-Boost, Auto-Tune, Build Image Prompt → Generate Image (DALL·E 3 / gpt-image-1), the Image Workshop photo enhancer (gpt-image-1), Reverse Engine image-to-prompt (GPT-4o vision), Build Video Prompt → Generate Video (AI video), or the 5-shot Storyboard generator — your submitted text and any uploaded content are sent over HTTPS to our AI service providers (currently OpenAI) to process the request. Inputs and outputs are not retained on PromptMeGood servers beyond what is needed to return a result. AI providers may retain inputs and outputs in line with their own policies (see <a href="https://openai.com/policies/privacy-policy" target="_blank" rel="noopener noreferrer">OpenAI's Privacy Policy</a>). We have configured our API access so that our provider does not train on them, and we do not use your inputs to train models either.</p>
 
-        <p><strong>3. When you create an account or buy Founding Member access.</strong> An account is optional and only needed to (a) purchase Founding Member ($79 one-time, lifetime access to core features while PromptMeGood operates, price locked for life), (b) subscribe to Pro Monthly ($9/month) or Pro Yearly ($79/year) when they launch, or (c) use account storage to keep your saved prompts attached to your account. Authentication is handled by <a href="https://supabase.com/" target="_blank" rel="noopener noreferrer">Supabase</a>. When you sign up, we store on our servers:</p>
+        <h2>3. When you create an account or buy a paid plan</h2>
+        <p>An account is optional and only needed to (a) buy Founding Member ($79 one-time, lifetime, price locked, first 500 buyers), (b) subscribe to Pro Monthly ($9/mo) or Pro Yearly ($79/yr) at launch, or (c) opt into account-backed Vault storage. Authentication is handled by <a href="https://supabase.com/" target="_blank" rel="noopener noreferrer">Supabase</a>. We store on our servers:</p>
         <ul>
-          <li>Your email address (used to sign in and to attach your plan to your account).</li>
+          <li>Your email (used to sign in and to attach your plan to your account).</li>
           <li>Your plan status (<code>free</code>, <code>pro</code>, or <code>founding</code>).</li>
-          <li>A Supabase user ID and (if applicable) a Stripe customer ID, used to keep your purchase tied to your account.</li>
-          <li>Optional profile fields you choose to add (such as a display name or avatar).</li>
-          <li>If you signed in with Google, the basic profile information Google shares (email, name, profile photo URL).</li>
+          <li>A Supabase user ID and (if applicable) a Stripe customer ID.</li>
+          <li>Optional profile fields you choose to add (such as a display name).</li>
+          <li>If you sign in with Google, the basic profile information Google shares (email, name, photo URL).</li>
         </ul>
-        <p>You can sign out at any time, and you can request deletion of your account and associated data by emailing <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>. Deleting your account does not automatically refund a Founding Member purchase — see our <a href="/terms.html">Terms of Service</a> for refund policy.</p>
+        <p>You can sign out at any time and request account deletion by emailing <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>. Account deletion does not automatically refund a Founding Member purchase — see the <a href="./terms.html">Terms</a> for refund details.</p>
 
-        <p><strong>4. Payments (Stripe).</strong> Founding Member purchases and (when launched) Pro Monthly subscriptions are processed by <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer">Stripe</a>. We never see, handle, or store your full credit-card number, CVV, or bank account details — Stripe collects those directly. Stripe sends us a confirmation that includes your email, the amount charged, the plan you bought, a Stripe customer ID, and a checkout session ID. We use that information to mark your account as a paid member and to provide receipts and customer support. Stripe's own privacy practices apply to anything they collect; review their policy for details.</p>
+        <h2>4. Payments (Stripe)</h2>
+        <p>Founding Member purchases and Pro subscriptions are processed by <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer">Stripe</a>. We never see, handle, or store your full card number, CVV, or bank account details — Stripe collects those directly. Stripe sends us a confirmation that includes your email, the amount charged, the plan, a Stripe customer ID, and a checkout session ID. We use that information to mark your account as paid and to provide receipts and customer support. Stripe's own privacy practices apply to anything they collect.</p>
 
-        <p><strong>5. Account storage (signed-in users only).</strong> If account storage is available and you opt in, the prompts you choose to save may be stored on our servers (Supabase) so you can access them from any signed-in device. This is opt-in and only applies once the feature is enabled on your account. You can export your saved prompts to a file at any time, or delete individual entries (or your entire vault) from inside the app. Deleted entries are removed from our database; backups are rotated on a rolling basis and any residual copies are removed within 30 days. Paid plans, including any account storage feature, are subject to fair use, provider availability, and the lifetime of the service.</p>
+        <h2>5. Optional account-backed Vault storage</h2>
+        <p>If you opt in (signed-in users only), the prompts you choose to save can be mirrored to our servers (Supabase) so the Vault follows you across devices. You can export the Vault to a file at any time, or delete individual entries (or the whole Vault) from inside the app. Deleted entries are removed from our database; backups rotate on a rolling schedule and any residual copies are removed within 30 days.</p>
 
-        <p><strong>6. Email collection (early-access list &amp; updates).</strong> If you submit your email through the "Join PRO Early Access" form on the pricing page or the "Want better prompts in your inbox?" form on the home page, your email is sent to a third-party form handler (<a href="https://formsubmit.co/" target="_blank" rel="noopener noreferrer">FormSubmit.co</a>) and forwarded to us. We use it only to notify you when PRO opens up or to send occasional product updates. You can unsubscribe at any time by replying to any email or by emailing <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.</p>
+        <h2>6. Email collection (waitlist &amp; updates)</h2>
+        <p>If you submit your email through the pricing-page waitlist or any newsletter form, your email is sent to <a href="https://formsubmit.co/" target="_blank" rel="noopener noreferrer">FormSubmit.co</a> and forwarded to us. We use it only to notify you about plan launches and product updates. Unsubscribe at any time by replying or by emailing <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.</p>
 
-        <p><strong>7. What we never do.</strong> We do not sell your personal data. We do not share your prompts, files, photo briefs, generated images, or vault contents with advertisers or data brokers. We do not run third-party advertising on the site. We do not use your inputs to train AI models.</p>
+        <h2>7. What we never do</h2>
+        <p>We do not sell your personal data. We do not share your prompts, files, photo briefs, generated images, or Vault contents with advertisers or data brokers. We do not run third-party advertising on the site. We do not use your inputs to train AI models.</p>
 
-        <p><strong>8. Pseudonymous usage analytics.</strong> We use <a href="https://clarity.microsoft.com/" target="_blank" rel="noopener noreferrer">Microsoft Clarity</a> to understand de-identified, aggregated usage patterns so we can improve the experience. Clarity assigns a session identifier rather than collecting your name or contact details, but because session replay and device/IP-derived metadata are involved, this data is best described as <em>pseudonymous</em> rather than fully anonymous. It includes:</p>
+        <h2>8. Pseudonymous usage analytics</h2>
+        <p>We use <a href="https://clarity.microsoft.com/" target="_blank" rel="noopener noreferrer">Microsoft Clarity</a> to understand de-identified, aggregated usage patterns so we can improve the product. Clarity assigns a session identifier rather than collecting your name, but because session replay and IP-derived metadata are involved, this data is best described as <em>pseudonymous</em>. It includes:</p>
         <ul>
-          <li><strong>Click and scroll behavior</strong> &mdash; which buttons are tapped and how far people scroll on each page (heatmaps).</li>
-          <li><strong>Masked session recordings</strong> &mdash; a replay of mouse movement, taps, and page navigation. Clarity automatically masks form fields and text inputs, so the contents of your goal field, generated prompts, and any text you type are <strong>not</strong> captured.</li>
-          <li><strong>Frustration signals</strong> &mdash; aggregate counts of rage clicks, dead clicks, and quick page exits, used to find broken or confusing UI.</li>
-          <li><strong>Approximate location, device, browser, and IP-derived metadata</strong> &mdash; collected by Clarity for analytics. We do not use IP addresses to personally identify you.</li>
+          <li><strong>Click and scroll behavior</strong> — heatmaps of taps and scrolling.</li>
+          <li><strong>Masked session recordings</strong> — replays of mouse movement and navigation. Clarity automatically masks form fields and text inputs, so the contents of your idea field, generated prompts, and any text you type are <strong>not</strong> captured.</li>
+          <li><strong>Frustration signals</strong> — aggregate counts of rage clicks, dead clicks, and quick exits.</li>
+          <li><strong>Approximate location, device, browser, and IP-derived metadata</strong> — collected by Clarity for analytics.</li>
         </ul>
-        <p>You can opt out of Microsoft Clarity collection across the web at <a href="https://privacy.microsoft.com/" target="_blank" rel="noopener noreferrer">privacy.microsoft.com</a>, or by enabling Do Not Track / a tracker-blocking extension in your browser.</p>
+        <p>Opt out of Clarity at <a href="https://privacy.microsoft.com/" target="_blank" rel="noopener noreferrer">privacy.microsoft.com</a>, or by enabling Do Not Track / a tracker-blocking extension.</p>
 
-        <p><strong>9. Cookies &amp; local storage.</strong> We use a small number of first-party cookies and localStorage keys to remember your theme accent, light/dark preference, vault data, daily-limit counters, returning-user state (prompt count, last workflow), conversion-nudge dismissal (sessionStorage, cleared when you close the tab), sign-in session (for signed-in users), and the Microsoft Clarity analytics session. We do not use third-party advertising cookies.</p>
+        <h2>9. Cookies &amp; local storage</h2>
+        <p>We use a small number of first-party cookies and <code>localStorage</code> keys to remember your theme, Vault data, daily-limit counters, returning-user state, conversion-nudge dismissal (sessionStorage, cleared on tab close), sign-in session (for signed-in users), and the Microsoft Clarity analytics session. We do not use third-party advertising cookies.</p>
 
-        <p><strong>10. You're in control.</strong> You can export, import, or clear your locally stored data at any time from the Prompt Vault section. Clearing your browser storage will remove everything PromptMeGood has saved on your device. Signed-in users can also delete cloud-synced prompts and request full account deletion via email.</p>
+        <h2>10. You're in control</h2>
+        <p>Export, import, or clear your locally-stored data any time from the 🗄️ Vault drawer in the app. Clearing your browser storage removes everything PromptMeGood has saved on your device. Signed-in users can also delete cloud-synced prompts and request full account deletion via email.</p>
 
-        <p><strong>11. Your privacy rights (GDPR / UK GDPR / CCPA).</strong> If you are in the EU, UK, or California (or another jurisdiction with similar laws), you have the right to: (a) request access to any data we hold about you, (b) request correction or deletion, (c) object to or restrict processing, (d) data portability where applicable, and (e) lodge a complaint with your local data-protection authority. Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a> with your request and we will respond within a reasonable timeframe (typically 30 days). To exercise the "Do Not Sell or Share My Personal Information" right under the CCPA: we already do not sell or share your personal information.</p>
+        <h2>11. Your privacy rights (GDPR / UK GDPR / CCPA)</h2>
+        <p>If you are in the EU, UK, California, or another jurisdiction with similar laws, you have the right to: (a) request access to data we hold about you, (b) request correction or deletion, (c) object to or restrict processing, (d) data portability where applicable, and (e) lodge a complaint with your local data-protection authority. Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a> with your request and we will respond within a reasonable timeframe (typically 30 days). We do not sell or share your personal information.</p>
 
-        <p><strong>12. Data retention.</strong> Locally stored data (your vault, history, picks, settings) stays on your device until you clear it. If we add account-based storage in the future, those entries stay until you delete them or your account. Account records (email, plan, Stripe customer ID) are kept while your account is active and for up to 24 months after deletion to handle billing disputes, refunds, and legal obligations. Stripe payment records are retained per Stripe's policies and tax-record requirements (typically 7 years). AI provider request logs are subject to those providers' retention policies (typically up to 30 days). Microsoft Clarity session data is retained per Clarity's defaults (typically up to 13 months).</p>
+        <h2>12. Data retention</h2>
+        <p>Locally-stored data stays on your device until you clear it. Account-backed Vault entries stay until you delete them or your account. Account records (email, plan, Stripe customer ID) are kept while your account is active and for up to 24 months after deletion to handle billing disputes, refunds, and legal obligations. Stripe payment records are retained per Stripe's policies and tax requirements (typically 7 years). AI provider request logs are subject to those providers' retention (typically up to 30 days). Microsoft Clarity session data is retained per Clarity's defaults (typically up to 13 months).</p>
 
-        <p><strong>13. Sub-processors.</strong> The third parties we share data with to operate the service are: <strong>OpenAI</strong> (AI inference: GPT-4o for text prompts and Run With AI; GPT-4o vision for the Reverse Engine image-to-prompt feature; DALL·E 3 and gpt-image-1 for the Image Generator and Image Workshop photo enhancement; AI video models for the Video panel; gpt-4o-mini for the Storyboard generator), <strong>Stripe</strong> (payment processing for Founding Member and Pro), <strong>Supabase</strong> (authentication and account profile storage if account-based features are enabled), <strong>Microsoft Clarity</strong> (pseudonymous analytics), and <strong>FormSubmit.co</strong> (email-form delivery for the early-access and newsletter forms). We may add or change sub-processors over time; material changes will be reflected in this policy.</p>
+        <h2>13. Sub-processors</h2>
+        <p>The third parties we share data with to operate the service: <strong>OpenAI</strong> (text, vision, image, video, and Storyboard inference), <strong>Stripe</strong> (payment processing), <strong>Supabase</strong> (authentication and account profile if account-backed features are enabled), <strong>Microsoft Clarity</strong> (pseudonymous analytics), and <strong>FormSubmit.co</strong> (email-form delivery for waitlist forms). We may add or change sub-processors over time; material changes will be reflected here.</p>
 
-        <p><strong>14. International transfers.</strong> Our sub-processors are primarily based in the United States. By using PromptMeGood you understand that your inputs and account data may be processed in the US under appropriate safeguards (such as Standard Contractual Clauses where required).</p>
+        <h2>14. International transfers</h2>
+        <p>Our sub-processors are primarily based in the United States. By using PromptMeGood you understand that your inputs and account data may be processed in the US under appropriate safeguards (such as Standard Contractual Clauses where required).</p>
 
-        <p><strong>15. Children.</strong> PromptMeGood is intended for users 13 and older. We do not knowingly collect personal information from children under 13. If you believe a child has provided us information, contact us and we will remove it.</p>
+        <h2>15. Children</h2>
+        <p>PromptMeGood is intended for users 13 and older. We do not knowingly collect personal information from children under 13. If you believe a child has provided us information, contact us and we will remove it.</p>
 
-        <p><strong>16. Security.</strong> We use industry-standard practices to protect your data — HTTPS for all traffic, hashed credentials handled by Supabase, and PCI-compliant payment processing handled by Stripe. No internet service can be guaranteed 100% secure; if we become aware of a security breach affecting your data, we will notify you and any required regulators in line with applicable law.</p>
+        <h2>16. Security</h2>
+        <p>We use industry-standard practices to protect your data — HTTPS for all traffic, hashed credentials handled by Supabase, and PCI-compliant payment processing handled by Stripe. No internet service can be guaranteed 100% secure; if we become aware of a security breach affecting your data, we will notify you and any required regulators in line with applicable law.</p>
 
-        <p><strong>17. Changes to this policy.</strong> We may update this Privacy Policy from time to time. The "Last updated" date at the top reflects the most recent revision. Material changes will be highlighted in the app.</p>
+        <h2>17. Changes to this policy</h2>
+        <p>We may update this Privacy Policy from time to time. The "Last updated" date at the top reflects the most recent revision. Material changes will be highlighted in the app.</p>
 
         <p>Questions or data requests? Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.</p>
-        <div class="back-bottom"><a href="/app">← Back to the App</a></div>
+        <p style="margin-top: 1.25rem;"><a href="/app">← Back to the App</a></p>
       </article>
     </div>
   </main>
 
   <footer class="site-footer">
-    <div class="container site-footer-inner">
-      <div class="site-footer-brand">&copy; 2026 PromptMeGood</div>
-      <p class="site-footer-tagline">Built for people who want real results from AI — not fluff.</p>
-      <div class="site-footer-back" aria-label="Navigation">
-        <a class="site-footer-link" href="/">Home</a>
-        <span class="site-footer-divider" aria-hidden="true">|</span>
-        <a class="site-footer-link" href="/guide.html">Guide</a>
-        <span class="site-footer-divider" aria-hidden="true">|</span>
-        <a class="site-footer-link" href="/pricing.html">Pricing</a>
-        <span class="site-footer-divider" aria-hidden="true">|</span>
-        <a class="site-footer-link" href="/terms.html">Terms of Service</a>
+    <div class="container">
+      <div>&copy; 2026 PromptMeGood</div>
+      <p class="site-footer-tagline">A structured prompt builder for people who want real results from AI.</p>
+      <div>
+        <a class="site-footer-link" href="/">Home</a>|
+        <a class="site-footer-link" href="./guide.html">Guide</a>|
+        <a class="site-footer-link" href="./manual.html">Manual</a>|
+        <a class="site-footer-link" href="./pricing.html">Pricing</a>|
+        <a class="site-footer-link" href="./contact.html">Contact</a>|
+        <a class="site-footer-link" href="./terms.html">Terms</a>
       </div>
     </div>
   </footer>
