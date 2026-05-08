@@ -1,0 +1,19 @@
+Replit Brief: Photography Tab Fixes
+There are two distinct UX issues in the Photography tab that need to be fixed.
+
+1. Storyboard Error on Open
+The Bug: When a user clicks the “Storyboard” button in the Video tab, the modal opens and immediately shows an error: “⚠️ Please type a concept first, then tap Generate Storyboard.”
+The Cause: The `pmg-storyboard.js` script reads the concept from `document.getElementById('goal')` (the Text Prompts input box). If the user hasn’t typed anything in the Text Prompts tab, it fails. The Storyboard modal should have its own input field inside the modal itself, or it should read from the Video tab’s input box (`pmg-vs-video-goal`).
+The Fix:
+
+	•	Update `pmg-storyboard.js` to read the concept from the Video tab’s input box (`pmg-vs-video-goal`) instead of the Text Prompts `goal` box.
+	•	If the input is empty when the button is clicked, do not open the modal and show the error. Instead, show a small inline validation message near the input box, or open the modal with an empty state that includes an input field so the user can type their concept right there.
+
+2. Generate Image Button Below the Fold
+The Bug: On mobile, after a user types their concept into the “Describe your image” textarea (`pmg-vs-image-goal`), the “✨ Build My Image Prompt” button is pushed far below the fold by the massive list of tuning pills (Style, Camera & Lens, Lighting, etc.). The user has to scroll past dozens of options just to generate the image.
+The Cause: The Photography tuning pills are fully expanded by default on mobile, taking up massive vertical space.
+The Fix:
+
+	•	Apply the same mobile accordion pattern to the Photography tuning section (`pmg-photo-suite`) that was applied to the Text Prompts tuning section.
+	•	On viewports `max-width: 768px`, the tuning section should be collapsed by default behind a “🎛️ Tune Your Image” toggle button.
+	•	This ensures the “✨ Build My Image Prompt” button stays visible above the fold immediately after the user types their concept.

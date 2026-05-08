@@ -851,6 +851,11 @@ html.pmg-chassis-v3 body.pmg-has-result #run-with-ai-btn {
 }
 .btn-send-to:active { transform: translateY(1px); }
 
+/* Desktop default: photo accordion header is hidden, suite is always shown.
+   Mobile rules above (≤768px) take over to collapse it. */
+.pmg-vs-photo-accordion .pmg-vs-photo-acc-header { display: none; }
+.pmg-vs-photo-accordion #pmg-vs-photo-suite-container { display: block; }
+
 /* Box 2 — AI response */
 .ai-response-box { margin-top: 12px; }
 html.pmg-chassis-v3 .pmgv3-air-host #aiResponseSection {
@@ -1086,6 +1091,48 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
     padding: 6px 12px !important;
     font-size: 13px;
   }
+  /* cv3-36: Photography Suite is a tap-to-expand accordion on mobile.
+     Mirrors the text-panel tuning accordion so the "Build My Image
+     Prompt" button stays above the fold on a 390px viewport. */
+  .pmg-vs-photo-accordion .pmg-vs-photo-acc-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(0, 200, 150, 0.08);
+    border: 1px solid rgba(0, 200, 150, 0.28);
+    border-radius: 10px;
+    color: #d4f5e8;
+    font-family: inherit;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(0, 200, 150, 0.15);
+  }
+  .pmg-vs-photo-accordion .pmg-vs-photo-acc-hint {
+    margin-left: auto;
+    font-size: 11px;
+    opacity: 0.65;
+    font-weight: 400;
+  }
+  .pmg-vs-photo-accordion .pmg-vs-photo-acc-chevron {
+    font-size: 14px;
+    color: #00c896;
+    transition: transform 0.18s ease;
+  }
+  .pmg-vs-photo-accordion.is-mobile-open .pmg-vs-photo-acc-chevron {
+    transform: rotate(180deg);
+  }
+  .pmg-vs-photo-accordion:not(.is-mobile-open) #pmg-vs-photo-suite-container {
+    display: none !important;
+  }
+  .pmg-vs-photo-accordion.is-mobile-open #pmg-vs-photo-suite-container {
+    margin-top: 10px;
+    max-height: 55vh;
+    overflow-y: auto;
+  }
+
   /* cv3-29: shrink Photography Suite + Sora video pills on mobile too.
      They previously inherited desktop padding/min-height (44px touch
      target), making each pill row tower over the next and pushing

@@ -285,8 +285,36 @@
   }
 
   function getGoalText() {
+    // Storyboard launches from inside the Video panel, so the Video
+    // textarea is the natural source of the concept. Fall back to the
+    // Text Prompts goal box for back-compat (legacy entry points).
+    var videoEl = document.getElementById('pmg-vs-video-goal');
+    var v = videoEl ? (videoEl.value || '').trim() : '';
+    if (v) return v;
     var goalEl = document.getElementById('goal');
     return goalEl ? (goalEl.value || '').trim() : '';
+  }
+
+  function flashEmptyHint() {
+    // Show a small inline hint near the video goal input rather than
+    // opening the modal straight into an error state.
+    var videoEl = document.getElementById('pmg-vs-video-goal');
+    if (videoEl) {
+      try { videoEl.focus(); } catch (_) {}
+      try { videoEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+    }
+    var host = (videoEl && videoEl.parentNode) || document.getElementById('pmgv3-panel-video');
+    if (!host) return;
+    var hintId = 'pmg-sb-empty-hint';
+    var existing = document.getElementById(hintId);
+    if (existing) { existing.remove(); }
+    var hint = document.createElement('div');
+    hint.id = hintId;
+    hint.setAttribute('role', 'status');
+    hint.style.cssText = 'margin:8px 0 0;padding:8px 10px;border-radius:8px;background:rgba(255,170,40,0.12);border:1px solid rgba(255,170,40,0.4);color:#ffcc66;font-size:13px;';
+    hint.textContent = '✏️ Type your video idea above first, then tap Generate Storyboard.';
+    host.insertBefore(hint, videoEl ? videoEl.nextSibling : null);
+    setTimeout(function () { try { hint.remove(); } catch (_) {} }, 4000);
   }
 
   function wire() {
@@ -294,7 +322,9 @@
       var t = e.target.closest('#' + TRIGGER_ID + ', [data-pmg-open-storyboard]');
       if (t) {
         e.preventDefault();
-        openStoryboard(getGoalText());
+        var concept = getGoalText();
+        if (!concept) { flashEmptyHint(); return; }
+        openStoryboard(concept);
         return;
       }
       if (!modal()) return;

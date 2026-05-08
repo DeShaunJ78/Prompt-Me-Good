@@ -196,8 +196,12 @@
         '<div id="pmg-vs-reverse-status" class="pmg-vs-reverse-status" hidden></div>',
       '</section>',
       buildImageWorkshopHtml(),
-      '<section class="pmg-vs-inline-section">',
-        '<label class="pmgv3-section-label">Photography Suite</label>',
+      '<section class="pmg-vs-inline-section pmg-vs-photo-accordion" id="pmg-vs-photo-accordion">',
+        '<button type="button" class="pmg-vs-photo-acc-header" id="pmg-vs-photo-acc-toggle" aria-expanded="false" aria-controls="pmg-vs-photo-suite-container">',
+          '<span class="pmgv3-section-label" style="margin:0">🎛️ Tune Your Image</span>',
+          '<span class="pmg-vs-photo-acc-hint">Style · Camera · Lighting · more</span>',
+          '<span class="pmg-vs-photo-acc-chevron" aria-hidden="true">▾</span>',
+        '</button>',
         '<div id="pmg-vs-photo-suite-container">',
           '<p style="margin:6px 0 0;font-size:.85rem;opacity:.7">Loading photo controls…</p>',
         '</div>',
@@ -1053,6 +1057,17 @@
         var on = chip.getAttribute('aria-pressed') === 'true';
         chip.setAttribute('aria-pressed', on ? 'false' : 'true');
         refreshEditButton();
+        return;
+      }
+      // Mobile accordion toggle for the Photography Suite — keeps
+      // Build My Image Prompt above the fold on ≤768px viewports.
+      var accBtn = e.target.closest('#pmg-vs-photo-acc-toggle');
+      if (accBtn) {
+        var sec = document.getElementById('pmg-vs-photo-accordion');
+        if (sec) {
+          var open = sec.classList.toggle('is-mobile-open');
+          accBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
         return;
       }
       if (e.target.closest('#pmg-vs-build-image-prompt-btn'))  { buildImagePrompt(); return; }
