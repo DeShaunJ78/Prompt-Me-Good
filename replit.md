@@ -13,120 +13,109 @@ PromptMeGood is an AI prompt builder designed to enhance AI interactions and use
 
 ## Stack
 
-*   **Monorepo:** pnpm workspaces
-*   **Runtime:** Node.js v24
-*   **TypeScript:** v5.9
-*   **API Framework:** Express 5
-*   **ORM:** Drizzle ORM
-*   **Validation:** Zod, `drizzle-zod`
-*   **API Codegen:** Orval
-*   **Build Tool:** Vite (frontend), esbuild (backend)
+*   **Monorepo:** pnpm workspaces · **Runtime:** Node.js v24 · **TypeScript:** v5.9
+*   **API:** Express 5 · **ORM:** Drizzle · **Validation:** Zod, `drizzle-zod`
+*   **API Codegen:** Orval · **Build:** Vite (frontend), esbuild (backend)
 
 ## Where things live
 
-*   `artifacts/promptmegood/`: Frontend — `index.html` (marketing landing), `app.html` (workstation UI), `guide.html`, `manual.html`, `help.html`, `contact.html`, `pricing.html`, `privacy.html`, `terms.html`, `review.html`, `404.html`. Chassis v3 is the only chassis loaded.
-*   `packages/api/`: Backend API services.
-*   `packages/db/`: Database schema and migrations.
-*   `packages/shared/`: Shared utilities and types.
-*   `openapi.yaml`: OpenAPI Specification (API contracts).
-*   `artifacts/promptmegood/src/styles/`: Theme files (CSS variables).
-*   `artifacts/promptmegood/public/styles/pmg-g-theme.css`: G "Warm Dark Hybrid" override stylesheet.
-*   `artifacts/promptmegood/public/styles/pmg-chassis-v3.css` + `public/scripts/pmg-chassis-v3.js`: Workstation chassis layout and styling (definitive redesign).
-*   `artifacts/promptmegood/public/styles/pmg-visual-studio.css` + `public/scripts/pmg-visual-studio.js`: Inline Photo + Video panel mounters (Reverse Engine, Image Workshop, DNA Card, Sora video).
-*   `artifacts/promptmegood/public/styles/pmg-storyboard.css` + `public/scripts/pmg-storyboard.js`: Storyboard Studio modal (text → 5-shot cinematic storyboard → handoff to Video panel).
-*   `artifacts/promptmegood/public/sitemap.xml` + `public/robots.txt`: SEO surface (lastmod 2026-05-08; AI crawlers explicitly allowed).
-*   `artifacts/promptmegood/playwright.config.ts`: Frontend test configuration.
+*   `artifacts/promptmegood/`: Frontend — `index.html` (marketing landing), `app.html` (workstation UI), plus `guide.html`, `manual.html`, `help.html`, `contact.html`, `pricing.html`, `privacy.html`, `terms.html`, `review.html`, `404.html`. Chassis v3 is the only chassis loaded.
+*   `packages/api/`, `packages/db/`, `packages/shared/`: Backend services, schema, shared types.
+*   `openapi.yaml`: API contracts.
+*   `artifacts/promptmegood/public/styles/` + `public/scripts/`: Workstation runtime stylesheets and scripts.
+    *   `pmg-g-theme.css` — G "Warm Dark Hybrid" override (theme tokens).
+    *   `pmg-chassis-v3.{css,js}` — Workstation shell (definitive redesign).
+    *   `pmg-visual-studio.{css,js}` — Inline Photo + Video panel mounters (Reverse Engine, Image Workshop, DNA Card, Sora video).
+    *   `pmg-storyboard.{css,js}` — Storyboard Studio modal (text → 5-shot cinematic storyboard → handoff to Video panel).
+    *   `pmg-auto-boost.{css,js}` — Per-panel ✨ Auto-Boost button.
+    *   `pmg-ux.js` — Photo Suite GROUPS, presets, Surprise Me, demoteButtons, etc.
+*   `artifacts/promptmegood/public/sitemap.xml` + `public/robots.txt`: SEO surface (AI crawlers explicitly allowed).
+*   `artifacts/promptmegood/playwright.config.ts`: Frontend test config.
 
 ## Architecture decisions
 
-*   **Monorepo with pnpm:** Facilitates shared code and consistent development.
-*   **Three-panel inline architecture:** `data-active-panel="text|photography|video"` swaps which `#pmgv3-panel-*` is visible. No modals.
-*   **Client-side quick-win flow:** First-time user onboarding uses sequential client-side API calls for immediate engagement.
-*   **Accessibility Guard:** Global, continuous accessibility check ensures interactive elements are clickable and visible.
-*   **Quiet Onboarding:** Suppresses non-essential UI nudges for new sessions for a focused first-prompt experience.
-*   **Expert Command Center as Paid Feature:** Advanced prompt engineering tools are paywalled after beta.
-*   **G theme overlay:** Visual language is layered via a token+skin override stylesheet without markup rewrites.
-*   **Local-first state:** Vault, picks, theme, and returning-user state live in browser localStorage; only AI-feature inputs leave the device.
+*   **Monorepo with pnpm:** Shared code, consistent dev.
+*   **Three-panel inline architecture:** `data-active-panel="text|photography|video"` swaps which `#pmgv3-panel-*` is visible. No modals for panel switches.
+*   **Client-side quick-win flow:** First-time onboarding uses sequential client-side API calls.
+*   **Accessibility Guard:** Continuous check that interactive elements are clickable + visible.
+*   **Quiet Onboarding:** Suppresses non-essential UI nudges for new sessions.
+*   **Expert Command Center is paywalled** after `BETA_END`.
+*   **G theme overlay:** Visual language layered via token+skin override stylesheet — no markup rewrites.
+*   **Local-first state:** Vault, picks, theme, returning-user state live in `localStorage`; only AI-feature inputs leave the device.
+*   **Light/dark mode is locked to dark:** `pmg-g-theme.css` lines 11–22 force the same dark teal palette for both `[data-theme="light"]` and `[data-theme="dark"]`. A real light mode would need a separate token set there.
 
 ## Product
 
-*   **AI Prompt Builder:** Craft effective prompts with smart suggestions, auto-optimization, and quality checks.
-*   **Three Panels:** Text Prompts · Photography · Video — inline panel switchers, all share the same canvas.
-*   **Image Workshop:** Upload → 15 enhancement chips → gpt-image-1 enhance, with PNG/SVG download.
-*   **Reverse Engine:** Image-to-prompt via GPT-4o vision; pre-fills Photo Suite picks.
-*   **Prompt DNA Card:** 1080×1350 share PNG pairing image with the prompt that made it.
-*   **Storyboard:** 5-shot cinematic storyboard generator → Send to Video panel.
+*   **Three Panels:** Text Prompts · Photography · Video — inline switchers, shared canvas.
+*   **Image Workshop:** Upload → 15 enhancement chips → gpt-image-1 enhance, PNG/SVG download.
+*   **Reverse Engine:** Image → prompt via GPT-4o vision, pre-fills Photo Suite picks.
+*   **Prompt DNA Card:** 1080×1350 share PNG (image + originating prompt).
+*   **Storyboard:** 5-shot cinematic storyboard → Send to Video panel.
 *   **Pro Tuning:** Photo + Video presets/boosts/modes; Money Mode for text.
+*   **Auto-Boost / Auto-Tune:** One-click prompt rewrite + idea-driven pill auto-pick.
 *   **Run With AI:** GPT-4o execution in-app.
 *   **Prompt Vault:** Save, organize, compare, export/import.
-*   **Brand Voice Profiles (Pro):** Customize AI responses with specific brand voices.
-*   **Voice Input:** Web Speech API for prompt input with language selection.
+*   **Brand Voice Profiles (Pro):** Customized AI tone.
+*   **Voice Input:** Web Speech API.
 *   **Expert Command Center (paid):** Diagnose · Engineer · Tune · Variations · Save.
 
 ## User preferences
 
-I prefer concise and direct communication. When making changes, prioritize iterative development and explain the high-level impact before diving into details. Please ask for confirmation before making any major architectural changes or introducing new external dependencies.
+I prefer concise and direct communication. Iterative dev — explain the high-level impact before diving into details. Ask before major architectural changes or new external dependencies.
 
 ## Gotchas
 
-*   **Cache-buster:** `pmg-auto-boost.css` + `pmg-auto-boost.js` at `ab-3`. `pmg-chassis-v3.css` at `cv3-38`, `pmg-chassis-v3.js` at `cv3-39`. `pmg-visual-studio.css` + `pmg-visual-studio.js` at `vs-22-photo-accordion`; `pmg-storyboard.css` at `sb-7`, `pmg-storyboard.js` at `sb-9`. `pmg-ux.js` at `cv3-39-photo-hints`. Brand assets (`pmg-logo.png`, `favicon-32.png`, `favicon-48.png`) use `?v=5`.
-*   **Accessibility State:** Verify `inert`/`aria-hidden` states after DOM manipulations.
-*   **Quick Win Overlay:** Ensure `html.pmg-qw-pending` is applied via inline script for first-time users.
-*   **Expert Command Center Gating:** Expert Mode becomes a paid feature after `BETA_END`; ensure UI reflects this.
-*   **Empty-state action gating:** New post-result actions need IDs added to `EMPTY_BTN_IDS` in `index.html`'s `watchResultBox()`.
-*   **Saved-To-Vault indicator:** Any code persisting a prompt to the vault MUST `document.dispatchEvent(new Event('pmg:vault-saved'))`.
-*   **Body-appended overlays:** New runtime overlays mounted directly under `<body>` must have `data-pmg-overlay-root`.
-*   **Waitlist anchors:** `pricing.html` uses three IDs (`#early-access`, `#founding-member-waitlist`, `#pro-early-access`) for its single waitlist form.
-*   **Adding new top-level HTML pages:** Register new HTML files in `artifacts/promptmegood/vite.config.ts` `rollupOptions.input` AND add to `public/sitemap.xml`.
-*   **Guide vs Manual split:** `guide.html` is the short orientation; `manual.html` is the long-form reference. Cross-link both and keep `help.html` pointing to both.
-*   **Route split (`/` vs `/app`):** `/` is marketing landing, `/app` is workstation. Landing auto-redirects returning users to `/app`; use `?stay=1` to bypass.
-*   **`?panel=X` deep-link:** `?panel=photography` or `?panel=video` on `/app.html` auto-switches to that panel after the chassis builds. Useful for tests, screenshots, and bookmarkable links.
-*   **No custom pull-to-refresh:** `pmg-pull-refresh.js` was removed (was hijacking touch events mid-scroll, triggering false reloads that wiped the textarea). Rely on the browser's native pull-to-refresh. If a custom one is ever re-added, gate it on `e.touches[0].clientY === 0 && document.scrollingElement.scrollTop === 0` and hard-cancel as soon as the user moves horizontally or downward.
-*   **Topbar icon tap targets:** `.pmgv3-ico` is hard-set to 44×44 (width, height, min-width, min-height — all `!important`) on the base rule, no media-query gate. The ≤400px breakpoint only shrinks the glyph `font-size` to 14px; box stays 44×44. Don't reintroduce `width: 32px` or `width: 36px` overrides.
-*   **v3 Run with AI visibility:** `#prompt-output-box` is rendered with inline `style="display:none !important"`. The Generate click handler force-reveals it via `setProperty('display','block','important')` (clearing inline `!important` via `style.display=''` is unreliable in some browsers) and also explicitly unhides `#run-with-ai-btn`. CSS safety net `body.pmg-has-result #run-with-ai-btn { display: block !important }` defends against any legacy script that re-stamps `display:none`.
-*   **Auto-Tune (cv3-31, audit 2.1):** New `POST /api/auto-tune` endpoint (`artifacts/api-server/src/routes/ai.ts` — uses `rateLimit`, JSON-mode, 250 max tokens) takes `{idea: string}` and returns `{picks: {category, skillLevel, tone, outputFormat, maxLength, outputLanguage, personality}}`. Server hard-clamps each value to a server-side `TUNE_ENUMS` constant — guards against the model going off-script and against arbitrary string injection downstream. Frontend hook in chassis-v3 `wireActions()` calls `autoTuneFromIdea()` from the Analyze handler immediately after revealing the tuning section: writes returned values via `<select>.value = v; dispatchEvent('change')` so the existing pill sync repaints. Pick-count badge briefly shows "AI tuning…" while in flight. Disable hatches: `?noautotune` query param, `localStorage.pmg_autotune_disable='1'`. 12s abort timeout, silent fallback. User can still hit Generate without ever touching pills (audit goal: "make 7 micro-decisions optional, not required").
-*   **Storyboard concept source (sb-9):** `getGoalText()` reads `#pmg-vs-video-goal` first (the Video panel textarea — Storyboard launches from there) and falls back to the Text Prompts `#goal` for legacy entry points. If both are empty, the click handler calls `flashEmptyHint()` (an inline ⚠️ message inserted right after the video textarea, auto-removed after 4s) and the modal does NOT open. This avoids the prior "modal opens straight into an error" UX. Don't reintroduce reading from `#goal` first — Storyboard lives in the Video panel and Text-panel content is unrelated to a video concept.
-*   **Photography Suite mobile accordion (cv3-36 / vs-22):** On viewports ≤768px, the Photography Suite (the dense Style/Camera/Lighting/Composition pill grid relocated into `#pmg-vs-photo-suite-container`) is collapsed behind a "🎛️ Tune Your Image" toggle button (`#pmg-vs-photo-acc-toggle` inside `#pmg-vs-photo-accordion`). Click flips `is-mobile-open` on the accordion section + `aria-expanded` on the button. CSS hides `#pmg-vs-photo-suite-container` until open. Desktop default (above 768px) hides the header and shows the suite always — no behaviour change. Without this, the suite pushed `✨ Build My Image Prompt` far below the fold on a 390px viewport.
-*   **Mobile tuning accordion (cv3-30):** Audit 3.1 — text panel's `.tuning-section` is now a tap-to-expand accordion below 768px so Generate stays above the fold on a 390px viewport. The header is rendered as a `<button class="tuning-header" id="tuning-mobile-toggle">` containing title + `.tuning-pick-count` badge (live-updated every 1.2s, counts `.pmg-tune-pill.is-active`/`.pmg-pill.is-active`) + `.tuning-chevron`. Click toggles `is-mobile-open` on `#tuning-panel`; CSS hides `.pmgv3-tuning-host` (not `#settingsPanel` directly — avoids fighting inline `display: none`) and `.tuning-hint` when not open. Desktop unaffected: chevron `display: none`, header has `cursor: default`, section is always open. Analyze handler force-adds `is-mobile-open` on desktop / removes on mobile.
-*   **First-impression cleanup (cv3-29):** (1) `.pmgv3-right-placeholder` (built into the text panel right column) shows "Your engineered prompt will appear here" intro card with 3 numbered steps. Auto-hides via `body.pmg-has-result`. (2) `.pmgv3-bottom` quick-entry footer is hidden across ALL viewports (was desktop-only); the markup is preserved so existing `#quick-entry`/`#quick-entry-submit` handlers remain intact but visually gone. The main `#goal` textarea is the single, unambiguous entry point. (3) Mobile pill compaction extended to `.pmg-photo-pill`, `.pmg-pill`, and `.pmg-vs-pill` (32px min-height, 5px 10px padding, 12px font) so Photography Suite + Sora groups don't tower past the fold on 390px.
-*   **Auto-Boost (ab-2):** `pmg-auto-boost.{js,css}` mounts a `✨ Auto-Boost Prompt/Brief` button into each suite — **text** mounts directly **after `#pmgv3-strength-slot`** (the v3 strength bar, visible) instead of after `#copy-btn` (which lives in `.actions-row`, hidden by chassis-v3 — caused the button to render but be invisible in v3). Photo mounts after `#pmg-vs-image-copy`, video after `#pmg-vs-video-copy`. Two-step server flow: `POST /api/clarify` → `{questions:[]}` (0–2, JSON-mode); if non-empty, renders an inline `.pmg-ab-card` above the prompt with text inputs + "Got it, now boost" / "Skip, boost anyway"; then `POST /api/boost` with optional `answers` map → `{result}`. Boost rewrites with explicit Role/Context/Constraints/Tone/Format (text), Style/Camera/Lens/Lighting/Composition/Palette (photo), or Scene/Movement/Pacing (video). On success: writes back to `#resultBox` / `#pmg-vs-image-refined` / `#pmg-vs-video-refined`, force-sets strength to 100% via `#strength-score-pct=100` (so chassis-v3 `mirrorStrength()` 1.5s tick keeps it pinned), updates `#strength-fill`/`#strength-status`/`#strength-score-badge` directly, and pulses `#pmgv3-strength-slot`. Same file also restyles `.pmg-send-to-shell .pmg-send-to-main-btn`/`.pmg-send-to-caret-btn` to bright mint gradient. Disable hatches: `?noautoboost`, `localStorage.pmg_autoboost_disable='1'`, or global `pmg_disable='1'`. Mount uses 200ms poll (≤30s) + MutationObserver to catch late-mounted visual-studio panels.
-*   **Light/dark mode is intentionally locked to dark:** The G theme overlay (`pmg-g-theme.css` lines 11-22) forces the same dark teal palette for both `[data-theme="light"]` and `[data-theme="dark"]`. Any future "real light mode" requires a separate token set in that overlay.
+*   **Cache-busters (current):** `pmg-chassis-v3.css` `cv3-38`, `pmg-chassis-v3.js` `cv3-39`, `pmg-visual-studio.{css,js}` `vs-22-photo-accordion`, `pmg-storyboard.css` `sb-7`, `pmg-storyboard.js` `sb-9`, `pmg-auto-boost.{css,js}` `ab-3`, `pmg-ux.js` `cv3-39-photo-hints`. Brand assets `?v=5`. Bump only what changed.
+*   **Empty-state action gating:** New post-result actions need IDs added to `EMPTY_BTN_IDS` in `app.html`'s `watchResultBox()`.
+*   **Saved-To-Vault indicator:** Any code persisting to the vault MUST `document.dispatchEvent(new Event('pmg:vault-saved'))`.
+*   **Body-appended overlays:** Runtime overlays mounted directly under `<body>` need `data-pmg-overlay-root`.
+*   **Adding new top-level HTML pages:** Register in `vite.config.ts` `rollupOptions.input` AND add to `public/sitemap.xml`.
+*   **Guide vs Manual split:** `guide.html` = short orientation; `manual.html` = long-form reference. Cross-link both; `help.html` points to both.
+*   **Route split (`/` vs `/app`):** `/` = marketing, `/app` = workstation. Landing auto-redirects returning users to `/app`; `?stay=1` bypasses.
+*   **`?panel=X` deep-link:** `?panel=photography|video` on `/app.html` auto-switches to that panel after the chassis builds.
+*   **Waitlist anchors:** `pricing.html` uses `#early-access`, `#founding-member-waitlist`, `#pro-early-access` for its single waitlist form.
+*   **Topbar icon tap targets:** `.pmgv3-ico` is hard-set to 44×44 (all four dimensions, `!important`) on the base rule — no media-query gate. The ≤400px breakpoint shrinks only the glyph `font-size`. Don't reintroduce 32/36px overrides.
+*   **No custom pull-to-refresh:** `pmg-pull-refresh.js` was removed (was hijacking touch events mid-scroll, wiping the textarea). Rely on the browser native. If re-added, gate on `e.touches[0].clientY === 0 && document.scrollingElement.scrollTop === 0` and hard-cancel on horizontal/downward movement.
+*   **v3 Run with AI visibility:** `#prompt-output-box` ships with inline `style="display:none !important"`. The Generate handler force-reveals it via `setProperty('display','block','important')` (clearing inline `!important` via `style.display=''` is unreliable in some browsers) and explicitly unhides `#run-with-ai-btn`. CSS safety net: `body.pmg-has-result #run-with-ai-btn { display: block !important }`.
+*   **Storyboard concept source:** `getGoalText()` reads `#pmg-vs-video-goal` first (Video panel — Storyboard launches from there), falls back to `#goal`. If both empty, click handler shows inline ⚠️ and does NOT open the modal. Don't reintroduce reading `#goal` first.
+*   **Photography Suite mobile accordion (≤768px):** The dense Style/Camera/Lighting/Composition pill grid (relocated into `#pmg-vs-photo-suite-container`) is collapsed behind a "🎛️ Tune Your Image" toggle (`#pmg-vs-photo-acc-toggle`). Click flips `is-mobile-open` on the accordion section + `aria-expanded` on the button. Desktop default (>768px) hides the header and shows the suite always. Without this, the suite pushed `✨ Build My Image Prompt` far below the fold on 390px.
+*   **Mobile tuning accordion (≤768px):** Text panel's `.tuning-section` is a tap-to-expand accordion with header `<button class="tuning-header" id="tuning-mobile-toggle">` + `.tuning-pick-count` badge (live-updated every 1.2s) + `.tuning-chevron`. Click toggles `is-mobile-open` on `#tuning-panel`. CSS hides `.pmgv3-tuning-host` (NOT `#settingsPanel` — avoids fighting inline `display:none`) and `.tuning-hint` when not open. Desktop unaffected. Analyze handler force-adds `is-mobile-open` on desktop / removes on mobile.
+*   **Auto-Tune:** `POST /api/auto-tune` (`artifacts/api-server/src/routes/ai.ts` — `rateLimit`, JSON-mode, 250 max tokens) takes `{idea}` → `{picks:{category, skillLevel, tone, outputFormat, maxLength, outputLanguage, personality}}`. Server hard-clamps each value to `TUNE_ENUMS`. Frontend hook in chassis-v3 `wireActions()` calls `autoTuneFromIdea()` from the Analyze handler after revealing the tuning section: writes via `<select>.value = v; dispatchEvent('change')`. Pick-count badge briefly shows "AI tuning…". Disable hatches: `?noautotune`, `localStorage.pmg_autotune_disable='1'`. 12s abort timeout, silent fallback.
+*   **Auto-Boost:** `pmg-auto-boost.{js,css}` mounts `✨ Auto-Boost Prompt/Brief` per panel — **text** mounts after `#pmgv3-strength-slot` (NOT after `#copy-btn`, which lives in `.actions-row` hidden by chassis-v3). Photo after `#pmg-vs-image-copy`, video after `#pmg-vs-video-copy`. Two-step server flow: `POST /api/clarify` → `{questions:[]}` (0–2, JSON-mode); if non-empty, renders inline `.pmg-ab-card` above the prompt with text inputs + "Got it, now boost"/"Skip, boost anyway"; then `POST /api/boost` with optional `answers` → `{result}`. Boost rewrites with explicit Role/Context/Constraints/Tone/Format (text), Style/Camera/Lens/Lighting/Composition/Palette (photo), Scene/Movement/Pacing (video). On success: writes back to the panel's refined output, force-sets strength to 100% via `#strength-score-pct=100` (chassis-v3 `mirrorStrength()` 1.5s tick keeps it pinned), updates `#strength-fill`/`#strength-status`/`#strength-score-badge`, pulses `#pmgv3-strength-slot`. Disable hatches: `?noautoboost`, `localStorage.pmg_autoboost_disable='1'`, `pmg_disable='1'`. Mount uses 200ms poll (≤30s) + MutationObserver.
+*   **First-impression layout:** (1) `.pmgv3-right-placeholder` shows the empty-state intro card (3 numbered steps); auto-hides via `body.pmg-has-result`. (2) `.pmgv3-bottom` quick-entry footer is hidden across ALL viewports; markup preserved so `#quick-entry`/`#quick-entry-submit` handlers stay intact but visually gone. The main `#goal` textarea is the single entry point. (3) Mobile pill compaction (`.pmg-photo-pill`, `.pmg-pill`, `.pmg-vs-pill`): 32px min-height, 5px 10px padding, 12px font.
 
-### Chassis v3 (definitive redesign)
+## Chassis v3 (definitive redesign)
 
-*   **Shell:** `pmg-chassis-v3.{css,js}` implements dark teal #0d2b1e bg, #00c896 mint, 52px topbar + 44px module tabs (Text|Photography|Video) + 2-col body (1fr 1fr) + 64px bottom-bar quick-entry. v3 builds `#pmg-chassis-v3-root` then REPARENTS `#goal` (via `.field.field-primary`), `#settingsPanel`, `#generateBtn`, `#resultBox`, `#strength-score`, `#aiResponseSection` into v3 slots — `form="prompt-form"` attribute is set on relocated `#goal`/`#generateBtn` to preserve form-submit semantics. Universal hide `body > *:not(#pmg-chassis-v3-root):not(script)…` suppresses the legacy DOM. `#generateBtnTop` (cloned by `pmg-ux.js`) is hidden by CSS AND scrubbed every 200ms (max 30 ticks). GEN_LABEL re-asserter writes `'✨ Generate My Prompt'` to #generateBtn every 800ms (other scripts overwrite to "Fix My Prompt"). Mirror legacy `#strength-score-pct` → spec `#strength-score-badge` on a 1500ms tick.
-*   **Form ownership:** `reparent()` step 0 moves `#prompt-form` from its native legacy DOM location into `<body>` and force-hides it (`display: none !important`). Visible inputs use the HTML5 `form="prompt-form"` attribute to stay associated. The form's submit listener (bound at app.html ~L8843) survives because the form element itself is preserved. Generate button click handler calls `e.preventDefault()` then `form.requestSubmit()` because the reparented button is no longer a form descendant. A defensive MutationObserver re-rescues the form to body if any late-loading legacy script reparents it.
+*   **Shell:** Dark teal `#0d2b1e` bg, `#00c896` mint, 52px topbar + 44px module tabs (Text|Photography|Video) + 2-col body (1fr 1fr) + 64px bottom-bar quick-entry. v3 builds `#pmg-chassis-v3-root` then REPARENTS `#goal` (via `.field.field-primary`), `#settingsPanel`, `#generateBtn`, `#resultBox`, `#strength-score`, `#aiResponseSection` into v3 slots — `form="prompt-form"` set on relocated `#goal`/`#generateBtn` to preserve form-submit semantics. Universal hide `body > *:not(#pmg-chassis-v3-root):not(script)…` suppresses legacy DOM. `#generateBtnTop` (cloned by `pmg-ux.js`) is hidden by CSS AND scrubbed every 200ms (max 30 ticks). `GEN_LABEL` re-asserter writes `'✨ Generate My Prompt'` to `#generateBtn` every 800ms (other scripts overwrite to "Fix My Prompt"). Mirror legacy `#strength-score-pct` → spec `#strength-score-badge` on a 1500ms tick.
+*   **Topbar buttons:** `❓` Help (`<a>` to `/guide.html` target=_blank) · 🗄️ Vault · ⚙️ Settings · `Upgrade` (→ `/pricing.html`).
+*   **Form ownership:** `reparent()` step 0 moves `#prompt-form` into `<body>` and force-hides it. Visible inputs use `form="prompt-form"` to stay associated. The form's submit listener (`app.html` ~L8843) survives because the form element is preserved. Generate click handler calls `e.preventDefault()` then `form.requestSubmit()` because the reparented button is no longer a form descendant. A defensive MutationObserver re-rescues the form to body if any late-loading legacy script reparents it.
 
-### Segmented panels (cv3-24 / vs-15 / sb-8)
+## Segmented panels
 
-*   **Panel architecture:** `buildShell()` builds three siblings inside `.pmgv3-body`: `#pmgv3-panel-text` (existing text workstation), `#pmgv3-panel-photo` (image goal + Reverse Engine + Photography Suite + Build Image Prompt + refined output + Generate + image surface + Save / 🧬 DNA Card / Share / Regenerate), `#pmgv3-panel-video` (video goal + Sora tuning grid + Storyboard launcher + Build Video Prompt + refined output + Generate + video surface + Save / Regenerate). The body has `data-active-panel="text|photography|video"` and CSS hides the inactive panels (`!important`). Tab clicks call `window.pmgChassisV3.setActivePanel(name)`. Each panel uses `display: grid; grid-template-columns: 1fr 1fr` and stacks at ≤768px. `pmg-visual-studio.js` exposes `window.mountVisualStudioPanels({photoLeft, photoRight, videoLeft, videoRight})` which v3 polls until ready then calls. `window.openVisualStudio({mode})` is kept as a back-compat shim that just calls `setActivePanel(mode === 'video' ? 'video' : 'photography')`.
-*   **Panel-scoped IDs:** Image and video panels each have their own scoped IDs to avoid collisions: `#pmg-vs-image-goal` / `#pmg-vs-video-goal`, `#pmg-vs-image-refined` / `#pmg-vs-video-refined`, `#pmg-vs-image-generate-btn` / `#pmg-vs-video-generate-btn`, `#pmg-vs-image-actions` / `#pmg-vs-video-actions`, `#pmg-vs-image-placeholder` / `#pmg-vs-video-placeholder`, `#pmg-vs-image-save` / `#pmg-vs-video-save`, `#pmg-vs-image-regen` / `#pmg-vs-video-regen`. Singular shared image-only buttons: `#pmg-vs-reverse-engineer-btn`, `#pmg-vs-reverse-input`, `#pmg-vs-reverse-status`, `#pmg-vs-generated-image`, `#pmg-vs-generated-video`, `#pmg-vs-download-dna`, `#pmg-vs-share-dna`. Reverse Engine POSTs to `/api/vision-analyze` and pre-fills `#pmg-vs-image-goal`. DNA Card composes a 1080×1350 canvas from `#pmg-vs-generated-image` + `#pmg-vs-image-refined`. Sora video POSTs to `/api/video` with paywall fallback (renders an upgrade card linking to `/pricing.html#founding-member-waitlist`).
-*   **Photography Suite relocation:** The legacy `#photo-suite-section` / `#pmg-photo-suite` is **moved into** `#pmg-vs-photo-suite-container` inside the Photo panel by `relocatePhotoSuite()`. Polled every 200ms (max 30 ticks) from chassis-v3 boot to catch late-loading suite mounts.
-*   **Storyboard mount:** `pmg-storyboard.js` `injectTrigger` only mounts into `#pmgv3-storyboard-mount` (inside Video panel left) — if the slot doesn't exist yet it returns and waits for the search observer to retry. `sendToVideoStudio` calls `window.pmgChassisV3.setActivePanel('video')` then prefills `#pmg-vs-video-goal` 80ms later.
+*   **Architecture:** `buildShell()` builds three siblings inside `.pmgv3-body`: `#pmgv3-panel-text`, `#pmgv3-panel-photo`, `#pmgv3-panel-video`. Body has `data-active-panel="text|photography|video"`; CSS hides inactive panels (`!important`). Tab clicks call `window.pmgChassisV3.setActivePanel(name)`. Each panel `display: grid; grid-template-columns: 1fr 1fr`, stacks at ≤768px. `pmg-visual-studio.js` exposes `window.mountVisualStudioPanels({photoLeft, photoRight, videoLeft, videoRight})` which v3 polls until ready then calls. `window.openVisualStudio({mode})` is a back-compat shim that just calls `setActivePanel(...)`.
+*   **Panel-scoped IDs (avoid collisions):** `#pmg-vs-image-goal` / `#pmg-vs-video-goal`, `#pmg-vs-image-refined` / `#pmg-vs-video-refined`, `#pmg-vs-image-generate-btn` / `#pmg-vs-video-generate-btn`, `#pmg-vs-image-actions` / `#pmg-vs-video-actions`, `#pmg-vs-image-placeholder` / `#pmg-vs-video-placeholder`, `#pmg-vs-image-save` / `#pmg-vs-video-save`, `#pmg-vs-image-regen` / `#pmg-vs-video-regen`. Image-only: `#pmg-vs-reverse-engineer-btn`, `#pmg-vs-reverse-input`, `#pmg-vs-reverse-status`, `#pmg-vs-generated-image`, `#pmg-vs-download-dna`, `#pmg-vs-share-dna`. Video-only: `#pmg-vs-generated-video`. Reverse Engine POSTs `/api/vision-analyze`, pre-fills `#pmg-vs-image-goal`. Sora video POSTs `/api/video` with paywall fallback (upgrade card → `/pricing.html#founding-member-waitlist`).
+*   **Photo Suite relocation:** Legacy `#photo-suite-section` / `#pmg-photo-suite` is moved into `#pmg-vs-photo-suite-container` inside the Photo panel by `relocatePhotoSuite()` (200ms poll, max 30 ticks).
+*   **Storyboard mount:** `pmg-storyboard.js` `injectTrigger` only mounts into `#pmgv3-storyboard-mount` (Video panel left). `sendToVideoStudio` calls `setActivePanel('video')` then prefills `#pmg-vs-video-goal` 80ms later.
 
-### Photo + Video features
+## Photo + Video features
 
-*   **Image Workshop (vs-20):** Photo panel left column "🖼️ Image Workshop". Drop/upload JPG/PNG/WEBP ≤10MB, toggle 15 enhancement chips (Upscale, Color Pop, Cinematic Grade, Remove BG, Restore, Day↔Night, Vector Style, Anime, Oil, Watercolor, B&W Film, 35mm Grain, Studio Lighting, Clean BG, HDR), optional free-form note, then `POST /api/image-edit` (`ai.ts` ~L845 — `openai.images.edit` with `gpt-image-1`, reuses `imageLimiter` + `userCapEnforce("img", 1)`, shares daily image budget with `/api/image`). Returns `data:image/png;base64,…`. Frontend offers Download PNG + 🎨 Save as SVG (wraps raster in SVG `<image>` — true raster-to-vector tracing is intentionally NOT implemented). Generic `wireDropZone(zoneId, onFile)` helper wraps both `#pmg-vs-edit-dropzone` AND `#pmg-vs-reverse-dropzone`. Chip directives concatenated under "preserve subject and composition" guardrail.
-*   **Pro Tuning Layer (vs-17):** Each panel has "⚡ Pro Tuning" with three sub-sections: Quick Start presets (one-click bundles), Pro Boosts (toggle enhancers), Modes (checkbox switches). Driven by `PHOTO_PRESETS/BOOSTS/MODES` + `VIDEO_PRESETS/BOOSTS/MODES` in `pmg-visual-studio.js`. Each boost/mode has a `directive` string appended via `collectProDirectives(scope)` inside `buildImagePrompt`/`buildVideoPrompt`. Click handlers (capture-phase delegation): `[data-vs-pro-boost]` toggles `aria-pressed`; `[data-vs-pro-preset]` invokes `applyPreset`; modes use native `<input type="checkbox" data-vs-pro-mode>`.
-*   **Photography Suite + Sora pills (cv3-25 to cv3-28, vs-16 to vs-19):** `setActivePanel('photography')` toggles `body.image-mode` so the legacy Photo Suite renders inside `#pmgv3-panel-photo` (defensive CSS in `pmg-chassis-v3.css` overrides legacy `[hidden]`/`is-collapsed`). Photo Suite GROUPS in `pmg-ux.js`: Style / Camera & Lens (with subgroups for Focal Length, Body, Aperture, Shutter, ISO, Film Stock) / Lighting & Mood / Composition / Camera Angle (10 angles) / Color Palette / Aspect. Quick Pick presets render as a tinted mint card. Below 768px, all groups start collapsed. Sora video uses `.pmg-vs-pill[data-vs-sora-group][data-vs-sora-value]` with single-select groups: Shot Type / Camera Movement / Camera Angle / Mood & Lighting / Style / Focus / Easing / Duration / Resolution (config in `SORA_OPTIONS`; consumed by `buildVideoPrompt`). When extending: add to GROUPS and to flat `pills` union so Surprise Me / applyPreset / refreshSummary keep working.
+*   **Image Workshop:** Photo panel left "🖼️ Image Workshop". Drop/upload JPG/PNG/WEBP ≤10MB, toggle 15 enhancement chips (Upscale, Color Pop, Cinematic Grade, Remove BG, Restore, Day↔Night, Vector Style, Anime, Oil, Watercolor, B&W Film, 35mm Grain, Studio Lighting, Clean BG, HDR), optional note → `POST /api/image-edit` (`ai.ts` ~L845, `openai.images.edit` `gpt-image-1`, reuses `imageLimiter` + `userCapEnforce("img", 1)`, shares daily image budget with `/api/image`). Returns `data:image/png;base64,…`. Frontend offers Download PNG + 🎨 Save as SVG (raster wrapped in SVG `<image>` — true raster-to-vector tracing intentionally NOT implemented). Generic `wireDropZone(zoneId, onFile)` wraps both `#pmg-vs-edit-dropzone` and `#pmg-vs-reverse-dropzone`. Chip directives concatenated under "preserve subject and composition" guardrail.
+*   **Pro Tuning Layer:** Each panel has "⚡ Pro Tuning" with three sub-sections: Quick Start presets, Pro Boosts, Modes. Driven by `PHOTO_PRESETS/BOOSTS/MODES` + `VIDEO_PRESETS/BOOSTS/MODES` in `pmg-visual-studio.js`. Each boost/mode has a `directive` appended via `collectProDirectives(scope)` inside `buildImagePrompt`/`buildVideoPrompt`. Capture-phase delegation: `[data-vs-pro-boost]` toggles `aria-pressed`; `[data-vs-pro-preset]` invokes `applyPreset`; modes are native `<input type="checkbox" data-vs-pro-mode>`.
+*   **Photo Suite + Sora pills:** `setActivePanel('photography')` toggles `body.image-mode` so the legacy Photo Suite renders inside `#pmgv3-panel-photo` (defensive CSS overrides legacy `[hidden]`/`is-collapsed`). Photo Suite GROUPS in `pmg-ux.js`: Style / Camera & Lens (subgroups Focal Length, Body, Aperture, Shutter, ISO, Film Stock — labels carry plain-language hints, e.g. "Aperture (Depth Of Field)") / Lighting & Mood / Composition / Camera Angle (10 angles) / Color Palette / Aspect. Quick Pick presets render as a tinted mint card. Below 768px all groups start collapsed. Sora video uses `.pmg-vs-pill[data-vs-sora-group][data-vs-sora-value]` with single-select groups: Shot Type / Camera Movement / Camera Angle / Mood & Lighting / Style / Focus / Easing / Duration / Resolution (config in `SORA_OPTIONS`, consumed by `buildVideoPrompt`). When extending: add to GROUPS AND to flat `pills` union so Surprise Me / applyPreset / refreshSummary keep working.
 
-### Three signature features (vs-2 / sb-1)
+## Three signature features
 
 *   **Reverse Engine** — `[📸 Reverse Engineer an Image]` below `#pmg-vs-image-goal`. POSTs image (jpg/png/webp ≤10MB) to `/api/vision-analyze` (gpt-4o vision). Returns `{prompt, suite_settings:{...}}`. Pre-fills image goal + best-effort programmatic-clicks Photo Suite pills.
 *   **Prompt DNA Card** — `[🧬 DNA Card]` + `[↗ Share]` in post-generate row (image-only). Pure-frontend: composes 1080×1350 canvas (image 1080×1080 + prompt strip + brand stamp), PNG download. Web Share API hidden when `!navigator.share`. Image loaded `crossOrigin="anonymous"`; if tainted, falls back to brand-only card.
 *   **Prompt Storyboard** — `[🎞️ Generate Storyboard]` mounts in Video panel left. POSTs to `/api/storyboard` (gpt-4o-mini, returns `{panels:[5 strings]}`), then fires up to 2 parallel `/api/image` calls. `[🎬 Send to Video Studio]` calls `setActivePanel('video')` + pre-fills `#pmg-vs-video-goal`. Modal `#pmg-storyboard-modal`; entry points `window.openStoryboard(concept)` and `[data-pmg-open-storyboard]`.
 
-### Misc still-relevant
+## Misc
 
 *   **`demoteButtons()` excludes image generators:** `pmg-ux.js` `demoteButtons()` intentionally OMITS `image-generate-btn` and `imageBtn`.
-*   **Result panel hide signal:** Use `body.pmg-has-result` to hide `#result-panel` until generation completes.
+*   **Result panel hide signal:** `body.pmg-has-result` to hide `#result-panel` until generation completes.
 
 ## Pointers
 
-*   **Validation Skill:** See `validation` skill for running `overflow-360` playwright tests.
-*   **OpenAPI Spec:** Refer to `openapi.yaml` for API endpoint details.
-*   **Drizzle ORM Docs:** [https://orm.drizzle.team/docs/overview](https://orm.drizzle.team/docs/overview)
-*   **Zod Docs:** [https://zod.dev/](https://zod.dev/)
-*   **Orval Docs:** [https://orval.dev/](https://orval.dev/)
-*   **Vite Docs:** [https://vitejs.dev/guide/](https://vitejs.dev/guide/)
-*   **Express Docs:** [https://expressjs.com/](https://expressjs.com/)
+*   **Validation:** See `validation` skill for `overflow-360` playwright tests.
+*   **OpenAPI:** `openapi.yaml` for endpoint details.
+*   **Drizzle ORM:** https://orm.drizzle.team/docs/overview · **Zod:** https://zod.dev · **Orval:** https://orval.dev · **Vite:** https://vitejs.dev/guide/ · **Express:** https://expressjs.com
