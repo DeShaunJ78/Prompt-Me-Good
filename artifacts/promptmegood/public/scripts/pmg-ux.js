@@ -5440,8 +5440,12 @@
         { label: 'ISO', values: [
           'ISO 100 Clean', 'ISO 400 Daylight', 'ISO 1600 Low-Light'
         ] },
+        /* cv3-27 (from Director Mode reference): expanded film
+           stock with the analog formats users actually ask for. */
         { label: 'Film Stock', values: [
-          'Kodak Portra 400', 'CineStill 800T', 'Tri-X B&W'
+          'Full Color', 'Black & White Film',
+          'Kodak Portra 400', 'CineStill 800T', 'Tri-X B&W',
+          'VHS', '16mm Film', '35mm Film', 'Digital Clean'
         ] }
       ],
       pills: [
@@ -5453,13 +5457,20 @@
         'f/1.4 Bokeh', 'f/2.8 Soft', 'f/8 Sharp', 'f/16 Deep DOF',
         '1/60 Motion Blur', '1/250 Sharp', '1/1000 Frozen Action',
         'ISO 100 Clean', 'ISO 400 Daylight', 'ISO 1600 Low-Light',
-        'Kodak Portra 400', 'CineStill 800T', 'Tri-X B&W'
+        'Full Color', 'Black & White Film',
+        'Kodak Portra 400', 'CineStill 800T', 'Tri-X B&W',
+        'VHS', '16mm Film', '35mm Film', 'Digital Clean'
       ]
     },
     {
       id: 'lighting', label: 'Lighting & Mood', icon: '💡',
       pills: [
-        'Golden Hour', 'Blue Hour', 'Studio Softbox', 'Backlit',
+        /* cv3-27 (from Director Mode reference): added Time-of-Day
+           pills (Midday, Twilight) and Light-Direction pills
+           (Front Lit, Side Lit, Top Lit) so the suite covers the
+           same surface as pro tools like Sora's Director mode. */
+        'Golden Hour', 'Midday', 'Twilight', 'Blue Hour',
+        'Studio Softbox', 'Backlit', 'Front Lit', 'Side Lit', 'Top Lit',
         'Natural Window Light', 'Dramatic Shadows', 'Neon Glow',
         'Candle Lit', 'Overcast Diffused', 'Moonlit',
         'Harsh Noon', 'Cinematic Low-Key'
@@ -5467,11 +5478,17 @@
     },
     {
       id: 'composition', label: 'Composition', icon: '🖼️',
+      /* cv3-27 (from Director Mode reference): added Center Weighted
+         + Headroom (composition framing rules), full Shot Size scale
+         (Extreme Close-Up → Extreme Wide), and Selective Focus
+         (focus depth pill that complements the aperture knobs). */
       pills: [
-        'Rule Of Thirds', 'Centered', 'Symmetrical',
-        'Close-Up', 'Wide Shot', 'Bird\'s-Eye View',
-        'Worm\'s-Eye View', 'Dutch Angle', 'Leading Lines',
-        'Negative Space', 'Frame Within A Frame'
+        'Rule Of Thirds', 'Centered', 'Center Weighted', 'Symmetrical',
+        'Headroom', 'Negative Space', 'Frame Within A Frame',
+        'Leading Lines', 'Dutch Angle',
+        'Bird\'s-Eye View', 'Worm\'s-Eye View',
+        'Extreme Close-Up', 'Close-Up', 'Medium Shot', 'Wide Shot', 'Extreme Wide',
+        'Selective Focus'
       ]
     },
     {

@@ -18,13 +18,22 @@
 (function () {
   'use strict';
 
+  // vs-18 (from Director Mode reference): expanded Sora pill suite
+  // to match pro tools' director controls. Added shot sizes
+  // (Extreme close-up / Extreme wide), camera movements (Tilt /
+  // Tracking / Orbit), Time-of-Day + Light-Direction moods (Midday /
+  // Twilight / Front lit / Side lit / Back lit / Top lit), film-stock
+  // styles (VHS / 16mm Film / 35mm Film / Digital), and two new
+  // groups: focus (depth) and easing (movement intensity).
   var SORA_OPTIONS = {
-    shot:       ['Wide', 'Medium', 'Close-up', 'Aerial', 'POV', 'Tracking'],
-    movement:   ['Static', 'Slow push in', 'Pan left', 'Pan right', 'Handheld', 'Dolly'],
-    mood:       ['Golden hour', 'Night', 'Overcast', 'Studio', 'Neon'],
+    shot:       ['Wide', 'Medium', 'Close-up', 'Extreme close-up', 'Extreme wide', 'Aerial', 'POV', 'Tracking'],
+    movement:   ['Static', 'Slow push in', 'Pan left', 'Pan right', 'Tilt', 'Handheld', 'Dolly', 'Tracking', 'Orbit'],
+    mood:       ['Golden hour', 'Midday', 'Twilight', 'Night', 'Overcast', 'Studio', 'Neon', 'Front lit', 'Side lit', 'Back lit', 'Top lit'],
+    focus:      ['Deep focus', 'Cinematic Bokeh', 'Selective focus'],
+    easing:     ['Subtle', 'Standard', 'Intense', 'Linear', 'Natural'],
     duration:   ['5', '10'],
     resolution: ['480p', '720p', '1080p'],
-    style:      ['Cinematic', 'Realistic', 'Animated', 'Documentary', 'Dreamy'],
+    style:      ['Cinematic', 'Realistic', 'Animated', 'Documentary', 'Dreamy', 'VHS', '16mm Film', '35mm Film', 'Digital'],
   };
 
   // ---------- Pro Layer config (Quick Starts + Boosts + Modes) ----------
@@ -223,10 +232,12 @@
   function buildVideoLeft() {
     var soraPillsHtml = '';
     [
-      ['shot',       'Shot Type'],
+      ['shot',       'Shot Size'],
       ['movement',   'Camera Movement'],
       ['mood',       'Mood & Lighting'],
-      ['style',      'Style'],
+      ['focus',      'Focus Depth'],
+      ['easing',     'Movement Intensity'],
+      ['style',      'Style / Film Stock'],
       ['duration',   'Duration (sec)'],
       ['resolution', 'Resolution'],
     ].forEach(function (row) {
@@ -378,6 +389,8 @@
       if (key === 'shot')          directives.push(v + ' shot');
       else if (key === 'movement') directives.push(v + ' camera movement');
       else if (key === 'mood')     directives.push(v + ' lighting');
+      else if (key === 'focus')    directives.push(v.toLowerCase() + ' depth of field');
+      else if (key === 'easing')   directives.push(v.toLowerCase() + ' motion easing');
       else if (key === 'style')    directives.push(v + ' style');
     });
     var pro = collectProDirectives('video', VIDEO_BOOSTS, VIDEO_MODES);
