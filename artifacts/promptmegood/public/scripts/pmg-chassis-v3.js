@@ -289,21 +289,54 @@
           t.classList.remove('is-collapsed');
           t.removeAttribute('hidden');
           t.style.removeProperty('display');
-          // cv3-30 audit 3.1: on mobile, start the accordion CLOSED so the
-          // Generate CTA stays above the fold. Desktop CSS ignores this class.
-          try {
-            if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) {
-              t.classList.remove('is-mobile-open');
-            } else {
-              t.classList.add('is-mobile-open');
-            }
-          } catch (e) {}
+          /* cv3-47: tuning accordion always starts COLLAPSED after Analyze
+             — on desktop AND mobile. The "AI tuned N picks" badge in the
+             header tells the user the AI made selections; they don't have
+             to see them to proceed. They can expand by clicking the
+             header. This eliminates the "two equally prominent green
+             buttons" problem on first-time analysis. */
+          t.classList.remove('is-mobile-open');
+          /* cv3-47: keep ARIA state synchronized in case the user
+             expanded the accordion on a previous analysis pass. */
+          var ariaToggle = document.getElementById('tuning-mobile-toggle');
+          if (ariaToggle) ariaToggle.setAttribute('aria-expanded', 'false');
         }
         if (g) { g.classList.remove('is-collapsed'); g.removeAttribute('hidden'); g.style.removeProperty('display'); }
         var gbShow = document.getElementById('generateBtn');
         if (gbShow) { gbShow.style.removeProperty('display'); gbShow.removeAttribute('data-pmgv3-collapsed'); }
         var spShow = document.getElementById('settingsPanel');
         if (spShow) { spShow.style.removeProperty('display'); spShow.removeAttribute('data-pmgv3-collapsed'); }
+        /* cv3-47: replace the loud "→ Analyze My Idea" button with a
+           tiny low-contrast "← Re-analyze" text link. Power users can
+           still re-run analysis; the green Generate button below is now
+           the only prominent CTA on screen. Idempotent — second click
+           on the link no-ops the injection. */
+        try {
+          if (analyzeBtn.style.display !== 'none') {
+            analyzeBtn.style.display = 'none';
+          }
+          if (!document.getElementById('pmgv3-reanalyze')) {
+            var link = document.createElement('button');
+            link.type = 'button';
+            link.id = 'pmgv3-reanalyze';
+            link.className = 'pmgv3-reanalyze';
+            link.textContent = '← Re-analyze';
+            link.addEventListener('click', function () { analyzeBtn.click(); });
+            analyzeBtn.parentNode.insertBefore(link, analyzeBtn.nextSibling);
+          }
+        } catch (e) {}
+        /* cv3-47: subtle "Ready" label above the Generate button so the
+           user understands the analysis step has completed and Generate
+           is the next action. Inserted once. */
+        try {
+          if (g && !document.getElementById('pmgv3-ready-label')) {
+            var ready = document.createElement('div');
+            ready.id = 'pmgv3-ready-label';
+            ready.className = 'pmgv3-ready-label';
+            ready.textContent = '✓ Ready — your settings are tuned';
+            g.insertBefore(ready, g.firstChild);
+          }
+        } catch (e) {}
         // Trigger existing auto-optimize logic if available so pills pre-fill
         try {
           var autoOpt = document.getElementById('auto-optimize-toggle');
@@ -320,7 +353,10 @@
         // sync repaints. Falls back silently on error — user can still tune
         // manually. Disable hatches: ?noautotune or localStorage.pmg_autotune_disable.
         try { autoTuneFromIdea(); } catch (e) {}
-        if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        /* cv3-47: scroll to the Generate section, not the tuning section.
+           Generate is the next action; the collapsed tuning header is
+           visible just above it. */
+        if (g) g.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
     }
 

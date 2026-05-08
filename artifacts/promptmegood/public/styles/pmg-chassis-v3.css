@@ -508,11 +508,52 @@ button.tuning-header {
   color: rgba(0, 200, 150, 0.7);
   font-size: 14px;
   transition: transform 0.2s ease;
-  display: none; /* desktop hides chevron — section is always open */
+  display: inline-block; /* cv3-47: chevron always visible — tuning is now a tap-to-expand accordion on desktop too */
 }
+.tuning-section.is-mobile-open .tuning-chevron { transform: rotate(180deg); }
 .tuning-hint {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.5);
+}
+/* cv3-47: tuning accordion is collapsed-by-default on ALL viewports.
+   Previously the host was only hidden inside the ≤768px media query, so
+   on desktop both the dense pill grid and the green Generate button were
+   visible at once — competing for the user's attention. Now desktop
+   behaves the same as mobile: header + badge + chevron until the user
+   opts in by clicking the header. */
+html.pmg-chassis-v3 .tuning-section:not(.is-mobile-open) .pmgv3-tuning-host,
+html.pmg-chassis-v3 .tuning-section:not(.is-mobile-open) .tuning-hint {
+  display: none !important;
+}
+button.tuning-header { cursor: pointer; }
+/* cv3-47: small low-contrast "← Re-analyze" text link that replaces the
+   green Analyze button after the user has analyzed. Intentionally NOT a
+   button visually — it should never compete with Generate for attention. */
+.pmgv3-reanalyze {
+  display: inline-block;
+  background: none;
+  border: 0;
+  padding: 4px 0;
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.45);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(255, 255, 255, 0.2);
+}
+.pmgv3-reanalyze:hover { color: #00c896; text-decoration-color: rgba(0, 200, 150, 0.5); }
+/* cv3-47: subtle confirmation that the analyze step is done, sitting
+   right above the green Generate CTA so the user understands what to do
+   next. Mint accent without competing button styling. */
+.pmgv3-ready-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #00c896;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 0 2px;
 }
 /* Re-style relocated #settingsPanel */
 html.pmg-chassis-v3 .tuning-section #settingsPanel {
@@ -1076,14 +1117,9 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
     border-bottom: 1px solid rgba(0, 200, 150, 0.18);
     padding-bottom: 10px;
   }
-  /* Hide the dense settings grid until the user expands the accordion.
-     The host wrapper holds the relocated #settingsPanel — hiding the
-     host (not #settingsPanel directly) avoids fighting the inline
-     `display: none` that gets stripped on Analyze. */
-  .tuning-section:not(.is-mobile-open) .pmgv3-tuning-host,
-  .tuning-section:not(.is-mobile-open) .tuning-hint {
-    display: none !important;
-  }
+  /* cv3-47: the desktop-equivalent rule now lives outside the media
+     query (above) so the accordion is collapsed-by-default everywhere.
+     Mobile-only sizing tweaks remain here. */
   /* Tuning pills: shrink from 44px touch target to 36px so they fit comfortably */
   .pmg-prompt-tuning .pmg-tune-pills,
   html.pmg-chassis-v3 .tuning-section .pmg-tune-pills {
