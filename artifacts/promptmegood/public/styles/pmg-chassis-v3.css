@@ -516,6 +516,95 @@ html.pmg-chassis-v3 .tuning-section .pmg-pill.is-active {
   font-weight: 600;
 }
 
+/* ---- Right-column empty-state placeholder (cv3-29) ----
+   Fixes the "looks broken" first impression: before any prompt is
+   generated, the right column was just empty dark space. Now shows a
+   friendly intro card. Hides automatically once a result lands
+   (body.pmg-has-result, set by app.html) so it never competes with
+   the real output box. */
+.pmgv3-right-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 32px 24px;
+  border: 1px dashed rgba(0, 200, 150, 0.28);
+  border-radius: 14px;
+  background: linear-gradient(180deg,
+    rgba(0, 200, 150, 0.06) 0%,
+    rgba(0, 200, 150, 0.015) 100%);
+  color: rgba(255, 255, 255, 0.78);
+  text-align: center;
+  min-height: 340px;
+  animation: pmgv3-slide-in 0.4s ease-out;
+}
+.pmgv3-rp-icon {
+  font-size: 38px;
+  line-height: 1;
+  opacity: 0.85;
+  filter: drop-shadow(0 2px 8px rgba(0, 200, 150, 0.35));
+}
+.pmgv3-rp-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #e8fbf3;
+  max-width: 360px;
+}
+.pmgv3-rp-sub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.62);
+  max-width: 380px;
+  line-height: 1.5;
+}
+.pmgv3-rp-sub strong { color: #00c896; font-weight: 700; }
+.pmgv3-rp-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: left;
+  max-width: 320px;
+  width: 100%;
+}
+.pmgv3-rp-bullets li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(0, 200, 150, 0.05);
+  border: 1px solid rgba(0, 200, 150, 0.12);
+}
+.pmgv3-rp-bullets li span {
+  color: #00c896;
+  font-weight: 700;
+  font-size: 14px;
+}
+body.pmg-has-result .pmgv3-right-placeholder {
+  display: none !important;
+}
+
+/* ---- Bottom bar quick-entry (cv3-29) ----
+   Hidden on every viewport. The audit identified this as a "competing
+   input box" — both #goal (top) and #quick-entry (bottom) ask the same
+   question, confusing first-time users. The main #goal textarea is the
+   single, unambiguous entry point. Footer markup is kept (script
+   handlers reference #quick-entry / #quick-entry-submit) but visually
+   removed across all breakpoints. */
+.pmgv3-bottom {
+  display: none !important;
+}
+/* When the bottom bar is hidden, the body no longer needs to reserve
+   space for it. */
+.pmgv3-body {
+  padding-bottom: 16px !important;
+}
+
 /* ---- Generate section (Step 4C) ---- */
 .generate-section {
   display: flex;
@@ -906,6 +995,34 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
     padding: 6px 12px !important;
     font-size: 13px;
   }
+  /* cv3-29: shrink Photography Suite + Sora video pills on mobile too.
+     They previously inherited desktop padding/min-height (44px touch
+     target), making each pill row tower over the next and pushing
+     Generate well below the fold on a 390px viewport. */
+  .pmg-photo-pill,
+  .pmg-pill,
+  .pmg-vs-pill {
+    min-height: 32px !important;
+    padding: 5px 10px !important;
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+  }
+  .pmg-vs-pill-row,
+  .pmg-photo-pills {
+    gap: 6px !important;
+  }
+  /* Tighten the placeholder on small screens — less padding so the
+     intro card doesn't dominate above the fold when the panel stacks
+     under the prompt area. */
+  .pmgv3-right-placeholder {
+    min-height: 200px;
+    padding: 22px 18px;
+    gap: 10px;
+  }
+  .pmgv3-rp-icon { font-size: 30px; }
+  .pmgv3-rp-title { font-size: 15px; }
+  .pmgv3-rp-sub { font-size: 12px; }
+  .pmgv3-rp-bullets { font-size: 12px; }
 }
 /* cv3-22 fix: at ≤400px the brand + 2 icons + Upgrade overflow the row.
    Shrink the right cluster (icon size + button padding) and tighten the
