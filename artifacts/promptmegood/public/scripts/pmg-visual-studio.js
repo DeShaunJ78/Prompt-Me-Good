@@ -187,10 +187,15 @@
       '<section class="pmg-vs-inline-section">',
         '<label class="pmgv3-section-label" for="pmg-vs-image-goal">Describe Your Image</label>',
         '<textarea id="pmg-vs-image-goal" rows="3" placeholder="A woman walking through rainy Tokyo at night, cinematic, neon reflections, 35mm film look…"></textarea>',
-        '<button type="button" id="pmg-vs-reverse-engineer-btn" class="pmg-vs-btn pmg-vs-btn-secondary pmg-vs-full-width" style="margin-top:10px;">📸 Reverse Engineer an Image</button>',
-        '<input type="file" id="pmg-vs-reverse-input" accept="image/jpeg,image/png,image/webp" hidden />',
+        // vs-20: existing Reverse-Engine button is now wrapped in
+        // a drop-zone (drag any image onto it OR click to browse).
+        '<div id="pmg-vs-reverse-dropzone" class="pmg-vs-dropzone pmg-vs-dropzone--inline" style="margin-top:10px;">',
+          '<button type="button" id="pmg-vs-reverse-engineer-btn" class="pmg-vs-btn pmg-vs-btn-secondary pmg-vs-full-width">📸 Reverse Engineer an Image · drop or click</button>',
+          '<input type="file" id="pmg-vs-reverse-input" accept="image/jpeg,image/png,image/webp" hidden />',
+        '</div>',
         '<div id="pmg-vs-reverse-status" class="pmg-vs-reverse-status" hidden></div>',
       '</section>',
+      buildImageWorkshopHtml(),
       '<section class="pmg-vs-inline-section">',
         '<label class="pmgv3-section-label">Photography Suite</label>',
         '<div id="pmg-vs-photo-suite-container">',
@@ -543,6 +548,237 @@
     if (save) { save.href = url; save.setAttribute('download', 'promptmegood-video.mp4'); }
   }
 
+  // ---------- Image Workshop (vs-20) ----------
+  // Upload-and-enhance flow. User drops/picks a photo, toggles enhancement
+  // chips (color grade, restore, vector style, anime, remove background,
+  // etc.), optionally adds a free-form note, and we POST it to
+  // /api/image-edit which returns a re-rendered PNG.
+  var EDIT_PRESETS = [
+    { id: 'upscale',     emoji: '✨', label: 'Upscale & Sharpen',
+      directive: 'upscale to higher resolution, increase sharpness, recover fine detail in eyes hair and textures, no blur' },
+    { id: 'color-pop',   emoji: '🎨', label: 'Color Pop',
+      directive: 'punchy saturated color pop, vibrant tones, lifted shadows, magazine-style color treatment' },
+    { id: 'cinematic',   emoji: '🎬', label: 'Cinematic Grade',
+      directive: 'cinematic teal-and-orange color grade, film contrast, soft highlights, deep shadows, 2.39:1 mood' },
+    { id: 'remove-bg',   emoji: '🪄', label: 'Remove Background',
+      directive: 'isolate the main subject and replace the background with pure transparent-style flat white, clean cutout edges' },
+    { id: 'restore',     emoji: '📜', label: 'Restore Old Photo',
+      directive: 'restore old damaged photograph: remove scratches, dust and creases; recover faded colors; sharpen blurred edges; fix tears; keep original subject identity' },
+    { id: 'day-night',   emoji: '🌙', label: 'Day → Night',
+      directive: 'convert daytime scene to night, add moonlight and ambient artificial light, deep blue sky, glowing windows, preserve subject and composition' },
+    { id: 'night-day',   emoji: '🌅', label: 'Night → Day',
+      directive: 'convert nighttime scene to daytime, soft natural sunlight, blue sky, preserve subject and composition' },
+    { id: 'vector',      emoji: '🖼️', label: 'Vector Style',
+      directive: 'convert to clean vector illustration: flat solid colors, bold clean outlines, minimal gradients, suitable as a logo or sticker' },
+    { id: 'anime',       emoji: '🎌', label: 'Anime Style',
+      directive: 'convert to high-quality anime illustration, cel-shaded, expressive line art, Studio Ghibli palette' },
+    { id: 'oil-paint',   emoji: '🎭', label: 'Oil Painting',
+      directive: 'convert to classical oil painting, visible brushstrokes, rich impasto texture, Rembrandt lighting' },
+    { id: 'watercolor',  emoji: '💧', label: 'Watercolor',
+      directive: 'convert to soft watercolor painting, gentle paper texture, flowing pigment edges, light pastel palette' },
+    { id: 'bw-film',     emoji: '⚫', label: 'B&W Film',
+      directive: 'convert to high-contrast black-and-white film photograph, Tri-X grain, dramatic shadows' },
+    { id: 'film-grain',  emoji: '📷', label: 'Add 35mm Grain',
+      directive: 'add subtle 35mm film grain, organic analog texture, Kodak Portra warmth' },
+    { id: 'studio-light',emoji: '💡', label: 'Studio Lighting',
+      directive: 'relight subject with professional studio softbox setup, key light + soft fill + rim light, magazine-cover quality' },
+    { id: 'clean-bg',    emoji: '🧹', label: 'Clean Background',
+      directive: 'remove distracting elements from the background, simplify composition, keep subject untouched' },
+    { id: 'hdr',         emoji: '🌈', label: 'HDR Look',
+      directive: 'apply HDR processing — recover blown highlights, lift shadows, enhanced dynamic range, crisp local contrast' },
+  ];
+
+  function buildImageWorkshopHtml() {
+    var chipsHtml = EDIT_PRESETS.map(function (p) {
+      return '<button type="button" class="pmg-vs-edit-chip" data-edit-preset="' + p.id +
+             '" aria-pressed="false">' + p.emoji + ' ' + escapeHtml(p.label) + '</button>';
+    }).join('');
+    return [
+      '<section class="pmg-vs-inline-section pmg-vs-workshop">',
+        '<label class="pmgv3-section-label">🖼️ Image Workshop — Upload &amp; Enhance</label>',
+        '<p style="margin:0 0 10px;font-size:12px;opacity:.7">Already have a photo? Drop it in, pick the enhancements you want, and we will rebuild it.</p>',
+        '<div class="pmg-vs-dropzone" id="pmg-vs-edit-dropzone" tabindex="0" role="button" aria-label="Upload image to enhance">',
+          '<input type="file" id="pmg-vs-edit-input" accept="image/jpeg,image/png,image/webp" hidden />',
+          '<div class="pmg-vs-dropzone-empty">',
+            '<div class="pmg-vs-dropzone-icon">📤</div>',
+            '<div><strong>Drop image here</strong> or <span class="pmg-vs-link-look">click to browse</span></div>',
+            '<div class="pmg-vs-dropzone-hint">JPG / PNG / WEBP · up to 10 MB</div>',
+          '</div>',
+          '<div class="pmg-vs-dropzone-preview" hidden>',
+            '<img id="pmg-vs-edit-preview" alt="Selected image preview" />',
+            '<button type="button" class="pmg-vs-link" id="pmg-vs-edit-clear" aria-label="Remove selected image">✕ Remove</button>',
+          '</div>',
+        '</div>',
+        '<div class="pmg-vs-edit-chips" role="group" aria-label="Enhancement options">' + chipsHtml + '</div>',
+        '<textarea id="pmg-vs-edit-custom" rows="2" placeholder="Optional: extra direction (e.g. add a sunset, make it look like the 90s, change shirt to red…)" maxlength="500"></textarea>',
+        '<button type="button" id="pmg-vs-edit-go" class="pmg-vs-btn pmg-vs-btn-primary pmg-vs-full-width" disabled>✨ Enhance Photo</button>',
+        '<div id="pmg-vs-edit-status" class="pmg-vs-reverse-status" hidden></div>',
+        '<div id="pmg-vs-edit-result" class="pmg-vs-edit-result" hidden>',
+          '<img id="pmg-vs-edit-output" alt="Enhanced result" />',
+          '<div class="pmg-vs-actions-row">',
+            '<a id="pmg-vs-edit-download" class="pmg-vs-btn pmg-vs-btn-secondary" download="enhanced.png" href="#">⬇ Download PNG</a>',
+            '<button type="button" id="pmg-vs-edit-svg" class="pmg-vs-btn pmg-vs-btn-secondary">🎨 Save as SVG</button>',
+            '<button type="button" id="pmg-vs-edit-redo" class="pmg-vs-btn pmg-vs-btn-secondary">🔄 Try Again</button>',
+          '</div>',
+        '</div>',
+      '</section>',
+    ].join('');
+  }
+
+  var editFile = null;
+
+  function setEditStatus(msg, kind) {
+    var el = $('pmg-vs-edit-status');
+    if (!el) return;
+    el.hidden = !msg;
+    el.textContent = msg || '';
+    el.className = 'pmg-vs-reverse-status pmg-vs-reverse-status--' + (kind || 'info');
+  }
+
+  function refreshEditButton() {
+    var btn = $('pmg-vs-edit-go');
+    if (!btn) return;
+    var hasFile = !!editFile;
+    var hasPick = !!document.querySelector('.pmg-vs-edit-chip[aria-pressed="true"]') ||
+                  ((($('pmg-vs-edit-custom') && $('pmg-vs-edit-custom').value) || '').trim().length > 0);
+    btn.disabled = !(hasFile && hasPick);
+  }
+
+  function setEditFile(file) {
+    if (!file) {
+      editFile = null;
+      var emp = document.querySelector('#pmg-vs-edit-dropzone .pmg-vs-dropzone-empty');
+      var prev = document.querySelector('#pmg-vs-edit-dropzone .pmg-vs-dropzone-preview');
+      if (emp)  emp.hidden = false;
+      if (prev) prev.hidden = true;
+      var img = $('pmg-vs-edit-preview');
+      if (img && img.src.startsWith('blob:')) URL.revokeObjectURL(img.src);
+      if (img) img.removeAttribute('src');
+      refreshEditButton();
+      return;
+    }
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
+      setEditStatus('⚠️ Use JPG, PNG, or WEBP.', 'err');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setEditStatus('⚠️ Image is over 10 MB. Please pick a smaller one.', 'err');
+      return;
+    }
+    editFile = file;
+    setEditStatus('', 'info');
+    var emp2 = document.querySelector('#pmg-vs-edit-dropzone .pmg-vs-dropzone-empty');
+    var prev2 = document.querySelector('#pmg-vs-edit-dropzone .pmg-vs-dropzone-preview');
+    if (emp2)  emp2.hidden = true;
+    if (prev2) prev2.hidden = false;
+    var img2 = $('pmg-vs-edit-preview');
+    if (img2) {
+      if (img2.src.startsWith('blob:')) URL.revokeObjectURL(img2.src);
+      img2.src = URL.createObjectURL(file);
+    }
+    refreshEditButton();
+  }
+
+  async function runImageEdit() {
+    if (!editFile) { setEditStatus('⚠️ Drop a photo first.', 'err'); return; }
+    var directives = Array.prototype.map.call(
+      document.querySelectorAll('.pmg-vs-edit-chip[aria-pressed="true"]'),
+      function (el) {
+        var id = el.getAttribute('data-edit-preset');
+        var p = EDIT_PRESETS.filter(function (x) { return x.id === id; })[0];
+        return p && p.directive;
+      }
+    ).filter(Boolean);
+    var custom = (($('pmg-vs-edit-custom') && $('pmg-vs-edit-custom').value) || '').trim();
+    if (directives.length === 0 && !custom) {
+      setEditStatus('⚠️ Pick at least one enhancement chip (or describe what you want).', 'err');
+      return;
+    }
+    var btn = $('pmg-vs-edit-go');
+    if (btn) { btn.disabled = true; btn.dataset.origLabel = btn.textContent; btn.textContent = '🛠️ Rebuilding your photo… (~20s)'; }
+    setEditStatus('🛠️ Sending to the AI image studio — typically takes 15-30 seconds.', 'info');
+    try {
+      var fd = new FormData();
+      fd.append('image', editFile, editFile.name || 'upload.png');
+      fd.append('directives', JSON.stringify(directives));
+      if (custom) fd.append('custom', custom);
+      var headers = authHeaders();
+      delete headers['Content-Type'];
+      var res = await fetch('/api/image-edit', { method: 'POST', body: fd, headers: headers });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok || !data.url) {
+        setEditStatus('⚠️ ' + (data.error || 'Could not enhance that image. Try a smaller file or different chips.'), 'err');
+        return;
+      }
+      var out = $('pmg-vs-edit-output');
+      var dl  = $('pmg-vs-edit-download');
+      var box = $('pmg-vs-edit-result');
+      if (out) out.src = data.url;
+      if (dl)  dl.href = data.url;
+      if (box) box.hidden = false;
+      setEditStatus('✓ Done. Download the PNG, save as SVG, or tweak the chips and try again.', 'ok');
+    } catch (e) {
+      setEditStatus('⚠️ Network error. Please try again.', 'err');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = btn.dataset.origLabel || '✨ Enhance Photo'; refreshEditButton(); }
+    }
+  }
+
+  // Build a valid SVG file that wraps the enhanced raster in an <image>
+  // element. Not a true vector trace — but combined with the "Vector
+  // Style" enhancement chip (which flattens to vector aesthetics) it
+  // gives users an SVG file they can drop into design tools.
+  function downloadAsSvg() {
+    var img = $('pmg-vs-edit-output');
+    if (!img || !img.src) return;
+    var w = img.naturalWidth || 1024;
+    var h = img.naturalHeight || 1024;
+    var svg = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+              '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" ' +
+              'width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">' +
+              '<title>PromptMeGood — Enhanced Image</title>' +
+              '<image width="' + w + '" height="' + h + '" xlink:href="' + img.src + '"/>' +
+              '</svg>';
+    var blob = new Blob([svg], { type: 'image/svg+xml' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'enhanced.svg';
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 100);
+  }
+
+  // Generic drop-zone wirer — used for Reverse Engine button and the
+  // Image Workshop dropzone. Folder upload note: HTML5 drag-drop yields
+  // a flat FileList for folder drops on Chromium (recursively expanded),
+  // so dropping a folder of photos onto either zone works for the FIRST
+  // image; multi-file batch is a follow-up feature.
+  function wireDropZone(zoneId, onFile) {
+    var zone = document.getElementById(zoneId);
+    if (!zone || zone.dataset.dropWired) return;
+    zone.dataset.dropWired = '1';
+    ['dragenter', 'dragover'].forEach(function (ev) {
+      zone.addEventListener(ev, function (e) {
+        e.preventDefault(); e.stopPropagation();
+        zone.classList.add('is-drag-over');
+      });
+    });
+    ['dragleave', 'drop'].forEach(function (ev) {
+      zone.addEventListener(ev, function (e) {
+        e.preventDefault(); e.stopPropagation();
+        zone.classList.remove('is-drag-over');
+      });
+    });
+    zone.addEventListener('drop', function (e) {
+      var files = (e.dataTransfer && e.dataTransfer.files) || [];
+      // First image wins (folder drop yields flat list on Chromium).
+      var first = null;
+      for (var i = 0; i < files.length; i++) {
+        if (/^image\//.test(files[i].type)) { first = files[i]; break; }
+      }
+      if (first) onFile(first);
+    });
+  }
+
   // ---------- Reverse Engine ----------
   function pickReverseImage() {
     var input = $('pmg-vs-reverse-input');
@@ -801,6 +1037,24 @@
       }
       // Inline panel buttons
       if (e.target.closest('#pmg-vs-reverse-engineer-btn'))    { pickReverseImage(); return; }
+      // Image Workshop (vs-20)
+      if (e.target.closest('#pmg-vs-edit-clear'))              { setEditFile(null); return; }
+      if (e.target.closest('#pmg-vs-edit-go'))                 { runImageEdit(); return; }
+      if (e.target.closest('#pmg-vs-edit-svg'))                { downloadAsSvg(); return; }
+      if (e.target.closest('#pmg-vs-edit-redo'))               { runImageEdit(); return; }
+      var dz = e.target.closest('#pmg-vs-edit-dropzone');
+      if (dz && !e.target.closest('#pmg-vs-edit-clear') && !e.target.closest('.pmg-vs-dropzone-preview img')) {
+        var inp = $('pmg-vs-edit-input');
+        if (inp) { inp.value = ''; inp.click(); }
+        return;
+      }
+      var chip = e.target.closest('.pmg-vs-edit-chip');
+      if (chip) {
+        var on = chip.getAttribute('aria-pressed') === 'true';
+        chip.setAttribute('aria-pressed', on ? 'false' : 'true');
+        refreshEditButton();
+        return;
+      }
       if (e.target.closest('#pmg-vs-build-image-prompt-btn'))  { buildImagePrompt(); return; }
       if (e.target.closest('#pmg-vs-build-video-prompt-btn'))  { buildVideoPrompt(); return; }
       if (e.target.closest('#pmg-vs-image-generate-btn'))      { generateImage();    return; }
@@ -844,7 +1098,35 @@
         var f = e.target.files && e.target.files[0];
         if (f) handleReverseImage(f);
       }
+      if (e.target && e.target.id === 'pmg-vs-edit-input') {
+        var f2 = e.target.files && e.target.files[0];
+        if (f2) setEditFile(f2);
+      }
+      if (e.target && e.target.id === 'pmg-vs-edit-custom') refreshEditButton();
     });
+    document.addEventListener('input', function (e) {
+      if (e.target && e.target.id === 'pmg-vs-edit-custom') refreshEditButton();
+    });
+    // Keyboard a11y: dropzones are role=button tabindex=0 — Space/Enter
+    // should open the file picker just like a click does.
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      var dz = e.target && e.target.closest && e.target.closest('#pmg-vs-edit-dropzone');
+      if (dz) {
+        e.preventDefault();
+        var inp = $('pmg-vs-edit-input');
+        if (inp) { inp.value = ''; inp.click(); }
+      }
+    });
+
+    // Wire drop zones whenever they appear in the DOM (panels mount async).
+    var dzTicks = 0;
+    var dzTimer = setInterval(function () {
+      dzTicks++;
+      wireDropZone('pmg-vs-edit-dropzone', setEditFile);
+      wireDropZone('pmg-vs-reverse-dropzone', handleReverseImage);
+      if (dzTicks > 60) clearInterval(dzTimer);
+    }, 250);
   }
 
   // Public API

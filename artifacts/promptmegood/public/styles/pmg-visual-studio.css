@@ -648,3 +648,77 @@
   .pmg-vs-pro-presets,
   .pmg-vs-pro-boosts { grid-template-columns: 1fr; }
 }
+
+/* ============================================================================
+ * vs-20 — Image Workshop (upload + enhance) + drag-drop zones.
+ * ============================================================================ */
+.pmg-vs-workshop textarea {
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 200, 150, 0.25);
+  border-radius: 8px;
+  color: #e8f5ee;
+  font: inherit;
+  resize: vertical;
+}
+.pmg-vs-dropzone {
+  position: relative;
+  border: 2px dashed rgba(0, 200, 150, 0.45);
+  border-radius: 12px;
+  background: rgba(0, 200, 150, 0.04);
+  padding: 18px 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  margin-bottom: 10px;
+}
+.pmg-vs-dropzone:hover,
+.pmg-vs-dropzone:focus-visible { border-color: #00c896; background: rgba(0, 200, 150, 0.1); outline: none; }
+.pmg-vs-dropzone.is-drag-over { border-color: #00c896; background: rgba(0, 200, 150, 0.18); border-style: solid; }
+.pmg-vs-dropzone--inline { padding: 0; border: none; background: transparent; }
+.pmg-vs-dropzone--inline.is-drag-over { background: rgba(0, 200, 150, 0.15); border: 2px dashed #00c896; border-radius: 12px; }
+.pmg-vs-dropzone-icon { font-size: 28px; margin-bottom: 6px; }
+.pmg-vs-dropzone-hint { font-size: 11px; opacity: 0.6; margin-top: 4px; }
+.pmg-vs-link-look { color: #00c896; text-decoration: underline; cursor: pointer; }
+.pmg-vs-dropzone-preview {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.pmg-vs-dropzone-preview img {
+  max-width: 100%; max-height: 220px; border-radius: 8px;
+  border: 1px solid rgba(0, 200, 150, 0.3);
+}
+.pmg-vs-edit-chips {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 6px;
+  margin: 10px 0;
+}
+.pmg-vs-edit-chip {
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 200, 150, 0.25);
+  border-radius: 8px;
+  color: #e8f5ee;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.pmg-vs-edit-chip:hover { border-color: rgba(0, 200, 150, 0.6); background: rgba(0, 200, 150, 0.06); }
+.pmg-vs-edit-chip[aria-pressed="true"] {
+  background: #00c896; border-color: #00c896; color: #062018; font-weight: 600;
+}
+.pmg-vs-edit-result {
+  margin-top: 12px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 200, 150, 0.25);
+  border-radius: 10px;
+}
+.pmg-vs-edit-result img {
+  width: 100%; max-height: 420px; object-fit: contain;
+  border-radius: 6px; background: #0a1f17; margin-bottom: 8px;
+}
