@@ -600,19 +600,29 @@
     });
     /* Defense-in-depth: even if the gear button is re-rendered or
        PMGExpertCenter loads after wireActions(), a document-level
-       capture-phase delegate guarantees the gear always opens the
-       Expert Center. Idempotent (no-op if already attached). */
+       capture-phase delegate guarantees the gear always does
+       *something*. Idempotent (no-op if already attached).
+
+       Two improvements over the previous version:
+       1. stopImmediatePropagation() prevents the bindIfPresent
+          bubble-phase listener above from firing a second time when
+          PMGExpertCenter exists (was causing a double-open).
+       2. If PMGExpertCenter has not loaded yet, we still fall back
+          to openSettings() so the click is never silently swallowed. */
     if (!window.__pmgv3SettingsDelegate) {
       window.__pmgv3SettingsDelegate = true;
       document.addEventListener('click', function (e) {
         var hit = e.target && e.target.closest && e.target.closest('#pmgv3-settings');
         if (!hit) return;
+        e.preventDefault();
+        try { e.stopImmediatePropagation(); } catch (_e) {}
         try {
           if (window.PMGExpertCenter && typeof window.PMGExpertCenter.requestOpen === 'function') {
-            e.preventDefault();
             window.PMGExpertCenter.requestOpen();
+            return;
           }
         } catch (_e) {}
+        try { openSettings(); } catch (_e) {}
       }, true);
     }
 
@@ -681,6 +691,26 @@
     }
     // Trigger a render of vault contents if the legacy script exposes one.
     try { if (typeof window.renderHistory === 'function') window.renderHistory(); } catch (_e) {}
+    /* Resilience: if #history was never mounted (some script removed it
+       or the chassis loaded before app.html parsed), avoid showing a
+       blank drawer — render a friendly empty-state so the gear/vault
+       interaction always reads as intentional. Idempotent: only fills
+       when the drawer body has nothing in it. */
+    if (body && !body.firstElementChild) {
+      var es = document.createElement('div');
+      es.id = 'pmgv3-vault-empty';
+      es.style.cssText = 'padding: 28px 8px; text-align: center; color: #9bccb6; font-size: 14px; line-height: 1.55;';
+      es.innerHTML = [
+        '<div style="font-size: 36px; margin-bottom: 10px;" aria-hidden="true">🗄️</div>',
+        '<div style="font-weight: 700; color: #e6f7ee; margin-bottom: 6px;">Your Vault Is Empty</div>',
+        '<div>Generate a prompt and tap <strong style="color:#3ee0a0;">💾 Save Draft</strong> to keep it here for later.</div>'
+      ].join('');
+      body.appendChild(es);
+    } else if (body) {
+      // If real content is now present, remove any stale empty-state node.
+      var stale = document.getElementById('pmgv3-vault-empty');
+      if (stale && body.firstElementChild !== stale) try { stale.remove(); } catch (_e) {}
+    }
     overlay.classList.add('is-open');
     drawer.classList.add('is-open');
     document.addEventListener('keydown', vaultDrawerEsc);
