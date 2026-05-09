@@ -945,10 +945,37 @@ html.pmg-chassis-v3 body.pmg-has-result #run-with-ai-btn {
   box-shadow: 0 6px 24px rgba(0, 200, 150, 0.35);
 }
 
-.send-to-row {
-  display: flex;
+/* cv3-53: send-to-row is now a 2×2 grid (4 destinations:
+   ChatGPT, Claude, Gemini, Perplexity). */
+.send-to-row,
+.pmgv3-send-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 8px;
+}
+@media (max-width: 360px) {
+  .send-to-row,
+  .pmgv3-send-grid { grid-template-columns: 1fr; }
+}
+
+/* Quiet preview nudge that sits between the in-house Run With AI
+   result output and the "Send your prompt to:" handoff label. Small,
+   muted, not a warning, not a button — just a draft-check reframe. */
+.pmgv3-send-nudge {
+  margin: 14px 0 6px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.55);
+  font-style: italic;
+}
+.pmgv3-send-label {
+  margin: 8px 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.75);
 }
 /* Send-to buttons: secondary ghost/outline styling — sit visually
    below the primary Run with AI CTA so they read as alternative

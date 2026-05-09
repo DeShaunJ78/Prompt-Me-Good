@@ -152,15 +152,21 @@
               '<button class="btn-secondary" type="button" id="save-draft-btn">💾 Save Draft</button>',
             '</div>',
             '<div class="next-step-divider"><span>Happy with your prompt?</span></div>',
-            '<button class="btn-run-primary" type="button" id="run-with-ai-btn">▶ Run with AI to see your result</button>',
-            '<div class="send-to-row">',
-              '<button class="btn-send-to" data-platform="chatgpt" type="button">Send to ChatGPT</button>',
-              '<button class="btn-send-to" data-platform="claude" type="button">Send to Claude</button>',
-              '<button class="btn-send-to" data-platform="gemini" type="button">Send to Gemini</button>',
+            '<button class="btn-run-primary" type="button" id="run-with-ai-btn">▶ Run With AI Here</button>',
+            /* cv3-53: in-house Run With AI result renders here, BEFORE
+               the send-to area, so the visual flow is:
+               button → result → nudge → label → 2×2 handoff grid. */
+            '<div class="output-box ai-response-box is-collapsed" id="ai-response-box" style="display:none !important">',
+              '<div class="pmgv3-air-host"></div>',
             '</div>',
-          '</div>',
-          '<div class="output-box ai-response-box is-collapsed" id="ai-response-box" style="display:none !important">',
-            '<div class="pmgv3-air-host"></div>',
+            '<p class="pmgv3-send-nudge">This is a quick preview — for the best output, send your optimized prompt to ChatGPT, Claude, Perplexity, or Gemini below.</p>',
+            '<div class="pmgv3-send-label">Send your prompt to:</div>',
+            '<div class="pmgv3-send-grid send-to-row">',
+              '<button class="btn-send-to" data-platform="chatgpt"    data-pmg-dest="chatgpt"    type="button">Send to ChatGPT</button>',
+              '<button class="btn-send-to" data-platform="claude"     data-pmg-dest="claude"     type="button">Send to Claude</button>',
+              '<button class="btn-send-to" data-platform="gemini"     data-pmg-dest="gemini"     type="button">Send to Gemini</button>',
+              '<button class="btn-send-to" data-platform="perplexity" data-pmg-dest="perplexity" type="button">Send to Perplexity</button>',
+            '</div>',
           '</div>',
         '</div>',
         '</div>', // /#pmgv3-panel-text
@@ -997,11 +1003,13 @@
           chatgpt: 'https://chatgpt.com/?q=' + encoded,
           claude: 'https://claude.ai/new?q=' + encoded,
           gemini: 'https://gemini.google.com/app',
+          perplexity: 'https://www.perplexity.ai/search?q=' + encoded,
         };
-        var platform = btn.dataset.platform;
-        var label = platform === 'chatgpt' ? 'ChatGPT'
-                  : platform === 'claude'  ? 'Claude'
-                  : platform === 'gemini'  ? 'Gemini'
+        var platform = btn.dataset.pmgDest || btn.dataset.platform;
+        var label = platform === 'chatgpt'    ? 'ChatGPT'
+                  : platform === 'claude'     ? 'Claude'
+                  : platform === 'gemini'     ? 'Gemini'
+                  : platform === 'perplexity' ? 'Perplexity'
                   : platform;
         try { navigator.clipboard.writeText(prompt); } catch (e) {}
         if (urls[platform]) {
