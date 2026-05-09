@@ -253,12 +253,20 @@ a.pmgv3-ico:hover { color: #00c896; }
   height: 100%;
   min-height: 0;
 }
+/* 4-way panel exclusion (bm-1: added Business Mode). The active panel's
+   siblings get display:none so only one panel renders at a time. */
 .pmgv3-body[data-active-panel="text"]         #pmgv3-panel-photo,
 .pmgv3-body[data-active-panel="text"]         #pmgv3-panel-video,
+.pmgv3-body[data-active-panel="text"]         #pmgv3-panel-business,
 .pmgv3-body[data-active-panel="photography"]  #pmgv3-panel-text,
 .pmgv3-body[data-active-panel="photography"]  #pmgv3-panel-video,
+.pmgv3-body[data-active-panel="photography"]  #pmgv3-panel-business,
 .pmgv3-body[data-active-panel="video"]        #pmgv3-panel-text,
-.pmgv3-body[data-active-panel="video"]        #pmgv3-panel-photo {
+.pmgv3-body[data-active-panel="video"]        #pmgv3-panel-photo,
+.pmgv3-body[data-active-panel="video"]        #pmgv3-panel-business,
+.pmgv3-body[data-active-panel="business"]     #pmgv3-panel-text,
+.pmgv3-body[data-active-panel="business"]     #pmgv3-panel-photo,
+.pmgv3-body[data-active-panel="business"]     #pmgv3-panel-video {
   display: none !important;
 }
 

@@ -93,6 +93,11 @@
         '<button class="pmgv3-tab is-active" data-module="text" role="tab" aria-selected="true" type="button">✍️ Text Prompts</button>',
         '<button class="pmgv3-tab" data-module="photography" role="tab" aria-selected="false" type="button">📸 Photography</button>',
         '<button class="pmgv3-tab" data-module="video" role="tab" aria-selected="false" type="button">🎬 Video</button>',
+        // bm-1: Business Mode tab. The 🔒 glyph is purely visual today
+        // (no paywall enforcement until BETA_END, matching the existing
+        // Expert Command Center pattern). When clicked, the left column
+        // becomes the Business Mode dashboard via pmg-business-mode.js.
+        '<button class="pmgv3-tab" data-module="business" role="tab" aria-selected="false" type="button">💼 Business Mode <span class="pmgv3-tab-lock" aria-hidden="true">🔒</span></button>',
       '</nav>',
       '<div class="pmgv3-body" data-active-panel="text">',
         '<div class="pmgv3-panel" id="pmgv3-panel-text">',
@@ -216,6 +221,11 @@
         '<div class="pmgv3-panel" id="pmgv3-panel-video">',
           '<div class="pmgv3-left" id="pmgv3-video-left"></div>',
           '<div class="pmgv3-right" id="pmgv3-video-right"></div>',
+        '</div>',
+        // bm-1: Business Mode panel. Left + right columns are built and
+        // populated by /scripts/pmg-business-mode.js when its mount()
+        // runs (200ms poll for #pmgv3-panel-business).
+        '<div class="pmgv3-panel" id="pmgv3-panel-business">',
         '</div>',
       '</div>',
       '<footer class="pmgv3-bottom">',
@@ -1635,7 +1645,7 @@
 
   function setActivePanel(name) {
     if (!name) return;
-    var validNames = { text: 1, photography: 1, video: 1 };
+    var validNames = { text: 1, photography: 1, video: 1, business: 1 };
     if (!validNames[name]) return;
     var body = rootEl && rootEl.querySelector('.pmgv3-body');
     if (body) body.setAttribute('data-active-panel', name);
@@ -1691,7 +1701,7 @@
   }
   // Allow ?panel=photography|video|text deep-linking (also useful for tests).
   var initialPanel = qs.get('panel');
-  if (initialPanel === 'photography' || initialPanel === 'video') {
+  if (initialPanel === 'photography' || initialPanel === 'video' || initialPanel === 'business') {
     var panelTries = 0;
     var panelInt = setInterval(function () {
       panelTries++;
