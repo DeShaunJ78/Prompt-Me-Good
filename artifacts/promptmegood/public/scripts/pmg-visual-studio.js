@@ -207,6 +207,16 @@
         '</div>',
       '</section>',
       buildProLayerHtml('photo', PHOTO_PRESETS, PHOTO_BOOSTS, PHOTO_MODES),
+      // vs-23: heads-up notice — major image models reject edits of minors.
+      // Placed above the build/generate row so users see it BEFORE they
+      // burn an attempt on a family photo that the model will refuse.
+      '<aside class="pmgv3-child-photo-warning" role="note" aria-label="Note on editing photos of children">',
+        '<div class="warning-icon" aria-hidden="true">⚠️</div>',
+        '<div class="warning-content">',
+          '<strong>Note on Editing Photos of Children</strong>',
+          '<p>Major AI platforms (Gemini, ChatGPT, Claude) have strict safety filters that often block editing or altering photos of children and minors — to prevent misuse and protect privacy. If a family-photo edit gets refused, this is likely why. For kid photos we recommend traditional tools like Photoshop or Lightroom instead.</p>',
+        '</div>',
+      '</aside>',
       '<section class="pmg-vs-inline-section">',
         '<button type="button" id="pmg-vs-build-image-prompt-btn" class="pmg-vs-btn pmg-vs-btn-secondary pmg-vs-full-width">✨ Build My Image Prompt</button>',
       '</section>',

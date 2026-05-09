@@ -722,3 +722,36 @@
   width: 100%; max-height: 420px; object-fit: contain;
   border-radius: 6px; background: #0a1f17; margin-bottom: 8px;
 }
+
+/* vs-23: child photo warning notice — sits above the build/generate
+   row inside the Photography panel left column. Subtle warning-yellow
+   tint that doesn't fight the mint primary. */
+.pmgv3-child-photo-warning {
+  display: flex;
+  gap: 12px;
+  background: rgba(255, 170, 0, 0.10);
+  border: 1px solid rgba(255, 170, 0, 0.30);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 0 0 16px;
+  align-items: flex-start;
+}
+.pmgv3-child-photo-warning .warning-icon {
+  font-size: 18px;
+  line-height: 1.2;
+  flex: 0 0 auto;
+}
+.pmgv3-child-photo-warning .warning-content { min-width: 0; }
+.pmgv3-child-photo-warning .warning-content strong {
+  display: block;
+  color: #ffb84d;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.pmgv3-child-photo-warning .warning-content p {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.80);
+  line-height: 1.4;
+}
