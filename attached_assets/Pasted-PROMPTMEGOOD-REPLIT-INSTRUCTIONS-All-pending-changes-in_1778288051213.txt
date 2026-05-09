@@ -1,0 +1,125 @@
+PROMPTMEGOOD — REPLIT INSTRUCTIONS
+All pending changes in one file. Apply in order.
+=====================================================
+
+
+CHANGE 1 — Run With AI button label
+-------------------------------------
+Find the button currently labelled "Run With AI to see your result"
+Change the label to: "Run With AI Here"
+No other changes to the button.
+
+
+CHANGE 2 — Preview nudge text (styling fix)
+---------------------------------------------
+The line "This is a quick preview — for the best output, send your optimized prompt to ChatGPT, Claude, Perplexity, or Gemini below." is too large and too prominent.
+
+Apply this CSS to the element containing that text:
+
+  font-size: 0.72rem;
+  color: #8a9a8a;
+  opacity: 0.6;
+  text-align: center;
+  margin: 8px 0 12px 0;
+  font-style: italic;
+
+It should read as a quiet ghost line, not a headline.
+
+
+CHANGE 3 — Replace 3-button "Send to" row with a 2x2 branded grid
+--------------------------------------------------------------------
+Remove the existing row of Send to ChatGPT / Send to Claude / Send to Gemini buttons.
+
+Replace with:
+
+  <p class="pmg-send-label">Send your prompt to:</p>
+  <div class="pmg-send-grid">
+    <button data-pmg-dest="chatgpt">ChatGPT</button>
+    <button data-pmg-dest="claude">Claude</button>
+    <button data-pmg-dest="perplexity">Perplexity</button>
+    <button data-pmg-dest="gemini">Gemini</button>
+  </div>
+
+CSS for the grid:
+
+  .pmg-send-label {
+    font-size: 0.75rem;
+    color: #8a9a8a;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .pmg-send-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .pmg-send-grid button {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+  }
+
+Branded colors for each button:
+
+  button[data-pmg-dest="chatgpt"]    { background: #10A37F; color: #ffffff; }
+  button[data-pmg-dest="claude"]     { background: #D4A574; color: #1a1a1a; }
+  button[data-pmg-dest="perplexity"] { background: #20B2AA; color: #ffffff; }
+  button[data-pmg-dest="gemini"]     { background: #4285F4; color: #ffffff; }
+
+Wire each button to the existing sendTo(key) function in pmg-send-to.js using the data-pmg-dest attribute value as the key. The existing DESTS catalog already has all four destinations. No new backend logic needed.
+
+
+CHANGE 4 — Add Perplexity to the DESTS catalog (if not already present)
+-------------------------------------------------------------------------
+In pmg-send-to.js, confirm the DESTS object includes a perplexity entry.
+If it does not, add:
+
+  perplexity: {
+    label: 'Perplexity',
+    url: 'https://www.perplexity.ai/',
+    prefill: function (text) {
+      return 'https://www.perplexity.ai/search?q=' + encodeURIComponent(text);
+    },
+    tip: 'Perplexity searches the web in real time — great for research-based prompts.'
+  }
+
+
+CHANGE 5 — Clipboard copy for all four destinations
+------------------------------------------------------
+In the sendTo() function in pmg-send-to.js, before opening any destination URL, always copy the prompt text to the clipboard silently.
+
+Add this line at the start of the sendTo() function, before the window.open() call:
+
+  try { navigator.clipboard.writeText(text); } catch (_) {}
+
+Do NOT show a toast or notification when the destination prefills successfully (ChatGPT, Claude, Perplexity). Only show a toast for Gemini, which does not support prefill. The existing Gemini toast is correct — leave it as is.
+
+
+CHANGE 6 — Session persistence: switch from localStorage to sessionStorage
+---------------------------------------------------------------------------
+In the session save and restore logic (wherever the prompt text, tuning selections, and generated result are saved), change every instance of:
+
+  localStorage.getItem(...)
+  localStorage.setItem(...)
+  localStorage.removeItem(...)
+
+to:
+
+  sessionStorage.getItem(...)
+  sessionStorage.setItem(...)
+  sessionStorage.removeItem(...)
+
+This is a one-word change everywhere. sessionStorage clears automatically when the tab is closed, giving users a clean slate on fresh visits while preserving the prompt when they switch apps temporarily (e.g., to paste into Gemini and return).
+
+Do NOT change localStorage calls for user preferences, upgrade status, or saved vault prompts — only the temporary session state (current prompt, tuning picks, generated result).
+
+
+=====================================================
+END OF INSTRUCTIONS
+=====================================================
