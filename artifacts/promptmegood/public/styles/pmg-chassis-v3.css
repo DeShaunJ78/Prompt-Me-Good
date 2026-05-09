@@ -539,6 +539,19 @@ html.pmg-chassis-v3 .tuning-section:not(.is-mobile-open) .tuning-hint {
   display: none !important;
 }
 button.tuning-header { cursor: pointer; }
+
+/* cv3-57: collapsed tuning bar was clipping its own header text on
+   desktop because the section had no min-height and the header sat
+   inside 16px+16px padding with a 12px margin-bottom. Pin a min
+   height that fits 16 + 24 + 16 = 56px and zero out the header's
+   bottom margin while collapsed so the chevron line doesn't drift. */
+html.pmg-chassis-v3 .tuning-section:not(.is-mobile-open) {
+  height: auto;
+  min-height: 56px;
+}
+html.pmg-chassis-v3 .tuning-section:not(.is-mobile-open) button.tuning-header {
+  margin-bottom: 0;
+}
 /* cv3-47: small low-contrast "← Re-analyze" text link that replaces the
    green Analyze button after the user has analyzed. Intentionally NOT a
    button visually — it should never compete with Generate for attention. */
@@ -1029,6 +1042,33 @@ html.pmg-chassis-v3 .pmgv3-air-host #aiResponseSection {
   margin: 0;
 }
 html.pmg-chassis-v3 .pmgv3-air-host .run-section-divider { display: none; }
+/* cv3-57: defensive — if any divider/hr lands inside the AI response
+   surface (e.g. the section is rendered outside .pmgv3-air-host, or a
+   nested container inherits a background), it shows up as a green
+   horizontal stripe across the response text. Force-transparent any
+   such element and downgrade the visible separator (if anyone needs
+   one) to a 1px subtle border. */
+html.pmg-chassis-v3 #aiResponseSection .run-section-divider,
+html.pmg-chassis-v3 #aiResponseSection hr,
+html.pmg-chassis-v3 #aiResponseSection .divider,
+html.pmg-chassis-v3 .ai-response-section .run-section-divider,
+html.pmg-chassis-v3 .ai-response-section hr,
+html.pmg-chassis-v3 .ai-response-section .divider,
+html.pmg-chassis-v3 .ai-response-box .run-section-divider,
+html.pmg-chassis-v3 .ai-response-box hr,
+html.pmg-chassis-v3 .ai-response-box .divider {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  height: 1px !important;
+  margin: 8px 0 !important;
+  box-shadow: none !important;
+}
+html.pmg-chassis-v3 #aiResponseSection .ai-response-output,
+html.pmg-chassis-v3 .ai-response-section .ai-response-output {
+  background-image: none !important;
+}
 html.pmg-chassis-v3 .pmgv3-air-host .run-section-title {
   font-size: 14px;
   font-weight: 700;
