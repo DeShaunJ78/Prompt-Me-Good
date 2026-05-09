@@ -53,21 +53,22 @@
         if (rb) rb.textContent = text;
       },
       mountTarget: function () {
-        // ab-7 (Missing Features Brief): mount the Auto-Boost button
-        // immediately BEFORE #generateBtn so it sits inside the v3
-        // .pmgv3-generate-host alongside "Generate My Prompt". This
-        // makes it discoverable post-Analyze / pre-Generate (the
-        // generate-section reveals once the user clicks "Analyze My
-        // Idea"), instead of being hidden inside the result panel
-        // actions row until after a result exists.
+        // ab-8 (user correction): mount the Auto-Boost button DIRECTLY
+        // UNDER the prompt strength bar inside the result panel. The
+        // strength slot lives inside #prompt-output-box which the
+        // chassis keeps display:none until a result exists, so the
+        // button is automatically hidden on the home / pre-gen view
+        // and only appears once the user has a generated prompt to
+        // act on. The user explicitly does NOT want this button on
+        // the homepage / pre-generate flow.
         //
-        // Returning null when #generateBtn isn't reparented yet makes
-        // mountFor() retry on the next observer tick, so we end up
-        // anchored correctly even though the chassis builds the
-        // generate slot asynchronously.
-        return document.getElementById('generateBtn');
+        // Previous attempts:
+        //   bm-3: anchored on #copy-btn (sat in the actions row, but
+        //         user wanted it under the strength bar specifically).
+        //   ab-7: anchored before #generateBtn (put it on the
+        //         pre-generate view — wrong, reverted).
+        return document.getElementById('pmgv3-strength-slot');
       },
-      buttonPosition: 'before',
       cardHost: function () { return document.getElementById('resultBox'); },
       cardPosition: 'before',
     },
