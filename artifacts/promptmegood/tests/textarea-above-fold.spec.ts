@@ -39,31 +39,35 @@ type GoalGeometry = {
 };
 
 async function switchToImageMode(page: Page): Promise<boolean> {
-  // Use a user-realistic path: click the #imageModeBtn the visitor would
-  // tap, falling back to window.setMode('image') if the button isn't yet
-  // bound on first load. We do NOT directly add the `image-mode` body
-  // class — that would mask regressions in the real wiring (e.g. if the
-  // mode-switch handler stops applying the class, this test should fail
-  // rather than silently paper over the bug).
+  // The canonical "create an image" entry point is the Photography tab in
+  // chassis-v3 (the legacy #imageModeBtn / .mode-switch is hidden by
+  // pmg-t27-unify-style and no longer reachable by users). Use a
+  // user-realistic path: click the chassis tab, falling back to the
+  // public setActivePanel API if tabs aren't bound yet. We do NOT
+  // directly toggle body.image-mode or data-active-panel — that would
+  // mask regressions in the real wiring.
   await page.evaluate(() => {
-    const btn = document.getElementById(
-      "imageModeBtn",
-    ) as HTMLButtonElement | null;
-    if (btn) {
-      btn.click();
+    const tab = document.querySelector<HTMLButtonElement>(
+      '.pmgv3-tab[data-module="photography"]',
+    );
+    if (tab) {
+      tab.click();
       return;
     }
-    const w = window as unknown as { setMode?: (m: string) => void };
-    if (typeof w.setMode === "function") {
-      w.setMode("image");
+    const w = window as unknown as {
+      pmgChassisV3?: { setActivePanel?: (n: string) => void };
+    };
+    if (typeof w.pmgChassisV3?.setActivePanel === "function") {
+      w.pmgChassisV3.setActivePanel("photography");
     }
   });
-  // Let any image-mode CSS / JS settle (label swap, generate-btn swap,
-  // photo-suite mount, image-mode-hint reveal).
-  await page.waitForTimeout(400);
-  return await page.evaluate(() =>
-    document.body.classList.contains("image-mode"),
-  );
+  // Let chassis swap the active panel + Visual Studio settle (suite
+  // relocation, refined-output reset, tab aria-selected flip).
+  await page.waitForTimeout(500);
+  return await page.evaluate(() => {
+    const body = document.querySelector<HTMLElement>(".pmgv3-body");
+    return body?.getAttribute("data-active-panel") === "photography";
+  });
 }
 
 async function readGoalGeometry(page: Page): Promise<GoalGeometry> {
@@ -264,23 +268,14 @@ for (const vp of VIEWPORTS) {
 
   });
 
-  // Image mode is split out into its own describe block because, unlike text
-  // mode, it does NOT today guarantee a real input above the fold (the
-  // canonical #goal is intentionally hidden by the image-mode flow, the
-  // actual image-prompt textarea sits just below the 800px fold, and the
-  // visible above-fold band is the styled <p class="image-mode-hint">
-  // banner — not a typing surface). The tests below therefore guard the
-  // narrower image-mode invariants we own today: (1) entering image mode
-  // must not auto-scroll the page, and (2) the image-mode generate path
-  // stays wired (button in DOM + runtime function registered). Follow-up
-  // Task #120 tracks the actual UX work to bring the image-prompt input
-  // above the fold; once that lands, these guards should be tightened to
-  // also assert above-fold input visibility under a renamed describe
-  // block. Naming this describe "image mode homepage regression guards"
-  // (not "textarea above the fold") prevents future readers from assuming
-  // image mode meets the same above-fold contract that text mode does.
-  test.describe(`image mode homepage regression guards @ ${vp.name}`, () => {
-    test(`image mode does not pre-scroll the page on first load (${vp.name})`, async ({
+  // Image mode (Photography v3 panel) — Task #120 brought this in line with
+  // text mode's "real input above the fold" guarantee. The canonical entry
+  // point is the chassis-v3 Photography tab, which mounts an inline panel
+  // built by pmg-visual-studio with its own image-prompt textarea
+  // (#pmg-vs-image-goal) and Generate button (#pmg-vs-image-generate-btn)
+  // at the top of the panel — no scroll required, no extra clicks.
+  test.describe(`image mode (Photography panel) above the fold @ ${vp.name}`, () => {
+    test(`image-prompt textarea is visible and above the fold (${vp.name})`, async ({
       page,
     }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
@@ -289,43 +284,75 @@ for (const vp of VIEWPORTS) {
       await dismissOnboarding(page);
       await page.waitForTimeout(300);
 
-      // Capture pre-switch scroll position. A regression that auto-scrolls
-      // on mode switch (e.g. an unguarded `scrollIntoView` on a re-mounted
-      // image-mode card) would push the textarea below the fold even if it
-      // was correctly positioned in source.
       const beforeScrollY = await page.evaluate(() => window.scrollY);
 
       const switched = await switchToImageMode(page);
       expect(
         switched,
-        "homepage should enter image mode (body.image-mode)",
+        "Photography tab must activate the photography panel (data-active-panel='photography')",
       ).toBe(true);
 
+      // Switching tabs must not auto-scroll — a regression that fires
+      // scrollIntoView on mount could push the textarea below the fold
+      // even if it lives at the top of the panel in source.
       const afterScrollY = await page.evaluate(() => window.scrollY);
-
-      // NOTE on intent vs reality (read before tightening this guard):
-      // Image mode today does NOT mirror text mode's "real text input above
-      // the fold" guarantee — the canonical #goal textarea is intentionally
-      // hidden by the image-mode flow, and the actual image-prompt textarea
-      // currently lives just below the fold (the visible above-fold band is
-      // the styled <p class="image-mode-hint"> banner, not a real input,
-      // followed by the Photography Suite which mounts further down). A
-      // strict above-fold-input assertion here would red-flag intentional
-      // UX and block PRs that have nothing to do with image mode. If the
-      // product later decides image mode should also surface a real input
-      // above the fold (matching text mode), this test should be tightened
-      // to require it. For now we only guard the regression vectors we own:
-      //   1) Switching into image mode must not auto-scroll the page.
-      //   2) The mode switch itself must succeed (asserted above).
-      // The companion test below additionally guards that the image-mode
-      // generate handler stays wired.
       expect(
         afterScrollY,
-        `page must not auto-scroll when entering image mode (before=${beforeScrollY}px, after=${afterScrollY}px)`,
+        `page must not auto-scroll when switching to the Photography panel (before=${beforeScrollY}px, after=${afterScrollY}px)`,
       ).toBeLessThanOrEqual(Math.max(1, beforeScrollY));
+
+      // The image-prompt textarea must be present, visible, enabled, and
+      // sit fully within the first viewport so a visitor can start typing
+      // immediately after switching to the Photography tab.
+      const geom = await page.evaluate(() => {
+        const el = document.getElementById(
+          "pmg-vs-image-goal",
+        ) as HTMLTextAreaElement | null;
+        if (!el) {
+          return {
+            found: false,
+            visible: false,
+            enabled: false,
+            top: 0,
+            bottom: 0,
+            viewportHeight: window.innerHeight,
+          };
+        }
+        const cs = getComputedStyle(el);
+        const visible =
+          cs.display !== "none" &&
+          cs.visibility !== "hidden" &&
+          parseFloat(cs.opacity || "1") > 0;
+        const r = el.getBoundingClientRect();
+        return {
+          found: true,
+          visible,
+          enabled: !el.disabled && !el.readOnly,
+          top: r.top,
+          bottom: r.bottom,
+          viewportHeight: window.innerHeight,
+        };
+      });
+      expect(geom.found, "#pmg-vs-image-goal must exist in the DOM").toBe(true);
+      expect(
+        geom.visible,
+        "#pmg-vs-image-goal must be visible (display/visibility/opacity)",
+      ).toBe(true);
+      expect(
+        geom.enabled,
+        "#pmg-vs-image-goal must be enabled and editable",
+      ).toBe(true);
+      expect(
+        geom.top,
+        `#pmg-vs-image-goal must start within the first viewport (top=${geom.top}px)`,
+      ).toBeGreaterThanOrEqual(0);
+      expect(
+        geom.bottom,
+        `#pmg-vs-image-goal must end within the first viewport (bottom=${geom.bottom}px, viewport=${geom.viewportHeight}px)`,
+      ).toBeLessThanOrEqual(geom.viewportHeight);
     });
 
-    test(`Image-mode generate path is wired on first load (${vp.name})`, async ({
+    test(`image-mode Generate button is reachable in the first viewport (${vp.name})`, async ({
       page,
     }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
@@ -337,39 +364,36 @@ for (const vp of VIEWPORTS) {
       const switched = await switchToImageMode(page);
       expect(
         switched,
-        "homepage should enter image mode (body.image-mode)",
+        "Photography tab must activate the photography panel",
       ).toBe(true);
 
-      // The image-mode CTA (#image-generate-btn) is dynamically demoted by
-      // pmg-pro / pmg-ux on first load (paywall + UX heuristics), so we do
-      // NOT assert it is visually visible — that would lock in implementation
-      // details we don't own here. We DO assert the regression-critical
-      // invariants: the button still exists in the DOM AND a runtime image-
-      // generation entry point is registered on window. We deliberately do
-      // not lock the wiring style (inline onclick="runImageGeneration()" vs
-      // addEventListener), so a future refactor away from inline onclick
-      // remains valid as long as the runtime function is still callable.
-      const wiring = await page.evaluate(() => {
-        const btn = document.getElementById("image-generate-btn");
-        const w = window as unknown as {
-          runImageGeneration?: unknown;
-          generateImage?: unknown;
-        };
+      // The panel's Generate button should be reachable directly under the
+      // input. We allow up to ~1.25× viewport because the right-column
+      // result card on desktop can push the left-column actions just under
+      // the fold without requiring any meaningful scroll. The button MUST
+      // exist in the DOM regardless.
+      const btn = await page.evaluate(() => {
+        const el = document.getElementById(
+          "pmg-vs-image-generate-btn",
+        ) as HTMLButtonElement | null;
+        if (!el) {
+          return { exists: false, top: 0, viewportHeight: window.innerHeight };
+        }
+        const r = el.getBoundingClientRect();
         return {
-          exists: !!btn,
-          runtimeWired:
-            typeof w.runImageGeneration === "function" ||
-            typeof w.generateImage === "function",
+          exists: true,
+          top: r.top,
+          viewportHeight: window.innerHeight,
         };
       });
       expect(
-        wiring.exists,
-        "#image-generate-btn must exist in the DOM in image mode",
+        btn.exists,
+        "#pmg-vs-image-generate-btn must exist in the photography panel",
       ).toBe(true);
       expect(
-        wiring.runtimeWired,
-        "window.runImageGeneration (or generateImage fallback) must be registered so the image-mode CTA can resolve",
-      ).toBe(true);
+        btn.top,
+        `#pmg-vs-image-generate-btn must be reachable in the first viewport (top=${btn.top}px, viewport=${btn.viewportHeight}px)`,
+      ).toBeLessThanOrEqual(btn.viewportHeight * 1.25);
     });
   });
 }
