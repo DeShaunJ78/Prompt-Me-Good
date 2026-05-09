@@ -64,6 +64,7 @@
     wireActions();
     wirePersistence();
     deleteTargets();
+    setupInspirationFeed();
     // Re-apply the hide on a short tick in case any late legacy script flips display
     var hideTicks = 0;
     var hideTick = setInterval(function () {
@@ -79,6 +80,32 @@
       var tp = document.getElementById('tuning-panel');
       if (tp) tp.style.setProperty('display', 'none', 'important');
     }, 200);
+  }
+
+  /* if-1 (Right Column UX Fill brief): wire the "Start Fast" template
+     pills inside .pmgv3-inspiration-feed. Clicking a pill fills the
+     #goal textarea, fires input + change events so any listeners
+     (auto-tune, persistence) react, focuses the field, and scrolls
+     it into view on mobile. Mirrors the pattern used elsewhere
+     (pmg-business-mode.js Build Prompt) and intentionally does NOT
+     auto-submit — the user still picks tuning before generating. */
+  function setupInspirationFeed() {
+    document.addEventListener('click', function (ev) {
+      var pill = ev.target && ev.target.closest && ev.target.closest('[data-pmg-tpl-fill]');
+      if (!pill) return;
+      ev.preventDefault();
+      var text = pill.getAttribute('data-pmg-tpl-fill') || '';
+      var goal = document.getElementById('goal');
+      if (!goal) return;
+      goal.value = text;
+      goal.dispatchEvent(new Event('input', { bubbles: true }));
+      goal.dispatchEvent(new Event('change', { bubbles: true }));
+      try { goal.focus({ preventScroll: false }); } catch (_) { goal.focus(); }
+      var beh = (window.PMG_A11Y && typeof window.PMG_A11Y.scrollBehavior === 'function')
+        ? window.PMG_A11Y.scrollBehavior()
+        : 'smooth';
+      try { goal.scrollIntoView({ block: 'center', behavior: beh }); } catch (_) {}
+    });
   }
 
   function buildShell() {
@@ -166,7 +193,14 @@
           '</section>',
         '</div>',
         '<div class="pmgv3-right">',
-          '<div class="pmgv3-right-placeholder" id="pmgv3-right-placeholder" aria-hidden="true">',
+          /* if-1: aria-hidden removed. Previously the placeholder was
+             marked aria-hidden="true" because it contained only
+             decorative empty-state copy, but the inspiration feed
+             below adds real interactive buttons (.pmgv3-if-pill).
+             Hiding them from assistive tech while leaving them
+             keyboard-focusable is an a11y regression — so the
+             wrapper is now exposed normally. */
+          '<div class="pmgv3-right-placeholder" id="pmgv3-right-placeholder">',
             '<div class="pmgv3-rp-icon" aria-hidden="true">✨</div>',
             '<div class="pmgv3-rp-title">Your Optimized Prompt Will Appear Here</div>',
             '<div class="pmgv3-rp-sub">Type your goal below or choose a template to generate your first prompt.</div>',
@@ -175,6 +209,36 @@
               '<li><span aria-hidden="true">②</span> Tune the auto-picked settings</li>',
               '<li><span aria-hidden="true">③</span> Generate a strong, ready-to-run prompt</li>',
             '</ul>',
+            /* if-1 (Right Column UX Fill brief): inspiration feed
+               fills the otherwise-blank right column on desktop with
+               two visual example cards + three clickable template
+               pills. Auto-hidden post-generation because the parent
+               .pmgv3-right-placeholder already collapses on
+               body.pmg-has-result. Pills wire via delegated click
+               handler installed below in setupInspirationFeed(). */
+            '<div class="pmgv3-inspiration-feed">',
+              '<div class="pmgv3-if-section">',
+                '<div class="pmgv3-if-heading">See What\u2019s Possible</div>',
+                '<div class="pmgv3-if-examples">',
+                  '<div class="pmgv3-if-card">',
+                    '<div class="pmgv3-if-card-label">For a Creator</div>',
+                    '<div class="pmgv3-if-card-snippet">"Act as a viral YouTube strategist. Write a 60-second hook for a video about [TOPIC]. Use high-retention pacing, open loops, and a conversational tone."</div>',
+                  '</div>',
+                  '<div class="pmgv3-if-card">',
+                    '<div class="pmgv3-if-card-label">For a Business Owner</div>',
+                    '<div class="pmgv3-if-card-snippet">"Write a high-converting product description for [PRODUCT]. Focus on emotional benefits over features, use bullet points for readability, and end with a strong CTA."</div>',
+                  '</div>',
+                '</div>',
+              '</div>',
+              '<div class="pmgv3-if-section">',
+                '<div class="pmgv3-if-heading">Start Fast</div>',
+                '<div class="pmgv3-if-pills">',
+                  '<button type="button" class="pmgv3-if-pill" data-pmg-tpl-fill="Write a cold email that gets replies">Write a cold email that gets replies</button>',
+                  '<button type="button" class="pmgv3-if-pill" data-pmg-tpl-fill="Fix my website\u2019s landing page copy">Fix my website\u2019s landing page copy</button>',
+                  '<button type="button" class="pmgv3-if-pill" data-pmg-tpl-fill="Brainstorm 10 viral TikTok ideas">Brainstorm 10 viral TikTok ideas</button>',
+                '</div>',
+              '</div>',
+            '</div>',
           '</div>',
           '<div class="output-box is-collapsed" id="prompt-output-box" style="display:none !important">',
             '<div class="strength-bar-container" id="pmgv3-strength-slot">',

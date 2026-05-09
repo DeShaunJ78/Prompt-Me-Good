@@ -774,6 +774,95 @@ body.pmg-has-result .pmgv3-right-placeholder {
   display: none !important;
 }
 
+/* ---- Inspiration feed (if-1) ----
+   Fills the desktop blank space below the 3-step intro with two
+   "See What's Possible" example cards + three clickable "Start Fast"
+   template pills. Lives inside .pmgv3-right-placeholder so it inherits
+   the existing pmg-has-result hide rule above — no separate CSS
+   gating needed. Spec: brief PromptMeGood Right Column UX Fill. */
+.pmgv3-inspiration-feed {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 10px;
+}
+.pmgv3-if-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.pmgv3-if-heading {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(0, 200, 150, 0.85);
+  text-align: left;
+  padding-left: 2px;
+}
+.pmgv3-if-examples {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pmgv3-if-card {
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(0, 200, 150, 0.07);
+  border: 1px solid rgba(0, 200, 150, 0.18);
+}
+.pmgv3-if-card-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #00c896;
+  margin-bottom: 6px;
+}
+.pmgv3-if-card-snippet {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.78);
+  font-style: italic;
+}
+.pmgv3-if-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pmgv3-if-pill {
+  appearance: none;
+  -webkit-appearance: none;
+  text-align: left;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(0, 200, 150, 0.22);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 13px;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  font-family: inherit;
+}
+.pmgv3-if-pill:hover,
+.pmgv3-if-pill:focus-visible {
+  background: rgba(0, 200, 150, 0.10);
+  border-color: #00c896;
+  transform: translateY(-1px);
+  outline: none;
+}
+.pmgv3-if-pill:active { transform: translateY(0); }
+@media (max-width: 768px) {
+  .pmgv3-inspiration-feed { max-width: 100%; }
+  .pmgv3-if-card-snippet { font-size: 12px; }
+  .pmgv3-if-pill { font-size: 12.5px; padding: 9px 12px; }
+}
+
 /* ---- Bottom bar quick-entry (cv3-29) ----
    Hidden on every viewport. The audit identified this as a "competing
    input box" — both #goal (top) and #quick-entry (bottom) ask the same
