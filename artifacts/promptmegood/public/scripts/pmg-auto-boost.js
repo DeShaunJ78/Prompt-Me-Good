@@ -53,24 +53,21 @@
         if (rb) rb.textContent = text;
       },
       mountTarget: function () {
-        // bm-3 (Repair Brief): mount the Auto-Boost button INSIDE the
-        // result panel actions row, right next to "Run With AI" and
-        // "Copy". Previously it was mounted as a sibling of the
-        // .output-box wrapper which made it float at the top of the
-        // right column, completely disconnected from the result panel
-        // it acts on. Anchoring to #copy-btn keeps the button hidden
-        // until a result exists (the actions row is part of the
-        // collapsed output-box), which is the correct behavior — there
-        // is nothing to boost before generation.
+        // ab-7 (Missing Features Brief): mount the Auto-Boost button
+        // immediately BEFORE #generateBtn so it sits inside the v3
+        // .pmgv3-generate-host alongside "Generate My Prompt". This
+        // makes it discoverable post-Analyze / pre-Generate (the
+        // generate-section reveals once the user clicks "Analyze My
+        // Idea"), instead of being hidden inside the result panel
+        // actions row until after a result exists.
         //
-        // We deliberately do NOT fall back to a different anchor:
-        // returning null here makes mountFor() skip this cycle and
-        // retry on the next observer tick, so when #copy-btn renders
-        // late (chassis reparents the legacy result actions row into
-        // the v3 right column) the button still ends up next to it
-        // instead of stranded at a wrong anchor.
-        return document.getElementById('copy-btn');
+        // Returning null when #generateBtn isn't reparented yet makes
+        // mountFor() retry on the next observer tick, so we end up
+        // anchored correctly even though the chassis builds the
+        // generate slot asynchronously.
+        return document.getElementById('generateBtn');
       },
+      buttonPosition: 'before',
       cardHost: function () { return document.getElementById('resultBox'); },
       cardPosition: 'before',
     },
@@ -140,7 +137,15 @@
     var target = SUITES[scope].mountTarget();
     if (!target || !target.parentNode) return false;
     var btn = makeButton(scope);
-    target.parentNode.insertBefore(btn, target.nextSibling);
+    // Default 'after' for backward compat with photo/video suites that
+    // anchor on a copy button. Text suite uses 'before' to land just
+    // above #generateBtn (ab-7).
+    var pos = SUITES[scope].buttonPosition || 'after';
+    if (pos === 'before') {
+      target.parentNode.insertBefore(btn, target);
+    } else {
+      target.parentNode.insertBefore(btn, target.nextSibling);
+    }
     return true;
   }
 
