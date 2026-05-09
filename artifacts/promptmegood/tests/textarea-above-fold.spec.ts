@@ -41,12 +41,11 @@ type GoalGeometry = {
 
 async function switchToImageMode(page: Page): Promise<boolean> {
   // The canonical "create an image" entry point is the Photography tab in
-  // chassis-v3 (the legacy #imageModeBtn / .mode-switch is hidden by
-  // pmg-t27-unify-style and no longer reachable by users). Use a
-  // user-realistic path: click the chassis tab, falling back to the
-  // public setActivePanel API if tabs aren't bound yet. We do NOT
-  // directly toggle body.image-mode or data-active-panel — that would
-  // mask regressions in the real wiring.
+  // chassis-v3 (the legacy #imageModeBtn / .mode-switch / setMode flow was
+  // fully removed in Task #140). Use a user-realistic path: click the
+  // chassis tab, falling back to the public setActivePanel API if tabs
+  // aren't bound yet. We do NOT directly toggle body.image-mode or
+  // data-active-panel — that would mask regressions in the real wiring.
   await page.evaluate(() => {
     const tab = document.querySelector<HTMLButtonElement>(
       '.pmgv3-tab[data-module="photography"]',

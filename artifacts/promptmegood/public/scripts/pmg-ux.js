@@ -1845,23 +1845,7 @@
     } catch (e) {}
   }
 
-  function reorderImageMode() {
-    var goal = document.getElementById('goal');
-    var imageBtn = document.getElementById('image-generate-btn');
-    var uploadField = document.getElementById('upload-field');
-    if (!goal || !imageBtn) return;
-    var goalField = goal.closest('.field');
-    if (!goalField || !goalField.parentNode) return;
-    var parent = goalField.parentNode;
-    try {
-      if (imageBtn.parentNode !== parent) {
-        parent.insertBefore(imageBtn, goalField.nextSibling);
-      } else if (imageBtn.previousSibling !== goalField) {
-        parent.insertBefore(imageBtn, goalField.nextSibling);
-      }
-      imageBtn.style.cssText = 'margin-top: 12px; width: 100%; min-height: 48px;';
-    } catch (e) {}
-  }
+  /* reorderImageMode() removed (Task #140) — #image-generate-btn no longer exists. */
 
   function moveUploadBelowHelpMeStart() {
     var uploadField = document.getElementById('upload-field');
@@ -2103,7 +2087,6 @@
     setupWhatNextBlock();
     reorderResultPanel();
     setTimeout(reorderResultPanel, 200);
-    reorderImageMode();
     setupNavSearchToggle();
     setupQuickStartGate();
     setupResultStickyDesktop();
@@ -4199,23 +4182,8 @@
         attributeFilter: ['class', 'style']
       });
     } catch (e) {}
-    /* Direct binding to mode toggle buttons for guaranteed coverage */
-    ['imageModeBtn', 'writeModeBtn', 'textModeBtn'].forEach(function (id) {
-      var btn = document.getElementById(id);
-      if (btn) {
-        btn.addEventListener('click', function () {
-          setTimeout(syncVisibility, 30);
-          setTimeout(syncVisibility, 200);
-        });
-      }
-    });
-    /* Catch-all capture-phase click delegation for late-bound mode toggles */
-    document.addEventListener('click', function (e) {
-      var t = e.target && e.target.closest && e.target.closest('.mode-switch-btn, [data-mode], [onclick*="setMode"]');
-      if (!t) return;
-      setTimeout(syncVisibility, 30);
-      setTimeout(syncVisibility, 200);
-    }, true);
+    /* Mode toggle button onclick wiring removed (Task #140) — legacy buttons
+       no longer exist. Body class observer above still catches mode changes. */
     /* Bounded fallback poll: 5Hz for the first 6 seconds after init. After
        that, the body observer + click delegation are the source of truth. */
     var ticks = 0;
@@ -7295,11 +7263,6 @@
       try { goal.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
     }
 
-    /* Switch into image mode if the helper exists. */
-    if (typeof window.setMode === 'function') {
-      try { window.setMode('image'); } catch (e) {}
-    }
-
     /* Reveal the relocated image generator section. */
     var host = document.getElementById(IMG_GEN_HOST_ID);
     if (host) host.style.display = 'block';
@@ -7316,7 +7279,7 @@
     } else if (typeof window.runImageGeneration === 'function') {
       try { window.runImageGeneration(); } catch (e) {}
     } else {
-      var btn = document.getElementById('image-generate-btn') || document.getElementById('imageBtn');
+      var btn = document.getElementById('imageBtn');
       if (btn) btn.click();
     }
 
@@ -7887,13 +7850,8 @@
   function injectStyles() {
     if (document.getElementById(STYLE_ID)) return;
     var css = [
-      /* Hide the redundant top-of-builder mode toggle and its hint. */
-      '#modeSwitch, .mode-switch { display: none !important; }',
-      '.image-mode-hint { display: none !important; }',
-
-      /* Hide the standalone "Generate Image" button in the top builder
-         actions row — the Photography Suite now owns this action. */
-      '#image-generate-btn { display: none !important; }',
+      /* Mode-switch / image-mode-hint / #image-generate-btn hide rules
+         removed (Task #140) — those nodes no longer exist in markup. */
 
       /* Hide the legacy duplicated photo widgets that earlier phases
          injected into the top builder when image-mode is active. */
@@ -8011,13 +7969,6 @@
   function forceWriteMode() {
     try {
       document.body.classList.remove('image-mode');
-      var writeBtn = document.getElementById('writeModeBtn');
-      var imgBtn = document.getElementById('imageModeBtn');
-      if (writeBtn) writeBtn.classList.add('active');
-      if (imgBtn) imgBtn.classList.remove('active');
-      if (typeof window.setMode === 'function') {
-        try { window.setMode('write'); } catch (e) { /* no-op */ }
-      }
     } catch (e) { /* no-op */ }
   }
 
@@ -15803,14 +15754,14 @@
      smooth-scroll to #builder, expand any collapsed image controls
      when entering image mode, then focus the canonical input. */
   function pmgT107SwitchMode(mode) {
-    /* setMode is the single source of truth for text vs image mode
-       (defined at index.html L10206). It updates body classes,
-       reveals the right column's photo suite + image generator, and
-       hides text-only controls. Wrapped in try because setMode is
-       defined late in the page and may not be ready on initial
-       click of a returning-visitor session. */
+    /* setMode removed (Task #140). Photography is now a chassis-v3 tab; if
+       a callsite needs to enter image mode, route via the tab. We keep
+       the function as a no-op so existing call sites stay safe. */
     try {
-      if (typeof window.setMode === 'function') window.setMode(mode);
+      if (mode === 'image' && window.pmgChassisV3 &&
+          typeof window.pmgChassisV3.setActivePanel === 'function') {
+        window.pmgChassisV3.setActivePanel('photography');
+      }
     } catch (e) {}
   }
 
@@ -16246,7 +16197,7 @@
   }
 
   var TARGET_CHECKS = {
-    image:    function () { return typeof window.setMode === 'function'; },
+    image:    function () { return !!(window.pmgChassisV3 && typeof window.pmgChassisV3.setActivePanel === 'function'); },
     vault:    function () { return !!document.getElementById('history'); },
     quality:  function () { return !!document.getElementById('check-quality-btn'); }
   };
@@ -16254,8 +16205,10 @@
   function handleAction(action) {
     switch (action) {
       case 'image': {
-        if (typeof window.setMode === 'function') window.setMode('image');
-        var goal = document.getElementById('goal');
+        if (window.pmgChassisV3 && typeof window.pmgChassisV3.setActivePanel === 'function') {
+          try { window.pmgChassisV3.setActivePanel('photography'); } catch (e) {}
+        }
+        var goal = document.getElementById('pmg-vs-image-goal') || document.getElementById('goal');
         if (goal) goal.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
         break;
       }
@@ -17009,7 +16962,9 @@
           if (ws) ws.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
           break;
         case 'builder':
-          if (typeof window.setMode === 'function') window.setMode('write');
+          if (window.pmgChassisV3 && typeof window.pmgChassisV3.setActivePanel === 'function') {
+            try { window.pmgChassisV3.setActivePanel('text'); } catch (e) {}
+          }
           var b = document.getElementById('goal');
           if (b) {
             var bField = b.closest('.field-primary');
@@ -17021,7 +16976,9 @@
           }
           break;
         case 'image':
-          if (typeof window.setMode === 'function') window.setMode('image');
+          if (window.pmgChassisV3 && typeof window.pmgChassisV3.setActivePanel === 'function') {
+            try { window.pmgChassisV3.setActivePanel('photography'); } catch (e) {}
+          }
           var photoSuite = document.getElementById('photo-suite-section') || document.getElementById('pmg-photo-suite');
           if (photoSuite) {
             photoSuite.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });

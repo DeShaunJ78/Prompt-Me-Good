@@ -209,13 +209,18 @@
     if (mode !== 'image' && mode !== 'text') return;
     var want = mode === 'image';
     if (isImageMode() === want) return;
+    /* Task #140: legacy window.setMode + #imageModeBtn/#writeModeBtn are gone.
+       Photography is now a chassis-v3 tab. */
     try {
-      if (typeof window.setMode === 'function') { window.setMode(mode); return; }
-    } catch (_) { /* fall through */ }
-    /* Last-ditch: click the matching mode toggle if present. */
-    var sel = mode === 'image' ? '[data-mode="image"]' : '[data-mode="text"]';
-    var btn = document.querySelector(sel);
-    if (btn) try { btn.click(); } catch (_) {}
+      if (window.pmgChassisV3 && typeof window.pmgChassisV3.setActivePanel === 'function') {
+        window.pmgChassisV3.setActivePanel(want ? 'photography' : 'text');
+        return;
+      }
+    } catch (_) {}
+    /* Last-ditch: click the matching chassis tab if present. */
+    var tabSel = want ? '.pmgv3-tab[data-module="photography"]' : '.pmgv3-tab[data-module="text"]';
+    var tab = document.querySelector(tabSel);
+    if (tab) try { tab.click(); } catch (_) {}
   }
 
   function applyPills(pills) {

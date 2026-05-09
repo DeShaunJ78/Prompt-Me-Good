@@ -533,7 +533,6 @@
   /* Map of button-id -> { feature: counter-key, label: human-readable } */
   var GATED = {
     'runBtn':              { feature: 'run',     label: 'Run With AI' },
-    'image-generate-btn':  { feature: 'img',     label: 'Image Generation' },
     'imageBtn':            { feature: 'img',     label: 'Image Generation' },
     'upload-analyze-btn':  { feature: 'analyze', label: 'File And Image Analysis' }
   };
@@ -592,7 +591,6 @@
     if (pmgIsPro()) return;
     [
       ['runBtn',             'run'],
-      ['image-generate-btn', 'img'],
       ['upload-analyze-btn', 'analyze']
     ].forEach(function (p) {
       ensureHint(document.getElementById(p[0]), p[1]);
@@ -653,7 +651,6 @@
   function decorateGatedButtons() {
     [
       ['runBtn',             'Run With AI'],
-      ['image-generate-btn', 'Image Generation'],
       ['upload-analyze-btn', 'File And Image Analysis']
     ].forEach(function (p) {
       var btn = document.getElementById(p[0]);

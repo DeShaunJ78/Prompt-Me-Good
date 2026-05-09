@@ -806,9 +806,9 @@
 
   function textToImageHandoff() {
     var bias = gatherTextBias();
-    /* Switch to image mode using the page's bridge. */
-    if (typeof window.setMode === 'function') {
-      try { window.setMode('image'); } catch (_) {}
+    /* Switch to image mode via chassis-v3 (Task #140 removed window.setMode). */
+    if (window.pmgChassisV3 && typeof window.pmgChassisV3.setActivePanel === 'function') {
+      try { window.pmgChassisV3.setActivePanel('photography'); } catch (_) {}
     }
     /* Apply pill bias — clear current picks first so we don't
        blend with stale state, then activate the bias pills. */
@@ -892,8 +892,9 @@
 
   function imageToTextHandoff() {
     var seed = deriveTextSeedFromPills();
-    if (typeof window.setMode === 'function') {
-      try { window.setMode('write'); } catch (_) {}
+    /* Switch back to text panel via chassis-v3 (Task #140 removed window.setMode). */
+    if (window.pmgChassisV3 && typeof window.pmgChassisV3.setActivePanel === 'function') {
+      try { window.pmgChassisV3.setActivePanel('text'); } catch (_) {}
     }
     /* Pre-seed deterministically: this is an explicit user action
        (click on "Write A Prompt About This"), so overwrite the

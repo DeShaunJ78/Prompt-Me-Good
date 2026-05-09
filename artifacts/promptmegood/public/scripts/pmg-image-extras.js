@@ -545,10 +545,14 @@
   /* ------------------------------------------------------------------
    * Wrap runImageGeneration to track previous/current image URLs
    * ------------------------------------------------------------------ */
+  var __wgTries = 0;
   function wrapGenerator() {
     var orig = window.runImageGeneration;
     if (typeof orig !== 'function') {
-      setTimeout(wrapGenerator, 200);
+      /* runImageGeneration was removed in Task #140 (chassis-v3 owns image
+         generation now via #pmg-vs-image-generate-btn). Bound the retry so
+         we don't poll forever on text-only sessions. */
+      if (++__wgTries < 30) setTimeout(wrapGenerator, 200);
       return;
     }
     if (orig.__pmgImgxWrapped) return;

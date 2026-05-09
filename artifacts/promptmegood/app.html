@@ -3303,20 +3303,8 @@
         font-size: clamp(1rem, 4.5vw, 1.18rem);
       }
     }
-    .mode-switch{display:flex;gap:0;background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-full);padding:4px;margin-bottom:var(--space-5);width:100%;max-width:360px}
-    .mode-switch-btn{flex:1;padding:10px 16px;border:none;border-radius:var(--radius-full);font-size:var(--text-sm);font-weight:600;cursor:pointer;background:transparent;color:var(--color-text-muted);transition:all 180ms ease;display:flex;align-items:center;justify-content:center;gap:6px}
-    .mode-switch-btn.active{background:var(--color-primary);color:#fff;box-shadow:var(--shadow-sm)}
-    .mode-switch-btn:not(.active):hover{color:var(--color-text);background:var(--color-surface)}
-    body.image-mode .builder-transition{display:none}
-    body.image-mode #generateBtn{display:none}
-    body.image-mode #image-generate-btn{display:flex!important}
-    body.image-mode .demo-stack,body.image-mode #random-prompt,body.image-mode #advanced-options,body.image-mode .guided-cta-row,body.image-mode .weekly-goal-pin,body.image-mode #auto-optimize-row,body.image-mode #tour-step-settings,body.image-mode .settings-panel{display:none!important}
-    body.image-mode .image-mode-hint{display:block!important}
-    body:not(.image-mode) #imageResultSection{display:none!important}
-    body:not(.image-mode) #image-generate-btn{display:none!important}
-    .image-mode-hint{display:none;font-size:var(--text-sm);color:var(--color-text-muted);margin-bottom:var(--space-3);padding:10px 14px;background:color-mix(in srgb,var(--color-primary) 8%,var(--color-surface));border-radius:var(--radius-md);border-left:3px solid var(--color-primary);line-height:1.5}
-    #image-generate-btn{display:none;width:100%;padding:14px;font-size:var(--text-base);font-weight:700;border-radius:var(--radius-full);border:none;background:var(--color-primary);color:#fff;cursor:pointer;align-items:center;justify-content:center;gap:8px;transition:opacity 180ms ease;margin-bottom:var(--space-2)}
-    #image-generate-btn:disabled{opacity:.65;cursor:not-allowed}
+    /* Legacy mode-switch + #image-generate-btn CSS removed (Task #140).
+       Photography is now reached via the chassis-v3 Photography tab. */
     .image-result-section{margin-top:var(--space-4)}
     .image-result-wrap{width:100%;background:var(--color-surface-2);border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--color-border);min-height:200px;display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-3)}
     .image-result-wrap img{display:block;width:100%;height:auto;border-radius:var(--radius-lg)}
@@ -3591,7 +3579,6 @@
   #post-uc-guidance { order: 5; }
   #settingsPanel { order: 6; }
   #generateBtn { width: 100%; min-height: 54px !important; font-weight: 800 !important; font-size: 1.05rem !important; box-shadow: 0 12px 28px color-mix(in srgb, var(--color-primary) 28%, transparent) !important; }
-  #image-generate-btn { width: 100%; min-height: 54px; border-radius: var(--radius-full); font-weight: 800; background: var(--color-primary); color: var(--color-text-inverse); box-shadow: 0 12px 28px color-mix(in srgb, var(--color-primary) 28%, transparent); }
   .upload-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; }
   #upload-hint, .upload-preview-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .upload-preview { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 12px; align-items: center; max-width: 100%; }
@@ -3602,8 +3589,6 @@
   .what-next-list li { padding: 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent); background: var(--color-surface); }
   #weekly-goal-pin, #replay-tour-dropdown-builder, .guided-cta-recommended-badge:empty { display: none !important; }
   body.pmg-has-generated #weekly-goal-pin { display: block !important; }
-  body.image-mode label[for="goal"] { font-size: 0; }
-  body.image-mode label[for="goal"]::after { content: "Your Image"; font-size: var(--text-base); }
   @media (max-width: 760px) {
     .container { width: min(calc(100% - 1rem), 1100px) !important; }
     .panel, .card, .result-card, .settings-panel, .upload-field, .what-next { padding: max(var(--space-4, 16px), 16px) !important; }
@@ -4070,13 +4055,13 @@
     }
   </style>
   <link rel="stylesheet" href="/styles/pmg-g-theme.css?v=g2-teal-2" />
-  <link rel="stylesheet" href="/styles/pmg-chassis-v3.css?v=cv3-61-total-reset" />
+  <link rel="stylesheet" href="/styles/pmg-chassis-v3.css?v=t140-image-mode-removed" />
   <link rel="stylesheet" href="/styles/pmg-visual-studio.css?v=ps-2-build-above-fold" />
   <link rel="stylesheet" href="/styles/pmg-storyboard.css?v=sb-7" />
   <link rel="stylesheet" href="/styles/pmg-auto-boost.css?v=ab-5-always-show" />
   <link rel="stylesheet" href="/styles/pmg-spark-panel.css?v=sp-3-typewriter" />
   <link rel="stylesheet" href="/styles/pmg-business-mode.css?v=bm-1" />
-  <script src="/scripts/pmg-chassis-v3.js?v=cv3-61-total-reset"></script>
+  <script src="/scripts/pmg-chassis-v3.js?v=t140-image-mode-removed"></script>
   <script src="/scripts/pmg-visual-studio.js?v=ps-2-build-above-fold" defer></script>
   <script src="/scripts/pmg-storyboard.js?v=sb-9" defer></script>
   <script src="/scripts/pmg-spark-panel.js?v=sp-3-typewriter" defer></script>
@@ -4433,11 +4418,6 @@
             <span class="workspace-header-eyebrow">Workspace</span>
             <p class="workspace-header-sub">Create, refine, and run your prompts here.</p>
           </header>
-          <div class="mode-switch" id="modeSwitch" role="group" aria-label="Choose what to create">
-            <button class="mode-switch-btn active" id="writeModeBtn" type="button" onclick="setMode('write')">✍️ Write Something</button>
-            <button class="mode-switch-btn" id="imageModeBtn" type="button" onclick="setMode('image')">🎨 Create An Image</button>
-          </div>
-          <p class="image-mode-hint">Describe the image you want — plain English. We’ll turn it into a professional DALL·E 3 prompt automatically. <em>Try: “A woman walking through rainy Tokyo at night, cinematic, neon reflections, 35mm film look.”</em></p>
           <div class="panel-head panel-head-row">
             <div>
               <h2 id="builder-title" hidden style="display:none">Get AI To Understand You</h2>
@@ -4539,8 +4519,6 @@
 
               <div class="actions-row" id="tour-step-generate">
                 <button class="btn btn-primary" type="submit" id="generateBtn">Fix My Prompt</button>
-                <button type="button" id="image-generate-btn" onclick="runImageGeneration()">🎨 Generate Image</button>
-                <p class="image-gen-hint" id="image-gen-hint" role="status" aria-live="polite">Choose A Style Or Tap Surprise Me To Generate.</p>
                 <div class="demo-stack">
                   <button class="btn btn-secondary" type="button" id="fill-demo">Use Demo Values</button>
                   <p class="demo-microcopy" id="demo-microcopy">Use Demo Values</p>
@@ -7622,31 +7600,7 @@ Context:
             { id: 'clarityBoost', kws: ['planning','plan ','decision','strategy','explain','explanation','learning','learn ','problem','step','process','how to','understand','teach','breakdown'], reason: 'This looks like a planning or learning task — Clarity Boost adds clearer structure and steps.' }
           ];
           // Visual-goal nudge — replaces the former "Photo Prompt Mode" toggle suggestion.
-          // Routes the user to image mode + the Photography Suite instead of toggling a checkbox.
-          const IMAGE_KWS = ['image','photo','photography','visual','ad ','ads ','mockup','midjourney','dall','dalle','picture','poster','thumbnail','illustration','artwork'];
-          const alreadyInImage = document.body.classList.contains('image-mode');
-          const imageMatched = IMAGE_KWS.some(function (kw) { return t.indexOf(kw) !== -1; });
-          if (imageMatched && !alreadyInImage) {
-            let nudge = document.getElementById('pmg-image-mode-nudge');
-            if (!nudge) {
-              nudge = document.createElement('div');
-              nudge.id = 'pmg-image-mode-nudge';
-              nudge.setAttribute('role', 'note');
-              nudge.style.cssText = 'margin:var(--space-3,12px) 0;padding:var(--space-3,12px);border:1px solid var(--color-primary,#3b82f6);border-radius:var(--radius-md,8px);background:var(--color-surface-2,#f5f7fb);display:flex;gap:var(--space-2,8px);align-items:center;flex-wrap:wrap;';
-              nudge.innerHTML = '<span style="flex:1 1 200px;font-size:var(--text-sm,14px);">You mentioned visuals — open the Photography Suite for image-tuned prompts.</span><button type="button" id="pmg-image-mode-nudge-btn" class="btn btn-primary" style="min-height:44px;">Switch to Image Mode</button>';
-              const adv = document.getElementById('advanced-options');
-              if (adv && adv.parentNode) adv.parentNode.insertBefore(nudge, adv);
-              const btn = document.getElementById('pmg-image-mode-nudge-btn');
-              if (btn) btn.addEventListener('click', function () {
-                try { if (typeof window.setMode === 'function') window.setMode('image'); } catch (_) {}
-                const suite = document.getElementById('photo-suite-section') || document.getElementById('pmg-photo-suite');
-                if (suite && typeof suite.scrollIntoView === 'function') {
-                  try { suite.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) { suite.scrollIntoView(); }
-                }
-                nudge.remove();
-              });
-            }
-          }
+          // Image-mode nudge removed (Task #140) — Photography is now a chassis-v3 tab.
           const isExpert = document.body.classList.contains('is-expert-mode');
           const aoCheckbox = document.getElementById('auto-optimize-toggle');
           const isAutoOptOn = aoCheckbox ? aoCheckbox.checked : true;
@@ -8699,10 +8653,6 @@ Context:
           var gs = document.querySelector('.global-search');
           if (gs) gs.inert = !gs.classList.contains('pmg-expanded');
 
-          // Mode switch: inert when zero-size
-          var ms = document.getElementById('modeSwitch');
-          if (ms) { var r = ms.getBoundingClientRect(); ms.inert = (r.width === 0 || r.height === 0); }
-
           // Collapsed advanced-options <details>
           var advOpts = document.getElementById('advanced-options');
           if (advOpts) {
@@ -9288,26 +9238,6 @@ Context:
               if (rs.dataset.tourRevealedHidden === '1') { rs.hidden = true; delete rs.dataset.tourRevealedHidden; }
               if (rs.dataset.tourRevealedDup === '1') { rs.classList.add('pmg-t15-hide-dup'); delete rs.dataset.tourRevealedDup; }
               if (rs.dataset.tourRevealedDisplay === '1') { rs.style.removeProperty('display'); delete rs.dataset.tourRevealedDisplay; }
-            }
-          }
-        },
-        {
-          selector: '#modeSwitch',
-          fallbackSelector: '#imageModeBtn',
-          title: 'Write or create an image',
-          text: "Switch between Write Something for text prompts (emails, plans, scripts) and Create An Image for DALL\u00B7E 3 image generation. In image mode, the Photography Suite appears with Style, Camera, Lighting, Composition, and Color pills to shape your image.",
-          onEnter: function () {
-            var ms = document.getElementById('modeSwitch');
-            if (ms && getComputedStyle(ms).display === 'none') {
-              ms.style.setProperty('display', 'flex', 'important');
-              ms.dataset.tourRevealed = '1';
-            }
-          },
-          onLeave: function () {
-            var ms = document.getElementById('modeSwitch');
-            if (ms && ms.dataset.tourRevealed === '1') {
-              ms.style.removeProperty('display');
-              delete ms.dataset.tourRevealed;
             }
           }
         },
@@ -12109,55 +12039,10 @@ Context:
   })()
   </script>
 
-<script>
-(function(){
-  window.setMode=function(mode){
-    var isImg=mode==='image';
-    document.body.classList.toggle('image-mode',isImg);
-    document.getElementById('writeModeBtn').classList.toggle('active',!isImg);
-    document.getElementById('imageModeBtn').classList.toggle('active',isImg);
-    var goal=document.getElementById('goal');
-    if(goal)goal.placeholder=isImg?'A woman walking through rainy Tokyo at night, cinematic…':'I need to make money online fast using skills I already have…';
-    var title=document.getElementById('builder-title');
-    if(title)title.textContent=isImg?'Create An Image':'Build Your Prompt';
-    if(!isImg){var sec=document.getElementById('imageResultSection');if(sec)sec.hidden=true;}
-  };
-  var _imgRunning=false;
-  window.runImageGeneration=async function(){
-    if(_imgRunning)return;
-    var goal=document.getElementById('goal');
-    var desc=((goal&&goal.value)||'').trim();
-    var hint=document.getElementById('image-gen-hint');
-    if(!desc){if(hint){hint.textContent='Add An Image Idea First';hint.hidden=false;}return}
-    _imgRunning=true;
-    var sec=document.getElementById('imageResultSection'),wrap=document.getElementById('imageResultWrap'),dl=document.getElementById('imageDownloadBtn'),btn=document.getElementById('image-generate-btn');
-    if(hint)hint.hidden=true;
-    if(sec)sec.hidden=false;
-    if(wrap)wrap.innerHTML='<div style="text-align:center;padding:2rem"><div class="image-spinner"></div><p style="font-weight:700;font-size:1rem;margin:12px 0 4px">Generating Image</p><p style="color:var(--color-text-muted);font-size:.85rem">This can take a few moments.</p></div>';
-    if(dl)dl.style.display='none';
-    if(btn){btn.disabled=true;btn.textContent='Generating Image\u2026'}
-    setTimeout(function(){if(sec)sec.scrollIntoView({behavior:window.PMG_A11Y.scrollBehavior(),block:'center'})},150);
-    try{
-      var res=await fetch('/api/image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:desc,size:window.__pmgAspectRatio||'1024x1024'})});
-      var data=await res.json();
-      if(!res.ok||!data.url){
-        var errMsg='Failed. Try again.';
-        if(res.status===429)errMsg='Image Limit Reached Today';
-        else if(res.status>=500)errMsg='Image Generation Is Temporarily Unavailable';
-        else if(data.error)errMsg=data.error;
-        if(wrap)wrap.innerHTML='<div style="padding:2rem;text-align:center;color:var(--color-text-muted)">\u26A0\uFE0F '+errMsg+'</div>';
-        return;
-      }
-      if(wrap){wrap.innerHTML='';var img=document.createElement('img');img.src=data.url;img.alt='AI generated image';img.onload=function(){if(sec)sec.scrollIntoView({behavior:window.PMG_A11Y.scrollBehavior(),block:'center'})};wrap.appendChild(img)}
-      if(dl){dl.href=data.url;dl.style.display='inline-flex'}
-      var ag2=document.getElementById('imageAgainBtn');if(ag2){ag2.disabled=false;ag2.removeAttribute('aria-disabled')}
-      var cp2=document.getElementById('copyImagePromptBtn');if(cp2){cp2.disabled=false;cp2.removeAttribute('aria-disabled')}
-    }catch(e){if(wrap)wrap.innerHTML='<div style="padding:2rem;text-align:center;color:var(--color-text-muted)">\u26A0\uFE0F Network error. Check your connection and try again.</div>'}
-    finally{_imgRunning=false;if(btn){btn.disabled=false;btn.textContent='\uD83C\uDFA8 Generate Image'}}
-  };
-  window.generateImage=window.runImageGeneration;
-})();
-</script>
+<!-- Legacy window.setMode + window.runImageGeneration removed (Task #140).
+     Photography is now reached via the chassis-v3 Photography tab; image
+     generation is handled by pmg-visual-studio.js (#pmg-vs-image-generate-btn). -->
+
 
 <!-- ===== File / Image Upload + /api/analyze handler ===== -->
 <script>
@@ -12571,14 +12456,14 @@ Context:
        The static file at /scripts/pmg-pricing-config.js is kept only as a no-JS / api-down
        fallback; the real source of truth is the backend route below. -->
   <script src="/api/pricing-config.js?v=task100" defer></script>
-  <script src="/scripts/pmg-ux.js?v=cv3-42-tour-anchor-pin" defer></script>
+  <script src="/scripts/pmg-ux.js?v=t140-image-mode-removed" defer></script>
   <script src="/scripts/pmg-quick-win.js?v=task200-quick-win-4" defer></script>
   <script src="/scripts/pmg-next-action.js?v=5" defer></script>
   <script src="/scripts/post-spec.js" defer></script>
   <script src="/scripts/pmg-image-fix.js?v=img-progress-2" defer></script>
   <script src="/scripts/pmg-result-states.js?v=2-refocus" defer></script>
   <script src="/scripts/pmg-history-states.js?v=3-task42" defer></script>
-  <script src="/scripts/pmg-pro.js?v=task100" defer></script>
+  <script src="/scripts/pmg-pro.js?v=t140-image-mode-removed" defer></script>
   <script src="/scripts/pmg-money-mode-pro.js?v=1" defer></script>
   <script src="/scripts/pmg-linear-flow.js?v=3-refocus" defer></script>
   <script src="/scripts/pmg-shortcuts.js?v=10-task55" defer></script>
@@ -12587,9 +12472,9 @@ Context:
   <script src="/scripts/pmg-fix-diff.js?v=task49-2" defer></script>
   <script src="/scripts/pmg-suite-mobile-polish.js?v=task110-1" defer></script>
   <script src="/scripts/pmg-suite-handoff.js?v=task111-1" defer></script>
-  <script src="/scripts/pmg-image-extras.js?v=task52-1" defer></script>
-  <script src="/scripts/pmg-share.js?v=task56-2" defer></script>
-  <script src="/scripts/pmg-handoff.js?v=task57-3" defer></script>
+  <script src="/scripts/pmg-image-extras.js?v=t140-image-mode-removed" defer></script>
+  <script src="/scripts/pmg-share.js?v=t140-image-mode-removed" defer></script>
+  <script src="/scripts/pmg-handoff.js?v=t140-image-mode-removed" defer></script>
   <script src="/scripts/pmg-suggestions.js?v=task58-5" defer></script>
   <script src="/scripts/pmg-send-to.js?v=sendto-4-silent" defer></script>
   <script src="/scripts/pmg-templates.js?v=tpl-1" defer></script>
@@ -12783,9 +12668,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const gen = document.getElementById("generateBtn");
   if (gen) gen.textContent = "Fix My Prompt";
 
-  const imageBtn = document.getElementById("image-generate-btn");
-  if (imageBtn) imageBtn.textContent = "🎨 Generate Image";
-
   const goal = document.getElementById("goal");
   if (goal) goal.placeholder = "Describe What You Want — We'll Build The Perfect Prompt.";
 
@@ -12810,7 +12692,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  ["generateBtn", "image-generate-btn"].forEach(id => {
+  ["generateBtn"].forEach(id => {
     const btn = document.getElementById(id);
     if (!btn) return;
     btn.addEventListener("click", function () {

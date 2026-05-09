@@ -1663,14 +1663,12 @@
     try {
       if (name === 'photography') {
         document.body.classList.add('image-mode');
-        if (typeof window.setMode === 'function') { try { window.setMode('image'); } catch (_) {} }
         // re-relocate in case suite (re)built since last switch
         if (typeof window.relocatePhotoSuite === 'function') {
           try { window.relocatePhotoSuite(); } catch (_) {}
         }
       } else {
         document.body.classList.remove('image-mode');
-        if (typeof window.setMode === 'function') { try { window.setMode('write'); } catch (_) {} }
       }
     } catch (_) {}
   }
