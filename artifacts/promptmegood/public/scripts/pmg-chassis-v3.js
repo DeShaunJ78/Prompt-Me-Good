@@ -52,6 +52,15 @@
     if (genBtnHide) genBtnHide.style.setProperty('display', 'none', 'important');
     var settingsHide = document.getElementById('settingsPanel');
     if (settingsHide) settingsHide.style.setProperty('display', 'none', 'important');
+    // ph-1 (Placeholder Fix Brief): ensure the empty-state placeholder is
+    // visible on a fresh boot. Some legacy code paths may have left
+    // body.pmg-has-result set from a previous interaction, which the CSS
+    // rule `.pmg-has-result .pmgv3-right-placeholder { display:none }`
+    // turns into a hidden right column on first paint. Clearing the class
+    // here resets to the empty-state default. We do this BEFORE
+    // wirePersistence() so session restore (L484) can legitimately
+    // re-add the class when a stored prompt is being restored.
+    document.body.classList.remove('pmg-has-result');
     wireActions();
     wirePersistence();
     deleteTargets();
