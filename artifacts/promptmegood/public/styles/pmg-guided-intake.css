@@ -1,0 +1,83 @@
+/* pmg-guided-intake.css — gi-1
+   Guided intake fields injected above #pmg-vs-image-goal and
+   #pmg-vs-video-goal. The textarea remains the source-of-truth that
+   buildImage/VideoPrompt() reads; we just hide it in guided mode. */
+
+.pmg-gi {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.pmg-gi[data-pmg-gi-mode="freeform"] .pmg-gi-fields {
+  display: none;
+}
+
+.pmg-gi-toggle-row {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 8px;
+}
+
+.pmg-gi-toggle {
+  background: transparent;
+  border: 1px solid rgba(62, 224, 160, 0.20);
+  color: rgba(220, 240, 230, 0.70);
+  font: 500 12px/1.2 'Inter', system-ui, -apple-system, sans-serif;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pmg-gi-toggle:hover,
+.pmg-gi-toggle:focus-visible {
+  border-color: rgba(62, 224, 160, 0.55);
+  color: #3ee0a0;
+  outline: none;
+  background: rgba(62, 224, 160, 0.06);
+}
+
+.pmg-gi-toggle-icon {
+  font-size: 13px;
+  line-height: 1;
+  display: inline-block;
+  transform: translateY(0.5px);
+}
+
+.pmg-gi-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 0 4px;
+}
+
+.pmg-gi-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pmg-gi-field .pmgv3-section-label {
+  margin: 0 0 2px;
+}
+
+.pmg-gi-input,
+.pmg-gi-select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pmg-gi-hint {
+  font: 400 11px/1.4 'Inter', system-ui, -apple-system, sans-serif;
+  color: rgba(220, 240, 230, 0.50);
+  margin: 2px 0 0;
+}
+
+@media (max-width: 480px) {
+  .pmg-gi-fields { gap: 10px; }
+  .pmg-gi-hint { font-size: 10.5px; }
+}
