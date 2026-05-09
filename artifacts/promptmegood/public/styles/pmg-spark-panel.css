@@ -62,17 +62,19 @@
   align-items: center;
 }
 
-/* The actual input field (transparent background, sits OVER the typewriter) */
-.whisperer-input {
+/* The actual input field (transparent background, sits OVER the typewriter).
+   sp-5 (Whisperer Fix Brief follow-up): selector is qualified with
+   `input[type="text"]` (specificity 0,2,1) so it beats the global
+   `input[type="text"] { background: #0e3a36 !important }` rule in
+   pmg-g-theme.css (specificity 0,1,1). Without this, the global rule
+   wins the cascade and paints a solid dark-teal background over the
+   typewriter overlay underneath — even with !important on both sides. */
+input[type="text"].whisperer-input {
   width: 100%;
-  /* sp-4 (Whisperer Fix Brief): force transparency so the typewriter
-     overlay underneath remains visible. A global input rule elsewhere
-     was computing this to rgb(14,58,54) (solid dark teal), which
-     completely covered the cycling placeholder text. */
   background: transparent !important;
   border: none;
-  border-bottom: 1px solid rgba(0, 200, 150, 0.3);
-  color: #fff;
+  border-bottom: 1px solid rgba(0, 200, 150, 0.3) !important;
+  color: #fff !important;
   font-size: 15px;
   padding: 6px 4px;
   outline: none;
@@ -83,8 +85,8 @@
   z-index: 2; /* above the typewriter overlay */
 }
 
-.whisperer-input:focus {
-  border-bottom-color: #00c896;
+input[type="text"].whisperer-input:focus {
+  border-bottom-color: #00c896 !important;
 }
 
 /* The animated typewriter text (sits behind the input). Clicks pass
@@ -95,7 +97,12 @@
   right: 4px;
   top: 50%;
   transform: translateY(-50%);
-  color: rgba(255, 255, 255, 0.45);
+  /* sp-5: bumped from rgba(255,255,255,0.45) — that opacity was so
+     faint on the dark teal panel background that the cycling questions
+     read as invisible at a glance, even though the JS was running and
+     the element was visible in computed styles. 0.78 + the mint tint
+     keeps the placeholder feel without disappearing. */
+  color: rgba(180, 240, 220, 0.78);
   font-style: italic;
   font-size: 15px;
   pointer-events: none;
