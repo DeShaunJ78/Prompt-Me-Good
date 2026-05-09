@@ -1666,24 +1666,55 @@
     } catch (_) {}
   }
 
-  // Mount Visual Studio inline panels once the chassis + VS script are both ready.
-  function mountVSWhenReady() {
-    var attempts = 0;
-    var iv = setInterval(function () {
-      attempts++;
-      if (attempts > 40) { clearInterval(iv); return; }
-      if (typeof window.mountVisualStudioPanels !== 'function') return;
-      var pl = document.getElementById('pmgv3-photo-left');
-      var pr = document.getElementById('pmgv3-photo-right');
-      var vl = document.getElementById('pmgv3-video-left');
-      var vr = document.getElementById('pmgv3-video-right');
-      if (!pl || !pr || !vl || !vr) return;
-      window.mountVisualStudioPanels({
-        photoLeft: pl, photoRight: pr, videoLeft: vl, videoRight: vr,
-      });
-      clearInterval(iv);
-    }, 100);
+  // bm-3 (Repair Brief Bug 3): wait-for-condition helper backed by a
+  // MutationObserver instead of setInterval polling. Calls `predicate`
+  // immediately, then on every DOM mutation under document.body, with
+  // a hard timeout safety net. This eliminates 3 of the chassis's
+  // polling loops (mount-VS, deep-link panel, photo-suite relocate).
+  //
+  // The remaining 5 setIntervals in this file are intentionally kept:
+  //   - killClones / hideTick are *defensive* against legacy scripts
+  //     that re-inject removed DOM after we've cleaned it; they are
+  //     load-bearing for the chassis' "swap legacy DOM into v3 slots"
+  //     contract. Replacing them risks the legacy markup flashing or
+  //     persisting on slow first paints.
+  //   - updatePickCount / mirrorStrength / (1269) are periodic UI
+  //     sync ticks, not "wait for X" — observers don't apply here.
+  function waitForCondition(predicate, opts) {
+    var timeoutMs = (opts && opts.timeoutMs) || 4000;
+    var done = false;
+    function attempt() {
+      if (done) return true;
+      var ok = false;
+      try { ok = !!predicate(); } catch (_) { ok = false; }
+      if (ok) { done = true; try { mo.disconnect(); } catch (_) {} clearTimeout(killer); }
+      return ok;
+    }
+    if (attempt()) return;
+    var mo = new MutationObserver(function () { attempt(); });
+    try {
+      mo.observe(document.body, { childList: true, subtree: true });
+    } catch (_) { /* SSR / detached docs */ }
+    var killer = setTimeout(function () {
+      done = true;
+      try { mo.disconnect(); } catch (_) {}
+    }, timeoutMs);
   }
+
+  // Mount Visual Studio inline panels once the chassis + VS script are both ready.
+  function tryMountVS() {
+    if (typeof window.mountVisualStudioPanels !== 'function') return false;
+    var pl = document.getElementById('pmgv3-photo-left');
+    var pr = document.getElementById('pmgv3-photo-right');
+    var vl = document.getElementById('pmgv3-video-left');
+    var vr = document.getElementById('pmgv3-video-right');
+    if (!pl || !pr || !vl || !vr) return false;
+    window.mountVisualStudioPanels({
+      photoLeft: pl, photoRight: pr, videoLeft: vl, videoRight: vr,
+    });
+    return true;
+  }
+  function mountVSWhenReady() { waitForCondition(tryMountVS, { timeoutMs: 4000 }); }
   // Kick off mount after boot; chassis-v3 runs first so VS may not be defined yet.
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', mountVSWhenReady);
@@ -1693,25 +1724,30 @@
   // Allow ?panel=photography|video|text deep-linking (also useful for tests).
   var initialPanel = qs.get('panel');
   if (initialPanel === 'photography' || initialPanel === 'video') {
-    var panelTries = 0;
-    var panelInt = setInterval(function () {
-      panelTries++;
-      if (panelTries > 30) { clearInterval(panelInt); return; }
-      if (rootEl && rootEl.querySelector('.pmgv3-body')) {
-        setActivePanel(initialPanel);
-        clearInterval(panelInt);
-      }
-    }, 100);
+    waitForCondition(function () {
+      if (!(rootEl && rootEl.querySelector('.pmgv3-body'))) return false;
+      setActivePanel(initialPanel);
+      return true;
+    }, { timeoutMs: 3000 });
   }
-  // Re-attempt to relocate the photo suite as legacy mounts run.
-  var psTries = 0;
-  var psInt = setInterval(function () {
-    psTries++;
-    if (psTries > 30) { clearInterval(psInt); return; }
-    if (typeof window.relocatePhotoSuite === 'function') {
-      try { window.relocatePhotoSuite(); } catch (_) {}
+  // Re-attempt to relocate the photo suite as legacy mounts run. The
+  // photo suite can mount late, so we observe DOM mutations until a
+  // hard 6s ceiling — no per-mutation settle counter (mutations don't
+  // imply work was done; counting them risks premature disconnect on
+  // unrelated DOM churn).
+  (function () {
+    var done = false;
+    function tick() {
+      if (done) return;
+      if (typeof window.relocatePhotoSuite === 'function') {
+        try { window.relocatePhotoSuite(); } catch (_) {}
+      }
     }
-  }, 200);
+    tick();
+    var mo2 = new MutationObserver(tick);
+    try { mo2.observe(document.body, { childList: true, subtree: true }); } catch (_) {}
+    setTimeout(function () { done = true; try { mo2.disconnect(); } catch (_) {} }, 6000);
+  })();
 
   // Expose for debugging + VS back-compat shim
   window.pmgChassisV3 = {

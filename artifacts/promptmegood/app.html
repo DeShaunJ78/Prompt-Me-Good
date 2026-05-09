@@ -4058,14 +4058,14 @@
   <link rel="stylesheet" href="/styles/pmg-chassis-v3.css?v=bm-2" />
   <link rel="stylesheet" href="/styles/pmg-visual-studio.css?v=ps-2-build-above-fold" />
   <link rel="stylesheet" href="/styles/pmg-storyboard.css?v=sb-7" />
-  <link rel="stylesheet" href="/styles/pmg-auto-boost.css?v=ab-5-always-show" />
+  <link rel="stylesheet" href="/styles/pmg-auto-boost.css?v=bm-3-in-actions-row" />
   <link rel="stylesheet" href="/styles/pmg-spark-panel.css?v=sp-3-typewriter" />
-  <link rel="stylesheet" href="/styles/pmg-business-mode.css?v=bm-2" />
-  <script src="/scripts/pmg-chassis-v3.js?v=bm-2"></script>
+  <link rel="stylesheet" href="/styles/pmg-business-mode.css?v=bm-3" />
+  <script src="/scripts/pmg-chassis-v3.js?v=bm-3"></script>
   <script src="/scripts/pmg-visual-studio.js?v=ps-2-build-above-fold" defer></script>
   <script src="/scripts/pmg-storyboard.js?v=sb-9" defer></script>
   <script src="/scripts/pmg-spark-panel.js?v=sp-3-typewriter" defer></script>
-  <script src="/scripts/pmg-business-mode.js?v=bm-2" defer></script>
+  <script src="/scripts/pmg-business-mode.js?v=bm-3" defer></script>
   <style id="pmg-splash-css">
     /* Instant splash loader — Phase 1 of the master roadmap. Painted before
        the chassis JS executes so users never see a flash of blank workstation.
@@ -11762,7 +11762,9 @@ Context:
         if (inFlight) return;
         const prompt = getCurrentPrompt();
         if (!prompt) {
-          alert('Generate a prompt above first, then run it here.');
+          if (typeof window.showToast === 'function') {
+            window.showToast('Generate a prompt above first, then run it here.');
+          }
           return;
         }
         // cv3-61: clear any prior length-warning state up-front so a
@@ -12017,7 +12019,7 @@ Context:
     function $(id){return document.getElementById(id)}
     window.generateImage=async function(){
       var rb=$('resultBox'),prompt=((rb&&(rb.textContent||rb.innerText))||'').trim();
-      if(!prompt){alert('Fix your prompt first, then click Generate Image.');return}
+      if(!prompt){if(typeof window.showToast==='function')window.showToast('Fix your prompt first, then click Generate Image.');return}
       var sec=$('imageResultSection'),wrap=$('imageResultWrap'),dl=$('imageDownloadBtn'),again=$('imageAgainBtn'),btn=$('imageBtn');
       if(sec)sec.hidden=false;
       if(wrap)wrap.innerHTML='<div class="image-generating-state"><div class="image-spinner"></div><span>Creating your image…<br><small>About 10 seconds</small></span></div>';
@@ -12478,7 +12480,7 @@ Context:
   <script src="/scripts/pmg-suggestions.js?v=t140-image-mode-removed" defer></script>
   <script src="/scripts/pmg-send-to.js?v=sendto-4-silent" defer></script>
   <script src="/scripts/pmg-templates.js?v=tpl-1" defer></script>
-  <script src="/scripts/pmg-auto-boost.js?v=ab-5-always-show" defer></script>
+  <script src="/scripts/pmg-auto-boost.js?v=bm-3-in-actions-row" defer></script>
   <script src="/scripts/pmg-image-actions-gate.js?v=task135-1" defer></script>
   <script src="/scripts/pmg-postgen-actions.js?v=task61-2" defer></script>
   <script src="/scripts/pmg-analytics.js?v=task93-1" defer></script>
@@ -12510,7 +12512,9 @@ Context:
     function downloadTxt(){
       var text = getPromptText();
       if (!text){
-        try { alert('Fix your prompt first, then download it.'); } catch(_) {}
+        if (typeof window.showToast === 'function') {
+          window.showToast('Fix your prompt first, then download it.');
+        }
         return;
       }
       var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
@@ -12537,7 +12541,9 @@ Context:
         text = goal.value.trim();
       }
       if (!text){
-        try { alert('Describe the image first, then copy the prompt.'); } catch(_) {}
+        if (typeof window.showToast === 'function') {
+          window.showToast('Describe the image first, then copy the prompt.');
+        }
         return;
       }
       var done = function(){
