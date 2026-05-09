@@ -1,0 +1,422 @@
+/* ============================================================================
+   PromptMeGood — Business Mode (bm-1)
+   Premium outcome-specific workspace with Brand Voice Vault, 6 workflow
+   packs, dynamic variable forms, and a quality-check toggle on the
+   generated output. Sits inside #pmgv3-panel-business as a 4th panel
+   alongside text/photo/video.
+   ============================================================================ */
+
+/* Panel layout — single column on the left (dashboard / pack list /
+   execution form), single column on the right (output + quality view).
+   Mirrors the chassis 1fr 1fr grid set by pmg-chassis-v3.css. */
+#pmgv3-panel-business .pmgv3-left,
+#pmgv3-panel-business .pmgv3-right {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ---- Brand Voice Vault (left header) ---- */
+.pmg-business-brand-vault {
+  background: linear-gradient(135deg,
+    rgba(0, 200, 150, 0.07) 0%,
+    rgba(0, 0, 0, 0.20) 100%);
+  border: 1px solid rgba(0, 200, 150, 0.45);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 4px;
+  box-shadow: 0 0 14px rgba(0, 200, 150, 0.10);
+}
+
+.pmg-business-brand-vault h3 {
+  margin: 0 0 4px;
+  color: #00c896;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pmg-business-brand-vault > p {
+  margin: 0 0 12px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.pmg-business-brand-vault label {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pmg-business-brand-vault input[type="text"],
+.pmg-business-brand-vault textarea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  padding: 8px 10px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+.pmg-business-brand-vault input[type="text"]:focus,
+.pmg-business-brand-vault textarea:focus {
+  border-color: #00c896;
+}
+.pmg-business-brand-vault textarea {
+  min-height: 56px;
+  resize: vertical;
+}
+
+.pmg-business-brand-vault .pmg-bv-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+#biz-save-brand {
+  background: #00c896;
+  color: #000;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 18px;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+#biz-save-brand:hover { background: #00e6ac; transform: translateY(-1px); }
+#biz-save-brand:active { transform: translateY(0); }
+
+.pmg-bv-saved-flag {
+  display: none;
+  align-items: center;
+  gap: 5px;
+  color: #00c896;
+  font-size: 12px;
+  font-weight: 600;
+}
+.pmg-bv-saved-flag.is-visible { display: inline-flex; }
+
+/* ---- Six-Pack Grid ---- */
+.pmg-business-packs-title {
+  margin: 6px 0 4px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.pmg-business-pack-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.pmg-business-pack {
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s, background 0.15s;
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+}
+.pmg-business-pack:hover {
+  border-color: rgba(0, 200, 150, 0.55);
+  background: rgba(0, 200, 150, 0.05);
+  transform: translateY(-1px);
+}
+.pmg-business-pack-icon {
+  font-size: 22px;
+  display: block;
+  margin-bottom: 6px;
+}
+.pmg-business-pack-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  margin: 0 0 2px;
+  line-height: 1.25;
+}
+.pmg-business-pack-sub {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11.5px;
+  line-height: 1.3;
+}
+
+/* ---- Pack templates list ---- */
+.pmg-business-templates {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pmg-business-templates-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.pmg-business-back-btn {
+  background: transparent;
+  color: #00c896;
+  border: 1px solid rgba(0, 200, 150, 0.4);
+  padding: 5px 11px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+}
+.pmg-business-back-btn:hover { background: rgba(0, 200, 150, 0.1); }
+
+.pmg-business-templates h4 {
+  margin: 0;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+.pmg-business-template-item {
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 11px 13px;
+  cursor: pointer;
+  color: #fff;
+  text-align: left;
+  font-family: inherit;
+  font-size: 13px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.pmg-business-template-item:hover {
+  border-color: rgba(0, 200, 150, 0.5);
+  background: rgba(0, 200, 150, 0.05);
+}
+.pmg-business-template-name {
+  font-weight: 700;
+  margin: 0 0 3px;
+  font-size: 13px;
+}
+.pmg-business-template-preview {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11.5px;
+  line-height: 1.3;
+}
+
+/* ---- Execution view (variable form) ---- */
+.pmg-business-execution {
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(0, 200, 150, 0.35);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.pmg-business-execution h4 {
+  margin: 0 0 4px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pmg-business-execution > p.pmg-be-hint {
+  margin: 0 0 12px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.pmg-business-execution label {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 12px;
+  font-weight: 600;
+}
+.pmg-business-execution input[type="text"],
+.pmg-business-execution textarea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  padding: 8px 10px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+.pmg-business-execution input[type="text"]:focus,
+.pmg-business-execution textarea:focus {
+  border-color: #00c896;
+}
+.pmg-business-execution textarea {
+  min-height: 60px;
+  resize: vertical;
+}
+
+#biz-generate-prompt {
+  margin-top: 14px;
+  background: #00c896;
+  color: #000;
+  border: none;
+  padding: 11px 18px;
+  border-radius: 22px;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.15s, transform 0.1s;
+}
+#biz-generate-prompt:hover { background: #00e6ac; transform: translateY(-1px); }
+#biz-generate-prompt:active { transform: translateY(0); }
+#biz-generate-prompt:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+/* ---- Right column: output + quality toggle ---- */
+.pmg-business-output {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+.pmg-business-output-empty {
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 30px 22px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.pmg-business-output-empty .pmg-boe-icon {
+  font-size: 28px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.pmg-business-quality-toggle {
+  display: inline-flex;
+  background: rgba(0, 0, 0, 0.30);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 20px;
+  padding: 3px;
+  align-self: flex-start;
+}
+.pmg-business-quality-toggle button {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 5px 14px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, color 0.15s;
+}
+.pmg-business-quality-toggle button.is-active {
+  background: #00c896;
+  color: #000;
+}
+
+.pmg-business-result-box {
+  background: rgba(0, 0, 0, 0.30);
+  border: 1px solid rgba(0, 200, 150, 0.35);
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 13.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 220px;
+}
+.pmg-business-analysis-box {
+  background: rgba(0, 200, 150, 0.06);
+  border: 1px solid rgba(0, 200, 150, 0.30);
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 13px;
+  line-height: 1.6;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 220px;
+}
+.pmg-business-analysis-box h5 {
+  margin: 0 0 6px;
+  color: #00c896;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.pmg-business-analysis-box ul {
+  margin: 6px 0 12px;
+  padding-left: 18px;
+}
+.pmg-business-analysis-box li {
+  margin-bottom: 4px;
+}
+
+.pmg-business-result-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.pmg-business-result-actions button {
+  background: rgba(0, 200, 150, 0.10);
+  color: #00c896;
+  border: 1px solid rgba(0, 200, 150, 0.40);
+  padding: 7px 14px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.pmg-business-result-actions button:hover { background: rgba(0, 200, 150, 0.20); }
+
+/* ---- Tab indicator (lock icon on the Business tab itself) ---- */
+.pmgv3-tab[data-module="business"] .pmgv3-tab-lock {
+  font-size: 10px;
+  margin-left: 3px;
+  opacity: 0.7;
+}
+
+/* ---- Mobile (≤768px) ---- */
+@media (max-width: 768px) {
+  .pmg-business-pack-grid {
+    grid-template-columns: 1fr;
+  }
+  .pmg-business-brand-vault {
+    padding: 14px;
+  }
+  #biz-generate-prompt {
+    font-size: 13px;
+    padding: 12px 16px;
+  }
+}
