@@ -774,25 +774,29 @@ body.pmg-has-result .pmgv3-right-placeholder {
   display: none !important;
 }
 
-/* ---- Inspiration feed (if-1) ----
+/* ---- Inspiration feed (if-2) ----
    Fills the desktop blank space below the 3-step intro with two
-   "See What's Possible" example cards + three clickable "Start Fast"
-   template pills. Lives inside .pmgv3-right-placeholder so it inherits
-   the existing pmg-has-result hide rule above — no separate CSS
-   gating needed. Spec: brief PromptMeGood Right Column UX Fill. */
+   "See What's Possible" Before/After cards + three "Start Fast"
+   template pills laid out as a horizontal wrap row. Lives inside
+   .pmgv3-right-placeholder so it inherits the existing
+   pmg-has-result hide rule above — no separate CSS gating needed.
+   Spec: brief PromptMeGood Right Column UX Fill (v2). */
 .pmgv3-inspiration-feed {
   width: 100%;
-  max-width: 420px;
+  max-width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 18px;
   margin-top: 10px;
+  overflow-wrap: break-word;
 }
 .pmgv3-if-section {
   display: flex;
   flex-direction: column;
   gap: 10px;
   width: 100%;
+  box-sizing: border-box;
 }
 .pmgv3-if-heading {
   font-size: 12px;
@@ -812,8 +816,11 @@ body.pmg-has-result .pmgv3-right-placeholder {
   text-align: left;
   padding: 12px 14px;
   border-radius: 10px;
-  background: rgba(0, 200, 150, 0.07);
-  border: 1px solid rgba(0, 200, 150, 0.18);
+  background: rgba(0, 200, 150, 0.04);
+  border: 1px solid rgba(0, 200, 150, 0.14);
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
 }
 .pmgv3-if-card-label {
   font-size: 11px;
@@ -821,33 +828,99 @@ body.pmg-has-result .pmgv3-right-placeholder {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #00c896;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
-.pmgv3-if-card-snippet {
-  font-size: 12.5px;
-  line-height: 1.55;
-  color: rgba(255, 255, 255, 0.78);
-  font-style: italic;
+/* Horizontal Before -> After on desktop */
+.pmgv3-if-ba {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
 }
-.pmgv3-if-pills {
+.pmgv3-if-ba-col {
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+}
+/* Before = raw / muted chat-bubble look */
+.pmgv3-if-ba-before {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px dashed rgba(255, 255, 255, 0.16);
+}
+.pmgv3-if-ba-before .pmgv3-if-ba-tag {
+  color: rgba(255, 255, 255, 0.45);
+}
+.pmgv3-if-ba-before .pmgv3-if-ba-text {
+  color: rgba(255, 255, 255, 0.55);
+  font-style: normal;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+}
+/* After = mini result panel — dark green bg, subtle border */
+.pmgv3-if-ba-after {
+  background: rgba(0, 200, 150, 0.10);
+  border: 1px solid rgba(0, 200, 150, 0.32);
+}
+.pmgv3-if-ba-after .pmgv3-if-ba-tag {
+  color: #00c896;
+}
+.pmgv3-if-ba-after .pmgv3-if-ba-text {
+  color: rgba(255, 255, 255, 0.88);
+  font-style: italic;
+  font-size: 12.5px;
+}
+.pmgv3-if-ba-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.pmgv3-if-ba-text {
+  line-height: 1.5;
+  word-break: break-word;
+}
+.pmgv3-if-ba-arrow {
+  flex: 0 0 auto;
+  align-self: center;
+  font-size: 16px;
+  line-height: 1;
+  color: rgba(0, 200, 150, 0.55);
+  user-select: none;
+}
+/* Pills row = horizontal flex-wrap on desktop */
+.pmgv3-if-pills {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
   gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
 }
 .pmgv3-if-pill {
   appearance: none;
   -webkit-appearance: none;
+  flex: 0 1 auto;
+  max-width: 100%;
   text-align: left;
-  padding: 10px 14px;
-  border-radius: 10px;
+  padding: 8px 12px;
+  border-radius: 999px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(0, 200, 150, 0.22);
   color: rgba(255, 255, 255, 0.88);
-  font-size: 13px;
+  font-size: 12.5px;
   line-height: 1.4;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
   font-family: inherit;
+  overflow-wrap: break-word;
 }
 .pmgv3-if-pill:hover,
 .pmgv3-if-pill:focus-visible {
@@ -857,10 +930,17 @@ body.pmg-has-result .pmgv3-right-placeholder {
   outline: none;
 }
 .pmgv3-if-pill:active { transform: translateY(0); }
+/* Mobile: stack Before/After vertically; pills stay wrap */
 @media (max-width: 768px) {
-  .pmgv3-inspiration-feed { max-width: 100%; }
-  .pmgv3-if-card-snippet { font-size: 12px; }
-  .pmgv3-if-pill { font-size: 12.5px; padding: 9px 12px; }
+  .pmgv3-if-ba {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .pmgv3-if-ba-arrow {
+    transform: rotate(90deg);
+    align-self: center;
+  }
+  .pmgv3-if-pill { font-size: 12px; padding: 8px 10px; }
 }
 
 /* ---- Bottom bar quick-entry (cv3-29) ----
