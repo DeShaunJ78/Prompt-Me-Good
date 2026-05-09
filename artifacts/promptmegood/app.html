@@ -9463,7 +9463,29 @@ Context:
       // On mobile especially, highlighting the entire container covers most of
       // the viewport and obscures the content the tour is pointing at — so
       // fall back to the first heading / title / primary action inside.
-      function obGetTightRect(target, isMobile) {
+      function obGetTightRect(target, isMobile, step) {
+        // Explicit opt-in: step author can pin the highlight to a specific
+        // inner element via `highlightSelector` on the step, or via a
+        // `data-tour-anchor="<step.id>"` attribute on a DOM element. When
+        // matched, we skip the tooBig heuristic entirely — author intent wins.
+        if (step) {
+          var explicit = null;
+          if (step.highlightSelector) {
+            explicit = target.querySelector(step.highlightSelector) ||
+                       document.querySelector(step.highlightSelector);
+          }
+          if (!explicit && step.id) {
+            var anchorSel = '[data-tour-anchor="' + step.id + '"]';
+            explicit = target.querySelector(anchorSel) ||
+                       document.querySelector(anchorSel);
+          }
+          if (explicit) {
+            var er = explicit.getBoundingClientRect();
+            if (er.width > 0 && er.height > 0) {
+              return { rect: er, anchor: explicit };
+            }
+          }
+        }
         var rect = target.getBoundingClientRect();
         var vw = window.innerWidth || document.documentElement.clientWidth;
         var vh = window.innerHeight || document.documentElement.clientHeight;
@@ -9521,7 +9543,7 @@ Context:
           return;
         }
         const isMobile = window.matchMedia('(max-width: 640px)').matches;
-        const tight = obGetTightRect(target, isMobile);
+        const tight = obGetTightRect(target, isMobile, step);
         const rect = tight.rect;
         const scrollAnchor = tight.anchor || target;
         const attempts = scrollAttempts || 0;
@@ -12549,7 +12571,7 @@ Context:
        The static file at /scripts/pmg-pricing-config.js is kept only as a no-JS / api-down
        fallback; the real source of truth is the backend route below. -->
   <script src="/api/pricing-config.js?v=task100" defer></script>
-  <script src="/scripts/pmg-ux.js?v=cv3-41-tight-tour-rect" defer></script>
+  <script src="/scripts/pmg-ux.js?v=cv3-42-tour-anchor-pin" defer></script>
   <script src="/scripts/pmg-quick-win.js?v=task200-quick-win-4" defer></script>
   <script src="/scripts/pmg-next-action.js?v=5" defer></script>
   <script src="/scripts/post-spec.js" defer></script>

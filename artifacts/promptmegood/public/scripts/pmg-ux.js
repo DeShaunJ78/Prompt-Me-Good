@@ -17443,7 +17443,29 @@
   // especially, highlighting a whole container covers most of the viewport
   // and obscures what the tour is pointing at — fall back to the first
   // heading / title / primary action inside.
-  function wsGetTightRect(target, isMobile) {
+  function wsGetTightRect(target, isMobile, step) {
+    // Explicit opt-in: a step author can pin the highlight to a specific
+    // inner element via `highlightSelector` on the step, or via a
+    // `data-tour-anchor="<step.id>"` attribute on a DOM element. When matched,
+    // we skip the tooBig heuristic entirely — author intent wins.
+    if (step) {
+      var explicit = null;
+      if (step.highlightSelector) {
+        explicit = target.querySelector(step.highlightSelector) ||
+                   document.querySelector(step.highlightSelector);
+      }
+      if (!explicit && step.id) {
+        var anchorSel = '[data-tour-anchor="' + step.id + '"]';
+        explicit = target.querySelector(anchorSel) ||
+                   document.querySelector(anchorSel);
+      }
+      if (explicit) {
+        var er = explicit.getBoundingClientRect();
+        if (er.width > 0 && er.height > 0) {
+          return { rect: er, anchor: explicit };
+        }
+      }
+    }
     var rect = target.getBoundingClientRect();
     var vw = window.innerWidth || document.documentElement.clientWidth;
     var vh = window.innerHeight || document.documentElement.clientHeight;
@@ -17506,7 +17528,7 @@
     var tooltip = document.getElementById('pmg-ws-tooltip');
 
     var isMobile = window.matchMedia('(max-width: 640px)').matches;
-    var tight = wsGetTightRect(target, isMobile);
+    var tight = wsGetTightRect(target, isMobile, step);
     var rect = tight.rect;
     var scrollAnchor = tight.anchor || target;
     var attempts = scrollAttempts || 0;
