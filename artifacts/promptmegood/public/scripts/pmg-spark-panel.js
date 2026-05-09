@@ -22,17 +22,19 @@
 (function () {
   'use strict';
 
+  // Mobile-optimized: kept ≤45 chars so questions don't get truncated
+  // inside the Whisperer input on narrow viewports.
   var QUESTIONS = [
-    "What's a problem you've been putting off solving?",
-    "If you had a world-class expert on call right now, what would you ask them?",
-    "What's something you wish you could explain better to someone?",
-    "What's a business idea you've never had time to explore?",
-    "What would you create if you knew it couldn't fail?",
-    "What do you need written that you've been dreading?",
-    "What's a complex topic you want to understand in 5 minutes?",
-    "What's a skill you want to learn but don't know where to start?",
-    "What's a message you've been struggling to write?",
-    "What would you build if you had a team of experts helping you?"
+    "What problem keeps coming back?",
+    "What do you need AI to do today?",
+    "What's your dream outcome?",
+    "What would make today easier?",
+    "What do you want to create?",
+    "Who are you trying to reach?",
+    "What's the one thing you need done?",
+    "What would you build if you knew it'd work?",
+    "What's your biggest challenge right now?",
+    "What content do you want to create?"
   ];
 
   // Typewriter loop state — module-scoped so reset() can rewind it.
