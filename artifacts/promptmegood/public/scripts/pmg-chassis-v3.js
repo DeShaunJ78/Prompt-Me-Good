@@ -295,12 +295,18 @@
      fresh and the user's idea + tuning + generated prompt are gone.
      This is a critical UX failure — losing work mid-task is one of
      the fastest ways to lose a user. We persist the live session to
-     localStorage on every change and restore it on boot.
+     sessionStorage on every change and restore it on boot. cv3-55:
+     sessionStorage (not localStorage) — survives switching apps /
+     opening Gemini in a new tab, but auto-clears when the tab is
+     fully closed, giving a clean slate on next fresh open.
 
      Storage:
        pmgv3:session = { goal, tuning:{id:value}, prompt, ts }
-     TTL: 7 days. Disable hatches: ?fresh=1 in URL,
-     localStorage.pmgv3_persist_disable='1'. */
+     TTL: 7 days (defensive — sessionStorage clears on tab close
+     anyway, but if a stale entry somehow survives we still ignore
+     it). Disable hatches: ?fresh=1 in URL,
+     localStorage.pmgv3_persist_disable='1' (disable flag stays on
+     localStorage so it persists across tabs). */
   var SESSION_KEY = 'pmgv3:session';
   var SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
   var TUNE_FIELDS = ['category', 'skillLevel', 'tone', 'outputFormat', 'maxLength', 'outputLanguage', 'personality'];
@@ -315,7 +321,7 @@
   }
   function readSession() {
     try {
-      var raw = localStorage.getItem(SESSION_KEY);
+      var raw = sessionStorage.getItem(SESSION_KEY);
       if (!raw) return null;
       var parsed = JSON.parse(raw);
       if (!parsed || typeof parsed !== 'object') return null;
@@ -347,7 +353,7 @@
       // signal. Without this, pagehide on a cleared page re-persists
       // a junk session right after Start Over.
       if (!data.goal && !data.prompt) return;
-      localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(data));
     } catch (e) {}
   }
   function schedulePersist() {
@@ -355,7 +361,7 @@
     _persistTimer = setTimeout(writeSession, 400);
   }
   function clearSession() {
-    try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+    try { sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
   }
   // Expose for doStartOver / external callers.
   window.pmgChassisV3 = window.pmgChassisV3 || {};
@@ -727,7 +733,7 @@
       // cv3-49: drop the persisted session AND suspend the persistence
       // layer for ~700ms so the cascade of input/change events fired by
       // the reset below doesn't immediately re-write a half-empty
-      // session (default-tuning-but-no-goal) back into localStorage.
+      // session (default-tuning-but-no-goal) back into sessionStorage.
       _persistSuspended = true;
       try { clearSession(); } catch (e) {}
       setTimeout(function () {
