@@ -7978,59 +7978,38 @@ Context:
         }
       })();
 
+      // tpl-1: 25 starter prompts. Click on a builtin card now ONLY sets
+      // the #goal textarea and scrolls/focuses it (see click handler in
+      // templatesGrid.addEventListener). category/tone are display-only
+      // strings shown in the card meta line; they are NOT pushed into the
+      // tuning selects (the new lightweight UX lets the user edit and
+      // generate themselves).
       const TEMPLATES = [
-        {
-          title: 'Cold Email That Books A Call',
-          desc: 'Outbound email to a stranger who needs your service.',
-          data: {
-            goal: 'Write a cold email to a small business owner that gets them to book a 15-minute call about my service',
-            category: 'business',
-            skillLevel: 'intermediate',
-            tone: 'professional',
-            outputFormat: 'step-by-step',
-            details: 'My service helps local businesses get more leads. Keep the email under 120 words. Include subject line, body, and a soft call-to-action.',
-            moneyMode: false
-          }
-        },
-        {
-          title: 'Blog post outline',
-          desc: 'SEO-friendly outline ready for drafting.',
-          data: {
-            goal: 'Create an SEO-friendly outline for a blog post on a topic of my choice',
-            category: 'content',
-            skillLevel: 'intermediate',
-            tone: 'expert',
-            outputFormat: 'detailed breakdown',
-            details: 'Include H1, H2/H3 sections, key points per section, suggested keywords, and a meta description.',
-            moneyMode: false
-          }
-        },
-        {
-          title: 'Code review checklist',
-          desc: 'Senior-engineer-style review of a pull request.',
-          data: {
-            goal: 'Act as a senior engineer and review a pull request I will paste, focusing on bugs, security, and clarity',
-            category: 'business',
-            skillLevel: 'advanced',
-            tone: 'expert',
-            outputFormat: 'list',
-            details: 'Group feedback into Critical, Important, and Nice-to-have. End with one summary sentence.',
-            moneyMode: false
-          }
-        },
-        {
-          title: 'First $100 Plan',
-          desc: 'Money-Mode Plan To Make Your First $100 Fast.',
-          data: {
-            goal: 'Help me make my first $100 online this week with no audience and no budget',
-            category: 'money',
-            skillLevel: 'beginner',
-            tone: 'bold-direct',
-            outputFormat: 'step-by-step',
-            details: 'I have a few hours per day. I want a low-cost, fast-to-launch path with concrete daily actions.',
-            moneyMode: true
-          }
-        }
+        { title: 'Start a Snow Removal Business',     desc: 'How to launch, price, and land your first customers this winter.', data: { category: 'money',        tone: 'hustle',       goal: "I want to start a snow removal business in my neighborhood. Help me figure out how to price jobs, what equipment I need to start cheap, how to find my first 10 customers, and what to say when I knock on doors or post online." } },
+        { title: 'Make Your First $1,000 Online',     desc: 'A realistic plan to earn your first $1,000 from scratch.',         data: { category: 'money',        tone: 'hustle',       goal: "I want to make my first $1,000 online with no startup money. Give me 3 realistic ways to do it this month, step by step, including what to say to potential clients and where to find them." } },
+        { title: 'Cold Email That Books Calls',       desc: 'Outbound email to a stranger who needs your service.',             data: { category: 'business',     tone: 'professional', goal: "Write me a cold email I can send to local small business owners to offer my services. I want it to feel personal, not spammy, and end with a clear call to action to book a 15-minute call. My service is [describe your service]." } },
+        { title: 'Price Your Services Confidently',   desc: 'Stop undercharging. Find out what you should actually charge.',    data: { category: 'money',        tone: 'pricing',      goal: "I run a small service business and I always undercharge because I'm afraid of losing clients. Help me figure out what I should charge, how to present my prices without apologizing, and what to say when someone says it's too expensive." } },
+        { title: 'Get Your First 10 Clients',         desc: 'A practical outreach plan for a brand new business.',              data: { category: 'business',     tone: 'growth',       goal: "I just started my business and I have zero clients. Give me a step-by-step plan to get my first 10 paying clients in the next 30 days without spending money on ads. Include what to post, who to contact, and what to say." } },
+        { title: 'Write a One-Page Business Plan',    desc: 'A clear, simple plan you can actually execute.',                   data: { category: 'business',     tone: 'planning',     goal: "Help me write a simple one-page business plan for my idea. I want it to cover what I'm selling, who my customer is, how I make money, and what my first 90 days look like. My idea is [describe your idea]." } },
+        { title: 'Go Viral on YouTube',               desc: 'A video idea and script hook designed to get clicks and views.',   data: { category: 'content',      tone: 'viral',        goal: "I want to make a YouTube video that goes viral in my niche. Give me 5 video title ideas that would make people click, a strong opening hook for the best one, and an outline for the full video. My niche is [describe your niche]." } },
+        { title: 'Grow a Facebook Page Fast',         desc: 'A 30-day content plan to build a real following.',                 data: { category: 'content',      tone: 'social',       goal: "I want to grow my Facebook page from zero to 1,000 real followers in 30 days. Give me a content plan with specific post ideas for each week, what times to post, and how to get people to share my content. My page is about [describe your topic]." } },
+        { title: 'Write a Week of Instagram Content', desc: '7 ready-to-post captions for your niche.',                         data: { category: 'content',      tone: 'social',       goal: "Write me 7 Instagram captions for this week — one for each day. They should mix education, inspiration, and engagement. Keep them conversational, not corporate. My brand is about [describe your brand or niche]." } },
+        { title: 'LinkedIn Post That Gets Shares',    desc: 'A thought leadership post that builds your professional brand.',   data: { category: 'content',      tone: 'professional', goal: "Write me a LinkedIn post that will get a lot of shares and comments. It should share a real insight or lesson, feel personal and honest, and end with a question that makes people want to respond. The topic I want to write about is [describe your topic or experience]." } },
+        { title: 'Go Viral on X (Twitter)',           desc: 'A thread or single tweet designed to get massive engagement.',     data: { category: 'content',      tone: 'viral',        goal: "Write me a Twitter/X thread that goes viral. It should teach something valuable, be easy to read in short punchy lines, start with a hook that stops the scroll, and end with a call to follow me. The topic is [describe your topic]." } },
+        { title: 'Build a Content Strategy in 1 Hour',desc: 'A simple repeatable system for posting consistently.',             data: { category: 'content',      tone: 'strategy',     goal: "I want to build a simple content strategy I can actually stick to. Help me pick 3 content pillars for my brand, create a weekly posting schedule, and give me a template I can reuse every week so I never run out of ideas. My brand is about [describe your brand]." } },
+        { title: 'Write a Resume That Gets Interviews',desc:'A results-focused resume for your target role.',                   data: { category: 'career',       tone: 'professional', goal: "Help me rewrite my resume to get more interviews. I want it to lead with results and numbers, not just job duties. Make it sound confident and specific. My target role is [describe the job] and my background is [briefly describe your experience]." } },
+        { title: 'Ask for a Raise and Get It',        desc: "A script for the conversation you've been putting off.",           data: { category: 'career',       tone: 'negotiation',  goal: "I want to ask my boss for a raise and I don't know how to start the conversation. Write me a script for how to bring it up, make my case, and handle pushback. I've been at this company for [time] and my main accomplishments are [list 2-3 things]." } },
+        { title: 'Ace Your Next Job Interview',       desc: 'Answers to the 5 hardest interview questions.',                    data: { category: 'career',       tone: 'interview',    goal: "Help me prepare for a job interview. Write strong, confident answers to these 5 questions: Tell me about yourself. What's your greatest weakness? Why do you want this job? Tell me about a time you failed. Where do you see yourself in 5 years. The role I'm interviewing for is [describe the role]." } },
+        { title: 'Build a Morning Routine That Sticks',desc:'A personalized routine based on your goals and schedule.',         data: { category: 'personal',     tone: 'productivity', goal: "Help me build a morning routine I will actually stick to. I want to feel energized, focused, and ready to work by 9am. I have about 60 minutes in the morning. My biggest goals right now are [describe your goals] and my biggest struggle is [describe what holds you back]." } },
+        { title: 'Overcome Procrastination for Good', desc: 'A practical system to stop delaying and start doing.',             data: { category: 'personal',     tone: 'mindset',      goal: "I struggle badly with procrastination and it's hurting my business and personal life. Give me a practical system to overcome it — not just motivation tips, but a real structure I can follow daily. Include how to handle the moments when I feel most stuck." } },
+        { title: 'Write a Powerful Sermon Outline',   desc: 'A structured sermon with a clear message and application.',        data: { category: 'faith',        tone: 'ministry',     goal: "Help me write a sermon outline on the topic of [describe your topic or scripture]. I want it to have a strong opening that grabs attention, 3 clear points with scripture references, real-life illustrations people can relate to, and a closing call to action." } },
+        { title: 'Write a Daily Devotional',          desc: 'A short, meaningful devotional for your community.',               data: { category: 'faith',        tone: 'devotional',   goal: "Write a short daily devotional (about 300 words) based on [describe your scripture or theme]. It should open with a relatable story or question, connect it to the scripture, and close with a practical application and a prayer." } },
+        { title: 'Plan a Community Outreach Event',   desc: 'A step-by-step plan to serve your neighborhood.',                  data: { category: 'faith',        tone: 'outreach',     goal: "Help me plan a community outreach event for my church or organization. I want to serve my neighborhood in a practical way, attract new people, and make a real impact. My community is [describe your area] and my resources are [describe what you have available]." } },
+        { title: 'Write a Motivational Speech',       desc: 'An inspiring speech for your team, congregation, or community.',   data: { category: 'faith',        tone: 'leadership',   goal: "Write me a motivational speech for [describe your audience — team, congregation, graduates, etc.]. The message I want to leave them with is [describe your core message]. Make it personal, powerful, and end with something they will remember." } },
+        { title: 'Understand Any Complex Topic Fast', desc: 'A clear, simple explanation of anything complicated.',             data: { category: 'learning',     tone: 'research',     goal: "Explain [describe the topic] to me like I'm smart but completely new to it. Break it down into the key concepts I need to understand first, give me real-world examples, and tell me what most people get wrong about it." } },
+        { title: 'Make a Hard Decision With Clarity', desc: 'A structured framework to think through your toughest choices.',   data: { category: 'learning',     tone: 'decision',     goal: "I'm trying to decide between [describe your two or more options] and I keep going back and forth. Help me think through this decision clearly. What are the real trade-offs? What questions should I be asking myself? What would a smart, experienced person consider that I might be missing?" } },
+        { title: 'Delegate and Automate Your Work',   desc: 'Find what to hand off so you can focus on what matters.',          data: { category: 'productivity', tone: 'systems',      goal: "I'm overwhelmed with tasks and I need to figure out what to delegate, what to automate, and what only I should be doing. Help me build a simple system to sort my workload. My main responsibilities are [list your key tasks] and my biggest time wasters are [describe what eats your time]." } },
+        { title: 'Write Anything Better and Faster',  desc: 'A framework for clear, compelling writing every time.',            data: { category: 'learning',     tone: 'writing',      goal: "I need to write [describe what you need to write — email, report, proposal, post, etc.] and I want it to be clear, persuasive, and easy to read. Help me structure it, give me an opening line that hooks the reader, and tell me what to cut to make it tighter." } }
       ];
 
       const TEMPLATES_KEY = 'promptmegood:templates:v1';
@@ -8250,8 +8229,24 @@ Context:
           const t = loadUserTemplates().find(function (x) { return x.id === card.dataset.templateId; });
           if (t) { applyTemplate(t); bumpTemplateUse(t.id); }
         } else {
+          // tpl-1: builtin templates are now lightweight starter prompts.
+          // Only set the #goal textarea, then scroll back to it and focus
+          // so the user can edit before generating. This is intentionally
+          // NOT applyTemplate() (which auto-generates a full prompt and
+          // pushes tuning selects) — the new UX is "drop a draft, let me
+          // tune it myself".
           const t = TEMPLATES[Number(card.dataset.templateIdx)];
-          if (t) applyTemplate(t);
+          if (t && t.data && typeof t.data.goal === 'string') {
+            const goalEl = document.getElementById('goal');
+            if (goalEl) {
+              goalEl.value = t.data.goal;
+              try { goalEl.dispatchEvent(new Event('input', { bubbles: true })); } catch (_) {}
+              try { goalEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) { try { goalEl.scrollIntoView(); } catch (__) {} }
+              try { goalEl.focus({ preventScroll: false }); } catch (_) { try { goalEl.focus(); } catch (__) {} }
+            }
+            // If the templates browser overlay is open, close it on pick.
+            try { document.dispatchEvent(new CustomEvent('pmg:templates-pick', { detail: { title: t.title } })); } catch (_) {}
+          }
         }
       });
 
@@ -12481,6 +12476,7 @@ Context:
   <script src="/scripts/pmg-handoff.js?v=task57-3" defer></script>
   <script src="/scripts/pmg-suggestions.js?v=task58-5" defer></script>
   <script src="/scripts/pmg-send-to.js?v=sendto-4-silent" defer></script>
+  <script src="/scripts/pmg-templates.js?v=tpl-1" defer></script>
   <script src="/scripts/pmg-auto-boost.js?v=ab-3" defer></script>
   <script src="/scripts/pmg-image-actions-gate.js?v=task135-1" defer></script>
   <script src="/scripts/pmg-postgen-actions.js?v=task61-2" defer></script>

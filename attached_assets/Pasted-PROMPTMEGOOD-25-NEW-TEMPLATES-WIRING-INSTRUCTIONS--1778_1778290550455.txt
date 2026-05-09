@@ -1,0 +1,208 @@
+PROMPTMEGOOD — 25 NEW TEMPLATES + WIRING INSTRUCTIONS
+=======================================================
+
+PART 1: REPLIT WIRING INSTRUCTIONS
+------------------------------------
+
+The templates section already exists in the DOM as #templates with a #templates-grid inside it.
+The four existing template cards are there but the section is not visible on the main screen.
+
+Do these three things:
+
+1. ADD A TRIGGER BELOW THE TEXTAREA
+   Directly below the #goal textarea, add a small link:
+   "Need inspiration? Browse templates"
+   When tapped, it scrolls to or reveals the #templates section.
+   Style it as small muted text — same ghost style as the preview nudge.
+
+2. WIRE EACH TEMPLATE CARD TO THE TEXTAREA
+   Every .template-card button needs an onclick that:
+   a) Sets document.getElementById('goal').value = [the template's goal text]
+   b) Scrolls back up to the textarea
+   c) Focuses the textarea so the user can edit it immediately
+   The goal text for each template is defined in Part 2 below.
+
+3. REPLACE THE 4 EXISTING TEMPLATES WITH THE 25 BELOW
+   Delete the current 4 cards in #templates-grid and replace with
+   the 25 cards defined in Part 2. Keep the same .template-card
+   HTML structure that already exists.
+
+
+PART 2: THE 25 TEMPLATES
+--------------------------
+
+Each template has:
+- CATEGORY (used for .template-card-meta)
+- TITLE (used for .template-card-title)
+- DESCRIPTION (used for .template-card-desc, shown on the card)
+- GOAL TEXT (what gets dropped into the #goal textarea when tapped)
+
+
+--- MONEY & BUSINESS (6 templates) ---
+
+1.
+CATEGORY: money · hustle
+TITLE: Start a Snow Removal Business
+DESCRIPTION: How to launch, price, and land your first customers this winter.
+GOAL TEXT: I want to start a snow removal business in my neighborhood. Help me figure out how to price jobs, what equipment I need to start cheap, how to find my first 10 customers, and what to say when I knock on doors or post online.
+
+2.
+CATEGORY: money · hustle
+TITLE: Make Your First $1,000 Online
+DESCRIPTION: A realistic plan to earn your first $1,000 from scratch.
+GOAL TEXT: I want to make my first $1,000 online with no startup money. Give me 3 realistic ways to do it this month, step by step, including what to say to potential clients and where to find them.
+
+3.
+CATEGORY: business · professional
+TITLE: Cold Email That Books Calls
+DESCRIPTION: Outbound email to a stranger who needs your service.
+GOAL TEXT: Write me a cold email I can send to local small business owners to offer my services. I want it to feel personal, not spammy, and end with a clear call to action to book a 15-minute call. My service is [describe your service].
+
+4.
+CATEGORY: money · pricing
+TITLE: Price Your Services Confidently
+DESCRIPTION: Stop undercharging. Find out what you should actually charge.
+GOAL TEXT: I run a small service business and I always undercharge because I'm afraid of losing clients. Help me figure out what I should charge, how to present my prices without apologizing, and what to say when someone says it's too expensive.
+
+5.
+CATEGORY: business · growth
+TITLE: Get Your First 10 Clients
+DESCRIPTION: A practical outreach plan for a brand new business.
+GOAL TEXT: I just started my business and I have zero clients. Give me a step-by-step plan to get my first 10 paying clients in the next 30 days without spending money on ads. Include what to post, who to contact, and what to say.
+
+6.
+CATEGORY: business · planning
+TITLE: Write a One-Page Business Plan
+DESCRIPTION: A clear, simple plan you can actually execute.
+GOAL TEXT: Help me write a simple one-page business plan for my idea. I want it to cover what I'm selling, who my customer is, how I make money, and what my first 90 days look like. My idea is [describe your idea].
+
+
+--- CONTENT & SOCIAL MEDIA (6 templates) ---
+
+7.
+CATEGORY: content · viral
+TITLE: Go Viral on YouTube
+DESCRIPTION: A video idea and script hook designed to get clicks and views.
+GOAL TEXT: I want to make a YouTube video that goes viral in my niche. Give me 5 video title ideas that would make people click, a strong opening hook for the best one, and an outline for the full video. My niche is [describe your niche].
+
+8.
+CATEGORY: content · social
+TITLE: Grow a Facebook Page Fast
+DESCRIPTION: A 30-day content plan to build a real following.
+GOAL TEXT: I want to grow my Facebook page from zero to 1,000 real followers in 30 days. Give me a content plan with specific post ideas for each week, what times to post, and how to get people to share my content. My page is about [describe your topic].
+
+9.
+CATEGORY: content · social
+TITLE: Write a Week of Instagram Content
+DESCRIPTION: 7 ready-to-post captions for your niche.
+GOAL TEXT: Write me 7 Instagram captions for this week — one for each day. They should mix education, inspiration, and engagement. Keep them conversational, not corporate. My brand is about [describe your brand or niche].
+
+10.
+CATEGORY: content · professional
+TITLE: LinkedIn Post That Gets Shares
+DESCRIPTION: A thought leadership post that builds your professional brand.
+GOAL TEXT: Write me a LinkedIn post that will get a lot of shares and comments. It should share a real insight or lesson, feel personal and honest, and end with a question that makes people want to respond. The topic I want to write about is [describe your topic or experience].
+
+11.
+CATEGORY: content · viral
+TITLE: Go Viral on X (Twitter)
+DESCRIPTION: A thread or single tweet designed to get massive engagement.
+GOAL TEXT: Write me a Twitter/X thread that goes viral. It should teach something valuable, be easy to read in short punchy lines, start with a hook that stops the scroll, and end with a call to follow me. The topic is [describe your topic].
+
+12.
+CATEGORY: content · strategy
+TITLE: Build a Content Strategy in 1 Hour
+DESCRIPTION: A simple repeatable system for posting consistently.
+GOAL TEXT: I want to build a simple content strategy I can actually stick to. Help me pick 3 content pillars for my brand, create a weekly posting schedule, and give me a template I can reuse every week so I never run out of ideas. My brand is about [describe your brand].
+
+
+--- CAREER & PERSONAL GROWTH (5 templates) ---
+
+13.
+CATEGORY: career · professional
+TITLE: Write a Resume That Gets Interviews
+DESCRIPTION: A results-focused resume for your target role.
+GOAL TEXT: Help me rewrite my resume to get more interviews. I want it to lead with results and numbers, not just job duties. Make it sound confident and specific. My target role is [describe the job] and my background is [briefly describe your experience].
+
+14.
+CATEGORY: career · negotiation
+TITLE: Ask for a Raise and Get It
+DESCRIPTION: A script for the conversation you've been putting off.
+GOAL TEXT: I want to ask my boss for a raise and I don't know how to start the conversation. Write me a script for how to bring it up, make my case, and handle pushback. I've been at this company for [time] and my main accomplishments are [list 2-3 things].
+
+15.
+CATEGORY: career · interview
+TITLE: Ace Your Next Job Interview
+DESCRIPTION: Answers to the 5 hardest interview questions.
+GOAL TEXT: Help me prepare for a job interview. Write strong, confident answers to these 5 questions: Tell me about yourself. What's your greatest weakness? Why do you want this job? Tell me about a time you failed. Where do you see yourself in 5 years. The role I'm interviewing for is [describe the role].
+
+16.
+CATEGORY: personal · productivity
+TITLE: Build a Morning Routine That Sticks
+DESCRIPTION: A personalized routine based on your goals and schedule.
+GOAL TEXT: Help me build a morning routine I will actually stick to. I want to feel energized, focused, and ready to work by 9am. I have about 60 minutes in the morning. My biggest goals right now are [describe your goals] and my biggest struggle is [describe what holds you back].
+
+17.
+CATEGORY: personal · mindset
+TITLE: Overcome Procrastination for Good
+DESCRIPTION: A practical system to stop delaying and start doing.
+GOAL TEXT: I struggle badly with procrastination and it's hurting my business and personal life. Give me a practical system to overcome it — not just motivation tips, but a real structure I can follow daily. Include how to handle the moments when I feel most stuck.
+
+
+--- FAITH & COMMUNITY (4 templates) ---
+
+18.
+CATEGORY: faith · ministry
+TITLE: Write a Powerful Sermon Outline
+DESCRIPTION: A structured sermon with a clear message and application.
+GOAL TEXT: Help me write a sermon outline on the topic of [describe your topic or scripture]. I want it to have a strong opening that grabs attention, 3 clear points with scripture references, real-life illustrations people can relate to, and a closing call to action.
+
+19.
+CATEGORY: faith · devotional
+TITLE: Write a Daily Devotional
+DESCRIPTION: A short, meaningful devotional for your community.
+GOAL TEXT: Write a short daily devotional (about 300 words) based on [describe your scripture or theme]. It should open with a relatable story or question, connect it to the scripture, and close with a practical application and a prayer.
+
+20.
+CATEGORY: faith · outreach
+TITLE: Plan a Community Outreach Event
+DESCRIPTION: A step-by-step plan to serve your neighborhood.
+GOAL TEXT: Help me plan a community outreach event for my church or organization. I want to serve my neighborhood in a practical way, attract new people, and make a real impact. My community is [describe your area] and my resources are [describe what you have available].
+
+21.
+CATEGORY: faith · leadership
+TITLE: Write a Motivational Speech
+DESCRIPTION: An inspiring speech for your team, congregation, or community.
+GOAL TEXT: Write me a motivational speech for [describe your audience — team, congregation, graduates, etc.]. The message I want to leave them with is [describe your core message]. Make it personal, powerful, and end with something they will remember.
+
+
+--- LEARNING & PROBLEM SOLVING (4 templates) ---
+
+22.
+CATEGORY: learning · research
+TITLE: Understand Any Complex Topic Fast
+DESCRIPTION: A clear, simple explanation of anything complicated.
+GOAL TEXT: Explain [describe the topic] to me like I'm smart but completely new to it. Break it down into the key concepts I need to understand first, give me real-world examples, and tell me what most people get wrong about it.
+
+23.
+CATEGORY: learning · decision
+TITLE: Make a Hard Decision With Clarity
+DESCRIPTION: A structured framework to think through your toughest choices.
+GOAL TEXT: I'm trying to decide between [describe your two or more options] and I keep going back and forth. Help me think through this decision clearly. What are the real trade-offs? What questions should I be asking myself? What would a smart, experienced person consider that I might be missing?
+
+24.
+CATEGORY: productivity · systems
+TITLE: Delegate and Automate Your Work
+DESCRIPTION: Find what to hand off so you can focus on what matters.
+GOAL TEXT: I'm overwhelmed with tasks and I need to figure out what to delegate, what to automate, and what only I should be doing. Help me build a simple system to sort my workload. My main responsibilities are [list your key tasks] and my biggest time wasters are [describe what eats your time].
+
+25.
+CATEGORY: learning · writing
+TITLE: Write Anything Better and Faster
+DESCRIPTION: A framework for clear, compelling writing every time.
+GOAL TEXT: I need to write [describe what you need to write — email, report, proposal, post, etc.] and I want it to be clear, persuasive, and easy to read. Help me structure it, give me an opening line that hooks the reader, and tell me what to cut to make it tighter.
+
+
+=======================================================
+END OF FILE
+=======================================================
