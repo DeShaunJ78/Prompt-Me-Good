@@ -963,12 +963,15 @@ html.pmg-chassis-v3 body.pmg-has-result #run-with-ai-btn {
    result output and the "Send your prompt to:" handoff label. Small,
    muted, not a warning, not a button — just a draft-check reframe. */
 .pmgv3-send-nudge {
-  margin: 14px 0 6px;
-  padding: 0;
-  font-size: 12px;
-  line-height: 1.45;
-  color: rgba(255, 255, 255, 0.55);
-  font-style: italic;
+  font-size: 0.72rem !important;
+  color: #8a9a8a !important;
+  opacity: 0.6 !important;
+  font-style: italic !important;
+  text-align: center !important;
+  margin: 8px 0 12px 0 !important;
+  padding: 0 !important;
+  line-height: 1.45 !important;
+  font-weight: 400 !important;
 }
 .pmgv3-send-label {
   margin: 8px 0 4px;
@@ -1000,13 +1003,17 @@ html.pmg-chassis-v3 body.pmg-has-result #run-with-ai-btn {
 .btn-send-to:active { transform: translateY(1px); }
 
 /* ChatGPT — OpenAI green */
-.btn-send-to[data-pmg-dest="chatgpt"]    { background: #10A37F; border-color: #10A37F; }
-/* Claude — Anthropic sand gold (softer on dark; switch to #CC785C for burnt orange) */
-.btn-send-to[data-pmg-dest="claude"]     { background: #C99B6B; border-color: #C99B6B; color: #1a1208; }
-/* Gemini — Google blue */
-.btn-send-to[data-pmg-dest="gemini"]     { background: #4285F4; border-color: #4285F4; }
+.btn-send-to[data-pmg-dest="chatgpt"],
+button[data-pmg-dest="chatgpt"].btn-send-to    { background: #10A37F !important; border-color: #10A37F !important; color: #ffffff !important; }
+/* Claude — Anthropic sand gold */
+.btn-send-to[data-pmg-dest="claude"],
+button[data-pmg-dest="claude"].btn-send-to     { background: #D4A574 !important; border-color: #D4A574 !important; color: #1a1a1a !important; }
 /* Perplexity — teal */
-.btn-send-to[data-pmg-dest="perplexity"] { background: #20B8CD; border-color: #20B8CD; color: #04222a; }
+.btn-send-to[data-pmg-dest="perplexity"],
+button[data-pmg-dest="perplexity"].btn-send-to { background: #20B2AA !important; border-color: #20B2AA !important; color: #ffffff !important; }
+/* Gemini — Google blue */
+.btn-send-to[data-pmg-dest="gemini"],
+button[data-pmg-dest="gemini"].btn-send-to     { background: #4285F4 !important; border-color: #4285F4 !important; color: #ffffff !important; }
 
 /* Desktop default: photo accordion header is hidden, suite is always shown.
    Mobile rules above (≤768px) take over to collapse it. */
