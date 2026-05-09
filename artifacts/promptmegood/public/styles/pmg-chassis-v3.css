@@ -977,16 +977,14 @@ html.pmg-chassis-v3 body.pmg-has-result #run-with-ai-btn {
   letter-spacing: 0.02em;
   color: rgba(255, 255, 255, 0.75);
 }
-/* Send-to buttons: secondary ghost/outline styling — sit visually
-   below the primary Run with AI CTA so they read as alternative
-   destinations, not competing primaries. */
+/* cv3-53: Each send-to destination is brand-coloured (filled, not
+   ghost) so the four buttons are visually distinct and recognisable.
+   Base rule below holds layout/typography ONLY — colour is supplied
+   per-destination by the [data-pmg-dest=...] selectors. */
 .btn-send-to {
-  flex: 1;
-  padding: 9px 8px;
-  background: transparent;
-  border: 1px solid #00c896;
+  padding: 10px 8px;
+  border: 1px solid transparent;
   border-radius: 8px;
-  color: #00c896;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -995,14 +993,20 @@ html.pmg-chassis-v3 body.pmg-has-result #run-with-ai-btn {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  transition: background 0.15s ease, color 0.15s ease, transform 0.05s ease;
+  color: #fff;
+  transition: filter 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
 }
-.btn-send-to:hover {
-  background: rgba(0, 200, 150, 0.08);
-  color: #3ee0a0;
-  border-color: #3ee0a0;
-}
+.btn-send-to:hover  { filter: brightness(1.10); box-shadow: 0 4px 14px rgba(0,0,0,0.25); }
 .btn-send-to:active { transform: translateY(1px); }
+
+/* ChatGPT — OpenAI green */
+.btn-send-to[data-pmg-dest="chatgpt"]    { background: #10A37F; border-color: #10A37F; }
+/* Claude — Anthropic sand gold (softer on dark; switch to #CC785C for burnt orange) */
+.btn-send-to[data-pmg-dest="claude"]     { background: #C99B6B; border-color: #C99B6B; color: #1a1208; }
+/* Gemini — Google blue */
+.btn-send-to[data-pmg-dest="gemini"]     { background: #4285F4; border-color: #4285F4; }
+/* Perplexity — teal */
+.btn-send-to[data-pmg-dest="perplexity"] { background: #20B8CD; border-color: #20B8CD; color: #04222a; }
 
 /* Desktop default: photo accordion header is hidden, suite is always shown.
    Mobile rules above (≤768px) take over to collapse it. */
