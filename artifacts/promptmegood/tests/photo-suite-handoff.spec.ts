@@ -4,14 +4,14 @@ import { installApiMocks } from "./_mock-api";
 /* Task #111 — Image-mode → Photography Suite handoff smoke
  *
  * Verifies the handoff card contract:
- *   1. The card mounts under .image-result-actions in image mode.
+ *   1. The card mounts under .image-result-actions once the
+ *      chassis-v3 Photography panel is active.
  *   2. With no image rendered, the card is in the disabled state
  *      and clicking the CTA does NOT route or hydrate.
  *   3. With a rendered image, the card is enabled, the CTA meets
  *      the 44px tap target floor, clicking it routes to the Suite,
  *      expands the first group, mounts the hydration reference
  *      chip, and exposes the hydration payload.
- *   4. The inline entry-point cue is present near #imageModeBtn.
  *
  * Uses the mobile-360 project (360x800) to also catch the
  * mobile-first full-width layout on ≤640px.
@@ -48,37 +48,30 @@ test.describe("Photography Suite handoff @ mobile-360", () => {
       undefined,
       { timeout: 10_000 },
     );
-    /* Enter image mode so the suite + result section are exposed.
-       Also drop `pmg-workstation-promote` so the entry-point cue (which
-       opts out of the streamlined homepage above-the-fold mode) is
-       allowed to mount — this test exercises the handoff feature in
-       isolation, not the streamlined homepage layout. */
+    /* Enter image mode by clicking the chassis-v3 Photography tab
+       (Task #140 removed window.setMode and the legacy
+       #imageModeBtn). Drive the real user gesture so tab wiring
+       regressions are actually caught. */
+    const photoTab = page.locator('.pmgv3-tab[data-module="photography"]');
+    await photoTab.waitFor({ state: "visible", timeout: 10_000 });
+    await photoTab.click();
+    await expect(page.locator(".pmgv3-body")).toHaveAttribute(
+      "data-active-panel",
+      "photography",
+      { timeout: 5_000 },
+    );
+    /* Reveal the legacy result section so the card has a host. */
     await page.evaluate(() => {
-      document.body.classList.remove("pmg-workstation-promote");
-      const w = window as unknown as { setMode?: (m: string) => void };
-      if (typeof w.setMode === "function") {
-        w.setMode("image");
-      } else {
-        document.body.classList.add("image-mode");
-      }
-      /* Reveal the result section so the card has a host. */
       const sec = document.getElementById("imageResultSection");
       if (sec) sec.removeAttribute("hidden");
     });
-    /* Give the suite-handoff init retries a chance to mount the cue
-       now that the streamlined-mode opt-out is gone. */
-    await page.waitForFunction(
-      () => !!document.getElementById("pmg-suite-handoff-cue"),
-      undefined,
-      { timeout: 5_000 },
-    );
     await page.waitForSelector("#pmg-suite-handoff-card", {
       state: "attached",
       timeout: 5_000,
     });
   });
 
-  test("card mounts and entry-point cue is present", async ({ page }) => {
+  test("card mounts in the photography panel", async ({ page }) => {
     const state = await page.evaluate(
       () =>
         (window as unknown as { __pmgSuiteHandoff: SuiteHandoff })
@@ -86,7 +79,6 @@ test.describe("Photography Suite handoff @ mobile-360", () => {
     );
     expect(state.mounted).toBe(true);
     expect(state.ctaMounted).toBe(true);
-    expect(state.cueMounted).toBe(true);
   });
 
   test("card is disabled when no image has been generated", async ({

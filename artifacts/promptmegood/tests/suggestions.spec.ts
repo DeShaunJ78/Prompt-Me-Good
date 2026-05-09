@@ -16,7 +16,6 @@ type SuggestionsApi = {
 type Win = Window & {
   __pmgSuggestions?: SuggestionsApi;
   generateImage?: () => unknown;
-  runImageGeneration?: () => unknown;
 };
 
 async function gotoApp(page: Page): Promise<void> {
@@ -492,50 +491,6 @@ test.describe("Smart pill suggestions + negative pills @ mobile-360", () => {
     expect(out).not.toContain("Dramatic Shadows");
     expect(out).not.toContain("Cinematic Low-Key");
     expect(out).not.toContain("Cinematic");
-  });
-
-  /* Regression: the primary `#image-generate-btn` calls
-     `runImageGeneration()` directly via inline onclick (see
-     index.html:3363). Wrapping only `window.generateImage` would
-     let users skip the "Avoid:" suffix on the main button path —
-     the wrapper must also patch `runImageGeneration`. */
-  test("runImageGeneration also receives the Avoid suffix", async ({
-    page,
-  }) => {
-    await gotoApp(page);
-    await setAvoid(page, "lighting", true);
-    await activatePill(page, "Harsh Noon");
-    await page.evaluate(() => {
-      const goal = document.getElementById("goal") as HTMLTextAreaElement;
-      goal.value = "A cosy reading nook";
-      const realFetch = window.fetch;
-      window.fetch = ((input: RequestInfo | URL) => {
-        if (typeof input === "string" && input.indexOf("/api/image") !== -1) {
-          return Promise.resolve(
-            new Response(JSON.stringify({ url: "data:," }), {
-              status: 200,
-              headers: { "Content-Type": "application/json" },
-            }),
-          );
-        }
-        return realFetch(input);
-      }) as typeof fetch;
-    });
-    await page.evaluate(async () => {
-      const w = window as unknown as Win;
-      if (typeof w.runImageGeneration === "function") {
-        try {
-          await w.runImageGeneration();
-        } catch {
-          /* ignore */
-        }
-      }
-    });
-    const goalAfter = await page.evaluate(() => {
-      return (document.getElementById("goal") as HTMLTextAreaElement).value;
-    });
-    expect(goalAfter).toMatch(/Avoid:\s/);
-    expect(goalAfter).toContain("Harsh Noon");
   });
 
   /* Regression: the original wrapper guarded with

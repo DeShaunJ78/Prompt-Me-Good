@@ -311,24 +311,18 @@ test.describe(`horizontal overflow @ ${VIEWPORT_WIDTH}px (homepage interactive s
     await dismissOnboarding(page);
     await page.waitForTimeout(400);
 
-    const switched = await page.evaluate(() => {
-      const w = window as unknown as {
-        setMode?: (m: string) => void;
-      };
-      if (typeof w.setMode === "function") {
-        w.setMode("image");
-      }
-      const btn = document.getElementById(
-        "imageModeBtn",
-      ) as HTMLButtonElement | null;
-      if (btn) btn.click();
-      document.body.classList.add("image-mode");
-      return document.body.classList.contains("image-mode");
-    });
-    expect(
-      switched,
-      "homepage should enter image mode (body.image-mode)",
-    ).toBe(true);
+    /* Drive the real user gesture: click the chassis-v3
+       Photography tab (Task #140 removed #imageModeBtn /
+       window.setMode). */
+    const photoTab = page.locator('.pmgv3-tab[data-module="photography"]');
+    await photoTab.waitFor({ state: "visible", timeout: 10_000 });
+    await photoTab.click();
+    await expect(page.locator(".pmgv3-body")).toHaveAttribute(
+      "data-active-panel",
+      "photography",
+      { timeout: 5_000 },
+    );
+    await expect(page.locator("body")).toHaveClass(/image-mode/);
     await page.waitForTimeout(500);
 
     await page
