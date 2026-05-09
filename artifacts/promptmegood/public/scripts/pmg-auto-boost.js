@@ -39,7 +39,7 @@
   // should host the inline question card (above the prompt).
   var SUITES = {
     text: {
-      label: '✨ Auto-Boost Prompt',
+      label: 'Auto-Boost Prompt',
       read: function () {
         var rb = document.getElementById('resultBox');
         if (!rb) return '';
@@ -53,18 +53,26 @@
         if (rb) rb.textContent = text;
       },
       mountTarget: function () {
-        // Mount directly below the v3 strength bar (visible) instead of
-        // after the legacy #copy-btn (which lives inside .actions-row,
-        // hidden by chassis-v3 CSS). Falls back to #copy-btn for any
-        // non-v3 surface that may still load this script.
-        return document.getElementById('pmgv3-strength-slot')
-          || document.getElementById('copy-btn');
+        // ab-5-always-show: mount as a sibling AFTER the .output-box
+        // wrapper (NOT inside it). The wrapper carries .is-collapsed
+        // pre-result, which the chassis CSS hides via display:none on
+        // the wrapper itself — any child of the wrapper (including the
+        // strength slot) is invisible until generation. Mounting after
+        // the wrapper keeps the button visible from first paint, which
+        // is what the user wants for discoverability.
+        var slot = document.getElementById('pmgv3-strength-slot');
+        if (slot) {
+          var box = slot.closest('.output-box');
+          if (box) return box;
+          return slot; // fallback if not wrapped
+        }
+        return document.getElementById('copy-btn');
       },
       cardHost: function () { return document.getElementById('resultBox'); },
       cardPosition: 'before',
     },
     photo: {
-      label: '✨ Auto-Boost Brief',
+      label: 'Auto-Boost Brief',
       read: function () {
         var ta = document.getElementById('pmg-vs-image-refined');
         return ta ? (ta.value || '').trim() : '';
@@ -81,7 +89,7 @@
       cardPosition: 'before',
     },
     video: {
-      label: '✨ Auto-Boost Brief',
+      label: 'Auto-Boost Brief',
       read: function () {
         var ta = document.getElementById('pmg-vs-video-refined');
         return ta ? (ta.value || '').trim() : '';

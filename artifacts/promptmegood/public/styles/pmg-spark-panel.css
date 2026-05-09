@@ -1,14 +1,16 @@
 /* ============================================================================
-   PromptMeGood — Prompt Whisperer (sp-2 — slim glowing search bar)
-   Replaces the bulky sp-1 panel. Single-line input + inline Spark button
-   with an animated mint glow. Visually distinct from the main builder
-   below it (different shape, height, border, energy).
+   PromptMeGood — Prompt Whisperer (sp-3 — typewriter slim search bar)
+   V3 redesign: slim height, animated mint glow, label row with title,
+   and a typewriter cycling animation behind a transparent input. The
+   typewriter overlay prevents long sample questions from being truncated
+   on narrow screens (the input itself stays visually empty until the
+   user types).
    ============================================================================ */
 
 /* Whisperer Bar Container */
 .pmgv3-whisperer-bar {
-  margin: 0 0 10px;
-  padding: 12px 16px;
+  margin: 0 0 12px;
+  padding: 14px 18px;
   background: linear-gradient(135deg,
     rgba(0, 200, 150, 0.06) 0%,
     rgba(0, 0, 0, 0.18) 100%);
@@ -24,11 +26,12 @@
   50%      { box-shadow: 0 0 24px rgba(0, 200, 150, 0.25); }
 }
 
+/* Label row */
 .whisperer-label {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .whisperer-icon {
@@ -44,15 +47,24 @@
   letter-spacing: 1.2px;
 }
 
+/* Input row */
 .whisperer-input-row {
   display: flex;
   gap: 10px;
   align-items: center;
 }
 
-.whisperer-input {
+.whisperer-input-wrapper {
   flex: 1;
   min-width: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* The actual input field (transparent background, sits OVER the typewriter) */
+.whisperer-input {
+  width: 100%;
   background: transparent;
   border: none;
   border-bottom: 1px solid rgba(0, 200, 150, 0.3);
@@ -63,17 +75,51 @@
   font-family: inherit;
   transition: border-color 0.2s;
   border-radius: 0;
+  position: relative;
+  z-index: 2; /* above the typewriter overlay */
 }
 
 .whisperer-input:focus {
   border-bottom-color: #00c896;
 }
 
-.whisperer-input::placeholder {
+/* The animated typewriter text (sits behind the input). Clicks pass
+   through so the user can click "into" the question to start typing. */
+.whisperer-typewriter {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
   color: rgba(255, 255, 255, 0.45);
   font-style: italic;
+  font-size: 15px;
+  pointer-events: none;
+  z-index: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  /* Blinking cursor on the right edge of the currently-typed text */
+  border-right: 2px solid rgba(0, 200, 150, 0.7);
+  animation: whisperBlink 0.75s step-end infinite;
+  /* Reserve a sensible line so the overlay aligns with the input baseline */
+  height: 1.4em;
+  line-height: 1.4em;
 }
 
+@keyframes whisperBlink {
+  from, to { border-color: transparent; }
+  50%      { border-color: rgba(0, 200, 150, 0.7); }
+}
+
+/* When the user is typing OR has focused the input, hide the typewriter
+   so it doesn't compete with their value. JS also pauses the loop. */
+.pmgv3-whisperer-bar.is-active .whisperer-typewriter,
+.whisperer-input:focus ~ .whisperer-typewriter {
+  display: none;
+}
+
+/* Spark button */
 .whisperer-spark-btn {
   background: #00c896;
   color: #000;
@@ -132,9 +178,10 @@
 /* Mobile: keep the bar slim, allow the button to shrink slightly */
 @media (max-width: 480px) {
   .pmgv3-whisperer-bar {
-    padding: 10px 12px;
+    padding: 12px 14px;
   }
-  .whisperer-input {
+  .whisperer-input,
+  .whisperer-typewriter {
     font-size: 14px;
   }
   .whisperer-spark-btn {

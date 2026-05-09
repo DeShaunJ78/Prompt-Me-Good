@@ -212,12 +212,28 @@
   opacity: 0.85 !important;
 }
 
-/* Auto-Boost button: when no result yet, the mount slot should not
-   reserve vertical space. The button is only useful after generation,
-   so collapse the slot until populated. */
+/* Auto-Boost button: ab-5-always-show — per UX feedback the button must
+   be visible BEFORE generation too, so users discover it when shaping
+   their first idea. Removed the prior `body:not(.pmg-has-result)` hide
+   rule. The button still respects an explicit [hidden] attribute.
+   We also lift the button out of the parent .output-box.is-collapsed
+   visibility constraint by promoting its display state inline-block
+   regardless of the wrapper's collapsed state. */
 .pmg-ab-btn[hidden] { display: none !important; }
-body:not(.pmg-has-result) #pmg-ab-btn-text {
-  display: none !important;
+html.pmg-chassis-v3 #pmg-ab-btn-text {
+  display: inline-flex !important;
+  visibility: visible !important;
+}
+/* The auto-boost button is mounted as a sibling of #pmgv3-strength-slot
+   inside .output-box, which gets `is-collapsed` (display:none on its
+   children) until a result exists. Pull the text auto-boost button OUT
+   of that collapse by absolute-positioning it to its own row above the
+   collapsed wrapper — done via wrapping the button in its own block
+   with relative positioning. Simpler: defeat the parent collapse for
+   the button only. */
+html.pmg-chassis-v3 .output-box.is-collapsed #pmg-ab-btn-text {
+  display: inline-flex !important;
+  margin: 8px 0 4px;
 }
 
 /* ----- Mobile tweaks ------------------------------------------- */

@@ -101,13 +101,21 @@
           // Replaces the bulky sp-1 panel with a single-line input that
           // looks/feels like a search field, not a workspace. Wired by
           // /scripts/pmg-spark-panel.js. Sits above the main builder.
+          // sp-3-typewriter: V3 redesign. Slim glowing search bar with
+          // a typewriter cycling animation (blinking cursor), so long
+          // prompts don't get truncated on mobile and the bar visually
+          // reads as "interactive" not "static". The typewriter overlay
+          // sits BEHIND a transparent input — clicks pass through.
           '<div class="pmgv3-whisperer-bar" id="pmgv3-whisperer-bar">',
             '<div class="whisperer-label">',
               '<span class="whisperer-icon" aria-hidden="true">✨</span>',
               '<span class="whisperer-title">Prompt Whisperer</span>',
             '</div>',
             '<div class="whisperer-input-row">',
-              '<input type="text" class="whisperer-input" id="whisperer-input" autocomplete="off" placeholder="What\'s a business idea you\'ve never had time to explore?" />',
+              '<div class="whisperer-input-wrapper">',
+                '<input type="text" class="whisperer-input" id="whisperer-input" autocomplete="off" placeholder="" aria-label="Prompt Whisperer question" />',
+                '<div class="whisperer-typewriter" id="whisperer-typewriter" aria-hidden="true"></div>',
+              '</div>',
               '<button type="button" class="whisperer-spark-btn" id="btn-whisperer-spark">Spark →</button>',
             '</div>',
           '</div>',
@@ -835,9 +843,21 @@
         // Restore the default label (text panel uses "Auto-Boost Prompt",
         // photo/video panels use "Auto-Boost Brief"). Only rewrite if it
         // was changed (e.g. "Boosting…", "✓ Boosted").
-        var label = (id === 'pmg-ab-btn-text') ? '\u2728 Auto-Boost Prompt' : '\u2728 Auto-Boost Brief';
+        // Note: pmg-auto-boost.js renders the sparkle as a separate
+        // <span class="pmg-ab-spark"> sibling, so the label text itself
+        // does NOT include a sparkle (avoids the "✨✨" duplicate).
+        // The span is preserved across resets — we only touch the
+        // .pmg-ab-label child here when restoring.
+        var label = (id === 'pmg-ab-btn-text') ? 'Auto-Boost Prompt' : 'Auto-Boost Brief';
         if (ab.textContent && /boost(ing|ed)|\u2713|too|loading/i.test(ab.textContent)) {
-          ab.textContent = label;
+          // Preserve the .pmg-ab-spark icon span by only rewriting the
+          // .pmg-ab-label child, not the whole textContent.
+          var lblSpan = ab.querySelector('.pmg-ab-label');
+          if (lblSpan) {
+            lblSpan.textContent = label;
+          } else {
+            ab.textContent = label;
+          }
         }
       });
       // 6b. Remove any inline auto-boost clarifier cards left on screen.
