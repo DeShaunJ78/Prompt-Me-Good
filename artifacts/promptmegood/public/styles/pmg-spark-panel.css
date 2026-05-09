@@ -65,7 +65,11 @@
 /* The actual input field (transparent background, sits OVER the typewriter) */
 .whisperer-input {
   width: 100%;
-  background: transparent;
+  /* sp-4 (Whisperer Fix Brief): force transparency so the typewriter
+     overlay underneath remains visible. A global input rule elsewhere
+     was computing this to rgb(14,58,54) (solid dark teal), which
+     completely covered the cycling placeholder text. */
+  background: transparent !important;
   border: none;
   border-bottom: 1px solid rgba(0, 200, 150, 0.3);
   color: #fff;
