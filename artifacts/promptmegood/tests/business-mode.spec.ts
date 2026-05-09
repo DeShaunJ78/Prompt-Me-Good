@@ -351,5 +351,12 @@ test.describe("Business Mode workspace", () => {
     expect(entry.data.category).toBe("business");
     expect(entry.data.template).toBe("offer-creation");
     expect(entry.source).toBe("business-mode");
+    // NOTE: a UI-level assertion that the saved entry surfaces in the
+    // chassis Vault drawer cannot be added today — app.html's
+    // renderHistory() lives inside an IIFE and is not exposed on
+    // window, and there is no pmg:vault-saved listener that triggers
+    // a re-render of the reparented #history list. See follow-up
+    // task #146 for the production fix; once landed, this spec
+    // should be extended to open the drawer and assert visibility.
   });
 });
