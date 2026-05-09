@@ -118,6 +118,10 @@
               '<span class="tuning-hint">We\'ve pre-selected settings based on your idea. Adjust if needed.</span>',
             '</button>',
             '<div class="pmgv3-tuning-host"></div>',
+            // cv3-58 epic-text: container for the new advanced reasoning /
+            // calibrated-confidence / target-audience controls. Mounted by
+            // mountEpicTextTuning() once the chassis is up.
+            '<div class="pmgv3-epic-tuning" id="pmgv3-epic-tuning"></div>',
           '</section>',
           '<section class="generate-section is-collapsed" id="generate-section" style="display:none !important">',
             '<div class="generate-divider"></div>',
@@ -806,6 +810,140 @@
     // Expose so other scripts (or the home-button handler) can call it.
     window.pmgChassisV3 = window.pmgChassisV3 || {};
     window.pmgChassisV3.startOver = doStartOver;
+
+    // ===================================================================
+    // cv3-58 — Text Prompting Suite "Epic" upgrade
+    // ===================================================================
+    // Three new client-side controls injected into the v3 tuning section:
+    //   1. Reasoning framework <select>  (Standard / CoT / CAD / MPS)
+    //   2. Strict Fact-Checking switch   (calibrated-confidence directive)
+    //   3. Target-audience text <input>  (persona injector)
+    //
+    // None of these touch the legacy #settingsPanel selects — they live
+    // in their own #pmgv3-epic-tuning container ABOVE the legacy panel.
+    // At submit time a capture-phase listener on #prompt-form temporarily
+    // appends the chosen directives to #goal.value and restores the
+    // original value in a microtask. Same mutate-and-restore pattern that
+    // pmg-pro.js's Brand Voice injector already uses (documented at
+    // app.html ~L8842).
+    var EPIC_REASONING_DIRECTIVE = {
+      cot: 'Before providing the final answer, please think step-by-step. Break down your reasoning process clearly.',
+      cad: 'Please solve this by: 1) Identifying the core components of the problem. 2) Solving each component individually. 3) Synthesizing the partial solutions into a holistic final answer.',
+      mps: 'Please analyze this from at least 3 distinct perspectives. For each, articulate its core assumptions and strongest arguments before providing an integrated conclusion.'
+    };
+    var EPIC_REASONING_HINTS = {
+      standard: 'Standard: Fast and direct — best when you just want the answer.',
+      cot:      'Step-by-Step: Forces the AI to show its work — best for math, logic, or planning.',
+      cad:      'Break It Down: Decomposes a big problem into parts then synthesizes — best for massive, complex projects.',
+      mps:      'Multiple Perspectives: Forces the AI to argue 3+ angles before concluding — best for debates or strategy.'
+    };
+    var EPIC_CONFIDENCE_DIRECTIVE = 'For each factual claim you make, assign an explicit confidence level (e.g., Highly Confident, Speculative, Unknown). Prioritize accurate confidence calibration over making definitive statements. If you do not know, explicitly state that you lack sufficient information.';
+    var EPIC_AUDIENCE_DIRECTIVE_TPL = 'Tailor your vocabulary, tone, and examples specifically for this target audience: ';
+
+    function buildEpicTextTuningHtml() {
+      return [
+        '<div class="pmgv3-reasoning-frameworks">',
+          '<label class="pmgv3-section-label" for="pmgv3-reasoning-select">How should the AI think?</label>',
+          '<select id="pmgv3-reasoning-select" class="pmgv3-select">',
+            '<option value="standard">Standard (Just give me the answer)</option>',
+            '<option value="cot">Step-by-Step (Best for math, logic, or planning)</option>',
+            '<option value="cad">Break It Down (Best for massive, complex projects)</option>',
+            '<option value="mps">Multiple Perspectives (Best for debates or strategy)</option>',
+          '</select>',
+          '<p class="pmgv3-style-hint" id="pmgv3-reasoning-hint">' + EPIC_REASONING_HINTS.standard + '</p>',
+        '</div>',
+        '<div class="pmgv3-confidence-toggle">',
+          '<label class="pmgv3-switch">',
+            '<input type="checkbox" id="pmgv3-calibrated-confidence">',
+            '<span class="pmgv3-slider"></span>',
+          '</label>',
+          '<div class="pmgv3-switch-text">',
+            '<span class="pmgv3-switch-label">Strict Fact-Checking Mode</span>',
+            '<p class="pmgv3-switch-hint">Forces the AI to tell you how confident it is in each claim, and to admit when it doesn\'t know — instead of guessing.</p>',
+          '</div>',
+        '</div>',
+        '<div class="pmgv3-audience-injector">',
+          '<label class="pmgv3-section-label" for="pmgv3-target-audience">Who is this for?</label>',
+          '<input type="text" id="pmgv3-target-audience" class="pmgv3-input" placeholder="e.g. busy small-business owners, 5th-grade students, senior engineers" maxlength="200" autocomplete="off" />',
+          '<p class="pmgv3-style-hint">The AI will automatically adjust its vocabulary, tone, and examples to match.</p>',
+        '</div>'
+      ].join('');
+    }
+    function mountEpicTextTuning() {
+      var host = document.getElementById('pmgv3-epic-tuning');
+      if (!host || host.getAttribute('data-mounted') === '1') return;
+      host.innerHTML = buildEpicTextTuningHtml();
+      host.setAttribute('data-mounted', '1');
+      try {
+        var sel = document.getElementById('pmgv3-reasoning-select');
+        var saved = localStorage.getItem('pmgv3:epic:reasoning');
+        if (sel && saved && EPIC_REASONING_HINTS[saved]) sel.value = saved;
+        if (sel) {
+          var hint = document.getElementById('pmgv3-reasoning-hint');
+          if (hint) hint.textContent = EPIC_REASONING_HINTS[sel.value] || EPIC_REASONING_HINTS.standard;
+          sel.addEventListener('change', function () {
+            try { localStorage.setItem('pmgv3:epic:reasoning', sel.value); } catch (_) {}
+            var h = document.getElementById('pmgv3-reasoning-hint');
+            if (h) h.textContent = EPIC_REASONING_HINTS[sel.value] || EPIC_REASONING_HINTS.standard;
+          });
+        }
+        var cc = document.getElementById('pmgv3-calibrated-confidence');
+        var ccSaved = localStorage.getItem('pmgv3:epic:confidence');
+        if (cc && ccSaved === '1') cc.checked = true;
+        if (cc) cc.addEventListener('change', function () {
+          try { localStorage.setItem('pmgv3:epic:confidence', cc.checked ? '1' : '0'); } catch (_) {}
+        });
+        var ta = document.getElementById('pmgv3-target-audience');
+        var taSaved = localStorage.getItem('pmgv3:epic:audience');
+        if (ta && taSaved) ta.value = taSaved;
+        if (ta) ta.addEventListener('input', function () {
+          try { localStorage.setItem('pmgv3:epic:audience', ta.value); } catch (_) {}
+        });
+      } catch (_) {}
+    }
+    function collectEpicDirectives() {
+      var out = [];
+      var sel = document.getElementById('pmgv3-reasoning-select');
+      if (sel && sel.value && EPIC_REASONING_DIRECTIVE[sel.value]) {
+        out.push(EPIC_REASONING_DIRECTIVE[sel.value]);
+      }
+      var cc = document.getElementById('pmgv3-calibrated-confidence');
+      if (cc && cc.checked) out.push(EPIC_CONFIDENCE_DIRECTIVE);
+      var ta = document.getElementById('pmgv3-target-audience');
+      var aud = ta && ta.value && ta.value.trim();
+      if (aud) out.push(EPIC_AUDIENCE_DIRECTIVE_TPL + aud);
+      return out;
+    }
+    function attachEpicDirectivesInjector() {
+      var form = document.getElementById('prompt-form');
+      if (!form || form.getAttribute('data-pmgv3-epic-injector') === '1') return;
+      form.setAttribute('data-pmgv3-epic-injector', '1');
+      // Capture phase so we mutate BEFORE the legacy bubble-phase
+      // submit handler at app.html ~L8840 reads getFormData(). Restore
+      // the original goal text in a microtask — by then getFormData()
+      // has already captured the mutated value, but the user never sees
+      // the appended directives in their textarea.
+      form.addEventListener('submit', function () {
+        var goal = document.getElementById('goal');
+        if (!goal) return;
+        var dirs = collectEpicDirectives();
+        if (!dirs.length) return;
+        var original = goal.value;
+        var suffix = '\n\n' + dirs.join('\n\n');
+        goal.value = original + suffix;
+        Promise.resolve().then(function () {
+          if (goal.value === original + suffix) goal.value = original;
+        });
+      }, true);
+    }
+    // Expose for tests / external callers.
+    window.pmgChassisV3.mountEpicTextTuning = mountEpicTextTuning;
+    window.pmgChassisV3.collectEpicDirectives = collectEpicDirectives;
+    // Mount the epic-text controls + attach the submit-time directive
+    // injector. Called inside wireActions() so the helper functions are
+    // in scope (they're declared as inner functions above).
+    mountEpicTextTuning();
+    attachEpicDirectivesInjector();
 
     function mountStartOverLinks() {
       // (a) Below the Generate button, inside #generate-section.

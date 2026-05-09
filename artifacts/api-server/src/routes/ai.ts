@@ -1198,8 +1198,12 @@ router.post("/boost", rateLimit, async (req, res) => {
     return;
   }
   const scopeSystem: Record<typeof scope, string> = {
+    // cv3-58: Recursive Self-Improvement Prompting (RSIP). The model writes
+    // an optimized first draft, critiques it for 2 weaknesses, then writes
+    // a refined v2 — but only the v2 is returned. This consistently beats
+    // single-shot rewriting on prompt-engineering benchmarks.
     text:
-      "You are PromptMeGood's structural strengthening engine. Rewrite the user's prompt so it includes explicit Role, Context, Constraints, Tone, and Output Format. Do NOT change the core intent or subject. Only add the structural elements that are missing. Output ONLY the strengthened prompt as plain text — no headers, no markdown fences, no commentary.",
+      "You are PromptMeGood's structural strengthening engine using Recursive Self-Improvement Prompting. Take the user's prompt and silently follow this loop: (1) Write an optimized version that includes explicit Role, Context, Constraints, Tone, and Output Format — preserving the core intent and subject. (2) Critically evaluate that draft and identify exactly 2 concrete weaknesses (missing specificity, ambiguity, weak constraints, etc.). (3) Write a final, more refined version that fixes both weaknesses. Output ONLY the final refined prompt as plain text — no headers, no draft, no critique, no markdown fences, no commentary.",
     photo:
       "You are PromptMeGood's photography brief strengthening engine. Rewrite the user's image prompt so it includes explicit Style, Camera/Lens, Lighting, Composition, and Color Palette. Do NOT change the subject or scene. Only add missing structural elements. Output ONLY the strengthened prompt as a single dense paragraph — no headers, no markdown fences, no commentary.",
     video:
