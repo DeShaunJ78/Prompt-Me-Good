@@ -247,55 +247,109 @@
     ].join('');
   }
   function buildPhotoLeft() {
+    // ps-1: Three-mode sub-tab restructure.
+    // Create New (default) gets the prompt-builder flow. Edit Photo and
+    // Reverse Engineer move into secondary tabs so the 80% case (write a
+    // text prompt → generate) stops being buried under upload-first UI.
+    // No IDs renamed; everything below is the same content as before,
+    // just regrouped under three #photo-mode-* containers.
     return [
-      '<section class="pmg-vs-inline-section">',
-        '<label class="pmgv3-section-label" for="pmg-vs-image-goal">Describe Your Image</label>',
-        '<textarea id="pmg-vs-image-goal" rows="3" placeholder="A woman walking through rainy Tokyo at night, cinematic, neon reflections, 35mm film look…"></textarea>',
-        // vs-20: existing Reverse-Engine button is now wrapped in
-        // a drop-zone (drag any image onto it OR click to browse).
-        '<div id="pmg-vs-reverse-dropzone" class="pmg-vs-dropzone pmg-vs-dropzone--inline" style="margin-top:10px;">',
-          '<button type="button" id="pmg-vs-reverse-engineer-btn" class="pmg-vs-btn pmg-vs-btn-secondary pmg-vs-full-width">📸 Reverse Engineer an Image · drop or click</button>',
-          '<input type="file" id="pmg-vs-reverse-input" accept="image/jpeg,image/png,image/webp" hidden />',
-        '</div>',
-        '<div id="pmg-vs-reverse-status" class="pmg-vs-reverse-status" hidden></div>',
-      '</section>',
-      buildBaseStyleToggleHtml(),
-      buildImageWorkshopHtml(),
-      '<section class="pmg-vs-inline-section pmg-vs-photo-accordion" id="pmg-vs-photo-accordion">',
-        '<button type="button" class="pmg-vs-photo-acc-header" id="pmg-vs-photo-acc-toggle" aria-expanded="false" aria-controls="pmg-vs-photo-suite-container">',
-          '<span class="pmgv3-section-label" style="margin:0">🎛️ Tune Your Image</span>',
-          '<span class="pmg-vs-photo-acc-hint">Style · Camera · Lighting · more</span>',
-          '<span class="pmg-vs-photo-acc-chevron" aria-hidden="true">▾</span>',
-        '</button>',
-        '<div id="pmg-vs-photo-suite-container">',
-          '<p style="margin:6px 0 0;font-size:.85rem;opacity:.7">Loading photo controls…</p>',
-        '</div>',
-      '</section>',
-      buildLightingAccordionHtml(),
-      buildProLayerHtml('photo', PHOTO_PRESETS, PHOTO_BOOSTS, PHOTO_MODES),
-      buildExpertTipsHtml(),
-      // vs-23: heads-up notice — major image models reject edits of minors.
-      // Placed above the build/generate row so users see it BEFORE they
-      // burn an attempt on a family photo that the model will refuse.
-      '<aside class="pmgv3-child-photo-warning" role="note" aria-label="Note on editing photos of children">',
-        '<div class="warning-icon" aria-hidden="true">⚠️</div>',
-        '<div class="warning-content">',
-          '<strong>Note on Editing Photos of Children</strong>',
-          '<p>Major AI platforms (Gemini, ChatGPT, Claude) have strict safety filters that often block editing or altering photos of children and minors — to prevent misuse and protect privacy. If a family-photo edit gets refused, this is likely why. For kid photos we recommend traditional tools like Photoshop or Lightroom instead.</p>',
-        '</div>',
-      '</aside>',
-      '<section class="pmg-vs-inline-section">',
-        '<button type="button" id="pmg-vs-build-image-prompt-btn" class="pmg-vs-btn pmg-vs-btn-secondary pmg-vs-full-width">✨ Build My Image Prompt</button>',
-      '</section>',
-      '<section class="pmg-vs-inline-section pmg-vs-refined-output" id="pmg-vs-image-refined-section" hidden>',
-        '<label class="pmgv3-section-label" for="pmg-vs-image-refined">Your Refined Prompt — edit before you generate</label>',
-        '<textarea id="pmg-vs-image-refined" rows="5"></textarea>',
-        '<div class="pmg-vs-actions-row">',
-          '<button type="button" id="pmg-vs-image-copy" class="pmg-vs-btn pmg-vs-btn-secondary">📋 Copy</button>',
-          '<button type="button" id="pmg-vs-image-generate-btn" class="pmg-vs-btn pmg-vs-btn-primary" style="flex:1">✨ Generate Image</button>',
-        '</div>',
-      '</section>',
+      '<div class="pmgv3-photo-subtabs" role="tablist" aria-label="Photography mode">',
+        '<button type="button" class="photo-subtab active" data-mode="create" role="tab" aria-selected="true" aria-controls="photo-mode-create">📷 Create New</button>',
+        '<button type="button" class="photo-subtab" data-mode="edit" role="tab" aria-selected="false" aria-controls="photo-mode-edit">✨ Edit Photo</button>',
+        '<button type="button" class="photo-subtab" data-mode="reverse" role="tab" aria-selected="false" aria-controls="photo-mode-reverse">🔍 Reverse Engineer</button>',
+      '</div>',
+
+      // ----- 1. CREATE (default active) -----
+      '<div class="photo-mode-container active" id="photo-mode-create" role="tabpanel" aria-labelledby="photo-mode-create-tab">',
+        '<section class="pmg-vs-inline-section">',
+          '<label class="pmgv3-section-label" for="pmg-vs-image-goal">Describe Your Image</label>',
+          '<textarea id="pmg-vs-image-goal" rows="3" placeholder="A woman walking through rainy Tokyo at night, cinematic, neon reflections, 35mm film look…"></textarea>',
+        '</section>',
+        buildBaseStyleToggleHtml(),
+        '<section class="pmg-vs-inline-section pmg-vs-photo-accordion" id="pmg-vs-photo-accordion">',
+          '<button type="button" class="pmg-vs-photo-acc-header" id="pmg-vs-photo-acc-toggle" aria-expanded="false" aria-controls="pmg-vs-photo-suite-container">',
+            '<span class="pmgv3-section-label" style="margin:0">🎛️ Tune Your Image</span>',
+            '<span class="pmg-vs-photo-acc-hint">Style · Camera · Lighting · more</span>',
+            '<span class="pmg-vs-photo-acc-chevron" aria-hidden="true">▾</span>',
+          '</button>',
+          '<div id="pmg-vs-photo-suite-container">',
+            '<p style="margin:6px 0 0;font-size:.85rem;opacity:.7">Loading photo controls…</p>',
+          '</div>',
+        '</section>',
+        buildLightingAccordionHtml(),
+        buildProLayerHtml('photo', PHOTO_PRESETS, PHOTO_BOOSTS, PHOTO_MODES),
+        buildExpertTipsHtml(),
+        // vs-23: heads-up notice — major image models reject edits of minors.
+        '<aside class="pmgv3-child-photo-warning" role="note" aria-label="Note on editing photos of children">',
+          '<div class="warning-icon" aria-hidden="true">⚠️</div>',
+          '<div class="warning-content">',
+            '<strong>Note on Editing Photos of Children</strong>',
+            '<p>Major AI platforms (Gemini, ChatGPT, Claude) have strict safety filters that often block editing or altering photos of children and minors — to prevent misuse and protect privacy. If a family-photo edit gets refused, this is likely why. For kid photos we recommend traditional tools like Photoshop or Lightroom instead.</p>',
+          '</div>',
+        '</aside>',
+        '<section class="pmg-vs-inline-section">',
+          '<button type="button" id="pmg-vs-build-image-prompt-btn" class="pmg-vs-btn pmg-vs-btn-secondary pmg-vs-full-width">✨ Build My Image Prompt</button>',
+        '</section>',
+        '<section class="pmg-vs-inline-section pmg-vs-refined-output" id="pmg-vs-image-refined-section" hidden>',
+          '<label class="pmgv3-section-label" for="pmg-vs-image-refined">Your Refined Prompt — edit before you generate</label>',
+          '<textarea id="pmg-vs-image-refined" rows="5"></textarea>',
+          '<div class="pmg-vs-actions-row">',
+            '<button type="button" id="pmg-vs-image-copy" class="pmg-vs-btn pmg-vs-btn-secondary">📋 Copy</button>',
+            '<button type="button" id="pmg-vs-image-generate-btn" class="pmg-vs-btn pmg-vs-btn-primary" style="flex:1">✨ Generate Image</button>',
+          '</div>',
+        '</section>',
+      '</div>',
+
+      // ----- 2. EDIT (Image Workshop) -----
+      '<div class="photo-mode-container" id="photo-mode-edit" role="tabpanel" style="display:none;">',
+        buildImageWorkshopHtml(),
+      '</div>',
+
+      // ----- 3. REVERSE ENGINEER -----
+      '<div class="photo-mode-container" id="photo-mode-reverse" role="tabpanel" style="display:none;">',
+        '<section class="pmg-vs-inline-section">',
+          '<label class="pmgv3-section-label">🔍 Reverse Engineer an Image</label>',
+          '<p style="margin:0 0 10px;font-size:12px;opacity:.7">Drop in any photo and we will read its DNA — composition, lighting, palette, lens — and turn it into a prompt you can reuse and tweak. After analysis you will jump back to <strong>Create New</strong> with the prompt and pills pre-filled.</p>',
+          '<div id="pmg-vs-reverse-dropzone" class="pmg-vs-dropzone pmg-vs-dropzone--inline">',
+            '<button type="button" id="pmg-vs-reverse-engineer-btn" class="pmg-vs-btn pmg-vs-btn-secondary pmg-vs-full-width">📸 Reverse Engineer an Image · drop or click</button>',
+            '<input type="file" id="pmg-vs-reverse-input" accept="image/jpeg,image/png,image/webp" hidden />',
+          '</div>',
+          '<div id="pmg-vs-reverse-status" class="pmg-vs-reverse-status" hidden></div>',
+        '</section>',
+      '</div>',
     ].join('');
+  }
+
+  // ps-1: Wire the Photo sub-tabs (Create / Edit / Reverse).
+  // Idempotent — guards via data-pmg-subtabs-wired so re-mounts are safe.
+  function initPhotoSubTabs(root) {
+    var scope = root || document;
+    var bar = scope.querySelector('.pmgv3-photo-subtabs');
+    if (!bar || bar.dataset.pmgSubtabsWired === '1') return;
+    bar.dataset.pmgSubtabsWired = '1';
+    bar.addEventListener('click', function (e) {
+      var tab = e.target && e.target.closest && e.target.closest('.photo-subtab');
+      if (!tab || !bar.contains(tab)) return;
+      setPhotoSubMode(tab.getAttribute('data-mode'), scope);
+    });
+  }
+
+  function setPhotoSubMode(mode, root) {
+    if (!mode) return;
+    var scope = root || document;
+    var tabs = scope.querySelectorAll('.photo-subtab');
+    var containers = scope.querySelectorAll('.photo-mode-container');
+    tabs.forEach(function (t) {
+      var on = t.getAttribute('data-mode') === mode;
+      t.classList.toggle('active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    containers.forEach(function (c) {
+      var on = c.id === ('photo-mode-' + mode);
+      c.classList.toggle('active', on);
+      c.style.display = on ? 'block' : 'none';
+    });
   }
 
   function buildPhotoRight() {
@@ -440,6 +494,7 @@
       hosts.videoRight.innerHTML = buildVideoRight();
     }
     relocatePhotoSuite();
+    if (hosts.photoLeft) initPhotoSubTabs(hosts.photoLeft);
     _mounted = true;
   }
 
@@ -985,7 +1040,10 @@
         ta.dispatchEvent(new Event('input', { bubbles: true }));
       }
       applySuiteSettings(data.suite_settings || {});
-      setReverseStatus('✓ Reverse engineered. Tweak the prompt below, then Build My Image Prompt → Generate.', 'ok');
+      setReverseStatus('✓ Reverse engineered. Jumping back to Create New so you can tweak the prompt → Build → Generate.', 'ok');
+      // ps-1: auto-switch back to Create so the user actually sees the
+      // prefilled goal textarea (it lives inside the Create container).
+      try { setPhotoSubMode('create'); } catch (_) {}
     } catch (e) {
       setReverseStatus('⚠️ Network error. Please try again.', 'err');
     } finally {

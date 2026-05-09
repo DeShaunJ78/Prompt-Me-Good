@@ -960,3 +960,57 @@
   color: #fff;
   font-weight: 600;
 }
+
+/* ----------------------------------------------------------------
+   ps-1: Photography Suite sub-tabs (Create / Edit / Reverse)
+   The Create tab is the 80% case (write a prompt, generate); Edit and
+   Reverse are secondary. Layout matches the dark teal chassis tokens.
+   ---------------------------------------------------------------- */
+.pmgv3-photo-subtabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.photo-subtab {
+  flex: 1;
+  background: transparent;
+  border: 1px solid transparent;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .18s ease, color .18s ease, border-color .18s ease;
+  white-space: nowrap;
+}
+.photo-subtab:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+.photo-subtab:focus-visible {
+  outline: 2px solid #00c896;
+  outline-offset: 2px;
+}
+.photo-subtab.active {
+  background: rgba(0, 200, 150, 0.15);
+  color: #00c896;
+  border-color: rgba(0, 200, 150, 0.35);
+}
+.photo-mode-container {
+  animation: pmgPhotoFadeIn .25s ease-in-out;
+}
+@keyframes pmgPhotoFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 480px) {
+  .photo-subtab {
+    padding: 8px 8px;
+    font-size: 12.5px;
+  }
+}
