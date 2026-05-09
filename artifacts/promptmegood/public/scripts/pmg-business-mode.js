@@ -1,632 +1,378 @@
-/* ============================================================================
-   PromptMeGood — Business Mode (bm-1)
-   Premium outcome-specific workspace. Mounts into #pmgv3-panel-business
-   built by pmg-chassis-v3.js. Provides:
-     1. Brand Voice Vault (left header) — synced with the Pro Brand Voice
-        Profile (storage key 'pmg-brand-voice-v1'), so the two surfaces
-        share the same vault.
-     2. Six Workflow Packs grid (Entrepreneur, E-Commerce, Builder,
-        Creator, Marketing, Customer Experience).
-     3. Pack -> templates list -> dynamic variable execution form.
-     4. Generate Master Prompt: variable substitution + Brand Voice
-        injection -> right column output.
-     5. Quality view toggle [View Final Prompt | View AI Analysis].
-   All state is local. No server calls. The generated prompt is plain
-   text the user can copy / send to AI / save to vault.
-   ============================================================================ */
+/* pmg-business-mode.js (bm-2)
+ *
+ * Header-icon Business Mode panel.
+ *
+ * The 💼 button in the chassis-v3 topbar (#pmgv3-business) opens a
+ * right-side slide-in drawer. Inside the drawer, three accordion
+ * sections let the user define their Brand Voice (persisted to
+ * localStorage), pick a Social Prompt Pack, or focus on a single
+ * Platform. Clicking "Build Prompt" assembles a single goal string,
+ * closes the drawer, switches to the Text Prompts tab, fills #goal,
+ * and submits the existing #prompt-form so the existing
+ * generatePrompt flow runs unchanged.
+ *
+ * NON-NEGOTIABLES (per implementation brief):
+ *   - No new backend / no new AI routes.
+ *   - Do NOT alter generatePrompt; assemble a string + feed #goal.
+ *   - Do NOT touch the Money Mode toggle.
+ *   - Do NOT add a 4th tab to the chassis-v3 nav.
+ */
 (function () {
   'use strict';
 
-  var BV_KEY = 'pmg-brand-voice-v1'; // shared with pmg-pro.js Brand Voice
-  var BV_MAX = 1500;
-
-  /* ---- Templates (6 packs × 3 templates) ---- */
-  var PACKS = [
-    {
-      id: 'entrepreneur',
-      icon: '🏢',
-      title: 'Entrepreneur & Business',
-      sub: 'Offers, landing pages, cold outreach',
-      templates: [
-        {
-          id: 'offer-creation',
-          name: 'Offer Creation',
-          why: 'Forces you to package value, price, guarantee, and bonuses — the 4 levers of an irresistible offer.',
-          template: 'Help me craft an irresistible offer for [PRODUCT/SERVICE]. Target audience is [AUDIENCE]. Price point is [PRICE]. Include a strong guarantee and 3 bonuses.'
-        },
-        {
-          id: 'landing-page',
-          name: 'Landing Page Copy',
-          why: 'Uses the PAS (Problem-Agitation-Solution) framework with a hook headline and a clear CTA.',
-          template: 'Write high-converting landing page copy for [PRODUCT]. Include a hook headline, 3 PAS (Problem-Agitation-Solution) bullet points, and a strong CTA.'
-        },
-        {
-          id: 'cold-email',
-          name: 'Cold Email Sequence',
-          why: 'A 3-touch sequence is the proven minimum to get past inbox noise and land a meeting.',
-          template: 'Write a 3-part cold email sequence targeting [DECISION MAKER] at [INDUSTRY] companies. Goal is to book a 15-minute demo for [PRODUCT].'
-        }
-      ]
-    },
-    {
-      id: 'ecommerce',
-      icon: '🛍️',
-      title: 'E-Commerce & Shopify',
-      sub: 'Product copy, ad angles, cart recovery',
-      templates: [
-        {
-          id: 'product-description',
-          name: 'Shopify Product Description',
-          why: 'SEO-friendly + emotional benefit framing converts higher than spec-only descriptions.',
-          template: 'Write an SEO-optimized Shopify product description for [PRODUCT NAME]. Key features: [FEATURES]. Focus on the emotional benefit, not just specs.'
-        },
-        {
-          id: 'fb-ad-angles',
-          name: 'Facebook Ad Angles',
-          why: '3 distinct angles (logical, emotional, urgency) covers all major buyer psychology triggers.',
-          template: 'Generate 3 distinct Facebook ad angles for [PRODUCT]. Angle 1: Logical/ROI. Angle 2: Emotional/Status. Angle 3: Urgency/Scarcity.'
-        },
-        {
-          id: 'abandoned-cart',
-          name: 'Abandoned Cart Email',
-          why: 'A helpful + incentive 2-step combo recovers ~10% of abandoned carts on average.',
-          template: 'Write a 2-part abandoned cart email sequence for [PRODUCT]. Email 1: Helpful reminder. Email 2: 10% discount offer with 24-hour urgency.'
-        }
-      ]
-    },
-    {
-      id: 'builder',
-      icon: '💻',
-      title: 'Builder (Replit / Bolt / Cursor)',
-      sub: 'PRDs, debugging, schemas',
-      templates: [
-        {
-          id: 'app-spec',
-          name: 'App Spec PRD',
-          why: 'A structured PRD gives the AI agent the scope and stack constraints it needs to ship working code.',
-          template: 'Write a detailed PRD (Product Requirements Document) for an AI agent to build a [APP TYPE] using [TECH STACK]. Core features: [FEATURES].'
-        },
-        {
-          id: 'debug-prompt',
-          name: 'Debugging Prompt',
-          why: 'Forcing error + expected behavior + framework context prevents the AI from guessing at the wrong fix.',
-          template: 'I am getting this error: [ERROR MESSAGE] in my [LANGUAGE/FRAMEWORK] code. The expected behavior is [EXPECTED]. Write a prompt to diagnose and fix this.'
-        },
-        {
-          id: 'db-schema',
-          name: 'Database Schema',
-          why: 'Producing SQL DDL alongside the schema design saves a follow-up round-trip.',
-          template: 'Design a relational database schema for a [APP TYPE]. It needs to track [ENTITIES]. Provide the SQL table creation scripts.'
-        }
-      ]
-    },
-    {
-      id: 'creator',
-      icon: '🎬',
-      title: 'Creator (YouTube, TikTok, Social)',
-      sub: 'Scripts, hooks, content calendars',
-      templates: [
-        {
-          id: 'youtube-script',
-          name: 'YouTube Script',
-          why: 'A 15-second hook is the single biggest predictor of retention; chapters keep the watch-time rolling.',
-          template: 'Write a YouTube script about [TOPIC]. Start with a 15-second hook. Outline 3 main chapters. End with a call to subscribe.'
-        },
-        {
-          id: 'tiktok-hooks',
-          name: 'TikTok Hook Generator',
-          why: 'Negative Hook + Curiosity Gap are the two highest-performing patterns on short-form video.',
-          template: 'Give me 5 viral TikTok hooks for a video about [TOPIC]. Use the "Negative Hook" and "Curiosity Gap" frameworks.'
-        },
-        {
-          id: 'content-calendar',
-          name: '30-Day Content Calendar',
-          why: 'A multi-format mix (long, short, written) builds reach across platforms in parallel.',
-          template: 'Create a 30-day content calendar for a [NICHE] creator. Include 2 YouTube long-form ideas, 4 Shorts ideas, and 8 Twitter threads.'
-        }
-      ]
-    },
-    {
-      id: 'marketing',
-      icon: '📣',
-      title: 'Marketing & Advertising',
-      sub: 'Search ads, webinars, PR',
-      templates: [
-        {
-          id: 'google-ad',
-          name: 'Google Search Ad',
-          why: 'Locks the headlines/descriptions to Google\'s exact character limits so the output is pasteable.',
-          template: 'Write 3 Headlines (max 30 chars) and 2 Descriptions (max 90 chars) for a Google Search Ad targeting the keyword [KEYWORD].'
-        },
-        {
-          id: 'webinar-outline',
-          name: 'Webinar Outline',
-          why: 'The intro/teach/pitch ratio of 5/30/10 is the standard high-converting webinar structure.',
-          template: 'Outline a 45-minute webinar teaching [TOPIC]. Include a 5-minute intro, 30 minutes of teaching, and a 10-minute pitch for [PRODUCT].'
-        },
-        {
-          id: 'press-release',
-          name: 'Press Release',
-          why: 'Pull-quote + boilerplate is what reporters expect; missing them gets a release ignored.',
-          template: 'Write a professional press release announcing [EVENT/LAUNCH]. Include a quote from [SPOKESPERSON NAME] and a company boilerplate.'
-        }
-      ]
-    },
-    {
-      id: 'customer',
-      icon: '🎧',
-      title: 'Customer Experience',
-      sub: 'Support, onboarding, policies',
-      templates: [
-        {
-          id: 'support-reply',
-          name: 'Support Reply',
-          why: 'Empathy-first language paired with a concrete resolution defuses ~80% of escalations.',
-          template: 'Draft an empathetic reply to a customer who is angry about [ISSUE]. Offer them [RESOLUTION].'
-        },
-        {
-          id: 'onboarding',
-          name: 'Onboarding Sequence',
-          why: 'A 3-email sequence with a single first-action goal beats long welcome guides on activation rate.',
-          template: 'Write a 3-part welcome email sequence for new users of [SOFTWARE/SERVICE]. Goal: Get them to complete [FIRST ACTION].'
-        },
-        {
-          id: 'refund-policy',
-          name: 'Refund Policy',
-          why: 'Clear + friendly + firm reduces support volume and protects margin in equal measure.',
-          template: 'Write a clear, friendly, and firm refund policy for a [BUSINESS TYPE]. Terms: [TERMS].'
-        }
-      ]
-    }
+  var LS_KEY = 'pmgv3:bm:brand';
+  var BRAND_TONES = [
+    'Professional',
+    'Casual',
+    'Luxury',
+    'Direct-Response',
+    'Educational',
+    'Founder-Led',
+    'Funny',
   ];
 
-  /* ---- Brand Voice Vault storage helpers (sync with pmg-pro.js) ---- */
-  function loadBrand() {
-    try {
-      var raw = localStorage.getItem(BV_KEY);
-      if (!raw) return { audience: '', tone: '', negative: '', name: '', useWords: '' };
-      var p = JSON.parse(raw) || {};
-      return {
-        audience: String(p.audience || '').slice(0, BV_MAX),
-        tone:     String(p.voice    || '').slice(0, BV_MAX), // pro stores as 'voice'
-        negative: String(p.avoidWords || '').slice(0, BV_MAX),
-        name:     String(p.name || ''),       // preserved untouched
-        useWords: String(p.useWords || '')   // preserved untouched
-      };
-    } catch (_) { return { audience: '', tone: '', negative: '', name: '', useWords: '' }; }
-  }
+  var SOCIAL_PACKS = {
+    launch:     { label: 'Launch Pack',            platforms: 'TikTok, Instagram, LinkedIn, X, and an email announcement' },
+    ecommerce:  { label: 'Ecommerce Product Pack', platforms: 'a TikTok product demo, an Instagram Reel, a Pinterest pin, and a Facebook post' },
+    founder:    { label: 'Founder Content Pack',   platforms: 'a LinkedIn post, an X thread, and a YouTube Short script' },
+    local:      { label: 'Local Business Pack',    platforms: 'a Facebook post, an Instagram caption, and a Google Business update' },
+    viral:      { label: 'Viral Short-Form Pack',  platforms: 'TikTok, Instagram Reels, and YouTube Shorts' },
+  };
 
-  function saveBrand(vault) {
-    try {
-      var existing = (function () {
-        try { return JSON.parse(localStorage.getItem(BV_KEY) || '{}') || {}; }
-        catch (_) { return {}; }
-      })();
-      var next = {
-        // preserve any pro-only fields written by pmg-pro.js
-        name: existing.name || '',
-        useWords: existing.useWords || '',
-        // overwrite the three vault-managed fields
-        voice: String(vault.tone || '').slice(0, BV_MAX),
-        audience: String(vault.audience || '').slice(0, BV_MAX),
-        avoidWords: String(vault.negative || '').slice(0, BV_MAX)
-      };
-      localStorage.setItem(BV_KEY, JSON.stringify(next));
-      return true;
-    } catch (_) { return false; }
-  }
+  var PLATFORMS    = ['TikTok', 'Instagram', 'YouTube', 'LinkedIn', 'X'];
+  var CONTENT_TYPES = ['Hook', 'Script', 'Caption', 'Thread', 'Ad Copy'];
+  var GOALS        = ['Awareness', 'Engagement', 'Leads', 'Sales', 'Education'];
 
-  function buildBrandInjection(b) {
-    if (!b) return '';
-    var bits = [];
-    if (b.audience) bits.push('The target audience is ' + b.audience + '.');
-    if (b.tone)     bits.push('The tone must be ' + b.tone + '.');
-    if (b.negative) bits.push('STRICT NEGATIVE CONSTRAINTS: ' + b.negative + '.');
-    if (!bits.length) return '';
-    return '\n\n[SYSTEM INSTRUCTION: ' + bits.join(' ') + ']';
-  }
-
-  /* ---- Tiny DOM helpers ---- */
-  function el(tag, attrs, kids) {
+  /* ---------------------------------------------------------------- *
+   * Helpers
+   * ---------------------------------------------------------------- */
+  function $(id) { return document.getElementById(id); }
+  function el(tag, attrs, html) {
     var n = document.createElement(tag);
-    if (attrs) {
-      for (var k in attrs) {
-        if (!Object.prototype.hasOwnProperty.call(attrs, k)) continue;
-        if (k === 'class') n.className = attrs[k];
-        else if (k === 'html') n.innerHTML = attrs[k];
-        else if (k === 'text') n.textContent = attrs[k];
-        else if (k.indexOf('on') === 0 && typeof attrs[k] === 'function') {
-          n.addEventListener(k.slice(2), attrs[k]);
-        } else if (attrs[k] != null) {
-          n.setAttribute(k, attrs[k]);
-        }
-      }
-    }
-    if (kids) {
-      (Array.isArray(kids) ? kids : [kids]).forEach(function (c) {
-        if (c == null) return;
-        n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
-      });
-    }
+    if (attrs) Object.keys(attrs).forEach(function (k) { n.setAttribute(k, attrs[k]); });
+    if (html != null) n.innerHTML = html;
     return n;
   }
 
-  function clear(node) { while (node && node.firstChild) node.removeChild(node.firstChild); }
-
-  /* Parse [BRACKETED TOKENS] out of a template string into a unique
-     ordered list of variable names. Tokens may contain spaces and
-     slashes (e.g. [PRODUCT/SERVICE], [DECISION MAKER]). */
-  function parseVariables(template) {
-    var out = [];
-    var seen = {};
-    var re = /\[([^\[\]]+)\]/g;
-    var m;
-    while ((m = re.exec(template)) !== null) {
-      var name = m[1].trim();
-      if (!seen[name]) { seen[name] = true; out.push(name); }
-    }
-    return out;
-  }
-
-  /* Substitute filled-in values back into the template, preserving any
-     unfilled [TOKENS] so the user can still see what they skipped. */
-  function fillTemplate(template, values) {
-    return template.replace(/\[([^\[\]]+)\]/g, function (full, name) {
-      var key = name.trim();
-      var v = values[key];
-      if (v && String(v).trim()) return String(v).trim();
-      return full;
-    });
-  }
-
-  function slugify(s) {
-    return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
-  }
-
-  /* ---- Mount ---- */
-  function mount(panel) {
-    if (!panel || panel.dataset.pmgBmMounted === '1') return;
-    panel.dataset.pmgBmMounted = '1';
-
-    var left  = el('div', { class: 'pmgv3-left',  id: 'pmgv3-business-left'  });
-    var right = el('div', { class: 'pmgv3-right', id: 'pmgv3-business-right' });
-    panel.appendChild(left);
-    panel.appendChild(right);
-
-    renderVault(left);
-    renderDashboard(left);
-    renderEmptyOutput(right);
-  }
-
-  /* ---- Brand Voice Vault ---- */
-  function renderVault(host) {
-    var existingVault = host.querySelector('.pmg-business-brand-vault');
-    if (existingVault) existingVault.remove();
-    var b = loadBrand();
-
-    var vault = el('div', { class: 'pmg-business-brand-vault' });
-    vault.appendChild(el('h3', { html: '<span aria-hidden="true">🏛️</span> Your Brand Voice Vault' }));
-    vault.appendChild(el('p', { text: 'Set this once. Every prompt will automatically use these rules.' }));
-
-    vault.appendChild(el('label', { for: 'biz-audience', text: 'Target Audience (Who are you talking to?)' }));
-    var audInp = el('input', { type: 'text', id: 'biz-audience', placeholder: 'e.g., Busy moms, B2B SaaS founders' });
-    audInp.value = b.audience || '';
-    vault.appendChild(audInp);
-
-    vault.appendChild(el('label', { for: 'biz-tone', text: 'Brand Tone (How do you sound?)' }));
-    var toneInp = el('input', { type: 'text', id: 'biz-tone', placeholder: 'e.g., Professional but witty, empathetic, no jargon' });
-    toneInp.value = b.tone || '';
-    vault.appendChild(toneInp);
-
-    vault.appendChild(el('label', { for: 'biz-negative', text: 'Negative Constraints (What should the AI NEVER do?)' }));
-    var negInp = el('textarea', { id: 'biz-negative', placeholder: 'e.g., Never use emojis, avoid corporate buzzwords, do not invent statistics' });
-    negInp.value = b.negative || '';
-    vault.appendChild(negInp);
-
-    var row = el('div', { class: 'pmg-bv-row' });
-    var saveBtn = el('button', { id: 'biz-save-brand', class: 'btn-secondary', type: 'button', text: 'Save Brand Voice' });
-    var savedFlag = el('span', { class: 'pmg-bv-saved-flag', html: '<span aria-hidden="true">✓</span> Saved — applied to every Business Mode prompt.' });
-    if ((b.audience || b.tone || b.negative)) savedFlag.classList.add('is-visible');
-
-    saveBtn.addEventListener('click', function () {
-      var ok = saveBrand({
-        audience: audInp.value,
-        tone: toneInp.value,
-        negative: negInp.value
-      });
-      if (ok) {
-        savedFlag.classList.add('is-visible');
-        saveBtn.textContent = 'Saved ✓';
-        setTimeout(function () { saveBtn.textContent = 'Save Brand Voice'; }, 1600);
-      }
-    });
-
-    row.appendChild(saveBtn);
-    row.appendChild(savedFlag);
-    vault.appendChild(row);
-
-    // Insert at the very top of the left column.
-    if (host.firstChild) host.insertBefore(vault, host.firstChild);
-    else host.appendChild(vault);
-  }
-
-  /* ---- Pack grid (dashboard) ---- */
-  function renderDashboard(host) {
-    // Remove any pack/template/execution view from a previous render.
-    Array.prototype.forEach.call(
-      host.querySelectorAll('.pmg-business-packs-title, .pmg-business-pack-grid, .pmg-business-templates, .pmg-business-execution'),
-      function (n) { n.remove(); }
-    );
-
-    host.appendChild(el('div', { class: 'pmg-business-packs-title', text: 'Workflow Packs' }));
-    var grid = el('div', { class: 'pmg-business-pack-grid' });
-    PACKS.forEach(function (pack) {
-      var btn = el('button', { class: 'pmg-business-pack', type: 'button', 'data-pack': pack.id });
-      btn.appendChild(el('span', { class: 'pmg-business-pack-icon', 'aria-hidden': 'true', text: pack.icon }));
-      btn.appendChild(el('div', { class: 'pmg-business-pack-title', text: pack.title }));
-      btn.appendChild(el('div', { class: 'pmg-business-pack-sub', text: pack.sub }));
-      btn.addEventListener('click', function () { renderTemplateList(host, pack); });
-      grid.appendChild(btn);
-    });
-    host.appendChild(grid);
-  }
-
-  /* ---- Templates list (after a pack is opened) ---- */
-  function renderTemplateList(host, pack) {
-    Array.prototype.forEach.call(
-      host.querySelectorAll('.pmg-business-packs-title, .pmg-business-pack-grid, .pmg-business-templates, .pmg-business-execution'),
-      function (n) { n.remove(); }
-    );
-
-    var wrap = el('div', { class: 'pmg-business-templates' });
-    var header = el('div', { class: 'pmg-business-templates-header' });
-    header.appendChild(el('h4', { html: '<span aria-hidden="true">' + pack.icon + '</span> ' + pack.title }));
-    var back = el('button', { class: 'pmg-business-back-btn', type: 'button', text: '← All packs' });
-    back.addEventListener('click', function () { renderDashboard(host); });
-    header.appendChild(back);
-    wrap.appendChild(header);
-
-    pack.templates.forEach(function (tpl) {
-      var item = el('button', { class: 'pmg-business-template-item', type: 'button', 'data-template': tpl.id });
-      item.appendChild(el('div', { class: 'pmg-business-template-name', text: tpl.name }));
-      var preview = tpl.template.length > 110 ? tpl.template.slice(0, 107) + '…' : tpl.template;
-      item.appendChild(el('div', { class: 'pmg-business-template-preview', text: preview }));
-      item.addEventListener('click', function () { renderExecution(host, pack, tpl); });
-      wrap.appendChild(item);
-    });
-
-    host.appendChild(wrap);
-  }
-
-  /* ---- Execution view (variable form) ---- */
-  function renderExecution(host, pack, tpl) {
-    Array.prototype.forEach.call(
-      host.querySelectorAll('.pmg-business-packs-title, .pmg-business-pack-grid, .pmg-business-templates, .pmg-business-execution'),
-      function (n) { n.remove(); }
-    );
-
-    var vars = parseVariables(tpl.template);
-    var view = el('div', { class: 'pmg-business-execution' });
-
-    var header = el('div', { class: 'pmg-business-templates-header' });
-    header.appendChild(el('h4', { html: '<span aria-hidden="true">' + pack.icon + '</span> ' + tpl.name }));
-    var back = el('button', { class: 'pmg-business-back-btn', type: 'button', text: '← Back to ' + pack.title });
-    back.addEventListener('click', function () { renderTemplateList(host, pack); });
-    header.appendChild(back);
-    view.appendChild(header);
-
-    view.appendChild(el('p', { class: 'pmg-be-hint', text: 'Fill in the blanks below. Your Brand Voice Vault rules will be appended automatically.' }));
-
-    var inputs = {};
-    vars.forEach(function (name) {
-      var id = 'var-' + slugify(name);
-      view.appendChild(el('label', { for: id, text: name }));
-      // Long fields (FEATURES, ENTITIES, ERROR MESSAGE, TERMS) get a textarea.
-      var isLong = /FEATURES|ENTITIES|ERROR|TERMS|EXPECTED|RESOLUTION|ISSUE/i.test(name);
-      var input = el(isLong ? 'textarea' : 'input', {
-        type: isLong ? null : 'text',
-        id: id,
-        placeholder: 'Your ' + name.toLowerCase()
-      });
-      view.appendChild(input);
-      inputs[name] = input;
-    });
-
-    var genBtn = el('button', { id: 'biz-generate-prompt', class: 'btn-primary', type: 'button', text: 'Generate Master Prompt' });
-    genBtn.addEventListener('click', function () {
-      var values = {};
-      vars.forEach(function (n) { values[n] = inputs[n].value; });
-      var filled = fillTemplate(tpl.template, values);
-      var brand = loadBrand();
-      var injection = buildBrandInjection(brand);
-      var finalPrompt = filled + injection;
-      writeOutput(finalPrompt, tpl, brand);
-    });
-    view.appendChild(genBtn);
-
-    host.appendChild(view);
-  }
-
-  /* ---- Right column: empty / output / quality toggle ---- */
-  function renderEmptyOutput(rightHost) {
-    clear(rightHost);
-    var empty = el('div', { class: 'pmg-business-output-empty' });
-    empty.appendChild(el('div', { class: 'pmg-boe-icon', 'aria-hidden': 'true', text: '💼' }));
-    empty.appendChild(el('div', {
-      html: '<strong style="color:#fff;display:block;margin-bottom:6px;">Pick a pack on the left to start.</strong>' +
-            'Your Brand Voice Vault rules will automatically be applied to every Business Mode prompt — set them once at the top of the left column.'
-    }));
-    rightHost.appendChild(empty);
-  }
-
-  function writeOutput(finalPrompt, tpl, brand) {
-    var rightHost = document.getElementById('pmgv3-business-right');
-    if (!rightHost) return;
-    clear(rightHost);
-
-    var wrap = el('div', { class: 'pmg-business-output' });
-
-    // Quality toggle — pair of toggle buttons (NOT a tablist; we don't
-    // implement the full ARIA tabs contract: arrow-key navigation,
-    // role="tabpanel" wrappers, aria-controls linkage. Using
-    // aria-pressed on plain buttons gives assistive tech the correct
-    // semantics for the simpler "two-state toggle" pattern.)
-    var toggle = el('div', { class: 'pmg-business-quality-toggle' });
-    var btnFinal = el('button', { type: 'button', class: 'is-active', 'data-view': 'final', 'aria-pressed': 'true', text: 'View Final Prompt' });
-    var btnAnalysis = el('button', { type: 'button', 'data-view': 'analysis', 'aria-pressed': 'false', text: 'View AI Analysis' });
-    toggle.appendChild(btnFinal);
-    toggle.appendChild(btnAnalysis);
-    wrap.appendChild(toggle);
-
-    var resultBox = el('div', { class: 'pmg-business-result-box', text: finalPrompt });
-    var analysisBox = buildAnalysisBox(tpl, brand);
-    analysisBox.style.display = 'none';
-    wrap.appendChild(resultBox);
-    wrap.appendChild(analysisBox);
-
-    // Actions row: Copy, Save to Vault, Send to ChatGPT.
-    var actions = el('div', { class: 'pmg-business-result-actions' });
-    var copyBtn = el('button', { type: 'button', text: '📋 Copy' });
-    copyBtn.addEventListener('click', function () {
-      var done = function () {
-        copyBtn.textContent = '✓ Copied';
-        setTimeout(function () { copyBtn.textContent = '📋 Copy'; }, 1400);
+  function loadBrand() {
+    try {
+      var raw = localStorage.getItem(LS_KEY);
+      if (!raw) return { audience: '', tone: '' };
+      var v = JSON.parse(raw);
+      return {
+        audience: typeof v.audience === 'string' ? v.audience : '',
+        tone:     typeof v.tone === 'string' && BRAND_TONES.indexOf(v.tone) >= 0 ? v.tone : '',
       };
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(finalPrompt).then(done, done);
-        } else {
-          var ta = document.createElement('textarea');
-          ta.value = finalPrompt;
-          document.body.appendChild(ta);
-          ta.select();
-          try { document.execCommand('copy'); } catch (_) {}
-          ta.remove();
-          done();
-        }
-      } catch (_) { done(); }
-    });
-    actions.appendChild(copyBtn);
+    } catch (_) { return { audience: '', tone: '' }; }
+  }
+  function saveBrand(audience, tone) {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify({ audience: audience || '', tone: tone || '' }));
+    } catch (_) {}
+  }
 
-    var vaultBtn = el('button', { type: 'button', text: '🗄️ Save to Vault' });
-    vaultBtn.addEventListener('click', function () {
-      try {
-        // Match the real vault contract used by app.html (~L5988) and
-        // pmg-ux.js: HISTORY_KEY = 'promptmegood:history:v1', items
-        // shaped { id, savedAt, data: { goal, ... } } — getLatestVaultItem
-        // filters on `i.data && i.data.goal`, so `data.goal` is required
-        // for the entry to surface in the Vault drawer.
-        var key = 'promptmegood:history:v1';
-        var raw = localStorage.getItem(key);
-        var arr = raw ? JSON.parse(raw) : [];
-        if (!Array.isArray(arr)) arr = [];
-        arr.unshift({
-          id: 'biz-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
-          savedAt: Date.now(),
-          createdAt: Date.now(),
-          source: 'business-mode',
-          data: {
-            goal: tpl.name + ' (Business Mode)',
-            prompt: finalPrompt,
-            category: 'business',
-            template: tpl.id
-          }
-        });
-        localStorage.setItem(key, JSON.stringify(arr.slice(0, 200)));
-        document.dispatchEvent(new Event('pmg:vault-saved'));
-        vaultBtn.textContent = '✓ Saved to Vault';
-        setTimeout(function () { vaultBtn.textContent = '🗄️ Save to Vault'; }, 1600);
-      } catch (_) {
-        vaultBtn.textContent = 'Save failed';
-        setTimeout(function () { vaultBtn.textContent = '🗄️ Save to Vault'; }, 1600);
+  /* ---------------------------------------------------------------- *
+   * Drawer DOM (built once, lazily)
+   * ---------------------------------------------------------------- */
+  var built = false;
+
+  function buildDrawer() {
+    if (built) return;
+    built = true;
+
+    var overlay = el('div', { id: 'pmg-bm-overlay', 'data-pmg-overlay-root': '' });
+    overlay.addEventListener('click', closeDrawer);
+
+    var drawer = el('aside', {
+      id: 'pmg-bm-drawer',
+      'data-pmg-overlay-root': '',
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-labelledby': 'pmg-bm-title',
+    });
+
+    var toneOptions = ['<option value="">Select a tone…</option>']
+      .concat(BRAND_TONES.map(function (t) {
+        return '<option value="' + t + '">' + t + '</option>';
+      })).join('');
+
+    var packOptions = ['<option value="">Select a pack…</option>']
+      .concat(Object.keys(SOCIAL_PACKS).map(function (k) {
+        return '<option value="' + k + '">' + SOCIAL_PACKS[k].label + '</option>';
+      })).join('');
+
+    var platformOptions = ['<option value="">Select a platform…</option>']
+      .concat(PLATFORMS.map(function (p) { return '<option value="' + p + '">' + p + '</option>'; })).join('');
+
+    var contentTypeOptions = ['<option value="">Select a content type…</option>']
+      .concat(CONTENT_TYPES.map(function (c) { return '<option value="' + c + '">' + c + '</option>'; })).join('');
+
+    var goalOptions = ['<option value="">Select a goal…</option>']
+      .concat(GOALS.map(function (g) { return '<option value="' + g + '">' + g + '</option>'; })).join('');
+
+    drawer.innerHTML = [
+      '<div class="pmg-bm-head">',
+        '<h2 id="pmg-bm-title"><span aria-hidden="true">💼</span> Business Mode</h2>',
+        '<button type="button" class="pmg-bm-close" aria-label="Close Business Mode">✕</button>',
+      '</div>',
+      '<div class="pmg-bm-body">',
+        '<p class="pmg-bm-intro">Marketing prompt workstation for business owners and creators. Set your Brand Voice once, then build a Social Pack or focus on a single platform — your prompt drops into the Text Prompts tab and generates automatically.</p>',
+
+        /* Brand Voice */
+        '<details class="pmg-bm-section" id="pmg-bm-sec-brand" open>',
+          '<summary>1. Brand Voice <span style="font-weight:400;color:rgba(230,247,238,0.55);font-size:12px;margin-left:6px;">(saved automatically)</span></summary>',
+          '<div class="pmg-bm-sec-body">',
+            '<div class="pmg-bm-field">',
+              '<label for="pmg-bm-audience">Target Audience</label>',
+              '<input id="pmg-bm-audience" class="pmg-bm-input" type="text" maxlength="200" autocomplete="off" placeholder="e.g. busy moms, B2B SaaS founders" />',
+            '</div>',
+            '<div class="pmg-bm-field">',
+              '<label for="pmg-bm-tone">Brand Tone</label>',
+              '<select id="pmg-bm-tone" class="pmg-bm-select">' + toneOptions + '</select>',
+            '</div>',
+            '<p class="pmg-bm-saved" id="pmg-bm-saved">✓ Saved to this device</p>',
+          '</div>',
+        '</details>',
+
+        /* Social Prompt Packs */
+        '<details class="pmg-bm-section" id="pmg-bm-sec-pack">',
+          '<summary>2. Social Prompt Packs</summary>',
+          '<div class="pmg-bm-sec-body">',
+            '<p class="pmg-bm-hint">Generate a coordinated set of prompts for multiple platforms in one shot.</p>',
+            '<div class="pmg-bm-field">',
+              '<label for="pmg-bm-pack">Pack</label>',
+              '<select id="pmg-bm-pack" class="pmg-bm-select">' + packOptions + '</select>',
+            '</div>',
+            '<div class="pmg-bm-field">',
+              '<label for="pmg-bm-pack-offer">Your Offer / Idea</label>',
+              '<textarea id="pmg-bm-pack-offer" class="pmg-bm-textarea" placeholder="What are you promoting or talking about?"></textarea>',
+            '</div>',
+            '<button type="button" class="pmg-bm-build" id="pmg-bm-pack-build">Build Prompt →</button>',
+            '<p class="pmg-bm-error" id="pmg-bm-pack-err"></p>',
+          '</div>',
+        '</details>',
+
+        /* Platform Builder */
+        '<details class="pmg-bm-section" id="pmg-bm-sec-platform">',
+          '<summary>3. Platform Builder</summary>',
+          '<div class="pmg-bm-sec-body">',
+            '<p class="pmg-bm-hint">Focus on one platform with a specific content type and goal.</p>',
+            '<div class="pmg-bm-field">',
+              '<label for="pmg-bm-platform">Platform</label>',
+              '<select id="pmg-bm-platform" class="pmg-bm-select">' + platformOptions + '</select>',
+            '</div>',
+            '<div class="pmg-bm-field">',
+              '<label for="pmg-bm-content-type">Content Type</label>',
+              '<select id="pmg-bm-content-type" class="pmg-bm-select">' + contentTypeOptions + '</select>',
+            '</div>',
+            '<div class="pmg-bm-field">',
+              '<label for="pmg-bm-goal">Goal</label>',
+              '<select id="pmg-bm-goal" class="pmg-bm-select">' + goalOptions + '</select>',
+            '</div>',
+            '<div class="pmg-bm-field">',
+              '<label for="pmg-bm-platform-offer">Your Offer / Idea</label>',
+              '<textarea id="pmg-bm-platform-offer" class="pmg-bm-textarea" placeholder="What are you promoting or talking about?"></textarea>',
+            '</div>',
+            '<button type="button" class="pmg-bm-build" id="pmg-bm-platform-build">Build Prompt →</button>',
+            '<p class="pmg-bm-error" id="pmg-bm-platform-err"></p>',
+          '</div>',
+        '</details>',
+      '</div>',
+    ].join('');
+
+    document.body.appendChild(overlay);
+    document.body.appendChild(drawer);
+
+    drawer.querySelector('.pmg-bm-close').addEventListener('click', closeDrawer);
+
+    /* Brand Voice persistence */
+    var brand = loadBrand();
+    var audIn = $('pmg-bm-audience');
+    var toneIn = $('pmg-bm-tone');
+    if (audIn)  audIn.value = brand.audience;
+    if (toneIn) toneIn.value = brand.tone;
+
+    var savedTimer = null;
+    function flashSaved() {
+      var s = $('pmg-bm-saved');
+      if (!s) return;
+      s.classList.add('is-shown');
+      if (savedTimer) clearTimeout(savedTimer);
+      savedTimer = setTimeout(function () { s.classList.remove('is-shown'); }, 1400);
+    }
+    var saveDebounce = null;
+    function persistBrandDebounced() {
+      if (saveDebounce) clearTimeout(saveDebounce);
+      saveDebounce = setTimeout(function () {
+        saveBrand(audIn ? audIn.value.trim() : '', toneIn ? toneIn.value : '');
+        flashSaved();
+      }, 250);
+    }
+    if (audIn)  audIn.addEventListener('input', persistBrandDebounced);
+    if (toneIn) toneIn.addEventListener('change', function () {
+      saveBrand(audIn ? audIn.value.trim() : '', toneIn.value);
+      flashSaved();
+    });
+
+    /* Build Prompt handlers */
+    var packBtn = $('pmg-bm-pack-build');
+    if (packBtn) packBtn.addEventListener('click', onBuildPack);
+    var platBtn = $('pmg-bm-platform-build');
+    if (platBtn) platBtn.addEventListener('click', onBuildPlatform);
+
+    /* Esc closes */
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        var ov = $('pmg-bm-overlay');
+        if (ov && ov.classList.contains('is-open')) closeDrawer();
       }
     });
-    actions.appendChild(vaultBtn);
-
-    var sendBtn = el('button', { type: 'button', text: '↗ Send to ChatGPT' });
-    sendBtn.addEventListener('click', function () {
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          try { navigator.clipboard.writeText(finalPrompt); } catch (_) {}
-        }
-        var url = 'https://chat.openai.com/?q=' + encodeURIComponent(finalPrompt);
-        window.open(url, '_blank', 'noopener');
-      } catch (_) {}
-    });
-    actions.appendChild(sendBtn);
-
-    wrap.appendChild(actions);
-
-    // Toggle handlers
-    btnFinal.addEventListener('click', function () {
-      btnFinal.classList.add('is-active');
-      btnFinal.setAttribute('aria-pressed', 'true');
-      btnAnalysis.classList.remove('is-active');
-      btnAnalysis.setAttribute('aria-pressed', 'false');
-      resultBox.style.display = '';
-      analysisBox.style.display = 'none';
-    });
-    btnAnalysis.addEventListener('click', function () {
-      btnAnalysis.classList.add('is-active');
-      btnAnalysis.setAttribute('aria-pressed', 'true');
-      btnFinal.classList.remove('is-active');
-      btnFinal.setAttribute('aria-pressed', 'false');
-      resultBox.style.display = 'none';
-      analysisBox.style.display = '';
-    });
-
-    rightHost.appendChild(wrap);
   }
 
-  function buildAnalysisBox(tpl, brand) {
-    var box = el('div', { class: 'pmg-business-analysis-box' });
-    box.appendChild(el('h5', { text: 'Why this prompt is powerful' }));
-    box.appendChild(el('p', { text: tpl.why || 'Battle-tested template structure used by professional copywriters and engineers.' }));
+  /* ---------------------------------------------------------------- *
+   * Open / close
+   * ---------------------------------------------------------------- */
+  function openDrawer() {
+    buildDrawer();
+    var ov = $('pmg-bm-overlay');
+    var dr = $('pmg-bm-drawer');
+    if (ov) ov.classList.add('is-open');
+    if (dr) dr.classList.add('is-open');
+  }
+  function closeDrawer() {
+    var ov = $('pmg-bm-overlay');
+    var dr = $('pmg-bm-drawer');
+    if (ov) ov.classList.remove('is-open');
+    if (dr) dr.classList.remove('is-open');
+  }
 
-    box.appendChild(el('h5', { text: 'What was applied' }));
-    var ul = el('ul');
-    ul.appendChild(el('li', { text: 'Variable substitution: your inputs were filled into the proven template structure.' }));
-    if (brand && (brand.audience || brand.tone || brand.negative)) {
-      var bits = [];
-      if (brand.audience) bits.push('audience (' + brand.audience + ')');
-      if (brand.tone)     bits.push('tone (' + brand.tone + ')');
-      if (brand.negative) bits.push('negative constraints');
-      ul.appendChild(el('li', { text: 'Brand Voice Vault appended: ' + bits.join(', ') + ' — so the output sounds like you, not like a generic AI.' }));
+  /* ---------------------------------------------------------------- *
+   * Assemble + dispatch
+   * ---------------------------------------------------------------- */
+  function brandSuffix() {
+    /* Read LIVE values from the drawer inputs (if mounted) so a Build
+       Prompt click immediately after typing in Brand Voice never
+       races the 250ms debounced localStorage save. Falls back to
+       localStorage when the drawer isn't built yet. */
+    var audIn = $('pmg-bm-audience');
+    var toneIn = $('pmg-bm-tone');
+    var audience = audIn ? audIn.value.trim() : '';
+    var tone     = toneIn ? toneIn.value : '';
+    if (!audience && !tone) {
+      var b = loadBrand();
+      audience = b.audience;
+      tone = b.tone;
     } else {
-      ul.appendChild(el('li', { text: 'No Brand Voice set yet — add one at the top of the left column to inject your audience, tone, and negative constraints automatically.' }));
+      /* Force-flush any pending debounced save so the next session
+         restore reads what the user just typed. */
+      saveBrand(audience, tone);
     }
-    ul.appendChild(el('li', { text: 'Hidden system instruction: the brand rules are framed as a system-level directive so AI models prioritize them over conflicting guidance in the user prompt.' }));
-    box.appendChild(ul);
-
-    box.appendChild(el('h5', { text: 'Tip' }));
-    box.appendChild(el('p', { text: 'Paste this into ChatGPT, Claude, or Gemini. Iterate by adjusting the Brand Voice Vault — every future prompt inherits the change automatically.' }));
-
-    return box;
+    var parts = [];
+    if (audience) parts.push('My target audience is ' + audience + '.');
+    if (tone)     parts.push('My brand tone is ' + tone + '.');
+    return parts.length ? ' ' + parts.join(' ') : '';
   }
 
-  /* ---- Boot ---- */
-  function whenPanelReady(cb) {
-    var ticks = 0;
-    var t = setInterval(function () {
-      var p = document.getElementById('pmgv3-panel-business');
-      if (p) { clearInterval(t); cb(p); return; }
-      if (++ticks > 150) { clearInterval(t); }
+  function onBuildPack() {
+    var packEl = $('pmg-bm-pack');
+    var offerEl = $('pmg-bm-pack-offer');
+    var errEl = $('pmg-bm-pack-err');
+    if (errEl) errEl.textContent = '';
+    var packKey = packEl ? packEl.value : '';
+    var offer = offerEl ? offerEl.value.trim() : '';
+    if (!packKey) { if (errEl) errEl.textContent = 'Pick a pack first.'; return; }
+    if (!offer)   { if (errEl) errEl.textContent = 'Tell us what you\'re promoting or talking about.'; return; }
+    var pack = SOCIAL_PACKS[packKey];
+    var goal = 'I need a ' + pack.label + ' for: ' + offer +
+               '. Generate distinct, platform-native copy for ' + pack.platforms + '.' +
+               brandSuffix();
+    dispatchToText(goal);
+  }
+
+  function onBuildPlatform() {
+    var pEl = $('pmg-bm-platform');
+    var cEl = $('pmg-bm-content-type');
+    var gEl = $('pmg-bm-goal');
+    var oEl = $('pmg-bm-platform-offer');
+    var errEl = $('pmg-bm-platform-err');
+    if (errEl) errEl.textContent = '';
+    var platform = pEl ? pEl.value : '';
+    var ctype    = cEl ? cEl.value : '';
+    var pgoal    = gEl ? gEl.value : '';
+    var offer    = oEl ? oEl.value.trim() : '';
+    if (!platform || !ctype || !pgoal) {
+      if (errEl) errEl.textContent = 'Pick a platform, content type, and goal.';
+      return;
+    }
+    if (!offer) {
+      if (errEl) errEl.textContent = 'Tell us what you\'re promoting or talking about.';
+      return;
+    }
+    var goal = 'Write a ' + platform + ' ' + ctype +
+               ' aimed at ' + pgoal.toLowerCase() +
+               ' for: ' + offer + '.' +
+               brandSuffix();
+    dispatchToText(goal);
+  }
+
+  function dispatchToText(goalText) {
+    closeDrawer();
+    /* Switch to Text Prompts tab so the user lands on the right surface. */
+    try {
+      if (window.pmgChassisV3 && typeof window.pmgChassisV3.setActivePanel === 'function') {
+        window.pmgChassisV3.setActivePanel('text');
+      }
+    } catch (_) {}
+
+    /* Inject into #goal + fire input event so any listeners (autosize,
+       persistence, strength meter) update. */
+    var goalEl = $('goal');
+    if (goalEl) {
+      goalEl.value = goalText;
+      try { goalEl.dispatchEvent(new Event('input', { bubbles: true })); } catch (_) {}
+      try { goalEl.dispatchEvent(new Event('change', { bubbles: true })); } catch (_) {}
+    }
+
+    /* Submit the existing #prompt-form — generatePrompt is wired to its
+       submit event in app.html (~L8843). requestSubmit fires the
+       'submit' event AND triggers HTML5 validation. */
+    var form = $('prompt-form');
+    if (form) {
+      try {
+        if (typeof form.requestSubmit === 'function') form.requestSubmit();
+        else form.submit();
+      } catch (_) { try { form.submit(); } catch (__) {} }
+    }
+  }
+
+  /* ---------------------------------------------------------------- *
+   * Wire 💼 header icon (poll until chassis-v3 builds it)
+   * ---------------------------------------------------------------- */
+  function wireIcon() {
+    var btn = $('pmgv3-business');
+    if (!btn) return false;
+    if (btn.getAttribute('data-bm-wired') === '1') return true;
+    btn.setAttribute('data-bm-wired', '1');
+    btn.addEventListener('click', openDrawer);
+    return true;
+  }
+  function bootWire() {
+    if (wireIcon()) return;
+    var tries = 0;
+    var iv = setInterval(function () {
+      tries++;
+      if (wireIcon() || tries > 60) clearInterval(iv);
     }, 200);
   }
-
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { whenPanelReady(mount); });
+    document.addEventListener('DOMContentLoaded', bootWire);
   } else {
-    whenPanelReady(mount);
+    bootWire();
   }
 
-  // Public test/debug surface.
-  window.PMGBusiness = {
-    packs: PACKS,
-    loadBrand: loadBrand,
-    saveBrand: saveBrand,
-    parseVariables: parseVariables,
-    fillTemplate: fillTemplate,
-    buildBrandInjection: buildBrandInjection
+  /* Tiny public API for tests / programmatic use. */
+  window.pmgBusinessMode = {
+    open: openDrawer,
+    close: closeDrawer,
   };
 })();

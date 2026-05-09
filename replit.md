@@ -23,7 +23,7 @@ pnpm workspaces · Node v24 · TS 5.9 · Express 5 · Drizzle ORM · Zod · Orva
     *   `pmg-storyboard.{css,js}` — Storyboard Studio modal.
     *   `pmg-auto-boost.{css,js}` — Per-panel ✨ Auto-Boost.
     *   `pmg-ux.js` — Photo Suite GROUPS, presets, Surprise Me, demoteButtons.
-    *   `pmg-business-mode.{css,js}` — Business Mode 4th panel.
+    *   `pmg-business-mode.{css,js}` — Business Mode header-icon drawer (💼 in topbar → right slide-in with Brand Voice + Social Packs + Platform Builder accordions; Build Prompt fills `#goal` and submits `#prompt-form`).
 *   `artifacts/promptmegood/public/sitemap.xml` + `robots.txt` — SEO surface (AI crawlers allowed).
 *   `artifacts/promptmegood/playwright.config.ts` — Frontend test config.
 
@@ -62,6 +62,7 @@ Concise, direct communication. Iterative dev — explain high-level impact befor
 *   **Storyboard concept source:** `getGoalText()` reads `#pmg-vs-video-goal` first (Video panel), falls back to `#goal`. If both empty, shows inline ⚠️ and does NOT open the modal.
 *   **Auto-Tune** (`POST /api/auto-tune`, JSON-mode, 250 tokens): hooked from chassis-v3 `wireActions()` Analyze handler. Server hard-clamps to `TUNE_ENUMS`. 12s abort, silent fallback. Disable: `?noautotune`, `localStorage.pmg_autotune_disable='1'`.
 *   **Auto-Boost** (`pmg-auto-boost.{js,css}`): Two-step `POST /api/clarify` → optional Q&A card → `POST /api/boost`. Mounts after `#pmgv3-strength-slot` (text), `#pmg-vs-image-copy` (photo), `#pmg-vs-video-copy` (video). On success force-sets strength to 100%. Disable: `?noautoboost`, `localStorage.pmg_autoboost_disable='1'`.
+*   **Business Mode is a header-icon drawer, not a tab (bm-2).** The 💼 button (`#pmgv3-business`) in `.pmgv3-tb-r` opens a right-side slide-in (`#pmg-bm-drawer` + `#pmg-bm-overlay`, both carry `data-pmg-overlay-root`). Brand Voice persists to `localStorage['pmgv3:bm:brand']` (`{audience, tone}`). Build Prompt assembles a string, calls `pmgChassisV3.setActivePanel('text')`, sets `#goal.value`, dispatches input/change, and `requestSubmit()`s `#prompt-form` so the existing generatePrompt flow runs unchanged. NO new backend routes. `brandSuffix()` reads LIVE drawer inputs (not localStorage) to avoid the 250ms debounce race. `window.pmgBusinessMode.{open,close}` exposed for tests. The old 4th tab + `#pmgv3-panel-business` were removed; `validNames` and the `?panel=` allowlist no longer include `business`.
 *   **Image-mode is now a chassis-v3 tab (not a global toggle).** `window.setMode`, `window.runImageGeneration`, `#modeSwitch`, `#imageModeBtn`/`#writeModeBtn`, `#image-generate-btn`, `.image-mode-hint` are all gone (Task #140). To enter image mode programmatically, call `window.pmgChassisV3.setActivePanel('photography')`. The class `body.image-mode` is still toggled by chassis-v3 because the relocated Photo Suite's CSS keys off it. `pmg-share.js` and `pmg-handoff.js` route through `setActivePanel`; remaining `typeof window.setMode === 'function'` references are inert no-ops.
 
 ## Pointers

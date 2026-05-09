@@ -84,6 +84,9 @@
         '</button>',
         '<div class="pmgv3-tb-r">',
           '<a class="pmgv3-ico" id="pmgv3-help" href="/guide.html" target="_blank" rel="noopener" title="Quick Guide — opens in a new tab" aria-label="Open the PromptMeGood quick guide in a new tab">❓</a>',
+          // bm-2: Business Mode is a header-icon panel (NOT a 4th tab).
+          // Click is wired by /scripts/pmg-business-mode.js.
+          '<button class="pmgv3-ico" id="pmgv3-business" type="button" title="Business Mode — assemble a marketing prompt" aria-label="Open Business Mode">💼</button>',
           '<button class="pmgv3-ico" id="pmgv3-vault" type="button" title="Vault" aria-label="Vault">🗄️</button>',
           '<button class="pmgv3-ico" id="pmgv3-settings" type="button" title="Settings" aria-label="Settings">⚙️</button>',
           '<button class="pmgv3-upgrade" type="button" id="pmgv3-upgrade" title="See pricing — $79 one-time Founding Member (first 500, lifetime access) or Pro $9/mo">Upgrade</button>',
@@ -93,11 +96,6 @@
         '<button class="pmgv3-tab is-active" data-module="text" role="tab" aria-selected="true" type="button">✍️ Text Prompts</button>',
         '<button class="pmgv3-tab" data-module="photography" role="tab" aria-selected="false" type="button">📸 Photography</button>',
         '<button class="pmgv3-tab" data-module="video" role="tab" aria-selected="false" type="button">🎬 Video</button>',
-        // bm-1: Business Mode tab. The 🔒 glyph is purely visual today
-        // (no paywall enforcement until BETA_END, matching the existing
-        // Expert Command Center pattern). When clicked, the left column
-        // becomes the Business Mode dashboard via pmg-business-mode.js.
-        '<button class="pmgv3-tab" data-module="business" role="tab" aria-selected="false" type="button">💼 Business Mode <span class="pmgv3-tab-lock" aria-hidden="true">🔒</span></button>',
       '</nav>',
       '<div class="pmgv3-body" data-active-panel="text">',
         '<div class="pmgv3-panel" id="pmgv3-panel-text">',
@@ -221,11 +219,6 @@
         '<div class="pmgv3-panel" id="pmgv3-panel-video">',
           '<div class="pmgv3-left" id="pmgv3-video-left"></div>',
           '<div class="pmgv3-right" id="pmgv3-video-right"></div>',
-        '</div>',
-        // bm-1: Business Mode panel. Left + right columns are built and
-        // populated by /scripts/pmg-business-mode.js when its mount()
-        // runs (200ms poll for #pmgv3-panel-business).
-        '<div class="pmgv3-panel" id="pmgv3-panel-business">',
         '</div>',
       '</div>',
       '<footer class="pmgv3-bottom">',
@@ -1645,7 +1638,7 @@
 
   function setActivePanel(name) {
     if (!name) return;
-    var validNames = { text: 1, photography: 1, video: 1, business: 1 };
+    var validNames = { text: 1, photography: 1, video: 1 };
     if (!validNames[name]) return;
     var body = rootEl && rootEl.querySelector('.pmgv3-body');
     if (body) body.setAttribute('data-active-panel', name);
@@ -1699,7 +1692,7 @@
   }
   // Allow ?panel=photography|video|text deep-linking (also useful for tests).
   var initialPanel = qs.get('panel');
-  if (initialPanel === 'photography' || initialPanel === 'video' || initialPanel === 'business') {
+  if (initialPanel === 'photography' || initialPanel === 'video') {
     var panelTries = 0;
     var panelInt = setInterval(function () {
       panelTries++;
