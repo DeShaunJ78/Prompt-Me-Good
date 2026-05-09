@@ -532,14 +532,49 @@ router.post("/run", runLimiter, runCostCheck, userCapEnforce("run"), async (req,
 });
 
 
-// /api/image — generates an image using DALL-E 3 from the user's prompt.
+// /api/image — generates an image using gpt-image-1 from the user's prompt.
 // The user's prompt is treated as a description — we enhance it automatically
 // into a professional image prompt before sending to OpenAI.
+//
+// Audit (2026-05-09 "Bolstering Photography and Video Prompt Construction")
+// recommended replacing the previous single-paragraph enhancer with a
+// structured, layered framework matching Midjourney/DALL·E best practice
+// (Subject → Action/Environment → Camera/Lens → Lighting → Style/Medium)
+// AND categorized negative prompts woven into the positive prose, since
+// gpt-image-1 does not accept a separate negative_prompt field. The
+// enhancer LLM picks the right "Avoid:" clause based on detected style
+// (photorealistic vs. illustration vs. 3D/render).
 const IMAGE_PROMPT_ENHANCER =
-  "You are a professional photographer, art director, and AI image prompt specialist. " +
-  "Take the user's description and rewrite it as a single, highly detailed image generation prompt. " +
-  "Include: subject, setting, lighting, camera angle, mood, style, and technical quality descriptors. " +
-  "Make it vivid and specific. Output ONLY the enhanced prompt — no commentary, no preamble.";
+  "You are a senior photographer, art director, and AI image-prompt engineer. " +
+  "Rewrite the user's description as ONE dense image-generation prompt that follows this layered framework, in order:\n" +
+  "1. SUBJECT — who or what is the focus, with concrete attributes (age, attire, expression, materials).\n" +
+  "2. ACTION & ENVIRONMENT — what they are doing and where, with spatial detail (time of day, weather, setting).\n" +
+  "3. CAMERA & LENS — shot type, focal length, aperture, angle (e.g. 35mm f/1.8 medium close-up at eye level).\n" +
+  "4. LIGHTING — direction, quality, color temperature, key/fill (e.g. soft window key from camera left, warm bounce fill).\n" +
+  "5. STYLE & MEDIUM — aesthetic, film stock or render engine, color palette, post-processing.\n\n" +
+  "Then append a short 'Avoid:' clause categorized to the style you detect:\n" +
+  "  - PHOTOREALISTIC → 'Avoid: warped hands, extra fingers, plastic skin, distorted anatomy, oversaturated colors, lens flare artifacts.'\n" +
+  "  - ILLUSTRATION / ANIME / PAINTERLY → 'Avoid: jpeg compression artifacts, pixelation, watermarks, text, low-resolution edges, blurry linework.'\n" +
+  "  - 3D / RENDER / CGI → 'Avoid: low-poly geometry, plastic shading, broken topology, harsh aliasing, missing shadows, untextured surfaces.'\n\n" +
+  "Be concrete and specific. Output ONLY the enhanced prompt — no headings, no commentary, no preamble.";
+
+// Video enhancer (Sora). Audit-recommended structured framework for video
+// adds three video-only layers on top of the image framework: explicit
+// camera movement, subject motion, and temporal evolution. Negatives are
+// categorized for video failure modes (jitter, morph, flicker) since Sora
+// does not accept a separate negative_prompt field either.
+const VIDEO_PROMPT_ENHANCER =
+  "You are a senior cinematographer and AI video-prompt engineer for Sora-class models. " +
+  "Rewrite the user's description as ONE dense video-generation prompt that follows this layered framework, in order:\n" +
+  "1. SUBJECT & ENVIRONMENT — focus and setting with concrete spatial detail (time of day, weather, location).\n" +
+  "2. CAMERA & LENS — shot type, focal length, angle (e.g. 35mm wide-angle low-angle hero shot).\n" +
+  "3. LIGHTING — direction, quality, color temperature, key/fill.\n" +
+  "4. CAMERA MOVEMENT — explicit and named: static locked-off, slow push-in, pull-out, handheld tracking, dolly left, crane up, orbit, whip pan. Include the speed (slow / steady / rapid).\n" +
+  "5. SUBJECT MOTION — what the subject does across the clip, in clear physical verbs (turns head slowly, walks toward camera, raises hand).\n" +
+  "6. TEMPORAL EVOLUTION — how the scene changes over the duration (lighting shifts, weather builds, subject expression changes, particles drift).\n" +
+  "7. STYLE & MEDIUM — aesthetic, film grade, color palette, reference (e.g. cinematic 35mm, Kodak Vision3, A24 color grade).\n\n" +
+  "Then append: 'Avoid: frame jitter, morphing faces, flickering hands, temporal aliasing, sudden cuts, identity drift between frames, warped geometry, text artifacts.'\n\n" +
+  "Be concrete and specific. Output ONLY the enhanced prompt — no headings, no commentary, no preamble.";
 
 // Per-user image cap charges 1 unit per generated image (1–4 per request)
 // so a single n=4 call can't bypass the per-day matrix (free=1, trial=5,
@@ -586,10 +621,14 @@ router.post("/image", imageLimiter, userCapEnforce("img", imageCostExtractor), a
   }
 
   try {
-    // Step 1: Enhance the user's plain description into a professional image prompt
+    // Step 1: Enhance the user's plain description into a structured,
+    // layered image prompt with category-appropriate negatives woven in.
+    // Token budget bumped 300 → 500 because the layered framework
+    // (5 layers + Avoid clause) is meaningfully longer than the previous
+    // single-paragraph enhancer.
     const enhancedPromptResult = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      max_completion_tokens: 300,
+      max_completion_tokens: 500,
       messages: [
         { role: "system", content: IMAGE_PROMPT_ENHANCER },
         { role: "user", content: description },
@@ -697,21 +736,47 @@ router.post("/video", videoLimiter, userCapEnforce("vid", 1), async (req, res) =
   const nSeconds = VALID_DUR.has(nSecondsRaw) ? nSecondsRaw : 5;
 
   try {
-    // Sora API call. The OpenAI SDK does not yet expose `videos.generate` in
-    // the published TS types, so we hit the REST endpoint directly. Shape
-    // mirrors `POST /v1/video/generations` per the spec the user provided.
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       res.status(500).json({ success: false, ok: false, error: "Server misconfigured: missing API key." });
       return;
     }
+
+    // Step 1: Enhance the user's prompt with the structured Sora-targeted
+    // framework (subject + environment + camera + lighting + camera movement
+    // + subject motion + temporal evolution + categorized "Avoid:" clause).
+    // Audit recommendation #2 (2026-05-09) — Sora benefits massively from
+    // explicit motion + temporal cues vs. raw frontend string concatenation.
+    // Failure here falls back to the raw prompt so a 4o-mini outage does
+    // not block video generation.
+    let videoPrompt = prompt;
+    try {
+      const enhanced = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        max_completion_tokens: 600,
+        messages: [
+          { role: "system", content: VIDEO_PROMPT_ENHANCER },
+          { role: "user", content: prompt },
+        ],
+      });
+      const out = enhanced.choices[0]?.message?.content?.trim();
+      if (out && out.length > 0) videoPrompt = out.slice(0, 1500);
+    } catch (enhErr) {
+      const m = enhErr instanceof Error ? enhErr.message : String(enhErr);
+      logger.warn({ err: m }, "video prompt enhancement failed — falling back to raw prompt");
+    }
+
+    // Step 2: Sora API call. The OpenAI SDK does not yet expose
+    // `videos.generate` in the published TS types, so we hit the REST
+    // endpoint directly. Shape mirrors `POST /v1/video/generations` per the
+    // spec the user provided.
     const soraRes = await fetch("https://api.openai.com/v1/video/generations", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({ model: "sora", prompt, resolution, n_seconds: nSeconds }),
+      body: JSON.stringify({ model: "sora", prompt: videoPrompt, resolution, n_seconds: nSeconds }),
     });
 
     if (!soraRes.ok) {
