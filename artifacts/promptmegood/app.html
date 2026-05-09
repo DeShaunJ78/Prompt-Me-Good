@@ -4070,12 +4070,12 @@
     }
   </style>
   <link rel="stylesheet" href="/styles/pmg-g-theme.css?v=g2-teal-2" />
-  <link rel="stylesheet" href="/styles/pmg-chassis-v3.css?v=cv3-59-whisperer" />
+  <link rel="stylesheet" href="/styles/pmg-chassis-v3.css?v=cv3-61-total-reset" />
   <link rel="stylesheet" href="/styles/pmg-visual-studio.css?v=ps-1-subtabs" />
   <link rel="stylesheet" href="/styles/pmg-storyboard.css?v=sb-7" />
   <link rel="stylesheet" href="/styles/pmg-auto-boost.css?v=ab-4-ghost-send" />
   <link rel="stylesheet" href="/styles/pmg-spark-panel.css?v=sp-2-slim" />
-  <script src="/scripts/pmg-chassis-v3.js?v=cv3-59-whisperer"></script>
+  <script src="/scripts/pmg-chassis-v3.js?v=cv3-61-total-reset"></script>
   <script src="/scripts/pmg-visual-studio.js?v=ps-1-subtabs" defer></script>
   <script src="/scripts/pmg-storyboard.js?v=sb-9" defer></script>
   <script src="/scripts/pmg-spark-panel.js?v=sp-2-slim" defer></script>
@@ -11771,8 +11771,58 @@ Context:
           alert('Generate a prompt above first, then run it here.');
           return;
         }
-        if (prompt.length > 2000) {
-          alert('Your prompt is too long to run (max 2000 characters). Try shortening it.');
+        // cv3-61: clear any prior length-warning state up-front so a
+        // shortened re-attempt picks up cleanly. Note: we do NOT call
+        // _rb.disabled=true on the too-long path because a disabled
+        // button stops firing 'click' events — the user would be stuck
+        // even after shortening the prompt. We only DIM it visually
+        // and change the label; the click handler still fires and
+        // re-evaluates length on every attempt.
+        const _lw = document.getElementById('pmgv3-length-warning');
+        const _rb = document.getElementById('runBtn') || document.getElementById('run-with-ai-btn');
+        if (_lw) _lw.style.display = 'none';
+        if (_rb) {
+          _rb.disabled = false;
+          _rb.style.removeProperty('opacity');
+          // setRunning() owns the live label; only restore if a stale
+          // "too large" label is still on the button.
+          if (_rb.textContent && /too large/i.test(_rb.textContent)) {
+            _rb.textContent = '\u25B6 Run With AI';
+          }
+        }
+        if (prompt.length > 6000) {
+          // cv3-60: replace the legacy alert() with a graceful inline
+          // warning + visually-dimmed (but still clickable) button +
+          // pulse on the Send-To grid.
+          if (_lw) {
+            _lw.style.display = 'flex';
+            try { _lw.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+          }
+          if (_rb) {
+            _rb.textContent = 'Prompt too large for preview';
+            _rb.style.opacity = '0.5';
+            _rb.setAttribute('aria-disabled', 'true');
+          }
+          const _sg = document.querySelector('.pmgv3-send-grid')
+                   || document.querySelector('.send-to-row');
+          if (_sg) {
+            // cv3-60: use the Web Animations API instead of a CSS class.
+            // A class-based pulse gets stripped by pmg-ux.js's wide-scoped
+            // MutationObservers (the "highlight-pulse" class disappeared
+            // within ~50ms in testing). element.animate() binds the
+            // animation to the element directly and survives.
+            _sg.classList.add('highlight-pulse'); // for any future CSS hooks
+            try {
+              if (typeof _sg.animate === 'function') {
+                _sg.animate([
+                  { boxShadow: '0 0 0 0    rgba(0, 200, 150, 0.55)' },
+                  { boxShadow: '0 0 0 12px rgba(0, 200, 150, 0)'    },
+                  { boxShadow: '0 0 0 0    rgba(0, 200, 150, 0)'    }
+                ], { duration: 1500, iterations: 1, easing: 'ease-out' });
+              }
+            } catch (_) {}
+            setTimeout(function () { _sg.classList.remove('highlight-pulse'); }, 1600);
+          }
           return;
         }
 

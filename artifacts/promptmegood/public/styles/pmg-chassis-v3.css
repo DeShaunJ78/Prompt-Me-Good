@@ -1518,3 +1518,45 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
   border-color: #00c896;
   box-shadow: 0 0 0 2px rgba(0, 200, 150, 0.25);
 }
+
+/* ============================================================================
+   cv3-60 — Inline length warning (replaces alert() for >6000 char prompts)
+   ============================================================================ */
+.pmgv3-inline-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(255, 184, 0, 0.10);
+  border: 1px solid rgba(255, 184, 0, 0.30);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 0 0 12px;
+  animation: pmgv3-warning-slide 0.3s ease-out;
+}
+.pmgv3-inline-warning .warning-icon {
+  font-size: 18px;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+.pmgv3-inline-warning .warning-text {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.pmgv3-inline-warning .warning-text strong { color: #ffb800; }
+
+@keyframes pmgv3-warning-slide {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Pulse the Send-To grid to draw attention when the warning appears */
+@keyframes pmgv3-pulse-highlight {
+  0%   { box-shadow: 0 0 0 0    rgba(0, 200, 150, 0.45); }
+  70%  { box-shadow: 0 0 0 12px rgba(0, 200, 150, 0);    }
+  100% { box-shadow: 0 0 0 0    rgba(0, 200, 150, 0);    }
+}
+.highlight-pulse {
+  animation: pmgv3-pulse-highlight 1.5s ease-out;
+  border-radius: 8px;
+}

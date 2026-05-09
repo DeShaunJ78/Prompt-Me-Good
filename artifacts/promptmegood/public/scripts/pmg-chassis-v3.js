@@ -173,6 +173,16 @@
               '<button class="btn-secondary" type="button" id="save-draft-btn">💾 Save Draft</button>',
             '</div>',
             '<div class="next-step-divider"><span>Happy with your prompt?</span></div>',
+            /* cv3-60: inline length-warning replaces the legacy alert()
+               that fired when prompts exceeded the Run-With-AI ceiling.
+               Hidden by default; app.html run() reveals + disables the
+               button + pulses the send-to grid below. */
+            '<div id="pmgv3-length-warning" class="pmgv3-inline-warning" style="display:none" role="status" aria-live="polite">',
+              '<span class="warning-icon" aria-hidden="true">⚠️</span>',
+              '<div class="warning-text">',
+                '<strong>Epic prompt!</strong> It\'s too detailed for the quick preview window — use one of the <strong>Send to</strong> buttons below to run it in ChatGPT, Claude, Perplexity, or Gemini for the full, uncapped result.',
+              '</div>',
+            '</div>',
             '<button class="btn-run-primary" type="button" id="run-with-ai-btn">▶ Run With AI Here</button>',
             /* cv3-53: in-house Run With AI result renders here, BEFORE
                the send-to area, so the visual flow is:
@@ -750,6 +760,141 @@
       hdr.parentNode.insertBefore(link, hdr.nextSibling);
     }
 
+    // cv3-61: Total Reset — extends doStartOver to clear every piece of
+    // state the user can touch (pills, image/video goals, whisperer,
+    // strength bar, auto-boost buttons, length warning, run button).
+    // Called from doStartOver() AFTER the original reset cascade so any
+    // single missing element doesn't break the rest of the chain.
+    function performTotalReset() {
+      // 1. Clear secondary text inputs/textareas (the main #goal is
+      //    handled by the legacy doStartOver block below).
+      ['pmg-vs-image-goal', 'pmg-vs-video-goal', 'pmg-vs-image-refined', 'pmg-vs-video-refined', 'whisperer-input', 'quick-entry'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        try {
+          el.value = '';
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+        } catch (e) {}
+      });
+      // 1b. Clear #resultBox (contenteditable <div>, not a textarea).
+      var rbEl = document.getElementById('resultBox');
+      if (rbEl) {
+        try { rbEl.textContent = ''; } catch (e) {}
+        try { rbEl.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
+      }
+      // 1c. Whisperer: rotate placeholder + clear input.
+      try { if (window.PMGSpark && typeof window.PMGSpark.reset === 'function') window.PMGSpark.reset(); } catch (e) {}
+      // 2. Reset all pills across the three flavors:
+      //    - .pmg-pill / .pmg-tune-pill (text panel)        → .is-active class
+      //    - .pmg-photo-pill (photo suite)                  → .is-active + aria-pressed
+      //    - .pmg-vs-pill (Sora video)                      → aria-pressed
+      document.querySelectorAll('.pmg-pill.is-active, .pmg-tune-pill.is-active, .pmg-photo-pill.is-active').forEach(function (p) {
+        p.classList.remove('is-active');
+        if (p.hasAttribute('aria-pressed')) p.setAttribute('aria-pressed', 'false');
+      });
+      document.querySelectorAll('.pmg-vs-pill[aria-pressed="true"], .pmg-photo-pill[aria-pressed="true"]').forEach(function (p) {
+        p.setAttribute('aria-pressed', 'false');
+        p.classList.remove('is-active');
+      });
+      // 2b. Pro Tuning boost/mode toggles in the visual studio.
+      document.querySelectorAll('[data-vs-pro-boost][aria-pressed="true"]').forEach(function (b) {
+        b.setAttribute('aria-pressed', 'false');
+      });
+      document.querySelectorAll('input[data-vs-pro-mode]:checked').forEach(function (c) {
+        c.checked = false;
+        try { c.dispatchEvent(new Event('change', { bubbles: true })); } catch (e) {}
+      });
+      // 3. Tuning pick-count badge — clear so it shows "0 picks" cleanly.
+      var pickBadge = document.querySelector('.tuning-pick-count, .tuning-badge');
+      if (pickBadge) {
+        try { pickBadge.textContent = ''; } catch (e) {}
+      }
+      // 5. Strength bar: zero the fill, restore default status, hide the
+      //    container (it should not be visible on a fresh load).
+      var sFill = document.getElementById('strength-fill');
+      if (sFill) {
+        sFill.style.width = '0%';
+        sFill.style.removeProperty('background-color');
+      }
+      var sStatus = document.getElementById('strength-status');
+      if (sStatus) sStatus.textContent = 'Analyzing…';
+      var sBadge = document.getElementById('strength-score-badge');
+      if (sBadge) sBadge.textContent = '--';
+      var sPct = document.getElementById('strength-score-pct');
+      if (sPct) sPct.textContent = '0';
+      var sSlot = document.getElementById('pmgv3-strength-slot');
+      if (sSlot) sSlot.style.setProperty('display', 'none', 'important');
+      // 6. Auto-Boost buttons (per-panel: text/photo/video).
+      ['pmg-ab-btn-text', 'pmg-ab-btn-photo', 'pmg-ab-btn-video'].forEach(function (id) {
+        var ab = document.getElementById(id);
+        if (!ab) return;
+        ab.classList.remove('is-boosted', 'boosted-state', 'is-loading');
+        ab.disabled = false;
+        ab.removeAttribute('aria-busy');
+        ab.style.removeProperty('opacity');
+        // Restore the default label (text panel uses "Auto-Boost Prompt",
+        // photo/video panels use "Auto-Boost Brief"). Only rewrite if it
+        // was changed (e.g. "Boosting…", "✓ Boosted").
+        var label = (id === 'pmg-ab-btn-text') ? '\u2728 Auto-Boost Prompt' : '\u2728 Auto-Boost Brief';
+        if (ab.textContent && /boost(ing|ed)|\u2713|too|loading/i.test(ab.textContent)) {
+          ab.textContent = label;
+        }
+      });
+      // 6b. Remove any inline auto-boost clarifier cards left on screen.
+      document.querySelectorAll('.pmg-ab-card').forEach(function (c) { c.remove(); });
+      // 7. Run-With-AI button: clear the "too large" stuck state.
+      [document.getElementById('runBtn'), document.getElementById('run-with-ai-btn')].forEach(function (btn) {
+        if (!btn) return;
+        btn.disabled = false;
+        btn.style.removeProperty('opacity');
+        btn.removeAttribute('aria-disabled');
+        if (btn.textContent && /too large|prompt too|running/i.test(btn.textContent)) {
+          btn.textContent = (btn.id === 'run-with-ai-btn') ? '\u25B6 Run With AI Here' : '\u25B6 Run With AI';
+        }
+      });
+      // 8. Hide the inline length warning.
+      var lw = document.getElementById('pmgv3-length-warning');
+      if (lw) lw.style.display = 'none';
+      // 8b. Epic Tuning controls (added by mountEpicTextTuning) — these
+      //     persist to localStorage, so a true "Total Reset" must clear
+      //     both the inputs AND the storage keys, otherwise reasoning
+      //     framework + audience + fact-check toggle stick across resets.
+      try {
+        var epicSel = document.getElementById('pmgv3-reasoning-select');
+        if (epicSel) {
+          epicSel.value = 'standard';
+          try { epicSel.dispatchEvent(new Event('change', { bubbles: true })); } catch (e) {}
+        }
+        var epicCC = document.getElementById('pmgv3-calibrated-confidence');
+        if (epicCC) {
+          epicCC.checked = false;
+          try { epicCC.dispatchEvent(new Event('change', { bubbles: true })); } catch (e) {}
+        }
+        var epicTA = document.getElementById('pmgv3-target-audience');
+        if (epicTA) {
+          epicTA.value = '';
+          try { epicTA.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
+        }
+        try { localStorage.removeItem('pmgv3:epic:reasoning'); } catch (e) {}
+        try { localStorage.removeItem('pmgv3:epic:confidence'); } catch (e) {}
+        try { localStorage.removeItem('pmgv3:epic:audience'); } catch (e) {}
+      } catch (e) {}
+      // 9. Drop the visible photo/video result boxes back to their empty
+      //    placeholders so the right column doesn't keep stale media.
+      ['pmg-vs-generated-image', 'pmg-vs-generated-video'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) {
+          if (el.tagName === 'IMG') el.removeAttribute('src');
+          if (el.tagName === 'VIDEO') { try { el.pause(); } catch (e) {} el.removeAttribute('src'); el.load && el.load(); }
+          el.style.setProperty('display', 'none', 'important');
+        }
+      });
+      ['pmg-vs-image-placeholder', 'pmg-vs-video-placeholder'].forEach(function (id) {
+        var ph = document.getElementById(id);
+        if (ph) ph.style.removeProperty('display');
+      });
+    }
+
     function doStartOver() {
       // cv3-49: drop the persisted session AND suspend the persistence
       // layer for ~700ms so the cascade of input/change events fired by
@@ -822,8 +967,15 @@
       } catch (e) {
         try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (_e) {}
       }
+      // 7. cv3-61: Total Reset extras — pills, secondary inputs, strength
+      //    bar, auto-boost buttons, length warning, run button, etc.
+      //    Wrapped in try/catch so any single failure can't break focus().
+      try { performTotalReset(); } catch (e) {}
       if (goal) { try { goal.focus(); } catch (e) {} }
     }
+    // Expose for tests / external callers.
+    window.pmgChassisV3 = window.pmgChassisV3 || {};
+    window.pmgChassisV3.totalReset = performTotalReset;
     // Expose so other scripts (or the home-button handler) can call it.
     window.pmgChassisV3 = window.pmgChassisV3 || {};
     window.pmgChassisV3.startOver = doStartOver;
