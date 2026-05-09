@@ -890,3 +890,73 @@
 .pmgv3-expert-tips-panel .tips-content li { margin-bottom: 8px; }
 .pmgv3-expert-tips-panel .tips-content li:last-child { margin-bottom: 0; }
 .pmgv3-expert-tips-panel .tips-content li strong { color: rgba(255, 255, 255, 0.95); }
+
+/* ============================================================================
+   vs-25 epic-video — Video Suite "Epic" upgrade
+   Adds: Camera Movement <select>, Audio Cue <input>, Expert Tips panel.
+   The .pmgv3-select and .pmgv3-input base styles already ship with
+   pmg-chassis-v3.css (cv3-58), so we only add the tips-panel block and
+   tighten the camera/audio container spacing to fit inside the
+   pmg-vs-inline-section card.
+   ============================================================================ */
+.pmgv3-camera-movement,
+.pmgv3-audio-injector {
+  display: block;
+}
+.pmgv3-camera-movement .pmgv3-section-label,
+.pmgv3-audio-injector  .pmgv3-section-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 6px;
+}
+.pmgv3-camera-movement .pmgv3-style-hint,
+.pmgv3-audio-injector  .pmgv3-style-hint {
+  margin: 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.45;
+}
+
+/* Pro Tips panel (10,000 Generation Rule) */
+.pmgv3-expert-tips-panel {
+  background: rgba(0, 200, 150, 0.05);
+  border: 1px solid rgba(0, 200, 150, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 0;
+}
+.pmgv3-expert-tips-panel .tips-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.pmgv3-expert-tips-panel .tips-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+.pmgv3-expert-tips-panel .tips-header strong {
+  color: #00c896;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.pmgv3-expert-tips-panel .tips-content ul {
+  margin: 0;
+  padding-left: 20px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.pmgv3-expert-tips-panel .tips-content li {
+  margin-bottom: 8px;
+}
+.pmgv3-expert-tips-panel .tips-content li:last-child {
+  margin-bottom: 0;
+}
+.pmgv3-expert-tips-panel .tips-content strong {
+  color: #fff;
+  font-weight: 600;
+}

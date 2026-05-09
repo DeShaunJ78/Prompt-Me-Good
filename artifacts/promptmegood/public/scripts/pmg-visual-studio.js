@@ -346,6 +346,43 @@
         '<label class="pmgv3-section-label" for="pmg-vs-video-goal">Describe Your Scene</label>',
         '<textarea id="pmg-vs-video-goal" rows="3" placeholder="A tracking shot of a vintage car driving through neon-lit Tokyo at night…"></textarea>',
       '</section>',
+      // vs-25 epic-video — Pro Tips panel (10,000 generation rule).
+      '<section class="pmg-vs-inline-section">',
+        '<div class="pmgv3-expert-tips-panel">',
+          '<div class="tips-header">',
+            '<span class="tips-icon">🎬</span>',
+            '<strong>Pro Tip: How to actually win at AI Video</strong>',
+          '</div>',
+          '<div class="tips-content">',
+            '<ul>',
+              '<li><strong>Volume Beats Perfection:</strong> Stop trying to get the perfect clip on shot one. Pros generate 10–50 variations and pick the best.</li>',
+              '<li><strong>Keep Actions Simple:</strong> "Walking while talking while eating" confuses the model. One clear action per shot wins every time.</li>',
+              '<li><strong>Front-Load the Important Stuff:</strong> AI pays the most attention to the first sentence. Lead with the subject and the action.</li>',
+            '</ul>',
+          '</div>',
+        '</div>',
+      '</section>',
+      // vs-25 epic-video — Camera Movement (forced single choice) + Audio Cues.
+      '<section class="pmg-vs-inline-section">',
+        '<div class="pmgv3-camera-movement">',
+          '<label class="pmgv3-section-label" for="pmgv3-camera-select">Camera Movement</label>',
+          '<select id="pmgv3-camera-select" class="pmgv3-select">',
+            '<option value="">— No specific movement —</option>',
+            '<option value="static">Static / Locked Off (Best for high realism)</option>',
+            '<option value="slow_push">Slow Push In (Builds tension or intimacy)</option>',
+            '<option value="slow_pull">Slow Pull Out (Reveals scale or isolation)</option>',
+            '<option value="orbit">Orbit / Circular (Great for products or dramatic reveals)</option>',
+            '<option value="handheld">Handheld Follow (Adds energy and documentary feel)</option>',
+            '<option value="fpv">FPV Drone (High speed, flying through spaces)</option>',
+          '</select>',
+          '<p class="pmgv3-style-hint">AI video works best with ONE clear camera movement. Pick the simplest one that tells your story.</p>',
+        '</div>',
+        '<div class="pmgv3-audio-injector" style="margin-top:12px">',
+          '<label class="pmgv3-section-label" for="pmgv3-audio-cues">Sound &amp; Atmosphere</label>',
+          '<input type="text" id="pmgv3-audio-cues" class="pmgv3-input" maxlength="200" autocomplete="off" placeholder="e.g. soft rain, distant traffic, faint piano…" />',
+          '<p class="pmgv3-style-hint">Modern AI video tools (Veo 3, Sora) use sound descriptions to match the visual pacing — even when no audio is generated.</p>',
+        '</div>',
+      '</section>',
       '<section class="pmg-vs-inline-section">',
         '<label class="pmgv3-section-label">Video Tuning Suite</label>',
         '<p style="margin:0 0 8px;font-size:12px;opacity:.65">Pick a vibe in each group — we will compose the directives.</p>',
@@ -514,8 +551,31 @@
       else if (key === 'style')    directives.push(v + ' style');
     });
     var pro = collectProDirectives('video', VIDEO_BOOSTS, VIDEO_MODES);
+    // vs-25 epic-video — Camera Movement select (forced single choice).
+    var camSel = $('pmgv3-camera-select');
+    var CAM_LABEL = {
+      static:    'Static / locked-off camera',
+      slow_push: 'Slow push in on the subject',
+      slow_pull: 'Slow pull out from the subject',
+      orbit:     'Orbit / circular camera move around the subject',
+      handheld:  'Handheld follow camera',
+      fpv:       'FPV drone flying through the scene'
+    };
+    if (camSel && camSel.value && CAM_LABEL[camSel.value]) {
+      pro.push('Camera Movement: ' + CAM_LABEL[camSel.value] + '.');
+    }
+    // vs-25 epic-video — Audio Cue injector.
+    var audioEl = $('pmgv3-audio-cues');
+    var audio = audioEl && audioEl.value && audioEl.value.trim();
+    if (audio) {
+      pro.push('Audio Cues: ' + audio + '. Ensure the visual pacing and environment match these sounds.');
+    }
     var allDirectives = directives.concat(pro);
-    var refined = goal + (allDirectives.length ? '. ' + allDirectives.join('. ') + '.' : '');
+    // vs-25 epic-video — always-on Anti-Jitter negative prompt block.
+    var negative = '--no morphing, jittering, warping, floating limbs, sudden physics changes, text artifacts, blurry edges, unnatural physics';
+    var refined = goal +
+      (allDirectives.length ? '. ' + allDirectives.join('. ') + '.' : '') +
+      ' ' + negative;
     var ta = $('pmg-vs-video-refined');
     if (ta) {
       ta.value = refined;
