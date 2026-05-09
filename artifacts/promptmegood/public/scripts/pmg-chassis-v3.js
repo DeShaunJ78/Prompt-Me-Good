@@ -97,26 +97,22 @@
       '<div class="pmgv3-body" data-active-panel="text">',
         '<div class="pmgv3-panel" id="pmgv3-panel-text">',
         '<div class="pmgv3-left">',
-          // sp-1 Prompt Whisperer Spark Panel — pure additive on-ramp.
-          // Wired by /scripts/pmg-spark-panel.js. Hidden by default
-          // (display:none) until that script confirms the user hasn't
-          // dismissed it; this prevents a flash of the panel when the
-          // user has previously closed it.
-          '<div class="pmgv3-spark-panel" id="pmgv3-spark-panel" style="display:none">',
-            '<div class="spark-header">',
-              '<span class="spark-icon" aria-hidden="true">✨</span>',
-              '<span class="spark-label">Prompt Whisperer</span>',
-              '<button type="button" class="spark-close-btn" id="btn-close-spark" aria-label="Skip the Prompt Whisperer" title="Skip this">×</button>',
+          // sp-2 Prompt Whisperer — slim glowing search bar.
+          // Replaces the bulky sp-1 panel with a single-line input that
+          // looks/feels like a search field, not a workspace. Wired by
+          // /scripts/pmg-spark-panel.js. Sits above the main builder.
+          '<div class="pmgv3-whisperer-bar" id="pmgv3-whisperer-bar">',
+            '<div class="whisperer-label">',
+              '<span class="whisperer-icon" aria-hidden="true">✨</span>',
+              '<span class="whisperer-title">Prompt Whisperer</span>',
             '</div>',
-            '<div class="spark-content" id="spark-question-container">',
-              '<h3 class="spark-question" id="spark-question-text">Loading spark…</h3>',
-              '<p class="spark-subtext">Answer simply. We\'ll build the perfect prompt for you.</p>',
-              '<textarea class="spark-input" id="spark-answer-input" rows="3" placeholder="Type your answer here…"></textarea>',
-              '<div class="spark-actions">',
-                '<button type="button" class="spark-btn-primary" id="btn-spark-submit">Build My Prompt</button>',
-                '<button type="button" class="spark-btn-secondary" id="btn-spark-skip">Skip — I know what I want</button>',
-              '</div>',
+            '<div class="whisperer-input-row">',
+              '<input type="text" class="whisperer-input" id="whisperer-input" autocomplete="off" placeholder="What\'s a business idea you\'ve never had time to explore?" />',
+              '<button type="button" class="whisperer-spark-btn" id="btn-whisperer-spark">Spark →</button>',
             '</div>',
+          '</div>',
+          '<div class="pmgv3-whisperer-divider" aria-hidden="true">',
+            '<span>— or build from scratch below —</span>',
           '</div>',
           '<section class="idea-section">',
             '<label class="pmgv3-section-label" for="goal">Your Idea</label>',
