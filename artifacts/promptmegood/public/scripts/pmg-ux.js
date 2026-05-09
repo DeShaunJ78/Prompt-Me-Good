@@ -17438,6 +17438,45 @@
     return target;
   }
 
+  // Pick a tighter, meaningful rect when the resolved target is a large
+  // container (e.g. #runSection, #history, #photo-suite-section). On mobile
+  // especially, highlighting a whole container covers most of the viewport
+  // and obscures what the tour is pointing at — fall back to the first
+  // heading / title / primary action inside.
+  function wsGetTightRect(target, isMobile) {
+    var rect = target.getBoundingClientRect();
+    var vw = window.innerWidth || document.documentElement.clientWidth;
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    var heightCap = isMobile ? vh * 0.45 : vh * 0.7;
+    var widthCap = isMobile ? vw * 0.95 : vw * 0.9;
+    var tooBig = rect.height > heightCap || (rect.width > widthCap && rect.height > vh * 0.3);
+    if (!tooBig) return { rect: rect, anchor: target };
+    var innerSel = [
+      '[data-tour-target]',
+      '.panel-title', '.run-section-title', '.tuning-header',
+      '.pmg-vault-toggle', '.pmg-vault-toggle-label',
+      'h1', 'h2', 'h3', 'h4',
+      '.btn-primary', 'button.btn', 'button[type="submit"]', 'button'
+    ].join(',');
+    var candidates = target.querySelectorAll(innerSel);
+    for (var i = 0; i < candidates.length; i++) {
+      var c = candidates[i];
+      var cr = c.getBoundingClientRect();
+      if (cr.width > 0 && cr.height > 0 && cr.height <= heightCap) {
+        return { rect: cr, anchor: c };
+      }
+    }
+    var clamped = Math.min(rect.height, heightCap);
+    return {
+      rect: {
+        top: rect.top, left: rect.left,
+        width: rect.width, height: clamped,
+        bottom: rect.top + clamped, right: rect.left + rect.width
+      },
+      anchor: target
+    };
+  }
+
   var _wsPositionSkipGuard = false;
   function positionStep(scrollAttempts) {
     if (!isOpen()) return;
@@ -17466,14 +17505,16 @@
     var highlight = document.getElementById('pmg-ws-highlight');
     var tooltip = document.getElementById('pmg-ws-tooltip');
 
-    var rect = target.getBoundingClientRect();
-    var attempts = scrollAttempts || 0;
     var isMobile = window.matchMedia('(max-width: 640px)').matches;
+    var tight = wsGetTightRect(target, isMobile);
+    var rect = tight.rect;
+    var scrollAnchor = tight.anchor || target;
+    var attempts = scrollAttempts || 0;
     var needsScroll = rect.top < 80 || rect.bottom > window.innerHeight - 80;
 
     if (needsScroll && attempts < 2) {
       overlay.classList.add('is-transitioning');
-      target.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
+      scrollAnchor.scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
       setTimeout(function () { positionStep(attempts + 1); }, isMobile ? 360 : 400);
       return;
     }
@@ -17481,8 +17522,7 @@
     var pad = 6;
     var hlLeft = Math.max(0, rect.left - pad);
     var hlWidth = Math.min(rect.width + pad * 2, window.innerWidth);
-    var rawH = rect.height + pad * 2;
-    var hlHeight = isMobile ? Math.min(rawH, window.innerHeight * 0.35) : rawH;
+    var hlHeight = rect.height + pad * 2;
     highlight.style.top = (rect.top - pad) + 'px';
     highlight.style.left = hlLeft + 'px';
     highlight.style.width = hlWidth + 'px';
