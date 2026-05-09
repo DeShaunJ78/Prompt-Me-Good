@@ -1,0 +1,169 @@
+Replit Implementation Brief: Business 
+Mode Upgrade
+Replit, we are introducing a massive new tier to PromptMeGood called Business Mode. 
+This is a premium, outcome-specific workspace designed for power users (entrepreneurs, 
+marketers, developers, creators).
+This does not replace the existing prompt builder. It sits alongside it as a premium 
+tab/mode. When a user clicks "Business Mode" (or upgrades to access it), they enter a 
+guided, high-value workflow environment.
+1. The Core Architecture: The Business Mode Dashboard
+UI Layout: •
+Add a new primary tab at the top: [✍ Text Prompts] [📸 Photography] [🎬 Video] [💼 Business 
+Mode 🔒] •
+When clicked, the left column transforms into the Business Mode Dashboard. •
+The dashboard features a clean, grid-based menu of the Six Workflow Packs (detailed 
+below). •
+Above the grid, there is a persistent "Brand Voice Vault" configuration section.
+2. The Brand Voice Vault (Global Settings)
+This is the killer feature. Users define their brand once, and every prompt generated in 
+Business Mode automatically inherits these rules.
+HTML Structure (Left Column Header):
+HTML
+<div class="pmg-business-brand-vault">
+  <h3>
+🏛
+ Your Brand Voice Vault</h3>
+  <p>Set this once. Every prompt will automatically use these rules.</p>
+  
+  <label>Target Audience (Who are you talking to?)</label>
+  <input type="text" id="biz-audience" placeholder="e.g., Busy moms, B2B SaaS fo
+  
+  <label>Brand Tone (How do you sound?)</label>
+  <input type="text" id="biz-tone" placeholder="e.g., Professional but witty, em
+  
+  <label>Negative Constraints (What should the AI NEVER do?)</label>
+<textarea id="biz-negative" placeholder="e.g., Never use emojis, avoid corpora
+<button id="biz-save-brand" class="btn-secondary">Save Brand Voice</button>
+</div>
+Logic: When a user generates a prompt from any Business Mode template, the system must 
+automatically append a hidden system instruction to the prompt:
+[SYSTEM INSTRUCTION: The target audience is ${biz-audience}. The tone must be ${biz-tone}. STRICT 
+NEGATIVE CONSTRAINTS: ${biz-negative}.]
+3. The Six Workflow Packs (The Grid)
+Below the Brand Vault, display a CSS Grid of the six packs. When a user clicks a pack, it 
+opens a list of specific templates.
+Pack 1: 🏢 Entrepreneur & Business
+• 
+Offer Creation: 
+Help me craft an irresistible offer for [PRODUCT/SERVICE]. Target audience is 
+[AUDIENCE]. Price point is [PRICE]. Include a strong guarantee and 3 bonuses.
+• 
+Landing Page Copy: 
+Write high-converting landing page copy for [PRODUCT]. Include a hook 
+headline, 3 PAS (Problem-Agitation-Solution) bullet points, and a strong CTA.
+• 
+Cold Email Sequence: 
+Write a 3-part cold email sequence targeting [DECISION MAKER] at 
+[INDUSTRY] companies. Goal is to book a 15-minute demo for [PRODUCT].
+Pack 2: 🛍 E-Commerce & Shopify
+• 
+Product Description: 
+Write an SEO-optimized Shopify product description for [PRODUCT NAME]. 
+Key features: [FEATURES]. Focus on the emotional benefit, not just specs.
+• 
+Facebook Ad Angle: 
+Generate 3 distinct Facebook ad angles for [PRODUCT]. Angle 1: Logical/ROI. 
+Angle 2: Emotional/Status. Angle 3: Urgency/Scarcity.
+• 
+Abandoned Cart Email: 
+Write a 2-part abandoned cart email sequence for [PRODUCT]. Email 1: 
+Helpful reminder. Email 2: 10% discount offer with 24-hour urgency.
+Pack 3: 💻 Builder (Replit / Bolt / Cursor)
+• 
+App Spec Prompt: 
+Write a detailed PRD (Product Requirements Document) for an AI agent to build 
+a [APP TYPE] using [TECH STACK]. Core features: [FEATURES].
+• 
+Debugging Prompt: 
+I am getting this error: [ERROR MESSAGE] in my [LANGUAGE/FRAMEWORK] 
+code. The expected behavior is [EXPECTED]. Write a prompt to diagnose and fix this.
+• 
+Database Schema: 
+Design a relational database schema for a [APP TYPE]. It needs to track 
+[ENTITIES]. Provide the SQL table creation scripts.
+Pack 4: 🎬 Creator (YouTube, TikTok, Social)
+• 
+YouTube Script: 
+Write a YouTube script about [TOPIC]. Start with a 15-second hook. Outline 3 main 
+chapters. End with a call to subscribe.
+• 
+TikTok Hook Generator: 
+Give me 5 viral TikTok hooks for a video about [TOPIC]. Use the 'Negative 
+Hook' and 'Curiosity Gap' frameworks.
+• 
+Content Calendar: 
+Create a 30-day content calendar for a [NICHE] creator. Include 2 YouTube long
+form ideas, 4 Shorts ideas, and 8 Twitter threads.
+Pack 5: 📣 Marketing & Advertising
+• 
+Google Search Ad: 
+Write 3 Headlines (max 30 chars) and 2 Descriptions (max 90 chars) for a Google 
+Search Ad targeting the keyword [KEYWORD].
+• 
+Webinar Outline: 
+Outline a 45-minute webinar teaching [TOPIC]. Include a 5-minute intro, 30 
+minutes of teaching, and a 10-minute pitch for [PRODUCT].
+• 
+Press Release: 
+Write a professional press release announcing [EVENT/LAUNCH]. Include a quote 
+from [SPOKESPERSON NAME] and a company boilerplate.
+Pack 6: 🎧 Customer Experience
+• 
+Support Reply: 
+[RESOLUTION].
+Draft an empathetic reply to a customer who is angry about [ISSUE]. Offer them 
+• 
+Onboarding Sequence: 
+Write a 3-part welcome email sequence for new users of 
+[SOFTWARE/SERVICE]. Goal: Get them to complete [FIRST ACTION].
+• 
+Refund Policy: 
+[TERMS].
+Write a clear, friendly, and firm refund policy for a [BUSINESS TYPE]. Terms: 
+4. The Template Execution UI (Prompt Variables)
+When a user clicks a specific template (e.g., "Product Description"), the UI changes to the 
+Execution View.
+Implementation:
+Instead of a blank text box, the user sees a form with specific input fields based on the 
+variables in the template (the 
+[BRACKETED] items above).
+HTML
+<div class="pmg-business-execution">
+<h4>
+🛍
+ Shopify Product Description</h4>
+<label>Product Name</label>
+<input type="text" id="var-product-name">
+<label>Key Features (comma separated)</label>
+<input type="text" id="var-features">
+<button id="biz-generate-prompt" class="btn-primary">Generate Master Prompt</
+</div>
+Logic:
+When the user clicks "Generate Master Prompt":
+1. The system takes the base template.
+2. It replaces the 
+[VARIABLES] with the user's input.
+3. It appends the Brand Voice Vault rules.
+4. It outputs the final, highly-engineered prompt into the Right Column, exactly like the 
+standard app does today.
+5. The "Before & After" Quality View (Right Column)
+To prove the value of Business Mode, the right column output should include a "Quality 
+Check" toggle.
+Implementation:
+Add a toggle above the generated prompt: 
+[View Final Prompt] | [View AI Analysis] .
+When "View AI Analysis" is clicked, show a brief explanation of why this prompt is powerful 
+(e.g., "This prompt uses the PAS framework, injects your brand voice, and sets strict 
+negative constraints to prevent hallucination.")
+Summary of Work for Replit:
+1. Build the new 
+Business Mode tab and layout.
+2. Build the 
+Brand Voice Vault and its 
+localStorage saving mechanism.
+3. Build the CSS Grid for the 6 Workflow Packs.
+4. Build the dynamic 
+Execution View that parses templates and creates input fields for 
+variables.
+5. Wire the "Generate Master Prompt" button to combine the template, variables, and 
+Brand Voice into the final output in the right column
