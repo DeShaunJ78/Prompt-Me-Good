@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { installApiMocks } from "./_mock-api";
 
 /* Task #110 — Photography Suite mobile polish smoke
  *
@@ -18,6 +19,7 @@ const BASE_URL = process.env.PMG_BASE_URL ?? "http://localhost:80";
 
 test.describe("Photography Suite mobile polish @ mobile-360", () => {
   test.beforeEach(async ({ page }) => {
+    await installApiMocks(page);
     await page.addInitScript(() => {
       sessionStorage.setItem("promptmegood:t42-banner-dismissed", "1");
     });

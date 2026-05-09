@@ -1,4 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
+import { installApiMocks } from "./_mock-api";
 
 type Viewport = { name: string; width: number; height: number };
 
@@ -108,6 +109,7 @@ for (const vp of VIEWPORTS) {
       page,
     }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
+      await installApiMocks(page);
       await page.goto("/app");
       await settle(page);
       await dismissOnboarding(page);
@@ -171,6 +173,7 @@ for (const vp of VIEWPORTS) {
       page,
     }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
+      await installApiMocks(page);
       await page.goto("/app");
       await settle(page);
       await dismissOnboarding(page);
@@ -279,6 +282,7 @@ for (const vp of VIEWPORTS) {
       page,
     }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
+      await installApiMocks(page);
       await page.goto("/app");
       await settle(page);
       await dismissOnboarding(page);
@@ -356,6 +360,7 @@ for (const vp of VIEWPORTS) {
       page,
     }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
+      await installApiMocks(page);
       await page.goto("/app");
       await settle(page);
       await dismissOnboarding(page);
@@ -437,6 +442,7 @@ for (const vp of VIEWPORTS) {
       page,
     }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
+      await installApiMocks(page);
       await page.goto("/app");
       await settle(page);
       await dismissOnboarding(page);

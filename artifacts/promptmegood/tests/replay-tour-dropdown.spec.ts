@@ -1,4 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
+import { installApiMocks } from "./_mock-api";
 
 /* Task #130 — Replay Tour dropdown coverage.
  *
@@ -38,6 +39,7 @@ const WS_OVERLAY = "#pmg-ws-tour-overlay";
 
 async function gotoApp(page: Page) {
   await page.setViewportSize(VIEWPORT);
+  await installApiMocks(page);
   // Pre-mark first-run flags so onboarding doesn't fight us, and clear
   // the workstation-tour-seen flag so the Workstation option is allowed
   // to launch its overlay.

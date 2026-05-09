@@ -1,4 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
+import { installApiMocks } from "./_mock-api";
 
 const VIEWPORT_WIDTH = 360;
 const TOLERANCE_PX = 1;
@@ -231,6 +232,7 @@ for (const { name, path } of PAGES) {
     test(`${name} does not overflow viewport horizontally`, async ({
       page,
     }) => {
+      await installApiMocks(page);
       await page.goto(path);
       await settle(page);
       await dismissOnboarding(page);
@@ -244,6 +246,7 @@ test.describe(`horizontal overflow @ ${VIEWPORT_WIDTH}px (homepage interactive s
   test("mobile nav open does not overflow viewport horizontally", async ({
     page,
   }) => {
+    await installApiMocks(page);
     await page.goto("/app");
     await settle(page);
     await dismissOnboarding(page);
@@ -266,6 +269,7 @@ test.describe(`horizontal overflow @ ${VIEWPORT_WIDTH}px (homepage interactive s
   test("Help Me Start modal open does not overflow viewport horizontally", async ({
     page,
   }) => {
+    await installApiMocks(page);
     await page.goto("/app");
     await settle(page);
     await dismissOnboarding(page);
@@ -301,6 +305,7 @@ test.describe(`horizontal overflow @ ${VIEWPORT_WIDTH}px (homepage interactive s
   test("Photography Suite expanded with busy pill selection does not overflow viewport horizontally", async ({
     page,
   }) => {
+    await installApiMocks(page);
     await page.goto("/app");
     await settle(page);
     await dismissOnboarding(page);

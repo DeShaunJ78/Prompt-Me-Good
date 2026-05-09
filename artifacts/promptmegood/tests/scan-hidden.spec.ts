@@ -1,4 +1,5 @@
 import { test } from '@playwright/test';
+import { installApiMocks } from './_mock-api';
 
 test('scan hidden focusable controls', async ({ browser }) => {
   const scanFn = () => {
@@ -28,6 +29,7 @@ test('scan hidden focusable controls', async ({ browser }) => {
 
   const dCtx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const dPage = await dCtx.newPage();
+  await installApiMocks(dPage);
   await dPage.goto('/app', { waitUntil: 'networkidle', timeout: 30000 });
   await dPage.waitForTimeout(3000);
   const dResults = await dPage.evaluate(scanFn);
@@ -37,6 +39,7 @@ test('scan hidden focusable controls', async ({ browser }) => {
 
   const mCtx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const mPage = await mCtx.newPage();
+  await installApiMocks(mPage);
   await mPage.goto('/app', { waitUntil: 'networkidle', timeout: 30000 });
   await mPage.waitForTimeout(3000);
   const mResults = await mPage.evaluate(scanFn);

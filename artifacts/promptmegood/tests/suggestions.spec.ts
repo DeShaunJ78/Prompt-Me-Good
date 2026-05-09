@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { installApiMocks } from "./_mock-api";
 
 const BASE_URL = process.env.PMG_BASE_URL ?? "http://localhost:80";
 
@@ -19,6 +20,7 @@ type Win = Window & {
 };
 
 async function gotoApp(page: Page): Promise<void> {
+  await installApiMocks(page);
   await page.addInitScript(() => {
     try {
       localStorage.setItem("promptmegood:tour:v1:done", "1");

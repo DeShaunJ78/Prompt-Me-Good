@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { installApiMocks } from "./_mock-api";
 
 test.setTimeout(90_000);
 
@@ -35,6 +36,7 @@ function mockGenerateJson(page: import("@playwright/test").Page) {
 }
 
 async function mockApiAndGenerate(page: import("@playwright/test").Page, goalText: string) {
+  await installApiMocks(page);
   await mockGenerateStream(page);
 
   await page.goto("/app");
@@ -168,6 +170,7 @@ test.describe("Power Moves MVP", () => {
   });
 
   test("Improve With AI → #improve-status appears and resultBox text changes", async ({ page }) => {
+    await installApiMocks(page);
     await mockGenerateStream(page);
     await mockGenerateJson(page);
 

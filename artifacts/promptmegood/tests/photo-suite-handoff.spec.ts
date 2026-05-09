@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { installApiMocks } from "./_mock-api";
 
 /* Task #111 — Image-mode → Photography Suite handoff smoke
  *
@@ -35,6 +36,7 @@ type SuiteHandoff = {
 
 test.describe("Photography Suite handoff @ mobile-360", () => {
   test.beforeEach(async ({ page }) => {
+    await installApiMocks(page);
     await page.addInitScript(() => {
       sessionStorage.setItem("promptmegood:t42-banner-dismissed", "1");
     });

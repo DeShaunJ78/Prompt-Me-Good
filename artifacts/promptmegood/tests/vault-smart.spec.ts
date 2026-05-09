@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { installApiMocks } from "./_mock-api";
 
 const BASE_URL = process.env.PMG_BASE_URL ?? "http://localhost:80";
 const HISTORY_KEY = "promptmegood:history:v1";
@@ -90,6 +91,7 @@ async function dismissOnboarding(page: Page) {
 }
 
 async function gotoHistory(page: Page) {
+  await installApiMocks(page);
   await page.goto(BASE_URL + "/app", { waitUntil: "domcontentloaded" });
   await page.waitForSelector("#history-list", { timeout: 10_000 });
   await dismissOnboarding(page);
@@ -258,6 +260,7 @@ test.describe("Smart Vault @ mobile-360", () => {
       },
       { key: HISTORY_KEY },
     );
+    await installApiMocks(page);
     await page.goto(BASE_URL + "/app", { waitUntil: "domcontentloaded" });
     await page.waitForSelector("#history-list");
     await dismissOnboarding(page);

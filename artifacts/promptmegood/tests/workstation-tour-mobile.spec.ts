@@ -1,4 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
+import { installApiMocks } from "./_mock-api";
 
 type PmgWindow = Window & { pmgStartWorkstationTour?: () => void };
 
@@ -9,6 +10,7 @@ const HIGHLIGHT_PAD = 6;
 
 async function gotoApp(page: Page) {
   await page.setViewportSize({ width: MOBILE_W, height: MOBILE_H });
+  await installApiMocks(page);
   await page.addInitScript(() => {
     localStorage.setItem("promptmegood:tour:v1:done", "1");
     sessionStorage.setItem("promptmegood:t42-banner-dismissed", "1");
@@ -236,6 +238,7 @@ test.describe("Workstation tour compact overlay @ mobile-400x720", () => {
 
   test("invite banner fits within mobile viewport when shown", async ({ page }) => {
     await page.setViewportSize({ width: MOBILE_W, height: MOBILE_H });
+    await installApiMocks(page);
     await page.addInitScript(() => {
       localStorage.setItem("promptmegood:tour:v1:done", "1");
       localStorage.removeItem("pmg.workstationTourSeen");
