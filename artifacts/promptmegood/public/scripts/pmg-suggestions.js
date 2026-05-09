@@ -830,7 +830,9 @@
       return orig.apply(this, arguments);
     };
     window.generateImage = wrapper;
-    window.runImageGeneration = wrapper;
+    /* Only re-alias runImageGeneration if it existed before us (Task #140
+       removed the legacy global; don't resurrect it as a side-effect). */
+    if (origRun) window.runImageGeneration = wrapper;
   }
 
   /* ------------------------------------------------------------

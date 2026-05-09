@@ -16750,8 +16750,10 @@
 
   /* ── P3: Image Generation Loading State ── */
   function patchImageGeneration() {
-    var origRunImage = window.runImageGeneration;
+    /* Task #140: prefer generateImage; runImageGeneration may not exist. */
+    var origRunImage = window.runImageGeneration || window.generateImage;
     if (!origRunImage || origRunImage.__pmgT103Patched) return;
+    var hadRunGlobal = typeof window.runImageGeneration === 'function';
     var genWasSame = (window.generateImage === origRunImage);
 
     var t103Wrapper = async function () {
@@ -16822,8 +16824,8 @@
       }
     };
     t103Wrapper.__pmgT103Patched = true;
-    window.runImageGeneration = t103Wrapper;
-    if (genWasSame) {
+    if (hadRunGlobal) window.runImageGeneration = t103Wrapper;
+    if (genWasSame || !hadRunGlobal) {
       window.generateImage = t103Wrapper;
     }
   }

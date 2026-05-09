@@ -71,9 +71,9 @@ test.describe("Photo Prompt Mode removal @ mobile-360", () => {
 
     await photoTab.click();
 
-    // Tab click should switch the active panel + set body.image-mode
-    // (chassis-v3 toggles the class so the relocated Photo Suite renders).
-    await expect(page.locator("body")).toHaveAttribute(
+    // Chassis-v3 sets data-active-panel on the inner .pmgv3-body and
+    // toggles body.image-mode so the relocated Photo Suite renders.
+    await expect(page.locator(".pmgv3-body")).toHaveAttribute(
       "data-active-panel",
       "photography",
       { timeout: 5_000 },

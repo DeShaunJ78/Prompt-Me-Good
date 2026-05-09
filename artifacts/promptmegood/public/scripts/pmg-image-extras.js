@@ -547,14 +547,11 @@
    * ------------------------------------------------------------------ */
   var __wgTries = 0;
   function wrapGenerator() {
+    /* Task #140: chassis-v3 owns image generation via
+       #pmg-vs-image-generate-btn. The legacy runImageGeneration global
+       is gone; nothing left to wrap. */
     var orig = window.runImageGeneration;
-    if (typeof orig !== 'function') {
-      /* runImageGeneration was removed in Task #140 (chassis-v3 owns image
-         generation now via #pmg-vs-image-generate-btn). Bound the retry so
-         we don't poll forever on text-only sessions. */
-      if (++__wgTries < 30) setTimeout(wrapGenerator, 200);
-      return;
-    }
+    if (typeof orig !== 'function') return;
     if (orig.__pmgImgxWrapped) return;
     var wrapped = async function () {
       /* Bump the run sequence so any later post-run sampler from an
