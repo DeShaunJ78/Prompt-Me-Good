@@ -432,5 +432,108 @@ for (const vp of VIEWPORTS) {
         "#pmg-vs-image-generate-btn (revealed after Build) must still exist in the DOM",
       ).toBe(true);
     });
+
+    test(`image-mode Generate button is reachable above the fold after Build (${vp.name})`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: vp.width, height: vp.height });
+      await page.goto("/app");
+      await settle(page);
+      await dismissOnboarding(page);
+      await page.waitForTimeout(300);
+
+      const switched = await switchToImageMode(page);
+      expect(switched).toBe(true);
+
+      // Type a goal and click the visible Build CTA — this is the real user
+      // path to image generation. After Build, #pmg-vs-image-refined-section
+      // unhides and #pmg-vs-image-generate-btn becomes the actionable
+      // generate control. We assert that control lands within the first
+      // viewport without any scroll, so generation is reachable above the
+      // fold in the same first-impression frame.
+      await page.evaluate(() => {
+        const ta = document.getElementById(
+          "pmg-vs-image-goal",
+        ) as HTMLTextAreaElement | null;
+        if (!ta) return;
+        ta.value = "a cat on a roof at sunset";
+        ta.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      await page.click("#pmg-vs-build-image-prompt-btn");
+      // Build is synchronous (composes string locally + reveals section); a
+      // short settle covers any rAF / strength-mirror tick.
+      await page.waitForTimeout(800);
+
+      const m = await page.evaluate(() => {
+        const sec = document.getElementById("pmg-vs-image-refined-section");
+        const gen = document.getElementById(
+          "pmg-vs-image-generate-btn",
+        ) as HTMLButtonElement | null;
+        const ref = document.getElementById(
+          "pmg-vs-image-refined",
+        ) as HTMLTextAreaElement | null;
+        if (!sec || !gen) {
+          return {
+            ok: false,
+            sectionRevealed: false,
+            visible: false,
+            enabled: false,
+            top: 0,
+            bottom: 0,
+            viewportHeight: window.innerHeight,
+            scrollY: window.scrollY,
+            refinedFilled: false,
+          };
+        }
+        const cs = getComputedStyle(gen);
+        const visible =
+          cs.display !== "none" &&
+          cs.visibility !== "hidden" &&
+          parseFloat(cs.opacity || "1") > 0;
+        const r = gen.getBoundingClientRect();
+        return {
+          ok: true,
+          sectionRevealed: !sec.hasAttribute("hidden"),
+          visible,
+          enabled: !gen.disabled,
+          top: r.top,
+          bottom: r.bottom,
+          viewportHeight: window.innerHeight,
+          scrollY: window.scrollY,
+          refinedFilled: !!(ref && ref.value && ref.value.length > 0),
+        };
+      });
+      expect(m.ok, "refined section + generate button must exist").toBe(true);
+      expect(
+        m.sectionRevealed,
+        "#pmg-vs-image-refined-section must unhide after Build",
+      ).toBe(true);
+      expect(
+        m.refinedFilled,
+        "#pmg-vs-image-refined must be populated after Build",
+      ).toBe(true);
+      expect(
+        m.visible,
+        "#pmg-vs-image-generate-btn must be visible after Build",
+      ).toBe(true);
+      expect(
+        m.enabled,
+        "#pmg-vs-image-generate-btn must be enabled after Build",
+      ).toBe(true);
+      // Build should not auto-scroll the page — Generate must land above the
+      // fold in the original viewport frame.
+      expect(
+        m.scrollY,
+        `Build click must not scroll the page (scrollY=${m.scrollY}px)`,
+      ).toBeLessThanOrEqual(8);
+      expect(
+        m.top,
+        `#pmg-vs-image-generate-btn must start within the first viewport (top=${m.top}px)`,
+      ).toBeGreaterThanOrEqual(0);
+      expect(
+        m.bottom,
+        `#pmg-vs-image-generate-btn must end within the first viewport (bottom=${m.bottom}px, viewport=${m.viewportHeight}px)`,
+      ).toBeLessThanOrEqual(m.viewportHeight);
+    });
   });
 }
