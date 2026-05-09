@@ -265,6 +265,12 @@
         '<section class="pmg-vs-inline-section">',
           '<label class="pmgv3-section-label" for="pmg-vs-image-goal">Describe Your Image</label>',
           '<textarea id="pmg-vs-image-goal" rows="3" placeholder="A woman walking through rainy Tokyo at night, cinematic, neon reflections, 35mm film look…"></textarea>',
+          // ps-2-build-above-fold (Task #120): primary CTA lives directly
+          // under the textarea so a first-time visitor on 360x800 / 1280x800
+          // can build a prompt without scrolling. Tuning sections below
+          // are optional refinement — clicking Build with no picks still
+          // produces a valid prompt from the goal alone.
+          '<button type="button" id="pmg-vs-build-image-prompt-btn" class="pmg-vs-btn pmg-vs-btn-primary pmg-vs-full-width" style="margin-top:10px">✨ Build My Image Prompt</button>',
         '</section>',
         buildBaseStyleToggleHtml(),
         '<section class="pmg-vs-inline-section pmg-vs-photo-accordion" id="pmg-vs-photo-accordion">',
@@ -288,9 +294,11 @@
             '<p>Major AI platforms (Gemini, ChatGPT, Claude) have strict safety filters that often block editing or altering photos of children and minors — to prevent misuse and protect privacy. If a family-photo edit gets refused, this is likely why. For kid photos we recommend traditional tools like Photoshop or Lightroom instead.</p>',
           '</div>',
         '</aside>',
-        '<section class="pmg-vs-inline-section">',
-          '<button type="button" id="pmg-vs-build-image-prompt-btn" class="pmg-vs-btn pmg-vs-btn-secondary pmg-vs-full-width">✨ Build My Image Prompt</button>',
-        '</section>',
+        // ps-2-build-above-fold (Task #120): the primary "Build My Image
+        // Prompt" CTA was relocated up under the textarea so it is reachable
+        // without scrolling. The previous duplicate that lived here below
+        // the tuning sections has been removed (no second instance — same
+        // ID would have been invalid HTML).
         '<section class="pmg-vs-inline-section pmg-vs-refined-output" id="pmg-vs-image-refined-section" hidden>',
           '<label class="pmgv3-section-label" for="pmg-vs-image-refined">Your Refined Prompt — edit before you generate</label>',
           '<textarea id="pmg-vs-image-refined" rows="5"></textarea>',

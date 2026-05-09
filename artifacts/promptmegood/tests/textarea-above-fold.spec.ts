@@ -352,7 +352,7 @@ for (const vp of VIEWPORTS) {
       ).toBeLessThanOrEqual(geom.viewportHeight);
     });
 
-    test(`image-mode Generate button is reachable in the first viewport (${vp.name})`, async ({
+    test(`image-mode primary CTA is visible above the fold (${vp.name})`, async ({
       page,
     }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
@@ -367,33 +367,70 @@ for (const vp of VIEWPORTS) {
         "Photography tab must activate the photography panel",
       ).toBe(true);
 
-      // The panel's Generate button should be reachable directly under the
-      // input. We allow up to ~1.25× viewport because the right-column
-      // result card on desktop can push the left-column actions just under
-      // the fold without requiring any meaningful scroll. The button MUST
-      // exist in the DOM regardless.
-      const btn = await page.evaluate(() => {
-        const el = document.getElementById(
-          "pmg-vs-image-generate-btn",
+      // The visible primary CTA on the Photography panel is "✨ Build My
+      // Image Prompt" (#pmg-vs-build-image-prompt-btn) — it sits directly
+      // under the textarea (ps-2-build-above-fold). The downstream
+      // "✨ Generate Image" button (#pmg-vs-image-generate-btn) lives
+      // inside the hidden #pmg-vs-image-refined-section and is only
+      // revealed after the user clicks Build, so we don't assert its
+      // geometry here. We DO assert it still exists in the DOM so the
+      // wiring contract isn't accidentally dropped.
+      const m = await page.evaluate(() => {
+        const build = document.getElementById(
+          "pmg-vs-build-image-prompt-btn",
         ) as HTMLButtonElement | null;
-        if (!el) {
-          return { exists: false, top: 0, viewportHeight: window.innerHeight };
+        const gen = document.getElementById("pmg-vs-image-generate-btn");
+        if (!build) {
+          return {
+            buildExists: false,
+            visible: false,
+            enabled: false,
+            top: 0,
+            bottom: 0,
+            viewportHeight: window.innerHeight,
+            genExists: !!gen,
+          };
         }
-        const r = el.getBoundingClientRect();
+        const cs = getComputedStyle(build);
+        const visible =
+          cs.display !== "none" &&
+          cs.visibility !== "hidden" &&
+          parseFloat(cs.opacity || "1") > 0;
+        const r = build.getBoundingClientRect();
         return {
-          exists: true,
+          buildExists: true,
+          visible,
+          enabled: !build.disabled,
           top: r.top,
+          bottom: r.bottom,
           viewportHeight: window.innerHeight,
+          genExists: !!gen,
         };
       });
       expect(
-        btn.exists,
-        "#pmg-vs-image-generate-btn must exist in the photography panel",
+        m.buildExists,
+        "#pmg-vs-build-image-prompt-btn must exist in the Photography panel",
       ).toBe(true);
       expect(
-        btn.top,
-        `#pmg-vs-image-generate-btn must be reachable in the first viewport (top=${btn.top}px, viewport=${btn.viewportHeight}px)`,
-      ).toBeLessThanOrEqual(btn.viewportHeight * 1.25);
+        m.visible,
+        "#pmg-vs-build-image-prompt-btn must be visible (display/visibility/opacity)",
+      ).toBe(true);
+      expect(
+        m.enabled,
+        "#pmg-vs-build-image-prompt-btn must be enabled",
+      ).toBe(true);
+      expect(
+        m.top,
+        `#pmg-vs-build-image-prompt-btn must start within the first viewport (top=${m.top}px)`,
+      ).toBeGreaterThanOrEqual(0);
+      expect(
+        m.bottom,
+        `#pmg-vs-build-image-prompt-btn must end within the first viewport (bottom=${m.bottom}px, viewport=${m.viewportHeight}px)`,
+      ).toBeLessThanOrEqual(m.viewportHeight);
+      expect(
+        m.genExists,
+        "#pmg-vs-image-generate-btn (revealed after Build) must still exist in the DOM",
+      ).toBe(true);
     });
   });
 }
