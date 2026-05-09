@@ -182,6 +182,70 @@
   }
 
   // ---------- Panel HTML builders ----------
+  // vs-24: Photography Suite "Epic" upgrade. Adds:
+  //   1. Base Style toggle (Photographic vs Digital) — drives both a
+  //      style directive AND a matched negative-prompt block in
+  //      buildImagePrompt().
+  //   2. Lighting & Environment Studio accordion — 6 pills, multi-select,
+  //      contributes data-prompt values to the refined prompt.
+  //   3. Expert Tips panel — static guidance for accurate faces / family
+  //      photos (no logic, just copy).
+  function buildBaseStyleToggleHtml() {
+    return [
+      '<section class="pmg-vs-inline-section pmgv3-photo-style-toggle" data-pmgv3-base-style="photographic">',
+        '<label class="pmgv3-section-label">Base Style</label>',
+        '<div class="pmgv3-toggle-group" role="group" aria-label="Base Style">',
+          '<button type="button" class="pmgv3-toggle-btn is-active" data-style="photographic" aria-pressed="true">📷 Photographic</button>',
+          '<button type="button" class="pmgv3-toggle-btn" data-style="digital" aria-pressed="false">🎨 Digital Art</button>',
+        '</div>',
+        '<p class="pmgv3-style-hint" id="style-hint-photographic">Forces real-world camera lensing — DSLR realism, natural light, sharp focus. Best for portraits, product, photojournalism.</p>',
+        '<p class="pmgv3-style-hint" id="style-hint-digital" style="display:none;">Optimized for stylized renders — Unreal/Octane, hyper-detail, concept art. Best for fantasy, sci-fi, illustration.</p>',
+      '</section>'
+    ].join('');
+  }
+  function buildLightingAccordionHtml() {
+    var pills = [
+      { p: 'golden hour lighting, warm sunlight, long shadows',           label: '🌅 Golden Hour' },
+      { p: 'neon cyberpunk lighting, magenta and cyan rim light, wet streets', label: '🌃 Neon Cyberpunk' },
+      { p: 'moody cinematic lighting, low-key, deep shadows, single key light', label: '🎬 Moody Cinematic' },
+      { p: 'harsh flash photography, direct on-camera flash, hard shadows',     label: '⚡ Harsh Flash' },
+      { p: 'soft softbox lighting, even diffusion, studio portrait',            label: '🪟 Soft Softbox' },
+      { p: 'blue hour, cool dusk light, ambient sky tones',                     label: '🌌 Blue Hour' }
+    ];
+    var pillHtml = pills.map(function (x) {
+      return '<button type="button" class="pmgv3-lighting-pill" data-prompt="' + x.p + '" aria-pressed="false">' + x.label + '</button>';
+    }).join('');
+    return [
+      '<section class="pmg-vs-inline-section pmgv3-lighting-accordion" id="pmgv3-lighting-accordion">',
+        '<button type="button" class="pmgv3-lighting-acc-header" id="pmgv3-lighting-acc-toggle" aria-expanded="false" aria-controls="pmgv3-lighting-acc-content">',
+          '<span class="pmgv3-section-label" style="margin:0">💡 Lighting &amp; Environment Studio</span>',
+          '<span class="pmgv3-lighting-acc-hint">Tap one or more</span>',
+          '<span class="pmgv3-lighting-acc-chevron" aria-hidden="true">▾</span>',
+        '</button>',
+        '<div class="pmgv3-lighting-acc-content" id="pmgv3-lighting-acc-content">',
+          '<div class="pmgv3-lighting-pills">' + pillHtml + '</div>',
+        '</div>',
+      '</section>'
+    ].join('');
+  }
+  function buildExpertTipsHtml() {
+    return [
+      '<aside class="pmgv3-expert-tips-panel" role="note" aria-label="Pro tips for accurate faces and family photos">',
+        '<div class="tips-header">',
+          '<span class="tips-icon" aria-hidden="true">🧠</span>',
+          '<strong>Pro Tip: Accurate Faces &amp; Family Photos</strong>',
+        '</div>',
+        '<div class="tips-content">',
+          '<ul>',
+            '<li><strong>Use Reference Images:</strong> In tools like Midjourney, drop a clear reference photo as a seed image to anchor likeness.</li>',
+            '<li><strong>Prompt Like a Photographer:</strong> Skip generic terms — name the lens, light, mood, camera body. Specificity wins.</li>',
+            '<li><strong>Face Restoration:</strong> If faces look "plasticky," post-process with a face-restoration tool (GFPGAN, CodeFormer) for cleaner detail.</li>',
+            '<li><strong>Combine Photos:</strong> For groups, generate individuals separately and composite them — AI almost always butchers group shots.</li>',
+          '</ul>',
+        '</div>',
+      '</aside>'
+    ].join('');
+  }
   function buildPhotoLeft() {
     return [
       '<section class="pmg-vs-inline-section">',
@@ -195,6 +259,7 @@
         '</div>',
         '<div id="pmg-vs-reverse-status" class="pmg-vs-reverse-status" hidden></div>',
       '</section>',
+      buildBaseStyleToggleHtml(),
       buildImageWorkshopHtml(),
       '<section class="pmg-vs-inline-section pmg-vs-photo-accordion" id="pmg-vs-photo-accordion">',
         '<button type="button" class="pmg-vs-photo-acc-header" id="pmg-vs-photo-acc-toggle" aria-expanded="false" aria-controls="pmg-vs-photo-suite-container">',
@@ -206,7 +271,9 @@
           '<p style="margin:6px 0 0;font-size:.85rem;opacity:.7">Loading photo controls…</p>',
         '</div>',
       '</section>',
+      buildLightingAccordionHtml(),
       buildProLayerHtml('photo', PHOTO_PRESETS, PHOTO_BOOSTS, PHOTO_MODES),
+      buildExpertTipsHtml(),
       // vs-23: heads-up notice — major image models reject edits of minors.
       // Placed above the build/generate row so users see it BEFORE they
       // burn an attempt on a family photo that the model will refuse.
@@ -371,6 +438,31 @@
   }
 
   // ---------- Build refined prompt ----------
+  // vs-24 Base-Style directives + matched negative prompts. The negative
+  // block is appended on its own line after the positive prompt because
+  // most image tools (Midjourney, SD WebUI, ComfyUI text-prompt boxes)
+  // accept the `--no` style or simply ignore it cleanly.
+  var BASE_STYLE_POSITIVE = {
+    photographic: 'Shot on high-end DSLR, raw photo, unedited, photorealistic, natural lighting, sharp focus',
+    digital:      'Unreal Engine 5 render, octane render, cinematic lighting, hyper-detailed, digital illustration, masterpiece'
+  };
+  var BASE_STYLE_NEGATIVE = {
+    photographic: '--no ugly, deformed, extra limbs, cartoon, illustration, 3d render, smooth skin, plastic, watermark, text, asymmetrical face, distorted eyes',
+    digital:      '--no low quality, worst quality, blurry, pixelated, watermark, text, signature, bad anatomy'
+  };
+  function getActiveBaseStyle() {
+    var host = document.querySelector('.pmgv3-photo-style-toggle');
+    var v = host && host.getAttribute('data-pmgv3-base-style');
+    return (v === 'digital') ? 'digital' : 'photographic';
+  }
+  function collectLightingPrompts() {
+    var out = [];
+    document.querySelectorAll('#pmgv3-lighting-accordion .pmgv3-lighting-pill[aria-pressed="true"]').forEach(function (p) {
+      var v = p.getAttribute('data-prompt');
+      if (v) out.push(v);
+    });
+    return out;
+  }
   function buildImagePrompt() {
     var goalEl = $('pmg-vs-image-goal');
     var goal = goalEl && goalEl.value.trim();
@@ -386,8 +478,14 @@
       });
       if (picked.length) refined += ' — ' + picked.join(', ');
     }
+    var lighting = collectLightingPrompts();
+    if (lighting.length) refined += '. ' + lighting.join('. ') + '.';
     var pro = collectProDirectives('photo', PHOTO_BOOSTS, PHOTO_MODES);
     if (pro.length) refined += '. ' + pro.join('. ') + '.';
+    // vs-24: Base Style positive directive + auto-applied negative prompt.
+    var bs = getActiveBaseStyle();
+    refined += '. ' + BASE_STYLE_POSITIVE[bs] + '.';
+    refined += '\n' + BASE_STYLE_NEGATIVE[bs];
     var ta = $('pmg-vs-image-refined');
     if (ta) {
       ta.value = refined;
@@ -1077,6 +1175,45 @@
         if (sec) {
           var open = sec.classList.toggle('is-mobile-open');
           accBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+        return;
+      }
+      // vs-24: Lighting & Environment accordion toggle (real accordion on
+      // all viewports — collapsed by default, opens on header tap).
+      var lightHdr = e.target.closest('#pmgv3-lighting-acc-toggle');
+      if (lightHdr) {
+        var lsec = document.getElementById('pmgv3-lighting-accordion');
+        if (lsec) {
+          var lopen = lsec.classList.toggle('is-open');
+          lightHdr.setAttribute('aria-expanded', lopen ? 'true' : 'false');
+        }
+        return;
+      }
+      // vs-24: Lighting pill multi-select toggle.
+      var lpill = e.target.closest('.pmgv3-lighting-pill');
+      if (lpill) {
+        var lon = lpill.getAttribute('aria-pressed') === 'true';
+        lpill.setAttribute('aria-pressed', lon ? 'false' : 'true');
+        return;
+      }
+      // vs-24: Base Style toggle — exclusive choice between Photographic
+      // and Digital. Drives both the style directive and the matched
+      // negative-prompt block in buildImagePrompt().
+      var styleBtn = e.target.closest('.pmgv3-photo-style-toggle .pmgv3-toggle-btn');
+      if (styleBtn) {
+        var styleHost = styleBtn.closest('.pmgv3-photo-style-toggle');
+        var styleVal = styleBtn.getAttribute('data-style') || 'photographic';
+        if (styleHost) {
+          styleHost.querySelectorAll('.pmgv3-toggle-btn').forEach(function (b) {
+            var on = (b === styleBtn);
+            b.classList.toggle('is-active', on);
+            b.setAttribute('aria-pressed', on ? 'true' : 'false');
+          });
+          styleHost.setAttribute('data-pmgv3-base-style', styleVal);
+          var ph = document.getElementById('style-hint-photographic');
+          var dh = document.getElementById('style-hint-digital');
+          if (ph) ph.style.display = (styleVal === 'photographic') ? '' : 'none';
+          if (dh) dh.style.display = (styleVal === 'digital')      ? '' : 'none';
         }
         return;
       }

@@ -755,3 +755,138 @@
   color: rgba(255, 255, 255, 0.80);
   line-height: 1.4;
 }
+
+/* ====================================================================
+   vs-24 — Photography Suite "Epic" upgrade
+   Base Style toggle, Lighting & Environment Studio accordion, and
+   Expert Tips panel. All three sit inside #pmgv3-panel-photo's left
+   column alongside the existing Workshop / Tune / Pro Tuning sections.
+   ==================================================================== */
+
+/* ---- Base Style toggle (Photographic vs Digital) ---- */
+.pmgv3-photo-style-toggle { margin-top: 0; }
+.pmgv3-toggle-group {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 8px;
+}
+.pmgv3-toggle-btn {
+  flex: 1;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 8px;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  text-align: center;
+}
+.pmgv3-toggle-btn:hover {
+  background: rgba(0, 200, 150, 0.08);
+  border-color: rgba(0, 200, 150, 0.5);
+}
+.pmgv3-toggle-btn.is-active {
+  background: rgba(0, 200, 150, 0.15);
+  border-color: #00c896;
+  color: #00c896;
+  font-weight: 600;
+}
+.pmgv3-style-hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 4px 0;
+  line-height: 1.45;
+}
+
+/* ---- Lighting & Environment Studio accordion ---- */
+.pmgv3-lighting-accordion {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 200, 150, 0.18);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.pmgv3-lighting-acc-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  padding: 4px 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+.pmgv3-lighting-acc-hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-left: auto;
+}
+.pmgv3-lighting-acc-chevron {
+  font-size: 14px;
+  color: rgba(0, 200, 150, 0.7);
+  transition: transform 0.2s ease;
+}
+.pmgv3-lighting-accordion.is-open .pmgv3-lighting-acc-chevron { transform: rotate(180deg); }
+.pmgv3-lighting-acc-content { display: none; padding-top: 10px; }
+.pmgv3-lighting-accordion.is-open .pmgv3-lighting-acc-content { display: block; }
+.pmgv3-lighting-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pmgv3-lighting-pill {
+  padding: 7px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.85);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+.pmgv3-lighting-pill:hover {
+  background: rgba(0, 200, 150, 0.08);
+  border-color: rgba(0, 200, 150, 0.5);
+}
+.pmgv3-lighting-pill[aria-pressed="true"] {
+  background: rgba(0, 200, 150, 0.18);
+  border-color: #00c896;
+  color: #00c896;
+  font-weight: 600;
+}
+
+/* ---- Expert Tips panel (Family Photos & Face Consistency) ---- */
+.pmgv3-expert-tips-panel {
+  background: rgba(0, 200, 150, 0.05);
+  border: 1px solid rgba(0, 200, 150, 0.20);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 20px 0;
+}
+.pmgv3-expert-tips-panel .tips-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.pmgv3-expert-tips-panel .tips-icon { font-size: 18px; line-height: 1; }
+.pmgv3-expert-tips-panel .tips-header strong {
+  color: #00c896;
+  font-size: 14px;
+  font-weight: 700;
+}
+.pmgv3-expert-tips-panel .tips-content ul {
+  margin: 0;
+  padding-left: 20px;
+  color: rgba(255, 255, 255, 0.80);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.pmgv3-expert-tips-panel .tips-content li { margin-bottom: 8px; }
+.pmgv3-expert-tips-panel .tips-content li:last-child { margin-bottom: 0; }
+.pmgv3-expert-tips-panel .tips-content li strong { color: rgba(255, 255, 255, 0.95); }
