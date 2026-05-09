@@ -150,8 +150,8 @@
         <h3>3.1 Your idea</h3>
         <p>The big textarea on the left is the only required input. One honest sentence is enough — for example, "Write a cold email to a SaaS director about our new analytics tool." A microphone button (where supported) lets you dictate it via the Web Speech API.</p>
 
-        <h3>3.2 Analyze My Idea (Auto-Tune)</h3>
-        <p>Tap <strong>Analyze My Idea</strong> and PromptMeGood reads your sentence and pre-fills the tuning panel: category, skill level, tone, output format, max length, output language, and personality. Picks are clamped to a safe enum on the server. You can change anything afterwards.</p>
+        <h3>3.2 Auto-Tune</h3>
+        <p>Auto-Tune runs automatically the moment you tap <strong>✨ Generate My Prompt</strong>. PromptMeGood reads your sentence and pre-fills the tuning panel — category, skill level, tone, output format, max length, output language, and personality — before building the prompt. Picks are clamped to a safe enum on the server. You can change anything and re-generate.</p>
 
         <h3>3.3 Tune Your Prompt</h3>
         <p>Below the idea field, the <strong>🎛️ Tune Your Prompt</strong> section holds the dropdowns. On phones it is a tap-to-expand accordion (the badge shows how many picks are active). On desktop it is always open.</p>
@@ -287,7 +287,7 @@
             <tr><td><code>?panel=photography</code></td><td>Auto-switch to the Photography panel after the chassis builds.</td></tr>
             <tr><td><code>?panel=video</code></td><td>Auto-switch to the Video panel.</td></tr>
             <tr><td><code>?stay=1</code></td><td>On the marketing landing, do not auto-redirect returning users to <code>/app</code>.</td></tr>
-            <tr><td><code>?noautotune</code></td><td>Disable the Auto-Tune step after Analyze My Idea.</td></tr>
+            <tr><td><code>?noautotune</code></td><td>Disable the Auto-Tune step that runs when you tap Generate My Prompt.</td></tr>
             <tr><td><code>?noautoboost</code></td><td>Disable the ✨ Auto-Boost button.</td></tr>
           </tbody>
         </table>

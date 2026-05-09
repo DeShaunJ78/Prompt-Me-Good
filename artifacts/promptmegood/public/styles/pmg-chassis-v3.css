@@ -273,7 +273,54 @@ a.pmgv3-ico:hover { color: #00c896; }
   overflow-y: auto;
   min-height: 0;
 }
-.pmgv3-left { padding-right: 8px; }
+.pmgv3-left { padding-right: 8px; padding-bottom: 84px; }
+
+/* if-8-sticky-cta: keep the primary CTA in view inside the scrollable
+   left column. Without this, on ~768px laptop screens (Audit URGENT #1)
+   the active CTA slips below the fold and users hit a "dead end" after
+   typing. Both buttons share the same sticky footer treatment so the
+   transition Analyze → Generate stays in the same screen position. */
+html.pmg-chassis-v3 .pmgv3-left #generate-section,
+html.pmg-chassis-v3 .pmgv3-left #analyze-btn {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  background: linear-gradient(180deg,
+    rgba(7, 24, 19, 0.0) 0%,
+    rgba(7, 24, 19, 0.92) 28%,
+    rgba(7, 24, 19, 0.97) 100%);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-top: 1px solid rgba(0, 200, 150, 0.18);
+}
+html.pmg-chassis-v3 .pmgv3-left #generate-section {
+  margin: 8px -8px 0 0;
+  padding: 10px 8px 12px;
+  border-radius: 0 0 12px 12px;
+}
+/* #analyze-btn lives inside its parent <section>, so the sticky margin
+   pulls it out to the column edges and the inner button keeps its own
+   styling. */
+html.pmg-chassis-v3 .pmgv3-left #analyze-btn {
+  display: block;
+  width: calc(100% + 8px);
+  margin: 14px -8px 0 0 !important;
+  padding: 14px 12px;
+  border-radius: 0 0 12px 12px;
+}
+@media (max-width: 768px) {
+  html.pmg-chassis-v3 .pmgv3-left #generate-section {
+    margin: 6px -6px 0;
+    padding: 8px 6px 10px;
+    border-radius: 0;
+  }
+  html.pmg-chassis-v3 .pmgv3-left #analyze-btn {
+    width: calc(100% + 6px);
+    margin: 10px -6px 0 0 !important;
+    padding: 14px 12px;
+    border-radius: 0;
+  }
+}
 
 /* ---- Inline Visual Studio panels (vs-15) ---- */
 .pmg-vs-inline-section { margin-bottom: 12px; }

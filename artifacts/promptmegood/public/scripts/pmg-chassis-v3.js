@@ -255,7 +255,7 @@
                 '<div class="pmgv3-if-pills">',
                   '<button type="button" class="pmgv3-if-pill" data-pmg-tpl-fill="Write a cold email that gets replies">Write a cold email that gets replies</button>',
                   '<button type="button" class="pmgv3-if-pill" data-pmg-tpl-fill="Fix my website\u2019s landing page copy">Fix my website\u2019s landing page copy</button>',
-                  '<button type="button" class="pmgv3-if-pill" data-pmg-tpl-fill="Brainstorm 10 viral TikTok ideas">Brainstorm 10 viral TikTok ideas</button>',
+                  '<button type="button" class="pmgv3-if-pill" data-pmg-tpl-fill="Brainstorm 10 viral TikTok ideas for my niche">10 viral TikTok ideas</button>',
                 '</div>',
               '</div>',
             '</div>',
