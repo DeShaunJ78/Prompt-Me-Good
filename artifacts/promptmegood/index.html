@@ -86,10 +86,12 @@
     .top-nav { display: flex; gap: 18px; align-items: center; font-size: 14px; flex-wrap: wrap; justify-content: flex-end; }
     .top-nav a { color: var(--muted); white-space: nowrap; }
     .top-nav a:hover, .top-nav a:focus { color: var(--accent); }
-    /* Narrow phones (≤420px): tighten gaps + allow the brand row to wrap so
+    /* Narrow phones (≤480px): tighten gaps + allow the brand row to wrap so
        the "Open the App →" link can never push the nav past the viewport edge.
-       Without this the landing fails the 360px horizontal-overflow check. */
-    @media (max-width: 420px) {
+       Bumped from 420 → 480 to cover iPhone Plus/Pro Max-class widths
+       (414–430px) where the nav had only ~200px and was wrapping internally,
+       stacking "Open the App →" under "Pricing  Guide". */
+    @media (max-width: 480px) {
       header.site .row { flex-wrap: wrap; gap: 8px; }
       .top-nav { gap: 12px; font-size: 13px; width: 100%; justify-content: flex-start; }
     }
