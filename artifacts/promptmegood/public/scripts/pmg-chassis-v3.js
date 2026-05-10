@@ -357,6 +357,26 @@
           '<button id="quick-entry-submit" class="quick-entry-btn" type="button" aria-label="Send">▲</button>',
         '</div>',
       '</footer>',
+      /* tr-trust: minimal trust-signal footer at the very bottom of the
+         chassis so users can reach Terms / Privacy / Contact without
+         leaving the workstation. Lives INSIDE #pmg-chassis-v3-root so the
+         universal-hide rule doesn't erase it. */
+      '<footer class="pmgv3-trust" role="contentinfo">',
+        '<nav class="pmgv3-trust-nav" aria-label="Site">',
+          '<a href="/">Home</a>',
+          '<span class="pmgv3-trust-sep" aria-hidden="true">·</span>',
+          '<a href="/guide.html">Guide</a>',
+          '<span class="pmgv3-trust-sep" aria-hidden="true">·</span>',
+          '<a href="/pricing.html">Pricing</a>',
+          '<span class="pmgv3-trust-sep" aria-hidden="true">·</span>',
+          '<a href="mailto:support@promptmegood.com">Contact</a>',
+          '<span class="pmgv3-trust-sep" aria-hidden="true">·</span>',
+          '<a href="/privacy.html">Privacy</a>',
+          '<span class="pmgv3-trust-sep" aria-hidden="true">·</span>',
+          '<a href="/terms.html">Terms</a>',
+        '</nav>',
+        '<div class="pmgv3-trust-copy">© 2026 PromptMeGood</div>',
+      '</footer>',
     ].join('');
     return root;
   }

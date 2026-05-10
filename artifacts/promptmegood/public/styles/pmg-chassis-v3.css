@@ -1923,3 +1923,53 @@ html.pmg-chassis-v3 .pmgv3-startover-result {
   color: rgba(255, 255, 255, 0.6);
   font-size: 13px;
 }
+
+/* ============================================================================
+   tr-trust: Minimal trust-signal footer at bottom of /app
+   ============================================================================ */
+html.pmg-chassis-v3 .pmgv3-trust {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 16px 22px;
+  margin-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  text-align: center;
+}
+html.pmg-chassis-v3 .pmgv3-trust-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.6;
+}
+html.pmg-chassis-v3 .pmgv3-trust-nav a {
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.15s ease;
+}
+html.pmg-chassis-v3 .pmgv3-trust-nav a:hover,
+html.pmg-chassis-v3 .pmgv3-trust-nav a:focus-visible {
+  color: #00c896;
+  text-decoration: underline;
+  text-decoration-color: rgba(0, 200, 150, 0.45);
+}
+html.pmg-chassis-v3 .pmgv3-trust-sep {
+  color: rgba(255, 255, 255, 0.18);
+  user-select: none;
+}
+html.pmg-chassis-v3 .pmgv3-trust-copy {
+  color: rgba(255, 255, 255, 0.32);
+  font-size: 11px;
+}
+@media (max-width: 480px) {
+  html.pmg-chassis-v3 .pmgv3-trust { padding: 16px 12px 18px; }
+  html.pmg-chassis-v3 .pmgv3-trust-nav { gap: 6px; }
+  html.pmg-chassis-v3 .pmgv3-trust-nav a { padding: 2px 2px; }
+}
