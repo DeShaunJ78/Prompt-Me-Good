@@ -297,7 +297,7 @@
       border-radius: 8px;
       align-items: center;
       justify-content: center;
-      background: rgba(95, 230, 176, 0.15);
+      background: color-mix(in srgb, var(--accent) 15%, transparent);
       color: var(--accent);
       font-weight: 800;
       font-size: 14px;
@@ -314,6 +314,86 @@
       font-size: 14px;
       line-height: 1.55;
     }
+
+    /* hp-trust-1: Founder note + trust strip
+       Honest first-person blurb above three small trust cards
+       (local-first, support promise, no tracking/upsells). All
+       claims map to real codebase facts (per replit.md): vault in
+       localStorage, no signup required, support@promptmegood.com.
+       No changelog/roadmap card — those don't exist yet and would
+       be a fabrication. */
+    section.trust { padding: 36px 0 48px; border-top: 1px solid var(--border); }
+    section.trust h2 {
+      margin: 0 0 6px;
+      font-size: clamp(22px, 3vw, 30px);
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .founder-note {
+      max-width: 68ch;
+      margin: 14px 0 24px;
+      padding: 16px 18px;
+      border-left: 3px solid var(--accent);
+      background: color-mix(in srgb, var(--accent) 5%, var(--surface));
+      border-radius: 0 12px 12px 0;
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .founder-note p { margin: 0 0 10px; }
+    .founder-note p:last-child { margin: 0; }
+    .founder-sig {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-style: italic;
+    }
+    .trust-grid {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .trust-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+    }
+    .trust-card .ic {
+      display: inline-flex;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      align-items: center;
+      justify-content: center;
+      background: color-mix(in srgb, var(--accent) 15%, transparent);
+      color: var(--accent);
+      font-size: 16px;
+    }
+    .trust-card h3 {
+      margin: 10px 0 6px;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .trust-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .trust-card a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .trust-card a:hover, .trust-card a:focus { text-decoration: underline; }
 
     @media (max-width: 720px) {
       .demo-grid { grid-template-columns: 1fr; gap: 12px; }
@@ -445,6 +525,35 @@
           <p>Save, tag, compare, and replay every prompt. 28+ starter templates. Everything stays in your browser, exportable any time.</p>
         </article>
       </div>
+    </div>
+  </section>
+
+  <section class="trust" aria-labelledby="trust-title">
+    <div class="wrap">
+      <h2 id="trust-title">Built By Someone Who Got Tired Of Bad Prompts</h2>
+      <p class="section-sub">No VC pitch, no growth hacks, no dark patterns. Just a tool I needed and figured other people might too.</p>
+      <blockquote class="founder-note">
+        <p>I kept getting AI answers that almost worked — close enough to feel the potential, wrong enough to waste an hour. The fix was never &ldquo;use a smarter model.&rdquo; It was always &ldquo;write a better prompt.&rdquo; So I built the tool I wished existed: type what's actually in your head, get a real prompt out the other side, run it however you want.</p>
+        <p>The Free tier is the real product, not a teaser. The paid plans exist so I can keep paying the AI bills without selling your data or stuffing the app full of ads. That's the whole pitch.</p>
+        <span class="founder-sig"><span aria-hidden="true">— </span>The PromptMeGood maker</span>
+      </blockquote>
+      <ul class="trust-grid">
+        <li class="trust-card">
+          <span class="ic" aria-hidden="true">🔒</span>
+          <h3>Local-First By Default</h3>
+          <p>Your Vault, picks, settings, and history live in your browser's local storage. Only the text you choose to send to AI ever leaves your device — and even then, no account is attached.</p>
+        </li>
+        <li class="trust-card">
+          <span class="ic" aria-hidden="true">✉️</span>
+          <h3>A Real Person Replies</h3>
+          <p>Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a> with bugs, feature requests, or sharp feedback. Most replies land within 1&ndash;2 business days, from the person who built the thing.</p>
+        </li>
+        <li class="trust-card">
+          <span class="ic" aria-hidden="true">⚖️</span>
+          <h3>No Tracking, No Upsells</h3>
+          <p>No signup wall, no &ldquo;upgrade to continue&rdquo; popups, no analytics that follow you around the web. The Free tier stays free forever &mdash; see the <a href="/pricing.html">pricing page</a> for the honest version.</p>
+        </li>
+      </ul>
     </div>
   </section>
 
