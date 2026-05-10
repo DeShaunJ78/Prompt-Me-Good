@@ -86,7 +86,11 @@ export default defineConfig({
         guide: path.resolve(import.meta.dirname, "guide.html"),
         manual: path.resolve(import.meta.dirname, "manual.html"),
         pricing: path.resolve(import.meta.dirname, "pricing.html"),
-        review: path.resolve(import.meta.dirname, "review.html"),
+        // review.html is a dev-only Code Review page that triggers the
+        // /api/review backend endpoint. Removed from the public build
+        // (audit brief 12) so curious users / bots cannot trigger it.
+        // The file is kept in the repo for local dev use; add it back to
+        // `input` temporarily if you need to access it via the dev server.
         privacy: path.resolve(import.meta.dirname, "privacy.html"),
         terms: path.resolve(import.meta.dirname, "terms.html"),
         help: path.resolve(import.meta.dirname, "help.html"),

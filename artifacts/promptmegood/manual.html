@@ -7,7 +7,7 @@
     (function () { try { if (location.hostname === 'promptmegood.com') location.replace('https://www.promptmegood.com' + location.pathname + location.search + location.hash); } catch (e) {} })();
   </script>
   <title>User Manual — PromptMeGood</title>
-  <meta name="description" content="The complete reference for PromptMeGood: every panel, every control, every shortcut. Text, Photography, and Video panels; Image Workshop; Reverse Engine; Prompt DNA Card; 5-shot Storyboard; Pro Tuning; Vault; and the Expert Command Center." />
+  <meta name="description" content="The complete reference for PromptMeGood: every panel, every control, every shortcut. Text, Photography, and Video panels; Image Workshop; Reverse Engineer; Prompt DNA Card; 5-shot Storyboard; Pro Tuning; Vault; and the Expert Command Center." />
   <meta name="keywords" content="PromptMeGood manual, AI prompt builder reference, ChatGPT prompt engineering, image to prompt, AI photo enhancer, AI video prompt, AI storyboard, photography prompt suite" />
   <meta name="robots" content="index,follow,max-image-preview:large" />
   <meta name="theme-color" content="#0a2420" />
@@ -123,7 +123,7 @@
         <h2 id="overview">1. Overview</h2>
         <p>PromptMeGood is a browser-based prompt workstation. Every feature runs at <code>/app</code>. There is nothing to install. You do not need an account to use the free tier.</p>
         <p>The marketing site lives at <code>/</code>; the workstation lives at <code>/app</code>. Returning users are auto-redirected from <code>/</code> to <code>/app</code>; append <code>?stay=1</code> to the URL to override.</p>
-        <p>All work is local-first. Your prompts, picks, and saved items live in your browser's <code>localStorage</code>. Only the inputs you submit to AI features (text prompts, image briefs, uploaded images for the Image Workshop or Reverse Engine, video briefs) leave the device — they go to the AI provider over HTTPS, are not retained on PromptMeGood servers, and are never used to train models.</p>
+        <p>All work is local-first. Your prompts, picks, and saved items live in your browser's <code>localStorage</code>. Only the inputs you submit to AI features (text prompts, image briefs, uploaded images for the Image Workshop or Reverse Engineer, video briefs) leave the device — they go to the AI provider over HTTPS, are not retained on PromptMeGood servers, and are never used to train models.</p>
 
         <h2 id="chassis">2. The chassis</h2>
         <p>The workstation has three parts:</p>
@@ -151,13 +151,13 @@
         <p>The big textarea on the left is the only required input. One honest sentence is enough — for example, "Write a cold email to a SaaS director about our new analytics tool." A microphone button (where supported) lets you dictate it via the Web Speech API.</p>
 
         <h3>3.2 Auto-Tune</h3>
-        <p>Auto-Tune runs automatically the moment you tap <strong>✨ Generate My Prompt</strong>. PromptMeGood reads your sentence and pre-fills the tuning panel — category, skill level, tone, output format, max length, output language, and personality — before building the prompt. Picks are clamped to a safe enum on the server. You can change anything and re-generate.</p>
+        <p>Auto-Tune runs automatically the moment you tap <strong>✨ Build My Prompt</strong>. PromptMeGood reads your sentence and pre-fills the tuning panel — category, skill level, tone, output format, max length, output language, and personality — before building the prompt. Picks are clamped to a safe enum on the server. You can change anything and re-generate.</p>
 
         <h3>3.3 Tune Your Prompt</h3>
         <p>Below the idea field, the <strong>🎛️ Tune Your Prompt</strong> section holds the dropdowns. On phones it is a tap-to-expand accordion (the badge shows how many picks are active). On desktop it is always open.</p>
 
-        <h3>3.4 Generate My Prompt</h3>
-        <p>Tap <strong>✨ Generate My Prompt</strong>. The right side reveals your structured prompt with explicit Role / Context / Constraints / Tone / Format / Next Steps, plus a <strong>strength score</strong> showing how complete it is.</p>
+        <h3>3.4 Build My Prompt</h3>
+        <p>Tap <strong>✨ Build My Prompt</strong>. The right side reveals your structured prompt with explicit Role / Context / Constraints / Tone / Format / Next Steps, plus a <strong>strength score</strong> showing how complete it is.</p>
 
         <h3>3.5 Run With AI</h3>
         <p>Beneath the result, <strong>Run With AI</strong> executes the prompt in-app with GPT-4o and shows the response inline. Free-tier users have a small daily cap on Run With AI; see §10.</p>
@@ -176,7 +176,7 @@
         <p><strong>Enhancement chips:</strong> Upscale · Color Pop · Cinematic Grade · Remove Background · Restore Old Photo · Day↔Night · Vector Style · Anime · Oil Painting · Watercolor · B&amp;W Film · 35mm Grain · Studio Lighting · Clean BG · HDR.</p>
         <p>All chips run under a "preserve subject and composition" guardrail.</p>
 
-        <h3>4.2 Reverse Engine</h3>
+        <h3>4.2 Reverse Engineer</h3>
         <p>The <strong>📸 Reverse Engineer an Image</strong> button under the Photo goal field reads any reference image with GPT-4o vision and returns a usable image prompt plus matching Photo Suite picks (style, camera, lighting, composition, palette). The picks are auto-applied; you can override anything before generating.</p>
 
         <h3>4.3 Photo Suite</h3>
@@ -287,7 +287,7 @@
             <tr><td><code>?panel=photography</code></td><td>Auto-switch to the Photography panel after the chassis builds.</td></tr>
             <tr><td><code>?panel=video</code></td><td>Auto-switch to the Video panel.</td></tr>
             <tr><td><code>?stay=1</code></td><td>On the marketing landing, do not auto-redirect returning users to <code>/app</code>.</td></tr>
-            <tr><td><code>?noautotune</code></td><td>Disable the Auto-Tune step that runs when you tap Generate My Prompt.</td></tr>
+            <tr><td><code>?noautotune</code></td><td>Disable the Auto-Tune step that runs when you tap Build My Prompt.</td></tr>
             <tr><td><code>?noautoboost</code></td><td>Disable the ✨ Auto-Boost button.</td></tr>
           </tbody>
         </table>
@@ -308,7 +308,7 @@
         <ul>
           <li><strong>Generate button does nothing.</strong> The idea field is probably empty or your browser blocked <code>localStorage</code>. Type a sentence; allow site storage.</li>
           <li><strong>Image / video generation says "limit reached."</strong> You have hit the daily cap for your plan. Wait until the next UTC day, or upgrade.</li>
-          <li><strong>Reverse Engine fails on my upload.</strong> Check the file is JPG / PNG / WEBP and ≤10 MB.</li>
+          <li><strong>Reverse Engineer fails on my upload.</strong> Check the file is JPG / PNG / WEBP and ≤10 MB.</li>
           <li><strong>The Vault drawer is empty.</strong> The Vault is per-browser. Switching browsers or clearing site data wipes it. Use Export / Import to move it.</li>
           <li><strong>Voice input is missing.</strong> The Web Speech API isn't available in every browser. Try Chrome or Edge.</li>
           <li><strong>Anything else.</strong> Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a> with the steps you took and a screenshot if possible.</li>
