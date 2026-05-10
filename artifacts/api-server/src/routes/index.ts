@@ -7,6 +7,7 @@ import pricingConfigRouter from "./pricing-config";
 import billingRouter from "./billing";
 import usageRouter from "./usage";
 import waitlistRouter from "./waitlist";
+import foundingCheckoutRouter from "./founding-checkout";
 
 const router: IRouter = Router();
 
@@ -17,6 +18,7 @@ router.use(pricingConfigRouter);
 router.use(billingRouter);
 router.use(usageRouter);
 router.use(waitlistRouter);
+router.use(foundingCheckoutRouter);
 
 // Dev-only Claude code-review endpoint. Mounted only when NODE_ENV !==
 // "production" so it never ships to live traffic. The handler also self-checks

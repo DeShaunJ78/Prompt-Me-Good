@@ -21,6 +21,8 @@
  *     subscription_status without trusting the client to know who it is).
  * ============================================================================ */
 import { Router, type IRouter } from "express";
+import { count } from "drizzle-orm";
+import { db, foundingPurchasesTable } from "@workspace/db";
 import { stripe } from "../lib/stripe-client";
 import { supabaseAdmin } from "../lib/supabase-admin";
 import { requireSupabaseUser, type AuthedRequest } from "../lib/auth";
@@ -140,6 +142,39 @@ router.post(
         error: `Pro launches soon. Founding Member access ($${PMG_PRICING.FOUNDING_PRICE_USD} lifetime, ${PMG_PRICING.PRICE_LOCK_TAGLINE}) is available now.`,
       });
       return;
+    }
+
+    /* Server-side Founding seat enforcement. The same pre-check runs in
+       founding-checkout.ts for the anonymous flow. Both paths read from
+       founding_purchases (the only table whose row count == real $$$
+       collected). If we're at the cap, refuse the checkout session. */
+    if (tier === "founding") {
+      try {
+        const rows = await db
+          .select({ n: count() })
+          .from(foundingPurchasesTable);
+        const sold = Number(rows[0]?.n ?? 0);
+        if (sold >= PMG_PRICING.FOUNDING_LIMIT) {
+          req.log?.info(
+            { userId: user.id, sold },
+            "blocked founding checkout — sold out",
+          );
+          res.status(409).json({
+            error: "sold_out",
+            message: `All ${PMG_PRICING.FOUNDING_LIMIT} Founding Member seats are claimed. Join the waitlist for general availability.`,
+          });
+          return;
+        }
+      } catch (err) {
+        // If the seat-count query fails, FAIL CLOSED — don't sell what
+        // we can't count. Operator will see the error and recover.
+        req.log?.error({ err }, "founding seat-count check failed");
+        res.status(500).json({
+          error: "seat_count_unavailable",
+          message: "Could not verify Founding Member availability. Please try again in a moment.",
+        });
+        return;
+      }
     }
 
     /* Map tier → Stripe Price ID env var. STRIPE_PRO_MONTHLY_PRICE_ID is

@@ -455,11 +455,23 @@
         </div>
       </section>
 
-      <div class="early-access" id="early-access">
+      <!-- Founding Member checkout (anonymous; account created via post-purchase
+           magic link). When sold out, hidden by the small IIFE at end of file
+           that polls /api/founding-checkout/status. -->
+      <div class="founding-checkout" id="founding-checkout-card">
         <span id="founding-member-waitlist" class="visually-hidden" aria-hidden="true"></span>
+        <h2 style="margin: 0 0 8px;">Become a Founding Member · $79 lifetime</h2>
+        <p style="margin: 0 0 14px;">First 500 buyers lock in lifetime access for a one-time $79. No account needed up-front — pay first, then we'll email you a magic link to set up your account.</p>
+        <p class="founding-counter" id="founding-counter" aria-live="polite" style="margin: 0 0 14px; font-size: 0.92rem; color: var(--muted);">Loading availability…</p>
+        <button type="button" id="founding-buy-btn" class="btn btn-primary" style="font-size: 1rem; padding: 12px 28px;">Buy Founding Member · $79</button>
+        <p class="founding-status" id="founding-buy-status" role="status" aria-live="polite" style="margin: 10px 0 0; font-size: 0.9rem; min-height: 1.2em;"></p>
+        <p style="margin: 14px 0 0; font-size: 0.78rem; color: var(--muted);">Secure checkout by Stripe · Refundable within 14 days if you change your mind.</p>
+      </div>
+
+      <div class="early-access" id="early-access" style="margin-top: 28px;">
         <span id="pro-early-access" class="visually-hidden" aria-hidden="true"></span>
-        <h2>Join the PromptMeGood waitlist</h2>
-        <p>One email, one list. We'll notify you the moment Founding Member checkout opens (first 500, $79 lifetime) and again when Pro Monthly and Pro Yearly go live.</p>
+        <h2>Or join the Pro waitlist</h2>
+        <p>One email, one list. We'll notify you when Pro Monthly and Pro Yearly go live.</p>
         <form class="early-access-form" id="early-access-form" novalidate>
           <label class="visually-hidden" for="early-access-email">Email address</label>
           <input id="early-access-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="Email address" required />
@@ -516,6 +528,95 @@
           } catch (e2) {}
         }
       } catch (e) {}
+    })();
+
+    /* Founding Member checkout — anonymous flow (no auth required). Buyer
+       hits /api/founding-checkout, server enforces seat count, returns
+       Stripe Checkout URL, browser redirects. Post-purchase the webhook
+       sends a magic link to the buyer's email for account setup. */
+    (function () {
+      var btn = document.getElementById('founding-buy-btn');
+      var statusEl = document.getElementById('founding-buy-status');
+      var counterEl = document.getElementById('founding-counter');
+      var card = document.getElementById('founding-checkout-card');
+      if (!btn || !card) return;
+
+      function setStatus(msg, kind) {
+        if (!statusEl) return;
+        statusEl.textContent = msg || '';
+        statusEl.style.color = kind === 'error' ? '#b91c1c'
+                              : kind === 'success' ? 'var(--primary)'
+                              : 'var(--muted)';
+      }
+
+      function renderCounter(s) {
+        if (!counterEl) return;
+        if (s.soldOut) {
+          counterEl.textContent = 'All ' + s.limit + ' Founding seats claimed.';
+          card.style.opacity = '0.55';
+          btn.disabled = true;
+          btn.textContent = 'Sold out';
+          setStatus('Founding Member is sold out — please join the Pro waitlist below.', 'error');
+        } else {
+          counterEl.textContent = s.sold + ' of ' + s.limit + ' Founding seats claimed · '
+            + s.remaining + ' left';
+        }
+      }
+
+      // Fetch current count once on load. Cached server-side for 15s.
+      fetch('/api/founding-checkout/status', { headers: { 'Accept': 'application/json' } })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (s) {
+          if (s && typeof s.sold === 'number') renderCounter(s);
+          else if (counterEl) counterEl.textContent = 'First 500 buyers · price locked at $79 for life';
+        })
+        .catch(function () {
+          if (counterEl) counterEl.textContent = 'First 500 buyers · price locked at $79 for life';
+        });
+
+      btn.addEventListener('click', function () {
+        if (btn.disabled) return;
+        btn.disabled = true;
+        var originalText = btn.textContent;
+        btn.textContent = 'Opening checkout…';
+        setStatus('', null);
+
+        fetch('/api/founding-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({})
+        })
+          .then(function (r) {
+            return r.json().then(function (j) { return { ok: r.ok, status: r.status, body: j }; });
+          })
+          .then(function (out) {
+            if (out.ok && out.body && out.body.url) {
+              window.location.assign(out.body.url);
+              return;
+            }
+            if (out.status === 409) {
+              setStatus(out.body && out.body.message
+                ? out.body.message
+                : 'Founding Member just sold out. Please join the Pro waitlist below.', 'error');
+              btn.textContent = 'Sold out';
+              return;
+            }
+            if (out.status === 429) {
+              setStatus('Too many attempts — please wait a minute and try again.', 'error');
+              btn.disabled = false;
+              btn.textContent = originalText;
+              return;
+            }
+            setStatus((out.body && out.body.error) || 'Could not open checkout. Please try again.', 'error');
+            btn.disabled = false;
+            btn.textContent = originalText;
+          })
+          .catch(function () {
+            setStatus('Network error — please check your connection and try again.', 'error');
+            btn.disabled = false;
+            btn.textContent = originalText;
+          });
+      });
     })();
 
     /* Theme toggle — same key the rest of the site uses. */
