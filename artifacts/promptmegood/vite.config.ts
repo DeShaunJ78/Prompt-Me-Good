@@ -95,6 +95,7 @@ export default defineConfig({
         terms: path.resolve(import.meta.dirname, "terms.html"),
         help: path.resolve(import.meta.dirname, "help.html"),
         contact: path.resolve(import.meta.dirname, "contact.html"),
+        changelog: path.resolve(import.meta.dirname, "changelog.html"),
         notfound: path.resolve(import.meta.dirname, "404.html"),
       },
     },
