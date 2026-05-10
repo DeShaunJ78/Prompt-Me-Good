@@ -4326,7 +4326,7 @@
           <ul class="hero-list">
             <li><span>1</span><span>Turns vague problems into <strong>sharper instructions</strong> AI can actually use.</span></li>
             <li><span>2</span><span>Adds <strong>role, context, constraints, tone, output format, and next actions</strong>.</span></li>
-            <li><span>3</span><span>Includes <strong>Money Mode</strong> for users who need speed, income, and practical execution.</span></li>
+            <li><span>3</span><span>Includes <strong>Growth Mode</strong> for users who need speed, income, and practical execution.</span></li>
           </ul>
         </aside>
       </div>
@@ -4428,14 +4428,14 @@
             </div>
             <div class="builder-head-actions">
               <span class="expert-mode-badge" id="expert-mode-badge" hidden style="display:none" aria-hidden="true"></span>
-              <p class="builder-expert-hint" id="builder-expert-hint">Power user? Turn on Expert Mode for full control.</p>
+              <p class="builder-expert-hint" id="builder-expert-hint">Power user? Open the Expert Command Center for full control.</p>
               <label class="expert-mode-toggle" for="expert-mode-toggle" id="expert-mode-toggle-wrap" title="For Advanced Users Who Want Full Control.">
                 <span class="switch">
                   <input type="checkbox" id="expert-mode-toggle" />
                   <span class="slider" aria-hidden="true"></span>
                 </span>
                 <span class="expert-mode-toggle-text">
-                  <span class="expert-mode-toggle-title">Expert Mode</span>
+                  <span class="expert-mode-toggle-title">Expert Command Center</span>
                   <span class="expert-mode-toggle-sub">For Advanced Users Who Want Full Control.</span>
                 </span>
               </label>
@@ -4678,7 +4678,7 @@
                   <span class="adv-icon" aria-hidden="true">⚙️</span>
                   <span class="adv-text">
                     <span class="adv-title">Advanced Output Settings</span>
-                    <span class="adv-sub">Money Mode, Human Voice, Clarity Boost</span>
+                    <span class="adv-sub">Growth Mode, Human Voice, Clarity Boost</span>
                   </span>
                   <span class="adv-chevron" aria-hidden="true">▾</span>
                 </summary>
@@ -4687,10 +4687,10 @@
                   <p class="adv-helper">You can turn any of these on or off before generating.</p>
                   <div class="toggle-row is-subtle">
                     <div>
-                      <strong>Money Mode</strong>
+                      <strong>Growth Mode</strong>
                       <span>Use this for business, income, execution, or practical results. Turn off for neutral/general prompts.</span>
                     </div>
-                    <label class="switch" aria-label="Turn Money Mode on or off">
+                    <label class="switch" aria-label="Turn Growth Mode on or off">
                       <input id="moneyMode" name="moneyMode" type="checkbox" />
                       <span class="slider"></span>
                     </label>
@@ -5725,7 +5725,7 @@ ${data['rules or limits']}`
 
         const moneyMode = data.moneyMode
           ? `
-- Money Mode: prioritize practical, actionable, and results-driven answers. Focus on outcomes and execution.`
+- Growth Mode: prioritize practical, actionable, and results-driven answers. Focus on outcomes and execution.`
           : '';
 
         const humanLine = data.humanTone
@@ -5909,7 +5909,7 @@ Context:
           if (data.maxLength) edits.push({ id: 'max_length', label: 'Length cap', reason: 'Capped response length at ' + data.maxLength + ' words', kind: 'directive', line: 'Keep the response under ' + data.maxLength + ' words.' });
           if (data['rules or limits']) edits.push({ id: 'rules_or_limits_line', label: 'Respect your rules', reason: 'Respects your rules-or-limits guard rail', kind: 'directive', line: 'Respect these rules or limits — do NOT do any of these: ' + data['rules or limits'] });
           if (personalityKey !== 'none') edits.push({ id: 'personality', label: 'Personality voice', reason: 'Added personality voice — ' + personalityLabel[personalityKey], kind: 'directive', line: 'Personality: ' + personalityMap[personalityKey] });
-          if (data.moneyMode) edits.push({ id: 'money_mode', label: 'Money Mode', reason: 'Added Money Mode — prioritize practical, results-driven answers', kind: 'directive', line: 'Money Mode: prioritize practical, actionable, and results-driven answers. Focus on outcomes and execution.' });
+          if (data.moneyMode) edits.push({ id: 'money_mode', label: 'Growth Mode', reason: 'Added Growth Mode — prioritize practical, results-driven answers', kind: 'directive', line: 'Growth Mode: prioritize practical, actionable, and results-driven answers. Focus on outcomes and execution.' });
           if (data.humanTone) edits.push({ id: 'human_voice', label: 'Human Voice', reason: 'Added Human Voice Mode — natural, varied phrasing', kind: 'directive', line: 'Human Voice Mode: write in a natural, human tone with varied sentence structure. Avoid robotic phrasing, repetitive patterns, and overly stiff wording. Use subtle variation and natural flow to reduce obvious AI-generated patterns.' });
           if (data.clarityBoost) edits.push({ id: 'clarity_boost', label: 'Clarity Boost', reason: 'Added Clarity Boost — clear sections and defined terms', kind: 'directive', line: 'Clarity Boost Mode: prioritize clarity. Organize the response with clear sections, define unclear terms, call out assumptions, and make each step easy to understand and act on.' });
           if (languageKey !== 'english') edits.push({ id: 'language', label: 'Output language', reason: 'Set the output language — ' + languageLabels[languageKey], kind: 'directive', line: 'Write the final response in ' + languageLabels[languageKey] + '.' });
@@ -6475,7 +6475,7 @@ Context:
           return '<div class="history-item' + (item.favorite ? ' is-favorite' : '') + (item.archived ? ' is-archived' : '') + (isPicked ? ' is-compare-selected' : '') + collapsedClass + '" data-id="' + escapeHtml(item.id) + '"' + dragAttr + '>' +
             '<div class="history-item-head">' +
               '<span class="history-item-goal">' + handleHtml + escapeHtml(item.nickname || item.data.goal || 'Untitled prompt') + (item.nickname ? ' <span style="color: var(--color-text-muted); font-weight: 400;">&middot; ' + escapeHtml(item.data.goal || '') + '</span>' : '') + '</span>' +
-              '<span class="history-item-meta">' + escapeHtml(formatTime(item.savedAt)) + (item.data.moneyMode ? ' &middot; Money Mode' : '') + favMeta + (item.useCount ? ' &middot; Used ' + item.useCount + '×' : '') + '</span>' +
+              '<span class="history-item-meta">' + escapeHtml(formatTime(item.savedAt)) + (item.data.moneyMode ? ' &middot; Growth Mode' : '') + favMeta + (item.useCount ? ' &middot; Used ' + item.useCount + '×' : '') + '</span>' +
             '</div>' +
             tagHtml +
             (item.note ? '<div class="history-item-note">' + escapeHtml(item.note) + '</div>' : '') +
@@ -7611,7 +7611,7 @@ Context:
           clearAdvancedSuggestions();
           const t = (combinedText || '').toLowerCase();
           const SUGGESTIONS = [
-            { id: 'moneyMode', kws: ['money','business','sales','income','profit','product','dropshipping','revenue','client','customer','side hustle','startup','launch'], reason: 'Your goal sounds money or business related — Money Mode adds practical, results-driven framing.' },
+            { id: 'moneyMode', kws: ['money','business','sales','income','profit','product','dropshipping','revenue','client','customer','side hustle','startup','launch'], reason: 'Your goal sounds money or business related — Growth Mode adds practical, results-driven framing.' },
             { id: 'humanTone', kws: ['writing','email','social','post ','posts','content','caption','storytelling','newsletter','blog','copy','script','tweet','linkedin'], reason: 'You are writing for people — Human Voice Mode keeps the tone natural.' },
             { id: 'clarityBoost', kws: ['planning','plan ','decision','strategy','explain','explanation','learning','learn ','problem','step','process','how to','understand','teach','breakdown'], reason: 'This looks like a planning or learning task — Clarity Boost adds clearer structure and steps.' }
           ];
@@ -10166,7 +10166,7 @@ Context:
           'Tone: ' + (data.tone || '—'),
           'Format: ' + (data.outputFormat || '—'),
           (data.personality && data.personality !== 'none') ? 'Personality: ' + data.personality : null,
-          data.moneyMode ? 'Money Mode: on' : null,
+          data.moneyMode ? 'Growth Mode: on' : null,
           'Date: ' + new Date().toLocaleString()
         ].filter(Boolean).join(' • ');
         printTitleEl.textContent = goal;
@@ -12474,7 +12474,7 @@ Context:
        The static file at /scripts/pmg-pricing-config.js is kept only as a no-JS / api-down
        fallback; the real source of truth is the backend route below. -->
   <script src="/api/pricing-config.js?v=task100" defer></script>
-  <script src="/scripts/pmg-ux.js?v=t128-pm-chip-truncate" defer></script>
+  <script src="/scripts/pmg-ux.js?v=names-1" defer></script>
   <script src="/scripts/pmg-quick-win.js?v=task200-quick-win-4" defer></script>
   <script src="/scripts/pmg-next-action.js?v=5" defer></script>
   <script src="/scripts/post-spec.js?v=naming-consistency-1" defer></script>

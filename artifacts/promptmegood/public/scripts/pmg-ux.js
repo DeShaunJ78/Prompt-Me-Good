@@ -2728,7 +2728,7 @@
     btn.type = 'button';
     btn.id = 'pmg-expert-toggle-btn';
     btn.className = 'pmg-expert-toggle';
-    btn.textContent = '⚙ Expert Mode';
+    btn.textContent = '⚙ Expert Command Center';
     btn.setAttribute('inputmode', 'none');
 
     var hint = document.createElement('span');
@@ -3753,7 +3753,7 @@
         if (b === keeper || keeper.contains(b) || b.contains(keeper)) return;
         if (b.classList.contains('pmg-t15-hide-dup')) return;
         var t = (b.textContent || '').replace(/\s+/g, ' ').trim();
-        if (!/Expert Mode/i.test(t)) return;
+        if (!/Expert (Mode|Command Center)/i.test(t)) return;
         if (b.id === 'expert-warning-confirm' || b.id === 'expert-warning-title') return;
         if (b.closest('[role="dialog"], .modal, [aria-modal="true"]')) return;
         if (b.closest('#expert-warning-modal')) return;
@@ -4962,8 +4962,8 @@
     var btn = document.createElement('button');
     btn.id = 'pmg-nav-expert-link';
     btn.type = 'button';
-    btn.setAttribute('aria-label', 'Toggle Expert Mode');
-    btn.innerHTML = '<span aria-hidden="true">⚙</span><span>Expert Mode</span>';
+    btn.setAttribute('aria-label', 'Toggle Expert Command Center');
+    btn.innerHTML = '<span aria-hidden="true">⚙</span><span>Expert Command Center</span>';
     btn.addEventListener('click', function () {
       var nextOn = !document.body.classList.contains('is-expert-mode');
       document.body.classList.toggle('pmg-expert-mode', nextOn);
