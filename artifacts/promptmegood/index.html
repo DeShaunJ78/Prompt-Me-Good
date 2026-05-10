@@ -390,10 +390,50 @@
     }
     .trust-card a {
       color: var(--accent);
-      text-decoration: none;
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
       font-weight: 600;
     }
-    .trust-card a:hover, .trust-card a:focus { text-decoration: underline; }
+    .trust-card a:hover, .trust-card a:focus { text-decoration-thickness: 2px; }
+
+    /* hp-a11y-1: skip-link, focus-visible, reduced-motion (P0/P1) */
+    .skip-link {
+      position: absolute;
+      left: 16px;
+      top: -48px;
+      background: var(--accent);
+      color: #04140d;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      text-decoration: none;
+      z-index: 200;
+      transition: top 0.18s ease;
+    }
+    .skip-link:focus, .skip-link:focus-visible { top: 16px; outline: 2px solid var(--text); outline-offset: 2px; }
+
+    .btn:focus-visible,
+    .feature-card:focus-visible,
+    .trust-card a:focus-visible,
+    .demo-cta:focus-visible,
+    a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+      }
+      .btn-primary:hover, .feature-card:hover, .trust-card:hover, .how-step:hover {
+        transform: none !important;
+      }
+    }
 
     @media (max-width: 720px) {
       .demo-grid { grid-template-columns: 1fr; gap: 12px; }
@@ -424,6 +464,7 @@
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to main content</a>
   <header class="site">
     <div class="wrap row">
       <a class="brand brand-name" href="/" aria-label="PromptMeGood home">
@@ -438,7 +479,7 @@
     </div>
   </header>
 
-  <main class="hero">
+  <main id="main" class="hero">
     <div class="wrap">
       <h1 class="headline"><em>Finally,</em> AI That Understands You</h1>
       <p class="lede">If your results feel off, it&rsquo;s not you &mdash; it&rsquo;s the prompt. <strong>Fix it instantly</strong> and get the answer you were actually looking for.</p>

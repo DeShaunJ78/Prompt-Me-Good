@@ -122,6 +122,39 @@
     .early-access-form input[type="email"] { flex: 1 1 260px; max-width: 360px; padding: 12px 14px; font: inherit; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg); color: var(--text); }
     .early-access-form input[type="email"]:focus { outline: 2px solid var(--primary); outline-offset: 1px; border-color: var(--primary); }
     .early-access-form .btn { width: auto; flex: 0 0 auto; }
+
+    /* hp-a11y-1: skip-link, focus-visible, reduced-motion (P0/P1) */
+    .skip-link {
+      position: absolute;
+      left: 16px;
+      top: -48px;
+      background: var(--primary);
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      text-decoration: none;
+      z-index: 200;
+      transition: top 0.18s ease;
+    }
+    .skip-link:focus, .skip-link:focus-visible { top: 16px; outline: 2px solid var(--text); outline-offset: 2px; }
+
+    .btn:focus-visible,
+    .pricing-faq-item summary:focus-visible,
+    a:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
     .early-access-turnstile { margin: var(--space-3) auto 0; display: flex; justify-content: center; min-height: 0; }
     .early-access-turnstile[hidden] { display: none; }
     .early-access-status { margin: var(--space-3) 0 0; font-size: 0.9rem; min-height: 1.4em; }
@@ -154,6 +187,7 @@
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to main content</a>
   <header class="topbar">
     <div class="container topbar-inner">
       <a class="brand" href="./index.html" aria-label="PromptMeGood home">
@@ -171,7 +205,7 @@
     </div>
   </header>
 
-  <main>
+  <main id="main">
     <section class="container pricing-hero">
       <div id="pmg-checkout-cancel-notice" hidden role="status" aria-live="polite">
         <strong>Checkout canceled.</strong> No charge was made. The Founding Member offer ($79 one-time, price locked for life — first 500 buyers) is still here whenever you're ready, and it's the only one-time way to unlock the <strong>Expert Command Center</strong>. Pro Monthly ($9/mo) and Pro Yearly ($79/yr) launch soon. Questions? Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.
