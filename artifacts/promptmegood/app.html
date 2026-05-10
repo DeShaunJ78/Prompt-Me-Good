@@ -80,7 +80,7 @@
   <meta property="og:description" content="Free AI prompt generator that turns plain English into better ChatGPT, Claude, DALL·E and Midjourney prompts. No signup. Save, refine, and run prompts in one place." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://www.promptmegood.com" />
-  <meta property="og:image" content="https://www.promptmegood.com/opengraph.jpg?v=5" />
+  <meta property="og:image" content="https://www.promptmegood.com/opengraph.jpg?v=6" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="PromptMeGood — free AI prompt generator for ChatGPT, Claude, DALL·E and Midjourney." />
@@ -88,7 +88,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Free AI Prompt Generator for ChatGPT, Claude & Image AI | PromptMeGood" />
   <meta name="twitter:description" content="Free AI prompt generator that turns plain English into better ChatGPT, Claude, DALL·E and Midjourney prompts. No signup. Save, refine, and run prompts in one place." />
-  <meta name="twitter:image" content="https://www.promptmegood.com/opengraph.jpg?v=5" />
+  <meta name="twitter:image" content="https://www.promptmegood.com/opengraph.jpg?v=6" />
   <meta name="twitter:image:alt" content="PromptMeGood — free AI prompt generator for ChatGPT, Claude, DALL·E and Midjourney." />
   <script type="application/ld+json">
   {
@@ -12787,6 +12787,107 @@ document.addEventListener("DOMContentLoaded", function () {
     wire();
   })();
 });
+</script>
+
+<script>
+  /* ================================================================
+     tr-3 + tr-5 — Traffic-Readiness onboarding hooks
+     ================================================================
+     tr-3: Pre-fill the goal textarea with a high-quality example on
+           the very first visit so the user only has to click
+           "Analyze My Idea" to see the tool's value.
+     tr-5: After the first successful generation+copy, show a one-shot
+           Vault toast so the user discovers retention at peak value.
+     Both gated on first-run flags in localStorage; subsequent visits
+     are no-ops. Disable: ?tr-off=1 or
+     localStorage['pmg_traffic_onboarding_disable']='1'. */
+  (function () {
+    function lsGet(k){ try { return localStorage.getItem(k); } catch(_) { return null; } }
+    function lsSet(k,v){ try { localStorage.setItem(k,v); } catch(_) {} }
+    if (lsGet('pmg_traffic_onboarding_disable') === '1') return;
+    if (/[?&]tr-off=1\b/.test(location.search)) return;
+
+    /* ---------- tr-3: First-visit goal pre-fill ---------- */
+    var PREFILL_KEY = 'pmg_prefill_seen';
+    var EXAMPLE = "Help me launch a profitable AI side hustle in 30 days — give me 3 ideas under $500 to start, the first week's plan, and exactly which tools to use.";
+
+    function tryPrefill() {
+      if (lsGet(PREFILL_KEY) === '1') return true;
+      // Don't fight session restore (sessionStorage['pmgv3:session']).
+      try {
+        var sess = sessionStorage.getItem('pmgv3:session');
+        if (sess && /"goal"\s*:\s*"[^"]/.test(sess)) {
+          lsSet(PREFILL_KEY, '1');
+          return true;
+        }
+      } catch(_) {}
+      // Don't pre-fill returning users (they hit the workstation before).
+      if (lsGet('pmg_visited') || lsGet('pmg_hasGeneratedPrompt') === 'true' ||
+          (Number(lsGet('pmg_prompt_count')) > 0)) {
+        lsSet(PREFILL_KEY, '1');
+        return true;
+      }
+      var goal = document.getElementById('goal');
+      if (!goal) return false;
+      if (goal.value && goal.value.trim()) { lsSet(PREFILL_KEY, '1'); return true; }
+      goal.value = EXAMPLE;
+      try {
+        goal.dispatchEvent(new Event('input', { bubbles: true }));
+        goal.dispatchEvent(new Event('change', { bubbles: true }));
+      } catch(_) {}
+      lsSet(PREFILL_KEY, '1');
+      return true;
+    }
+    var prefillTicks = 0;
+    var prefillIv = setInterval(function(){
+      prefillTicks++;
+      if (tryPrefill() || prefillTicks > 30) clearInterval(prefillIv);
+    }, 200);
+
+    /* ---------- tr-5: Post-first-copy Vault toast ---------- */
+    var TOAST_KEY = 'pmg_vault_toast_shown';
+    function maybeShowVaultToast() {
+      if (lsGet(TOAST_KEY) === '1') return;
+      // Only after first real generation.
+      if (lsGet('pmg_hasGeneratedPrompt') !== 'true') return;
+      lsSet(TOAST_KEY, '1');
+      // Prefer existing showToast (carries data-pmg-overlay-root rules).
+      try {
+        if (typeof window.showToast === 'function') {
+          window.showToast('✨ Prompt copied! Want to save it for later? Open the Vault.');
+          return;
+        }
+      } catch(_) {}
+      // Fallback: lightweight body-appended toast (chassis-safe).
+      var t = document.createElement('div');
+      t.setAttribute('data-pmg-overlay-root', '');
+      t.setAttribute('role', 'status');
+      t.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0e3a36;color:#f5fff8;border:1px solid rgba(0,200,150,0.45);box-shadow:0 8px 32px rgba(0,0,0,0.5);padding:12px 18px;border-radius:10px;font:500 14px Inter,system-ui,sans-serif;z-index:99999;max-width:90vw;text-align:center;';
+      t.textContent = '✨ Prompt copied! Want to save it for later? Open the Vault.';
+      document.body.appendChild(t);
+      setTimeout(function(){ try { t.remove(); } catch(_) {} }, 5500);
+    }
+    var COPY_IDS = ['copy-btn', 'pmg-vs-image-copy', 'pmg-vs-video-copy'];
+    function bindCopy() {
+      var bound = 0;
+      COPY_IDS.forEach(function(id){
+        var b = document.getElementById(id);
+        if (!b || b.dataset.pmgTrToast === '1') { if (b) bound++; return; }
+        b.dataset.pmgTrToast = '1';
+        b.addEventListener('click', function(){
+          // Defer so the actual copy + any showToast('Copied!') runs first.
+          setTimeout(maybeShowVaultToast, 1200);
+        });
+        bound++;
+      });
+      return bound === COPY_IDS.length;
+    }
+    var copyTicks = 0;
+    var copyIv = setInterval(function(){
+      copyTicks++;
+      if (bindCopy() || copyTicks > 40) clearInterval(copyIv);
+    }, 250);
+  })();
 </script>
 
 </body>

@@ -12,6 +12,12 @@ uri = "file://artifacts/promptmegood/public/images/pmg-cat-after.png"
 type = "image"
 title = "cat cinematic after"
 
+[[generated]]
+id = "2lUH9cL6fvxlNbspdmFma"
+uri = "file://artifacts/promptmegood/public/opengraph-v6.png"
+type = "image"
+title = "generated_image"
+
 [[outputs]]
 id = "wW4j9q7eO6c6lsff0hhJS"
 uri = "file://promptmegood_bundle.tar.gz"
@@ -233,3 +239,9 @@ id = "TyR2RXV-JutLMUISZG5K_"
 uri = "file://screenshots/photo-mobile.png"
 type = "image"
 title = "Photography Suite — Mobile (collapsed-by-default sections)"
+
+[[outputs]]
+id = "X1Sv7RqUjliWm42Qv9-x_"
+uri = "file://artifacts/promptmegood/public/opengraph.jpg"
+type = "image"
+title = "New OpenGraph image (1200x630)"

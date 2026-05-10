@@ -13,36 +13,10 @@
         }
       } catch (e) { /* no-op */ }
     })();
-    /* Returning-user fast-lane: anyone who has ever used the app jumps
-       straight into /app and never sees the marketing landing twice.
-       Detection signals (any one is enough):
-         - localStorage 'pmg_visited'      (set on first workstation paint)
-         - localStorage 'pmg_prompt_count' (any non-zero value)
-         - localStorage 'promptmegood:templates:v1'
-         - localStorage 'pmg.workstationTourSeen'
-         - localStorage 'pmg.quickWinSeen'
-       Bypass with ?stay=1 if the user wants to see the landing on purpose. */
-    (function () {
-      try {
-        if (/[?&]stay=1\b/.test(location.search)) return;
-        // Defensive: only fire from the actual landing URL. If a misconfigured
-        // dev server falls back to index.html for /app, do NOT redirect — that
-        // would create an infinite reload loop on the workstation route.
-        var p = location.pathname;
-        if (p !== '/' && p !== '/index.html' && p !== '') return;
-        var ls = window.localStorage;
-        if (!ls) return;
-        var hit =
-          ls.getItem('pmg_visited') ||
-          (Number(ls.getItem('pmg_prompt_count')) > 0) ||
-          ls.getItem('promptmegood:templates:v1') ||
-          ls.getItem('pmg.workstationTourSeen') ||
-          ls.getItem('pmg.quickWinSeen');
-        if (hit) {
-          location.replace('/app' + location.search + location.hash);
-        }
-      } catch (e) { /* no-op */ }
-    })();
+    /* tr-1: Returning-user fast-lane to /app REMOVED.
+       Cold traffic from sharing/SEO needs the landing page context before
+       the workstation. Users now reach /app only by clicking the primary
+       CTA. Power-users can still bookmark /app directly. */
   </script>
   <title>PromptMeGood — Free AI Prompt Workstation for ChatGPT, Claude & Image AI</title>
   <meta name="description" content="Finally, AI that understands you. If your results feel off, it&rsquo;s not you — it&rsquo;s the prompt. PromptMeGood fixes it instantly so you get the answer you were actually looking for. Free, no signup, local-first." />
@@ -56,13 +30,13 @@
   <meta property="og:description" content="Finally, AI that understands you. Fix bad prompts instantly and get the answer you were actually looking for. Free. No signup. Local-first." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://www.promptmegood.com/" />
-  <meta property="og:image" content="https://www.promptmegood.com/opengraph.jpg?v=5" />
+  <meta property="og:image" content="https://www.promptmegood.com/opengraph.jpg?v=6" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="PromptMeGood — Free AI Prompt Workstation" />
   <meta name="twitter:description" content="Calm, focused workstation for crafting AI prompts. Local-first. No signup." />
-  <meta name="twitter:image" content="https://www.promptmegood.com/opengraph.jpg?v=5" />
+  <meta name="twitter:image" content="https://www.promptmegood.com/opengraph.jpg?v=6" />
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=6" />
   <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48.png?v=6" />
   <link rel="shortcut icon" href="/favicon.ico" />
