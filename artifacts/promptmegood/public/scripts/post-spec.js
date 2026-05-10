@@ -202,8 +202,8 @@
 
     function updateLabel() {
       link.textContent = checkbox.checked
-        ? 'Switch to Standard Mode \u2192'
-        : 'Switch to Expert Mode \u2192';
+        ? 'Hide Expert Command Center \u2192'
+        : 'Open Expert Command Center \u2192';
     }
 
     updateLabel();

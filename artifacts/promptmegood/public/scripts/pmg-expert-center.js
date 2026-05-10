@@ -602,7 +602,7 @@
       if (tip) attrs.title = tip;
       return el('button', attrs, label);
     }
-    actions.appendChild(makeBtn('Fix This Like A Prompt Engineer', function () { fixLikeEngineer(status); }, 'Rewrite your prompt with role, audience, format, tone, constraints, and a success criterion.'));
+    actions.appendChild(makeBtn('Fix This Like A Prompt Architect', function () { fixLikeEngineer(status); }, 'Rewrite your prompt with role, audience, format, tone, constraints, and a success criterion.'));
     actions.appendChild(makeBtn('Ask Me 5 Questions', function () { askFiveQuestions(status); }, 'Generate 5 short clarifying questions to refine your goal before AI answers.'));
     actions.appendChild(makeBtn('Auto-Fill Safe Defaults', function () { autoFillDefaults(); status.textContent = 'Default Architect settings applied. Open the Architect tab to fine-tune, or tap Apply To Main Prompt below.'; }, 'Pre-fill safe Architect defaults so you can fine-tune from a sensible starting point.'));
     actions.appendChild(makeBtn('Add Missing Context', function () { addMissingContext(status); }, 'Inserts a checklist of details your prompt is missing, ready for you to fill in.'));
@@ -630,7 +630,7 @@
   function fixLikeEngineer(statusEl) {
     var goal = getGoalText().trim();
     if (!goal) { statusEl.textContent = 'Type a goal first.'; return; }
-    statusEl.innerHTML = '<span class="pmg-ec-loading"></span>Rewriting like a prompt engineer…';
+    statusEl.innerHTML = '<span class="pmg-ec-loading"></span>Rewriting like a prompt architect…';
     var instruction = 'You are a senior prompt engineer. Rewrite the request below as a high-quality prompt that any modern AI assistant could answer well. ' +
       'Add: a clear role for the AI to play, the target audience, the desired output format, the tone, 2-3 useful constraints, and a one-line success criterion. ' +
       'Keep the original intent. Output ONLY the rewritten prompt — no preamble, no explanation, no markdown fences.\n\nORIGINAL REQUEST:\n' + goal;
@@ -718,7 +718,7 @@
           if (!goal) { window.alert('Type a goal in the main prompt box first.'); return; }
           var built = buildEngineeredPrompt(goal, _state.engineer);
           setGoalText(built);
-          showStatusPill('Engineer Structure Applied');
+          showStatusPill('Architect Structure Applied');
           track('expert_center_apply', { source: 'engineer' });
           closeDrawer();
         } }
@@ -1060,7 +1060,7 @@
     pane.innerHTML = '';
     pane.appendChild(el('div', { class: 'pmg-ec-paywall' }, [
       el('h3', null, 'Expert Command Center is a Pro Feature'),
-      el('p', null, 'Diagnose, Engineer, Tune, Variations, and Save are included with the Founding Member ($79 one-time, price locked for life) and Pro plans. Founding Member is limited to the first 500 buyers.'),
+      el('p', null, 'Diagnose, Architect, Tune, Variations, and Save are included with the Founding Member ($79 one-time, price locked for life) and Pro plans. Founding Member is limited to the first 500 buyers.'),
       el('div', { class: 'pmg-ec-cta-row', style: 'border:0;padding:0;margin:0;' }, [
         el('a', { href: '/pricing.html', class: 'pmg-ec-primary' }, 'See Pricing'),
         el('button', { type: 'button', onclick: closeDrawer }, 'Maybe Later')
