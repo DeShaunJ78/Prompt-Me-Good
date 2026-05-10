@@ -18,7 +18,7 @@
     PRO_MONTHLY_USD: 9,
     PRO_YEARLY_USD: 79,
     FOUNDING_LIMIT: 500,
-    FOUNDING_DEADLINE_COPY: 'Offer Ends July 1 Or At 500 Founding Members — Whichever Comes First',
+    FOUNDING_DEADLINE_COPY: 'Checkout Opening Soon (First 500 Buyers Lock In $79 For Life)',
     TRIAL_DAYS: 7,
     /* Per-plan daily caps. Mirrors api-server/src/lib/pricing-config.ts. */
     TRIAL_DAILY_CAPS:    { run: 10, img: 5,  analyze: 3  },

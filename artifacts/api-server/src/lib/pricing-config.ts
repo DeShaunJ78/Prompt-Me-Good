@@ -13,7 +13,7 @@ export const PMG_PRICING = {
   PRO_MONTHLY_USD: 9,
   PRO_YEARLY_USD: 79,
   FOUNDING_LIMIT: 500,
-  FOUNDING_DEADLINE_COPY: "Offer Ends July 1 Or At 500 Founding Members — Whichever Comes First",
+  FOUNDING_DEADLINE_COPY: "Checkout Opening Soon (First 500 Buyers Lock In $79 For Life)",
   TRIAL_DAYS: 7,
   // Per-day per-feature caps for every plan. None of the paid tiers are
   // unlimited — they have generous fair-use caps so unit economics stay

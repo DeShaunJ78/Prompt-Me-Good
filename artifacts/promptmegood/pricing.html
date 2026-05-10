@@ -219,7 +219,7 @@
             <span class="tier-price-amount" data-pmg-price="founding">$79</span>
             <span class="tier-price-period">/ one-time, price locked for life</span>
           </div>
-          <p class="tier-status" style="color: var(--primary);">Waitlist Open · <span data-pmg-deadline>First 500 Buyers, Then The Offer Closes</span></p>
+          <p class="tier-status" style="color: var(--primary);">Waitlist Open · <span data-pmg-deadline>Checkout Opening Soon (First 500 Buyers)</span></p>
           <p class="tier-summary">One payment. Lifetime access to core features. No monthly bill, no renewal — and if Pro prices ever go up, yours never does.</p>
           <ul class="tier-features">
             <li>Lifetime access to core features</li>
@@ -246,7 +246,7 @@
             <span class="tier-price-amount" data-pmg-price="pro_monthly">$9</span>
             <span class="tier-price-period">/ month</span>
           </div>
-          <p class="tier-status">Ongoing premium · Coming Soon</p>
+          <p class="tier-status">Ongoing premium · Coming at launch</p>
           <p class="tier-summary">A monthly plan for people who run on prompts every day. The highest daily caps and full access to the Expert Command Center.</p>
           <ul class="tier-features is-soon">
             <li>Everything in Free</li>
@@ -275,7 +275,7 @@
             <span class="tier-price-amount" data-pmg-price="pro_yearly">$79</span>
             <span class="tier-price-period">/ year</span>
           </div>
-          <p class="tier-status">Best value · Coming Soon</p>
+          <p class="tier-status">Best value · Coming at launch</p>
           <p class="tier-summary">All of Pro, billed yearly. Save vs the monthly plan and lock in your rate.</p>
           <ul class="tier-features is-soon">
             <li>Everything in Pro Monthly</li>
@@ -334,6 +334,25 @@
           <details class="pricing-faq-item">
             <summary>What if PromptMeGood changes features later?</summary>
             <p>We will keep core features — the Prompt Builder, Photography Suite, Video panel, Run With AI, image generation, file analysis, Vault, and history — available to Founding Members for the lifetime of the service. We may add, replace, or retire individual sub-features over time as AI providers and tools evolve, and we don't guarantee that every future Pro feature will be included in Founding. We'll communicate material changes by email, and the Founding Member price never goes up. If the service is discontinued for reasons outside our control, refunds are not guaranteed — see the <a href="./terms.html">Terms</a>.</p>
+          </details>
+          <details class="pricing-faq-item">
+            <summary>Can I use PromptMeGood for free?</summary>
+            <p>Yes — the Free tier has no signup, no credit card, and no expiration. You get all three panels (Text, Photography, Video), the Prompt Builder, the Vault, and starter templates with no caps. AI-backed features are metered with daily caps: <strong><span data-pmg-cap="free:run">3</span> Run With AI</strong>, <strong><span data-pmg-cap="free:img">1</span> image generation</strong>, and <strong><span data-pmg-cap="free:analyze">1</span> file analysis per day</strong>. Video generation requires a paid plan (Founding Member or Pro) — the free Video panel still lets you build and copy structured video prompts to use in Sora, Runway, or any other tool. During the open beta (through June 1, 2026), the Expert Command Center is also free for everyone — after that it becomes a paid feature for Founding Members and Pro subscribers.</p>
+          </details>
+          <details class="pricing-faq-item">
+            <summary>What happens after the open beta ends?</summary>
+            <p>The open beta ends on <strong>June 1, 2026</strong>. Nothing breaks for free users — every existing free feature stays free, including the Prompt Builder, Photography Suite, Video panel, Vault, templates, and the daily AI caps listed above. The only change is that the <strong>Expert Command Center</strong> (Diagnose, Engineer, Tune, Variations, Save) becomes a paid feature available on the Founding Member ($79 one-time, lifetime) and Pro ($9/mo or $79/yr) plans. Free users tapping the gear will see a paywall card with a link back to this page; the rest of the workstation continues to work normally.</p>
+          </details>
+          <details class="pricing-faq-item">
+            <summary>What counts toward my daily usage limits?</summary>
+            <p>Four AI-backed features count toward daily caps:</p>
+            <ul style="margin: 8px 0 0 1.2em; padding: 0; color: var(--muted); font-size: 0.92rem;">
+              <li><strong>Run With AI</strong> (calls to GPT-4o) — Free <span data-pmg-cap="free:run">3</span> · Founding <span data-pmg-cap="founding:run">30</span> · Pro <span data-pmg-cap="pro:run">60</span> per day</li>
+              <li><strong>Image generation</strong> (DALL·E 3 / gpt-image-1 from the Photography Suite, Image Workshop, and DNA Card) — Free <span data-pmg-cap="free:img">1</span> · Founding <span data-pmg-cap="founding:img">15</span> · Pro <span data-pmg-cap="pro:img">30</span> per day</li>
+              <li><strong>File analysis</strong> (Reverse Engine on uploaded images) — Free <span data-pmg-cap="free:analyze">1</span> · Founding <span data-pmg-cap="founding:analyze">10</span> · Pro <span data-pmg-cap="pro:analyze">20</span> per day</li>
+              <li><strong>Video generation</strong> (Sora-style clips from the Video panel) — Free 0 · Founding 5 · Pro 10 per day</li>
+            </ul>
+            <p style="margin-top: 10px;">Everything else is unlimited: building and editing prompts in any panel, the structured Prompt Builder, all Photography Suite pills and presets, copy/tweak in the Video panel, Storyboard Studio, Brand Voice profiles, the Vault (save / tag / export), templates, history, and "Send to ChatGPT / Claude / Gemini / Perplexity" (those use your own account on the destination, not ours). Limits reset daily at midnight UTC.</p>
           </details>
         </div>
       </section>
