@@ -10,9 +10,14 @@
  *     (auto-boost, storyboard, session persistence) read from. In guided
  *     mode we just keep the textarea hidden and write the assembled
  *     string into its .value, dispatching input/change so listeners react.
- *   - Mode is persisted per-panel in localStorage:
+ *   - Mode is persisted per-panel in localStorage (a UX preference, sticky):
  *       pmgv3:vs:intake-mode:image | :video  ->  'guided' | 'freeform'
- *   - Field values are persisted per-panel in localStorage:
+ *   - Field values are persisted per-panel in SESSIONstorage (cleared on
+ *     full tab close, matching the rest of the app's session lifecycle —
+ *     see chassis-v3 wirePersistence/writeSession). Previously these were
+ *     in localStorage which leaked the user's last subject/environment/
+ *     action/style across full app close+reopen, contradicting the
+ *     "close the app to start fresh" mental model.
  *       pmgv3:vs:intake:image | :video  ->  {subject,environment,action,style}
  *   - Default mode for first-time users: 'guided'.
  *
@@ -65,14 +70,26 @@
   }
   function readFields(scopeKey) {
     try {
-      var raw = localStorage.getItem(STORAGE_PREFIX + ':' + scopeKey);
+      var raw = sessionStorage.getItem(STORAGE_PREFIX + ':' + scopeKey);
+      // Migrate any pre-existing localStorage values into sessionStorage on
+      // first read, then clear the localStorage copy so a future close+reopen
+      // resets cleanly. One-time migration; safe to run repeatedly.
+      if (!raw) {
+        var legacy = null;
+        try { legacy = localStorage.getItem(STORAGE_PREFIX + ':' + scopeKey); } catch (_) {}
+        if (legacy) {
+          raw = legacy;
+          try { sessionStorage.setItem(STORAGE_PREFIX + ':' + scopeKey, legacy); } catch (_) {}
+          try { localStorage.removeItem(STORAGE_PREFIX + ':' + scopeKey); } catch (_) {}
+        }
+      }
       if (!raw) return {};
       var p = JSON.parse(raw);
       return (p && typeof p === 'object') ? p : {};
     } catch (_) { return {}; }
   }
   function writeFields(scopeKey, fields) {
-    try { localStorage.setItem(STORAGE_PREFIX + ':' + scopeKey, JSON.stringify(fields)); } catch (_) {}
+    try { sessionStorage.setItem(STORAGE_PREFIX + ':' + scopeKey, JSON.stringify(fields)); } catch (_) {}
   }
 
   function assemble(fields) {
