@@ -1872,18 +1872,20 @@ html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to[data-pmg-dest="chatgpt"],
 html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to[data-pmg-dest="claude"],
 html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to[data-pmg-dest="perplexity"],
 html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to[data-pmg-dest="gemini"] {
-  background: transparent !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  color: rgba(255, 255, 255, 0.65) !important;
-  font-size: 12px !important;
-  font-weight: 500 !important;
-  padding: 8px 6px !important;
+  /* Faint teal-tinted surface so the chips lift off the panel just enough
+     to be scannable, while staying clearly secondary to Run With AI. */
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 5%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 30%, transparent) !important;
+  color: rgba(255, 255, 255, 0.82) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  padding: 9px 6px !important;
   box-shadow: none !important;
 }
 html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to:hover {
-  background: rgba(255, 255, 255, 0.04) !important;
-  border-color: rgba(0, 200, 150, 0.45) !important;
-  color: #00c896 !important;
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 12%, transparent) !important;
+  border-color: color-mix(in srgb, var(--color-primary, #3ee0a0) 55%, transparent) !important;
+  color: var(--color-primary, #3ee0a0) !important;
   filter: none !important;
 }
 
@@ -1891,7 +1893,7 @@ html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to:hover {
    second CTA stack. */
 html.pmg-chassis-v3 .pmgv3-send-label {
   margin-top: 14px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.62);
   text-transform: uppercase;
   font-size: 11px;
   letter-spacing: 0.06em;
