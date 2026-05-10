@@ -65,6 +65,7 @@
     wirePersistence();
     deleteTargets();
     setupInspirationFeed();
+    wireWhispererToggle();
     // Re-apply the hide on a short tick in case any late legacy script flips display
     var hideTicks = 0;
     var hideTick = setInterval(function () {
@@ -80,6 +81,46 @@
       var tp = document.getElementById('tuning-panel');
       if (tp) tp.style.setProperty('display', 'none', 'important');
     }, 200);
+  }
+
+  /* mux-3 (Section 1): Whisperer is collapsed by default. The small
+     "✨ Need a starter idea?" toggle expands the bar; preference
+     persists in localStorage['pmgv3:whisperer:open']. We DON'T auto-
+     restore the open state on first load — the brief explicitly wants
+     the textarea + Generate to dominate the first impression — but
+     once the user opts in, we remember it for subsequent sessions. */
+  function wireWhispererToggle() {
+    var btn = document.getElementById('pmgv3-whisperer-toggle');
+    var bar = document.getElementById('pmgv3-whisperer-bar');
+    if (!btn || !bar) return;
+    var KEY = 'pmgv3:whisperer:open';
+    function setOpen(open, persist) {
+      if (open) {
+        bar.classList.remove('is-collapsed');
+        bar.removeAttribute('hidden');
+        btn.setAttribute('aria-expanded', 'true');
+        btn.classList.add('is-open');
+      } else {
+        bar.classList.add('is-collapsed');
+        bar.setAttribute('hidden', '');
+        btn.setAttribute('aria-expanded', 'false');
+        btn.classList.remove('is-open');
+      }
+      if (persist) {
+        try { localStorage.setItem(KEY, open ? '1' : '0'); } catch (e) {}
+      }
+    }
+    var stored = null;
+    try { stored = localStorage.getItem(KEY); } catch (e) {}
+    if (stored === '1') setOpen(true, false);
+    btn.addEventListener('click', function () {
+      var nowOpen = btn.getAttribute('aria-expanded') !== 'true';
+      setOpen(nowOpen, true);
+      if (nowOpen) {
+        var input = document.getElementById('whisperer-input');
+        if (input) try { input.focus(); } catch (e) {}
+      }
+    });
   }
 
   /* if-1 (Right Column UX Fill brief): wire the "Start Fast" template
@@ -136,30 +177,25 @@
       '<div class="pmgv3-body" data-active-panel="text">',
         '<div class="pmgv3-panel" id="pmgv3-panel-text">',
         '<div class="pmgv3-left">',
-          // sp-2 Prompt Whisperer — slim glowing search bar.
-          // Replaces the bulky sp-1 panel with a single-line input that
-          // looks/feels like a search field, not a workspace. Wired by
-          // /scripts/pmg-spark-panel.js. Sits above the main builder.
-          // sp-3-typewriter: V3 redesign. Slim glowing search bar with
-          // a typewriter cycling animation (blinking cursor), so long
-          // prompts don't get truncated on mobile and the bar visually
-          // reads as "interactive" not "static". The typewriter overlay
-          // sits BEHIND a transparent input — clicks pass through.
-          '<div class="pmgv3-whisperer-bar" id="pmgv3-whisperer-bar">',
-            '<div class="whisperer-label">',
-              '<span class="whisperer-icon" aria-hidden="true">✨</span>',
-              '<span class="whisperer-title">Prompt Whisperer</span>',
-            '</div>',
-            '<div class="whisperer-input-row">',
-              '<div class="whisperer-input-wrapper">',
-                '<input type="text" class="whisperer-input" id="whisperer-input" autocomplete="off" placeholder="" aria-label="Prompt Whisperer question" />',
-                '<div class="whisperer-typewriter" id="whisperer-typewriter" aria-hidden="true"></div>',
+          // mux-3 (Section 1): Whisperer demoted behind a small text-link
+          // toggle. Default-collapsed so the textarea + Generate button
+          // dominate the first impression. Click expands; preference
+          // persists in localStorage['pmgv3:whisperer:open'].
+          '<div class="pmgv3-whisperer-wrap" id="pmgv3-whisperer-wrap">',
+            '<button type="button" class="pmgv3-whisperer-toggle" id="pmgv3-whisperer-toggle" aria-expanded="false" aria-controls="pmgv3-whisperer-bar">',
+              '<span aria-hidden="true">✨</span>',
+              '<span class="pmgv3-whisperer-toggle-label">Need a starter idea?</span>',
+              '<span class="pmgv3-whisperer-toggle-chevron" aria-hidden="true">▾</span>',
+            '</button>',
+            '<div class="pmgv3-whisperer-bar is-collapsed" id="pmgv3-whisperer-bar" hidden>',
+              '<div class="whisperer-input-row">',
+                '<div class="whisperer-input-wrapper">',
+                  '<input type="text" class="whisperer-input" id="whisperer-input" autocomplete="off" placeholder="" aria-label="Prompt Whisperer question" />',
+                  '<div class="whisperer-typewriter" id="whisperer-typewriter" aria-hidden="true"></div>',
+                '</div>',
+                '<button type="button" class="whisperer-spark-btn" id="btn-whisperer-spark">Spark →</button>',
               '</div>',
-              '<button type="button" class="whisperer-spark-btn" id="btn-whisperer-spark">Spark →</button>',
             '</div>',
-          '</div>',
-          '<div class="pmgv3-whisperer-divider" aria-hidden="true">',
-            '<span>— or build from scratch below —</span>',
           '</div>',
           '<section class="idea-section">',
             '<label class="pmgv3-section-label" for="goal">Your Idea</label>',

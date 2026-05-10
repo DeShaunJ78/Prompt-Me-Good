@@ -1791,3 +1791,99 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
   animation: pmgv3-pulse-highlight 1.5s ease-out;
   border-radius: 8px;
 }
+
+/* ============================================================================
+   mux-3 (Sections 1+2 of Master UX Restructure)
+   ============================================================================ */
+
+/* Section 1: Whisperer demoted to a small text-link toggle. Default
+   collapsed so the textarea + Generate button dominate. */
+.pmgv3-whisperer-wrap {
+  margin: 0 0 14px 0;
+}
+.pmgv3-whisperer-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 0;
+  padding: 4px 0;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.55);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(255, 255, 255, 0.18);
+  -webkit-tap-highlight-color: rgba(0, 200, 150, 0.15);
+}
+.pmgv3-whisperer-toggle:hover {
+  color: #00c896;
+  text-decoration-color: rgba(0, 200, 150, 0.45);
+}
+.pmgv3-whisperer-toggle-chevron {
+  font-size: 11px;
+  transition: transform 0.18s ease;
+  opacity: 0.7;
+}
+.pmgv3-whisperer-toggle.is-open .pmgv3-whisperer-toggle-chevron {
+  transform: rotate(180deg);
+}
+html.pmg-chassis-v3 .pmgv3-whisperer-bar.is-collapsed { display: none !important; }
+html.pmg-chassis-v3 .pmgv3-whisperer-bar:not(.is-collapsed) {
+  margin-top: 10px;
+}
+
+/* Section 2: post-generation breathing room + button hierarchy. */
+
+/* Add real margin above the utility row so the generated text doesn't
+   feel cramped against Edit / Rewrite / Save Draft. */
+html.pmg-chassis-v3 .prompt-actions { margin-top: 20px; }
+
+/* Hero Run-With-AI: the brief's "undeniable primary CTA". Slightly
+   bigger padding/font + stronger shadow so it dominates the column. */
+html.pmg-chassis-v3 .btn-run-primary {
+  padding: 16px 18px;
+  font-size: 16px;
+  letter-spacing: 0.01em;
+  box-shadow: 0 4px 18px rgba(0, 200, 150, 0.18);
+}
+html.pmg-chassis-v3 .btn-run-primary:hover {
+  box-shadow: 0 8px 28px rgba(0, 200, 150, 0.42);
+}
+
+/* Demote external destination buttons (ChatGPT / Claude / Perplexity /
+   Gemini) to ghost-style chips. They were full-color brand buttons that
+   visually competed with Run With AI. Override the per-destination
+   filled colors set above. */
+html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to,
+html.pmg-chassis-v3 .pmgv3-send-grid button.btn-send-to,
+html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to[data-pmg-dest="chatgpt"],
+html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to[data-pmg-dest="claude"],
+html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to[data-pmg-dest="perplexity"],
+html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to[data-pmg-dest="gemini"] {
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: rgba(255, 255, 255, 0.65) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 8px 6px !important;
+  box-shadow: none !important;
+}
+html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border-color: rgba(0, 200, 150, 0.45) !important;
+  color: #00c896 !important;
+  filter: none !important;
+}
+
+/* Tone down the send-to label so it reads as a quiet handoff, not a
+   second CTA stack. */
+html.pmg-chassis-v3 .pmgv3-send-label {
+  margin-top: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
