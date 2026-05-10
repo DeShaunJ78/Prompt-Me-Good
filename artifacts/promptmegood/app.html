@@ -3210,7 +3210,11 @@
     .result-top-btn#result-top-copy { background: var(--color-surface); color: var(--color-primary); border: 1.5px solid var(--color-primary); }
     @media (max-width: 760px) { .result-top-actions { flex-direction: column; } .result-top-btn { width: 100%; } }
     .ai-response-output.is-clamped { max-height: 320px; overflow: hidden; position: relative; }
-    .ai-response-output.is-clamped::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 48px; background: linear-gradient(to bottom, transparent, var(--color-surface)); pointer-events: none; }
+    /* Fade-out gradient removed: the box's actual background didn't match
+       --color-surface, so any tinted gradient terminated at a slightly
+       different shade and read as a visible horizontal band cutting through
+       the last lines of text. The "Show Full Response" button below the
+       box is sufficient cue that more content exists. */
     .ai-response-toggle { display: none; margin: 6px 0 0; padding: 6px 14px; font-size: 13px; font-weight: 600; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-primary); cursor: pointer; }
     .ai-response-toggle:hover { background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)); }
     .ai-response-toggle.is-visible { display: inline-flex; }
