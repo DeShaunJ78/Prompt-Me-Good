@@ -1888,6 +1888,31 @@ html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to:hover {
   color: var(--color-primary, #3ee0a0) !important;
   filter: none !important;
 }
+/* Two-line label inside each send-to chip: AI name on top, tiny muted
+   descriptor below. Uses flex-column so the chip naturally sizes to fit
+   without changing the grid layout. Descriptor inherits the chip's hover
+   color shift so it stays consistent. */
+html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to {
+  display: inline-flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 2px !important;
+  line-height: 1.2 !important;
+}
+html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to .pmgv3-send-name {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to .pmgv3-send-desc {
+  font-size: 11px;
+  font-weight: 400;
+  opacity: 0.65;
+  letter-spacing: 0.01em;
+  white-space: normal;
+  text-align: center;
+}
 
 /* Tone down the send-to label so it reads as a quiet handoff, not a
    second CTA stack. */
