@@ -16162,6 +16162,12 @@
       '  color: var(--color-text);',
       '  cursor: pointer;',
       '  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;',
+      /* task-128: chips always share one row (3-up flex). When the
+         column is narrow, prefer a clean ellipsis over wrapping or
+         overflow. min-width:0 above lets flex actually shrink. */
+      '  overflow: hidden;',
+      '  text-overflow: ellipsis;',
+      '  white-space: nowrap;',
       '}',
       '#' + SECTION_ID + ' .pmg-pm-chip:hover,',
       '#' + SECTION_ID + ' .pmg-pm-chip:focus-visible {',
@@ -16174,16 +16180,27 @@
       '  transform: scale(0.97);',
       '}',
       'body.image-mode #' + SECTION_ID + ' #pm-image { display: none; }',
-      '@media (max-width: 320px) {',
+      /* task-128: shrink type + padding earlier (≤360px covers iPhone
+         SE / mini and most Android-S). Ellipsis already inherited
+         from base rule above; keep it explicit here as a safety net
+         in case a global mobile override re-enables wrapping. */
+      '@media (max-width: 360px) {',
       '  #' + SECTION_ID + ' .pmg-pm-chip {',
-      '    font-size: 11px;',
-      '    padding: 8px 4px;',
-      '    gap: 2px;',
+      '    font-size: 11.5px;',
+      '    padding: 8px 6px;',
+      '    gap: 3px;',
       '    overflow: hidden;',
       '    text-overflow: ellipsis;',
       '    white-space: nowrap;',
       '  }',
       '  #' + SECTION_ID + ' .pmg-pm-grid { gap: 4px; }',
+      '}',
+      '@media (max-width: 320px) {',
+      '  #' + SECTION_ID + ' .pmg-pm-chip {',
+      '    font-size: 11px;',
+      '    padding: 8px 4px;',
+      '    gap: 2px;',
+      '  }',
       '}'
     ].join('\n');
     var s = document.createElement('style');
