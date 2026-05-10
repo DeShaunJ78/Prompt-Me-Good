@@ -176,6 +176,20 @@
       main.hero { padding: 36px 0 24px; }
       .btn { width: 100%; justify-content: center; }
     }
+
+    /* mtt-1 (mobile-touch-targets): a11y minimum 44×44 hit area for the
+       text-only nav and footer links and the brand/home link on phones.
+       Implemented with inline-flex + min-height so the visible glyphs/
+       wordmark are unchanged — only the tap zone grows. */
+    @media (max-width: 540px) {
+      .top-nav a,
+      footer.site .links a,
+      .brand {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+      }
+    }
   </style>
 </head>
 <body>

@@ -135,7 +135,22 @@
     .site-footer-link:hover { text-decoration: underline; }
     .site-footer-divider { color: var(--muted); }
 
-    @media (max-width: 600px) { .top-actions { gap: 8px; } .ghost-link { font-size: 0.85rem; } .pricing-card { padding: 22px 18px; } }
+    @media (max-width: 600px) { .topbar-inner { flex-wrap: wrap; row-gap: 8px; } .top-actions { gap: 8px; flex-wrap: wrap; justify-content: flex-end; } .ghost-link { font-size: 0.85rem; } .pricing-card { padding: 22px 18px; } }
+
+    /* mtt-1 (mobile-touch-targets): a11y minimum 44×44 hit area for the
+       brand link, ghost-link nav, theme toggle, and footer links on
+       phones. inline-flex + min-height grows tap zones without changing
+       visible glyphs. */
+    @media (max-width: 600px) {
+      .brand,
+      .ghost-link,
+      .site-footer-link {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+      }
+      .theme-toggle { min-height: 44px; }
+    }
   </style>
 </head>
 <body>
