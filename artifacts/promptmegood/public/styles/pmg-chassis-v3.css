@@ -486,14 +486,14 @@ html.pmg-chassis-v3 .idea-section #goal {
 }
 html.pmg-chassis-v3 .idea-section #goal:focus {
   outline: none;
-  border-color: #00c896;
-  box-shadow: 0 0 0 3px rgba(0, 200, 150, 0.15);
+  border-color: var(--color-primary, #3ee0a0);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #3ee0a0) 22%, transparent);
 }
 .btn-analyze {
   width: 100%;
   padding: 12px;
-  background: #00c896;
-  color: #0d2b1e;
+  background: var(--color-primary, #3ee0a0);
+  color: var(--color-text-inverse, #0a2420);
   font-weight: 700;
   border-radius: 10px;
   border: none;
@@ -501,11 +501,12 @@ html.pmg-chassis-v3 .idea-section #goal:focus {
   cursor: pointer;
   margin-top: 12px;
   font-family: inherit;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: transform 0.15s, box-shadow 0.15s, background-color 0.15s;
 }
 .btn-analyze:hover {
+  background: var(--color-primary-hover, var(--color-primary, #3ee0a0));
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0, 200, 150, 0.25);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-primary, #3ee0a0) 35%, transparent);
 }
 .btn-analyze:active { transform: translateY(0); }
 
@@ -1161,15 +1162,15 @@ html.pmg-chassis-v3 .pmgv3-output-host #resultBox:focus {
 .btn-run-primary {
   width: 100%;
   padding: 14px;
-  background: #00c896;
-  color: #0d2b1e;
+  background: var(--color-primary, #3ee0a0);
+  color: var(--color-text-inverse, #0a2420);
   font-weight: 800;
   font-size: 15px;
   border-radius: 12px;
   border: none;
   cursor: pointer;
   font-family: inherit;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: transform 0.15s, box-shadow 0.15s, background-color 0.15s;
 }
 /* Safety net: once a result exists, force the Run with AI button
    visible. Defends against any legacy script that may stamp
@@ -1179,8 +1180,9 @@ html.pmg-chassis-v3 body.pmg-has-result #run-with-ai-btn {
   display: block !important;
 }
 .btn-run-primary:hover {
+  background: var(--color-primary-hover, var(--color-primary, #3ee0a0));
   transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(0, 200, 150, 0.35);
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--color-primary, #3ee0a0) 45%, transparent);
 }
 
 /* cv3-53: send-to-row is now a 2×2 grid (4 destinations:
