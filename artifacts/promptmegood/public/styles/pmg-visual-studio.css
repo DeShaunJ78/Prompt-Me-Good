@@ -1014,3 +1014,87 @@
     font-size: 12.5px;
   }
 }
+
+/* ============================================================================
+   mux-2 — Advanced Tuning accordion + Live Assembly Preview
+   ============================================================================ */
+
+/* Outer accordion that wraps Camera / Lighting / Color / Pro Boosts so the
+   Photo & Video panels read as Subject → Style → Generate at first glance. */
+.pmg-vs-adv-tuning {
+  background: rgba(0, 200, 150, 0.04);
+  border: 1px solid rgba(0, 200, 150, 0.22);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.pmg-vs-adv-tuning-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  padding: 4px 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+.pmg-vs-adv-tuning-hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  margin-left: auto;
+}
+.pmg-vs-adv-tuning-chevron {
+  font-size: 14px;
+  color: rgba(0, 200, 150, 0.7);
+  transition: transform 0.2s ease;
+}
+.pmg-vs-adv-tuning.is-open .pmg-vs-adv-tuning-chevron { transform: rotate(180deg); }
+.pmg-vs-adv-tuning-content { display: none; padding-top: 10px; }
+.pmg-vs-adv-tuning.is-open .pmg-vs-adv-tuning-content { display: block; }
+
+/* The legacy "Tune Your Image" inner accordion now lives INSIDE the new
+   outer wrapper. Hide its chrome (header + collapse) so we don't get a
+   double-nested feel — the outer Advanced Tuning header is the single
+   collapse point. */
+.pmg-vs-adv-tuning .pmg-vs-photo-accordion {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+.pmg-vs-adv-tuning .pmg-vs-photo-acc-header { display: none !important; }
+.pmg-vs-adv-tuning #pmg-vs-photo-suite-container { display: block !important; }
+/* Mobile override: chassis-v3.css collapses the suite under the inner
+   accordion via .pmg-vs-photo-accordion:not(.is-mobile-open). When the
+   inner accordion is nested inside our mux-2 wrapper, the outer
+   Advanced Tuning accordion IS the collapse point — force the suite
+   visible regardless of inner is-mobile-open state. */
+.pmg-vs-adv-tuning .pmg-vs-photo-accordion:not(.is-mobile-open) #pmg-vs-photo-suite-container {
+  display: block !important;
+}
+
+/* Live Assembly Preview block — read-only mirror of the assembled prompt.
+   Sits under the goal textarea, above the Generate button. */
+.pmg-vs-live-preview {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(0, 200, 150, 0.30);
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.88);
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 44px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+.pmg-vs-live-preview.is-empty {
+  color: rgba(255, 255, 255, 0.45);
+  font-style: italic;
+  border-style: dashed;
+}
+.pmg-vs-live-preview::-webkit-scrollbar { width: 6px; }
+.pmg-vs-live-preview::-webkit-scrollbar-thumb { background: rgba(0, 200, 150, 0.4); border-radius: 3px; }

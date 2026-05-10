@@ -265,26 +265,44 @@
         '<section class="pmg-vs-inline-section">',
           '<label class="pmgv3-section-label" for="pmg-vs-image-goal">Describe Your Image</label>',
           '<textarea id="pmg-vs-image-goal" rows="3" placeholder="A woman walking through rainy Tokyo at night, cinematic, neon reflections, 35mm film look…"></textarea>',
+          // mux-2 Live Assembly Preview: read-only field that updates as the
+          // user types or toggles pills, so they can see exactly what the
+          // refined prompt will look like before clicking Generate.
+          '<div class="pmg-vs-live-preview is-empty" id="pmg-vs-image-live-preview" aria-live="polite" aria-label="Live prompt preview">Type your image idea above — your prompt will assemble here as you tune.</div>',
+          // mux-2 Renamed: was "✨ Build My Image Prompt".
           // ps-2-build-above-fold (Task #120): primary CTA lives directly
           // under the textarea so a first-time visitor on 360x800 / 1280x800
-          // can build a prompt without scrolling. Tuning sections below
-          // are optional refinement — clicking Build with no picks still
-          // produces a valid prompt from the goal alone.
-          '<button type="button" id="pmg-vs-build-image-prompt-btn" class="pmg-vs-btn pmg-vs-btn-primary pmg-vs-full-width" style="margin-top:10px">✨ Build My Image Prompt</button>',
+          // can build a prompt without scrolling.
+          '<button type="button" id="pmg-vs-build-image-prompt-btn" class="pmg-vs-btn pmg-vs-btn-primary pmg-vs-full-width" style="margin-top:10px">✨ Generate Image</button>',
         '</section>',
         buildBaseStyleToggleHtml(),
-        '<section class="pmg-vs-inline-section pmg-vs-photo-accordion" id="pmg-vs-photo-accordion">',
-          '<button type="button" class="pmg-vs-photo-acc-header" id="pmg-vs-photo-acc-toggle" aria-expanded="false" aria-controls="pmg-vs-photo-suite-container">',
-            '<span class="pmgv3-section-label" style="margin:0">🎛️ Tune Your Image</span>',
-            '<span class="pmg-vs-photo-acc-hint">Style · Camera · Lighting · more</span>',
-            '<span class="pmg-vs-photo-acc-chevron" aria-hidden="true">▾</span>',
+        // mux-2 Advanced Tuning wrapper accordion. Collapses Camera /
+        // Lighting / Color / Pro Boosts behind a single closed-by-default
+        // toggle so the panel reads as Subject → Style → Generate at first
+        // glance. The legacy inner accordions (photo suite + lighting)
+        // still exist inside; CSS hides their inner chrome so we don't
+        // get a triple-nested feel.
+        '<section class="pmg-vs-inline-section pmg-vs-adv-tuning" id="pmg-vs-image-adv-tuning">',
+          '<button type="button" class="pmg-vs-adv-tuning-header" data-pmg-adv-target="pmg-vs-image-adv-tuning" aria-expanded="false" aria-controls="pmg-vs-image-adv-tuning-content">',
+            '<span class="pmgv3-section-label" style="margin:0">🎛️ Advanced Tuning</span>',
+            '<span class="pmg-vs-adv-tuning-hint">Camera · Lighting · Color · Pro Boosts</span>',
+            '<span class="pmg-vs-adv-tuning-chevron" aria-hidden="true">▾</span>',
           '</button>',
-          '<div id="pmg-vs-photo-suite-container">',
-            '<p style="margin:6px 0 0;font-size:.85rem;opacity:.7">Loading photo controls…</p>',
+          '<div class="pmg-vs-adv-tuning-content" id="pmg-vs-image-adv-tuning-content">',
+            '<section class="pmg-vs-inline-section pmg-vs-photo-accordion" id="pmg-vs-photo-accordion">',
+              '<button type="button" class="pmg-vs-photo-acc-header" id="pmg-vs-photo-acc-toggle" aria-expanded="false" aria-controls="pmg-vs-photo-suite-container">',
+                '<span class="pmgv3-section-label" style="margin:0">🎛️ Tune Your Image</span>',
+                '<span class="pmg-vs-photo-acc-hint">Style · Camera · Lighting · more</span>',
+                '<span class="pmg-vs-photo-acc-chevron" aria-hidden="true">▾</span>',
+              '</button>',
+              '<div id="pmg-vs-photo-suite-container">',
+                '<p style="margin:6px 0 0;font-size:.85rem;opacity:.7">Loading photo controls…</p>',
+              '</div>',
+            '</section>',
+            buildLightingAccordionHtml(),
+            buildProLayerHtml('photo', PHOTO_PRESETS, PHOTO_BOOSTS, PHOTO_MODES),
           '</div>',
         '</section>',
-        buildLightingAccordionHtml(),
-        buildProLayerHtml('photo', PHOTO_PRESETS, PHOTO_BOOSTS, PHOTO_MODES),
         buildExpertTipsHtml(),
         // vs-23: heads-up notice — major image models reject edits of minors.
         '<aside class="pmgv3-child-photo-warning" role="note" aria-label="Note on editing photos of children">',
@@ -304,7 +322,7 @@
           '<textarea id="pmg-vs-image-refined" rows="5"></textarea>',
           '<div class="pmg-vs-actions-row">',
             '<button type="button" id="pmg-vs-image-copy" class="pmg-vs-btn pmg-vs-btn-secondary">📋 Copy</button>',
-            '<button type="button" id="pmg-vs-image-generate-btn" class="pmg-vs-btn pmg-vs-btn-primary" style="flex:1">✨ Generate Image</button>',
+            '<button type="button" id="pmg-vs-image-generate-btn" class="pmg-vs-btn pmg-vs-btn-primary" style="flex:1">🔄 Regenerate with edits</button>',
           '</div>',
         '</section>',
       '</div>',
@@ -407,7 +425,22 @@
       '<section class="pmg-vs-inline-section">',
         '<label class="pmgv3-section-label" for="pmg-vs-video-goal">Describe Your Scene</label>',
         '<textarea id="pmg-vs-video-goal" rows="3" placeholder="A tracking shot of a vintage car driving through neon-lit Tokyo at night…"></textarea>',
+        // mux-2 Live Assembly Preview for video.
+        '<div class="pmg-vs-live-preview is-empty" id="pmg-vs-video-live-preview" aria-live="polite" aria-label="Live prompt preview">Type your video idea above — your prompt will assemble here as you tune.</div>',
+        // mux-2 Renamed: was "✨ Build My Video Prompt". Moved up under
+        // the textarea so it sits above-fold like the photo panel.
+        '<button type="button" id="pmg-vs-build-video-prompt-btn" class="pmg-vs-btn pmg-vs-btn-primary pmg-vs-full-width" style="margin-top:10px">✨ Generate Video</button>',
       '</section>',
+      // mux-2 Advanced Tuning wrapper for the video panel. Wraps Pro
+      // Tips, Camera Movement, Audio Cues, all SORA pills, Pro Layer
+      // and the Storyboard launcher.
+      '<section class="pmg-vs-inline-section pmg-vs-adv-tuning" id="pmg-vs-video-adv-tuning">',
+        '<button type="button" class="pmg-vs-adv-tuning-header" data-pmg-adv-target="pmg-vs-video-adv-tuning" aria-expanded="false" aria-controls="pmg-vs-video-adv-tuning-content">',
+          '<span class="pmgv3-section-label" style="margin:0">🎛️ Advanced Tuning</span>',
+          '<span class="pmg-vs-adv-tuning-hint">Camera · Lighting · Pro Boosts · Storyboard</span>',
+          '<span class="pmg-vs-adv-tuning-chevron" aria-hidden="true">▾</span>',
+        '</button>',
+        '<div class="pmg-vs-adv-tuning-content" id="pmg-vs-video-adv-tuning-content">',
       // vs-25 epic-video — Pro Tips panel (10,000 generation rule).
       '<section class="pmg-vs-inline-section">',
         '<div class="pmgv3-expert-tips-panel">',
@@ -454,15 +487,18 @@
       '<section class="pmg-vs-inline-section" id="pmgv3-storyboard-mount">',
         // Storyboard launcher button is injected here by pmg-storyboard.js
       '</section>',
-      '<section class="pmg-vs-inline-section">',
-        '<button type="button" id="pmg-vs-build-video-prompt-btn" class="pmg-vs-btn pmg-vs-btn-secondary pmg-vs-full-width">✨ Build My Video Prompt</button>',
+        // mux-2 close Advanced Tuning content + section
+        '</div>',
       '</section>',
+      // mux-2 The old "✨ Build My Video Prompt" button that lived here
+      // was relocated to sit directly under the textarea (above-fold) and
+      // renamed to "✨ Generate Video".
       '<section class="pmg-vs-inline-section pmg-vs-refined-output" id="pmg-vs-video-refined-section" hidden>',
         '<label class="pmgv3-section-label" for="pmg-vs-video-refined">Your Refined Prompt — edit before you generate</label>',
         '<textarea id="pmg-vs-video-refined" rows="5"></textarea>',
         '<div class="pmg-vs-actions-row">',
           '<button type="button" id="pmg-vs-video-copy" class="pmg-vs-btn pmg-vs-btn-secondary">📋 Copy</button>',
-          '<button type="button" id="pmg-vs-video-generate-btn" class="pmg-vs-btn pmg-vs-btn-primary" style="flex:1">✨ Generate Video</button>',
+          '<button type="button" id="pmg-vs-video-generate-btn" class="pmg-vs-btn pmg-vs-btn-primary" style="flex:1">🔄 Regenerate with edits</button>',
         '</div>',
       '</section>',
     ].join('');
@@ -503,6 +539,7 @@
     }
     relocatePhotoSuite();
     if (hosts.photoLeft) initPhotoSubTabs(hosts.photoLeft);
+    wireLivePreview();
     _mounted = true;
   }
 
@@ -563,10 +600,13 @@
     });
     return out;
   }
-  function buildImagePrompt() {
+  // mux-2: pure assembler used by both buildImagePrompt (writes the
+  // refined textarea + triggers Generate) and renderImagePreview
+  // (read-only Live Preview block). Returns '' when no goal is set.
+  function assembleImagePrompt() {
     var goalEl = $('pmg-vs-image-goal');
     var goal = goalEl && goalEl.value.trim();
-    if (!goal) { goalEl && goalEl.focus(); return; }
+    if (!goal) return '';
     var refined = goal;
     var suite = document.getElementById('photo-suite-section')
              || document.getElementById('pmg-photo-suite');
@@ -582,23 +622,42 @@
     if (lighting.length) refined += '. ' + lighting.join('. ') + '.';
     var pro = collectProDirectives('photo', PHOTO_BOOSTS, PHOTO_MODES);
     if (pro.length) refined += '. ' + pro.join('. ') + '.';
-    // vs-24: Base Style positive directive + auto-applied negative prompt.
     var bs = getActiveBaseStyle();
     refined += '. ' + BASE_STYLE_POSITIVE[bs] + '.';
     refined += '\n' + BASE_STYLE_NEGATIVE[bs];
+    return refined;
+  }
+
+  function buildImagePrompt() {
+    var refined = assembleImagePrompt();
+    if (!refined) {
+      var goalEl = $('pmg-vs-image-goal');
+      if (goalEl) goalEl.focus();
+      return;
+    }
     var ta = $('pmg-vs-image-refined');
     if (ta) {
       ta.value = refined;
       var sec = $('pmg-vs-image-refined-section');
       if (sec) sec.hidden = false;
+      // mux-2: hide the top "Generate Image" CTA after first build so the
+      // refined-section's "🔄 Regenerate" becomes the single Generate button
+      // and the user isn't looking at two primary CTAs at once.
+      var topBtn = $('pmg-vs-build-image-prompt-btn');
+      if (topBtn) topBtn.style.display = 'none';
       ta.focus();
     }
+    // Auto-trigger the actual API call so the rename "Generate Image"
+    // does what it says on the tin. The user can still edit the refined
+    // textarea and click "🔄 Regenerate with edits" afterward.
+    if (typeof generateImage === 'function') generateImage();
   }
 
-  function buildVideoPrompt() {
+  // mux-2: pure assembler for the video panel.
+  function assembleVideoPrompt() {
     var goalEl = $('pmg-vs-video-goal');
     var goal = goalEl && goalEl.value.trim();
-    if (!goal) { goalEl && goalEl.focus(); return; }
+    if (!goal) return '';
     var directives = [];
     document.querySelectorAll('#pmgv3-panel-video .pmg-vs-pill[aria-pressed="true"]').forEach(function (p) {
       var key = p.getAttribute('data-vs-sora-group');
@@ -636,16 +695,104 @@
     var allDirectives = directives.concat(pro);
     // vs-25 epic-video — always-on Anti-Jitter negative prompt block.
     var negative = '--no morphing, jittering, warping, floating limbs, sudden physics changes, text artifacts, blurry edges, unnatural physics';
-    var refined = goal +
+    return goal +
       (allDirectives.length ? '. ' + allDirectives.join('. ') + '.' : '') +
       ' ' + negative;
+  }
+
+  function buildVideoPrompt() {
+    var refined = assembleVideoPrompt();
+    if (!refined) {
+      var goalEl = $('pmg-vs-video-goal');
+      if (goalEl) goalEl.focus();
+      return;
+    }
     var ta = $('pmg-vs-video-refined');
     if (ta) {
       ta.value = refined;
       var sec = $('pmg-vs-video-refined-section');
       if (sec) sec.hidden = false;
+      var topBtn = $('pmg-vs-build-video-prompt-btn');
+      if (topBtn) topBtn.style.display = 'none';
       ta.focus();
     }
+    if (typeof generateVideo === 'function') generateVideo();
+  }
+
+  // mux-2: Live Assembly Preview render. Updates the read-only block
+  // under each goal textarea so the user can see exactly what the
+  // refined prompt looks like as they type or toggle pills.
+  function renderImagePreview() {
+    var box = $('pmg-vs-image-live-preview');
+    if (!box) return;
+    var goalEl = $('pmg-vs-image-goal');
+    var hasGoal = !!(goalEl && goalEl.value.trim());
+    if (!hasGoal) {
+      box.classList.add('is-empty');
+      box.textContent = 'Type your image idea above — your prompt will assemble here as you tune.';
+      return;
+    }
+    var assembled = assembleImagePrompt();
+    box.classList.remove('is-empty');
+    box.textContent = assembled;
+  }
+  function renderVideoPreview() {
+    var box = $('pmg-vs-video-live-preview');
+    if (!box) return;
+    var goalEl = $('pmg-vs-video-goal');
+    var hasGoal = !!(goalEl && goalEl.value.trim());
+    if (!hasGoal) {
+      box.classList.add('is-empty');
+      box.textContent = 'Type your video idea above — your prompt will assemble here as you tune.';
+      return;
+    }
+    box.classList.remove('is-empty');
+    box.textContent = assembleVideoPrompt();
+  }
+  function renderAllPreviews() {
+    try { renderImagePreview(); } catch (_) {}
+    try { renderVideoPreview(); } catch (_) {}
+  }
+  // Wire input + mutation watchers once panels mount. Pill toggles flip
+  // aria-pressed via JS without firing native change events, so the
+  // observer is the reliable signal for those.
+  function wireLivePreview() {
+    if (wireLivePreview._wired) return;
+    wireLivePreview._wired = true;
+    document.addEventListener('input', function (e) {
+      var t = e.target;
+      if (!t || !t.id) return;
+      if (t.id === 'pmg-vs-image-goal' || t.id === 'pmgv3-audio-cues') renderImagePreview();
+      if (t.id === 'pmg-vs-video-goal' || t.id === 'pmgv3-audio-cues') renderVideoPreview();
+      // Guided intake fields write back into the legacy textareas which
+      // are listened to above, but cover the case where guided fields
+      // exist without the textarea echo (they don't currently).
+    });
+    document.addEventListener('change', function (e) {
+      var t = e.target;
+      if (!t) return;
+      if (t.id === 'pmgv3-camera-select') renderVideoPreview();
+      if (t.matches && t.matches('[data-vs-pro-mode]')) renderAllPreviews();
+    });
+    // Watch the photo + video panels for aria-pressed flips on pills,
+    // base-style toggle changes, and any class flips inside the photo
+    // suite. Cheap because the panels are small subtrees.
+    var observe = function (sel) {
+      var el = document.querySelector(sel);
+      if (!el || el.dataset.pmgPreviewObserved === '1') return;
+      el.dataset.pmgPreviewObserved = '1';
+      var mo = new MutationObserver(function () { renderAllPreviews(); });
+      mo.observe(el, { attributes: true, subtree: true,
+        attributeFilter: ['aria-pressed', 'data-pmgv3-base-style', 'class'] });
+    };
+    var ticks = 0;
+    var t = setInterval(function () {
+      ticks++;
+      observe('#pmgv3-panel-photography');
+      observe('#pmgv3-panel-video');
+      renderAllPreviews();
+      if (ticks > 40) clearInterval(t);
+    }, 250);
   }
 
   // ---------- Generate ----------
@@ -1340,6 +1487,16 @@
           var dh = document.getElementById('style-hint-digital');
           if (ph) ph.style.display = (styleVal === 'photographic') ? '' : 'none';
           if (dh) dh.style.display = (styleVal === 'digital')      ? '' : 'none';
+        }
+        return;
+      }
+      // mux-2 Advanced Tuning accordion toggle.
+      var advHdr = e.target.closest('.pmg-vs-adv-tuning-header');
+      if (advHdr) {
+        var sec = advHdr.closest('.pmg-vs-adv-tuning');
+        if (sec) {
+          var open = sec.classList.toggle('is-open');
+          advHdr.setAttribute('aria-expanded', open ? 'true' : 'false');
         }
         return;
       }
