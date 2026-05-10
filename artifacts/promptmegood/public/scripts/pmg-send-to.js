@@ -525,8 +525,14 @@
 
       '.' + MENU_CLASS + ' {',
       '  position: absolute; top: calc(100% + 6px); right: 0;',
-      '  min-width: 260px;',
-      '  max-width: min(320px, calc(100vw - 24px));',
+      /* send-to-dropdown-cutoff-fix: longest label
+         "DALL·E (ChatGPT)" + "Last Used" tag needs ~300px to sit
+         on one line. Old min/max (260/320) caused mid-word wrap +
+         vertical clip. Bumping to 300/380 preserves narrow-screen
+         safety (calc keeps it inside 360px viewports) while
+         giving popular labels room. */
+      '  min-width: 300px;',
+      '  max-width: min(380px, calc(100vw - 24px));',
       '  padding: 6px;',
       '  background: var(--color-surface);',
       '  border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);',
@@ -553,7 +559,12 @@
       '  gap: 8px; width: 100%;',
       '}',
       '.' + MENU_CLASS + ' .pmg-send-to-label-text {',
+      /* send-to-dropdown-cutoff-fix: keep nowrap so the label
+         stays on a single line, but allow ellipsis if the user
+         is on a sub-360px viewport where even the bumped max
+         can\'t fit the full label + Last Used tag. */
       '  white-space: nowrap; flex: 1 1 auto;',
+      '  overflow: hidden; text-overflow: ellipsis; min-width: 0;',
       '}',
       '.' + MENU_CLASS + ' .pmg-send-to-meta {',
       '  font-size: 11px; font-weight: 500; color: var(--color-text-muted);',
