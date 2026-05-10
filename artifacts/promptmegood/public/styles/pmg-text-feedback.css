@@ -1,0 +1,186 @@
+/* pmg-text-feedback.css  (txt-fb-1) — Live feedback card under #goal */
+
+#pmg-text-feedback.pmg-tfb {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 18%, transparent);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Hide on Photo / Video panels — text feedback is text-panel only. */
+body[data-active-panel="photography"] #pmg-text-feedback,
+body[data-active-panel="video"]       #pmg-text-feedback,
+body.image-mode                       #pmg-text-feedback {
+  display: none !important;
+}
+
+/* INTENTIONAL: mobile (≤768px) hide is owned by pmg-chassis-v3.css L1474-1479
+   (cv3-17 friction fix). On phones the #goal textarea is the single, clear
+   entry point and the feedback card eats above-the-fold space. We do NOT
+   override that rule here — desktop-only is the right tradeoff. */
+
+.pmg-tfb-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.pmg-tfb-meter-row {
+  justify-content: space-between;
+}
+
+/* Quality meter */
+.pmg-tfb-meter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.pmg-tfb-meter-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #888;
+  transition: background 220ms ease, box-shadow 220ms ease;
+}
+
+.pmg-tfb-meter[data-tone="idle"] .pmg-tfb-meter-dot { background: #777; }
+.pmg-tfb-meter[data-tone="warn"] .pmg-tfb-meter-dot {
+  background: #ffb454;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #ffb454 22%, transparent);
+}
+.pmg-tfb-meter[data-tone="mid"] .pmg-tfb-meter-dot {
+  background: #ffd766;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #ffd766 22%, transparent);
+}
+.pmg-tfb-meter[data-tone="good"] .pmg-tfb-meter-dot {
+  background: var(--color-primary, #3ee0a0);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #3ee0a0) 30%, transparent);
+}
+
+.pmg-tfb-meter-label {
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 12.5px;
+}
+
+/* Char / token counter */
+.pmg-tfb-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+.pmg-tfb-count-sep { opacity: 0.5; }
+.pmg-tfb-counter.is-warn {
+  color: #ffb454;
+}
+
+/* Tuning chips */
+.pmg-tfb-tuning {
+  align-items: center;
+}
+.pmg-tfb-tuning-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.5);
+  margin-right: 2px;
+}
+.pmg-tfb-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 12px;
+}
+.pmg-tfb-chip-key {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.pmg-tfb-chip-val {
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 600;
+}
+
+/* Linter row */
+.pmg-tfb-linter {
+  align-items: flex-start;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  padding-top: 8px;
+}
+.pmg-tfb-linter-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.5);
+  flex: 0 0 auto;
+  padding-top: 4px;
+}
+.pmg-tfb-linter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pmg-tfb-lchip {
+  appearance: none;
+  background: color-mix(in srgb, #ffb454 8%, transparent);
+  border: 1px solid color-mix(in srgb, #ffb454 28%, transparent);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+  text-align: left;
+  max-width: 100%;
+}
+.pmg-tfb-lchip:hover {
+  background: color-mix(in srgb, #ffb454 16%, transparent);
+  border-color: color-mix(in srgb, #ffb454 42%, transparent);
+}
+.pmg-tfb-lchip:active { transform: translateY(1px); }
+.pmg-tfb-lchip-word {
+  color: #ffb454;
+  font-weight: 600;
+}
+.pmg-tfb-lchip-sep { opacity: 0.55; }
+.pmg-tfb-lchip-tip { color: rgba(255, 255, 255, 0.78); }
+
+/* Mobile tightening */
+@media (max-width: 480px) {
+  #pmg-text-feedback.pmg-tfb { padding: 9px 10px; font-size: 12.5px; }
+  .pmg-tfb-meter { padding: 3px 9px; }
+  .pmg-tfb-meter-label { font-size: 12px; }
+  .pmg-tfb-lchip-tip { display: none; }   /* keep word + arrow only */
+  .pmg-tfb-lchip-sep { display: none; }
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .pmg-tfb-meter-dot,
+  .pmg-tfb-lchip { transition: none; }
+}
