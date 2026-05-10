@@ -5,17 +5,51 @@
  * the support inbox). Emails are now persisted to the `waitlist_signups`
  * table so the team can export a clean CSV / query by source.
  *
- * - Idempotent on email (unique index): a second submit for the same address
- *   returns 200 with `duplicate: true` so the UI doesn't show a scary error.
- * - No auth: this is a public form. We rely on the unique index + a simple
- *   length cap to keep abuse manageable. Add a Cloudflare Turnstile or
- *   per-IP rate limit if abuse appears.
+ * Defenses (defense-in-depth):
+ *   1. Cloudflare Turnstile token verification (when TURNSTILE_SECRET_KEY is
+ *      set). Token comes from the widget on pricing.html and is verified
+ *      server-side via siteverify. Skipped only if the secret is unset, so
+ *      local dev still works without a Cloudflare account.
+ *   2. Per-IP rate limiter (5 signups / 10 min) below.
+ *   3. Unique index on email (returns duplicate: true instead of an error).
+ *   4. Email is fingerprinted (non-reversible hash) before logging — no
+ *      plaintext PII in logs.
  * ============================================================================ */
 import { Router, type IRouter } from "express";
 import { db, waitlistSignupsTable, insertWaitlistSignupSchema } from "@workspace/db";
 import { makeRateLimiter } from "../middlewares/rateLimit";
 
 const router: IRouter = Router();
+
+const TURNSTILE_VERIFY_URL =
+  "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+
+async function verifyTurnstile(
+  token: string,
+  remoteip: string | undefined,
+): Promise<{ ok: boolean; reason?: string }> {
+  const secret = process.env["TURNSTILE_SECRET_KEY"];
+  // No secret configured → integration is "off". Allow through so dev
+  // environments without Cloudflare keys still function. Production should
+  // always have the secret set.
+  if (!secret) return { ok: true, reason: "turnstile_disabled" };
+  if (!token) return { ok: false, reason: "missing_token" };
+  try {
+    const body = new URLSearchParams({ secret, response: token });
+    if (remoteip) body.set("remoteip", remoteip);
+    const r = await fetch(TURNSTILE_VERIFY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
+      signal: AbortSignal.timeout(5000),
+    });
+    const data = (await r.json()) as { success?: boolean; "error-codes"?: string[] };
+    if (data.success === true) return { ok: true };
+    return { ok: false, reason: (data["error-codes"] ?? ["unknown"]).join(",") };
+  } catch (err) {
+    return { ok: false, reason: err instanceof Error ? err.message : "fetch_error" };
+  }
+}
 
 // Public unauthenticated POST — keep abuse modest.
 // 5 signups / 10 minutes per IP is generous for legitimate use
@@ -39,6 +73,15 @@ function emailFingerprint(email: string): string {
 
 router.post("/waitlist", waitlistLimiter, async (req, res) => {
   const log = req.log;
+
+  const turnstileToken =
+    typeof req.body?.turnstileToken === "string" ? req.body.turnstileToken : "";
+  const verify = await verifyTurnstile(turnstileToken, req.ip);
+  if (!verify.ok) {
+    log.warn({ reason: verify.reason }, "waitlist turnstile rejected");
+    return res.status(400).json({ ok: false, error: "turnstile_failed" });
+  }
+
   const parsed = insertWaitlistSignupSchema.safeParse({
     email: typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "",
     source: typeof req.body?.source === "string" ? req.body.source.slice(0, 64) : "pricing",

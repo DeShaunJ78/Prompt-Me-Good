@@ -24,6 +24,11 @@ const router: IRouter = Router();
 router.get("/public-config", (_req, res) => {
   const supabaseUrl = process.env["SUPABASE_URL"] ?? "";
   const supabasePublishableKey = process.env["SUPABASE_PUBLISHABLE_KEY"] ?? "";
+  // Cloudflare Turnstile site key is browser-safe by design (the secret
+  // key stays server-only and is used to verify tokens). Empty string when
+  // not configured so the pricing-page waitlist can degrade gracefully
+  // (skip the widget rather than break the whole form).
+  const turnstileSiteKey = process.env["TURNSTILE_SITE_KEY"] ?? "";
   // Short cache: paywall flips at a known instant configured via env var
   // (PMG_PAYWALL_FLIP_AT_ISO), so we keep staleness tight. The browser
   // polls /api/public-config on every page load anyway, so 30s is plenty.
@@ -31,6 +36,7 @@ router.get("/public-config", (_req, res) => {
   res.json({
     supabaseUrl,
     supabasePublishableKey,
+    turnstileSiteKey,
     ...getPaywallStatus(),
   });
 });

@@ -122,6 +122,8 @@
     .early-access-form input[type="email"] { flex: 1 1 260px; max-width: 360px; padding: 12px 14px; font: inherit; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg); color: var(--text); }
     .early-access-form input[type="email"]:focus { outline: 2px solid var(--primary); outline-offset: 1px; border-color: var(--primary); }
     .early-access-form .btn { width: auto; flex: 0 0 auto; }
+    .early-access-turnstile { margin: var(--space-3) auto 0; display: flex; justify-content: center; min-height: 0; }
+    .early-access-turnstile[hidden] { display: none; }
     .early-access-status { margin: var(--space-3) 0 0; font-size: 0.9rem; min-height: 1.4em; }
     .early-access-status.is-success { color: var(--primary); }
     .early-access-status.is-error { color: #B91C1C; }
@@ -331,6 +333,11 @@
           <input id="early-access-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="Email address" required />
           <button type="submit" class="btn btn-primary">Notify Me</button>
         </form>
+        <!-- Cloudflare Turnstile widget mount. Rendered explicitly by the
+             waitlist IIFE below once /api/public-config supplies the site
+             key. Hidden until a key is present so the empty box doesn't
+             show on dev environments without Turnstile configured. -->
+        <div id="early-access-turnstile" class="early-access-turnstile" hidden></div>
         <p class="early-access-status" id="early-access-status" role="status" aria-live="polite"></p>
       </div>
     </section>
@@ -401,16 +408,76 @@
 
     /* Waitlist form — submits to /api/waitlist (Supabase-backed Postgres
        via Drizzle). Replaces the prior formsubmit.co email relay so leads
-       land in the waitlist_signups table, not the support inbox. */
+       land in the waitlist_signups table, not the support inbox.
+       Cloudflare Turnstile (invisible/managed widget) gates submission. */
     (function () {
       var form = document.getElementById('early-access-form');
       var status = document.getElementById('early-access-status');
+      var tsMount = document.getElementById('early-access-turnstile');
       var STORAGE_KEY = 'promptmegood:emailCapture:v1';
       var STORAGE_CAP = 200;
       var SUBMIT_ENDPOINT = '/api/waitlist';
+      var TURNSTILE_JS = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      var turnstileSiteKey = '';
+      var turnstileWidgetId = null;
+      var turnstileToken = '';
       if (!form) return;
       var btn = form.querySelector('button[type="submit"], button:not([type])');
       var originalBtnText = btn ? btn.textContent : '';
+
+      function loadScript(src) {
+        return new Promise(function (resolve, reject) {
+          var s = document.createElement('script');
+          s.src = src; s.async = true; s.defer = true;
+          s.onload = function () { resolve(); };
+          s.onerror = function () { reject(new Error('script load failed: ' + src)); };
+          document.head.appendChild(s);
+        });
+      }
+
+      function whenTurnstileReady() {
+        return new Promise(function (resolve, reject) {
+          var deadline = Date.now() + 8000;
+          (function poll() {
+            if (window.turnstile && typeof window.turnstile.render === 'function') return resolve();
+            if (Date.now() > deadline) return reject(new Error('turnstile_timeout'));
+            setTimeout(poll, 100);
+          })();
+        });
+      }
+
+      function renderTurnstile() {
+        if (!turnstileSiteKey || !tsMount || turnstileWidgetId !== null) return;
+        try {
+          turnstileWidgetId = window.turnstile.render(tsMount, {
+            sitekey: turnstileSiteKey,
+            theme: 'auto',
+            callback: function (token) { turnstileToken = token || ''; },
+            'expired-callback': function () { turnstileToken = ''; },
+            'error-callback': function () { turnstileToken = ''; },
+          });
+          tsMount.hidden = false;
+        } catch (e) { /* widget render failed — fall through, server still rate-limits */ }
+      }
+
+      function resetTurnstile() {
+        turnstileToken = '';
+        if (turnstileWidgetId !== null && window.turnstile) {
+          try { window.turnstile.reset(turnstileWidgetId); } catch (e) {}
+        }
+      }
+
+      // Fetch the site key once on page load. If the endpoint or key is
+      // unavailable, the form still submits — the server treats Turnstile
+      // as "off" when its secret isn't configured either.
+      fetch('/api/public-config', { headers: { 'Accept': 'application/json' } })
+        .then(function (r) { return r.ok ? r.json() : {}; })
+        .then(function (cfg) {
+          turnstileSiteKey = (cfg && cfg.turnstileSiteKey) || '';
+          if (!turnstileSiteKey) return;
+          return loadScript(TURNSTILE_JS).then(whenTurnstileReady).then(renderTurnstile);
+        })
+        .catch(function () { /* silent — degrade gracefully */ });
       function setStatus(msg, kind) {
         if (!status) return;
         status.textContent = msg || '';
@@ -443,23 +510,46 @@
         if (!ok) { setStatus('Please enter a valid email address.', 'error'); return; }
         setStatus('', null);
         setBusy(true);
-        var payload = { email: value, source: 'pricing' };
+        // If Turnstile is rendered but no token yet (user hasn't completed
+        // the challenge), block submit with a friendly nudge. Skip the
+        // check when the widget never rendered (no site key configured).
+        if (turnstileSiteKey && turnstileWidgetId !== null && !turnstileToken) {
+          setBusy(false);
+          setStatus('Please complete the verification check above.', 'error');
+          return;
+        }
+        var payload = { email: value, source: 'pricing', turnstileToken: turnstileToken };
         fetch(SUBMIT_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
           body: JSON.stringify(payload)
         })
-          .then(function (res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json().catch(function () { return {}; }); })
-          .then(function (data) {
-            if (!data || data.ok !== true) throw new Error('Submission rejected');
+          .then(function (res) {
+            return res.json().catch(function () { return {}; }).then(function (data) {
+              return { res: res, data: data };
+            });
+          })
+          .then(function (out) {
+            var data = out.data || {};
+            if (!out.res.ok || data.ok !== true) {
+              if (data.error === 'turnstile_failed') {
+                resetTurnstile();
+                throw new Error('Verification failed. Please try the check again.');
+              }
+              throw new Error('Submission rejected');
+            }
             saveLocalBackup(value);
             if (input) input.value = '';
             var msg = data.duplicate
               ? "You're already on the list — we'll notify you when checkout opens."
               : "You're in. We'll notify you when checkout opens.";
             setStatus(msg, 'success');
+            resetTurnstile();
           })
-          .catch(function () { setStatus('Something went wrong. Please try again.', 'error'); })
+          .catch(function (err) {
+            var m = (err && err.message) || '';
+            setStatus(/Verification/.test(m) ? m : 'Something went wrong. Please try again.', 'error');
+          })
           .then(function () { setBusy(false); });
       });
     })();
