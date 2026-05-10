@@ -399,13 +399,15 @@
       }
     })();
 
-    /* Waitlist form — submits via FormSubmit.co AJAX. */
+    /* Waitlist form — submits to /api/waitlist (Supabase-backed Postgres
+       via Drizzle). Replaces the prior formsubmit.co email relay so leads
+       land in the waitlist_signups table, not the support inbox. */
     (function () {
       var form = document.getElementById('early-access-form');
       var status = document.getElementById('early-access-status');
       var STORAGE_KEY = 'promptmegood:emailCapture:v1';
       var STORAGE_CAP = 200;
-      var SUBMIT_ENDPOINT = 'https://formsubmit.co/ajax/support@promptmegood.com';
+      var SUBMIT_ENDPOINT = '/api/waitlist';
       if (!form) return;
       var btn = form.querySelector('button[type="submit"], button:not([type])');
       var originalBtnText = btn ? btn.textContent : '';
@@ -441,14 +443,7 @@
         if (!ok) { setStatus('Please enter a valid email address.', 'error'); return; }
         setStatus('', null);
         setBusy(true);
-        var payload = {
-          email: value,
-          source: 'PromptMeGood pricing waitlist',
-          timestamp: new Date().toISOString(),
-          _subject: 'PromptMeGood — new waitlist signup',
-          _template: 'table',
-          _honey: ''
-        };
+        var payload = { email: value, source: 'pricing' };
         fetch(SUBMIT_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -456,11 +451,13 @@
         })
           .then(function (res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json().catch(function () { return {}; }); })
           .then(function (data) {
-            var okFlag = data && (data.success === true || data.success === 'true');
-            if (!okFlag) throw new Error('Submission rejected');
+            if (!data || data.ok !== true) throw new Error('Submission rejected');
             saveLocalBackup(value);
             if (input) input.value = '';
-            setStatus("You're in. We'll notify you when checkout opens.", 'success');
+            var msg = data.duplicate
+              ? "You're already on the list — we'll notify you when checkout opens."
+              : "You're in. We'll notify you when checkout opens.";
+            setStatus(msg, 'success');
           })
           .catch(function () { setStatus('Something went wrong. Please try again.', 'error'); })
           .then(function () { setBusy(false); });
