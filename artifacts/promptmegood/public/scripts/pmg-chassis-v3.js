@@ -206,7 +206,7 @@
                  the goal field, not to the chassis root. */
               '<button type="button" id="pmgv3-goal-clear" class="pmgv3-goal-clear" title="Clear" aria-label="Clear what you typed" hidden>✕</button>',
             '</div>',
-          '<button id="analyze-btn" class="btn-analyze" type="button">→ Analyze My Idea</button>',
+          '<button id="analyze-btn" class="btn-analyze" type="button">✨ Build My Prompt</button>',
           '</section>',
           '<section class="tuning-section is-collapsed" id="tuning-panel" style="display:none !important">',
             '<button type="button" class="tuning-header" id="tuning-mobile-toggle" aria-expanded="false" aria-controls="settingsPanel">',
