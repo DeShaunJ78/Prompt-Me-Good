@@ -49,6 +49,7 @@ Concise, direct communication. Iterative dev — explain high-level impact befor
 ## Gotchas
 
 *   **Cache-busters:** Bump query string on changed `pmg-*.{css,js}` (current image-mode-cleanup buster: `t140-image-mode-removed`). Brand assets `?v=5`.
+*   **Tuning persists in TWO stores (mux-1):** `wirePersistence()` writes the full prompt session (idea + tuning + generated prompt) to `sessionStorage['pmgv3:session']` (clears on full tab close). A separate small inline IIFE at the end of `app.html` mirrors `personality`, `tone`, `outputFormat`, and `maxLength` to `localStorage` under `pmg-{field}` keys so cross-session restore works after a full close. Both stores coexist; localStorage restore runs ~200ms-polled until the legacy selects appear and dispatches `change` so the pill UI re-syncs. Personality enum on the server (`TUNE_ENUMS.personality` in `artifacts/api-server/src/routes/ai.ts`) must be kept in sync with the `<select id="personality">` options or auto-tune will silently clamp new values to "none".
 *   **Body-appended overlays + toasts** must carry `data-pmg-overlay-root` or the chassis universal-hide rule erases them. Applies to `flash()` and `pmg-send-to.js` `toast()`.
 *   **Saved-To-Vault indicator:** Code persisting to the vault MUST `document.dispatchEvent(new Event('pmg:vault-saved'))`.
 *   **Empty-state action gating:** New post-result action buttons need IDs in `EMPTY_BTN_IDS` in `app.html`'s `watchResultBox()`.

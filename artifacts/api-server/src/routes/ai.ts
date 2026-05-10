@@ -1310,7 +1310,7 @@ const TUNE_ENUMS = {
   outputFormat: ["step-by-step", "list", "detailed breakdown"],
   maxLength: ["", "100", "200", "300", "500"],
   outputLanguage: ["english", "spanish", "portuguese", "russian", "french", "german"],
-  personality: ["none", "direct", "friendly", "bold", "professional", "creative", "faith", "street", "luxury", "viral"],
+  personality: ["none", "direct", "friendly", "bold", "professional", "creative", "faith", "street", "luxury", "viral", "technical", "academic", "developer"],
 } as const;
 
 type TuneKey = keyof typeof TUNE_ENUMS;

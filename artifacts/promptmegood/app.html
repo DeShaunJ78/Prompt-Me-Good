@@ -4647,6 +4647,9 @@
                   <option value="street">Street-Smart &amp; Practical</option>
                   <option value="luxury">Luxury Brand Voice</option>
                   <option value="viral">Viral Social Media Voice</option>
+                  <option value="technical">Technical &mdash; Implementation-Focused</option>
+                  <option value="academic">Academic &mdash; Rigorous &amp; Formal</option>
+                  <option value="developer">Developer &mdash; XML-Structured Output</option>
                 </select>
                 <div class="pmg-tune-pills" data-pmg-tune-target="personality" role="group" aria-label="Personality Mode"></div>
                 <p class="helper">Choose The Kind Of Voice You Want The AI Response To Have.</p>
@@ -5668,7 +5671,10 @@
           faith: 'Write with spiritual seriousness, clarity, and conviction while keeping the response grounded, respectful, and practical.',
           street: 'Write in a practical, real-world tone with plain language, direct advice, and no unnecessary theory.',
           luxury: 'Write with a premium, refined, confident tone that feels elegant, polished, and high-value.',
-          viral: 'Write with strong hooks, punchy phrasing, curiosity, emotional pull, and short attention-grabbing lines.'
+          viral: 'Write with strong hooks, punchy phrasing, curiosity, emotional pull, and short attention-grabbing lines.',
+          technical: 'Write with high specificity and exact terminology. Use concrete implementation details, named tools, versions, parameters, and step-by-step technical procedures. Avoid hand-wavy phrasing.',
+          academic: 'Write rigorously and formally. Define key terms, structure the response with clear headings or numbered sections, cite reasoning, and acknowledge edge cases or limitations.',
+          developer: 'Structure the entire response as XML for AI coding tools. Wrap top-level sections in semantic tags such as <context>, <requirements>, <constraints>, <implementation>, <validation>. Inside <implementation>, place concrete code in <code language="..."> blocks. Keep prose minimal — favor structured tags over paragraphs.'
         };
 
         const personalityLabel = {
@@ -5681,7 +5687,10 @@
           faith: 'Faith-Based & Convicting',
           street: 'Street-Smart & Practical',
           luxury: 'Luxury Brand Voice',
-          viral: 'Viral Social Media Voice'
+          viral: 'Viral Social Media Voice',
+          technical: 'Technical',
+          academic: 'Academic',
+          developer: 'Developer (XML)'
         };
 
         const remixInstructions = {
@@ -5858,13 +5867,17 @@ Context:
             faith: 'Write with spiritual seriousness, clarity, and conviction while keeping the response grounded, respectful, and practical.',
             street: 'Write in a practical, real-world tone with plain language, direct advice, and no unnecessary theory.',
             luxury: 'Write with a premium, refined, confident tone that feels elegant, polished, and high-value.',
-            viral: 'Write with strong hooks, punchy phrasing, curiosity, emotional pull, and short attention-grabbing lines.'
+            viral: 'Write with strong hooks, punchy phrasing, curiosity, emotional pull, and short attention-grabbing lines.',
+            technical: 'Write with high specificity and exact terminology. Use concrete implementation details, named tools, versions, parameters, and step-by-step technical procedures. Avoid hand-wavy phrasing.',
+            academic: 'Write rigorously and formally. Define key terms, structure the response with clear headings or numbered sections, cite reasoning, and acknowledge edge cases or limitations.',
+            developer: 'Structure the entire response as XML for AI coding tools. Wrap top-level sections in semantic tags such as <context>, <requirements>, <constraints>, <implementation>, <validation>. Inside <implementation>, place concrete code in <code language="..."> blocks. Keep prose minimal — favor structured tags over paragraphs.'
           };
           var personalityLabel = {
             none: 'None', direct: 'Direct & Straightforward', friendly: 'Friendly & Conversational',
             bold: 'Bold & Persuasive', professional: 'Professional & Structured',
             creative: 'Creative & Expressive', faith: 'Faith-Based & Convicting',
-            street: 'Street-Smart & Practical', luxury: 'Luxury Brand Voice', viral: 'Viral Social Media Voice'
+            street: 'Street-Smart & Practical', luxury: 'Luxury Brand Voice', viral: 'Viral Social Media Voice',
+            technical: 'Technical', academic: 'Academic', developer: 'Developer (XML)'
           };
           var languageLabels = { english: 'English', spanish: 'Spanish', portuguese: 'Portuguese', russian: 'Russian', french: 'French', german: 'German' };
           var languageKey = data.outputLanguage && languageLabels[data.outputLanguage] ? data.outputLanguage : 'english';
@@ -12721,6 +12734,58 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     } catch (e) {}
   }, 3000);
+
+  /* mux-1: persist tuning dropdowns to localStorage so they survive a
+     full tab close (sessionStorage in pmgv3:session does NOT). On load
+     we wait briefly for the chassis + pill UI to wire up, then restore
+     and dispatch 'change' so the pill UI and any other listeners react.
+     localStorage takes precedence on cross-session restore; sessionStorage
+     handles within-session state (idea + generated prompt). */
+  (function persistTuningToLocalStorage() {
+    var KEYS = {
+      personality: 'pmg-personality',
+      tone: 'pmg-tone',
+      outputFormat: 'pmg-outputFormat',
+      maxLength: 'pmg-maxLength'
+    };
+    function safeGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+    function safeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+    function wire() {
+      var wiredAny = false;
+      Object.keys(KEYS).forEach(function (id) {
+        var sel = document.getElementById(id);
+        if (!sel || sel.dataset.pmgLsWired === '1') return;
+        sel.dataset.pmgLsWired = '1';
+        wiredAny = true;
+        var saved = safeGet(KEYS[id]);
+        if (saved !== null) {
+          var ok = false;
+          for (var i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value === saved) { ok = true; break; }
+          }
+          if (ok && sel.value !== saved) {
+            sel.value = saved;
+            try { sel.dispatchEvent(new Event('change', { bubbles: true })); } catch (e) {}
+          }
+        }
+        sel.addEventListener('change', function () { safeSet(KEYS[id], sel.value); });
+      });
+      return wiredAny;
+    }
+    // Initial pass; retry until pill UI / chassis has surfaced the selects.
+    var ticks = 0;
+    var iv = setInterval(function () {
+      ticks++;
+      var allWired = Object.keys(KEYS).every(function (id) {
+        var s = document.getElementById(id);
+        return s && s.dataset.pmgLsWired === '1';
+      });
+      if (allWired || ticks > 40) { clearInterval(iv); return; }
+      wire();
+    }, 200);
+    wire();
+  })();
 });
 </script>
 

@@ -1192,10 +1192,9 @@ html.pmg-chassis-v3 body.pmg-has-result #run-with-ai-btn {
   gap: 8px;
   margin-top: 8px;
 }
-@media (max-width: 360px) {
-  .send-to-row,
-  .pmgv3-send-grid { grid-template-columns: 1fr; }
-}
+/* mux-1: keep send-grid 2×2 even at <360px so the post-generation
+   handoff doesn't collapse into a tall single column on iPhone SE.
+   Buttons are small enough that two fit side-by-side; halves vertical. */
 
 /* Quiet preview nudge that sits between the in-house Run With AI
    result output and the "Send your prompt to:" handoff label. Small,
@@ -1590,6 +1589,13 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
    Shrink the right cluster (icon size + button padding) and tighten the
    topbar gutter so the row fits a 360px viewport without the
    `overflow-x: hidden` band-aid the overflow-360 test forbids. */
+/* mux-1: hide the BETA badge on phones — the brief calls out 480px
+   because the brand text + badge + 5 icons + Upgrade get squished
+   on common phone widths (iPhone 13 mini = 375, Pixel 5 = 393,
+   Galaxy S20 = 412, iPhone 14 Pro = 430). */
+@media (max-width: 480px) {
+  .pmgv3-brand-beta { display: none; }
+}
 @media (max-width: 400px) {
   .pmgv3-topbar { padding: 0 10px; }
   .pmgv3-tb-r { gap: 4px; }

@@ -1554,6 +1554,13 @@
       '.pmgv3-vault-drawer-close { width: 36px; height: 36px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); background: transparent; color: #e6f7ee; font-size: 18px; cursor: pointer; }',
       '.pmgv3-vault-drawer-close:hover { background: rgba(0,200,150,0.08); color: #00c896; }',
       '.pmgv3-vault-drawer-body { flex: 1 1 auto; overflow-y: auto; padding: 14px 18px 24px; }',
+      /* mux-1: large bottom "Done" target for thumb-reach on mobile. Hidden
+         on ≥769px (the top-right ✕ already lands well on desktop). */
+      '.pmgv3-vault-drawer-done { display: none; }',
+      '@media (max-width: 768px) {',
+        '.pmgv3-vault-drawer-done { display: block; flex: 0 0 auto; width: 100%; padding: 14px 18px; background: #00c896; color: #0a2420; border: 0; border-top: 1px solid rgba(255,255,255,0.08); font-size: 16px; font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent; }',
+        '.pmgv3-vault-drawer-done:active { background: #00b387; }',
+      '}',
       /* When #history is hosted inside the drawer it must override the chassis universal-hide. */
       '#pmgv3-vault-drawer #history { display: block !important; visibility: visible !important; opacity: 1 !important; }',
       '#pmgv3-vault-drawer #history .panel { background: transparent; box-shadow: none; border: 0; padding: 0; }',
@@ -1591,9 +1598,11 @@
           '<h2>🔒 Prompt Vault</h2>',
           '<button type="button" class="pmgv3-vault-drawer-close" aria-label="Close vault">✕</button>',
         '</div>',
-        '<div class="pmgv3-vault-drawer-body" id="pmgv3-vault-drawer-body"></div>'
+        '<div class="pmgv3-vault-drawer-body" id="pmgv3-vault-drawer-body"></div>',
+        '<button type="button" class="pmgv3-vault-drawer-done" aria-label="Close vault">Done</button>'
       ].join('');
       drawer.querySelector('.pmgv3-vault-drawer-close').addEventListener('click', closeVaultDrawer);
+      drawer.querySelector('.pmgv3-vault-drawer-done').addEventListener('click', closeVaultDrawer);
       document.body.appendChild(drawer);
     }
     var body = document.getElementById('pmgv3-vault-drawer-body');
