@@ -115,6 +115,27 @@
     .pricing-faq-item summary { cursor: pointer; font-weight: 600; }
     .pricing-faq-item p { margin: 10px 0 0; color: var(--muted); }
 
+    /* roadmap-strip-1: live now vs coming next */
+    .pricing-roadmap { margin: 0 auto var(--space-7); max-width: 980px; }
+    .pricing-roadmap-head { text-align: center; margin: 0 0 var(--space-5); }
+    .pricing-roadmap-head h2 { margin: 0 0 var(--space-2); font-size: var(--text-xl); }
+    .pricing-roadmap-head p { color: var(--muted); margin: 0; font-size: 0.95rem; max-width: 720px; margin: 0 auto; }
+    .pricing-roadmap-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+    .pricing-roadmap-col { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 22px 22px 24px; }
+    .pricing-roadmap-col.is-live { border-color: color-mix(in srgb, var(--primary) 35%, var(--border)); background: color-mix(in srgb, var(--primary) 4%, var(--surface)); }
+    .pricing-roadmap-col h3 { margin: 0 0 var(--space-3); font-size: 1.05rem; display: flex; align-items: center; gap: 8px; }
+    .pricing-roadmap-col.is-live h3 { color: var(--primary); }
+    .pricing-roadmap-col.is-soon h3 { color: var(--muted); }
+    .pricing-roadmap-col .ic { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; font-size: 0.78rem; font-weight: 800; }
+    .pricing-roadmap-col.is-live .ic { background: var(--primary); color: #fff; }
+    .pricing-roadmap-col.is-soon .ic { background: color-mix(in srgb, var(--muted) 18%, transparent); color: var(--muted); border: 1px solid color-mix(in srgb, var(--muted) 35%, transparent); }
+    .pricing-roadmap-col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; font-size: 0.92rem; }
+    .pricing-roadmap-col li { padding-left: 22px; position: relative; line-height: 1.45; }
+    .pricing-roadmap-col.is-live li::before { content: "✓"; position: absolute; left: 0; top: 0; color: var(--primary); font-weight: 800; }
+    .pricing-roadmap-col.is-soon li::before { content: "○"; position: absolute; left: 0; top: 0; color: var(--muted); font-weight: 800; }
+    .pricing-roadmap-col.is-soon li { color: var(--muted); }
+    .pricing-roadmap-col.is-soon li strong { color: var(--text); }
+
     .early-access { margin: 48px auto 0; max-width: 720px; background: var(--surface); border: 1px solid color-mix(in srgb, var(--primary) 22%, var(--border)); border-radius: var(--radius-lg); padding: var(--space-6); text-align: center; }
     .early-access h2 { margin: 0 0 var(--space-2); font-size: var(--text-xl); }
     .early-access p { color: var(--muted); margin: 0 0 var(--space-4); font-size: 0.95rem; }
@@ -332,6 +353,43 @@
       </div>
 
       <p class="pricing-footer-note">No credit card required for the Free tier. Founding Member is a one-time $79 charge — no recurring billing, ever — limited to the first 500 members and price-locked for life. Pro Monthly ($9/month) and Pro Yearly ($79/year) start billing at launch; waitlist members are notified before any charge. The <strong>Expert Command Center</strong> is included with every paid plan (free for everyone during the open beta). Fair use limits apply.</p>
+
+      <section class="container pricing-roadmap" aria-labelledby="pricing-roadmap-title">
+        <div class="pricing-roadmap-head">
+          <h2 id="pricing-roadmap-title">What's live now vs what's coming next</h2>
+          <p>The Free tier and the Founding Member waitlist are open today. Here's exactly what's already running in the app — and what's queued for launch — so you know what your $79 unlocks the moment checkout opens.</p>
+        </div>
+        <div class="pricing-roadmap-grid">
+          <div class="pricing-roadmap-col is-live">
+            <h3><span class="ic" aria-hidden="true">✓</span>Live in the app today</h3>
+            <ul>
+              <li>All three panels — Text, Photography, Video</li>
+              <li>Build My Prompt + Auto-Tune + Auto-Boost</li>
+              <li>Run With AI Here (GPT-4o, in-app)</li>
+              <li>Image Workshop — 15 enhancement chips (gpt-image-1)</li>
+              <li>Reverse Engine — image → prompt (GPT-4o vision)</li>
+              <li>5-shot Storyboard generator with rendered frames</li>
+              <li>Prompt DNA Card — 1080×1350 share PNG</li>
+              <li>Growth Mode — Brand Voice, Social Packs, Platform Builder</li>
+              <li>Expert Command Center — Diagnose · Architect · Tune · Variations · Save (free for everyone through June 1, 2026)</li>
+              <li>Prompt Vault — local-first, search, tags, compare, export/import</li>
+              <li>⌘K command palette · <kbd>?</kbd> cheatsheet · 🎤 voice input (9 languages)</li>
+              <li>Open in ChatGPT, Claude, Perplexity, or Gemini (one tap)</li>
+            </ul>
+          </div>
+          <div class="pricing-roadmap-col is-soon">
+            <h3><span class="ic" aria-hidden="true">○</span>Coming next</h3>
+            <ul>
+              <li><strong>Founding Member checkout (Stripe)</strong> — waitlist members are emailed first; price locks at $79 for the first 500 buyers.</li>
+              <li><strong>Pro Monthly billing ($9/mo)</strong> — opens at launch alongside Founding checkout.</li>
+              <li><strong>Pro Yearly billing ($79/yr)</strong> — opens at launch.</li>
+              <li><strong>Cloud-backed Vault sync (opt-in)</strong> — keep your saved prompts in step across devices; opt-in only, included with paid plans.</li>
+              <li><strong>Cloud Brand Voice Profiles</strong> — multiple named voices that travel with your account.</li>
+              <li><strong>Paywall card for Expert Command Center</strong> — replaces the open-beta unlock for free-tier users on June 1, 2026; the rest of the workstation stays free.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
 
       <section class="pricing-faq" aria-labelledby="pricing-faq-title">
         <h2 id="pricing-faq-title">Pricing FAQ</h2>
