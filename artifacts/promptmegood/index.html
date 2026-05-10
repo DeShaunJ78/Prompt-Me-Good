@@ -173,6 +173,17 @@
     footer.site .links { display: flex; flex-wrap: wrap; gap: 14px; }
     footer.site .links a { color: var(--muted); }
     footer.site .links a:hover, footer.site .links a:focus { color: var(--accent); }
+    /* Mobile (≤480px): stack footer with the © PromptMeGood line BELOW
+       the links and centered. column-reverse keeps DOM order intact. */
+    @media (max-width: 480px) {
+      footer.site .row {
+        flex-direction: column-reverse;
+        align-items: center;
+        text-align: center;
+        gap: 10px;
+      }
+      footer.site .links { justify-content: center; }
+    }
 
     /* hp-demo-1: Before/After demo + How It Works
        Two narrative sections between the hero and the existing feature
