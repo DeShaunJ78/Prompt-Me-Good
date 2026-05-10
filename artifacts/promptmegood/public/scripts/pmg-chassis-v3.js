@@ -63,6 +63,7 @@
     document.body.classList.remove('pmg-has-result');
     wireActions();
     wirePersistence();
+    wireDraftRecovery();
     deleteTargets();
     setupInspirationFeed();
     wireWhispererToggle();
@@ -500,6 +501,14 @@
      localStorage so it persists across tabs). */
   var SESSION_KEY = 'pmgv3:session';
   var SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  /* dr-1 (Draft Recovery): mirror every session write to localStorage
+     under a separate key so the draft survives a full tab close
+     (sessionStorage does not). On next visit, if the live sessionStorage
+     is empty but a fresh draft exists, we offer the user a non-blocking
+     restore banner. Cleared on Vault save (pmg:vault-saved event) and
+     on explicit dismiss. Same 7-day TTL as the live session. */
+  var DRAFT_KEY = 'pmgv3:draft';
+  var DRAFT_DISMISS_KEY = 'pmgv3:draft:dismissedTs';
   var TUNE_FIELDS = ['category', 'skillLevel', 'tone', 'outputFormat', 'maxLength', 'outputLanguage', 'personality'];
   var _persistTimer = null;
   var _persistSuspended = false;
@@ -544,7 +553,12 @@
       // signal. Without this, pagehide on a cleared page re-persists
       // a junk session right after Start Over.
       if (!data.goal && !data.prompt) return;
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(data));
+      var serialized = JSON.stringify(data);
+      sessionStorage.setItem(SESSION_KEY, serialized);
+      // dr-1: mirror to localStorage so the draft survives a full tab
+      // close. Same payload + timestamp; the recovery banner uses ts
+      // for the freshness check.
+      try { localStorage.setItem(DRAFT_KEY, serialized); } catch (e) {}
     } catch (e) {}
   }
   function schedulePersist() {
@@ -553,6 +567,10 @@
   }
   function clearSession() {
     try { sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
+    // dr-1: clear the localStorage draft mirror too so Start Over /
+    // explicit clears don't leave a stale "Restore your last draft?"
+    // banner waiting on the next visit.
+    try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
   }
   // Expose for doStartOver / external callers.
   window.pmgChassisV3 = window.pmgChassisV3 || {};
@@ -588,6 +606,136 @@
     });
     window.addEventListener('pagehide', writeSession);
     window.addEventListener('beforeunload', writeSession);
+  }
+
+  /* dr-1 (Draft Recovery): on boot, if the live sessionStorage is empty
+     (fresh tab) but a localStorage draft exists from a prior tab that
+     was closed mid-edit, surface a non-blocking floating banner with
+     Restore / Dismiss buttons. Restore rehydrates via the same
+     restoreSession() the in-tab persistence uses. Dismiss clears the
+     draft so the banner doesn't reappear.
+
+     The banner carries data-pmg-overlay-root so the chassis universal-
+     hide rule (pmg-chassis-v3.css L51) doesn't erase it on insertion.
+     Auto-clears on pmg:vault-saved so users who reach a save state
+     never see a stale offer. */
+  function readDraft() {
+    try {
+      var raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return null;
+      if (!parsed.ts || (Date.now() - parsed.ts) > SESSION_TTL_MS) {
+        try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+        return null;
+      }
+      // Only count as a draft if there's actual user content.
+      if (!parsed.goal && !parsed.prompt) return null;
+      return parsed;
+    } catch (e) { return null; }
+  }
+  function clearDraft() {
+    try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+  }
+  function relativeAge(ts) {
+    var diff = Math.max(0, Date.now() - ts);
+    var min = Math.floor(diff / 60000);
+    if (min < 1) return 'just now';
+    if (min < 60) return min + ' minute' + (min === 1 ? '' : 's') + ' ago';
+    var hr = Math.floor(min / 60);
+    if (hr < 24) return hr + ' hour' + (hr === 1 ? '' : 's') + ' ago';
+    var day = Math.floor(hr / 24);
+    return day + ' day' + (day === 1 ? '' : 's') + ' ago';
+  }
+  // Full HTML-entity escape. The previous version omitted " and ' which
+  // is fine for text-context insertion but brittle if the surrounding
+  // markup ever moves the value into an attribute. Belt-and-braces.
+  function escapeHtml(s) {
+    return String(s).replace(/[<>&"']/g, function (c) {
+      return c === '<' ? '&lt;'
+        : c === '>' ? '&gt;'
+        : c === '&' ? '&amp;'
+        : c === '"' ? '&quot;'
+        : '&#39;';
+    });
+  }
+  function showDraftBanner(snap) {
+    if (document.getElementById('pmg-draft-recovery')) return;
+    var preview = (snap.goal || snap.prompt || '').replace(/\s+/g, ' ').trim();
+    if (preview.length > 70) preview = preview.slice(0, 67) + '…';
+    var bar = document.createElement('div');
+    bar.id = 'pmg-draft-recovery';
+    bar.className = 'pmg-draft-recovery';
+    bar.setAttribute('data-pmg-overlay-root', '1');
+    bar.setAttribute('role', 'status');
+    bar.setAttribute('aria-live', 'polite');
+    bar.innerHTML =
+      '<div class="pmg-draft-recovery-inner">' +
+        '<div class="pmg-draft-recovery-text">' +
+          '<strong>Restore your last draft?</strong>' +
+          '<span class="pmg-draft-recovery-meta">Saved ' + escapeHtml(relativeAge(snap.ts)) +
+            (preview ? ' — &ldquo;' + escapeHtml(preview) + '&rdquo;' : '') + '</span>' +
+        '</div>' +
+        '<div class="pmg-draft-recovery-actions">' +
+          '<button type="button" class="pmg-draft-recovery-restore">Restore</button>' +
+          '<button type="button" class="pmg-draft-recovery-dismiss" aria-label="Dismiss">Dismiss</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(bar);
+    bar.querySelector('.pmg-draft-recovery-restore').addEventListener('click', function () {
+      // dr-1 race fix: if the user already started a new prompt while
+      // the 250ms-deferred banner was animating in, do NOT silently
+      // clobber their fresh typing. Confirm before overwriting; if they
+      // decline we keep their new work and clear the draft offer.
+      var goal = document.getElementById('goal');
+      var liveText = (goal && goal.value || '').trim();
+      if (liveText) {
+        var ok = window.confirm('You\'ve started typing a new prompt. Replace it with your saved draft?');
+        if (!ok) {
+          clearDraft();
+          bar.remove();
+          return;
+        }
+      }
+      // Mirror to sessionStorage so subsequent writes don't blow away
+      // the restored state, then run the same restore path.
+      try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(snap)); } catch (e) {}
+      restoreSession(snap);
+      bar.remove();
+    });
+    bar.querySelector('.pmg-draft-recovery-dismiss').addEventListener('click', function () {
+      clearDraft();
+      try { localStorage.setItem(DRAFT_DISMISS_KEY, String(Date.now())); } catch (e) {}
+      bar.remove();
+    });
+  }
+  function wireDraftRecovery() {
+    if (persistDisabled()) return;
+    // dr-1 fix: register the vault-saved auto-clear UNCONDITIONALLY
+    // (not gated on having a draft at boot). A user who lands fresh,
+    // types a new prompt, then saves to the Vault would otherwise see
+    // a stale "Restore?" banner on their next visit because the
+    // listener was never wired.
+    document.addEventListener('pmg:vault-saved', function () {
+      clearDraft();
+      var live = document.getElementById('pmg-draft-recovery');
+      if (live) live.remove();
+    });
+    // If sessionStorage already has a session, the in-tab restore path
+    // runs and we don't need the banner. Only offer recovery for tabs
+    // that booted clean.
+    if (readSession()) return;
+    var snap = readDraft();
+    if (!snap) return;
+    // If the user explicitly dismissed within the last 5 minutes, don't
+    // re-show on a quick reload. After 5 min, treat as a new session.
+    try {
+      var dts = parseInt(localStorage.getItem(DRAFT_DISMISS_KEY) || '0', 10);
+      if (dts && (Date.now() - dts) < 5 * 60 * 1000) return;
+    } catch (e) {}
+    // Defer one tick so chassis paint has settled before the banner
+    // animates in.
+    setTimeout(function () { showDraftBanner(snap); }, 250);
   }
 
   function restoreSession(snap) {
