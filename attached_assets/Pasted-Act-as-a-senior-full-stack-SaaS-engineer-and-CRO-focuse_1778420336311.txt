@@ -1,0 +1,129 @@
+Act as a senior full-stack SaaS engineer and CRO-focused UX designer. Update PromptMeGood to fix the highest-priority conversion, UX, and clarity issues from the current live site.
+
+Goal: make the site feel more trustworthy, easier to understand, easier to buy, and more polished without doing a full redesign.
+
+Priority 1: Homepage conversion upgrade
+1. Add a real product demo section above or directly below the hero.
+2. Show a before/after transformation:
+   - Before: “Write me a sales email.”
+   - After: a structured PromptMeGood prompt with role, audience, constraints, tone, format, and CTA.
+3. Add a small visual preview of the app UI or a styled mock card that shows the optimized prompt output.
+4. Keep the existing dark green brand style.
+5. Add a short “How it works” section:
+   - Type one honest sentence
+   - PromptMeGood structures it
+   - Run it, copy it, or save it
+6. Add a proof strip under the hero:
+   - Free tier with daily limits
+   - No signup required
+   - Local-first vault
+   - Built for text, image, and video prompts
+
+Priority 2: Fix naming confusion
+Unify feature names across the app, pricing page, guide, and any visible UI.
+
+Use these names:
+- “Growth Mode” for business, marketing, and social media workflows.
+- “Expert Tools” or “Expert Command Center” for Diagnose, Architect, Tune, Variations, and Save.
+- Pick either “Architect” or “Engineer” and use only one everywhere. Use “Architect” if the UI already says Architect.
+- Do not use “Business Mode,” “Expert Mode,” and “Expert Command Center” interchangeably.
+
+Update all labels, buttons, headings, pricing copy, guide copy, and tooltips to match.
+
+Priority 3: Pricing clarity
+The pricing page currently mixes free beta, waitlist, and coming-soon plans. Make it clearer.
+
+Add an availability row or badge to each plan:
+- Free: “Available now”
+- Founding Member: “Waitlist open, checkout opening soon”
+- Pro Monthly: “Coming at launch”
+- Pro Yearly: “Coming at launch”
+
+Add a short pricing FAQ with these questions:
+1. Can I use PromptMeGood free?
+2. When does Founding Member checkout open?
+3. What does lifetime access mean?
+4. What happens after beta?
+5. What counts toward daily usage limits?
+6. Can I cancel Pro anytime?
+7. How do refunds work?
+
+Also fix date consistency:
+- Make the free beta / Expert Tools free-until date consistent everywhere.
+- If pricing says May 31, 2026, do not have the guide say June 1, 2026.
+
+Priority 4: App topbar clarity
+The app topbar currently relies too much on icons. Improve discoverability.
+
+On desktop, show labels beside or under key topbar icons:
+- Help
+- Growth
+- Vault
+- Settings
+- Upgrade
+
+On mobile, icons can remain compact, but every icon must have:
+- aria-label
+- title tooltip
+- visible focus state
+- tap target of at least 44px by 44px
+
+Priority 5: Growth Mode v1
+Add or improve Growth Mode as a guided business/social prompt workflow.
+
+Growth Mode should ask:
+1. What are you trying to create?
+2. Platform: TikTok, Instagram, YouTube, LinkedIn, X/Twitter, Facebook, Pinterest, Threads, Reddit
+3. Goal: awareness, engagement, leads, sales, education, community, launch
+4. Audience
+5. Offer or topic
+6. Tone
+7. CTA
+
+Growth Mode should output a structured prompt, not just final content.
+
+Add platform presets:
+- TikTok: hooks, UGC scripts, product demos
+- Instagram: Reels, captions, carousels, Stories
+- YouTube: Shorts, long-form outlines, titles, thumbnails
+- LinkedIn: founder posts, thought leadership, B2B content
+- X/Twitter: threads, launch posts, polls, hot takes
+- Facebook: local business posts, groups, offers, events
+- Pinterest: evergreen pins, checklists, ecommerce/lifestyle content
+- Threads: casual founder/community posts
+- Reddit: authentic community answers and research prompts
+
+Priority 6: Trust and credibility
+Add a trust section to the homepage or near pricing.
+
+If testimonials are not available yet, add:
+- Founder note: “Why I built PromptMeGood”
+- Public changelog link or section
+- Example prompt transformations
+- “Local-first by default” privacy explainer
+- Support promise: “Most replies within 1 to 2 business days”
+- Optional: roadmap or “coming next” section
+
+Priority 7: Accessibility cleanup
+Run an accessibility pass on the homepage, pricing page, and app.
+
+Fix:
+- Low-contrast muted text on dark backgrounds
+- Missing aria-labels
+- Weak or invisible focus states
+- Icon-only buttons without labels
+- Keyboard navigation through tabs, drawers, modals, Vault, Settings, and Upgrade
+- Ensure drawers can close with Escape
+- Ensure focus returns to the triggering button after closing drawers/modals
+
+Acceptance criteria:
+1. Homepage clearly shows what PromptMeGood does within 5 seconds.
+2. Homepage includes at least one before/after prompt example.
+3. Pricing clearly separates available now, waitlist, and coming soon.
+4. Feature naming is consistent across homepage, app, pricing, guide, privacy, and terms.
+5. App topbar controls are understandable without guessing.
+6. Growth Mode supports at least TikTok, Instagram, YouTube, LinkedIn, and X/Twitter in v1.
+7. No obvious low-contrast text or unlabeled icon buttons remain.
+8. Site still keeps the current dark green PromptMeGood visual identity.
+9. Do not remove existing functionality.
+10. Test the main flow: open app, enter idea, build prompt, use starter idea, open Vault, open Settings/Expert Tools, open Growth Mode, visit Pricing.
