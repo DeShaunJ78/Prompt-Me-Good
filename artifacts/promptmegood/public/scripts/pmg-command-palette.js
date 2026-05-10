@@ -147,7 +147,7 @@
       { id: 'panel-text',  cat: 'Navigate', icon: '✍️', title: 'Open Text Panel',         sub: 'Build a writing prompt',           run: function () { setActivePanelSafe('text'); } },
       { id: 'panel-photo', cat: 'Navigate', icon: '📷', title: 'Open Photography Panel',  sub: 'Build an image prompt',            run: function () { setActivePanelSafe('photography'); } },
       { id: 'panel-video', cat: 'Navigate', icon: '🎬', title: 'Open Video Panel',        sub: 'Build a video / Sora prompt',      run: function () { setActivePanelSafe('video'); } },
-      { id: 'business',    cat: 'Navigate', icon: '💼', title: 'Open Business Mode',      sub: 'Brand voice, social packs, builders', run: function () { try { window.pmgBusinessMode && window.pmgBusinessMode.open(); } catch (e) {} } },
+      { id: 'business',    cat: 'Navigate', icon: '💼', title: 'Open Growth Mode',        sub: 'Brand voice, social packs, builders', run: function () { try { window.pmgBusinessMode && window.pmgBusinessMode.open(); } catch (e) {} } },
       { id: 'shortcuts',   cat: 'Help',     icon: '⌨️', title: 'Keyboard Shortcuts',      sub: 'Show all shortcuts',               run: function () { try { window.pmgCheatsheet && window.pmgCheatsheet.open(); } catch (e) {} } },
       { id: 'tour-intro',  cat: 'Tours',    icon: '🚀', title: 'Replay Intro Tour',       sub: 'Walk through the basics',          run: function () {
           try { localStorage.removeItem('pmg.workstationTourSeen'); } catch (e) {}

@@ -112,8 +112,8 @@
 
     drawer.innerHTML = [
       '<div class="pmg-bm-head">',
-        '<h2 id="pmg-bm-title"><span aria-hidden="true">💼</span> Business Mode</h2>',
-        '<button type="button" class="pmg-bm-close" aria-label="Close Business Mode">✕</button>',
+        '<h2 id="pmg-bm-title"><span aria-hidden="true">💼</span> Growth Mode</h2>',
+        '<button type="button" class="pmg-bm-close" aria-label="Close Growth Mode">✕</button>',
       '</div>',
       '<div class="pmg-bm-body">',
         '<p class="pmg-bm-intro">Marketing prompt workstation for business owners and creators. Set your Brand Voice once, then build a Social Pack or focus on a single platform — your prompt drops into the Text Prompts tab and generates automatically.</p>',
