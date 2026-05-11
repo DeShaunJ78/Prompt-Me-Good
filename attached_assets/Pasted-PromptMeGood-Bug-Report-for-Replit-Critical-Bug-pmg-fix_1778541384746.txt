@@ -1,0 +1,47 @@
+PromptMeGood — Bug Report for Replit
+Critical Bug: pmg-fixes-v6.js — Broken JavaScript (Site-Breaking)
+The file artifacts/promptmegood/public/scripts/pmg-fixes-v6.js has a fatal syntax error that prevents the entire script from executing. Node.js confirms the error at line 125.
+Root Causes:
+Malformed multi-line string in CSS array (lines 124–128): A CSS string was written using a raw multi-line template literal format instead of a properly escaped single-quoted string. This breaks the JavaScript array syntax.
+Duplicate array termination (lines 128–134): The ]; closing the CSS array appears twice, with orphaned code between them. The second ]; is invalid and leaves subsequent CSS strings as unreachable dead code outside the array.
+resetAllFields function defined outside the IIFE (lines 1031–1116): The main IIFE closes at line 1028 with })();. The resetAllFields function and its DOMContentLoaded listener are written after the closing })();, meaning they are floating in the global scope but still inside what appears to be another stray })(); at line 1116. This creates a second broken IIFE wrapper.
+Auto-Bridge (FIX 14) and Smart Labels (FIX 15) are also outside the IIFE (lines 1119–1177): These blocks are written after the closing })(); at line 1028, making them loose global code. A second stray })(); at line 1177 closes nothing valid.
+injectStyles() called again at line 1175: A bare call to injectStyles() is made at the very bottom of the file, outside any valid scope, which will throw a ReferenceError since the function is scoped inside the IIFE.
+Escaped single quotes in resetAllFields (lines 1074–1099): Strings inside resetAllFields use backslash-escaped single quotes (\') which is unnecessary inside double-quoted strings and suggests the code was generated incorrectly.
+Summary Table
+#
+File
+Line(s)
+Severity
+Description
+1
+pmg-fixes-v6.js
+124–128
+Critical
+Multi-line CSS string breaks JS array syntax
+2
+pmg-fixes-v6.js
+128–134
+Critical
+Duplicate ]; array terminator with dead code between them
+3
+pmg-fixes-v6.js
+1028–1116
+Critical
+resetAllFields + Start Over listener defined outside the IIFE
+4
+pmg-fixes-v6.js
+1119–1177
+Critical
+Auto-Bridge (FIX 14) and Smart Labels (FIX 15) outside the IIFE
+5
+pmg-fixes-v6.js
+1175
+Critical
+Bare injectStyles() call outside valid scope
+6
+pmg-fixes-v6.js
+1074–1099
+Minor
+Unnecessary backslash-escaped quotes in resetAllFields
+All fixes should be integrated inside the existing IIFE, before its closing })(); at what is currently line 1028. The CSS string for FIX 16 (.smart-assist mobile anchoring) must use proper single-quoted JS string syntax, not a raw multi-line literal.
