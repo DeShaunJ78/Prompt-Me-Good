@@ -78,15 +78,16 @@
     #pmg-nav-expert-link { font-size: 0.85rem; font-weight: 600; color: var(--muted); padding: 6px 10px; border-radius: 999px; flex-shrink: 0; white-space: nowrap; }
     #pmg-nav-expert-link:hover { color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent); }
 
-    main { flex: 1; padding: 2.5rem 0 3rem; }
-    .pricing-hero { text-align: center; margin: 0 0 var(--space-7); }
-    .eyebrow { display: inline-block; padding: 4px 12px; background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary); border-radius: 999px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: var(--space-3); }
-    .pricing-hero h1 { font-size: var(--text-2xl); margin: 0 0 var(--space-4); line-height: 1.15; }
-    /* hero-lede-3: max-width 720px to match the site's recurring centered
-       text-block width (#pmg-checkout-cancel-notice, .early-access) so the
-       hero is uniform with the rest of the pricing page. Lede = larger
+    main { flex: 1; padding: 3rem 0 3rem; }
+    .pricing-hero { text-align: center; margin: 0 0 var(--space-7); padding: var(--space-3) 0 var(--space-2); }
+    .eyebrow { display: inline-block; padding: 4px 12px; background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary); border-radius: 999px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: var(--space-4); }
+    /* hero-lede-4: bigger, more confident hero. H1 uses clamp() so it
+       scales up on desktop (~3.25rem) without overflowing on mobile. */
+    .pricing-hero h1 { font-size: clamp(2rem, 4.5vw, 3.25rem); margin: 0 0 var(--space-4); line-height: 1.1; letter-spacing: -0.01em; }
+    /* Centered text blocks at 720px to match the site's recurring width
+       (#pmg-checkout-cancel-notice, .early-access). Lede = larger
        headline-style line, sub = muted supporting copy. */
-    .pricing-hero-lede { color: var(--text); max-width: 720px; margin: 0 auto var(--space-3); font-size: 1.15rem; line-height: 1.55; font-weight: 500; }
+    .pricing-hero-lede { color: var(--text); max-width: 720px; margin: 0 auto var(--space-3); font-size: 1.2rem; line-height: 1.55; font-weight: 500; }
     .pricing-hero-sub { color: var(--muted); max-width: 720px; margin: 0 auto; font-size: 1rem; line-height: 1.6; }
     .pricing-hero-lede strong, .pricing-hero-sub strong { color: var(--text); }
 
