@@ -87,8 +87,9 @@
     /* Centered text blocks at 720px to match the site's recurring width
        (#pmg-checkout-cancel-notice, .early-access). Lede = larger
        headline-style line, sub = muted supporting copy. */
-    .pricing-hero-lede { color: var(--text); max-width: 720px; margin: 0 auto var(--space-3); font-size: 1.2rem; line-height: 1.55; font-weight: 500; }
-    .pricing-hero-sub { color: var(--muted); max-width: 720px; margin: 0 auto; font-size: 1rem; line-height: 1.6; }
+    .pricing-hero-lede { color: var(--text); max-width: 720px; margin: 0 auto var(--space-3); font-size: 1.2rem; line-height: 1.55; font-weight: 500; text-wrap: balance; }
+    .pricing-hero-sub { color: var(--muted); max-width: 720px; margin: 0 auto; font-size: 1rem; line-height: 1.6; text-wrap: balance; }
+    .pricing-hero h1 { text-wrap: balance; }
     .pricing-hero-lede strong, .pricing-hero-sub strong { color: var(--text); }
 
     #pmg-checkout-cancel-notice { max-width: 720px; margin: 0 auto var(--space-6); padding: 14px 18px; border-radius: 12px; background: color-mix(in srgb, var(--primary) 8%, transparent); border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent); color: var(--text); font-size: 0.95rem; text-align: left; }
