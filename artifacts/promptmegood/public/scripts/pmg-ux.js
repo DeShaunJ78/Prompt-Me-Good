@@ -4940,7 +4940,24 @@
      hamburger, the Expert Mode button stays visible in the header on
      every viewport. */
   function addNavExpertLink() {
+    /* ecc-app-only: the Expert Command Center toggle only does anything
+       on the workstation (/app), where the hidden #expert-mode-toggle
+       checkbox + PMGExpertCenter drawer live. On marketing pages
+       (pricing.html, guide.html, manual.html, etc.) clicking the
+       button is a no-op AND it lopsides the topbar with a long ⚙
+       label that has nothing to do with reading the marketing copy.
+       Gate the injection on the presence of #expert-mode-toggle so
+       the link only appears where it's actually wired. If a stale
+       button is already in the DOM from a previous page state, also
+       remove it. */
+    var hasToggle = !!document.getElementById('expert-mode-toggle');
     var existing = document.getElementById('pmg-nav-expert-link');
+    if (!hasToggle) {
+      if (existing && existing.parentNode) {
+        try { existing.parentNode.removeChild(existing); } catch (_e) {}
+      }
+      return;
+    }
     var topbarInner = document.querySelector('.topbar-inner');
     var navToggle = document.querySelector('.nav-toggle');
     /* If it already exists but somehow isn't in the topbar-inner (e.g.

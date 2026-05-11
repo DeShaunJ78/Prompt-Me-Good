@@ -1601,7 +1601,31 @@
       }
     });
     bindIfPresent('save-draft-btn', function () {
-      // Best-effort: try common existing save handlers
+      /* sd-vault-1: the legacy save selectors below (#save-vault-btn etc)
+         don't exist anywhere in app.html — the previous implementation
+         silently fell through to the localStorage 'pmgv3:lastDraft'
+         branch, which writes nowhere the Vault drawer can ever surface.
+         User reported "vault does nothing." Real save mechanism is
+         window.__pmgText.addToHistory(data, prompt) (exposed in
+         app.html L5851), which writes to the same #history list the
+         drawer hosts AND fires the 'pmg:vault-saved' signal. Try
+         that first; fall through to the legacy paths only if the
+         workstation API hasn't loaded. */
+      try {
+        var rb1 = document.getElementById('resultBox');
+        var prompt1 = (rb1 && rb1.textContent || '').trim();
+        if (prompt1 && prompt1 !== 'Your fixed prompt will appear here.'
+            && window.__pmgText
+            && typeof window.__pmgText.addToHistory === 'function') {
+          /* getFormData() is hoisted in app.html; if it's not on window,
+             pass an empty-ish object — addToHistory tolerates it. */
+          var data = {};
+          try { if (typeof window.getFormData === 'function') data = window.getFormData() || {}; } catch (_e) {}
+          window.__pmgText.addToHistory(data, prompt1);
+          flash('Saved to Vault');
+          return;
+        }
+      } catch (_e) {}
       var existing = document.querySelector('#save-vault-btn, #pmg-save-vault-btn, #savePromptBtn, [data-pmg-save-vault]');
       if (existing) existing.click();
       else {

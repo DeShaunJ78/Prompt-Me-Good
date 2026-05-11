@@ -2239,7 +2239,13 @@
       }
     }
     .bk-overlay {
-      position: fixed; inset: 0; z-index: 45; background: color-mix(in srgb, var(--color-bg) 80%, transparent);
+      /* bk-z-1: bumped from z-index:45 → 99995 so Backup/Restore opens
+         ABOVE the vault drawer (#pmgv3-vault-drawer is z-index:99991).
+         The Backup/Restore button lives inside #history which is
+         reparented into the drawer on open — without this, clicking
+         🔑 Backup / Restore opened the modal hidden behind the drawer
+         and read as "vault does nothing." */
+      position: fixed; inset: 0; z-index: 99995; background: color-mix(in srgb, var(--color-bg) 80%, transparent);
       backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: var(--space-4);
     }
     .bk-overlay.is-open { display: flex; }
@@ -4067,7 +4073,7 @@
   <link rel="stylesheet" href="/styles/pmg-business-mode.css?v=bm-3" />
 
   <link rel="stylesheet" href="/styles/pmg-guided-intake.css?v=gi-1" />
-  <script src="/scripts/pmg-chassis-v3.js?v=sf-removed"></script>
+  <script src="/scripts/pmg-chassis-v3.js?v=sd-vault-2"></script>
   <script src="/scripts/pmg-visual-studio.js?v=mux-2-adv-tuning" defer></script>
   <script src="/scripts/pmg-storyboard.js?v=sb-9" defer></script>
   <script src="/scripts/pmg-spark-panel.js?v=sp-6-mobile-questions" defer></script>
@@ -12478,7 +12484,7 @@ Context:
        The static file at /scripts/pmg-pricing-config.js is kept only as a no-JS / api-down
        fallback; the real source of truth is the backend route below. -->
   <script src="/api/pricing-config.js?v=task100" defer></script>
-  <script src="/scripts/pmg-ux.js?v=names-1" defer></script>
+  <script src="/scripts/pmg-ux.js?v=ecc-app-only" defer></script>
   <script src="/scripts/pmg-quick-win.js?v=task200-quick-win-4" defer></script>
   <script src="/scripts/pmg-next-action.js?v=5" defer></script>
   <script src="/scripts/post-spec.js?v=naming-consistency-1" defer></script>
