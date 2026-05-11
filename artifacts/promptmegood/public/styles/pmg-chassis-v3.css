@@ -275,57 +275,40 @@ a.pmgv3-ico:hover { color: #00c896; }
 }
 .pmgv3-left { padding-right: 8px; padding-bottom: 84px; }
 
-/* if-8-sticky-cta: keep the primary CTA in view inside the scrollable
-   left column. Without this, on ~768px laptop screens (Audit URGENT #1)
-   the active CTA slips below the fold and users hit a "dead end" after
-   typing. Both buttons share the same sticky footer treatment so the
-   transition Analyze → Generate stays in the same screen position. */
+/* btn-anchor-2: previous if-8-sticky-cta used position:sticky to keep the
+   primary CTA in view inside the scrollable left column. Side effect: on
+   long prompts the button visually "floated" detached from the textarea
+   because sticky pinned it to the bottom of the visible viewport while
+   the form scrolled. User explicitly asked: keep buttons in normal
+   document flow, attached to the form. The textarea is now capped
+   (btn-anchor-1) so the form has bounded height; the button sits as a
+   regular flex child of .pmgv3-left, pushed down by margin-top: auto so
+   it still hugs the bottom of the column without using sticky. */
 html.pmg-chassis-v3 .pmgv3-left #generate-section {
-  position: sticky;
-  bottom: 0;
-  z-index: 5;
-  background: linear-gradient(180deg,
-    rgba(7, 24, 19, 0.0) 0%,
-    rgba(7, 24, 19, 0.92) 28%,
-    rgba(7, 24, 19, 0.97) 100%);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  margin: 8px 0 0 0;
+  padding: 10px 0 4px;
   border-top: 1px solid rgba(0, 200, 150, 0.18);
+  background: transparent;
+  border-radius: 0;
 }
-/* #analyze-btn is sticky too, but must KEEP its --color-primary
-   background. Do NOT add the dark gradient/backdrop here — that
-   would paint over the teal CTA and make it look disabled. */
-html.pmg-chassis-v3 .pmgv3-left #analyze-btn {
-  position: sticky;
-  bottom: 0;
-  z-index: 5;
-}
-html.pmg-chassis-v3 .pmgv3-left #generate-section {
-  margin: 8px -8px 0 0;
-  padding: 10px 8px 12px;
-  border-radius: 0 0 12px 12px;
-}
-/* #analyze-btn lives inside its parent <section>, so the sticky margin
-   pulls it out to the column edges and the inner button keeps its own
-   styling. */
 html.pmg-chassis-v3 .pmgv3-left #analyze-btn {
   display: block;
-  width: calc(100% + 8px);
-  margin: 14px -8px 0 0 !important;
+  width: 100%;
+  margin: 14px 0 0 0 !important;
   padding: 14px 12px;
-  border-radius: 0 0 12px 12px;
+  border-radius: 12px;
 }
 @media (max-width: 768px) {
   html.pmg-chassis-v3 .pmgv3-left #generate-section {
-    margin: 6px -6px 0;
-    padding: 8px 6px 10px;
+    margin: 6px 0 0;
+    padding: 8px 0 4px;
     border-radius: 0;
   }
   html.pmg-chassis-v3 .pmgv3-left #analyze-btn {
-    width: calc(100% + 6px);
-    margin: 10px -6px 0 0 !important;
+    width: 100%;
+    margin: 10px 0 0 0 !important;
     padding: 14px 12px;
-    border-radius: 0;
+    border-radius: 12px;
   }
 }
 
