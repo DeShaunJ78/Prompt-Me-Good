@@ -42,7 +42,12 @@ const MIME = {
 
 function cacheHeaderFor(pathname, ext) {
   if (ext === ".html" || pathname === "/" || pathname.endsWith("/")) {
-    return "no-cache, must-revalidate";
+    // ns-1: HTML must NEVER be served from disk cache. `no-store` forbids the
+    // browser (and any intermediary that honors it) from holding a copy at
+    // all, so a redeploy is visible on the very next request — even when an
+    // old tab has been backgrounded for days. Tradeoff: each visit re-fetches
+    // the HTML shell (small), assets stay long-cached and unaffected.
+    return "no-store, no-cache, must-revalidate, max-age=0";
   }
   if (pathname.startsWith("/assets/")) {
     return "public, max-age=31536000, immutable";
@@ -129,7 +134,7 @@ const server = createServer(async (req, res) => {
     const body = await readFile(join(ROOT, "404.html"));
     res.writeHead(404, {
       "Content-Type": "text/html; charset=utf-8",
-      "Cache-Control": "no-cache, must-revalidate",
+      "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
       "X-Content-Type-Options": "nosniff",
     });
     res.end(body);
