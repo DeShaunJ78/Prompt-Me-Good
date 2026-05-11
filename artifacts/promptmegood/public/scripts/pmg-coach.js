@@ -237,11 +237,16 @@
   }
 
   function observeReady() {
-    var observer = new MutationObserver(function () {
+    function tick() {
       Object.keys(PANELS).forEach(function (panel) { ensureMounted(panel); });
       wireGoals();
       renderAll();
-    });
+    }
+    if (window.pmgMountBus && window.pmgMountBus.isActive()) {
+      window.pmgMountBus.subscribe(tick);
+      return;
+    }
+    var observer = new MutationObserver(tick);
     observer.observe(document.body, { childList: true, subtree: true });
     setTimeout(function () { try { observer.disconnect(); } catch (_) {} }, 30000);
   }

@@ -354,6 +354,11 @@
     injectStyles();
     tryMountAll();
 
+    if (window.pmgMountBus && window.pmgMountBus.isActive()) {
+      window.pmgMountBus.subscribe(function () { tryMountAll(); });
+      return;
+    }
+
     var mo = new MutationObserver(function () { tryMountAll(); });
     mo.observe(document.body, { childList: true, subtree: true });
 

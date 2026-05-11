@@ -454,14 +454,19 @@
 
   /* The Pro tuning UI re-renders selects; observe and re-bind. */
   function observeReady() {
-    var observer = new MutationObserver(function () {
+    function tick() {
       ensureMounted();
       wireGoal();
       wireTuning();
       var root = document.getElementById(ROOT_ID);
       if (root) wireRoot(root);
       render();
-    });
+    }
+    if (window.pmgMountBus && window.pmgMountBus.isActive()) {
+      window.pmgMountBus.subscribe(tick);
+      return;
+    }
+    var observer = new MutationObserver(tick);
     observer.observe(document.body, { childList: true, subtree: true });
     /* Stop observing after 30s — by then the page is fully built. */
     setTimeout(function () { try { observer.disconnect(); } catch (_) {} }, 30000);
