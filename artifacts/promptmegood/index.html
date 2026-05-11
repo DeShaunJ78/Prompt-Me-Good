@@ -91,9 +91,16 @@
        Bumped from 420 → 480 to cover iPhone Plus/Pro Max-class widths
        (414–430px) where the nav had only ~200px and was wrapping internally,
        stacking "Open the App →" under "Pricing  Guide". */
+    /* mhdr-2: keep the landing-page header as a SINGLE row on phones —
+       logo on the left, nav (Pricing + Guide only) on the right. The
+       previous rule wrapped the nav onto its own row, which was tall and
+       redundant once the hero already shows a full-width "Open the App →"
+       button. We hide the third nav link (Open the App) on mobile only;
+       desktop nav is untouched. */
     @media (max-width: 480px) {
-      header.site .row { flex-wrap: wrap; gap: 8px; }
-      .top-nav { gap: 12px; font-size: 13px; width: 100%; justify-content: flex-start; }
+      header.site .row { flex-wrap: nowrap; gap: 8px; align-items: center; }
+      .top-nav { gap: 12px; font-size: 13px; width: auto; justify-content: flex-end; flex-wrap: nowrap; }
+      .top-nav a[href="/app"] { display: none; }
     }
 
     main.hero { flex: 0 0 auto; padding: 56px 0 28px; }

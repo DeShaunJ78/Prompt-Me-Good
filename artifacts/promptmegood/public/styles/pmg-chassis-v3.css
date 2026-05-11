@@ -1604,6 +1604,13 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
    Galaxy S20 = 412, iPhone 14 Pro = 430). */
 @media (max-width: 480px) {
   .pmgv3-brand-beta { display: none; }
+  /* mhdr-1: hide the "PromptMeGood" wordmark on phones — the logo
+     icon alone is sufficient brand at this width and the freed
+     space stops the icon row + Upgrade button from getting squished
+     on iPhone Plus/Pro Max-class viewports (414–430px). The icon
+     and Beta badge are separate children, so scoping to span:not(.pmgv3-brand-beta)
+     leaves them intact. */
+  .pmgv3-brand > span:not(.pmgv3-brand-beta) { display: none; }
 }
 @media (max-width: 400px) {
   .pmgv3-topbar { padding: 0 10px; }
