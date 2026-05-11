@@ -50,13 +50,14 @@ Concise, direct communication. Iterative dev — explain high-level impact befor
 
 ### Universal rules (apply when adding ANY new code)
 
-*   **Cache-busters:** Bump `?v=` query string on changed `pmg-*.{css,js}`. Brand assets `?v=5`.
+*   **Cache-busters:** Bump `?v=` query string on changed `pmg-*.{css,js}`. Brand assets `?v=5`. Current chassis CSS: `?v=cta-color-token-2-sendto-2line-mhdr2`.
 *   **Theme tokens, never hardcoded teal.** New CTAs must use `var(--color-primary, #3ee0a0)` / `var(--color-text-inverse)` / `color-mix(in srgb, var(--color-primary) X%, transparent)`. `html[data-accent="blue|purple|gold|slate"]` flips `--color-primary` — hardcoded `#00c896` won't follow.
 *   **Body-appended overlays + toasts** must carry `data-pmg-overlay-root` or the chassis universal-hide rule erases them.
 *   **Saved-To-Vault indicator:** Code persisting to the vault MUST `document.dispatchEvent(new Event('pmg:vault-saved'))`.
 *   **Empty-state action gating:** New post-result action buttons need IDs in `EMPTY_BTN_IDS` in `app.html`'s `watchResultBox()`.
 *   **New top-level pages:** Register in `vite.config.ts` `rollupOptions.input` AND `public/sitemap.xml`.
 *   **Tap targets:** Topbar icons (`.pmgv3-ico`) hard-set to 44×44 `!important`. No 32/36px overrides — the ≤400px breakpoint shrinks only the glyph `font-size`.
+*   **Panel tabs at ≤480px (mhdr-2):** The 3 module tabs use `flex: 1 1 0` + `text-overflow: ellipsis` + `white-space: nowrap` to equal-distribute and truncate gracefully. Earlier `overflow-x: auto` (≤768 rule) created horizontal scroll with no visible affordance — "Video" got clipped on iPhone 16 (393px), Pixel (393), iPhone SE (375), Galaxy S24 (412), and iPhone SE 1st-gen (320). Don't reintroduce per-tab `min-width` or padding ≥10px — it breaks 320px fit. Photography Suite at the same breakpoint has defensive `min-width:0` + `overflow-wrap:anywhere` + `transform:none` on `:hover` to absorb worst-case "busy pill selection" overflow.
 *   **No custom pull-to-refresh.** `pmg-pull-refresh.js` was removed (hijacked touch, wiped textarea). Rely on browser native.
 
 ### Architecture details

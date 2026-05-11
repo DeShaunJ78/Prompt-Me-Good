@@ -1611,6 +1611,50 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
      and Beta badge are separate children, so scoping to span:not(.pmgv3-brand-beta)
      leaves them intact. */
   .pmgv3-brand > span:not(.pmgv3-brand-beta) { display: none; }
+  /* mhdr-2: distribute the 3 panel tabs evenly so "Video" never
+     clips on iPhone 16 (393px), Pixel (393px), Galaxy S24 (360-412px),
+     iPhone SE (375px), or iPhone SE 1st-gen (320px). The ≤768px rule
+     above set overflow-x:auto which created horizontal scroll with no
+     visible affordance — users literally couldn't see the Video tab
+     existed. flex:1 equal-distributes the row inside the available
+     width and ellipsis catches the worst case. */
+  .pmgv3-tabs {
+    overflow-x: visible;
+    padding: 0 8px;
+    gap: 4px;
+  }
+  .pmgv3-tab {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 6px 8px;
+    font-size: 13px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* mhdr-2: Photography Suite worst-case overflow guard. The
+     overflow-360 spec expands every group and clicks 3 pills per
+     group ("busy pill selection") — without these defensive rules,
+     long pill labels + group headers + count badges can push past
+     360px on iPhone SE 1st-gen. min-width:0 unlocks flex shrink,
+     overflow-wrap:anywhere lets long labels break inside the pill
+     instead of pushing the row wide, and transform:none on hover
+     prevents a 1-2px outward shift that nudges the rightmost pill
+     past the viewport edge. */
+  #pmg-photo-suite,
+  #pmg-photo-suite .pmg-photo-group,
+  #pmg-photo-suite .pmg-photo-group-body,
+  #pmg-photo-suite .pmg-photo-group-head {
+    min-width: 0;
+    max-width: 100%;
+  }
+  #pmg-photo-suite .pmg-photo-pill {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  #pmg-photo-suite .pmg-photo-pill:hover { transform: none; }
 }
 @media (max-width: 400px) {
   .pmgv3-topbar { padding: 0 10px; }
