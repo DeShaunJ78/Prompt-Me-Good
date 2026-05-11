@@ -273,7 +273,21 @@ a.pmgv3-ico:hover { color: #00c896; }
   overflow-y: auto;
   min-height: 0;
 }
-.pmgv3-left { padding-right: 8px; padding-bottom: 84px; }
+.pmgv3-left { padding-right: 8px; padding-bottom: max(84px, env(safe-area-inset-bottom, 0px)); }
+/* btn-anchor-3: push the generate-host (which holds #generate-section /
+   #generateBtn) to the bottom of the .pmgv3-left flex column. With the
+   textarea capped (btn-anchor-1) and sticky removed (btn-anchor-2), this
+   margin-top:auto is the final piece — the button is always the last
+   visual element in the column, anchored at the bottom regardless of
+   how much content sits above it. Same trick on .pmgv3-right keeps any
+   result-side action row pinned to the bottom of that column. */
+html.pmg-chassis-v3 .pmgv3-left .pmgv3-generate-host { margin-top: auto; }
+@media (max-width: 768px) {
+  /* On mobile the soft keyboard can eat the bottom 40-50% of the
+     viewport. Extra bottom padding keeps the CTA reachable above the
+     keyboard once the textarea is focused. */
+  .pmgv3-left { padding-bottom: max(120px, env(safe-area-inset-bottom, 0px)); }
+}
 
 /* btn-anchor-2: previous if-8-sticky-cta used position:sticky to keep the
    primary CTA in view inside the scrollable left column. Side effect: on
