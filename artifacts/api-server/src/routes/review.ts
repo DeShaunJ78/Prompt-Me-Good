@@ -73,7 +73,7 @@ function buildCodeStack(): string {
 }
 
 function buildReviewPrompt(codeStack: string): string {
-  return `You are a senior full-stack engineer and UX reviewer doing a thorough code review of a TypeScript pnpm-monorepo app called PromptMeGood — a prompt builder that generates optimized AI prompts (gpt-4o-mini) and runs them via OpenAI gpt-4o.
+  return `You are a senior full-stack engineer and UX reviewer doing a thorough code review of a TypeScript pnpm-monorepo app called PromptMeGood — a prompt builder that generates optimized AI prompts (gpt-4.1-mini) and runs them via OpenAI gpt-4.1.
 
 Here is the complete code stack:
 ${codeStack}

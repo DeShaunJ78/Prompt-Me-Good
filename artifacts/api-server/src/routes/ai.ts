@@ -94,8 +94,8 @@ function readStats(): StatsState {
 const GENERATE_MAX_INPUT = 4000;
 const GENERATE_GOAL_MAX = 8000;
 const GENERATE_MAX_OUTPUT_TOKENS = 600;
-const GENERATE_MODEL = "gpt-4o-mini";
-const STREAM_MODEL = "gpt-4o-mini";
+const GENERATE_MODEL = "gpt-4.1-mini";
+const STREAM_MODEL = "gpt-4.1-mini";
 
 // SYSTEM_PROMPT is the single source of truth for prompt-building behavior.
 // It is shared by /generate, /generate-stream, and /generate-prompt so the app
@@ -456,11 +456,11 @@ router.post("/generate-stream", generateLimiter, generateCostCheck, async (req, 
   }
 });
 
-// /api/run — executes a user-provided prompt against gpt-4o and streams the
+// /api/run — executes a user-provided prompt against gpt-4.1 and streams the
 // model's response as Server-Sent Events. Distinct from /generate (which
 // builds an optimized prompt template) — this is the "run with AI" feature
 // that lets users see what their prompt actually produces, in-app.
-const RUN_MODEL = "gpt-4o";
+const RUN_MODEL = "gpt-4.1";
 const RUN_MAX_INPUT = 2000;
 const RUN_MAX_OUTPUT_TOKENS = 1000;
 const RUN_SYSTEM_PROMPT =
@@ -627,7 +627,7 @@ router.post("/image", imageLimiter, userCapEnforce("img", imageCostExtractor), a
     // (5 layers + Avoid clause) is meaningfully longer than the previous
     // single-paragraph enhancer.
     const enhancedPromptResult = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4.1-mini",
       max_completion_tokens: 500,
       messages: [
         { role: "system", content: IMAGE_PROMPT_ENHANCER },
@@ -752,7 +752,7 @@ router.post("/video", videoLimiter, userCapEnforce("vid", 1), async (req, res) =
     let videoPrompt = prompt;
     try {
       const enhanced = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "gpt-4.1-mini",
         max_completion_tokens: 600,
         messages: [
           { role: "system", content: VIDEO_PROMPT_ENHANCER },
@@ -1072,7 +1072,7 @@ router.post("/storyboard", generateLimiter, async (req, res) => {
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4.1-mini",
       max_completion_tokens: 1500,
       response_format: { type: "json_object" },
       messages: [
@@ -1463,7 +1463,7 @@ const ANALYZE_MAX_BYTES = 10 * 1024 * 1024;
 const ANALYZE_MAX_TEXT_CHARS = 12000;
 const ANALYZE_MAX_GOAL_CHARS = 4000;
 const ANALYZE_MAX_OUTPUT_TOKENS = 1500;
-const ANALYZE_VISION_MODEL = "gpt-4o";
+const ANALYZE_VISION_MODEL = "gpt-4.1";
 const ALLOWED_ANALYZE_MIMES = new Set([
   "application/pdf",
   "image/jpeg",
