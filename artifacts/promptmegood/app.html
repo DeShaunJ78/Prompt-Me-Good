@@ -839,7 +839,14 @@
       background: var(--color-surface-2);
     }
     .field textarea { min-height: 112px; padding: var(--space-4); resize: vertical; line-height: 1.5; }
-    .field textarea#goal { min-height: 96px; padding: var(--space-3) var(--space-4); line-height: 1.5; resize: none; overflow: hidden; }
+    /* btn-anchor-1: cap #goal at a sane max-height with internal scroll so
+       the auto-grow textarea can't push #generateBtn off the form anchor.
+       Previously the textarea grew unbounded; with sticky CTA in
+       .pmgv3-left the button visually "floated" away from the textarea as
+       the column scrolled. Capping height keeps the form a fixed visual
+       block and the button stays attached. JS autoGrowGoal() also caps to
+       this same value. */
+    .field textarea#goal { min-height: 96px; max-height: clamp(140px, 32vh, 320px); padding: var(--space-3) var(--space-4); line-height: 1.5; resize: none; overflow-y: auto; }
     .field input::placeholder, .field textarea::placeholder { color: var(--color-text-faint); }
     select,
     .field select,
@@ -9123,8 +9130,13 @@ Context:
       } catch (e) {}
       const goalInputEl = document.getElementById('goal');
       function autoGrowGoal() {
+        // btn-anchor-1: respect the CSS max-height cap so the form stays
+        // anchored and #generateBtn doesn't visually detach from the
+        // textarea inside the sticky-CTA scroll column.
         goalInputEl.style.height = 'auto';
-        goalInputEl.style.height = goalInputEl.scrollHeight + 'px';
+        const cap = parseFloat(getComputedStyle(goalInputEl).maxHeight) || Infinity;
+        const next = Math.min(goalInputEl.scrollHeight, cap);
+        goalInputEl.style.height = next + 'px';
       }
       goalInputEl.addEventListener('input', autoGrowGoal);
       goalInputEl.addEventListener('change', autoGrowGoal);
