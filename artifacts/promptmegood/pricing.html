@@ -86,8 +86,10 @@
        Split into a short lede + smaller sub so it scans as a professional
        headline-and-subhead, not fine print. Narrower max-width for better
        line length (~55ch). */
-    .pricing-hero-lede { color: var(--text); max-width: 620px; margin: 0 auto var(--space-3); font-size: 1.15rem; line-height: 1.5; font-weight: 500; }
-    .pricing-hero-sub { color: var(--muted); max-width: 620px; margin: 0 auto; font-size: 0.95rem; line-height: 1.6; }
+    /* hero-lede-2: paragraphs sized to ~one pricing card width so they
+       sit visually centered as a "hat" above the Founding Member card. */
+    .pricing-hero-lede { color: var(--text); max-width: 380px; margin: 0 auto var(--space-3); font-size: 1.05rem; line-height: 1.5; font-weight: 500; }
+    .pricing-hero-sub { color: var(--muted); max-width: 380px; margin: 0 auto; font-size: 0.9rem; line-height: 1.55; }
     .pricing-hero-lede strong, .pricing-hero-sub strong { color: var(--text); }
 
     #pmg-checkout-cancel-notice { max-width: 720px; margin: 0 auto var(--space-6); padding: 14px 18px; border-radius: 12px; background: color-mix(in srgb, var(--primary) 8%, transparent); border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent); color: var(--text); font-size: 0.95rem; text-align: left; }
