@@ -7,7 +7,7 @@
     (function () { try { if (location.hostname === 'promptmegood.com') location.replace('https://www.promptmegood.com' + location.pathname + location.search + location.hash); } catch (e) {} })();
   </script>
   <title>Quick Start Guide — PromptMeGood</title>
-  <meta name="description" content="A 60-second tour of PromptMeGood: three inline panels for Text, Photography, and Video prompts; Growth Mode for marketing; the Image Workshop and Reverse Engine; the 5-shot Storyboard; the Prompt DNA Card; the Expert Command Center (Diagnose · Architect · Tune · Variations · Save); ⌘K command palette; voice input; and the local-first Vault." />
+  <meta name="description" content="A 60-second tour of PromptMeGood: three inline panels for Text, Photography, and Video prompts; the Coach clarity meter, Quick-Add chips, and Target Platform tuning; Growth Mode for marketing; the Image Workshop and Reverse Engine; the 5-shot Storyboard; the Prompt DNA Card; the Expert Command Center; ⌘K command palette; voice input; and the local-first Vault." />
   <meta name="keywords" content="PromptMeGood guide, AI prompt builder tutorial, ChatGPT prompt how-to, image to prompt, AI photo enhancer, AI video prompt, AI storyboard, DALL-E prompt, Midjourney prompt builder, Sora prompt builder, marketing prompt builder, brand voice prompt" />
   <meta name="robots" content="index,follow,max-image-preview:large" />
   <meta name="theme-color" content="#0a2420" />
@@ -27,9 +27,10 @@
     "@context": "https://schema.org",
     "@type": "FAQPage",
     "mainEntity": [
-      {"@type":"Question","name":"How do I write a good prompt with PromptMeGood?","acceptedAnswer":{"@type":"Answer","text":"Type one honest sentence describing what you want in the Text panel, then tap Build My Prompt. Auto-Tune reads your sentence and pre-fills category, tone, format, length, and personality before building a structured prompt with role, context, constraints, tone, format, and next steps — ready to paste into ChatGPT, Claude, Perplexity, or Gemini, or to run instantly in-app with Run With AI Here (GPT-4o)."}},
+      {"@type":"Question","name":"How do I write a good prompt with PromptMeGood?","acceptedAnswer":{"@type":"Answer","text":"Type one honest sentence describing what you want in the Text panel, then tap Build My Prompt. Auto-Tune reads your sentence and pre-fills category, tone, format, length, and personality before building a structured prompt with role, context, constraints, tone, format, and next steps — ready to paste into ChatGPT, Claude, Perplexity, or Gemini, or to run instantly in-app with Run With AI Here (GPT-4.1)."}},
+      {"@type":"Question","name":"What is the Clarity Coach?","acceptedAnswer":{"@type":"Answer","text":"Every panel shows a small live meter under your goal field — Too vague, Getting there, or Specific enough — plus a tiny ⓘ button that opens a four-item Clarity Checklist. Text checks Persona, Goal, Context, Constraints. Photo checks Subject, Lighting, Lens or Camera, Background. Video checks Subject, Action, Camera Direction, Visual Style. Items light up green as you cover them."}},
       {"@type":"Question","name":"What does the Image Workshop do?","acceptedAnswer":{"@type":"Answer","text":"Inside the Photography panel, drop a JPG/PNG/WEBP up to 10 MB, pick from 15 enhancement chips (Upscale, Color Pop, Cinematic Grade, Remove Background, Restore, Day↔Night, Vector Style, Anime, Oil, Watercolor, B&W Film, 35mm Grain, Studio Lighting, Clean BG, HDR), add an optional note, and hit Enhance. Powered by OpenAI gpt-image-1."}},
-      {"@type":"Question","name":"What is the Reverse Engine?","acceptedAnswer":{"@type":"Answer","text":"Reverse Engine is image-to-prompt. Upload any reference image and PromptMeGood reads it with GPT-4o vision, returns a usable image prompt, and auto-fills matching Photography Suite picks (style, camera, lighting, composition, palette)."}},
+      {"@type":"Question","name":"What is the Reverse Engine?","acceptedAnswer":{"@type":"Answer","text":"Reverse Engine is image-to-prompt. Upload any reference image and PromptMeGood reads it with GPT-4.1 vision, returns a usable image prompt, and auto-fills matching Photography Suite picks (style, camera, lighting, composition, palette)."}},
       {"@type":"Question","name":"What is the Prompt DNA Card?","acceptedAnswer":{"@type":"Answer","text":"After you generate an image, the DNA Card composes a shareable 1080×1350 PNG that pairs the image with the exact prompt that made it — perfect for X, Instagram, and Pinterest. Built entirely on your device."}},
       {"@type":"Question","name":"How does Storyboard work?","acceptedAnswer":{"@type":"Answer","text":"In the Video panel, type a story concept and tap Generate Storyboard. PromptMeGood returns a 5-shot cinematic storyboard with rendered frames, then a Send to Video button hands the shot list back to the Video panel as a multi-shot video prompt."}},
       {"@type":"Question","name":"What is Growth Mode?","acceptedAnswer":{"@type":"Answer","text":"Growth Mode is a marketing prompt drawer that opens from the 💼 icon in the topbar. Set your Brand Voice (audience and tone) once, then build a Social Pack across multiple platforms in one shot or focus on a single platform with a specific content type and goal. The assembled prompt drops into the Text panel and runs automatically."}},
@@ -90,6 +91,7 @@
     a:focus-visible, button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px; }
     .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary); font-size: 0.82em; font-weight: 600; }
     .pill.beta { background: color-mix(in srgb, #c47b00 14%, transparent); color: #a06700; }
+    .pill.new { background: color-mix(in srgb, var(--primary) 22%, transparent); color: var(--primary); }
     .step-grid { display: grid; gap: 14px; margin: 1rem 0 1.5rem; }
     .step { display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start; padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-md); background: color-mix(in srgb, var(--primary) 4%, transparent); }
     .step-num { width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; }
@@ -139,6 +141,7 @@
         <nav class="toc" aria-label="On this page">
           <strong>On this page</strong>
           <a href="#three-panels">Three panels</a>
+          <a href="#coach">Clarity Coach</a>
           <a href="#text">Text</a>
           <a href="#photo">Photography</a>
           <a href="#video">Video</a>
@@ -153,32 +156,45 @@
         <h2 id="three-panels">The three panels</h2>
         <p>The workstation has three inline panels that share one canvas — switch with the tabs at the top, no reload, no lost work.</p>
         <ul>
-          <li><strong>Text Prompts</strong> — turn an idea into a structured prompt for ChatGPT, Claude, Perplexity, or Gemini, or run it in-app with GPT-4o.</li>
+          <li><strong>Text Prompts</strong> — turn an idea into a structured prompt for ChatGPT, Claude, Perplexity, or Gemini, or run it in-app with GPT-4.1.</li>
           <li><strong>Photography</strong> — design photo briefs for DALL·E, Midjourney, gpt-image-1, and friends. Includes the Image Workshop photo enhancer and the Reverse Engine image-to-prompt tool.</li>
           <li><strong>Video</strong> — direct AI video prompts for Sora-class models, plus the 5-shot Storyboard generator.</li>
         </ul>
         <p class="meta-line">Tip: deep-link a panel with <code>?panel=text</code>, <code>?panel=photography</code>, or <code>?panel=video</code> on <code>/app</code>.</p>
 
+        <h2 id="coach">The Clarity Coach <span class="pill new">New</span></h2>
+        <p>Every panel now shows a small live meter under your goal field — <strong>Too vague</strong>, <strong>Getting there</strong>, or <strong>Specific enough</strong>. Next to the meter is a tiny ⓘ button that opens a <strong>Clarity Checklist</strong>. Items light up green ✓ as you cover them.</p>
+        <ul>
+          <li><strong>Text Coach</strong>: Persona · Goal · Context · Constraints.</li>
+          <li><strong>Photo Coach</strong>: Subject · Lighting · Lens / Camera · Background.</li>
+          <li><strong>Video Coach</strong>: Subject · Action · Camera Direction · Visual Style.</li>
+        </ul>
+        <p class="meta-line">The Coach is read-only — it never changes your prompt. It just tells you what is still thin so you can decide whether to add more, or build it as-is.</p>
+
         <h2 id="text">Text Prompts in 30 seconds</h2>
         <div class="step-grid">
-          <div class="step"><span class="step-num">1</span><div><strong>Type one honest sentence.</strong> "Write a cold email to a SaaS director about our new analytics tool." That is enough. You will see live feedback (length, vague-word linter, quality meter) appear on desktop as you type.</div></div>
+          <div class="step"><span class="step-num">1</span><div><strong>Type one honest sentence.</strong> "Write a cold email to a SaaS director about our new analytics tool." That is enough. The Coach meter, character/token counter, and vague-word linter appear live as you type (desktop view).</div></div>
           <div class="step"><span class="step-num">2</span><div><strong>Tap "✨ Build My Prompt."</strong> Auto-Tune fires automatically — it reads your sentence and pre-fills the Tune Your Prompt panel (category, skill level, tone, format, length, language, personality), then builds the prompt. The Tune panel stays collapsed unless you want to adjust a pick. Need a starter idea? Tap the small ✨ link above the textarea to open the Prompt Whisperer.</div></div>
-          <div class="step"><span class="step-num">3</span><div><strong>Use it.</strong> You get a structured prompt with role, context, constraints, tone, format, and next steps — plus a strength score. Tap the bright <strong>▶ Run With AI Here</strong> button to execute it in-app with GPT-4o, or use the smaller ChatGPT / Claude / Perplexity / Gemini handoff buttons to copy + open the destination. Tap <strong>✨ Auto-Boost</strong> to rewrite once more for the strongest version (it may ask 1–3 quick clarifying questions first).</div></div>
+          <div class="step"><span class="step-num">3</span><div><strong>Use it.</strong> You get a structured prompt with role, context, constraints, tone, format, and next steps — plus a strength score. Tap the bright <strong>▶ Run With AI Here</strong> button to execute it in-app with GPT-4.1, or use the smaller ChatGPT / Claude / Perplexity / Gemini handoff buttons to copy + open the destination. Tap <strong>✨ Auto-Boost</strong> to rewrite once more for the strongest version (it may ask 1–3 quick clarifying questions first).</div></div>
         </div>
         <p class="meta-line">Backgrounded the tab? Your draft and tuning are restored automatically. Cleared by accident? A floating Restore banner brings back the last 7 days.</p>
+
+        <h3>Target Platform <span class="pill new">New</span></h3>
+        <p>Inside the 🎛️ Tune Your Prompt section there is a new optional <strong>Target Platform</strong> dropdown — pick <em>LinkedIn</em>, <em>Email</em>, <em>Blog</em>, or <em>Ad Copy</em> and PromptMeGood appends a short tone-and-format hint to your Extra Details so the build knows the destination surface. Pick "No platform" any time to remove it. The hint is fully visible — edit or delete it freely.</p>
 
         <h2 id="photo">Photography in 30 seconds</h2>
         <p>Switch to the Photography tab. The left side is your builder, the right side is the result.</p>
         <ul>
           <li><strong>Image Workshop</strong> — drop a JPG/PNG/WEBP (≤10 MB), pick from 15 enhancement chips (Upscale, Color Pop, Cinematic Grade, Remove BG, Restore, Day↔Night, Vector Style, Anime, Oil, Watercolor, B&amp;W Film, 35mm Grain, Studio Lighting, Clean BG, HDR), and tap <em>Enhance</em>. Download as PNG.</li>
-          <li><strong>Reverse Engine</strong> <span class="pill">image → prompt</span> — drop any reference image and PromptMeGood writes the prompt that would recreate it, then auto-fills the Photography Suite picks (style, camera, lighting, composition, palette).</li>
+          <li><strong>Reverse Engine</strong> <span class="pill">image → prompt</span> — drop any reference image and PromptMeGood writes the prompt that would recreate it (GPT-4.1 vision), then auto-fills the Photography Suite picks (style, camera, lighting, composition, palette).</li>
           <li><strong>Guided builder</strong> — fill the four labeled fields (Subject, Environment, Action, Style) and watch the <em>Live Preview</em> assemble your prompt in real time as you type. Prefer freeform? Tap the ↻ link to switch to a single textarea.</li>
+          <li><strong>Photo Coach <span class="pill new">New</span></strong> — the meter and ⓘ checklist live right under your goal. Quick-add chip <em>Leica Look</em> appends a single distinctive directive without disturbing what you wrote.</li>
           <li><strong>Advanced Tuning</strong> — collapsed by default. Expand to fine-tune Camera, Lighting, Color, and Pro Boosts (Quick-Start presets, Modes) with one-tap pills.</li>
           <li><strong>✨ Generate Image</strong> — runs gpt-image-1. After the result lands, tap <strong>🧬 DNA Card</strong> to export a 1080×1350 share card that pairs the image with its exact prompt.</li>
         </ul>
 
         <h2 id="video">Video in 30 seconds</h2>
-        <p>Switch to the Video tab. Fill the guided fields (Subject, Environment, Action, Style) — or switch to freeform — and watch the <em>Live Preview</em> build your prompt as you type. Optional Sora-style controls (shot type, camera movement, mood, style, duration, resolution) live inside <strong>Advanced Tuning</strong>, collapsed by default. Tap <strong>✨ Generate Video</strong> when ready, or tap <strong>🎞️ Generate Storyboard</strong> to turn your concept into a 5-shot cinematic sequence with rendered frames, then send the whole shot list back to the Video panel as a multi-shot prompt.</p>
+        <p>Switch to the Video tab. Fill the guided fields (Subject, Environment, Action, Style) — or switch to freeform — and watch the <em>Live Preview</em> build your prompt as you type. The <strong>Video Coach <span class="pill new">New</span></strong> meter and clarity checklist sit right beside the goal; quick-add chips <em>Viral</em> and <em>Luxury</em> drop in a single directive without overwriting what you wrote. Optional Sora-style controls (shot type, camera movement, mood, style, duration, resolution) live inside <strong>Advanced Tuning</strong>, collapsed by default. Tap <strong>✨ Generate Video</strong> when ready, or tap <strong>🎞️ Generate Storyboard</strong> to turn your concept into a 5-shot cinematic sequence with rendered frames, then send the whole shot list back to the Video panel as a multi-shot prompt.</p>
 
         <h2 id="growth">💼 Growth Mode</h2>
         <p>Tap the <strong>💼</strong> icon in the topbar to slide in the <strong>Growth Mode</strong> drawer — a marketing prompt workstation for business owners and creators. Three accordion sections, all optional:</p>

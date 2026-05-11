@@ -44,6 +44,40 @@
 
   var ROOT_ID = 'pmg-text-feedback';
   var STYLE_ID = 'pmg-text-feedback-styles';
+  var CLARITY_STYLE_ID = 'pmg-text-feedback-clarity-styles';
+
+  /* Clarity Checklist (txt-fb-2): four prompt-engineering
+     primitives detected by light keyword regex. Drives the small
+     ⓘ popover next to the meter. Coverage feeds nothing else —
+     scoring still uses length + vague-word count for back-compat. */
+  var CLARITY_ITEMS = [
+    {
+      key: 'persona',
+      label: 'Persona — who is asking, or who it is for',
+      test: function (t) {
+        return /\b(i'?m|i am|as a|my role|my job|i work|founder|developer|writer|designer|teacher|owner|manager|engineer|marketer|consultant|coach|student|for (?:a|an|my) [a-z]+)\b/i.test(t);
+      }
+    },
+    {
+      key: 'goal',
+      label: 'Goal — what success looks like',
+      test: function (t) { return (t || '').trim().length >= 10; }
+    },
+    {
+      key: 'context',
+      label: 'Context — situation, audience, why',
+      test: function (t) {
+        return /\b(for|because|so that|in order to|targeting|audience|aimed at|focused on|since|when|where|while|after|before|with the goal)\b/i.test(t);
+      }
+    },
+    {
+      key: 'constraints',
+      label: 'Constraints — length, format, tone, what to avoid',
+      test: function (t) {
+        return /\b(under \d|less than|max(?:imum)?|no more than|short|brief|long|in \d+|tone|style|format|words|sentences|paragraphs|chars|characters|bullet|table|markdown|json|xml|avoid|do not|don'?t|without)\b/i.test(t);
+      }
+    }
+  ];
 
   var TUNE_DEFAULTS = {
     category: '',
@@ -81,12 +115,47 @@
   };
 
   function injectStyles() {
-    if (document.getElementById(STYLE_ID)) return;
-    var link = document.createElement('link');
-    link.id = STYLE_ID;
-    link.rel = 'stylesheet';
-    link.href = '/styles/pmg-text-feedback.css?v=txt-fb-1';
-    document.head.appendChild(link);
+    if (!document.getElementById(STYLE_ID)) {
+      var link = document.createElement('link');
+      link.id = STYLE_ID;
+      link.rel = 'stylesheet';
+      link.href = '/styles/pmg-text-feedback.css?v=txt-fb-1';
+      document.head.appendChild(link);
+    }
+    /* Clarity tooltip styles inlined so we don't have to bump the
+       external CSS file's cache-buster every time. */
+    if (!document.getElementById(CLARITY_STYLE_ID)) {
+      var css =
+        '.pmg-tfb-clarity-wrap { position: relative; display: inline-flex; align-items: center; gap: 4px; }' +
+        '.pmg-tfb-clarity-btn { background: transparent; border: 1px solid color-mix(in srgb, var(--color-text, #ece9e2) 22%, transparent);' +
+        '  color: var(--color-text, #ece9e2); border-radius: 999px; width: 22px; height: 22px; padding: 0; cursor: pointer;' +
+        '  display: inline-flex; align-items: center; justify-content: center; font-size: 12px; line-height: 1; opacity: .8; }' +
+        '.pmg-tfb-clarity-btn:hover, .pmg-tfb-clarity-btn:focus-visible { opacity: 1; border-color: var(--color-primary, #3ee0a0);' +
+        '  color: var(--color-primary, #3ee0a0); outline: none; }' +
+        '.pmg-tfb-clarity-btn[aria-expanded="true"] { background: color-mix(in srgb, var(--color-primary, #3ee0a0) 12%, transparent);' +
+        '  border-color: var(--color-primary, #3ee0a0); color: var(--color-primary, #3ee0a0); opacity: 1; }' +
+        '.pmg-tfb-clarity-cap { font-size: 11px; color: color-mix(in srgb, var(--color-text, #ece9e2) 55%, transparent); }' +
+        '.pmg-tfb-clarity-pop { position: absolute; top: calc(100% + 6px); left: 0; min-width: 240px; max-width: 360px; z-index: 60;' +
+        '  background: var(--color-surface, #1c1b18); border: 1px solid var(--color-border, color-mix(in srgb, var(--color-text, #ece9e2) 18%, transparent));' +
+        '  border-radius: 10px; padding: 10px 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.35); }' +
+        '.pmg-tfb-clarity-pop[hidden] { display: none; }' +
+        '.pmg-tfb-clarity-title { font-weight: 700; font-size: 12px; margin: 0 0 6px; color: var(--color-text, #ece9e2); }' +
+        '.pmg-tfb-clarity-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }' +
+        '.pmg-tfb-clarity-list li { display: grid; grid-template-columns: 18px 1fr; gap: 8px; align-items: start;' +
+        '  font-size: 12px; line-height: 1.4; color: color-mix(in srgb, var(--color-text, #ece9e2) 80%, transparent); }' +
+        '.pmg-tfb-clarity-mark { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px;' +
+        '  border-radius: 50%; font-size: 11px; line-height: 1;' +
+        '  background: color-mix(in srgb, var(--color-text, #ece9e2) 8%, transparent);' +
+        '  color: color-mix(in srgb, var(--color-text, #ece9e2) 50%, transparent); }' +
+        '.pmg-tfb-clarity-list li[data-met="1"] .pmg-tfb-clarity-mark {' +
+        '  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 22%, transparent);' +
+        '  color: var(--color-primary, #3ee0a0); }' +
+        '.pmg-tfb-clarity-list li[data-met="1"] .pmg-tfb-clarity-text { color: var(--color-text, #ece9e2); }';
+      var style = document.createElement('style');
+      style.id = CLARITY_STYLE_ID;
+      style.textContent = css;
+      document.head.appendChild(style);
+    }
   }
 
   function getGoalEl() {
@@ -163,6 +232,21 @@
         '<div class="pmg-tfb-meter" data-tone="idle" aria-live="polite">',
           '<span class="pmg-tfb-meter-dot" aria-hidden="true"></span>',
           '<span class="pmg-tfb-meter-label">Start typing your goal</span>',
+        '</div>',
+        '<div class="pmg-tfb-clarity-wrap">',
+          '<button type="button" class="pmg-tfb-clarity-btn" aria-expanded="false" aria-controls="pmg-tfb-clarity-pop" aria-label="Show clarity checklist">ⓘ</button>',
+          '<span class="pmg-tfb-clarity-cap">Clarity</span>',
+          '<div id="pmg-tfb-clarity-pop" class="pmg-tfb-clarity-pop" hidden role="tooltip">',
+            '<div class="pmg-tfb-clarity-title">Clarity checklist</div>',
+            '<ul class="pmg-tfb-clarity-list">',
+              CLARITY_ITEMS.map(function (item) {
+                return '<li data-key="' + item.key + '" data-met="0">' +
+                         '<span class="pmg-tfb-clarity-mark" aria-hidden="true">○</span>' +
+                         '<span class="pmg-tfb-clarity-text">' + escapeHtml(item.label) + '</span>' +
+                       '</li>';
+              }).join(''),
+            '</ul>',
+          '</div>',
         '</div>',
         '<div class="pmg-tfb-counter" aria-live="off">',
           '<span class="pmg-tfb-count-chars">0 chars</span>',
@@ -263,6 +347,18 @@
     }).join('');
   }
 
+  function renderClarity(root, text) {
+    CLARITY_ITEMS.forEach(function (item) {
+      var li = root.querySelector('.pmg-tfb-clarity-list li[data-key="' + item.key + '"]');
+      if (!li) return;
+      var met = false;
+      try { met = !!item.test(text); } catch (_) {}
+      li.setAttribute('data-met', met ? '1' : '0');
+      var mark = li.querySelector('.pmg-tfb-clarity-mark');
+      if (mark) mark.textContent = met ? '✓' : '○';
+    });
+  }
+
   function render() {
     var root = ensureMounted();
     if (!root) return;
@@ -273,6 +369,7 @@
     renderMeter(root, text, vague);
     renderCounter(root, text);
     renderLinter(root, vague);
+    renderClarity(root, text);
   }
 
   /* ---------------- Wiring ---------------- */
@@ -303,7 +400,33 @@
       var chip = ev.target && ev.target.closest && ev.target.closest('.pmg-tfb-lchip');
       if (chip) {
         highlightWord(chip.getAttribute('data-vague'));
+        return;
       }
+      var clarityBtn = ev.target && ev.target.closest && ev.target.closest('.pmg-tfb-clarity-btn');
+      if (clarityBtn) {
+        ev.stopPropagation();
+        var pop = root.querySelector('.pmg-tfb-clarity-pop');
+        var open = clarityBtn.getAttribute('aria-expanded') === 'true';
+        clarityBtn.setAttribute('aria-expanded', open ? 'false' : 'true');
+        if (pop) pop.hidden = open;
+      }
+    });
+    /* Click-outside to close the clarity popover. */
+    document.addEventListener('click', function (ev) {
+      var btn = root.querySelector('.pmg-tfb-clarity-btn');
+      if (!btn || btn.getAttribute('aria-expanded') !== 'true') return;
+      if (root.contains(ev.target)) return;
+      btn.setAttribute('aria-expanded', 'false');
+      var pop = root.querySelector('.pmg-tfb-clarity-pop');
+      if (pop) pop.hidden = true;
+    });
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key !== 'Escape') return;
+      var btn = root.querySelector('.pmg-tfb-clarity-btn');
+      if (!btn || btn.getAttribute('aria-expanded') !== 'true') return;
+      btn.setAttribute('aria-expanded', 'false');
+      var pop = root.querySelector('.pmg-tfb-clarity-pop');
+      if (pop) pop.hidden = true;
     });
   }
 
