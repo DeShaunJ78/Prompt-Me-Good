@@ -254,6 +254,21 @@
                body.pmg-has-result. Pills wire via delegated click
                handler installed below in setupInspirationFeed(). */
             '<div class="pmgv3-inspiration-feed">',
+              /* if-9-startfast-first: Start Fast pills moved ABOVE See What's
+                 Possible so the actionable templates are visible above the
+                 fold on 1280x900 desktop. Previously two tall Before/After
+                 cards (~360px combined) pushed Start Fast below the visible
+                 area with no scroll affordance — users couldn't see the
+                 pills exist. Order is now: 3-step ladder → Start Fast pills
+                 → Before/After cards (still visible by scroll). */
+              '<div class="pmgv3-if-section">',
+                '<div class="pmgv3-if-heading">Start Fast</div>',
+                '<div class="pmgv3-if-pills">',
+                  '<button type="button" class="pmgv3-if-pill" data-pmg-tpl-fill="Write a cold email that gets replies">Write a cold email that gets replies</button>',
+                  '<button type="button" class="pmgv3-if-pill" data-pmg-tpl-fill="Fix my website\u2019s landing page copy">Fix my website\u2019s landing page copy</button>',
+                  '<button type="button" class="pmgv3-if-pill" data-pmg-tpl-fill="Brainstorm 10 viral TikTok ideas for my niche">10 viral TikTok ideas</button>',
+                '</div>',
+              '</div>',
               '<div class="pmgv3-if-section">',
                 '<div class="pmgv3-if-heading">See What\u2019s Possible</div>',
                 '<div class="pmgv3-if-examples">',
@@ -285,14 +300,6 @@
                       '</div>',
                     '</div>',
                   '</div>',
-                '</div>',
-              '</div>',
-              '<div class="pmgv3-if-section">',
-                '<div class="pmgv3-if-heading">Start Fast</div>',
-                '<div class="pmgv3-if-pills">',
-                  '<button type="button" class="pmgv3-if-pill" data-pmg-tpl-fill="Write a cold email that gets replies">Write a cold email that gets replies</button>',
-                  '<button type="button" class="pmgv3-if-pill" data-pmg-tpl-fill="Fix my website\u2019s landing page copy">Fix my website\u2019s landing page copy</button>',
-                  '<button type="button" class="pmgv3-if-pill" data-pmg-tpl-fill="Brainstorm 10 viral TikTok ideas for my niche">10 viral TikTok ideas</button>',
                 '</div>',
               '</div>',
             '</div>',
