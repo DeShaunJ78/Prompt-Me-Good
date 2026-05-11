@@ -81,9 +81,14 @@
     main { flex: 1; padding: 2.5rem 0 3rem; }
     .pricing-hero { text-align: center; margin: 0 0 var(--space-7); }
     .eyebrow { display: inline-block; padding: 4px 12px; background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary); border-radius: 999px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: var(--space-3); }
-    .pricing-hero h1 { font-size: var(--text-2xl); margin: 0 0 var(--space-3); line-height: 1.15; }
-    .pricing-hero p { color: var(--muted); max-width: 760px; margin: 0 auto; font-size: var(--text-md); }
-    .pricing-hero p strong { color: var(--text); }
+    .pricing-hero h1 { font-size: var(--text-2xl); margin: 0 0 var(--space-4); line-height: 1.15; }
+    /* hero-lede-1: centered hero copy reads poorly as a long wall of text.
+       Split into a short lede + smaller sub so it scans as a professional
+       headline-and-subhead, not fine print. Narrower max-width for better
+       line length (~55ch). */
+    .pricing-hero-lede { color: var(--text); max-width: 620px; margin: 0 auto var(--space-3); font-size: 1.15rem; line-height: 1.5; font-weight: 500; }
+    .pricing-hero-sub { color: var(--muted); max-width: 620px; margin: 0 auto; font-size: 0.95rem; line-height: 1.6; }
+    .pricing-hero-lede strong, .pricing-hero-sub strong { color: var(--text); }
 
     #pmg-checkout-cancel-notice { max-width: 720px; margin: 0 auto var(--space-6); padding: 14px 18px; border-radius: 12px; background: color-mix(in srgb, var(--primary) 8%, transparent); border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent); color: var(--text); font-size: 0.95rem; text-align: left; }
 
@@ -239,7 +244,8 @@
       </div>
       <span class="eyebrow">Pricing</span>
       <h1>Simple, Honest Pricing</h1>
-      <p>Start free, no signup. The structured <strong>Prompt Builder</strong> and the <strong>Photography Suite</strong> are unlimited. Run With AI, image generation, and video generation come with small daily caps on the free tier. The <strong>Expert Command Center</strong> (Diagnose · Architect · Tune · Variations · Save) is included on every paid plan. Lock in lifetime access at $79 with our one-time <strong>Founding Member</strong> deal — first 500 buyers, price locked for life. Or wait for monthly <strong>Pro</strong> at $9/mo and yearly <strong>Pro</strong> at $79/yr. Fair use limits apply.</p>
+      <p class="pricing-hero-lede">Start free. No signup, no credit card. All three panels — Text, Photography, Video — included.</p>
+      <p class="pricing-hero-sub">Lock in lifetime access for <strong>$79</strong> with our one-time <strong>Founding Member</strong> deal — first 500 buyers, price locked for life. Pro Monthly (<strong>$9/mo</strong>) and Pro Yearly (<strong>$79/yr</strong>) launch soon.</p>
     </section>
 
     <section class="container">
