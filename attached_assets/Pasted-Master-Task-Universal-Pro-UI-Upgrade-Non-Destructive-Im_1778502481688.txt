@@ -1,0 +1,42 @@
+Master Task: Universal “Pro” UI Upgrade (Non-Destructive Implementation)
+
+CRITICAL INSTRUCTION: SAFETY & STABILITY FIRST
+
+	•	DO NOT remove, replace, or overwrite any existing functionality.
+	•	DO NOT change the current layout, spacing, or core user flow.
+	•	ADDITIVE ONLY: All new features must be implemented as non-destructive layers.
+	•	REGRESSION CHECK: After implementation, verify that the “Build My Prompt” button, the panel switching, and the existing generation logic still work exactly as they do now.
+
+Goal: Implement a consistent “Coach, Chips, and Presets” framework across all three panels.
+
+1. The “Coach” Component (Live Feedback Extension)
+	•	Placement: Next to the “Build My Prompt” button.
+	•	Logic: Extend the existing Text Quality Meter logic to the Photo and Video panels. Do not replace the existing Text meter; simply add the “Clarity Checklist” tooltip to it.
+	•	UI: A small, muted meter. On hover/tap, show a tooltip checklist:
+	◦	Text Panel: Persona, Goal, Context, Constraints.
+	◦	Photo Panel: Subject, Lighting, Lens/Camera, Background.
+	◦	Video Panel: Subject, Action, Camera Direction, Visual Style.
+
+2. The “Chips” Component (Quick Enhancements)
+	•	Placement: A single row of small, muted buttons in the empty space directly under the main textarea.
+	•	Logic: Appends the keyword to the user’s input. Must not clear the existing text.
+	•	Data:
+	◦	Text: `Friendly`, `Professional`, `Bullets`, `Table`, `Concise`.
+	◦	Photo: `35mm Film`, `Shot on iPhone`, `Leica Look`, `Minimalist`, `Studio Lighting`.
+	◦	Video: `Cinematic`, `Viral`, `Luxury`, `Realistic`, `Product Ad`.
+
+3. The “Presets” Component (Target Platform)
+	•	Placement: Inside the existing “Tuning” / “Settings” section (which is already secondary/collapsed).
+	•	UI: A new dropdown labeled “Target Platform.”
+	•	Data:
+	◦	Text: `LinkedIn`, `Email`, `Blog`, `Ad Copy`.
+	◦	Photo: `1:1`, `16:9`, `9:16`, `4:5`.
+	◦	Video: `TikTok/Reel`, `YouTube`, `Product Ad`, `Trailer`.
+
+4. Video Specific: Interactive Storyboard
+	•	Placement: Inside the 5-shot storyboard output.
+	•	UI: Add a tiny `🔄` (Regenerate) and `🔒` (Lock) icon to the corner of each shot box.
+	•	Logic: Enhance the existing output. “Lock” prevents that shot from being changed when the user clicks “Re-build.”
+
+
+This version is as safe as it gets. It tells Replit that the current site is the priority and these new features are guests, not replacements. Send this over and you’ll have the best of both worlds: your current fluid site, plus a pro-level toolkit.
