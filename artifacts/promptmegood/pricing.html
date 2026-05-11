@@ -84,11 +84,12 @@
     /* hero-lede-4: bigger, more confident hero. H1 uses clamp() so it
        scales up on desktop (~3.25rem) without overflowing on mobile. */
     .pricing-hero h1 { font-size: clamp(2rem, 4.5vw, 3.25rem); margin: 0 0 var(--space-4); line-height: 1.1; letter-spacing: -0.01em; }
-    /* Centered text blocks at 720px to match the site's recurring width
-       (#pmg-checkout-cancel-notice, .early-access). Lede = larger
-       headline-style line, sub = muted supporting copy. */
-    .pricing-hero-lede { color: var(--text); max-width: 720px; margin: 0 auto var(--space-3); font-size: 1.2rem; line-height: 1.55; font-weight: 500; text-wrap: balance; }
-    .pricing-hero-sub { color: var(--muted); max-width: 720px; margin: 0 auto; font-size: 1rem; line-height: 1.6; text-wrap: balance; }
+    /* hero-lede-5: hero text spans the same width as the pricing grid
+       (full .container) so it visually aligns with the cards below.
+       text-wrap: balance distributes lines evenly so it doesn't read
+       as a dense wall of text at wider viewports. */
+    .pricing-hero-lede { color: var(--text); margin: 0 auto var(--space-3); font-size: 1.2rem; line-height: 1.55; font-weight: 500; text-wrap: balance; }
+    .pricing-hero-sub { color: var(--muted); margin: 0 auto; font-size: 1rem; line-height: 1.6; text-wrap: balance; }
     .pricing-hero h1 { text-wrap: balance; }
     .pricing-hero-lede strong, .pricing-hero-sub strong { color: var(--text); }
 
