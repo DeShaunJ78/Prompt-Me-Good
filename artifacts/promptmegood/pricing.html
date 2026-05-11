@@ -79,7 +79,12 @@
     #pmg-nav-expert-link:hover { color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent); }
 
     main { flex: 1; padding: 3rem 0 3rem; }
-    .pricing-hero { text-align: center; margin: 0 0 var(--space-7); padding: var(--space-3) 0 var(--space-2); }
+    /* hero-center-fix: belt-and-suspenders centering. text-align:center alone
+       was rendering the hero offset to the left of the cards below. Flex column
+       + align-items:center forces every child (eyebrow, h1, lede, sub) to be
+       horizontally centered within the .container regardless of cascade. */
+    .pricing-hero { text-align: center; display: flex; flex-direction: column; align-items: center; margin: 0 auto var(--space-7); padding: var(--space-3) 0 var(--space-2); }
+    .pricing-hero > * { max-width: 100%; }
     .eyebrow { display: inline-block; padding: 4px 12px; background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary); border-radius: 999px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: var(--space-4); }
     /* hero-lede-4: bigger, more confident hero. H1 uses clamp() so it
        scales up on desktop (~3.25rem) without overflowing on mobile. */
