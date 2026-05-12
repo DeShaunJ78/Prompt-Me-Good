@@ -622,7 +622,7 @@
           setGoalText(tuned);
           showStatusPill('Expert Settings Applied');
           track('expert_center_apply', { source: 'diagnose' });
-          closeDrawer();
+          applyAndBuild();
         } }
     ]));
   }
@@ -720,7 +720,7 @@
           setGoalText(built);
           showStatusPill('Architect Structure Applied');
           track('expert_center_apply', { source: 'engineer' });
-          closeDrawer();
+          applyAndBuild();
         } }
     ]));
   }
@@ -817,7 +817,7 @@
           setGoalText(tuned);
           showStatusPill('Tuning Applied');
           track('expert_center_apply', { source: 'tune' });
-          closeDrawer();
+          applyAndBuild();
         } }
     ]));
   }
@@ -1046,6 +1046,34 @@
       try { _previousFocus.focus(); } catch (e) {}
     }
     track('expert_center_close', { applied: _appliedThisSession });
+  }
+
+  /* ecc-apply-builds-1: Every "Apply ___" button in ECC used to only
+     rewrite #goal + close the drawer, leaving the user staring at an
+     empty result box wondering why nothing built. Users consistently
+     read "Apply" as "Apply AND build it now." Also close the
+     surrounding Tune Prompt overlay (if open) so the result panel is
+     visible, then click #generateBtn so the result actually populates.
+     Keeps a single source of truth for the build trigger so the form
+     submit handler in app.html is the only place that knows how to
+     build a prompt. */
+  function applyAndBuild() {
+    closeDrawer();
+    /* Close Tune Prompt overlay if it's the parent context — without
+       this, the result panel stays hidden behind the modal backdrop. */
+    try {
+      var ov = document.getElementById('pmg-tune-overlay');
+      if (ov && ov.classList.contains('is-open') && window.pmgTuneChips
+          && typeof window.pmgTuneChips.close === 'function') {
+        window.pmgTuneChips.close(false);
+      }
+    } catch (_) {}
+    /* Two ticks so chassis observers + overlay close animations
+       settle, then submit the form via the canonical Build button. */
+    window.setTimeout(function () {
+      var gen = document.getElementById('generateBtn');
+      if (gen) try { gen.click(); } catch (_) {}
+    }, 80);
   }
 
   /* ecc-go-to-prompt-1: When ECC's Diagnose tab opens with an empty

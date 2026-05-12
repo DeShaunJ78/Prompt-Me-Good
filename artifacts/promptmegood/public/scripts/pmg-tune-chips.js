@@ -777,6 +777,19 @@
     }, 200);
   }
 
+  /* ecc-apply-builds-1: expose minimal public API so ECC's Apply
+     buttons can close the surrounding Tune overlay before firing
+     Build. close(buildAfter) mirrors closeOverlay's signature. */
+  window.pmgTuneChips = {
+    close: function (buildAfter) {
+      try { closeOverlay(!!buildAfter); } catch (_) {}
+    },
+    isOpen: function () {
+      var ov = document.getElementById('pmg-tune-overlay');
+      return !!(ov && ov.classList.contains('is-open'));
+    }
+  };
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
   } else {
