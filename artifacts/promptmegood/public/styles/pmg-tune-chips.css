@@ -155,15 +155,24 @@ html.pmg-chassis-v3 .pmg-chip.is-more {
    border + dimmer text so it reads as "open everything else". */
 html.pmg-chassis-v3 .pmg-tune-and-build.pmg-chip.is-tune-build {
   background: transparent;
-  border-style: dashed;
-  border-color: color-mix(in srgb, var(--color-primary, #3ee0a0) 35%, transparent);
-  color: color-mix(in srgb, var(--color-primary, #3ee0a0) 85%, white);
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--color-primary, #3ee0a0) 30%, transparent);
+  color: color-mix(in srgb, var(--color-primary, #3ee0a0) 80%, white);
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
+  font-size: 12px;
+  padding: 6px 12px;
 }
 html.pmg-chassis-v3 .pmg-tune-and-build.pmg-chip.is-tune-build:hover {
   border-color: var(--color-primary, #3ee0a0);
   background: color-mix(in srgb, var(--color-primary, #3ee0a0) 10%, transparent);
+  color: var(--color-primary, #3ee0a0);
+}
+
+/* Single-pill row: align quietly to the right under the textarea. */
+html.pmg-chassis-v3 .pmg-chip-row--single {
+  justify-content: flex-end;
+  margin-top: 6px;
 }
 
 /* "✓ Done — back to Build" bar appended to the bottom of .tuning-section

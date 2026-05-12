@@ -411,19 +411,12 @@
     rowEl.setAttribute('aria-label', 'Quick prompt tuning');
     rowEl.id = 'pmg-tune-chip-row';
 
-    MAIN.forEach(function (def) {
-      var c = makeChip(def);
-      if (c) rowEl.appendChild(c);
-    });
-
-    // Only show "More" if at least one MORE select exists.
-    var hasMore = MORE.some(function (def) { return !!$(def.id); });
-    if (hasMore) {
-      moreChipEl = makeMoreChip();
-      rowEl.appendChild(moreChipEl);
-    }
-
-    // Tune & Build sits at the end of the chip row as a quiet ghost link.
+    // Per latest UX direction: do NOT render inline tuning chips. Offer
+    // a single quiet "Prompt Tuning" pill aligned right under the
+    // textarea — opens the full tuning section on click. The chip /
+    // popover infrastructure above is kept dormant in case we want to
+    // revisit a chip-row variant later.
+    rowEl.classList.add('pmg-chip-row--single');
     rowEl.appendChild(makeTuneAndBuildChip());
 
     // Mount as the immediate next sibling of the textarea, so the chips
