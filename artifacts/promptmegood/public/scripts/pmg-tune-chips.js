@@ -337,6 +337,25 @@
 
   function openFullTuning() {
     document.body.classList.add('pmg-tune-section-shown');
+    // The auto-open guard parks inline `display:none !important` and a
+    // `hidden` attribute on #tuning-panel to defeat the chassis-v3
+    // restoreSession()/Analyze auto-reveal. Inline !important beats our
+    // body-class CSS rule, so we MUST explicitly clear those here when
+    // the user opens the panel themselves.
+    var panel = document.getElementById('tuning-panel');
+    if (panel) {
+      panel.style.removeProperty('display');
+      panel.removeAttribute('hidden');
+      panel.classList.remove('is-collapsed');
+    }
+    // Same defensive unhide for the inner settings container — the
+    // chassis sometimes leaves it data-pmgv3-collapsed.
+    var sp = document.getElementById('settingsPanel');
+    if (sp) {
+      sp.style.removeProperty('display');
+      sp.removeAttribute('hidden');
+      sp.removeAttribute('data-pmgv3-collapsed');
+    }
     var toggle = $('tuning-mobile-toggle');
     if (toggle) {
       var section = toggle.closest('.tuning-section');
