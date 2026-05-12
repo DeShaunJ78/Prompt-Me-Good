@@ -137,6 +137,38 @@
       try { localStorage.setItem(STORAGE_KEY, detailsEl.open ? '1' : '0'); } catch (_) {}
     });
     wireScrollIntoView(detailsEl);
+    wireExplicitToggle(detailsEl);
+  }
+
+  /* adv-mirror-10: bypass native <details>/<summary> mobile flakiness
+     entirely. User reported still needing two taps on mobile after
+     adv-mirror-9 (touch-action:manipulation). Native <summary> toggle
+     can race with concurrent listeners + MutationObservers (we have
+     several hanging off this details: persistOpenState, scrollIntoView,
+     toggle storage). Some mobile browsers also queue the toggle behind
+     a layout pass that never happens if we trigger a scroll on the same
+     tap. Fix: intercept click on the summary, preventDefault to kill
+     the native toggle, manually flip details.open, then dispatch a
+     synthetic 'toggle' event so all our listeners still fire exactly
+     once and in the order we wired them. Idempotent — guard prevents
+     double-wire if persistOpenState is somehow called twice. */
+  function wireExplicitToggle(detailsEl) {
+    if (detailsEl.__pmgExplicitToggleWired) return;
+    detailsEl.__pmgExplicitToggleWired = true;
+    var summary = detailsEl.querySelector(':scope > summary');
+    if (!summary) return;
+    summary.addEventListener('click', function (e) {
+      /* Only handle primary clicks / taps. Let middle/right click
+         and modifier-clicks fall through (they're rare on a summary
+         but not worth breaking). */
+      if (e.button !== undefined && e.button !== 0) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      e.stopPropagation();
+      detailsEl.open = !detailsEl.open;
+      /* Dispatch toggle so persistOpenState + wireScrollIntoView fire. */
+      try { detailsEl.dispatchEvent(new Event('toggle')); } catch (_) {}
+    });
   }
 
   /* adv-mirror-8: smooth-scroll the <details> into a comfortable spot
@@ -253,6 +285,7 @@
       try { localStorage.setItem('pmg:advmirror:mmpro:orig:open', wrap.open ? '1' : '0'); } catch (_) {}
     });
     wireScrollIntoView(wrap);
+    wireExplicitToggle(wrap);
     orig.parentNode.insertBefore(wrap, orig);
     wrap.appendChild(sum);
     wrap.appendChild(orig);
@@ -319,6 +352,7 @@
       try { localStorage.setItem('pmg:advmirror:mmpro:open', sub.open ? '1' : '0'); } catch (_) {}
     });
     wireScrollIntoView(sub);
+    wireExplicitToggle(sub);
     mirrorRow.parentNode.insertBefore(sub, mirrorRow.nextSibling);
     wireMmproClone(orig, clone);
     return true;
