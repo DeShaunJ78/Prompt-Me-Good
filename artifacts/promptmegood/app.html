@@ -11977,7 +11977,8 @@ Context:
             _rb.textContent = '\u25B6 Run With AI';
           }
         }
-        if (prompt.length > 6000) {
+        // run-cap-1: aligned to server RUN_MAX_INPUT=8000.
+        if (prompt.length > 8000) {
           // cv3-60: replace the legacy alert() with a graceful inline
           // warning + visually-dimmed (but still clickable) button +
           // pulse on the Send-To grid.

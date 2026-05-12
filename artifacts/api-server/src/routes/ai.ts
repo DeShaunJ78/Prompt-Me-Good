@@ -461,7 +461,14 @@ router.post("/generate-stream", generateLimiter, generateCostCheck, async (req, 
 // builds an optimized prompt template) — this is the "run with AI" feature
 // that lets users see what their prompt actually produces, in-app.
 const RUN_MODEL = "gpt-4.1";
-const RUN_MAX_INPUT = 2000;
+// run-cap-1: bumped 2000 → 8000. Real generated prompts (especially with
+// Pro Tuning, expert mode, or storyboard-style multi-shot specs) routinely
+// land at 3-5k chars; the 2k ceiling was rejecting valid output from our
+// own builder. 8000 chars ≈ 2k tokens — well under gpt-4.1's 1M context
+// window and matches the client preview warning so the UI and server
+// agree. Sanitize middleware MAX_INPUT_CHARS=6000 is for goal/build
+// inputs, not run inputs, so it doesn't conflict.
+const RUN_MAX_INPUT = 8000;
 const RUN_MAX_OUTPUT_TOKENS = 1000;
 const RUN_SYSTEM_PROMPT =
   "You are a helpful, direct AI assistant. Execute the user's prompt exactly as instructed. Be specific, practical, and thorough.";
@@ -481,7 +488,7 @@ router.post("/run", runLimiter, runCostCheck, userCapEnforce("run"), async (req,
     res.status(400).json({
       success: false,
       ok: false,
-      error: "Prompt is too long. Please shorten it.",
+      error: `Prompt is too long (${prompt.length} chars). Max ${RUN_MAX_INPUT}.`,
     });
     return;
   }
