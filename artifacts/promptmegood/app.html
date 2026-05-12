@@ -4072,7 +4072,7 @@
     }
   </style>
   <link rel="stylesheet" href="/styles/pmg-g-theme.css?v=g2-teal-2" />
-  <link rel="stylesheet" href="/styles/pmg-chassis-v3.css?v=cta-color-token-2-sendto-2line-mhdr2" />
+  <link rel="stylesheet" href="/styles/pmg-chassis-v3.css?v=cta-color-token-2-sendto-2line-mhdr2-stream1" />
   <link rel="stylesheet" href="/styles/pmg-visual-studio.css?v=mux-2-adv-tuning" />
   <link rel="stylesheet" href="/styles/pmg-storyboard.css?v=sb-7" />
   <link rel="stylesheet" href="/styles/pmg-auto-boost.css?v=ab-8-under-strength" />
@@ -8847,6 +8847,13 @@ Context:
         const localPrompt = generatePrompt(data);
 
         function finalize(promptText) {
+          // no-jank-1: ensure the streaming indicator is cleared before we
+          // paint the final prompt, regardless of which path got us here
+          // (stream success, structured fallback, raw fallback, local).
+          try {
+            var rb = document.getElementById('resultBox');
+            if (rb && rb.classList) rb.classList.remove('is-streaming');
+          } catch (_) {}
           setPromptText(promptText);
           addToHistory(data, promptText);
           // T49 Fix My Prompt diff: announce a successful local-builder run so
@@ -8923,18 +8930,40 @@ Context:
 
         // AI-first STREAMING path. Shows live word-by-word output.
         // Fallback chain: stream → non-stream structured → local builder.
-        // We seed the box with a status line so the user sees activity even
-        // if the upstream model takes a moment to start streaming. The first
-        // streamed chunk replaces this seed (full text starts fresh).
-        setPromptText('Generating your prompt…');
+        // perf-stream-1: OpenAI's time-to-first-token is ~600-1500ms which
+        // historically left the box showing a static "Generating…" string.
+        // We replace that with a CSS-animated typing indicator (.is-streaming
+        // + ::after caret) so the wait FEELS alive instead of frozen, and
+        // we rAF-batch the per-chunk paints so bursts of small tokens don't
+        // trigger layout thrash. Same total time, dramatically lower
+        // perceived latency.
+        setPromptText('');
+        if (resultBox && resultBox.classList) resultBox.classList.add('is-streaming');
         if (resultBoxEl) resultBoxEl.classList.remove('is-clamped');
         if (resultBoxToggle) resultBoxToggle.classList.remove('is-visible');
         scrollToResult();
 
         let streamedText = '';
+        let pendingFull = null;
+        let rafId = 0;
+        function flushPending() {
+          rafId = 0;
+          if (pendingFull === null) return;
+          var next = pendingFull;
+          pendingFull = null;
+          // First real chunk arrived — drop the typing indicator, keep
+          // the streamed content from here on.
+          if (resultBox && resultBox.classList && resultBox.classList.contains('is-streaming')) {
+            resultBox.classList.remove('is-streaming');
+          }
+          setPromptText(next);
+        }
         function onChunk(_chunk, full) {
           streamedText = full;
-          setPromptText(full);
+          pendingFull = full;
+          if (rafId === 0) {
+            rafId = (window.requestAnimationFrame || function (cb) { return setTimeout(cb, 16); })(flushPending);
+          }
         }
 
         // Step-by-step fallback: stream → structured → raw → local.
@@ -8968,6 +8997,11 @@ Context:
         }
 
         function useLocalFallback() {
+          // no-jank-1: clear the streaming indicator before showing the
+          // error banner, otherwise the dots keep pulsing under the error.
+          try {
+            if (resultBox && resultBox.classList) resultBox.classList.remove('is-streaming');
+          } catch (_) {}
           // Surface a styled error banner with Try Again (Task #29).
           // The pmg-result-states overlay will catch this event and
           // show the inline error UI instead of silently swapping in
