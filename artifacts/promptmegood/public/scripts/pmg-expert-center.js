@@ -622,7 +622,7 @@
           setGoalText(tuned);
           showStatusPill('Expert Settings Applied');
           track('expert_center_apply', { source: 'diagnose' });
-          applyAndBuild();
+          applyAndClose();
         } }
     ]));
   }
@@ -720,7 +720,7 @@
           setGoalText(built);
           showStatusPill('Architect Structure Applied');
           track('expert_center_apply', { source: 'engineer' });
-          applyAndBuild();
+          applyAndClose();
         } }
     ]));
   }
@@ -817,7 +817,7 @@
           setGoalText(tuned);
           showStatusPill('Tuning Applied');
           track('expert_center_apply', { source: 'tune' });
-          applyAndBuild();
+          applyAndClose();
         } }
     ]));
   }
@@ -1048,19 +1048,20 @@
     track('expert_center_close', { applied: _appliedThisSession });
   }
 
-  /* ecc-apply-builds-1: Every "Apply ___" button in ECC used to only
-     rewrite #goal + close the drawer, leaving the user staring at an
-     empty result box wondering why nothing built. Users consistently
-     read "Apply" as "Apply AND build it now." Also close the
-     surrounding Tune Prompt overlay (if open) so the result panel is
-     visible, then click #generateBtn so the result actually populates.
-     Keeps a single source of truth for the build trigger so the form
-     submit handler in app.html is the only place that knows how to
-     build a prompt. */
-  function applyAndBuild() {
+  /* ecc-apply-visibility-1: ECC's Apply ___ buttons used to call
+     closeDrawer() only. That worked when ECC was opened directly
+     from the topbar gear, but when opened FROM INSIDE the Tune
+     Prompt overlay (the common entry now that we have a modal
+     overlay), closing ECC left the user staring at the still-open
+     Tune overlay — they never saw their freshly rewritten #goal and
+     reasonably concluded "ECC did nothing to my prompt."
+     applyAndClose closes ECC AND, if the Tune overlay is the parent
+     context, closes that too, dropping the user back at the workstation
+     with #goal visibly updated. We deliberately do NOT auto-fire Build
+     — the user should review the rewrite and choose whether to Run
+     With AI, send to ChatGPT/Claude, or build the engineered prompt. */
+  function applyAndClose() {
     closeDrawer();
-    /* Close Tune Prompt overlay if it's the parent context — without
-       this, the result panel stays hidden behind the modal backdrop. */
     try {
       var ov = document.getElementById('pmg-tune-overlay');
       if (ov && ov.classList.contains('is-open') && window.pmgTuneChips
@@ -1068,12 +1069,6 @@
         window.pmgTuneChips.close(false);
       }
     } catch (_) {}
-    /* Two ticks so chassis observers + overlay close animations
-       settle, then submit the form via the canonical Build button. */
-    window.setTimeout(function () {
-      var gen = document.getElementById('generateBtn');
-      if (gen) try { gen.click(); } catch (_) {}
-    }, 80);
   }
 
   /* ecc-go-to-prompt-1: When ECC's Diagnose tab opens with an empty
