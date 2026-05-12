@@ -4117,7 +4117,7 @@
       } catch (_) {}
     })();
   </script>
-  <script src="/scripts/pmg-chassis-v3.js?v=stale-session-1"></script>
+  <script src="/scripts/pmg-chassis-v3.js?v=run-reveal-1"></script>
   <script src="/scripts/pmg-visual-studio.js?v=mux-2-adv-tuning" defer></script>
   <script src="/scripts/pmg-storyboard.js?v=sb-9" defer></script>
   <script src="/scripts/pmg-spark-panel.js?v=sp-6-mobile-questions" defer></script>
@@ -12243,14 +12243,36 @@ Context:
         // from the top action buttons leaves the response invisible far below
         // the fold (the response section sits at the bottom of #result-panel,
         // beneath the result box, improve block, what-next, and final actions).
+        // run-reveal-1 (2026-05-12): defensively clear any inline display:none
+        // (incl. !important) on respSection / out before measuring layout —
+        // earlier Start Over / chassis paths can leave them with inline
+        // display:none !important, which makes the section render at zero
+        // height. Then scroll the OUTPUT element (not the section wrapper)
+        // into the CENTER of the viewport, so the spinner/streaming text is
+        // the visually dominant element instead of the send-to grid below it.
         if (respSection) {
+          try {
+            respSection.removeAttribute('hidden');
+            respSection.style.removeProperty('display');
+            respSection.style.removeProperty('visibility');
+          } catch (_) {}
+        }
+        if (out) {
+          try {
+            out.removeAttribute('hidden');
+            out.style.removeProperty('display');
+            out.style.removeProperty('visibility');
+          } catch (_) {}
+        }
+        var __scrollTarget = out || respSection;
+        if (__scrollTarget) {
           window.setTimeout(function () {
             try {
               var behavior = (window.PMG_A11Y && typeof window.PMG_A11Y.scrollBehavior === 'function')
                 ? window.PMG_A11Y.scrollBehavior() : 'smooth';
-              respSection.scrollIntoView({ behavior: behavior, block: 'start' });
+              __scrollTarget.scrollIntoView({ behavior: behavior, block: 'center' });
             } catch (_) {
-              try { respSection.scrollIntoView(); } catch (__) {}
+              try { __scrollTarget.scrollIntoView(); } catch (__) {}
             }
           }, 50);
         }

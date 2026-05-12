@@ -1578,18 +1578,54 @@
     }, 800);
 
     // Run with AI: reveal Box 2 + delegate to legacy #runBtn
+    // run-reveal-1 (2026-05-12): users reported "clicking Run With AI Here
+    // scrolls me to the ChatGPT/Claude buttons instead of running". Two
+    // root causes:
+    //   1. #ai-response-box ships with style="display:none !important" and
+    //      #aiResponseSection can be inline-hidden via Start Over with
+    //      !important. Plain `box.style.display = ''` and `.hidden = false`
+    //      silently fail to clear !important inline declarations in some
+    //      browsers/states. Result: outer box reveals but inner section
+    //      stays hidden → zero-height response area → scrollIntoView lands
+    //      on the empty box top, putting the send-to grid below it
+    //      dominantly in view.
+    //   2. The chassis scrolled the wrapper (block:'start') AND run() also
+    //      scrolled aiResponseSection 50ms later — competing scrolls.
+    // Fix: defensively removeProperty('display') on the box AND its inner
+    // section AND the output. Drop the chassis-side scroll — let run()
+    // handle the single authoritative scroll, which now centers on the
+    // output element so the spinner/streaming text is visually dominant.
     var runBtn = document.getElementById('run-with-ai-btn');
     if (runBtn) {
       runBtn.addEventListener('click', function () {
         var box = document.getElementById('ai-response-box');
-        if (box) { box.classList.remove('is-collapsed'); box.removeAttribute('hidden'); box.style.display = ''; }
+        var sec = document.getElementById('aiResponseSection');
+        var outEl = document.getElementById('aiResponseOutput');
+        if (box) {
+          box.classList.remove('is-collapsed');
+          box.removeAttribute('hidden');
+          box.style.removeProperty('display');
+          box.style.removeProperty('visibility');
+        }
+        if (sec) {
+          sec.removeAttribute('hidden');
+          sec.style.removeProperty('display');
+          sec.style.removeProperty('visibility');
+        }
+        if (outEl) {
+          outEl.removeAttribute('hidden');
+          outEl.style.removeProperty('display');
+          outEl.style.removeProperty('visibility');
+        }
         var legacyRun = document.getElementById('runBtn');
         if (legacyRun) {
           legacyRun.click();
         } else if (typeof window.runWithAI === 'function') {
           window.runWithAI();
         }
-        if (box) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // No scroll here — run() owns the single authoritative scroll
+        // 50ms after this returns. Two competing smooth-scrolls produced
+        // a "lands on the wrong element" jitter on Safari.
       });
     }
 
