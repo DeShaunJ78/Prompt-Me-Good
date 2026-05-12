@@ -335,6 +335,64 @@
     return btn;
   }
 
+  // ─── tc-9n: Desktop-only right-column relocation ────────────────────
+  // On desktop (≥769px), when the user opens Tune Your Prompt the
+  // section physically moves into the right column (replacing the
+  // empty-state placeholder / inspiration cards / current result while
+  // open) so it sits side-by-side with the textarea + Build button —
+  // no scrolling, no orphan bar at the bottom of the left column.
+  // CSS does the visual reorder so the priority fields ("How Should
+  // AI Think?" + "Who is this for?") surface BEFORE the dense pill
+  // grid via flex `order`. Mobile (<769px) keeps the original inline
+  // accordion flow — relocation is no-op below the breakpoint.
+  var DESKTOP_TUNE_MQ = (window.matchMedia && window.matchMedia('(min-width: 769px)')) || null;
+  var _tuneOriginalParent = null;
+  var _tuneOriginalNext = null;
+  function isDesktopTune() {
+    return DESKTOP_TUNE_MQ ? DESKTOP_TUNE_MQ.matches : (window.innerWidth >= 769);
+  }
+  function findTextRightColumn() {
+    return document.querySelector('.pmgv3-body[data-active-panel="text"] .pmgv3-right')
+        || document.querySelector('#pmgv3-panel-text .pmgv3-right')
+        || document.querySelector('.pmgv3-right');
+  }
+  function relocateTuningToRight() {
+    if (!isDesktopTune()) return;
+    var panel = document.getElementById('tuning-panel');
+    if (!panel) return;
+    var rightCol = findTextRightColumn();
+    if (!rightCol) return;
+    if (!_tuneOriginalParent && panel.parentNode && panel.parentNode !== rightCol) {
+      _tuneOriginalParent = panel.parentNode;
+      _tuneOriginalNext = panel.nextSibling;
+    }
+    if (panel.parentNode !== rightCol) {
+      try { rightCol.insertBefore(panel, rightCol.firstChild); } catch (_) {}
+    }
+    document.body.classList.add('pmg-tune-desktop-right');
+  }
+  function restoreTuningToLeft() {
+    document.body.classList.remove('pmg-tune-desktop-right');
+    var panel = document.getElementById('tuning-panel');
+    if (!panel || !_tuneOriginalParent) return;
+    if (panel.parentNode !== _tuneOriginalParent) {
+      try { _tuneOriginalParent.insertBefore(panel, _tuneOriginalNext || null); } catch (_) {}
+    }
+  }
+  // Resize across the breakpoint while the panel is open: snap to the
+  // correct home so the layout stays consistent.
+  if (DESKTOP_TUNE_MQ) {
+    var _onTuneMQChange = function () {
+      if (!document.body.classList.contains('pmg-tune-section-shown')) return;
+      if (DESKTOP_TUNE_MQ.matches) relocateTuningToRight();
+      else restoreTuningToLeft();
+    };
+    try {
+      if (DESKTOP_TUNE_MQ.addEventListener) DESKTOP_TUNE_MQ.addEventListener('change', _onTuneMQChange);
+      else if (DESKTOP_TUNE_MQ.addListener) DESKTOP_TUNE_MQ.addListener(_onTuneMQChange);
+    } catch (_) {}
+  }
+
   function openFullTuning() {
     document.body.classList.add('pmg-tune-section-shown');
     // tc-9k: chassis-v3 boot runs a 4-second hideTick poller (every
@@ -368,6 +426,9 @@
       sp.removeAttribute('data-pmgv3-collapsed');
     }
     injectDoneButton();
+    // tc-9n: desktop only — move the section into the right column so
+    // it sits side-by-side with the textarea + Build. No-op on mobile.
+    relocateTuningToRight();
     var oldBackdrop = document.getElementById('pmg-tune-backdrop');
     if (oldBackdrop && oldBackdrop.parentNode) oldBackdrop.parentNode.removeChild(oldBackdrop);
     // tc-9j: explicitly blur the goal textarea — if it had focus, iOS
@@ -469,6 +530,9 @@
 
   function closeFullTuningAndBuild() {
     document.body.classList.remove('pmg-tune-section-shown');
+    // tc-9n: put the section back in its original left-column home
+    // BEFORE Build fires so the result has the right column to itself.
+    restoreTuningToLeft();
     var panel = document.getElementById('tuning-panel');
     if (panel) {
       panel.classList.remove('is-mobile-open');
@@ -685,6 +749,8 @@
     var closeIfNeeded = function () {
       if (!document.body.classList.contains('pmg-tune-section-shown')) return;
       document.body.classList.remove('pmg-tune-section-shown');
+      // tc-9n: switching panels cleans up the desktop relocation too.
+      restoreTuningToLeft();
       var panel = document.getElementById('tuning-panel');
       if (panel) {
         panel.classList.remove('is-mobile-open');

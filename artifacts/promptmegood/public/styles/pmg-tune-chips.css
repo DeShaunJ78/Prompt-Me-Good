@@ -323,6 +323,37 @@ html.pmg-chassis-v3 body.pmg-tune-section-shown #tuning-panel .tuning-header {
   visibility: visible !important;
 }
 
+/* tc-9n: Desktop-only — when the user opens Tune Your Prompt, JS
+   physically relocates #tuning-panel into the .pmgv3-right column.
+   These rules then (a) hide everything else in the right column
+   (placeholder, inspiration cards, prior result) so the section owns
+   the right side while open, and (b) reorder the section's children
+   via flex `order` so the priority fields surface first:
+     1. .tuning-header           (🎛️ Tune Your Prompt)
+     2. .pmgv3-epic-tuning       (How Should AI Think? + Who is this for? + AOS mirror)
+     3. .pmgv3-tuning-host       (the dense pill grid: personality/tone/format/length)
+     4. .pmg-tune-done-bar       (Open Expert Center + ✓ Done — Build My Prompt)
+   The section drops its own internal cap because the right column
+   already provides scroll. The Done bar's position:sticky still
+   pins to the bottom of the right column's scroll viewport.
+   Mobile (<769px) is untouched — relocation is a no-op there. */
+@media (min-width: 769px) {
+  html.pmg-chassis-v3 body.pmg-tune-desktop-right .pmgv3-right > *:not(#tuning-panel) {
+    display: none !important;
+  }
+  html.pmg-chassis-v3 body.pmg-tune-desktop-right #tuning-panel {
+    display: flex !important;
+    flex-direction: column;
+    margin: 0;
+    max-height: none;
+    overflow: visible;
+  }
+  html.pmg-chassis-v3 body.pmg-tune-desktop-right #tuning-panel .tuning-header     { order: 0; }
+  html.pmg-chassis-v3 body.pmg-tune-desktop-right #tuning-panel .pmgv3-epic-tuning { order: 1; }
+  html.pmg-chassis-v3 body.pmg-tune-desktop-right #tuning-panel .pmgv3-tuning-host { order: 2; }
+  html.pmg-chassis-v3 body.pmg-tune-desktop-right #tuning-panel .pmg-tune-done-bar { order: 3; }
+}
+
 /* Mobile fit — chips wrap, popover narrows. */
 @media (max-width: 480px) {
   html.pmg-chassis-v3 .pmg-chip {
