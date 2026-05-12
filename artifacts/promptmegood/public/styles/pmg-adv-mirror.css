@@ -22,6 +22,25 @@ html.pmg-chassis-v3 .pmg-adv-mirror-summary {
   font-weight: 600;
   color: var(--color-text, #e8f3ec);
   -webkit-tap-highlight-color: color-mix(in srgb, var(--color-primary, #3ee0a0) 12%, transparent);
+  /* adv-mirror-9: kill mobile Safari's 300ms double-tap-to-zoom delay
+     so the first tap always registers. Without this, the gear card
+     needed two taps on iOS — first tap was consumed by the tap-zoom
+     heuristic (made worse by our scroll-into-view layout shift firing
+     inside that 300ms window). user-select:none prevents the long-press
+     text-selection menu from interfering with quick taps. */
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+/* adv-mirror-9: same fix for both "Show Pro options" sub-summaries
+   (mirror clone wrapper + original wrapper) so all three reveal
+   surfaces feel equally responsive on mobile. */
+html.pmg-chassis-v3 #pmg-mmpro-mirror-collapse > summary,
+html.pmg-chassis-v3 #pmg-mmpro-orig-collapse > summary {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 html.pmg-chassis-v3 .pmg-adv-mirror-summary::-webkit-details-marker { display: none; }
 html.pmg-chassis-v3 .pmg-adv-mirror-summary::marker { content: ''; }

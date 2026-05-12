@@ -556,7 +556,7 @@
       pane.appendChild(el('div', { class: 'pmg-ec-empty' }, [
         'Type a goal in the main prompt box to see your prompt strength score.',
         el('br'), el('br'),
-        el('button', { class: 'pmg-ec-primary', type: 'button', onclick: function () { closeDrawer(); var ta = $('#goal'); if (ta) try { ta.focus(); } catch (e) {} }, style: 'padding:10px 14px;border-radius:10px;border:0;background:var(--color-primary,#0f766e);color:#fff;font-weight:600;cursor:pointer;' }, 'Go To Prompt Box')
+        el('button', { class: 'pmg-ec-primary', type: 'button', onclick: function () { goToPromptBox(); }, style: 'padding:10px 14px;border-radius:10px;border:0;background:var(--color-primary,#0f766e);color:#fff;font-weight:600;cursor:pointer;' }, 'Go To Prompt Box')
       ]));
       return;
     }
@@ -1046,6 +1046,90 @@
       try { _previousFocus.focus(); } catch (e) {}
     }
     track('expert_center_close', { applied: _appliedThisSession });
+  }
+
+  /* ecc-go-to-prompt-1: When ECC's Diagnose tab opens with an empty
+     prompt box, the user sees a "Go To Prompt Box" button. Previously
+     it just called focus() on #goal — but that fails on mobile because
+     (a) #goal lives in the Text panel which may not be active (Photo /
+     Video tabs hide it), (b) focus() doesn't scroll the page on
+     mobile, and (c) without scroll the user has no idea anything
+     happened. This helper closes the drawer, switches to the Text
+     panel via chassis API, scrolls #goal smoothly into the comfortable
+     spot under the topbar, then focuses to pop the keyboard. We call
+     focus() BEFORE the rAF/scroll so we don't lose the user-gesture
+     window iOS requires for programmatic focus to open the keyboard.
+     preventScroll on focus avoids a double-scroll fight. Falls back
+     gracefully if any step fails. */
+  function goToPromptBox() {
+    closeDrawer();
+    try {
+      if (window.pmgChassisV3 && typeof window.pmgChassisV3.setActivePanel === 'function') {
+        window.pmgChassisV3.setActivePanel('text');
+      }
+    } catch (_) {}
+    var ta = document.getElementById('goal');
+    if (!ta) return;
+    /* First focus inside the user-gesture window so iOS will pop the
+       keyboard. preventScroll keeps our smooth-scroll in charge. */
+    try { ta.focus({ preventScroll: true }); } catch (e) {
+      try { ta.focus(); } catch (_) {}
+    }
+    /* Two rAF ticks so the panel switch and any layout settle before
+       we measure / scroll / re-focus. */
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        var liveTa = document.getElementById('goal') || ta;
+        /* Re-focus: the panel switch can blur the textarea by
+           reflowing the chassis layout. Focus again so the cursor
+           lands in the box even if the keyboard didn't already pop. */
+        if (document.activeElement !== liveTa) {
+          try { liveTa.focus({ preventScroll: true }); } catch (e) {
+            try { liveTa.focus(); } catch (_) {}
+          }
+        }
+        /* Smooth-scroll using the same pickScroller pattern as
+           pmg-adv-mirror.js — chassis v3 has its own inner scroll
+           container, so window.scrollTo is usually a no-op. */
+        try {
+          var topbar = document.querySelector('.pmgv3-topbar');
+          var stickyBottom = 0;
+          if (topbar) {
+            var tbRect = topbar.getBoundingClientRect();
+            if (tbRect.top <= 4 && tbRect.bottom > 0) stickyBottom = tbRect.bottom;
+          }
+          var rect = liveTa.getBoundingClientRect();
+          var delta = rect.top - (stickyBottom + 14);
+          if (Math.abs(delta) < 24) return;
+          var scroller = pickScrollerForGoal(liveTa);
+          var current = (scroller === window)
+            ? (window.scrollY || window.pageYOffset || 0)
+            : scroller.scrollTop;
+          var nextTop = current + delta;
+          if (scroller === window) {
+            window.scrollTo({ top: nextTop, behavior: 'smooth' });
+          } else {
+            try { scroller.scrollTo({ top: nextTop, behavior: 'smooth' }); }
+            catch (_) { scroller.scrollTop = nextTop; }
+          }
+        } catch (_) {
+          try { liveTa.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (__) {}
+        }
+      });
+    });
+  }
+
+  function pickScrollerForGoal(el) {
+    var node = el.parentNode;
+    while (node && node !== document.body && node.nodeType === 1) {
+      var cs = window.getComputedStyle(node);
+      var oy = cs.overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && node.scrollHeight > node.clientHeight + 1) {
+        return node;
+      }
+      node = node.parentNode;
+    }
+    return window;
   }
 
   /* =====================================================================
