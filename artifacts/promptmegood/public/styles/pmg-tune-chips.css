@@ -353,29 +353,34 @@ html.pmg-chassis-v3 body.pmg-tune-section-shown #tuning-panel .tuning-header {
   html.pmg-chassis-v3 body.pmg-tune-desktop-right #tuning-panel .pmgv3-tuning-host { order: 2; }
   html.pmg-chassis-v3 body.pmg-tune-desktop-right #tuning-panel .pmg-tune-done-bar { order: 3; }
 
-  /* tc-9o: header-level "Done — Build My Prompt" CTA, only visible
-     when the section is relocated to the right column. Lives inside
-     .tuning-header so it sits at the very top of the section — first
-     thing the user sees is the answer to "what do I do next?".
-     Hidden everywhere else (default + mobile) so the legacy header
-     layout is unchanged. */
-  html.pmg-chassis-v3 .tuning-header { align-items: center; }
+  /* tc-9o-fix1: header-level "Done — Build My Prompt" CTA. The
+     `.tuning-header` element is itself a <button> (the mobile collapse
+     toggle), so we cannot nest the Done button inside it without
+     producing invalid HTML. Instead we insert it as a SIBLING of
+     .tuning-header and pin it to the top-right of the relocated
+     section via position:absolute. The section itself becomes
+     position:relative on desktop relocation so the absolute coords
+     resolve against the correct box. The header button keeps its
+     own width / click target intact and the Done CTA sits visibly
+     to the right of the title text. */
   html.pmg-chassis-v3 #pmg-tune-done-top { display: none; }
+  html.pmg-chassis-v3 body.pmg-tune-desktop-right .tuning-section {
+    position: relative;
+  }
   html.pmg-chassis-v3 body.pmg-tune-desktop-right .tuning-header {
-    display: flex !important;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-    justify-content: space-between;
+    /* Reserve right-side space so the title doesn't run under the
+       absolutely-positioned Done CTA on narrower right columns. */
+    padding-right: 220px;
   }
   html.pmg-chassis-v3 body.pmg-tune-desktop-right #pmg-tune-done-top {
     display: inline-flex;
-    margin-left: auto;
-    /* Same teal CTA styling as the bottom Done — but slightly more
-       muted so the bottom one (after scrolling through tuning) still
-       reads as the primary commit moment. The pulse + border are
-       enough to draw the eye without competing. */
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary, #3ee0a0) 40%, transparent);
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    z-index: 5;
+    /* Slight extra emphasis so it reads as THE next step. */
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary, #3ee0a0) 50%, transparent),
+                0 4px 14px color-mix(in srgb, var(--color-primary, #3ee0a0) 22%, transparent);
   }
 }
 

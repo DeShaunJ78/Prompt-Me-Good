@@ -639,15 +639,27 @@
     if (!section) return;
 
     if (!document.getElementById('pmg-tune-done-top')) {
+      // tc-9o-fix1: `.tuning-header` is itself a <button> (the mobile
+      // collapse toggle, id `#tuning-mobile-toggle` — see chassis-v3.js
+      // line 213). Appending another <button> INSIDE it produced
+      // invalid HTML; the parser strips/relocates it and the visible
+      // CTA never appeared on desktop. Insert as a SIBLING right after
+      // the header button instead, then a CSS flex wrapper aligns
+      // them horizontally on desktop.
       var hdr = section.querySelector('.tuning-header');
-      if (hdr) {
+      if (hdr && hdr.parentNode) {
         var topBtn = document.createElement('button');
         topBtn.type = 'button';
         topBtn.id = 'pmg-tune-done-top';
         topBtn.className = 'pmg-tune-done pmg-tune-done--top';
         topBtn.innerHTML = '<span aria-hidden="true">✓</span> Done — Build My Prompt';
-        topBtn.addEventListener('click', closeFullTuningAndBuild);
-        hdr.appendChild(topBtn);
+        topBtn.addEventListener('click', function (e) {
+          // Stop the click from bubbling into the header button (which
+          // would toggle the mobile collapse state on the way through).
+          e.stopPropagation();
+          closeFullTuningAndBuild();
+        });
+        hdr.parentNode.insertBefore(topBtn, hdr.nextSibling);
       }
     }
 
