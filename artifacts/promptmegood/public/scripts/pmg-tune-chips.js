@@ -336,23 +336,17 @@
   }
 
   function openFullTuning() {
-    // Adding the body class is the primary visibility switch — the CSS
-    // rule `body.pmg-tune-chips-on:not(.pmg-tune-section-shown)
-    // .tuning-section { display:none !important }` flips off, and the
-    // panel becomes visible in its natural DOM position (right under
-    // the textarea / pill row inside .pmgv3-left).
     document.body.classList.add('pmg-tune-section-shown');
     var panel = document.getElementById('tuning-panel');
     if (panel) {
-      // Defensive: clear chassis-v3's initial inline display:none and
-      // any stale hidden attr / is-collapsed class so nothing competes
-      // with our reveal.
-      panel.style.removeProperty('display');
+      // Force visibility via INLINE style immediately. tc-9h: relying
+      // on a CSS body-class rule alone meant the first click's scroll
+      // could fire before the browser had committed the new computed
+      // style — landing on a still-hidden panel — and the user had to
+      // click twice. Inline display:block applies synchronously.
+      panel.style.setProperty('display', 'block', 'important');
       panel.removeAttribute('hidden');
       panel.classList.remove('is-collapsed');
-      // CRITICAL: chassis CSS hides .pmgv3-tuning-host unless the
-      // section has .is-mobile-open — on every viewport, not just
-      // mobile (cv3-47). Without it, the fields disappear.
       panel.classList.add('is-mobile-open');
       var toggle = $('tuning-mobile-toggle');
       if (toggle) toggle.setAttribute('aria-expanded', 'true');
@@ -364,26 +358,29 @@
       sp.removeAttribute('data-pmgv3-collapsed');
     }
     injectDoneButton();
-    // Remove any leftover backdrop from the earlier fixed-overlay
-    // experiment — the panel now lives in-place again.
     var oldBackdrop = document.getElementById('pmg-tune-backdrop');
     if (oldBackdrop && oldBackdrop.parentNode) oldBackdrop.parentNode.removeChild(oldBackdrop);
-    // Blur the pill so the browser's "keep focus visible" auto-scroll
-    // doesn't yank the page back to the pill while we scroll the panel
-    // into view.
     try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (_) {}
-    // Scroll the user to the "Tune Your Prompt" header. Per user spec:
-    // smooth scroll, with a small delay so mobile reflow finishes after
-    // the panel becomes visible. scroll-margin-top (set in CSS, ~84px)
-    // keeps the header clear of the chassis topbar.
+    // tc-9h: force a synchronous layout pass BEFORE the first scroll
+    // so the panel's true height/position is committed. Reading
+    // offsetHeight forces the browser to flush pending style+layout.
+    if (panel) {
+      // eslint-disable-next-line no-unused-expressions
+      panel.offsetHeight;
+    }
+    // Now scroll. The first call lands correctly because layout is
+    // already settled; the 380ms follow-up absorbs late mounts (epic
+    // tuning fields, Done bar) that grow the panel further.
     var doScroll = function () {
       var t = document.getElementById('tuning-panel') || document.getElementById('settingsPanel');
       if (!t) return;
       try { t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
       catch (_) { t.scrollIntoView(); }
     };
-    setTimeout(doScroll, 120);
-    setTimeout(doScroll, 400);
+    requestAnimationFrame(function () {
+      doScroll();
+      setTimeout(doScroll, 380);
+    });
   }
 
   function closeFullTuningAndBuild() {
