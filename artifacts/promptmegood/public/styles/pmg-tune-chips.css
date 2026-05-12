@@ -323,71 +323,158 @@ html.pmg-chassis-v3 body.pmg-tune-section-shown #tuning-panel .tuning-header {
   visibility: visible !important;
 }
 
-/* tc-9n: Desktop-only — when the user opens Tune Your Prompt, JS
-   physically relocates #tuning-panel into the .pmgv3-right column.
-   These rules then (a) hide everything else in the right column
-   (placeholder, inspiration cards, prior result) so the section owns
-   the right side while open, and (b) reorder the section's children
-   via flex `order` so the priority fields surface first:
-     1. .tuning-header           (🎛️ Tune Your Prompt)
-     2. .pmgv3-epic-tuning       (How Should AI Think? + Who is this for? + AOS mirror)
-     3. .pmgv3-tuning-host       (the dense pill grid: personality/tone/format/length)
-     4. .pmg-tune-done-bar       (Open Expert Center + ✓ Done — Build My Prompt)
-   The section drops its own internal cap because the right column
-   already provides scroll. The Done bar's position:sticky still
-   pins to the bottom of the right column's scroll viewport.
-   Mobile (<769px) is untouched — relocation is a no-op there. */
-@media (min-width: 769px) {
-  html.pmg-chassis-v3 body.pmg-tune-desktop-right .pmgv3-right > *:not(#tuning-panel) {
-    display: none !important;
-  }
-  html.pmg-chassis-v3 body.pmg-tune-desktop-right #tuning-panel {
-    display: flex !important;
-    flex-direction: column;
-    margin: 0;
-    max-height: none;
-    overflow: visible;
-  }
-  html.pmg-chassis-v3 body.pmg-tune-desktop-right #tuning-panel .tuning-header     { order: 0; }
-  html.pmg-chassis-v3 body.pmg-tune-desktop-right #tuning-panel .pmgv3-epic-tuning { order: 1; }
-  html.pmg-chassis-v3 body.pmg-tune-desktop-right #tuning-panel .pmgv3-tuning-host { order: 2; }
-  html.pmg-chassis-v3 body.pmg-tune-desktop-right #tuning-panel .pmg-tune-done-bar { order: 3; }
-
-  /* tc-9o-fix1: header-level "Done — Build My Prompt" CTA. The
-     `.tuning-header` element is itself a <button> (the mobile collapse
-     toggle), so we cannot nest the Done button inside it without
-     producing invalid HTML. Instead we insert it as a SIBLING of
-     .tuning-header and pin it to the top-right of the relocated
-     section via position:absolute. The section itself becomes
-     position:relative on desktop relocation so the absolute coords
-     resolve against the correct box. The header button keeps its
-     own width / click target intact and the Done CTA sits visibly
-     to the right of the title text. */
-  html.pmg-chassis-v3 #pmg-tune-done-top { display: none; }
-  html.pmg-chassis-v3 body.pmg-tune-desktop-right .tuning-section {
-    position: relative;
-  }
-  html.pmg-chassis-v3 body.pmg-tune-desktop-right .tuning-header {
-    /* Reserve right-side space so the title doesn't run under the
-       absolutely-positioned Done CTA on narrower right columns. */
-    padding-right: 220px;
-  }
-  html.pmg-chassis-v3 body.pmg-tune-desktop-right #pmg-tune-done-top {
-    display: inline-flex;
-    position: absolute;
-    top: 12px;
-    right: 14px;
-    z-index: 5;
-    /* Slight extra emphasis so it reads as THE next step. */
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary, #3ee0a0) 50%, transparent),
-                0 4px 14px color-mix(in srgb, var(--color-primary, #3ee0a0) 22%, transparent);
-  }
+/* tc-9p: Full-screen overlay that hosts the .tuning-section while open.
+   Replaces the tc-9n right-column relocation. The overlay backdrop is
+   a fixed full-viewport scrim; the panel is a centered modal that
+   contains the reparented #tuning-panel and a sticky footer with the
+   "✓ Done — Build My Prompt" CTA. Same layout on mobile and desktop —
+   the only width-fork is that the panel grows to nearly the full
+   viewport on narrow screens. data-pmg-overlay-root on both nodes is
+   what keeps the chassis universal-hide rule from erasing them. */
+html.pmg-chassis-v3 .pmg-tune-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10040;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(2, 10, 8, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+html.pmg-chassis-v3 .pmg-tune-overlay.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+html.pmg-chassis-v3 .pmg-tune-overlay-panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 720px;
+  max-height: calc(100vh - 48px);
+  background: #0b1620;
+  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 35%, transparent);
+  border-radius: 14px;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.55),
+    0 0 0 1px color-mix(in srgb, var(--color-primary, #3ee0a0) 8%, transparent) inset;
+  overflow: hidden;
+  transform: translateY(8px) scale(0.98);
+  transition: transform 0.18s ease;
+}
+html.pmg-chassis-v3 .pmg-tune-overlay.is-open .pmg-tune-overlay-panel {
+  transform: translateY(0) scale(1);
+}
+html.pmg-chassis-v3 .pmg-tune-overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 18%, transparent);
+  flex: 0 0 auto;
+}
+html.pmg-chassis-v3 .pmg-tune-overlay-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: color-mix(in srgb, var(--color-primary, #3ee0a0) 80%, white);
+}
+html.pmg-chassis-v3 .pmg-tune-overlay-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 22%, transparent);
+  background: transparent;
+  color: color-mix(in srgb, var(--color-primary, #3ee0a0) 80%, white);
+  font-size: 16px;
+  font-family: inherit;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+html.pmg-chassis-v3 .pmg-tune-overlay-close:hover {
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 12%, transparent);
+  border-color: var(--color-primary, #3ee0a0);
+}
+html.pmg-chassis-v3 .pmg-tune-overlay-close:focus-visible {
+  outline: 2px solid var(--color-primary, #3ee0a0);
+  outline-offset: 2px;
+}
+html.pmg-chassis-v3 .pmg-tune-overlay-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 16px 20px;
+  -webkit-overflow-scrolling: touch;
+}
+/* Inside the overlay, the reparented #tuning-panel must drop the
+   chassis-imposed cap and any sticky positioning that assumed an
+   outer scroller. The overlay body is the scroll container now. */
+html.pmg-chassis-v3 .pmg-tune-overlay-body #tuning-panel {
+  display: block !important;
+  margin: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  width: 100% !important;
+}
+/* The in-section secondary Done bar: no longer sticky inside the
+   overlay (the overlay footer is the always-visible primary CTA).
+   Keep it as a regular block so it ends the scroll region cleanly. */
+html.pmg-chassis-v3 .pmg-tune-overlay-body .pmg-tune-done-bar {
+  position: static;
+  bottom: auto;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+html.pmg-chassis-v3 .pmg-tune-overlay-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  border-top: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 22%, transparent);
+  background: color-mix(in srgb, #0b1620 96%, transparent);
+  flex: 0 0 auto;
+}
+html.pmg-chassis-v3 .pmg-tune-done--primary {
+  padding: 12px 22px;
+  font-size: 14px;
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 28%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary, #3ee0a0) 60%, transparent),
+              0 4px 16px color-mix(in srgb, var(--color-primary, #3ee0a0) 25%, transparent);
+}
+html.pmg-chassis-v3 .pmg-tune-done--primary:hover {
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 38%, transparent);
 }
 
-@media (max-width: 768px) {
-  /* Belt-and-suspenders: the top CTA is desktop-only. Mobile keeps
-     the inline accordion + bottom Done bar as before. */
-  html.pmg-chassis-v3 #pmg-tune-done-top { display: none !important; }
+/* tc-9p: hide the legacy left-column "Build/Generate My Prompt"
+   button once a result is on screen. The right-column action grid
+   (Run With AI, Auto-Boost, Edit, Rewrite, Send to ChatGPT…) provides
+   every next-step CTA. Reopening the Tune overlay and clicking its
+   sticky-footer Done re-fires the build, so users still have a way
+   to regenerate after tweaking. Removes the "redundant Generate My
+   Prompt button" friction surfaced in the post-launch UX walkthrough. */
+html.pmg-chassis-v3 body.pmg-has-result #generateBtn {
+  display: none !important;
+}
+
+@media (max-width: 480px) {
+  html.pmg-chassis-v3 .pmg-tune-overlay { padding: 12px; }
+  html.pmg-chassis-v3 .pmg-tune-overlay-panel { max-height: calc(100vh - 24px); }
+  html.pmg-chassis-v3 .pmg-tune-overlay-header,
+  html.pmg-chassis-v3 .pmg-tune-overlay-footer { padding: 12px 14px; }
+  html.pmg-chassis-v3 .pmg-tune-overlay-body { padding: 12px 14px; }
+  html.pmg-chassis-v3 .pmg-tune-done--primary { width: 100%; justify-content: center; }
+  html.pmg-chassis-v3 .pmg-tune-overlay-footer #pmg-tune-overlay-ecc { width: 100%; justify-content: center; }
 }
 
 /* Mobile fit — chips wrap, popover narrows. */

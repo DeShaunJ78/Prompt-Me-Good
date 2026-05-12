@@ -335,113 +335,167 @@
     return btn;
   }
 
-  // ─── tc-9n: Desktop-only right-column relocation ────────────────────
-  // On desktop (≥769px), when the user opens Tune Your Prompt the
-  // section physically moves into the right column (replacing the
-  // empty-state placeholder / inspiration cards / current result while
-  // open) so it sits side-by-side with the textarea + Build button —
-  // no scrolling, no orphan bar at the bottom of the left column.
-  // CSS does the visual reorder so the priority fields ("How Should
-  // AI Think?" + "Who is this for?") surface BEFORE the dense pill
-  // grid via flex `order`. Mobile (<769px) keeps the original inline
-  // accordion flow — relocation is no-op below the breakpoint.
-  var DESKTOP_TUNE_MQ = (window.matchMedia && window.matchMedia('(min-width: 769px)')) || null;
-  var _tuneOriginalParent = null;
-  var _tuneOriginalNext = null;
-  function isDesktopTune() {
-    return DESKTOP_TUNE_MQ ? DESKTOP_TUNE_MQ.matches : (window.innerWidth >= 769);
-  }
-  function findTextRightColumn() {
-    return document.querySelector('.pmgv3-body[data-active-panel="text"] .pmgv3-right')
-        || document.querySelector('#pmgv3-panel-text .pmgv3-right')
-        || document.querySelector('.pmgv3-right');
-  }
-  function relocateTuningToRight() {
-    if (!isDesktopTune()) return;
-    var panel = document.getElementById('tuning-panel');
-    if (!panel) return;
-    var rightCol = findTextRightColumn();
-    if (!rightCol) return;
-    if (!_tuneOriginalParent && panel.parentNode && panel.parentNode !== rightCol) {
-      _tuneOriginalParent = panel.parentNode;
-      _tuneOriginalNext = panel.nextSibling;
+  // ─── tc-9p: Full-screen overlay for the Tune section ──────────────────
+  // Replaces the tc-9n right-column relocation (which produced stacked
+  // panels, missing Done buttons, and leaked CTAs into the result column
+  // — see UX walkthrough notes in replit.md). Opening the Prompt Tuning
+  // pill mounts a modal overlay (backdrop + panel) appended to <body>,
+  // moves #tuning-panel into the overlay body, locks page scroll, and
+  // gives the user ONE obvious "✓ Done — Build My Prompt" CTA in the
+  // sticky footer. Closing puts #tuning-panel back where it came from.
+  // Same flow on mobile and desktop — no layout fork, no relocation
+  // safety nets, no top-vs-bottom button competition.
+  var _overlayBackdrop = null;
+  var _overlayPanel = null;
+  var _overlayBody = null;
+  var _tuneHomeParent = null;
+  var _tuneHomeNext = null;
+  var _bodyOverflowBefore = '';
+  var _overlayKeydownArmed = false;
+
+  function mountOverlay() {
+    if (_overlayBackdrop) return;
+
+    var backdrop = document.createElement('div');
+    backdrop.id = 'pmg-tune-overlay';
+    backdrop.className = 'pmg-tune-overlay';
+    backdrop.setAttribute('data-pmg-overlay-root', '');
+    backdrop.setAttribute('aria-hidden', 'true');
+    backdrop.addEventListener('click', function (e) {
+      if (e.target === backdrop) closeOverlay(false);
+    });
+
+    var panel = document.createElement('div');
+    panel.id = 'pmg-tune-overlay-panel';
+    panel.className = 'pmg-tune-overlay-panel';
+    panel.setAttribute('data-pmg-overlay-root', '');
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-modal', 'true');
+    panel.setAttribute('aria-label', 'Tune Your Prompt');
+
+    var hdr = document.createElement('div');
+    hdr.className = 'pmg-tune-overlay-header';
+    var title = document.createElement('div');
+    title.className = 'pmg-tune-overlay-title';
+    title.innerHTML = '<span aria-hidden="true">🎛️</span> Tune Your Prompt';
+    var closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'pmg-tune-overlay-close';
+    closeBtn.setAttribute('aria-label', 'Close without building');
+    closeBtn.innerHTML = '✕';
+    closeBtn.addEventListener('click', function () { closeOverlay(false); });
+    hdr.appendChild(title);
+    hdr.appendChild(closeBtn);
+
+    var body = document.createElement('div');
+    body.className = 'pmg-tune-overlay-body';
+
+    var footer = document.createElement('div');
+    footer.className = 'pmg-tune-overlay-footer';
+    var ecc = document.createElement('button');
+    ecc.type = 'button';
+    ecc.id = 'pmg-tune-overlay-ecc';
+    ecc.className = 'pmg-tune-ecc-link';
+    ecc.innerHTML = '<span aria-hidden="true">⚙</span> Open Expert Command Center';
+    ecc.addEventListener('click', openExpertCenter);
+    var done = document.createElement('button');
+    done.type = 'button';
+    done.id = 'pmg-tune-overlay-done';
+    done.className = 'pmg-tune-done pmg-tune-done--primary';
+    done.innerHTML = '<span aria-hidden="true">✓</span> Done — Build My Prompt';
+    done.addEventListener('click', function () { closeOverlay(true); });
+    footer.appendChild(ecc);
+    footer.appendChild(done);
+
+    panel.appendChild(hdr);
+    panel.appendChild(body);
+    panel.appendChild(footer);
+    backdrop.appendChild(panel);
+    document.body.appendChild(backdrop);
+
+    _overlayBackdrop = backdrop;
+    _overlayPanel = panel;
+    _overlayBody = body;
+
+    if (!_overlayKeydownArmed) {
+      _overlayKeydownArmed = true;
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        if (!document.body.classList.contains('pmg-tune-overlay-open')) return;
+        // Don't steal Esc from the chip popover — it owns its own handler.
+        if (openPopover) return;
+        e.preventDefault();
+        closeOverlay(false);
+      });
     }
-    if (panel.parentNode !== rightCol) {
-      try { rightCol.insertBefore(panel, rightCol.firstChild); } catch (_) {}
-    }
-    document.body.classList.add('pmg-tune-desktop-right');
-    armBuildSafetyNet();
   }
 
-  // tc-9o: safety net for the "right column became a huge mess" bug.
-  // The relocation hides EVERYTHING in .pmgv3-right except #tuning-panel
-  // via `body.pmg-tune-desktop-right .pmgv3-right > *:not(#tuning-panel)
-  // { display:none !important }`. If the user fires Build from anywhere
-  // OTHER than our Done button (e.g. the legacy #generateBtn that still
-  // lives in the left column), `closeFullTuningAndBuild()` never runs,
-  // the body class never clears, and when the result arrives in
-  // #resultBox the chassis tries to reveal it — but our hide rule is
-  // still active. Some chassis paths bypass the rule with their own
-  // `display:` overrides, leaking placeholder + result + tuning into
-  // the same column at once. Two-layer defense:
-  //   (a) Capture-phase click on any path to #generateBtn → restore
-  //       BEFORE the click handler runs, so the result lands clean.
-  //   (b) Body-class observer → if `pmg-has-result` ever flips on while
-  //       we're still in `pmg-tune-desktop-right`, restore immediately.
-  function armBuildSafetyNet() {
-    if (armBuildSafetyNet._armed) return;
-    armBuildSafetyNet._armed = true;
-    var teardown = function () {
-      if (!document.body.classList.contains('pmg-tune-desktop-right')) return;
-      document.body.classList.remove('pmg-tune-section-shown');
-      restoreTuningToLeft();
-      var panel = document.getElementById('tuning-panel');
-      if (panel) {
-        panel.classList.remove('is-mobile-open');
-        var toggle = $('tuning-mobile-toggle');
-        if (toggle) toggle.setAttribute('aria-expanded', 'false');
-      }
-    };
-    document.addEventListener('click', function (e) {
-      if (!document.body.classList.contains('pmg-tune-desktop-right')) return;
-      var t = e.target;
-      if (!t || !t.closest) return;
-      // Only react to a real Build click — NOT our own Done button (it
-      // already handles teardown via closeFullTuningAndBuild).
-      var hit = t.closest('#generateBtn, #image-generate-btn, .btn-run-primary');
-      if (!hit) return;
-      if (t.closest('#pmg-tune-done, #pmg-tune-done-top')) return;
-      teardown();
-    }, true);
-    try {
-      var bodyObs = new MutationObserver(function () {
-        if (!document.body.classList.contains('pmg-tune-desktop-right')) return;
-        if (!document.body.classList.contains('pmg-has-result')) return;
-        teardown();
-      });
-      bodyObs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-    } catch (_) {}
-  }
-  function restoreTuningToLeft() {
-    document.body.classList.remove('pmg-tune-desktop-right');
+  function openOverlay() {
+    mountOverlay();
     var panel = document.getElementById('tuning-panel');
-    if (!panel || !_tuneOriginalParent) return;
-    if (panel.parentNode !== _tuneOriginalParent) {
-      try { _tuneOriginalParent.insertBefore(panel, _tuneOriginalNext || null); } catch (_) {}
+    if (!panel || !_overlayBody) return;
+
+    // Stash original DOM home — restored on close so the section returns
+    // to its left-column slot for the next time the chassis renders it.
+    if (!_tuneHomeParent && panel.parentNode && panel.parentNode !== _overlayBody) {
+      _tuneHomeParent = panel.parentNode;
+      _tuneHomeNext = panel.nextSibling;
+    }
+
+    if (panel.parentNode !== _overlayBody) {
+      _overlayBody.appendChild(panel);
+    }
+
+    document.body.classList.add('pmg-tune-overlay-open');
+    _bodyOverflowBefore = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    _overlayBackdrop.setAttribute('aria-hidden', 'false');
+
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        if (_overlayBackdrop) _overlayBackdrop.classList.add('is-open');
+      });
+    });
+  }
+
+  function closeOverlay(buildAfter) {
+    document.body.classList.remove('pmg-tune-section-shown');
+    document.body.classList.remove('pmg-tune-overlay-open');
+    document.body.style.overflow = _bodyOverflowBefore || '';
+
+    if (_overlayBackdrop) {
+      _overlayBackdrop.classList.remove('is-open');
+      _overlayBackdrop.setAttribute('aria-hidden', 'true');
+    }
+
+    var panel = document.getElementById('tuning-panel');
+    if (panel && _tuneHomeParent && panel.parentNode !== _tuneHomeParent) {
+      try {
+        _tuneHomeParent.insertBefore(panel, _tuneHomeNext || null);
+      } catch (_) {}
+    }
+    if (panel) {
+      panel.classList.remove('is-mobile-open');
+      // tc-9p: clear the inline display:block we set when opening, so
+      // the hide-by-default CSS rule can take over once the panel is
+      // back in its original spot. Otherwise the panel stays visible
+      // in the left column after close (regression on stacked panels).
+      panel.style.removeProperty('display');
+      var toggle = $('tuning-mobile-toggle');
+      if (toggle) toggle.setAttribute('aria-expanded', 'false');
+    }
+
+    if (buildAfter) {
+      setTimeout(fireBuild, 60);
     }
   }
-  // Resize across the breakpoint while the panel is open: snap to the
-  // correct home so the layout stays consistent.
-  if (DESKTOP_TUNE_MQ) {
-    var _onTuneMQChange = function () {
-      if (!document.body.classList.contains('pmg-tune-section-shown')) return;
-      if (DESKTOP_TUNE_MQ.matches) relocateTuningToRight();
-      else restoreTuningToLeft();
-    };
-    try {
-      if (DESKTOP_TUNE_MQ.addEventListener) DESKTOP_TUNE_MQ.addEventListener('change', _onTuneMQChange);
-      else if (DESKTOP_TUNE_MQ.addListener) DESKTOP_TUNE_MQ.addListener(_onTuneMQChange);
-    } catch (_) {}
+
+  function fireBuild() {
+    var gen = $('generateBtn');
+    if (!gen) return;
+    gen.classList.add('pmg-cta-pulse');
+    setTimeout(function () { gen.classList.remove('pmg-cta-pulse'); }, 1600);
+    try { gen.click(); } catch (_) {}
   }
 
   function openFullTuning() {
@@ -449,20 +503,13 @@
     // tc-9k: chassis-v3 boot runs a 4-second hideTick poller (every
     // 200ms × 20 ticks) that re-applies `display:none !important` to
     // #tuning-panel and #settingsPanel UNLESS body.pmgv3-analyzed is
-    // set. Pre-Build that class is absent, so any reveal we do gets
-    // overwritten ~200ms later. The Analyze handler sets the same
-    // class — by setting it here we tell the chassis "user is past
-    // intake, stop hiding the tuning surface." Without this, the pill
-    // only worked reliably AFTER pressing Build (when Analyze had
-    // already set the class). See pmg-chassis-v3.js L70-84.
+    // set. We set the class so the chassis stops hiding the tuning
+    // surface while the overlay owns it.
     document.body.classList.add('pmgv3-analyzed');
     var panel = document.getElementById('tuning-panel');
     if (panel) {
-      // Force visibility via INLINE style immediately. tc-9h: relying
-      // on a CSS body-class rule alone meant the first click's scroll
-      // could fire before the browser had committed the new computed
-      // style — landing on a still-hidden panel — and the user had to
-      // click twice. Inline display:block applies synchronously.
+      // Force visibility via inline style — overlay's CSS will then
+      // own layout once the panel is reparented into the overlay body.
       panel.style.setProperty('display', 'block', 'important');
       panel.removeAttribute('hidden');
       panel.classList.remove('is-collapsed');
@@ -476,134 +523,25 @@
       sp.removeAttribute('hidden');
       sp.removeAttribute('data-pmgv3-collapsed');
     }
+    // tc-9p: still inject the bottom Done bar inside .tuning-section
+    // so users who scroll all the way down inside the overlay see a
+    // second Done CTA without having to scroll back up to the footer.
     injectDoneButton();
-    // tc-9n: desktop only — move the section into the right column so
-    // it sits side-by-side with the textarea + Build. No-op on mobile.
-    relocateTuningToRight();
-    var oldBackdrop = document.getElementById('pmg-tune-backdrop');
-    if (oldBackdrop && oldBackdrop.parentNode) oldBackdrop.parentNode.removeChild(oldBackdrop);
-    // tc-9j: explicitly blur the goal textarea — if it had focus, iOS
-    // Safari kept the virtual keyboard up which (a) shrinks the visual
-    // viewport (~400px) and (b) animates back to full height (~700px)
-    // ~300-500ms after the textarea loses focus. If we scrolled during
-    // that animation, the target position was wrong relative to the
-    // post-keyboard viewport. This was the "only works after Build"
-    // bug — post-Build the keyboard is already down.
+    // tc-9p: blur whatever has focus before opening so iOS doesn't
+    // keep the virtual keyboard up over the modal.
     try {
       var goalEl = document.getElementById('goal');
       if (goalEl && goalEl.blur) goalEl.blur();
       if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
     } catch (_) {}
-    if (panel) {
-      // eslint-disable-next-line no-unused-expressions
-      panel.offsetHeight;
-    }
-    // tc-9l: unified scroll math with adv-mirror-8. Earlier per-container
-    // scrollTop math worked on mobile (where window scroll is the right
-    // axis) but landed wrong on desktop where the chassis has its own
-    // inner scroller AND the topbar is sticky. Now we mirror the proven
-    // adv-mirror logic: pick the right scroller by walking ancestors for
-    // a real overflow:auto/scroll AND scrollHeight > clientHeight, then
-    // shift by the delta needed to put the target 14px below the sticky
-    // topbar's bottom edge. Same code path on desktop and mobile.
-    var pickTuneScroller = function (el) {
-      var node = el && el.parentNode;
-      while (node && node !== document.body && node.nodeType === 1) {
-        var cs;
-        try { cs = window.getComputedStyle(node); } catch (_) { node = node.parentNode; continue; }
-        var oy = cs.overflowY;
-        if ((oy === 'auto' || oy === 'scroll') && node.scrollHeight > node.clientHeight + 1) {
-          return node;
-        }
-        node = node.parentNode;
-      }
-      return window;
-    };
-    var doScroll = function () {
-      var t = document.getElementById('tuning-panel') || document.getElementById('settingsPanel');
-      if (!t) return;
-      var topbar = document.querySelector('.pmgv3-topbar');
-      var stickyBottom = 0;
-      if (topbar) {
-        var tbRect = topbar.getBoundingClientRect();
-        if (tbRect.top <= 4 && tbRect.bottom > 0) stickyBottom = tbRect.bottom;
-      }
-      var desiredTop = stickyBottom + 14;
-      var rect = t.getBoundingClientRect();
-      var delta = rect.top - desiredTop;
-      if (Math.abs(delta) < 12) return;
-      var scroller = pickTuneScroller(t);
-      var nextTop = (scroller === window
-        ? (window.scrollY || window.pageYOffset || 0)
-        : scroller.scrollTop) + delta;
-      try {
-        if (scroller === window) {
-          window.scrollTo({ top: nextTop, behavior: 'smooth' });
-        } else {
-          scroller.scrollTo({ top: nextTop, behavior: 'smooth' });
-        }
-      } catch (_) {
-        if (scroller === window) window.scrollTo(0, nextTop);
-        else scroller.scrollTop = nextTop;
-      }
-    };
-    // tc-9j: schedule three scrolls — one immediate (post-rAF, in case
-    // the keyboard wasn't up), one at 550ms (after iOS keyboard
-    // dismissal finishes), and one at 900ms (catches late field mounts
-    // and any remaining viewport adjustment). Also re-aim on the next
-    // visualViewport resize so we react to the keyboard going away
-    // even if its timing differs from our schedule.
-    requestAnimationFrame(function () { doScroll(); });
-    setTimeout(doScroll, 550);
-    setTimeout(doScroll, 900);
-    try {
-      if (window.visualViewport && !openFullTuning._vvBound) {
-        openFullTuning._vvBound = true;
-        var vv = window.visualViewport;
-        var onResize = function () {
-          if (document.body.classList.contains('pmg-tune-section-shown')) {
-            doScroll();
-          }
-        };
-        // One-shot per open: detach after first resize so we don't
-        // hijack normal scroll once the panel is settled.
-        var detach = function () {
-          try { vv.removeEventListener('resize', wrapped); } catch (_) {}
-          openFullTuning._vvBound = false;
-        };
-        var wrapped = function () { onResize(); setTimeout(detach, 100); };
-        vv.addEventListener('resize', wrapped);
-        // Safety: detach after 2s even if no resize fires.
-        setTimeout(detach, 2000);
-      }
-    } catch (_) {}
+    // tc-9p: open the modal overlay. Reparents #tuning-panel into the
+    // overlay body and locks page scroll. Same code path on mobile and
+    // desktop — no width-fork, no relocate-and-restore acrobatics.
+    openOverlay();
   }
 
   function closeFullTuningAndBuild() {
-    document.body.classList.remove('pmg-tune-section-shown');
-    // tc-9n: put the section back in its original left-column home
-    // BEFORE Build fires so the result has the right column to itself.
-    restoreTuningToLeft();
-    var panel = document.getElementById('tuning-panel');
-    if (panel) {
-      panel.classList.remove('is-mobile-open');
-      var toggle = $('tuning-mobile-toggle');
-      if (toggle) toggle.setAttribute('aria-expanded', 'false');
-    }
-    // Auto-fire Build My Prompt — the user has finished tuning, no
-    // reason to make them click again.
-    var gen = $('generateBtn');
-    if (gen) {
-      try { gen.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-      catch (_) { gen.scrollIntoView(); }
-      gen.classList.add('pmg-cta-pulse');
-      setTimeout(function () { gen.classList.remove('pmg-cta-pulse'); }, 1600);
-      // Defer one tick so any pending change events on the selects
-      // settle before submit.
-      setTimeout(function () {
-        try { gen.click(); } catch (_) {}
-      }, 60);
-    }
+    closeOverlay(true);
   }
 
   function openExpertCenter() {
@@ -624,45 +562,16 @@
   }
 
   function injectDoneButton() {
-    // tc-9o: also inject a header-level "✓ Done — Build My Prompt"
-    // button right inside `.tuning-header` so the user has an obvious
-    // next-step CTA at the TOP of the relocated section. Hidden by
-    // default; CSS in pmg-tune-chips.css shows it only when
-    // `body.pmg-tune-desktop-right` is active. Without this, the only
-    // CTA was the sticky bottom bar — which can sit below the fold
-    // when the right column scrolls, leaving the user unsure what to
-    // do next. Idempotent: early-out if both injections already exist.
+    // tc-9p: secondary Done bar appended INSIDE .tuning-section so
+    // users who scroll the overlay body see a second exit without
+    // having to scroll back up to the sticky footer. The overlay
+    // footer is always-visible — this is just a polite belt-and-
+    // suspenders for very tall tuning content. Idempotent.
     var section = (function () {
       var anySelect = $('personality') || $('tone') || $('outputFormat');
       return anySelect && anySelect.closest('.tuning-section');
     })();
     if (!section) return;
-
-    if (!document.getElementById('pmg-tune-done-top')) {
-      // tc-9o-fix1: `.tuning-header` is itself a <button> (the mobile
-      // collapse toggle, id `#tuning-mobile-toggle` — see chassis-v3.js
-      // line 213). Appending another <button> INSIDE it produced
-      // invalid HTML; the parser strips/relocates it and the visible
-      // CTA never appeared on desktop. Insert as a SIBLING right after
-      // the header button instead, then a CSS flex wrapper aligns
-      // them horizontally on desktop.
-      var hdr = section.querySelector('.tuning-header');
-      if (hdr && hdr.parentNode) {
-        var topBtn = document.createElement('button');
-        topBtn.type = 'button';
-        topBtn.id = 'pmg-tune-done-top';
-        topBtn.className = 'pmg-tune-done pmg-tune-done--top';
-        topBtn.innerHTML = '<span aria-hidden="true">✓</span> Done — Build My Prompt';
-        topBtn.addEventListener('click', function (e) {
-          // Stop the click from bubbling into the header button (which
-          // would toggle the mobile collapse state on the way through).
-          e.stopPropagation();
-          closeFullTuningAndBuild();
-        });
-        hdr.parentNode.insertBefore(topBtn, hdr.nextSibling);
-      }
-    }
-
     if (document.getElementById('pmg-tune-done')) return;
 
     var bar = document.createElement('div');
@@ -833,16 +742,10 @@
     armPanelSwitchAutoClose._armed = true;
     var lastPanel = pmgBody.getAttribute('data-active-panel') || 'text';
     var closeIfNeeded = function () {
-      if (!document.body.classList.contains('pmg-tune-section-shown')) return;
-      document.body.classList.remove('pmg-tune-section-shown');
-      // tc-9n: switching panels cleans up the desktop relocation too.
-      restoreTuningToLeft();
-      var panel = document.getElementById('tuning-panel');
-      if (panel) {
-        panel.classList.remove('is-mobile-open');
-        var toggle = $('tuning-mobile-toggle');
-        if (toggle) toggle.setAttribute('aria-expanded', 'false');
-      }
+      if (!document.body.classList.contains('pmg-tune-section-shown') &&
+          !document.body.classList.contains('pmg-tune-overlay-open')) return;
+      // tc-9p: switching panels closes the overlay (no build).
+      closeOverlay(false);
     };
     try {
       var mo = new MutationObserver(function () {
