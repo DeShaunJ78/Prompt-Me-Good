@@ -360,10 +360,18 @@
     injectDoneButton();
     var oldBackdrop = document.getElementById('pmg-tune-backdrop');
     if (oldBackdrop && oldBackdrop.parentNode) oldBackdrop.parentNode.removeChild(oldBackdrop);
-    try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (_) {}
-    // tc-9h: force a synchronous layout pass BEFORE the first scroll
-    // so the panel's true height/position is committed. Reading
-    // offsetHeight forces the browser to flush pending style+layout.
+    // tc-9j: explicitly blur the goal textarea — if it had focus, iOS
+    // Safari kept the virtual keyboard up which (a) shrinks the visual
+    // viewport (~400px) and (b) animates back to full height (~700px)
+    // ~300-500ms after the textarea loses focus. If we scrolled during
+    // that animation, the target position was wrong relative to the
+    // post-keyboard viewport. This was the "only works after Build"
+    // bug — post-Build the keyboard is already down.
+    try {
+      var goalEl = document.getElementById('goal');
+      if (goalEl && goalEl.blur) goalEl.blur();
+      if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    } catch (_) {}
     if (panel) {
       // eslint-disable-next-line no-unused-expressions
       panel.offsetHeight;
@@ -405,10 +413,36 @@
         catch (__) { t.scrollIntoView(); }
       }
     };
-    requestAnimationFrame(function () {
-      doScroll();
-      setTimeout(doScroll, 380);
-    });
+    // tc-9j: schedule three scrolls — one immediate (post-rAF, in case
+    // the keyboard wasn't up), one at 550ms (after iOS keyboard
+    // dismissal finishes), and one at 900ms (catches late field mounts
+    // and any remaining viewport adjustment). Also re-aim on the next
+    // visualViewport resize so we react to the keyboard going away
+    // even if its timing differs from our schedule.
+    requestAnimationFrame(function () { doScroll(); });
+    setTimeout(doScroll, 550);
+    setTimeout(doScroll, 900);
+    try {
+      if (window.visualViewport && !openFullTuning._vvBound) {
+        openFullTuning._vvBound = true;
+        var vv = window.visualViewport;
+        var onResize = function () {
+          if (document.body.classList.contains('pmg-tune-section-shown')) {
+            doScroll();
+          }
+        };
+        // One-shot per open: detach after first resize so we don't
+        // hijack normal scroll once the panel is settled.
+        var detach = function () {
+          try { vv.removeEventListener('resize', wrapped); } catch (_) {}
+          openFullTuning._vvBound = false;
+        };
+        var wrapped = function () { onResize(); setTimeout(detach, 100); };
+        vv.addEventListener('resize', wrapped);
+        // Safety: detach after 2s even if no resize fires.
+        setTimeout(detach, 2000);
+      }
+    } catch (_) {}
   }
 
   function closeFullTuningAndBuild() {
