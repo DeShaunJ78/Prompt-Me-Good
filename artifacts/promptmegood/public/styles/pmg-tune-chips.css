@@ -463,7 +463,15 @@ html.pmg-chassis-v3 .pmg-tune-done--primary:hover {
    sticky-footer Done re-fires the build, so users still have a way
    to regenerate after tweaking. Removes the "redundant Generate My
    Prompt button" friction surfaced in the post-launch UX walkthrough. */
-html.pmg-chassis-v3 body.pmg-has-result #generateBtn {
+html.pmg-chassis-v3 body.pmg-has-result #generateBtn,
+html.pmg-chassis-v3 body.pmg-has-generated #generateBtn {
+  /* double-cta-1 (2026-05-12): also hide the moment Build is clicked
+     (pmg-has-generated fires synchronously on click), not just after
+     the result lands. Users complained the giant "Generate My Prompt"
+     button stayed visible beneath the open Tuning section while the
+     stream was running, then briefly flashed before the post-result
+     rule kicked in. The Tune overlay's sticky-footer Done is the
+     single re-build CTA. */
   display: none !important;
 }
 

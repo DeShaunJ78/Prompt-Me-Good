@@ -495,19 +495,25 @@
 
      Storage:
        pmgv3:session = { goal, tuning:{id:value}, prompt, ts }
-     TTL: 7 days (defensive — sessionStorage clears on tab close
+     TTL: 30 minutes — see stale-session-1 below (defensive — sessionStorage clears on tab close
      anyway, but if a stale entry somehow survives we still ignore
      it). Disable hatches: ?fresh=1 in URL,
      localStorage.pmgv3_persist_disable='1' (disable flag stays on
      localStorage so it persists across tabs). */
   var SESSION_KEY = 'pmgv3:session';
-  var SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  /* stale-session-1 (2026-05-12): cut from 7 days to 30 minutes.
+     Users open the marketing page, click Open The App, and were greeted
+     by their stale prompt + tuning from a session days earlier. The 7-day
+     TTL was too generous for a single-session workflow tool. The Draft
+     Recovery banner (dr-1) is the dedicated UX for explicitly restoring
+     longer-term work — we should not silently re-hydrate stale state. */
+  var SESSION_TTL_MS = 30 * 60 * 1000;
   /* dr-1 (Draft Recovery): mirror every session write to localStorage
      under a separate key so the draft survives a full tab close
      (sessionStorage does not). On next visit, if the live sessionStorage
      is empty but a fresh draft exists, we offer the user a non-blocking
      restore banner. Cleared on Vault save (pmg:vault-saved event) and
-     on explicit dismiss. Same 7-day TTL as the live session. */
+     on explicit dismiss. Same 30-minute TTL as the live session (stale-session-1). */
   var DRAFT_KEY = 'pmgv3:draft';
   var DRAFT_DISMISS_KEY = 'pmgv3:draft:dismissedTs';
   var TUNE_FIELDS = ['category', 'skillLevel', 'tone', 'outputFormat', 'maxLength', 'outputLanguage', 'personality'];

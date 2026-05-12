@@ -4096,7 +4096,7 @@
   <link rel="stylesheet" href="/styles/pmg-business-mode.css?v=bm-3" />
 
   <link rel="stylesheet" href="/styles/pmg-guided-intake.css?v=gi-1" />
-  <link rel="stylesheet" href="/styles/pmg-tune-chips.css?v=ecc-apply-visibility-2" />
+  <link rel="stylesheet" href="/styles/pmg-tune-chips.css?v=double-cta-1" />
   <script>
     /* refresh-clears-1: a true browser reload (F5 / Cmd-R / pull-to-refresh)
        wipes the persisted workstation state BEFORE chassis-v3.js boots and
@@ -4117,7 +4117,7 @@
       } catch (_) {}
     })();
   </script>
-  <script src="/scripts/pmg-chassis-v3.js?v=sd-vault-2"></script>
+  <script src="/scripts/pmg-chassis-v3.js?v=stale-session-1"></script>
   <script src="/scripts/pmg-visual-studio.js?v=mux-2-adv-tuning" defer></script>
   <script src="/scripts/pmg-storyboard.js?v=sb-9" defer></script>
   <script src="/scripts/pmg-spark-panel.js?v=sp-6-mobile-questions" defer></script>
@@ -11983,6 +11983,34 @@ Context:
         return text;
       }
 
+      /* run-feedback-1: never let Run With AI fail silently. Tries the
+         platform showToast, falls back to a transient inline banner
+         mounted near the run button, falls back to alert(). */
+      function showRunFeedback(msg) {
+        try {
+          if (typeof window.showToast === 'function') { window.showToast(msg); return; }
+        } catch (_) {}
+        try {
+          var anchor = document.getElementById('run-with-ai-btn')
+                    || document.getElementById('runBtn');
+          if (anchor && anchor.parentNode) {
+            var existing = anchor.parentNode.querySelector('.pmg-run-feedback');
+            if (existing) existing.remove();
+            var b = document.createElement('div');
+            b.className = 'pmg-run-feedback';
+            b.setAttribute('data-pmg-overlay-root', '');
+            b.setAttribute('role', 'status');
+            b.setAttribute('aria-live', 'polite');
+            b.style.cssText = 'margin:8px 0;padding:10px 14px;background:#0e2722;color:#e8fff5;border:1px solid var(--color-primary,#3ee0a0);border-radius:8px;font-size:13px;font-weight:600;text-align:center;';
+            b.textContent = msg;
+            anchor.parentNode.insertBefore(b, anchor.nextSibling);
+            setTimeout(function () { try { b.remove(); } catch (_) {} }, 4000);
+            return;
+          }
+        } catch (_) {}
+        try { window.alert(msg); } catch (_) {}
+      }
+
       function show() {
         const sec = $('runSection');
         if (sec) sec.hidden = false;
@@ -12000,12 +12028,20 @@ Context:
       }
 
       async function run() {
-        if (inFlight) return;
+        if (inFlight) {
+          /* run-feedback-1: previously a silent no-op while a previous
+             run was still streaming. Users clicked Run With AI again and
+             saw "nothing happens". Surface a clear toast. */
+          showRunFeedback('Already running — please wait for the current response to finish.');
+          return;
+        }
         const prompt = getCurrentPrompt();
         if (!prompt) {
-          if (typeof window.showToast === 'function') {
-            window.showToast('Generate a prompt above first, then run it here.');
-          }
+          /* run-feedback-1: previously relied on window.showToast which
+             can be undefined at boot, leading to a true silent failure.
+             showRunFeedback ALWAYS surfaces a message (toast → fallback
+             to a transient inline banner → fallback to alert). */
+          showRunFeedback('Build a prompt first (click ✨ Build My Prompt), then run it here.');
           return;
         }
         // cv3-61: clear any prior length-warning state up-front so a
