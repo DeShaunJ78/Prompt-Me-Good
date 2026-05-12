@@ -1245,6 +1245,87 @@ html.pmg-chassis-v3 #resultBox.is-streaming .pmg-stream-status__sub {
   html.pmg-chassis-v3 #resultBox.is-streaming .pmg-stream-status__sub { animation: none; }
 }
 
+/* run-status-1: parallel streaming-state styles for the Run-With-AI output
+   box. Mirrors the #resultBox.is-streaming rules above so the same
+   .pmg-stream-status markup centers, spins, and fades correctly inside
+   #aiResponseOutput. Scoped under html.pmg-chassis-v3 so it loses to
+   nothing legacy. min-height is smaller (220px) since the run output
+   sits below the prompt box and we don't want to push everything off
+   the fold. */
+html.pmg-chassis-v3 #aiResponseOutput.is-streaming {
+  min-height: 220px;
+  position: relative;
+  overflow: hidden;
+}
+html.pmg-chassis-v3 #aiResponseOutput.is-streaming::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 0%,
+    transparent 35%,
+    color-mix(in srgb, var(--color-primary, #3ee0a0) 10%, transparent) 50%,
+    transparent 65%,
+    transparent 100%
+  );
+  background-size: 220% 100%;
+  animation: pmg-stream-sheen 2.4s linear infinite;
+  pointer-events: none;
+}
+html.pmg-chassis-v3 #aiResponseOutput.is-streaming .pmg-stream-status {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  pointer-events: none;
+  text-align: center;
+  width: min(420px, 88%);
+}
+html.pmg-chassis-v3 #aiResponseOutput.is-streaming .pmg-stream-status__spinner {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 3px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 18%, transparent);
+  border-top-color: var(--color-primary, #3ee0a0);
+  animation: pmg-stream-spin 0.9s linear infinite;
+}
+html.pmg-chassis-v3 #aiResponseOutput.is-streaming .pmg-stream-status__title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--color-primary, #3ee0a0);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+}
+html.pmg-chassis-v3 #aiResponseOutput.is-streaming .pmg-stream-status__title::after {
+  content: '';
+  display: inline-block;
+  width: 1.6em;
+  text-align: left;
+  color: var(--color-primary, #3ee0a0);
+  animation: pmg-stream-ellipsis 1.2s steps(4, end) infinite;
+}
+html.pmg-chassis-v3 #aiResponseOutput.is-streaming .pmg-stream-status__sub {
+  font-size: 13px;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--color-primary, #3ee0a0) 65%, #ffffff 25%);
+  opacity: 0.85;
+  min-height: 1.4em;
+  animation: pmg-stream-fade 0.5s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.pmg-chassis-v3 #aiResponseOutput.is-streaming::before { animation: none; }
+  html.pmg-chassis-v3 #aiResponseOutput.is-streaming .pmg-stream-status__spinner { animation: none; border-top-color: var(--color-primary, #3ee0a0); }
+  html.pmg-chassis-v3 #aiResponseOutput.is-streaming .pmg-stream-status__title::after { animation: none; content: '…'; }
+  html.pmg-chassis-v3 #aiResponseOutput.is-streaming .pmg-stream-status__sub { animation: none; }
+}
+
 .prompt-actions {
   display: flex;
   gap: 8px;

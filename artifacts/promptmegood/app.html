@@ -4075,7 +4075,7 @@
     }
   </style>
   <link rel="stylesheet" href="/styles/pmg-g-theme.css?v=g2-teal-2" />
-  <link rel="stylesheet" href="/styles/pmg-chassis-v3.css?v=cta-color-token-2-sendto-2line-mhdr2-stream2-clamp1" />
+  <link rel="stylesheet" href="/styles/pmg-chassis-v3.css?v=cta-color-token-2-sendto-2line-mhdr2-stream2-clamp1-runstatus1" />
   <link rel="stylesheet" href="/styles/pmg-visual-studio.css?v=mux-2-adv-tuning" />
   <link rel="stylesheet" href="/styles/pmg-storyboard.css?v=sb-7" />
   <link rel="stylesheet" href="/styles/pmg-auto-boost.css?v=ab-8-under-strength" />
@@ -5518,10 +5518,23 @@
             if (e.key !== 'Enter') return;
             if (e.shiftKey || e.ctrlKey || e.metaKey || e.altKey) return; // newline
             if (composing || e.isComposing) return;
-            // Find the right submit target: explicit form id wins, else
-            // climb to closest form, else look for a generate button.
+            // enter-submit-2: route through the chassis Generate button when
+            // present. The chassis #generateBtn click handler force-reveals
+            // #prompt-output-box (which ships as `display:none !important`),
+            // runs autoTuneFromIdea(), and THEN calls form.requestSubmit().
+            // Calling form.requestSubmit() directly skips that reveal — the
+            // build runs but the right-side output box stays hidden, which
+            // looks like Enter "broke" the page. Prefer the button click.
             var form = formId ? document.getElementById(formId) : el.closest('form');
             if (form) {
+              var genBtn = formId === 'prompt-form'
+                ? document.getElementById('generateBtn')
+                : null;
+              if (genBtn && !genBtn.disabled) {
+                e.preventDefault();
+                genBtn.click();
+                return;
+              }
               e.preventDefault();
               if (typeof form.requestSubmit === 'function') form.requestSubmit();
               else form.submit();
@@ -12026,6 +12039,60 @@ Context:
         lastResponseText = '';
         setRunning(true);
 
+        // run-status-1: paint a centered animated status block inside the
+        // AI response output while we wait for the first SSE chunk —
+        // mirrors the prompt-builder ".pmg-stream-status" pattern but with
+        // run-specific copy ("Running through AI…" + rotating sub-msgs)
+        // so the two side-by-side status states read as different stages.
+        // Cleared by __pmgClearRunStatus() from every termination path
+        // (first chunk, error, done, network failure).
+        try {
+          if (out && !out.querySelector('.pmg-stream-status')) {
+            out.classList.add('is-streaming');
+            var __rs = document.createElement('div');
+            __rs.className = 'pmg-stream-status';
+            __rs.setAttribute('aria-live', 'polite');
+            __rs.innerHTML =
+              '<div class="pmg-stream-status__spinner" aria-hidden="true"></div>' +
+              '<div class="pmg-stream-status__title">Running through AI</div>' +
+              '<div class="pmg-stream-status__sub">Sending your prompt</div>';
+            out.appendChild(__rs);
+            var __rsSub = __rs.querySelector('.pmg-stream-status__sub');
+            var __rsMsgs = [
+              'Sending your prompt',
+              'Thinking it through',
+              'Drafting the answer',
+              'Refining the response',
+              'Almost done'
+            ];
+            var __rsI = 0;
+            window.__pmgRunStatusTimer = setInterval(function () {
+              __rsI = (__rsI + 1) % __rsMsgs.length;
+              if (!__rsSub || !__rsSub.isConnected) return;
+              __rsSub.style.animation = 'none';
+              void __rsSub.offsetWidth;
+              __rsSub.style.animation = '';
+              __rsSub.textContent = __rsMsgs[__rsI];
+            }, 1400);
+          }
+        } catch (_) {}
+        function __pmgClearRunStatus() {
+          try {
+            if (window.__pmgRunStatusTimer) {
+              clearInterval(window.__pmgRunStatusTimer);
+              window.__pmgRunStatusTimer = 0;
+            }
+          } catch (_) {}
+          try {
+            if (out) {
+              var __ex = out.querySelector('.pmg-stream-status');
+              if (__ex && __ex.parentNode) __ex.parentNode.removeChild(__ex);
+              if (out.classList) out.classList.remove('is-streaming');
+            }
+          } catch (_) {}
+        }
+        window.__pmgClearRunStatus = __pmgClearRunStatus;
+
         // Bring the AI response section into view so the user can actually
         // watch the response stream in. Without this, clicking "Run With AI"
         // from the top action buttons leaves the response invisible far below
@@ -12051,6 +12118,7 @@ Context:
             body: JSON.stringify({ prompt }),
           });
         } catch (err) {
+          __pmgClearRunStatus();
           if (out) out.textContent = 'Network error. Please try again.';
           setRunning(false);
           return;
@@ -12076,6 +12144,7 @@ Context:
             }
           } catch (_) {}
           if (res.status === 429) msg = 'Rate limit reached. Please wait a bit before running again.';
+          __pmgClearRunStatus();
           if (out) out.textContent = msg;
           setRunning(false);
           return;
@@ -12089,6 +12158,7 @@ Context:
         // error instead.
         const responseCt = (res.headers.get('content-type') || '').toLowerCase();
         if (!responseCt.includes('text/event-stream')) {
+          __pmgClearRunStatus();
           if (out) out.textContent = 'AI service is temporarily unavailable. Please try again in a moment.';
           try { res.body && res.body.cancel && res.body.cancel(); } catch (_) {}
           setRunning(false);
@@ -12096,6 +12166,7 @@ Context:
         }
 
         if (!res.body) {
+          __pmgClearRunStatus();
           if (out) out.textContent = 'Streaming not supported in this browser.';
           setRunning(false);
           return;
@@ -12133,9 +12204,14 @@ Context:
                 try {
                   const obj = JSON.parse(payload);
                   if (obj && typeof obj.text === 'string') {
+                    // run-status-1: tear down the animated status block on
+                    // the very first real text chunk so the response paints
+                    // without the spinner overlapping it.
+                    if (lastResponseText === '') __pmgClearRunStatus();
                     lastResponseText += obj.text;
                     if (out) out.textContent = lastResponseText;
                   } else if (obj && obj.error) {
+                    __pmgClearRunStatus();
                     if (out) out.textContent = String(obj.error);
                   }
                 } catch (_) {
@@ -12146,8 +12222,12 @@ Context:
             }
           }
         } catch (err) {
+          __pmgClearRunStatus();
           if (!lastResponseText && out) out.textContent = 'Stream interrupted. Please try again.';
         } finally {
+          // run-status-1: defensive teardown — if no chunks ever arrived the
+          // status block never got cleared by the chunk handler.
+          __pmgClearRunStatus();
           // Belt-and-suspenders: if the stream closed cleanly but never delivered
           // a single text chunk (no [DONE], no error event, just an empty body),
           // the output box would be empty and CSS :empty::before would show
