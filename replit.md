@@ -56,6 +56,12 @@ Hard-won invariants — universal rules, architecture details, state persistence
 
 Per-script (`pmg-*.js` mounter) gotchas live in [`docs/scripts.md`](./docs/scripts.md). Read that file before editing any mounter or adding a new one. All listed scripts share: `?nameKey` URL kill-switch + `localStorage.pmg_{name}_disable='1'`.
 
+## SEO auditing
+
+*   **Audit the production custom domain, not the Replit dev preview.** Replit dev preview URLs (`*.janeway.replit.dev`, `*.replit.dev`) automatically respond with `X-Robots-Tag: none, noindex, noarchive, nofollow, nositelinkssearchbox, noimageindex`. This is platform behavior to keep dev URLs out of Google and **cannot be removed from the dev preview**. Lighthouse / SEO crawlers run against the dev preview will report "Page is blocked from indexing" on every page — false positive.
+*   **Real audit URL:** `https://www.promptmegood.com/` (and any sub-page). The custom domain serves no `X-Robots-Tag`, and per-page `<meta name="robots" …>` is the only signal.
+*   `/review.html` intentionally 404s in production (removed from `vite.config.ts` `rollupOptions.input` per audit brief 12); the 404 fallback page carries `noindex` which is correct.
+
 ## Pointers
 
 *   **Validation:** `validation` skill — `overflow-360` Playwright tests.
