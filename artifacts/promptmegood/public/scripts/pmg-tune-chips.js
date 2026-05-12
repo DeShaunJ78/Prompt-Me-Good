@@ -347,6 +347,15 @@
       panel.style.removeProperty('display');
       panel.removeAttribute('hidden');
       panel.classList.remove('is-collapsed');
+      // CRITICAL: chassis CSS hides .pmgv3-tuning-host (the actual
+      // settings grid) unless `.tuning-section` carries `.is-mobile-open`
+      // — on EVERY viewport, not just mobile (see pmg-chassis-v3.css
+      // L592-594, comment cv3-47). Without this class the panel "opens"
+      // but every field disappears. Add it directly so we don't depend
+      // on the toggle button's click handler being live.
+      panel.classList.add('is-mobile-open');
+      var toggle = $('tuning-mobile-toggle');
+      if (toggle) toggle.setAttribute('aria-expanded', 'true');
     }
     // Same defensive unhide for the inner settings container — the
     // chassis sometimes leaves it data-pmgv3-collapsed.
@@ -356,32 +365,29 @@
       sp.removeAttribute('hidden');
       sp.removeAttribute('data-pmgv3-collapsed');
     }
-    var toggle = $('tuning-mobile-toggle');
-    if (toggle) {
-      var section = toggle.closest('.tuning-section');
-      if (section && !section.classList.contains('is-mobile-open')) {
-        try { toggle.click(); } catch (_) {}
-      }
-    }
     injectDoneButton();
-    var settings = $('settingsPanel');
-    if (settings) {
-      try {
-        settings.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } catch (_) {
-        settings.scrollIntoView();
-      }
-    }
+    // Scroll the tuning section into view AND keep it centered. Use
+    // 'center' so the panel sits in the user's focus area instead of
+    // jumping to the top edge (where the chassis topbar would clip
+    // the panel header). Re-call after a short delay so any layout
+    // shift from revealing fields settles before we scroll.
+    var target = document.getElementById('tuning-panel') || $('settingsPanel');
+    var doScroll = function () {
+      if (!target) return;
+      try { target.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      catch (_) { target.scrollIntoView(); }
+    };
+    doScroll();
+    setTimeout(doScroll, 220);
   }
 
   function closeFullTuningAndBuild() {
     document.body.classList.remove('pmg-tune-section-shown');
-    var toggle = $('tuning-mobile-toggle');
-    if (toggle) {
-      var section = toggle.closest('.tuning-section');
-      if (section && section.classList.contains('is-mobile-open')) {
-        try { toggle.click(); } catch (_) {}
-      }
+    var panel = document.getElementById('tuning-panel');
+    if (panel) {
+      panel.classList.remove('is-mobile-open');
+      var toggle = $('tuning-mobile-toggle');
+      if (toggle) toggle.setAttribute('aria-expanded', 'false');
     }
     // Auto-fire Build My Prompt — the user has finished tuning, no
     // reason to make them click again.
@@ -589,12 +595,11 @@
     var closeIfNeeded = function () {
       if (!document.body.classList.contains('pmg-tune-section-shown')) return;
       document.body.classList.remove('pmg-tune-section-shown');
-      var toggle = $('tuning-mobile-toggle');
-      if (toggle) {
-        var section = toggle.closest('.tuning-section');
-        if (section && section.classList.contains('is-mobile-open')) {
-          try { toggle.click(); } catch (_) {}
-        }
+      var panel = document.getElementById('tuning-panel');
+      if (panel) {
+        panel.classList.remove('is-mobile-open');
+        var toggle = $('tuning-mobile-toggle');
+        if (toggle) toggle.setAttribute('aria-expanded', 'false');
       }
     };
     try {
