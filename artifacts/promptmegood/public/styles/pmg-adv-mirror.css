@@ -138,8 +138,47 @@ html.pmg-chassis-v3 .pmg-adv-mirror-switch input:focus-visible + .pmg-adv-mirror
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #3ee0a0) 35%, transparent);
 }
 
+html.pmg-chassis-v3 .pmg-adv-mirror-ecc-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px dashed color-mix(in srgb, var(--color-primary, #3ee0a0) 18%, transparent);
+}
+html.pmg-chassis-v3 .pmg-adv-mirror-ecc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary, #3ee0a0);
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 32%, transparent);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+html.pmg-chassis-v3 .pmg-adv-mirror-ecc-btn:hover {
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 14%, transparent);
+  border-color: color-mix(in srgb, var(--color-primary, #3ee0a0) 50%, transparent);
+}
+html.pmg-chassis-v3 .pmg-adv-mirror-ecc-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #3ee0a0) 35%, transparent);
+}
+html.pmg-chassis-v3 .pmg-adv-mirror-ecc-hint {
+  font-size: 11px;
+  color: color-mix(in srgb, var(--color-text, #e8f3ec) 55%, transparent);
+  line-height: 1.35;
+}
+
 @media (max-width: 480px) {
   html.pmg-chassis-v3 .pmg-adv-mirror-summary { padding: 10px 12px; }
   html.pmg-chassis-v3 .pmg-adv-mirror-body { padding: 0 12px 12px; }
   html.pmg-chassis-v3 .pmg-adv-mirror-row { padding: 9px 10px; }
+  html.pmg-chassis-v3 .pmg-adv-mirror-ecc-btn { align-self: stretch; }
 }

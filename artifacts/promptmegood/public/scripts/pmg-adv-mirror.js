@@ -59,9 +59,15 @@
           '</span>',
           '<span class="pmg-adv-mirror-chev" aria-hidden="true">▾</span>',
         '</summary>',
-        '<div class="pmg-adv-mirror-body">',
+        '<div class="pmg-adv-mirror-body" id="pmg-adv-mirror-body">',
           '<p class="pmg-adv-mirror-intro">These options shape how strong, natural, and clear your prompt becomes. Synced with the same controls above the Build button.</p>',
           rows,
+          '<div class="pmg-adv-mirror-ecc-row">',
+            '<button type="button" class="pmg-adv-mirror-ecc-btn" id="pmg-adv-mirror-ecc-open">',
+              '<span aria-hidden="true">⚙</span> Open Expert Command Center',
+            '</button>',
+            '<span class="pmg-adv-mirror-ecc-hint">Pro deep-tuning &mdash; reasoning, persona, format, constraints, success criteria.</span>',
+          '</div>',
         '</div>',
       '</details>'
     ].join('');
@@ -325,11 +331,29 @@
     wrap.innerHTML = buildMirrorHtml();
     target.appendChild(wrap);
     wireSync(wrap);
+    wireEccOpen(wrap);
     var details = wrap.querySelector('#' + MOUNT_ID + '-details');
     if (details) persistOpenState(details);
     mounted = true;
     watchMoneyModeProPanel();
     return true;
+  }
+
+  /* adv-mirror-5: small entry-point button into the Expert Command Center.
+     ECC is a separate paywalled panel that lives in pmg-expert-center.js.
+     Per user request we just expose its open API here rather than cloning
+     the whole panel inline. window.PMGExpertCenter.requestOpen() handles
+     warning + paywall gating internally. */
+  function wireEccOpen(wrap) {
+    var btn = wrap.querySelector('#pmg-adv-mirror-ecc-open');
+    if (!btn) return;
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      var api = window.PMGExpertCenter;
+      if (api && typeof api.requestOpen === 'function') {
+        try { api.requestOpen(); } catch (_) {}
+      }
+    });
   }
 
   function boot() {
