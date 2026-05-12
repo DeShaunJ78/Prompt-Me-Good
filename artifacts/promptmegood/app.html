@@ -9177,6 +9177,18 @@ Context:
           // the local prompt. We still expose the local prompt as a
           // backup the user can opt into via "Use Backup Prompt".
           var handledByOverlay = false;
+          /* stream-timeout-1 REVERTED 2026-05-12: do NOT silently
+             pre-populate the result box with the local-builder
+             template. Doing so misleads the user — they have no way
+             to tell whether what they're reading is a genuine AI
+             response or a fallback template, which undermines trust
+             in every result the app ever produces. The error overlay
+             (__pmgResultStates.showError) is the honest path: it
+             tells the user the AI had an issue and offers the local
+             template as an explicit opt-in via "Use Backup Prompt".
+             The real root-cause fix is the timeout bump above
+             (5s → 20s first chunk), which prevents this path from
+             firing on legitimate ECC/tuned builds in the first place. */
           try {
             if (window.__pmgResultStates && typeof window.__pmgResultStates.showError === 'function') {
               window.__pmgResultStates.showError({ fallbackText: localPrompt });
@@ -11722,8 +11734,13 @@ Context:
       //     instead of leaving the user staring at an empty box.
       async function callGenerateStream(payload, onChunk) {
         const ctrl = new AbortController();
-        const overallTimeoutId = window.setTimeout(function () { ctrl.abort(); }, 18000);
-        let firstChunkTimeoutId = window.setTimeout(function () { ctrl.abort(); }, 5000);
+        /* stream-timeout-1 (2026-05-12): bumped from 18s/5s to 45s/20s.
+           With ECC + heavy tuning the OpenAI first chunk legitimately
+           takes 6–12s, so the old 5s first-chunk abort was killing
+           every tuned/ECC build. Symptom: "screen changes (error
+           overlay flashes) but nothing appears in the box". */
+        const overallTimeoutId = window.setTimeout(function () { ctrl.abort(); }, 45000);
+        let firstChunkTimeoutId = window.setTimeout(function () { ctrl.abort(); }, 20000);
         function clearFirstChunkTimer() {
           if (firstChunkTimeoutId !== null) {
             window.clearTimeout(firstChunkTimeoutId);
