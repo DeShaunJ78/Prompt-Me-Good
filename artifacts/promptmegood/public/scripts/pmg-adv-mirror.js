@@ -136,6 +136,67 @@
     detailsEl.addEventListener('toggle', function () {
       try { localStorage.setItem(STORAGE_KEY, detailsEl.open ? '1' : '0'); } catch (_) {}
     });
+    wireScrollIntoView(detailsEl);
+  }
+
+  /* adv-mirror-8: smooth-scroll the <details> into a comfortable spot
+     when the user OPENS it. Doubles as implicit tap feedback (the page
+     visibly responds). Only fires on open (closing would be jarring),
+     and is a no-op when the element is already comfortably positioned
+     (avoids jitter on desktop where everything's usually visible). */
+  function wireScrollIntoView(el) {
+    if (!el || el.__pmgScrollWired) return;
+    el.__pmgScrollWired = true;
+    el.addEventListener('toggle', function () {
+      if (!el.open) return;
+      /* Wait two frames so the details has actually expanded before we
+         measure where its top sits. */
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          var topbar = document.querySelector('.pmgv3-topbar');
+          var stickyBottom = 0;
+          if (topbar) {
+            var tbRect = topbar.getBoundingClientRect();
+            /* Only treat as sticky if it's actually pinned at the top. */
+            if (tbRect.top <= 4 && tbRect.bottom > 0) stickyBottom = tbRect.bottom;
+          }
+          var desiredTop = stickyBottom + 14;
+          var rect = el.getBoundingClientRect();
+          var delta = rect.top - desiredTop;
+          /* Skip when already comfortably positioned (avoids desktop jitter). */
+          if (Math.abs(delta) < 24) return;
+          var scroller = pickScroller(el);
+          var nextTop = (scroller === window
+            ? (window.scrollY || window.pageYOffset || 0)
+            : scroller.scrollTop) + delta;
+          try {
+            if (scroller === window) {
+              window.scrollTo({ top: nextTop, behavior: 'smooth' });
+            } else {
+              scroller.scrollTo({ top: nextTop, behavior: 'smooth' });
+            }
+          } catch (_) {
+            if (scroller === window) window.scrollTo(0, nextTop);
+            else scroller.scrollTop = nextTop;
+          }
+        });
+      });
+    });
+  }
+
+  function pickScroller(el) {
+    /* Walk up looking for an ancestor with overflow-y auto/scroll AND
+       a real scrollHeight > clientHeight. Falls back to window. */
+    var node = el.parentNode;
+    while (node && node !== document.body && node.nodeType === 1) {
+      var cs = window.getComputedStyle(node);
+      var oy = cs.overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && node.scrollHeight > node.clientHeight + 1) {
+        return node;
+      }
+      node = node.parentNode;
+    }
+    return window;
   }
 
   /* adv-mirror-4: The Money Mode Pro panel (#pmg-mmpro-panel from
@@ -191,6 +252,7 @@
     wrap.addEventListener('toggle', function () {
       try { localStorage.setItem('pmg:advmirror:mmpro:orig:open', wrap.open ? '1' : '0'); } catch (_) {}
     });
+    wireScrollIntoView(wrap);
     orig.parentNode.insertBefore(wrap, orig);
     wrap.appendChild(sum);
     wrap.appendChild(orig);
@@ -256,6 +318,7 @@
     sub.addEventListener('toggle', function () {
       try { localStorage.setItem('pmg:advmirror:mmpro:open', sub.open ? '1' : '0'); } catch (_) {}
     });
+    wireScrollIntoView(sub);
     mirrorRow.parentNode.insertBefore(sub, mirrorRow.nextSibling);
     wireMmproClone(orig, clone);
     return true;
