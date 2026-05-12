@@ -4083,12 +4083,34 @@
   <link rel="stylesheet" href="/styles/pmg-business-mode.css?v=bm-3" />
 
   <link rel="stylesheet" href="/styles/pmg-guided-intake.css?v=gi-1" />
+  <link rel="stylesheet" href="/styles/pmg-tune-chips.css?v=tc-1" />
+  <script>
+    /* refresh-clears-1: a true browser reload (F5 / Cmd-R / pull-to-refresh)
+       wipes the persisted workstation state BEFORE chassis-v3.js boots and
+       calls restoreSession() / wireDraftRecovery(). Cold opens, back/forward
+       nav, and re-opening a closed tab are NOT treated as reloads — those
+       still benefit from session/draft restore as before. Kill switch:
+       localStorage.pmg_refresh_clears_disable = '1'. */
+    (function () {
+      try {
+        if (window.localStorage && localStorage.getItem('pmg_refresh_clears_disable') === '1') return;
+        var nav = (performance && performance.getEntriesByType) ? performance.getEntriesByType('navigation') : null;
+        var isReload = nav && nav[0] && nav[0].type === 'reload';
+        // Legacy fallback for browsers without Navigation Timing Level 2.
+        if (!isReload && performance && performance.navigation && performance.navigation.type === 1) isReload = true;
+        if (!isReload) return;
+        try { sessionStorage.removeItem('pmgv3:session'); } catch (_) {}
+        try { localStorage.removeItem('pmgv3:draft'); } catch (_) {}
+      } catch (_) {}
+    })();
+  </script>
   <script src="/scripts/pmg-chassis-v3.js?v=sd-vault-2"></script>
   <script src="/scripts/pmg-visual-studio.js?v=mux-2-adv-tuning" defer></script>
   <script src="/scripts/pmg-storyboard.js?v=sb-9" defer></script>
   <script src="/scripts/pmg-spark-panel.js?v=sp-6-mobile-questions" defer></script>
   <script src="/scripts/pmg-business-mode.js?v=growth-mode-1" defer></script>
   <script src="/scripts/pmg-guided-intake.js?v=gi-2" defer></script>
+  <script src="/scripts/pmg-tune-chips.js?v=tc-2-mount-fix" defer></script>
   <style id="pmg-splash-css">
     /* Instant splash loader — Phase 1 of the master roadmap. Painted before
        the chassis JS executes so users never see a flash of blank workstation.

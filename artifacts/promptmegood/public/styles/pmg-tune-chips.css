@@ -1,0 +1,210 @@
+/* pmg-tune-chips.css — quick-access tuning chip row + Tune & Build button.
+   Lives directly under the #goal textarea. Two-way bound to the existing
+   <select> elements inside #settingsPanel (id="category|skillLevel|tone|
+   outputFormat|maxLength|outputLanguage|personality"). Chips ARE the
+   tuning UI for casual use; the full Pro Tuning section is hidden by
+   default and only revealed when the user clicks the "🎛️ Tune & Build"
+   button next to "Fix My Prompt".
+
+   Theme tokens only — no hardcoded teal. Scoped under html.pmg-chassis-v3
+   so legacy chassis can never accidentally pick these up. */
+
+html.pmg-chassis-v3 .pmg-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 0 0;
+  padding: 0;
+  align-items: center;
+}
+
+html.pmg-chassis-v3 .pmg-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 28%, transparent);
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 6%, transparent);
+  color: color-mix(in srgb, var(--color-primary, #3ee0a0) 90%, #ffffff 10%);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  user-select: none;
+  line-height: 1.2;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+html.pmg-chassis-v3 .pmg-chip:hover {
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 14%, transparent);
+  border-color: color-mix(in srgb, var(--color-primary, #3ee0a0) 50%, transparent);
+}
+html.pmg-chassis-v3 .pmg-chip:focus-visible {
+  outline: 2px solid var(--color-primary, #3ee0a0);
+  outline-offset: 2px;
+}
+html.pmg-chassis-v3 .pmg-chip[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 22%, transparent);
+  border-color: var(--color-primary, #3ee0a0);
+}
+html.pmg-chassis-v3 .pmg-chip__label {
+  opacity: 0.7;
+  font-weight: 500;
+}
+html.pmg-chassis-v3 .pmg-chip__value {
+  font-weight: 700;
+}
+html.pmg-chassis-v3 .pmg-chip__caret {
+  font-size: 10px;
+  opacity: 0.6;
+  margin-left: 2px;
+}
+
+/* Brief flash when auto-tune (or any external code) updates the underlying
+   select — teaches the user that the chip is live-bound. */
+html.pmg-chassis-v3 .pmg-chip.is-just-updated {
+  animation: pmg-chip-flash 0.9s ease-out;
+}
+@keyframes pmg-chip-flash {
+  0%   { background: color-mix(in srgb, var(--color-primary, #3ee0a0) 38%, transparent); }
+  100% { background: color-mix(in srgb, var(--color-primary, #3ee0a0) 6%, transparent); }
+}
+
+/* Popover — fixed-positioned by JS so it never gets clipped by overflow
+   parents. data-pmg-overlay-root keeps the chassis universal-hide rule
+   from erasing it when body-appended. */
+html.pmg-chassis-v3 .pmg-chip-pop {
+  position: fixed;
+  z-index: 10050;
+  min-width: 200px;
+  max-width: 320px;
+  max-height: 60vh;
+  overflow-y: auto;
+  background: #0c1a18;
+  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 35%, transparent);
+  border-radius: 12px;
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.45),
+    0 0 0 1px color-mix(in srgb, var(--color-primary, #3ee0a0) 8%, transparent) inset;
+  padding: 6px;
+  font-size: 13px;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+html.pmg-chassis-v3 .pmg-chip-pop.is-open {
+  opacity: 1;
+  transform: translateY(0);
+}
+html.pmg-chassis-v3 .pmg-chip-pop__title {
+  display: block;
+  padding: 8px 10px 6px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-primary, #3ee0a0) 70%, #ffffff 30%);
+  opacity: 0.9;
+}
+html.pmg-chassis-v3 .pmg-chip-pop__opt {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  color: #e6f7f1;
+  padding: 9px 12px;
+  font-size: 13.5px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  line-height: 1.3;
+}
+html.pmg-chassis-v3 .pmg-chip-pop__opt:hover,
+html.pmg-chassis-v3 .pmg-chip-pop__opt:focus-visible {
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 14%, transparent);
+  outline: none;
+}
+html.pmg-chassis-v3 .pmg-chip-pop__opt[aria-selected="true"] {
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 22%, transparent);
+  color: var(--color-primary, #3ee0a0);
+  font-weight: 700;
+}
+html.pmg-chassis-v3 .pmg-chip-pop__opt[aria-selected="true"]::after {
+  content: '✓';
+  float: right;
+  margin-left: 8px;
+  color: var(--color-primary, #3ee0a0);
+}
+
+/* "More ▾" chip — visually identical to the others but slightly muted
+   so it reads as secondary. */
+html.pmg-chassis-v3 .pmg-chip.is-more {
+  background: transparent;
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--color-primary, #3ee0a0) 30%, transparent);
+}
+
+/* "🎛️ Tune & Build" button — sibling to #generateBtn. Same vertical
+   weight, ghost-style so the primary "Fix My Prompt" stays the hero. */
+html.pmg-chassis-v3 .pmg-tune-and-build {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 45%, transparent);
+  background: transparent;
+  color: var(--color-primary, #3ee0a0);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+  min-height: 44px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  margin-left: 8px;
+}
+html.pmg-chassis-v3 .pmg-tune-and-build:hover {
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 12%, transparent);
+  border-color: var(--color-primary, #3ee0a0);
+}
+html.pmg-chassis-v3 .pmg-tune-and-build:focus-visible {
+  outline: 2px solid var(--color-primary, #3ee0a0);
+  outline-offset: 2px;
+}
+
+/* When chips are mounted AND user hasn't explicitly opted in to the full
+   tuning section, hide it. Reveal when body has .pmg-tune-section-shown. */
+html.pmg-chassis-v3 body.pmg-tune-chips-on:not(.pmg-tune-section-shown) .tuning-section {
+  display: none !important;
+}
+
+/* Mobile fit — chips wrap, popover narrows. */
+@media (max-width: 480px) {
+  html.pmg-chassis-v3 .pmg-chip {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  html.pmg-chassis-v3 .pmg-chip-pop {
+    min-width: 180px;
+    max-width: 88vw;
+  }
+  html.pmg-chassis-v3 .pmg-tune-and-build {
+    margin-left: 0;
+    margin-top: 8px;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.pmg-chassis-v3 .pmg-chip,
+  html.pmg-chassis-v3 .pmg-chip-pop,
+  html.pmg-chassis-v3 .pmg-tune-and-build { transition: none; }
+  html.pmg-chassis-v3 .pmg-chip.is-just-updated { animation: none; }
+}

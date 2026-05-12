@@ -25,6 +25,7 @@ pnpm workspaces · Node v24 · TS 5.9 · Express 5 · Drizzle ORM · Zod · Orva
     *   `pmg-ux.js` — Photo Suite GROUPS, presets, Surprise Me, demoteButtons.
     *   `pmg-business-mode.{css,js}` — Business Mode header-icon drawer (💼 in topbar → right slide-in with Brand Voice + Social Packs + Platform Builder accordions; Build Prompt fills `#goal` and submits `#prompt-form`).
     *   `pmg-guided-intake.{css,js}` — Guided 4-field intake (Subject / Environment / Action / Style) injected ABOVE `#pmg-vs-image-goal` and `#pmg-vs-video-goal`, with a persistent ↻ toggle to freeform.
+*   `pmg-tune-chips.{css,js}` — Quick-access tuning chip row injected directly under the `#goal` textarea (4 main chips: Personality/Tone/Format/Length + "+ 3 more ▾" popover for Category/Experience/Language). Two-way bound to the underlying `<select>` elements (chip read-on-mount → write on click via real `change` event → re-read on `change` so auto-tune updates flash through). Also injects a sibling `🎛️ Tune & Build` button next to `#generateBtn` that reveals the full `.tuning-section` (hidden by default once chips are mounted via `body.pmg-tune-chips-on:not(.pmg-tune-section-shown)` rule). Disable: `?nochips`, `localStorage.pmg_tune_chips_disable='1'`.
 *   `artifacts/promptmegood/public/sitemap.xml` + `robots.txt` — SEO surface (AI crawlers allowed).
 *   `artifacts/promptmegood/playwright.config.ts` — Frontend test config.
 
@@ -34,6 +35,7 @@ pnpm workspaces · Node v24 · TS 5.9 · Express 5 · Drizzle ORM · Zod · Orva
 *   **Chassis v3 reparents legacy DOM** (`#goal`, `#settingsPanel`, `#generateBtn`, `#resultBox`, etc.) into v3 slots. Universal hide rule `body > *:not(#pmg-chassis-v3-root):not(script)…` suppresses everything outside the chassis root.
 *   **Panel-scoped IDs** (avoid collisions with text panel): `#pmg-vs-image-goal` / `#pmg-vs-video-goal`, `#pmg-vs-image-refined` / `#pmg-vs-video-refined`, `#pmg-vs-image-generate-btn` / `#pmg-vs-video-generate-btn`, etc. — see `pmg-visual-studio.js`.
 *   **Photo Suite relocation:** Legacy `#photo-suite-section` is moved into `#pmg-vs-photo-suite-container` by `relocatePhotoSuite()` (200ms poll, max 30 ticks). `body.image-mode` is the trigger CSS class — toggled by `setActivePanel('photography')`.
+*   **Refresh = clean slate (refresh-clears-1):** A true browser reload (F5 / Cmd-R / pull-to-refresh) wipes `sessionStorage['pmgv3:session']` AND `localStorage['pmgv3:draft']` BEFORE chassis-v3 boots, via an inline IIFE early in `app.html` `<head>`. Detection: `performance.getEntriesByType('navigation')[0].type === 'reload'` (with `performance.navigation.type === 1` legacy fallback). Cold opens, back/forward nav, and reopening a closed tab are NOT treated as reloads — those still benefit from session/draft restore. Disable: `localStorage.pmg_refresh_clears_disable='1'`.
 *   **Local-first state:** Vault, picks, theme live in `localStorage`; only AI-feature inputs leave the device.
 *   **Light/dark locked to dark:** `pmg-g-theme.css` L11–22 forces the dark teal palette for both `[data-theme]` values.
 *   **Expert Command Center is paywalled** after `BETA_END`.
