@@ -138,6 +138,53 @@ html.pmg-chassis-v3 .pmg-adv-mirror-switch input:focus-visible + .pmg-adv-mirror
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #3ee0a0) 35%, transparent);
 }
 
+/* adv-mirror-6: collapsed wrapper for the Money Mode Pro clone so the
+   default Advanced Output Settings view stays short and scannable. */
+html.pmg-chassis-v3 .pmg-mmpro-mirror-collapse {
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 3%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 14%, transparent);
+  border-radius: 10px;
+  overflow: hidden;
+}
+html.pmg-chassis-v3 .pmg-mmpro-mirror-collapse-summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  font-weight: 600;
+  color: var(--color-text, #e8f3ec);
+  -webkit-tap-highlight-color: color-mix(in srgb, var(--color-primary, #3ee0a0) 12%, transparent);
+}
+html.pmg-chassis-v3 .pmg-mmpro-mirror-collapse-summary::-webkit-details-marker { display: none; }
+html.pmg-chassis-v3 .pmg-mmpro-mirror-collapse-summary::marker { content: ''; }
+html.pmg-chassis-v3 .pmg-mmpro-mirror-collapse-icon { font-size: 15px; line-height: 1; }
+html.pmg-chassis-v3 .pmg-mmpro-mirror-collapse-title-wrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+html.pmg-chassis-v3 .pmg-mmpro-mirror-collapse-title { font-size: 13px; }
+html.pmg-chassis-v3 .pmg-mmpro-mirror-collapse-sub {
+  font-size: 11px;
+  font-weight: 400;
+  color: color-mix(in srgb, var(--color-text, #e8f3ec) 55%, transparent);
+  margin-top: 2px;
+}
+html.pmg-chassis-v3 .pmg-mmpro-mirror-collapse-chev {
+  font-size: 12px;
+  color: color-mix(in srgb, var(--color-text, #e8f3ec) 55%, transparent);
+  transition: transform 0.18s ease;
+}
+html.pmg-chassis-v3 .pmg-mmpro-mirror-collapse[open] .pmg-mmpro-mirror-collapse-chev {
+  transform: rotate(180deg);
+}
+html.pmg-chassis-v3 .pmg-mmpro-mirror-collapse > #pmg-mmpro-panel-mirror {
+  margin: 0 12px 12px;
+}
+
 html.pmg-chassis-v3 .pmg-adv-mirror-ecc-row {
   display: flex;
   flex-direction: column;

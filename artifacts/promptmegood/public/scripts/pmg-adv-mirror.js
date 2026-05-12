@@ -186,7 +186,34 @@
     clone.querySelectorAll('[aria-controls]').forEach(function (el) {
       el.setAttribute('aria-controls', el.getAttribute('aria-controls') + '-mirror');
     });
-    mirrorRow.parentNode.insertBefore(clone, mirrorRow.nextSibling);
+    /* adv-mirror-6: wrap the cloned MMPro panel in a collapsed sub-<details>
+       so the default Advanced Output Settings view stays short and matches
+       the calm layout in the user's reference screenshot. The clone is
+       still mounted (so sync wiring stays live) but the user opts in to
+       see the dense Pro controls. */
+    var sub = document.createElement('details');
+    sub.className = 'pmg-mmpro-mirror-collapse';
+    sub.id = 'pmg-mmpro-mirror-collapse';
+    var sum = document.createElement('summary');
+    sum.className = 'pmg-mmpro-mirror-collapse-summary';
+    sum.innerHTML =
+      '<span class="pmg-mmpro-mirror-collapse-icon" aria-hidden="true">💰</span>' +
+      '<span class="pmg-mmpro-mirror-collapse-title-wrap">' +
+        '<span class="pmg-mmpro-mirror-collapse-title">Show Pro options</span>' +
+        '<span class="pmg-mmpro-mirror-collapse-sub">Money Mode Pro &mdash; presets, focus, intensity, boosts</span>' +
+      '</span>' +
+      '<span class="pmg-mmpro-mirror-collapse-chev" aria-hidden="true">▾</span>';
+    sub.appendChild(sum);
+    sub.appendChild(clone);
+    /* Persist open state separately from the parent advmirror state. */
+    try {
+      var subStored = localStorage.getItem('pmg:advmirror:mmpro:open');
+      if (subStored === '1') sub.open = true;
+    } catch (_) {}
+    sub.addEventListener('toggle', function () {
+      try { localStorage.setItem('pmg:advmirror:mmpro:open', sub.open ? '1' : '0'); } catch (_) {}
+    });
+    mirrorRow.parentNode.insertBefore(sub, mirrorRow.nextSibling);
     wireMmproClone(orig, clone);
     return true;
   }
@@ -308,6 +335,10 @@
       var epicNow = document.getElementById('pmgv3-epic-tuning');
       if (existing && epicNow && !epicNow.contains(existing)) {
         try { existing.parentNode.removeChild(existing); } catch (_) {}
+        var staleSub = document.getElementById('pmg-mmpro-mirror-collapse');
+        if (staleSub && staleSub.parentNode) {
+          try { staleSub.parentNode.removeChild(staleSub); } catch (_) {}
+        }
         var staleClone = document.getElementById('pmg-mmpro-panel-mirror');
         if (staleClone && staleClone.parentNode) {
           try { staleClone.parentNode.removeChild(staleClone); } catch (_) {}
