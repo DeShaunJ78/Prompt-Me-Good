@@ -336,29 +336,27 @@
   }
 
   function openFullTuning() {
+    // Adding the body class is the primary visibility switch — the CSS
+    // rule `body.pmg-tune-chips-on:not(.pmg-tune-section-shown)
+    // .tuning-section { display:none !important }` flips off, and the
+    // panel becomes visible in its natural DOM position (right under
+    // the textarea / pill row inside .pmgv3-left).
     document.body.classList.add('pmg-tune-section-shown');
-    // The auto-open guard parks inline `display:none !important` and a
-    // `hidden` attribute on #tuning-panel to defeat the chassis-v3
-    // restoreSession()/Analyze auto-reveal. Inline !important beats our
-    // body-class CSS rule, so we MUST explicitly clear those here when
-    // the user opens the panel themselves.
     var panel = document.getElementById('tuning-panel');
     if (panel) {
+      // Defensive: clear chassis-v3's initial inline display:none and
+      // any stale hidden attr / is-collapsed class so nothing competes
+      // with our reveal.
       panel.style.removeProperty('display');
       panel.removeAttribute('hidden');
       panel.classList.remove('is-collapsed');
-      // CRITICAL: chassis CSS hides .pmgv3-tuning-host (the actual
-      // settings grid) unless `.tuning-section` carries `.is-mobile-open`
-      // — on EVERY viewport, not just mobile (see pmg-chassis-v3.css
-      // L592-594, comment cv3-47). Without this class the panel "opens"
-      // but every field disappears. Add it directly so we don't depend
-      // on the toggle button's click handler being live.
+      // CRITICAL: chassis CSS hides .pmgv3-tuning-host unless the
+      // section has .is-mobile-open — on every viewport, not just
+      // mobile (cv3-47). Without it, the fields disappear.
       panel.classList.add('is-mobile-open');
       var toggle = $('tuning-mobile-toggle');
       if (toggle) toggle.setAttribute('aria-expanded', 'true');
     }
-    // Same defensive unhide for the inner settings container — the
-    // chassis sometimes leaves it data-pmgv3-collapsed.
     var sp = document.getElementById('settingsPanel');
     if (sp) {
       sp.style.removeProperty('display');
@@ -366,34 +364,25 @@
       sp.removeAttribute('data-pmgv3-collapsed');
     }
     injectDoneButton();
-    // Keep the tuning panel pinned to the top of the user's viewport
-    // (with scroll-margin-top so the chassis topbar doesn't clip the
-    // header) for ~900ms after opening. Without the persistent guard,
-    // late-arriving content from auto-boost / spark / pick-count
-    // updates can push the panel back out of view before the smooth
-    // scroll even finishes.
-    var target = document.getElementById('tuning-panel') || $('settingsPanel');
+    // One clean scroll AFTER layout settles. Previously a rAF "pin"
+    // loop kept re-scrolling for 900ms, which on mobile could land
+    // the page far past the panel onto the empty-state placeholder
+    // when getBoundingClientRect briefly returned 0. Single scroll,
+    // single deferred retry — that's it.
+    var target = panel || sp;
     if (!target) return;
-    // Blur the pill so the browser's "keep focus visible" auto-scroll
-    // doesn't yank the page back to the top where the pill lives.
     try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (_) {}
-    var pinUntil = Date.now() + 900;
-    var lastScrollAt = 0;
-    var pin = function () {
-      var rect = target.getBoundingClientRect();
-      // If the panel header is above the topbar (≈64px) or below the
-      // bottom edge, re-anchor it to the top with scroll-margin.
-      if (rect.top < 60 || rect.top > window.innerHeight - 120) {
-        try { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-        catch (_) { target.scrollIntoView(); }
-        lastScrollAt = Date.now();
-      }
-      if (Date.now() < pinUntil) requestAnimationFrame(pin);
+    var doScroll = function () {
+      var t = document.getElementById('tuning-panel') || document.getElementById('settingsPanel');
+      if (!t) return;
+      // Skip scroll if the panel header is already comfortably in view —
+      // moving it would just disorient the user.
+      var rect = t.getBoundingClientRect();
+      if (rect.top >= 60 && rect.top <= window.innerHeight - 120) return;
+      try { t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      catch (_) { t.scrollIntoView(); }
     };
-    // Initial scroll, then enter the rAF guard.
-    try { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-    catch (_) { target.scrollIntoView(); }
-    requestAnimationFrame(pin);
+    setTimeout(doScroll, 80);
   }
 
   function closeFullTuningAndBuild() {
@@ -579,20 +568,24 @@
     var panel = document.getElementById('tuning-panel');
     if (!panel) return;
     _guardArmed = true;
-    var enforce = function () {
-      if (document.body.classList.contains('pmg-tune-section-shown')) return;
-      // Hide via inline style — survives third-party class/attr removals.
-      if (panel.style.getPropertyValue('display') !== 'none') {
-        panel.style.setProperty('display', 'none', 'important');
-      }
-      panel.setAttribute('hidden', '');
-      panel.classList.add('is-collapsed');
-    };
-    enforce();
-    try {
-      var mo = new MutationObserver(function () { enforce(); });
-      mo.observe(panel, { attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
-    } catch (_) {}
+    // tc-9c: previously this guard set inline `display:none !important`
+    // on #tuning-panel any time someone (chassis restoreSession,
+    // Analyze flow, etc.) tried to show it without our opt-in flag.
+    // The inline style then competed with openFullTuning() → the
+    // panel sometimes appeared empty / scrolled past on mobile, and
+    // the user landed on the empty-state placeholder.
+    //
+    // The CSS rule
+    //   body.pmg-tune-chips-on:not(.pmg-tune-section-shown)
+    //   .tuning-section { display:none !important }
+    // already handles the "hide unless opted-in" job by itself. We
+    // only need to keep the body class flag honest. So this guard is
+    // reduced to a one-time cleanup: clear any stale inline display
+    // that chassis init left behind, and let CSS do the rest.
+    if (panel.style.getPropertyValue('display') === 'none') {
+      panel.style.removeProperty('display');
+    }
+    panel.removeAttribute('hidden');
   }
 
   // Close the text tuning panel automatically whenever the user
