@@ -68,18 +68,21 @@
   <meta name="description" content="Free AI prompt generator that turns plain English into better ChatGPT, Claude, DALL·E and Midjourney prompts. No signup. Save, refine, and run prompts in one place." />
   <meta name="keywords" content="AI prompt generator, free AI prompt generator, ChatGPT prompt generator, AI image prompt generator, DALL-E prompt generator, Midjourney prompt generator, prompt builder, how to write better ChatGPT prompts, prompt engineering for beginners, AI prompt examples, Claude prompts" />
   <meta name="author" content="PromptMeGood" />
-  <!-- Workstation is JS-heavy and only useful to engaged users; marketing
-       lives on `/`. Tell crawlers to honor the landing as the canonical
-       indexable surface. -->
-  <meta name="robots" content="noindex,follow,max-image-preview:large" />
+  <!-- seo-1: workstation is now indexable. Previously noindex'd in favor
+       of the marketing page, but Lighthouse flagged it and we were
+       leaving real "ai prompt builder / chatgpt prompt generator"
+       traffic on the table — Canva, Figma, etc. all index their app
+       shells. Canonical points to /app so Google attributes ranking
+       value here, not back to the landing. -->
+  <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1" />
   <meta name="theme-color" content="#0a2420" />
   <meta name="color-scheme" content="dark" />
-  <link rel="canonical" href="https://www.promptmegood.com/" />
+  <link rel="canonical" href="https://www.promptmegood.com/app" />
   <meta property="og:site_name" content="PromptMeGood" />
   <meta property="og:title" content="Free AI Prompt Generator for ChatGPT, Claude & Image AI | PromptMeGood" />
   <meta property="og:description" content="Free AI prompt generator that turns plain English into better ChatGPT, Claude, DALL·E and Midjourney prompts. No signup. Save, refine, and run prompts in one place." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://www.promptmegood.com" />
+  <meta property="og:url" content="https://www.promptmegood.com/app" />
   <meta property="og:image" content="https://www.promptmegood.com/opengraph.jpg?v=6" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
