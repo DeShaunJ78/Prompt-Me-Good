@@ -364,31 +364,26 @@
       sp.removeAttribute('data-pmgv3-collapsed');
     }
     injectDoneButton();
-    // tc-9e: panel is now CSS-positioned as a fixed overlay anchored to
-    // the top of the viewport whenever body.pmg-tune-section-shown is
-    // present. No scroll juggling needed — it pops up instantly,
-    // guaranteed visible regardless of where the user was. Add a
-    // backdrop so the rest of the workstation visibly recedes and a
-    // backdrop tap closes the overlay.
-    var backdrop = document.getElementById('pmg-tune-backdrop');
-    if (!backdrop) {
-      backdrop = document.createElement('div');
-      backdrop.id = 'pmg-tune-backdrop';
-      backdrop.setAttribute('data-pmg-overlay-root', '');
-      backdrop.addEventListener('click', function () {
-        // Tap-outside closes WITHOUT building a prompt — same intent as
-        // a quiet dismiss. closeFullTuningAndBuild fires the prompt; we
-        // want a no-op close here.
-        document.body.classList.remove('pmg-tune-section-shown');
-      });
-      document.body.appendChild(backdrop);
-    }
-    // Make sure inner scrollable container starts at the top.
-    try {
-      var pTop = document.getElementById('tuning-panel');
-      if (pTop) pTop.scrollTop = 0;
-    } catch (_) {}
+    // Remove any leftover backdrop from the earlier fixed-overlay
+    // experiment — the panel now lives in-place again.
+    var oldBackdrop = document.getElementById('pmg-tune-backdrop');
+    if (oldBackdrop && oldBackdrop.parentNode) oldBackdrop.parentNode.removeChild(oldBackdrop);
+    // Blur the pill so the browser's "keep focus visible" auto-scroll
+    // doesn't yank the page back to the pill while we scroll the panel
+    // into view.
     try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (_) {}
+    // Scroll the user to the "Tune Your Prompt" header. Per user spec:
+    // smooth scroll, with a small delay so mobile reflow finishes after
+    // the panel becomes visible. scroll-margin-top (set in CSS, ~84px)
+    // keeps the header clear of the chassis topbar.
+    var doScroll = function () {
+      var t = document.getElementById('tuning-panel') || document.getElementById('settingsPanel');
+      if (!t) return;
+      try { t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      catch (_) { t.scrollIntoView(); }
+    };
+    setTimeout(doScroll, 120);
+    setTimeout(doScroll, 400);
   }
 
   function closeFullTuningAndBuild() {
