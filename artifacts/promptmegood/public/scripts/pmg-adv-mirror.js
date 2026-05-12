@@ -136,8 +136,103 @@
     detailsEl.addEventListener('toggle', function () {
       try { localStorage.setItem(STORAGE_KEY, detailsEl.open ? '1' : '0'); } catch (_) {}
     });
+    /* adv-mirror-11: smart exit on the MAIN mirror gear card.
+       Snapshot input states on open; on close, compare. Dirty → close
+       Tuning + fire Build (via the existing #pmg-tune-done button which
+       already does both). Clean → just scroll the user back to the
+       Tuning section header so they're not stranded mid-page. Sub-
+       collapses (#pmg-mmpro-mirror-collapse / #pmg-mmpro-orig-collapse)
+       opt out by NOT calling wireSmartExit. */
     wireScrollIntoView(detailsEl);
+    wireSmartExit(detailsEl);
     wireExplicitToggle(detailsEl);
+  }
+
+  /* adv-mirror-11: smart exit. Snapshot on open, compare on close. */
+  function wireSmartExit(el) {
+    if (!el || el.__pmgSmartExitWired) return;
+    el.__pmgSmartExitWired = true;
+    /* If the card is already open at wire time (persisted-open via
+       localStorage 'pmg:advmirror:open'='1'), the toggle event for that
+       initial open never fires — so we'd never snapshot a baseline and
+       a real dirty close would be miscategorised as clean. Capture
+       immediately in that case. */
+    var snapshot = el.open ? captureFormState(el) : null;
+    el.addEventListener('toggle', function () {
+      if (el.open) {
+        snapshot = captureFormState(el);
+        return;
+      }
+      var current = captureFormState(el);
+      var dirty = snapshot !== null && current !== snapshot;
+      snapshot = null;
+      if (dirty) {
+        commitTuningAndBuild();
+      } else {
+        scrollBackToTuningHeader(el);
+      }
+    });
+  }
+
+  function captureFormState(root) {
+    try {
+      var parts = [];
+      var inputs = root.querySelectorAll('input, select, textarea');
+      for (var i = 0; i < inputs.length; i++) {
+        var input = inputs[i];
+        var key = input.id || input.name || ('idx' + i);
+        if (input.type === 'checkbox' || input.type === 'radio') {
+          parts.push(key + '=' + (input.checked ? '1' : '0'));
+        } else {
+          parts.push(key + '=' + (input.value == null ? '' : String(input.value)));
+        }
+      }
+      return parts.join('|');
+    } catch (_) { return null; }
+  }
+
+  function commitTuningAndBuild() {
+    /* The Tuning Done button already collapses tuning AND fires Build —
+       reusing it keeps a single source of truth for the commit path. */
+    var done = document.getElementById('pmg-tune-done');
+    if (done) {
+      try { done.click(); return; } catch (_) {}
+    }
+    var gen = document.getElementById('generateBtn');
+    if (gen) { try { gen.click(); } catch (_) {} }
+  }
+
+  function scrollBackToTuningHeader(el) {
+    var section = el.closest('.tuning-section') ||
+                  document.querySelector('#tuning-panel .tuning-section') ||
+                  document.getElementById('tuning-panel');
+    var header = (section && section.querySelector('.tuning-header, button.tuning-header')) || section;
+    if (!header) return;
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        var topbar = document.querySelector('.pmgv3-topbar');
+        var stickyBottom = 0;
+        if (topbar) {
+          var tbRect = topbar.getBoundingClientRect();
+          if (tbRect.top <= 4 && tbRect.bottom > 0) stickyBottom = tbRect.bottom;
+        }
+        var desiredTop = stickyBottom + 14;
+        var rect = header.getBoundingClientRect();
+        var delta = rect.top - desiredTop;
+        if (Math.abs(delta) < 12) return;
+        var scroller = pickScroller(header);
+        var nextTop = (scroller === window
+          ? (window.scrollY || window.pageYOffset || 0)
+          : scroller.scrollTop) + delta;
+        try {
+          if (scroller === window) window.scrollTo({ top: nextTop, behavior: 'smooth' });
+          else scroller.scrollTo({ top: nextTop, behavior: 'smooth' });
+        } catch (_) {
+          if (scroller === window) window.scrollTo(0, nextTop);
+          else scroller.scrollTop = nextTop;
+        }
+      });
+    });
   }
 
   /* adv-mirror-10: bypass native <details>/<summary> mobile flakiness

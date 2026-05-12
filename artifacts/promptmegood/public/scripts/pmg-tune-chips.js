@@ -386,41 +386,53 @@
       // eslint-disable-next-line no-unused-expressions
       panel.offsetHeight;
     }
-    // tc-9i: scrollIntoView({block:'start'}) was overshooting on mobile
-    // — when the panel is near the end of its scroll container, the
-    // browser scrolls to its max position to honor "align top to top",
-    // which lands the user at the bottom of the document (footer).
-    // Replaced with manual scroll math: find the nearest scrollable
-    // ancestor and scroll exactly enough to put the panel header 16px
-    // below the container's top edge.
+    // tc-9l: unified scroll math with adv-mirror-8. Earlier per-container
+    // scrollTop math worked on mobile (where window scroll is the right
+    // axis) but landed wrong on desktop where the chassis has its own
+    // inner scroller AND the topbar is sticky. Now we mirror the proven
+    // adv-mirror logic: pick the right scroller by walking ancestors for
+    // a real overflow:auto/scroll AND scrollHeight > clientHeight, then
+    // shift by the delta needed to put the target 14px below the sticky
+    // topbar's bottom edge. Same code path on desktop and mobile.
+    var pickTuneScroller = function (el) {
+      var node = el && el.parentNode;
+      while (node && node !== document.body && node.nodeType === 1) {
+        var cs;
+        try { cs = window.getComputedStyle(node); } catch (_) { node = node.parentNode; continue; }
+        var oy = cs.overflowY;
+        if ((oy === 'auto' || oy === 'scroll') && node.scrollHeight > node.clientHeight + 1) {
+          return node;
+        }
+        node = node.parentNode;
+      }
+      return window;
+    };
     var doScroll = function () {
       var t = document.getElementById('tuning-panel') || document.getElementById('settingsPanel');
       if (!t) return;
-      var container = t.parentElement;
-      while (container && container !== document.body && container !== document.documentElement) {
-        var oy = '';
-        try { oy = getComputedStyle(container).overflowY; } catch (_) {}
-        if (oy === 'auto' || oy === 'scroll') break;
-        container = container.parentElement;
+      var topbar = document.querySelector('.pmgv3-topbar');
+      var stickyBottom = 0;
+      if (topbar) {
+        var tbRect = topbar.getBoundingClientRect();
+        if (tbRect.top <= 4 && tbRect.bottom > 0) stickyBottom = tbRect.bottom;
       }
-      if (!container || container === document.body) {
-        container = document.scrollingElement || document.documentElement;
-      }
+      var desiredTop = stickyBottom + 14;
+      var rect = t.getBoundingClientRect();
+      var delta = rect.top - desiredTop;
+      if (Math.abs(delta) < 12) return;
+      var scroller = pickTuneScroller(t);
+      var nextTop = (scroller === window
+        ? (window.scrollY || window.pageYOffset || 0)
+        : scroller.scrollTop) + delta;
       try {
-        var pRect = t.getBoundingClientRect();
-        var cRect = (container === document.documentElement || container === document.scrollingElement)
-          ? { top: 0 }
-          : container.getBoundingClientRect();
-        var current = container.scrollTop || 0;
-        var target = current + (pRect.top - cRect.top) - 16;
-        if (target < 0) target = 0;
-        // Don't overscroll: cap at max scrollable distance.
-        var maxScroll = (container.scrollHeight || 0) - (container.clientHeight || 0);
-        if (maxScroll > 0 && target > maxScroll) target = maxScroll;
-        container.scrollTo({ top: target, behavior: 'smooth' });
+        if (scroller === window) {
+          window.scrollTo({ top: nextTop, behavior: 'smooth' });
+        } else {
+          scroller.scrollTo({ top: nextTop, behavior: 'smooth' });
+        }
       } catch (_) {
-        try { t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-        catch (__) { t.scrollIntoView(); }
+        if (scroller === window) window.scrollTo(0, nextTop);
+        else scroller.scrollTop = nextTop;
       }
     };
     // tc-9j: schedule three scrolls — one immediate (post-rAF, in case
