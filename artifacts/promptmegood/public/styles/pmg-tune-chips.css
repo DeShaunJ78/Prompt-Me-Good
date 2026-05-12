@@ -498,3 +498,62 @@ html.pmg-chassis-v3 body.pmg-has-result #generateBtn {
   html.pmg-chassis-v3 .pmg-tune-and-build { transition: none; }
   html.pmg-chassis-v3 .pmg-chip.is-just-updated { animation: none; }
 }
+
+/* ecc-apply-visibility-2: post-Apply visual feedback. */
+@keyframes pmg-ecc-applied-pulse-kf {
+  0%   { box-shadow: 0 0 0 0    color-mix(in srgb, var(--color-primary, #3ee0a0) 70%, transparent); }
+  60%  { box-shadow: 0 0 0 10px color-mix(in srgb, var(--color-primary, #3ee0a0) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0    color-mix(in srgb, var(--color-primary, #3ee0a0) 0%, transparent); }
+}
+html.pmg-chassis-v3 #goal.pmg-ecc-applied-pulse {
+  animation: pmg-ecc-applied-pulse-kf 1.6s ease-out 1;
+  border-color: var(--color-primary, #3ee0a0) !important;
+}
+.pmg-ecc-apply-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  z-index: 100000;
+  background: #0e2722;
+  color: #e8fff5;
+  border: 1px solid var(--color-primary, #3ee0a0);
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+  max-width: calc(100vw - 32px);
+  text-align: center;
+  opacity: 0;
+  animation: pmg-ecc-toast-in 220ms ease-out forwards;
+}
+.pmg-ecc-apply-toast.is-out {
+  animation: pmg-ecc-toast-out 480ms ease-in forwards;
+}
+@keyframes pmg-ecc-toast-in  { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes pmg-ecc-toast-out { from { opacity: 1; transform: translate(-50%, 0); } to { opacity: 0; transform: translate(-50%, 12px); } }
+
+html.pmg-chassis-v3 #pmg-ecc-inline-build {
+  display: block;
+  width: 100%;
+  margin: 12px 0 4px;
+  padding: 14px 18px;
+  background: var(--color-primary, #3ee0a0);
+  color: var(--color-text-inverse, #07221c);
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary, #3ee0a0) 70%, transparent);
+  animation: pmg-ecc-applied-pulse-kf 1.6s ease-out 1;
+  transition: transform 120ms ease, filter 120ms ease;
+}
+html.pmg-chassis-v3 #pmg-ecc-inline-build:hover { filter: brightness(1.05); transform: translateY(-1px); }
+html.pmg-chassis-v3 #pmg-ecc-inline-build:active { transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  html.pmg-chassis-v3 #goal.pmg-ecc-applied-pulse,
+  html.pmg-chassis-v3 #pmg-ecc-inline-build { animation: none; }
+  .pmg-ecc-apply-toast, .pmg-ecc-apply-toast.is-out { animation: none; opacity: 1; }
+}

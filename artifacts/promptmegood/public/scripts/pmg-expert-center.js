@@ -1069,6 +1069,77 @@
         window.pmgTuneChips.close(false);
       }
     } catch (_) {}
+    /* ecc-apply-visibility-2: After both overlays close, the user is
+       parked on the workstation with a freshly rewritten #goal. They
+       previously had no visual cue this happened — the right panel
+       still showed its empty placeholder ("Your Optimized prompt will
+       appear here") and the legacy Build button is way down the page.
+       Make the success obvious: toast + scroll-to-goal + pulse
+       highlight on the textarea + briefly surface a sticky "Build My
+       Prompt" CTA next to the goal. */
+    setTimeout(function () {
+      try {
+        var goal = document.getElementById('goal');
+        if (goal) {
+          var behavior = (window.PMG_A11Y && window.PMG_A11Y.scrollBehavior) ? window.PMG_A11Y.scrollBehavior() : 'smooth';
+          try { goal.scrollIntoView({ behavior: behavior, block: 'center' }); } catch (_) {}
+          goal.classList.add('pmg-ecc-applied-pulse');
+          setTimeout(function () { try { goal.classList.remove('pmg-ecc-applied-pulse'); } catch (_) {} }, 2400);
+        }
+        showApplyToast();
+        showInlineBuildCta();
+      } catch (_) {}
+    }, 80);
+  }
+
+  /* Lightweight toast — uses the platform showToast if present, else mounts our own. */
+  function showApplyToast() {
+    var msg = '\u2713 Prompt rewritten — review your goal box, then Build My Prompt.';
+    try {
+      if (typeof window.showToast === 'function') { window.showToast(msg); return; }
+    } catch (_) {}
+    var t = document.createElement('div');
+    t.className = 'pmg-ecc-apply-toast';
+    t.setAttribute('data-pmg-overlay-root', '');
+    t.setAttribute('role', 'status');
+    t.setAttribute('aria-live', 'polite');
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.classList.add('is-out'); }, 3200);
+    setTimeout(function () { try { t.remove(); } catch (_) {} }, 3800);
+  }
+
+  /* Surface an inline "Build My Prompt" CTA right under #goal so the
+     user doesn't have to scroll to find the legacy button. Auto-removes
+     once the user clicks it OR after 30s OR if a result lands. */
+  function showInlineBuildCta() {
+    var goal = document.getElementById('goal');
+    if (!goal) return;
+    var existing = document.getElementById('pmg-ecc-inline-build');
+    if (existing) { try { existing.remove(); } catch (_) {} }
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'pmg-ecc-inline-build';
+    btn.className = 'pmg-ecc-inline-build';
+    btn.setAttribute('data-pmg-overlay-root', '');
+    btn.textContent = '\u2728 Build My Prompt';
+    btn.addEventListener('click', function () {
+      var real = document.getElementById('generateBtn');
+      if (real && typeof real.click === 'function') real.click();
+      try { btn.remove(); } catch (_) {}
+    });
+    /* Insert immediately after the goal textarea's wrapping field group
+       if possible, else after the textarea itself. */
+    var anchor = goal.closest('.pmgv3-field') || goal.closest('.pmg-field') || goal.parentNode;
+    if (anchor && anchor.parentNode) {
+      anchor.parentNode.insertBefore(btn, anchor.nextSibling);
+    } else if (goal.parentNode) {
+      goal.parentNode.insertBefore(btn, goal.nextSibling);
+    }
+    /* Auto-clear when the result actually lands. */
+    var clear = function () { try { btn.remove(); } catch (_) {} };
+    document.addEventListener('pmg:builder-finalized', clear, { once: true });
+    setTimeout(clear, 30000);
   }
 
   /* ecc-go-to-prompt-1: When ECC's Diagnose tab opens with an empty
