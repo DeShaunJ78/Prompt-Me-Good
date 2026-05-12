@@ -1215,9 +1215,23 @@
     }
   }
 
+  /* ecc-reparent-1: The #expert-warning-dialog lives in app.html inside
+     <main id="main">, which chassis-v3's universal hide rule sets to
+     display:none. Even though the dialog has data-pmg-overlay-root, a
+     hidden parent suppresses children, so dialog.showModal() succeeded
+     silently and the warning never appeared (so the ECC drawer never
+     got past the warning step from any entry point that triggered it).
+     Reparent to document.body once at boot — same pattern as the ECC
+     drawer (_root) which is already body-mounted. Idempotent. */
+  function reparentWarningDialog() {
+    var dlg = document.getElementById('expert-warning-dialog');
+    if (!dlg || dlg.parentNode === document.body) return;
+    try { document.body.appendChild(dlg); } catch (_) {}
+  }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', wireEntryPoints, { once: true });
+    document.addEventListener('DOMContentLoaded', function () { reparentWarningDialog(); wireEntryPoints(); }, { once: true });
   } else {
+    reparentWarningDialog();
     wireEntryPoints();
   }
   /* Re-run after a tick because pmg-ux.js may inject the nav button
