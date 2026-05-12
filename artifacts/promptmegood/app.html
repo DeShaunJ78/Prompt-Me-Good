@@ -12080,8 +12080,15 @@ Context:
             _rb.textContent = '\u25B6 Run With AI';
           }
         }
-        // run-cap-1: aligned to server RUN_MAX_INPUT=8000.
-        if (prompt.length > 8000) {
+        // run-cap-2 (2026-05-12): aligned to server RUN_MAX_INPUT=32000.
+        // Heavy ECC tuning routinely produces 10–20k char prompts;
+        // the old 8k cap silently rejected them. Also surface via the
+        // visible showRunFeedback banner because the small inline
+        // pmgv3-length-warning was easy to miss.
+        if (prompt.length > 32000) {
+          if (typeof showRunFeedback === 'function') {
+            showRunFeedback('Your prompt is ' + prompt.length.toLocaleString() + ' characters — too long even for tuned prompts (max 32,000). Trim it down a bit, then try again.');
+          }
           // cv3-60: replace the legacy alert() with a graceful inline
           // warning + visually-dimmed (but still clickable) button +
           // pulse on the Send-To grid.

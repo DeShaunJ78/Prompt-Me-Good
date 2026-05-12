@@ -461,15 +461,17 @@ router.post("/generate-stream", generateLimiter, generateCostCheck, async (req, 
 // builds an optimized prompt template) — this is the "run with AI" feature
 // that lets users see what their prompt actually produces, in-app.
 const RUN_MODEL = "gpt-4.1";
-// run-cap-1: bumped 2000 → 8000. Real generated prompts (especially with
-// Pro Tuning, expert mode, or storyboard-style multi-shot specs) routinely
-// land at 3-5k chars; the 2k ceiling was rejecting valid output from our
-// own builder. 8000 chars ≈ 2k tokens — well under gpt-4.1's 1M context
-// window and matches the client preview warning so the UI and server
-// agree. Sanitize middleware MAX_INPUT_CHARS=6000 is for goal/build
-// inputs, not run inputs, so it doesn't conflict.
-const RUN_MAX_INPUT = 8000;
-const RUN_MAX_OUTPUT_TOKENS = 1000;
+// run-cap-2 (2026-05-12): bumped 8000 → 32000 input, 1000 → 4000 output.
+// Heavily ECC-tuned prompts (Architect + Diagnose + Tune layered on top
+// of Pro Tuning + Storyboard) routinely land at 10–20k chars. The old
+// 8k ceiling silently dimmed the Run With AI button to "Prompt too
+// large for preview" — users (correctly) reported "Run With AI never
+// works with a heavily tuned prompt". 32k chars ≈ 8k tokens, still
+// trivial against gpt-4.1's 1M context window. Output bumped to 4000
+// because tuned prompts ask for full deliverables (essays, plans,
+// scripts) that the 1k ceiling truncated mid-sentence.
+const RUN_MAX_INPUT = 32000;
+const RUN_MAX_OUTPUT_TOKENS = 4000;
 const RUN_SYSTEM_PROMPT =
   "You are a helpful, direct AI assistant. Execute the user's prompt exactly as instructed. Be specific, practical, and thorough.";
 
