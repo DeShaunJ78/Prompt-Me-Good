@@ -370,6 +370,57 @@
       try { rightCol.insertBefore(panel, rightCol.firstChild); } catch (_) {}
     }
     document.body.classList.add('pmg-tune-desktop-right');
+    armBuildSafetyNet();
+  }
+
+  // tc-9o: safety net for the "right column became a huge mess" bug.
+  // The relocation hides EVERYTHING in .pmgv3-right except #tuning-panel
+  // via `body.pmg-tune-desktop-right .pmgv3-right > *:not(#tuning-panel)
+  // { display:none !important }`. If the user fires Build from anywhere
+  // OTHER than our Done button (e.g. the legacy #generateBtn that still
+  // lives in the left column), `closeFullTuningAndBuild()` never runs,
+  // the body class never clears, and when the result arrives in
+  // #resultBox the chassis tries to reveal it — but our hide rule is
+  // still active. Some chassis paths bypass the rule with their own
+  // `display:` overrides, leaking placeholder + result + tuning into
+  // the same column at once. Two-layer defense:
+  //   (a) Capture-phase click on any path to #generateBtn → restore
+  //       BEFORE the click handler runs, so the result lands clean.
+  //   (b) Body-class observer → if `pmg-has-result` ever flips on while
+  //       we're still in `pmg-tune-desktop-right`, restore immediately.
+  function armBuildSafetyNet() {
+    if (armBuildSafetyNet._armed) return;
+    armBuildSafetyNet._armed = true;
+    var teardown = function () {
+      if (!document.body.classList.contains('pmg-tune-desktop-right')) return;
+      document.body.classList.remove('pmg-tune-section-shown');
+      restoreTuningToLeft();
+      var panel = document.getElementById('tuning-panel');
+      if (panel) {
+        panel.classList.remove('is-mobile-open');
+        var toggle = $('tuning-mobile-toggle');
+        if (toggle) toggle.setAttribute('aria-expanded', 'false');
+      }
+    };
+    document.addEventListener('click', function (e) {
+      if (!document.body.classList.contains('pmg-tune-desktop-right')) return;
+      var t = e.target;
+      if (!t || !t.closest) return;
+      // Only react to a real Build click — NOT our own Done button (it
+      // already handles teardown via closeFullTuningAndBuild).
+      var hit = t.closest('#generateBtn, #image-generate-btn, .btn-run-primary');
+      if (!hit) return;
+      if (t.closest('#pmg-tune-done, #pmg-tune-done-top')) return;
+      teardown();
+    }, true);
+    try {
+      var bodyObs = new MutationObserver(function () {
+        if (!document.body.classList.contains('pmg-tune-desktop-right')) return;
+        if (!document.body.classList.contains('pmg-has-result')) return;
+        teardown();
+      });
+      bodyObs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    } catch (_) {}
   }
   function restoreTuningToLeft() {
     document.body.classList.remove('pmg-tune-desktop-right');
@@ -573,11 +624,34 @@
   }
 
   function injectDoneButton() {
-    if (document.getElementById('pmg-tune-done')) return;
-    // Find the .tuning-section that holds the live selects.
-    var anySelect = $('personality') || $('tone') || $('outputFormat');
-    var section = anySelect && anySelect.closest('.tuning-section');
+    // tc-9o: also inject a header-level "✓ Done — Build My Prompt"
+    // button right inside `.tuning-header` so the user has an obvious
+    // next-step CTA at the TOP of the relocated section. Hidden by
+    // default; CSS in pmg-tune-chips.css shows it only when
+    // `body.pmg-tune-desktop-right` is active. Without this, the only
+    // CTA was the sticky bottom bar — which can sit below the fold
+    // when the right column scrolls, leaving the user unsure what to
+    // do next. Idempotent: early-out if both injections already exist.
+    var section = (function () {
+      var anySelect = $('personality') || $('tone') || $('outputFormat');
+      return anySelect && anySelect.closest('.tuning-section');
+    })();
     if (!section) return;
+
+    if (!document.getElementById('pmg-tune-done-top')) {
+      var hdr = section.querySelector('.tuning-header');
+      if (hdr) {
+        var topBtn = document.createElement('button');
+        topBtn.type = 'button';
+        topBtn.id = 'pmg-tune-done-top';
+        topBtn.className = 'pmg-tune-done pmg-tune-done--top';
+        topBtn.innerHTML = '<span aria-hidden="true">✓</span> Done — Build My Prompt';
+        topBtn.addEventListener('click', closeFullTuningAndBuild);
+        hdr.appendChild(topBtn);
+      }
+    }
+
+    if (document.getElementById('pmg-tune-done')) return;
 
     var bar = document.createElement('div');
     bar.className = 'pmg-tune-done-bar';
