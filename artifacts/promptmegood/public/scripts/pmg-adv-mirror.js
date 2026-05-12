@@ -163,6 +163,48 @@
     panel.removeAttribute('data-pmg-relocated-by');
   }
 
+  /* adv-mirror-7: also wrap the ORIGINAL #pmg-mmpro-panel in a collapsed
+     <details> with the same "Show Pro options" summary, so the legacy
+     Advanced Output Settings panel inside #settingsPanel matches the
+     calm format we use in the mirror. The original panel stays in the
+     same position in the DOM (just gets a wrapper around it), so the
+     existing pmg-money-mode-pro.js logic continues to work unchanged. */
+  function wrapOriginalIfNeeded(orig) {
+    if (!orig || !orig.parentNode) return;
+    if (orig.parentNode.id === 'pmg-mmpro-orig-collapse') return;
+    var wrap = document.createElement('details');
+    wrap.className = 'pmg-mmpro-mirror-collapse';
+    wrap.id = 'pmg-mmpro-orig-collapse';
+    var sum = document.createElement('summary');
+    sum.className = 'pmg-mmpro-mirror-collapse-summary';
+    sum.innerHTML =
+      '<span class="pmg-mmpro-mirror-collapse-icon" aria-hidden="true">💰</span>' +
+      '<span class="pmg-mmpro-mirror-collapse-title-wrap">' +
+        '<span class="pmg-mmpro-mirror-collapse-title">Show Pro options</span>' +
+        '<span class="pmg-mmpro-mirror-collapse-sub">Money Mode Pro &mdash; presets, focus, intensity, boosts</span>' +
+      '</span>' +
+      '<span class="pmg-mmpro-mirror-collapse-chev" aria-hidden="true">▾</span>';
+    try {
+      var stored = localStorage.getItem('pmg:advmirror:mmpro:orig:open');
+      if (stored === '1') wrap.open = true;
+    } catch (_) {}
+    wrap.addEventListener('toggle', function () {
+      try { localStorage.setItem('pmg:advmirror:mmpro:orig:open', wrap.open ? '1' : '0'); } catch (_) {}
+    });
+    orig.parentNode.insertBefore(wrap, orig);
+    wrap.appendChild(sum);
+    wrap.appendChild(orig);
+    /* Auto-open when the user enables Money Mode so the panel is visible
+       the moment it becomes relevant; user can collapse again afterwards. */
+    var moneyToggle = document.getElementById('moneyMode');
+    if (moneyToggle) {
+      moneyToggle.addEventListener('change', function () {
+        if (moneyToggle.checked && !wrap.open) wrap.open = true;
+      });
+      if (moneyToggle.checked) wrap.open = true;
+    }
+  }
+
   function mirrorMoneyModeProPanel() {
     var orig = document.getElementById('pmg-mmpro-panel');
     if (!orig) return false;
@@ -171,6 +213,7 @@
     );
     if (!mirrorRow || !mirrorRow.parentNode) return false;
     ensureOriginalRestored(orig);
+    wrapOriginalIfNeeded(orig);
     if (document.getElementById('pmg-mmpro-panel-mirror')) return true;
     var clone = orig.cloneNode(true);
     clone.id = 'pmg-mmpro-panel-mirror';
