@@ -9,6 +9,13 @@
    Theme tokens only — no hardcoded teal. Scoped under html.pmg-chassis-v3
    so legacy chassis can never accidentally pick these up. */
 
+/* tc-9b: when scrollIntoView pins the tuning panel to the top of the
+   viewport, leave room for the chassis topbar (~64px) so the panel
+   header isn't clipped behind it. */
+html.pmg-chassis-v3 #tuning-panel {
+  scroll-margin-top: 84px;
+}
+
 html.pmg-chassis-v3 .pmg-chip-row {
   display: flex;
   flex-wrap: wrap;

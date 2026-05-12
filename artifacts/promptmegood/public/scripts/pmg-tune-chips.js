@@ -366,19 +366,34 @@
       sp.removeAttribute('data-pmgv3-collapsed');
     }
     injectDoneButton();
-    // Scroll the tuning section into view AND keep it centered. Use
-    // 'center' so the panel sits in the user's focus area instead of
-    // jumping to the top edge (where the chassis topbar would clip
-    // the panel header). Re-call after a short delay so any layout
-    // shift from revealing fields settles before we scroll.
+    // Keep the tuning panel pinned to the top of the user's viewport
+    // (with scroll-margin-top so the chassis topbar doesn't clip the
+    // header) for ~900ms after opening. Without the persistent guard,
+    // late-arriving content from auto-boost / spark / pick-count
+    // updates can push the panel back out of view before the smooth
+    // scroll even finishes.
     var target = document.getElementById('tuning-panel') || $('settingsPanel');
-    var doScroll = function () {
-      if (!target) return;
-      try { target.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-      catch (_) { target.scrollIntoView(); }
+    if (!target) return;
+    // Blur the pill so the browser's "keep focus visible" auto-scroll
+    // doesn't yank the page back to the top where the pill lives.
+    try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (_) {}
+    var pinUntil = Date.now() + 900;
+    var lastScrollAt = 0;
+    var pin = function () {
+      var rect = target.getBoundingClientRect();
+      // If the panel header is above the topbar (≈64px) or below the
+      // bottom edge, re-anchor it to the top with scroll-margin.
+      if (rect.top < 60 || rect.top > window.innerHeight - 120) {
+        try { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        catch (_) { target.scrollIntoView(); }
+        lastScrollAt = Date.now();
+      }
+      if (Date.now() < pinUntil) requestAnimationFrame(pin);
     };
-    doScroll();
-    setTimeout(doScroll, 220);
+    // Initial scroll, then enter the rAF guard.
+    try { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    catch (_) { target.scrollIntoView(); }
+    requestAnimationFrame(pin);
   }
 
   function closeFullTuningAndBuild() {
