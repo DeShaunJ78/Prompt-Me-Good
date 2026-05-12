@@ -364,22 +364,31 @@
       sp.removeAttribute('data-pmgv3-collapsed');
     }
     injectDoneButton();
-    // Land the user at the "Tune Your Prompt" header. scroll-margin-top
-    // (set in pmg-tune-chips.css) keeps the header clear of the chassis
-    // topbar. We call scroll twice — once after a tick so the panel has
-    // finished revealing, again at 320ms after the epic-tuning fields
-    // and Done bar finish mounting (they grow the panel which would
-    // otherwise leave the user above where they want to be).
-    if (!panel && !sp) return;
+    // tc-9e: panel is now CSS-positioned as a fixed overlay anchored to
+    // the top of the viewport whenever body.pmg-tune-section-shown is
+    // present. No scroll juggling needed — it pops up instantly,
+    // guaranteed visible regardless of where the user was. Add a
+    // backdrop so the rest of the workstation visibly recedes and a
+    // backdrop tap closes the overlay.
+    var backdrop = document.getElementById('pmg-tune-backdrop');
+    if (!backdrop) {
+      backdrop = document.createElement('div');
+      backdrop.id = 'pmg-tune-backdrop';
+      backdrop.setAttribute('data-pmg-overlay-root', '');
+      backdrop.addEventListener('click', function () {
+        // Tap-outside closes WITHOUT building a prompt — same intent as
+        // a quiet dismiss. closeFullTuningAndBuild fires the prompt; we
+        // want a no-op close here.
+        document.body.classList.remove('pmg-tune-section-shown');
+      });
+      document.body.appendChild(backdrop);
+    }
+    // Make sure inner scrollable container starts at the top.
+    try {
+      var pTop = document.getElementById('tuning-panel');
+      if (pTop) pTop.scrollTop = 0;
+    } catch (_) {}
     try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (_) {}
-    var doScroll = function () {
-      var t = document.getElementById('tuning-panel') || document.getElementById('settingsPanel');
-      if (!t) return;
-      try { t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-      catch (_) { t.scrollIntoView(); }
-    };
-    setTimeout(doScroll, 60);
-    setTimeout(doScroll, 320);
   }
 
   function closeFullTuningAndBuild() {

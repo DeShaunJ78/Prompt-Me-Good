@@ -287,6 +287,56 @@ html.pmg-chassis-v3 body.pmg-tune-chips-on:not(.pmg-tune-section-shown) .tuning-
   display: none !important;
 }
 
+/* tc-9e: When the user explicitly opens the tuning panel via the pill,
+   pop it as a fixed overlay anchored to the top of the viewport. This
+   sidesteps every layout / scroll-container issue (mobile .pmgv3-body
+   internal scroll, tabs sticky, hidden-then-revealed reflow racing
+   getBoundingClientRect, etc.) — the panel is GUARANTEED visible the
+   moment the body class flips. Inline DOM position is preserved, so
+   all chassis listeners and observers keep working untouched. */
+html.pmg-chassis-v3 body.pmg-tune-section-shown #tuning-panel {
+  position: fixed !important;
+  top: 64px !important;
+  left: 8px !important;
+  right: 8px !important;
+  bottom: 8px !important;
+  max-width: 880px !important;
+  margin: 0 auto !important;
+  z-index: 9999 !important;
+  overflow-y: auto !important;
+  background: var(--color-surface, #0d1a16) !important;
+  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 28%, transparent) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65) !important;
+  padding: 16px !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+@media (max-width: 480px) {
+  html.pmg-chassis-v3 body.pmg-tune-section-shown #tuning-panel {
+    top: 56px !important;
+    left: 4px !important;
+    right: 4px !important;
+    bottom: 4px !important;
+    padding: 12px !important;
+    border-radius: 14px !important;
+  }
+}
+/* Backdrop behind the overlay so the rest of the workstation visibly
+   recedes — also catches taps to close. */
+#pmg-tune-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 9998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+html.pmg-chassis-v3 body.pmg-tune-section-shown #pmg-tune-backdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 /* Mobile fit — chips wrap, popover narrows. */
 @media (max-width: 480px) {
   html.pmg-chassis-v3 .pmg-chip {
