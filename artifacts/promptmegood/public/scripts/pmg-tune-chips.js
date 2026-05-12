@@ -337,6 +337,16 @@
 
   function openFullTuning() {
     document.body.classList.add('pmg-tune-section-shown');
+    // tc-9k: chassis-v3 boot runs a 4-second hideTick poller (every
+    // 200ms × 20 ticks) that re-applies `display:none !important` to
+    // #tuning-panel and #settingsPanel UNLESS body.pmgv3-analyzed is
+    // set. Pre-Build that class is absent, so any reveal we do gets
+    // overwritten ~200ms later. The Analyze handler sets the same
+    // class — by setting it here we tell the chassis "user is past
+    // intake, stop hiding the tuning surface." Without this, the pill
+    // only worked reliably AFTER pressing Build (when Analyze had
+    // already set the class). See pmg-chassis-v3.js L70-84.
+    document.body.classList.add('pmgv3-analyzed');
     var panel = document.getElementById('tuning-panel');
     if (panel) {
       // Force visibility via INLINE style immediately. tc-9h: relying
