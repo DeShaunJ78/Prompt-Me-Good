@@ -132,6 +132,36 @@
     });
   }
 
+  /* adv-mirror-3: The Money Mode Pro panel (id #pmg-mmpro-panel from
+     pmg-money-mode-pro.js) mounts as a sibling of the ORIGINAL #moneyMode
+     toggle row inside the legacy (hidden) #settingsPanel. Since the user
+     now interacts with the mirror inside #pmgv3-epic-tuning, we relocate
+     that single panel beneath the mirror's Growth Mode row so it surfaces
+     where users can actually see it. We move (not clone) — there is only
+     one panel and only one source of truth for its state. */
+  function relocateMoneyModeProPanel() {
+    var panel = document.getElementById('pmg-mmpro-panel');
+    if (!panel) return false;
+    var mirrorRow = document.querySelector(
+      '#' + MOUNT_ID + ' .pmg-adv-mirror-row[data-mirror-row="moneyMode"]'
+    );
+    if (!mirrorRow || !mirrorRow.parentNode) return false;
+    if (panel.previousElementSibling === mirrorRow) return true;
+    mirrorRow.parentNode.insertBefore(panel, mirrorRow.nextSibling);
+    panel.setAttribute('data-pmg-relocated-by', 'adv-mirror');
+    return true;
+  }
+
+  function watchMoneyModeProPanel() {
+    if (relocateMoneyModeProPanel()) return;
+    var ticks = 0;
+    var iv = setInterval(function () {
+      ticks++;
+      if (ticks > 60) { clearInterval(iv); return; }
+      if (relocateMoneyModeProPanel()) clearInterval(iv);
+    }, 250);
+  }
+
   function tryMount() {
     if (mounted) {
       var existing = document.getElementById(MOUNT_ID);
@@ -159,6 +189,7 @@
     var details = wrap.querySelector('#' + MOUNT_ID + '-details');
     if (details) persistOpenState(details);
     mounted = true;
+    watchMoneyModeProPanel();
     return true;
   }
 
