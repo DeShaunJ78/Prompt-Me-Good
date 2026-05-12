@@ -295,6 +295,7 @@ html.pmg-chassis-v3 body.pmg-tune-chips-on:not(.pmg-tune-section-shown) .tuning-
    moment the body class flips. Inline DOM position is preserved, so
    all chassis listeners and observers keep working untouched. */
 html.pmg-chassis-v3 body.pmg-tune-section-shown #tuning-panel {
+  display: block !important;
   position: fixed !important;
   top: 64px !important;
   left: 8px !important;
@@ -310,6 +311,21 @@ html.pmg-chassis-v3 body.pmg-tune-section-shown #tuning-panel {
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65) !important;
   padding: 16px !important;
   -webkit-overflow-scrolling: touch !important;
+  visibility: visible !important;
+}
+/* Force-reveal the inner host + settings + epic-tuning so cv3-47's
+   `.tuning-section:not(.is-mobile-open) .pmgv3-tuning-host {display:none}`
+   can never hide the fields when the user has explicitly opted-in. */
+html.pmg-chassis-v3 body.pmg-tune-section-shown #tuning-panel .pmgv3-tuning-host,
+html.pmg-chassis-v3 body.pmg-tune-section-shown #tuning-panel #settingsPanel,
+html.pmg-chassis-v3 body.pmg-tune-section-shown #tuning-panel .pmgv3-epic-tuning,
+html.pmg-chassis-v3 body.pmg-tune-section-shown #tuning-panel .tuning-hint,
+html.pmg-chassis-v3 body.pmg-tune-section-shown #tuning-panel .tuning-header {
+  display: block !important;
+  visibility: visible !important;
+}
+html.pmg-chassis-v3 body.pmg-tune-section-shown #tuning-panel .tuning-header {
+  display: flex !important;
 }
 @media (max-width: 480px) {
   html.pmg-chassis-v3 body.pmg-tune-section-shown #tuning-panel {
