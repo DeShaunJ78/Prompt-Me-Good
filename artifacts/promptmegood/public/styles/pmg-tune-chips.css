@@ -169,10 +169,21 @@ html.pmg-chassis-v3 .pmg-tune-and-build.pmg-chip.is-tune-build:hover {
   color: var(--color-primary, #3ee0a0);
 }
 
-/* Single-pill row: align quietly to the right under the textarea. */
+/* Single-pill row: align quietly to the right under the textarea
+   (only used as a fallback when the voice row hasn't mounted yet). */
 html.pmg-chassis-v3 .pmg-chip-row--single {
   justify-content: flex-end;
   margin-top: 6px;
+}
+
+/* When the pill is hosted INSIDE the voice/lang row, push it to the
+   far right and shrink it slightly so it reads as secondary to the
+   Voice Input mic + language picker. */
+html.pmg-chassis-v3 .pmg-tune-and-build.is-in-voice-row {
+  margin-left: auto;
+  font-size: 11px;
+  padding: 5px 10px;
+  min-height: 0;
 }
 
 /* "✓ Done — back to Build" bar appended to the bottom of .tuning-section
@@ -180,10 +191,54 @@ html.pmg-chassis-v3 .pmg-chip-row--single {
    "Build My Prompt" CTA. */
 html.pmg-chassis-v3 .pmg-tune-done-bar {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
   margin-top: 14px;
   padding-top: 12px;
   border-top: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 18%, transparent);
+}
+
+/* Quiet "Open Expert Command Center" link inside the Done bar.
+   Subtle — text-button styling, NOT a competing CTA. */
+html.pmg-chassis-v3 .pmg-tune-ecc-link,
+html.pmg-chassis-v3 .pmg-vs-ecc-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px dashed color-mix(in srgb, var(--color-primary, #3ee0a0) 30%, transparent);
+  border-radius: 8px;
+  background: transparent;
+  color: color-mix(in srgb, var(--color-primary, #3ee0a0) 80%, white);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+html.pmg-chassis-v3 .pmg-tune-ecc-link:hover,
+html.pmg-chassis-v3 .pmg-vs-ecc-link:hover {
+  border-color: var(--color-primary, #3ee0a0);
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 10%, transparent);
+  color: var(--color-primary, #3ee0a0);
+}
+html.pmg-chassis-v3 .pmg-tune-ecc-link:focus-visible,
+html.pmg-chassis-v3 .pmg-vs-ecc-link:focus-visible {
+  outline: 2px solid var(--color-primary, #3ee0a0);
+  outline-offset: 2px;
+}
+
+/* Photo / Video panels: the ECC link sits at the bottom of each
+   already-collapsed Advanced Tuning accordion, right-aligned. */
+html.pmg-chassis-v3 .pmg-vs-ecc-slot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px dashed color-mix(in srgb, var(--color-primary, #3ee0a0) 18%, transparent);
 }
 html.pmg-chassis-v3 .pmg-tune-done {
   display: inline-flex;

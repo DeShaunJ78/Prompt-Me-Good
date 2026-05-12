@@ -355,7 +355,7 @@
     }
   }
 
-  function closeFullTuning() {
+  function closeFullTuningAndBuild() {
     document.body.classList.remove('pmg-tune-section-shown');
     var toggle = $('tuning-mobile-toggle');
     if (toggle) {
@@ -364,15 +364,37 @@
         try { toggle.click(); } catch (_) {}
       }
     }
+    // Auto-fire Build My Prompt — the user has finished tuning, no
+    // reason to make them click again.
     var gen = $('generateBtn');
     if (gen) {
       try { gen.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
       catch (_) { gen.scrollIntoView(); }
-      try { gen.focus({ preventScroll: true }); } catch (_) {}
-      // Brief attention pulse on the primary CTA.
       gen.classList.add('pmg-cta-pulse');
       setTimeout(function () { gen.classList.remove('pmg-cta-pulse'); }, 1600);
+      // Defer one tick so any pending change events on the selects
+      // settle before submit.
+      setTimeout(function () {
+        try { gen.click(); } catch (_) {}
+      }, 60);
     }
+  }
+
+  function openExpertCenter() {
+    try {
+      if (window.PMGExpertCenter && typeof window.PMGExpertCenter.requestOpen === 'function') {
+        window.PMGExpertCenter.requestOpen();
+        return;
+      }
+      if (window.PMGExpertCenter && typeof window.PMGExpertCenter.open === 'function') {
+        window.PMGExpertCenter.open();
+        return;
+      }
+    } catch (_) {}
+    // Fallback: click any pre-existing entry point if the API isn't ready.
+    var nav = document.getElementById('pmg-nav-expert-link') ||
+              document.getElementById('expert-mode-link');
+    if (nav) { try { nav.click(); } catch (_) {} }
   }
 
   function injectDoneButton() {
@@ -381,22 +403,63 @@
     var anySelect = $('personality') || $('tone') || $('outputFormat');
     var section = anySelect && anySelect.closest('.tuning-section');
     if (!section) return;
+
     var bar = document.createElement('div');
     bar.className = 'pmg-tune-done-bar';
+
+    var ecc = document.createElement('button');
+    ecc.type = 'button';
+    ecc.id = 'pmg-tune-ecc-link';
+    ecc.className = 'pmg-tune-ecc-link';
+    ecc.innerHTML = '<span aria-hidden="true">⚙</span> Open Expert Command Center';
+    ecc.title = 'Power-user controls (Founding / Pro)';
+    ecc.addEventListener('click', openExpertCenter);
+
     var done = document.createElement('button');
     done.type = 'button';
     done.id = 'pmg-tune-done';
     done.className = 'pmg-tune-done';
-    done.innerHTML = '<span aria-hidden="true">✓</span> Done — back to Build';
-    done.addEventListener('click', closeFullTuning);
+    done.innerHTML = '<span aria-hidden="true">✓</span> Done — Build My Prompt';
+    done.addEventListener('click', closeFullTuningAndBuild);
+
+    bar.appendChild(ecc);
     bar.appendChild(done);
     section.appendChild(bar);
+  }
+
+  // ─── Photo / Video panel ECC links ─────────────────────────────────────
+  // Subtle "Open Expert Command Center" link appended to the bottom of
+  // each panel's existing collapsed Advanced Tuning accordion. These
+  // panels already have their own prompt-building flow — we just add a
+  // way to escape into the power-user drawer without disrupting layout.
+
+  function injectPanelEccLinks() {
+    [
+      'pmg-vs-image-adv-tuning-content',
+      'pmg-vs-video-adv-tuning-content'
+    ].forEach(function (hostId) {
+      var host = document.getElementById(hostId);
+      if (!host) return;
+      var slotId = hostId + '-ecc';
+      if (document.getElementById(slotId)) return;
+      var slot = document.createElement('div');
+      slot.id = slotId;
+      slot.className = 'pmg-vs-ecc-slot';
+      var link = document.createElement('button');
+      link.type = 'button';
+      link.className = 'pmg-vs-ecc-link';
+      link.innerHTML = '<span aria-hidden="true">⚙</span> Open Expert Command Center';
+      link.title = 'Power-user controls (Founding / Pro)';
+      link.addEventListener('click', openExpertCenter);
+      slot.appendChild(link);
+      host.appendChild(slot);
+    });
   }
 
   // ─── Mount the chip row ─────────────────────────────────────────────────
 
   function mountRow() {
-    if (rowEl && rowEl.isConnected) return true;
+    if (document.getElementById('pmg-tune-and-build')) return true;
     var goal = $('goal');
     if (!goal) return false;
     // Make sure all selects exist before we render — some may be in the
@@ -405,24 +468,29 @@
       if (!$(MAIN[i].id)) return false;
     }
 
+    var pill = makeTuneAndBuildChip();
+
+    // Preferred mount: inside the existing voice/lang row so the pill
+    // sits on the SAME line as Voice Input + en-US, right-aligned. This
+    // avoids adding any new layout row and keeps the original "floor" of
+    // the page intact.
+    var voiceRow = document.querySelector('.pmg-voice-row[data-pmg-voice-for="goal"]');
+    if (voiceRow) {
+      pill.classList.add('is-in-voice-row');
+      voiceRow.appendChild(pill);
+      document.body.classList.add('pmg-tune-chips-on');
+      return true;
+    }
+
+    // Fallback (voice script disabled / not yet mounted): drop a single
+    // right-aligned wrapper directly after the textarea. Polling will
+    // upgrade us into the voice row once it appears.
     rowEl = document.createElement('div');
-    rowEl.className = 'pmg-chip-row';
+    rowEl.className = 'pmg-chip-row pmg-chip-row--single';
     rowEl.setAttribute('role', 'group');
-    rowEl.setAttribute('aria-label', 'Quick prompt tuning');
+    rowEl.setAttribute('aria-label', 'Prompt tuning');
     rowEl.id = 'pmg-tune-chip-row';
-
-    // Per latest UX direction: do NOT render inline tuning chips. Offer
-    // a single quiet "Prompt Tuning" pill aligned right under the
-    // textarea — opens the full tuning section on click. The chip /
-    // popover infrastructure above is kept dormant in case we want to
-    // revisit a chip-row variant later.
-    rowEl.classList.add('pmg-chip-row--single');
-    rowEl.appendChild(makeTuneAndBuildChip());
-
-    // Mount as the immediate next sibling of the textarea, so the chips
-    // sit directly under the input regardless of how chassis-v3 reparents
-    // #goal. closest('.field') is unreliable here because the chassis can
-    // hoist the textarea out of its original wrapper.
+    rowEl.appendChild(pill);
     if (goal.parentNode) {
       goal.parentNode.insertBefore(rowEl, goal.nextSibling);
     }
@@ -431,21 +499,77 @@
     return true;
   }
 
+  // After the voice row mounts later, migrate the pill into it and
+  // discard the standalone fallback row.
+  function relocateIntoVoiceRow() {
+    var pill = document.getElementById('pmg-tune-and-build');
+    if (!pill) return;
+    if (pill.classList.contains('is-in-voice-row')) return;
+    var voiceRow = document.querySelector('.pmg-voice-row[data-pmg-voice-for="goal"]');
+    if (!voiceRow) return;
+    pill.classList.add('is-in-voice-row');
+    voiceRow.appendChild(pill);
+    if (rowEl && rowEl.isConnected && !rowEl.children.length) {
+      try { rowEl.remove(); } catch (_) {}
+    }
+  }
+
   // ─── Boot ───────────────────────────────────────────────────────────────
 
   function tryBoot() {
     var ok = mountRow();
+    // Always attempt these — they're independent of the pill mount and
+    // each has its own existence guard so they're safe to call repeatedly.
+    relocateIntoVoiceRow();
+    injectPanelEccLinks();
+    armAutoOpenGuard();
     return ok;
   }
 
+  // ─── Auto-open guard ────────────────────────────────────────────────────
+  // The legacy chassis-v3 restoreSession() / Analyze flow can reveal
+  // #tuning-panel by removing its inline display:none. Per latest UX,
+  // the tuning panel must ONLY appear when the user explicitly clicks
+  // the "Prompt Tuning" pill. This observer re-hides #tuning-panel any
+  // time it gets revealed without our explicit opt-in flag.
+  var _guardArmed = false;
+  function armAutoOpenGuard() {
+    if (_guardArmed) return;
+    var panel = document.getElementById('tuning-panel');
+    if (!panel) return;
+    _guardArmed = true;
+    var enforce = function () {
+      if (document.body.classList.contains('pmg-tune-section-shown')) return;
+      // Hide via inline style — survives third-party class/attr removals.
+      if (panel.style.getPropertyValue('display') !== 'none') {
+        panel.style.setProperty('display', 'none', 'important');
+      }
+      panel.setAttribute('hidden', '');
+      panel.classList.add('is-collapsed');
+    };
+    enforce();
+    try {
+      var mo = new MutationObserver(function () { enforce(); });
+      mo.observe(panel, { attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
+    } catch (_) {}
+  }
+
   function boot() {
-    if (tryBoot()) return;
-    // Chassis v3 reparents and may build after DOMContentLoaded — poll
-    // briefly. Same pattern as Photo Suite relocation.
+    tryBoot();
+    // Chassis v3 reparents and pmg-voice mounts asynchronously — keep
+    // polling so we can (a) finish the initial mount if it failed and
+    // (b) UPGRADE the pill into the voice row once it appears, even if
+    // we already mounted via the fallback row. Stops once everything is
+    // settled or after ~10s.
     var tries = 0;
     var iv = setInterval(function () {
       tries++;
-      if (tryBoot() || tries >= 40) clearInterval(iv);
+      tryBoot();
+      var pill = document.getElementById('pmg-tune-and-build');
+      var inVoice = pill && pill.classList.contains('is-in-voice-row');
+      var imgEcc = document.getElementById('pmg-vs-image-adv-tuning-content-ecc');
+      var vidEcc = document.getElementById('pmg-vs-video-adv-tuning-content-ecc');
+      if ((inVoice && imgEcc && vidEcc) || tries >= 50) clearInterval(iv);
     }, 200);
   }
 
