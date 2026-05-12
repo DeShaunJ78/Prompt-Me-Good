@@ -1,0 +1,44 @@
+Replit Instructions — Replicate Mobile "Tune Your Prompt" Behavior on Desktop
+What Happens on Mobile (Current Behavior)
+The user clicks the 🎛️ Prompt Tuning button (id="pmg-tune-and-build"), which expands a full tuning panel above the Build My Prompt button in the left column. This panel contains Category, Skill Level, Tone, Output Format, Platform, Length, Language, Personality Mode, and Advanced Output Settings.
+Below the Build My Prompt button (id="analyze-btn"), there is a second collapsible section with the button id="tuning-mobile-toggle" labeled "🎛️ Tune Your Prompt — 7 picks ▾" with the subtitle "We've pre-selected settings based on your idea. Adjust if needed."
+When the user clicks id="tuning-mobile-toggle", this second panel expands to reveal:
+"How should the AI think?" — a dropdown (id="pmgv3-reasoning-select") with options: Standard, Step-by-Step, Break It Down, Multiple Perspectives
+Strict Fact-Checking Mode toggle
+"Who is this for?" — a text input (id="pmgv3-target-audience")
+Advanced Output Settings (Growth Mode, Human Voice, Clarity Boost) — synced with the panel above
+On mobile, clicking id="tuning-mobile-toggle" expands the panel in-place and the user naturally scrolls down to see the content (the "Tune Your Prompt" section shown in your screenshot).
+What Needs to Happen on Desktop (Missing Behavior)
+On desktop, the id="tuning-mobile-toggle" section is currently hidden or not scrolled to after the user clicks id="pmg-tune-and-build". The desktop layout has a two-column design (left: builder, right: prompt output/examples), so the "Tune Your Prompt" secondary panel sits below the fold in the left column and the user has no indication it exists.
+The fix required:
+When the user clicks id="pmg-tune-and-build" (the 🎛️ Prompt Tuning button) on desktop:
+Expand the tuning panel (already works).
+Also expand the id="tuning-mobile-toggle" secondary section if it is collapsed (i.e., programmatically trigger its expand/open state).
+Scroll the left column (the scrollable container that holds the builder form) smoothly down to bring id="tuning-mobile-toggle" into view.
+The scroll target is id="tuning-mobile-toggle". Use:
+JavaScript
+document.getElementById('tuning-mobile-toggle').scrollIntoView({ behavior: 'smooth', block: 'start' });
+Important: On desktop the page itself may not scroll — the left column is a scrollable div container. The scroll must be applied to that container, not window or document.body. Identify the scrollable parent of id="tuning-mobile-toggle" (likely the left panel wrapper) and call .scrollTop on it, or use scrollIntoView which handles this automatically.
+Wrap in a short delay to allow the panel to finish expanding before scrolling:
+JavaScript
+setTimeout(function () {
+  var target = document.getElementById('tuning-mobile-toggle');
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}, 150);
+Summary
+Element
+ID
+Action Needed on Desktop
+Prompt Tuning button
+pmg-tune-and-build
+Already opens top panel — add scroll trigger
+Secondary tuning section header
+tuning-mobile-toggle
+Ensure it is expanded, then scroll to it
+Reasoning dropdown
+pmgv3-reasoning-select
+Already inside the panel — no change needed
+Target audience input
+pmgv3-target-audience
+Already inside the panel — no change needed
+The goal is that on desktop, clicking 🎛️ Prompt Tuning reveals all tuning options — including the "How should the AI think?" and "Who is this for?" section — and scrolls the user down to see them, exactly as the mobile experience does naturally.
