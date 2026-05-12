@@ -67,13 +67,15 @@
     ].join('');
   }
 
+  /* adv-mirror-2: mount as a CHILD of #pmgv3-epic-tuning rather than as a
+     sibling. Earlier sibling-insert ended up orphaned inside #prompt-form
+     after pmg-ux.js's reorderForm() moved #settingsPanel around. Putting
+     the mirror INSIDE epic-tuning means it travels with epic-tuning's
+     life cycle no matter what reparents around it, and it still renders
+     right after the "Who is this for?" field (the last child of
+     epic-tuning). */
   function findMountTarget() {
-    var epic = document.getElementById('pmgv3-epic-tuning');
-    if (epic && epic.parentNode) return epic;
-    var settings = document.getElementById('settingsPanel');
-    if (settings && settings.parentNode) return settings;
-    var host = document.querySelector('#tuning-panel .pmgv3-tuning-host');
-    return host || null;
+    return document.getElementById('pmgv3-epic-tuning') || null;
   }
 
   var mounted = false;
@@ -131,20 +133,28 @@
   }
 
   function tryMount() {
-    if (mounted) return true;
-    if (document.getElementById(MOUNT_ID)) { mounted = true; return true; }
+    if (mounted) {
+      var existing = document.getElementById(MOUNT_ID);
+      var epicNow = document.getElementById('pmgv3-epic-tuning');
+      if (existing && epicNow && !epicNow.contains(existing)) {
+        try { existing.parentNode.removeChild(existing); } catch (_) {}
+        mounted = false;
+      } else {
+        return true;
+      }
+    }
+    var existingNode = document.getElementById(MOUNT_ID);
     var target = findMountTarget();
     if (!target) return false;
+    if (existingNode && target.contains(existingNode)) { mounted = true; return true; }
+    if (existingNode && existingNode.parentNode) {
+      try { existingNode.parentNode.removeChild(existingNode); } catch (_) {}
+    }
     var wrap = document.createElement('div');
     wrap.id = MOUNT_ID;
     wrap.className = 'pmg-adv-mirror-wrap';
     wrap.innerHTML = buildMirrorHtml();
-    if (target.id === 'pmgv3-epic-tuning' && target.parentNode) {
-      if (target.nextSibling) target.parentNode.insertBefore(wrap, target.nextSibling);
-      else target.parentNode.appendChild(wrap);
-    } else {
-      target.parentNode.appendChild(wrap);
-    }
+    target.appendChild(wrap);
     wireSync(wrap);
     var details = wrap.querySelector('#' + MOUNT_ID + '-details');
     if (details) persistOpenState(details);
