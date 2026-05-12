@@ -313,44 +313,84 @@
     return chip;
   }
 
-  // ─── Tune & Build button ────────────────────────────────────────────────
+  // ─── "Tune & Build" inline link + "Done" return button ──────────────────
+  //
+  // Tune & Build is intentionally NOT a sibling of #generateBtn. The only
+  // big CTA is "Build My Prompt" — Tune & Build is a quiet ghost link
+  // tucked into the chip row that opens the full tuning section. A "Done"
+  // button lives at the bottom of the tuning section to send the user
+  // back to the primary CTA once they've tweaked.
 
-  function injectTuneAndBuild() {
-    var genBtn = $('generateBtn');
-    if (!genBtn || document.getElementById('pmg-tune-and-build')) return;
-
+  function makeTuneAndBuildChip() {
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.id = 'pmg-tune-and-build';
-    btn.className = 'pmg-tune-and-build';
-    btn.innerHTML = '<span aria-hidden="true">🎛️</span> Tune &amp; Build';
-    btn.title = 'Open all tuning options before building';
+    btn.className = 'pmg-tune-and-build pmg-chip is-tune-build';
+    btn.innerHTML = '<span aria-hidden="true">🎛️</span> More tuning';
+    btn.title = 'Open every tuning option';
 
     btn.addEventListener('click', function () {
-      // Reveal the full tuning section.
-      document.body.classList.add('pmg-tune-section-shown');
-      // If there's a mobile accordion toggle, open it.
-      var toggle = $('tuning-mobile-toggle');
-      if (toggle) {
-        var section = toggle.closest('.tuning-section');
-        if (section && !section.classList.contains('is-mobile-open')) {
-          try { toggle.click(); } catch (_) {}
-        }
-      }
-      // Scroll to it.
-      var settings = $('settingsPanel');
-      if (settings) {
-        try {
-          settings.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } catch (_) {
-          settings.scrollIntoView();
-        }
-      }
+      openFullTuning();
     });
+    return btn;
+  }
 
-    if (genBtn.parentNode) {
-      genBtn.parentNode.insertBefore(btn, genBtn.nextSibling);
+  function openFullTuning() {
+    document.body.classList.add('pmg-tune-section-shown');
+    var toggle = $('tuning-mobile-toggle');
+    if (toggle) {
+      var section = toggle.closest('.tuning-section');
+      if (section && !section.classList.contains('is-mobile-open')) {
+        try { toggle.click(); } catch (_) {}
+      }
     }
+    injectDoneButton();
+    var settings = $('settingsPanel');
+    if (settings) {
+      try {
+        settings.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (_) {
+        settings.scrollIntoView();
+      }
+    }
+  }
+
+  function closeFullTuning() {
+    document.body.classList.remove('pmg-tune-section-shown');
+    var toggle = $('tuning-mobile-toggle');
+    if (toggle) {
+      var section = toggle.closest('.tuning-section');
+      if (section && section.classList.contains('is-mobile-open')) {
+        try { toggle.click(); } catch (_) {}
+      }
+    }
+    var gen = $('generateBtn');
+    if (gen) {
+      try { gen.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      catch (_) { gen.scrollIntoView(); }
+      try { gen.focus({ preventScroll: true }); } catch (_) {}
+      // Brief attention pulse on the primary CTA.
+      gen.classList.add('pmg-cta-pulse');
+      setTimeout(function () { gen.classList.remove('pmg-cta-pulse'); }, 1600);
+    }
+  }
+
+  function injectDoneButton() {
+    if (document.getElementById('pmg-tune-done')) return;
+    // Find the .tuning-section that holds the live selects.
+    var anySelect = $('personality') || $('tone') || $('outputFormat');
+    var section = anySelect && anySelect.closest('.tuning-section');
+    if (!section) return;
+    var bar = document.createElement('div');
+    bar.className = 'pmg-tune-done-bar';
+    var done = document.createElement('button');
+    done.type = 'button';
+    done.id = 'pmg-tune-done';
+    done.className = 'pmg-tune-done';
+    done.innerHTML = '<span aria-hidden="true">✓</span> Done — back to Build';
+    done.addEventListener('click', closeFullTuning);
+    bar.appendChild(done);
+    section.appendChild(bar);
   }
 
   // ─── Mount the chip row ─────────────────────────────────────────────────
@@ -383,6 +423,9 @@
       rowEl.appendChild(moreChipEl);
     }
 
+    // Tune & Build sits at the end of the chip row as a quiet ghost link.
+    rowEl.appendChild(makeTuneAndBuildChip());
+
     // Mount as the immediate next sibling of the textarea, so the chips
     // sit directly under the input regardless of how chassis-v3 reparents
     // #goal. closest('.field') is unreliable here because the chassis can
@@ -399,7 +442,6 @@
 
   function tryBoot() {
     var ok = mountRow();
-    if (ok) injectTuneAndBuild();
     return ok;
   }
 

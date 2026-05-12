@@ -149,34 +149,65 @@ html.pmg-chassis-v3 .pmg-chip.is-more {
   border-color: color-mix(in srgb, var(--color-primary, #3ee0a0) 30%, transparent);
 }
 
-/* "🎛️ Tune & Build" button — sibling to #generateBtn. Same vertical
-   weight, ghost-style so the primary "Fix My Prompt" stays the hero. */
-html.pmg-chassis-v3 .pmg-tune-and-build {
+/* "🎛️ More tuning" — quiet inline pill at the end of the chip row.
+   Intentionally NOT a competing CTA: the only big button is
+   "Build My Prompt". This pill matches chip styling but uses a dashed
+   border + dimmer text so it reads as "open everything else". */
+html.pmg-chassis-v3 .pmg-tune-and-build.pmg-chip.is-tune-build {
+  background: transparent;
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--color-primary, #3ee0a0) 35%, transparent);
+  color: color-mix(in srgb, var(--color-primary, #3ee0a0) 85%, white);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+html.pmg-chassis-v3 .pmg-tune-and-build.pmg-chip.is-tune-build:hover {
+  border-color: var(--color-primary, #3ee0a0);
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 10%, transparent);
+}
+
+/* "✓ Done — back to Build" bar appended to the bottom of .tuning-section
+   when the user opens the full panel. Sends them back to the primary
+   "Build My Prompt" CTA. */
+html.pmg-chassis-v3 .pmg-tune-done-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 18%, transparent);
+}
+html.pmg-chassis-v3 .pmg-tune-done {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 6px;
-  padding: 12px 18px;
+  padding: 10px 18px;
   border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 45%, transparent);
-  background: transparent;
+  border: 1px solid var(--color-primary, #3ee0a0);
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 14%, transparent);
   color: var(--color-primary, #3ee0a0);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   font-family: inherit;
-  letter-spacing: 0.01em;
-  min-height: 44px;
-  transition: background 0.15s ease, border-color 0.15s ease;
-  margin-left: 8px;
+  min-height: 40px;
+  transition: background 0.15s ease;
 }
-html.pmg-chassis-v3 .pmg-tune-and-build:hover {
-  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 12%, transparent);
-  border-color: var(--color-primary, #3ee0a0);
+html.pmg-chassis-v3 .pmg-tune-done:hover {
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 24%, transparent);
 }
-html.pmg-chassis-v3 .pmg-tune-and-build:focus-visible {
+html.pmg-chassis-v3 .pmg-tune-done:focus-visible {
   outline: 2px solid var(--color-primary, #3ee0a0);
   outline-offset: 2px;
+}
+
+/* Brief attention pulse on #generateBtn after Done is clicked. */
+@keyframes pmg-cta-pulse-kf {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary, #3ee0a0) 55%, transparent); }
+  60%  { box-shadow: 0 0 0 14px color-mix(in srgb, var(--color-primary, #3ee0a0) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary, #3ee0a0) 0%, transparent); }
+}
+html.pmg-chassis-v3 .pmg-cta-pulse {
+  animation: pmg-cta-pulse-kf 0.9s ease-out 1;
 }
 
 /* When chips are mounted AND user hasn't explicitly opted in to the full
@@ -195,10 +226,8 @@ html.pmg-chassis-v3 body.pmg-tune-chips-on:not(.pmg-tune-section-shown) .tuning-
     min-width: 180px;
     max-width: 88vw;
   }
-  html.pmg-chassis-v3 .pmg-tune-and-build {
-    margin-left: 0;
-    margin-top: 8px;
-    width: 100%;
+  html.pmg-chassis-v3 .pmg-tune-and-build.pmg-chip.is-tune-build {
+    font-size: 12px;
   }
 }
 
