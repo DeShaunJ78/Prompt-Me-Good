@@ -364,25 +364,22 @@
       sp.removeAttribute('data-pmgv3-collapsed');
     }
     injectDoneButton();
-    // One clean scroll AFTER layout settles. Previously a rAF "pin"
-    // loop kept re-scrolling for 900ms, which on mobile could land
-    // the page far past the panel onto the empty-state placeholder
-    // when getBoundingClientRect briefly returned 0. Single scroll,
-    // single deferred retry — that's it.
-    var target = panel || sp;
-    if (!target) return;
+    // Land the user at the "Tune Your Prompt" header. scroll-margin-top
+    // (set in pmg-tune-chips.css) keeps the header clear of the chassis
+    // topbar. We call scroll twice — once after a tick so the panel has
+    // finished revealing, again at 320ms after the epic-tuning fields
+    // and Done bar finish mounting (they grow the panel which would
+    // otherwise leave the user above where they want to be).
+    if (!panel && !sp) return;
     try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (_) {}
     var doScroll = function () {
       var t = document.getElementById('tuning-panel') || document.getElementById('settingsPanel');
       if (!t) return;
-      // Skip scroll if the panel header is already comfortably in view —
-      // moving it would just disorient the user.
-      var rect = t.getBoundingClientRect();
-      if (rect.top >= 60 && rect.top <= window.innerHeight - 120) return;
       try { t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
       catch (_) { t.scrollIntoView(); }
     };
-    setTimeout(doScroll, 80);
+    setTimeout(doScroll, 60);
+    setTimeout(doScroll, 320);
   }
 
   function closeFullTuningAndBuild() {
