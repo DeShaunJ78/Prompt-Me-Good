@@ -4072,7 +4072,7 @@
     }
   </style>
   <link rel="stylesheet" href="/styles/pmg-g-theme.css?v=g2-teal-2" />
-  <link rel="stylesheet" href="/styles/pmg-chassis-v3.css?v=cta-color-token-2-sendto-2line-mhdr2-stream1" />
+  <link rel="stylesheet" href="/styles/pmg-chassis-v3.css?v=cta-color-token-2-sendto-2line-mhdr2-stream2" />
   <link rel="stylesheet" href="/styles/pmg-visual-studio.css?v=mux-2-adv-tuning" />
   <link rel="stylesheet" href="/styles/pmg-storyboard.css?v=sb-7" />
   <link rel="stylesheet" href="/styles/pmg-auto-boost.css?v=ab-8-under-strength" />
@@ -8847,12 +8847,20 @@ Context:
         const localPrompt = generatePrompt(data);
 
         function finalize(promptText) {
-          // no-jank-1: ensure the streaming indicator is cleared before we
-          // paint the final prompt, regardless of which path got us here
+          // no-jank-1 / stream-anim-1: tear down the animated status block
+          // and is-streaming class regardless of which path got us here
           // (stream success, structured fallback, raw fallback, local).
           try {
-            var rb = document.getElementById('resultBox');
-            if (rb && rb.classList) rb.classList.remove('is-streaming');
+            if (typeof window.__pmgClearStreamStatus === 'function') {
+              window.__pmgClearStreamStatus();
+            } else {
+              var rb = document.getElementById('resultBox');
+              if (rb) {
+                var ss = rb.querySelector('.pmg-stream-status');
+                if (ss && ss.parentNode) ss.parentNode.removeChild(ss);
+                if (rb.classList) rb.classList.remove('is-streaming');
+              }
+            }
           } catch (_) {}
           setPromptText(promptText);
           addToHistory(data, promptText);
@@ -8939,9 +8947,65 @@ Context:
         // perceived latency.
         setPromptText('');
         if (resultBox && resultBox.classList) resultBox.classList.add('is-streaming');
+        // no-jank-1 / stream-anim-1: paint a centered animated status block
+        // (spinner + "Building your prompt…" + rotating sub-message) inside
+        // the result box so the wait reads as deliberate motion. The block
+        // is contenteditable=false so it never traps the caret, and is
+        // removed before the first real token paints.
+        try {
+          if (resultBox && !resultBox.querySelector('.pmg-stream-status')) {
+            var __ss = document.createElement('div');
+            __ss.className = 'pmg-stream-status';
+            __ss.setAttribute('contenteditable', 'false');
+            __ss.setAttribute('aria-live', 'polite');
+            __ss.innerHTML =
+              '<div class="pmg-stream-status__spinner" aria-hidden="true"></div>' +
+              '<div class="pmg-stream-status__title">Building your prompt</div>' +
+              '<div class="pmg-stream-status__sub">Warming up the model</div>';
+            resultBox.appendChild(__ss);
+            var __subEl = __ss.querySelector('.pmg-stream-status__sub');
+            var __msgs = [
+              'Warming up the model',
+              'Picking the right structure',
+              'Adding role + constraints',
+              'Tightening the wording',
+              'Almost there'
+            ];
+            var __i = 0;
+            window.__pmgStreamStatusTimer = setInterval(function () {
+              __i = (__i + 1) % __msgs.length;
+              if (!__subEl || !__subEl.isConnected) return;
+              __subEl.style.animation = 'none';
+              // force reflow so the fade-in restarts
+              void __subEl.offsetWidth;
+              __subEl.style.animation = '';
+              __subEl.textContent = __msgs[__i];
+            }, 1400);
+          }
+        } catch (_) {}
         if (resultBoxEl) resultBoxEl.classList.remove('is-clamped');
         if (resultBoxToggle) resultBoxToggle.classList.remove('is-visible');
         scrollToResult();
+
+        // Helper: tear down the streaming status block + class. Called from
+        // every termination path (first chunk, finalize, fallback, error).
+        function __pmgClearStreamStatus() {
+          try {
+            if (window.__pmgStreamStatusTimer) {
+              clearInterval(window.__pmgStreamStatusTimer);
+              window.__pmgStreamStatusTimer = 0;
+            }
+          } catch (_) {}
+          try {
+            if (resultBox) {
+              var __existing = resultBox.querySelector('.pmg-stream-status');
+              if (__existing && __existing.parentNode) __existing.parentNode.removeChild(__existing);
+              if (resultBox.classList) resultBox.classList.remove('is-streaming');
+            }
+          } catch (_) {}
+        }
+        // Expose so finalize()/useLocalFallback() can call it without scope tricks.
+        window.__pmgClearStreamStatus = __pmgClearStreamStatus;
 
         let streamedText = '';
         let pendingFull = null;
@@ -8951,11 +9015,8 @@ Context:
           if (pendingFull === null) return;
           var next = pendingFull;
           pendingFull = null;
-          // First real chunk arrived — drop the typing indicator, keep
-          // the streamed content from here on.
-          if (resultBox && resultBox.classList && resultBox.classList.contains('is-streaming')) {
-            resultBox.classList.remove('is-streaming');
-          }
+          // First real chunk arrived — tear down the animated status block.
+          __pmgClearStreamStatus();
           setPromptText(next);
         }
         function onChunk(_chunk, full) {
@@ -8997,10 +9058,11 @@ Context:
         }
 
         function useLocalFallback() {
-          // no-jank-1: clear the streaming indicator before showing the
-          // error banner, otherwise the dots keep pulsing under the error.
+          // no-jank-1 / stream-anim-1: tear down the animated status block
+          // before showing the error banner.
           try {
-            if (resultBox && resultBox.classList) resultBox.classList.remove('is-streaming');
+            if (typeof window.__pmgClearStreamStatus === 'function') window.__pmgClearStreamStatus();
+            else if (resultBox && resultBox.classList) resultBox.classList.remove('is-streaming');
           } catch (_) {}
           // Surface a styled error banner with Try Again (Task #29).
           // The pmg-result-states overlay will catch this event and
