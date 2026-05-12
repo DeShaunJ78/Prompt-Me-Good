@@ -4072,7 +4072,7 @@
     }
   </style>
   <link rel="stylesheet" href="/styles/pmg-g-theme.css?v=g2-teal-2" />
-  <link rel="stylesheet" href="/styles/pmg-chassis-v3.css?v=cta-color-token-2-sendto-2line-mhdr2-stream2" />
+  <link rel="stylesheet" href="/styles/pmg-chassis-v3.css?v=cta-color-token-2-sendto-2line-mhdr2-stream2-clamp1" />
   <link rel="stylesheet" href="/styles/pmg-visual-studio.css?v=mux-2-adv-tuning" />
   <link rel="stylesheet" href="/styles/pmg-storyboard.css?v=sb-7" />
   <link rel="stylesheet" href="/styles/pmg-auto-boost.css?v=ab-8-under-strength" />
@@ -5495,6 +5495,60 @@
       }
       focusGoalIfBuilderHash();
       window.addEventListener('hashchange', focusGoalIfBuilderHash);
+
+      // enter-submit-1: Most users hit Enter out of habit after typing a
+      // prompt. A <textarea> normally inserts a newline on Enter, leaving
+      // the user thinking the form is broken. Treat plain Enter as
+      // "submit", and Shift/Ctrl/Meta+Enter as "newline" so power users
+      // can still write multi-line goals. Composition events (IME for
+      // CJK input) are skipped so we don't fire mid-composition. Also
+      // wired to the panel-scoped image/video goal fields so the same
+      // habit works in Photo and Video panels.
+      (function wireEnterToSubmit() {
+        function attach(el, formId) {
+          if (!el || el.__pmgEnterWired) return;
+          el.__pmgEnterWired = true;
+          var composing = false;
+          el.addEventListener('compositionstart', function () { composing = true; });
+          el.addEventListener('compositionend',   function () { composing = false; });
+          el.addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter') return;
+            if (e.shiftKey || e.ctrlKey || e.metaKey || e.altKey) return; // newline
+            if (composing || e.isComposing) return;
+            // Find the right submit target: explicit form id wins, else
+            // climb to closest form, else look for a generate button.
+            var form = formId ? document.getElementById(formId) : el.closest('form');
+            if (form) {
+              e.preventDefault();
+              if (typeof form.requestSubmit === 'function') form.requestSubmit();
+              else form.submit();
+              return;
+            }
+            // Panel-scoped fallbacks (Photo / Video have no <form>).
+            var btnId = el.id === 'pmg-vs-image-goal' ? 'pmg-vs-image-generate-btn'
+                      : el.id === 'pmg-vs-video-goal' ? 'pmg-vs-video-generate-btn'
+                      : null;
+            if (btnId) {
+              var btn = document.getElementById(btnId);
+              if (btn && !btn.disabled) {
+                e.preventDefault();
+                btn.click();
+              }
+            }
+          });
+        }
+        attach(document.getElementById('goal'), 'prompt-form');
+        // Photo + Video goals may not exist yet (built later by chassis-v3
+        // / pmg-visual-studio). Re-try on a short interval so we catch
+        // them once the panels are mounted.
+        var tries = 0;
+        var iv = setInterval(function () {
+          tries++;
+          attach(document.getElementById('pmg-vs-image-goal'), null);
+          attach(document.getElementById('pmg-vs-video-goal'), null);
+          if (tries >= 30) clearInterval(iv);
+        }, 250);
+      })();
 
       const navToggle = document.getElementById('nav-toggle');
       const navPanel = document.getElementById('top-actions');

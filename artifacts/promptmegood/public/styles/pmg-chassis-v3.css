@@ -1125,6 +1125,18 @@ html.pmg-chassis-v3 .pmgv3-output-host #resultBox:focus {
   box-shadow: 0 0 0 3px rgba(0, 200, 150, 0.15);
 }
 
+/* clamp-fix-1: legacy `.result-box.is-clamped { max-height: 280px }` rule
+   in app.html (specificity 0,2,0) was being overridden by the chassis
+   selector `html.pmg-chassis-v3 .pmgv3-output-host #resultBox` (0,2,1),
+   so clicking "Show Full Prompt" / "Collapse Prompt" toggled the class
+   but the box never actually clamped. Mirror the rule under the chassis
+   namespace so it wins by specificity. */
+html.pmg-chassis-v3 .pmgv3-output-host #resultBox.is-clamped {
+  max-height: 280px !important;
+  overflow-y: auto !important;
+  position: relative;
+}
+
 /* perf-stream-1 / no-jank-1: While the prompt is streaming we momentarily
    set #resultBox.textContent to '' (so the first chunk replaces the
    placeholder cleanly). The legacy app.html rule
