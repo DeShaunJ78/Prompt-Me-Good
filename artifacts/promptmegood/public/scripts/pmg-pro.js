@@ -687,15 +687,21 @@
     actions.insertBefore(btn, actions.firstChild);
   }
 
-  /* FEATURE 5: Money Mode — keep working for free, add PRO badge */
+  /* FEATURE 5: Money Mode (renamed Growth Mode) — badge removed (pro-pill-fit-1).
+     The toggle itself is FREE (it's just a per-prompt directive). The real
+     paid Growth Mode workflows live in the 💼 drawer in the topbar (see
+     pmg-business-mode.js), so the inline "Money Mode Pro" badge here was
+     misleading. Function kept as a no-op for callsite stability. To restore:
+     uncomment the body. */
   function gateMoneyMode() {
-    var checkbox = document.getElementById('moneyMode');
-    if (!checkbox) return;
-    var row = checkbox.closest('.toggle-row');
-    if (!row) return;
-    var strong = row.querySelector('strong');
-    if (!strong) return;
-    addProBadge(strong, 'PRO', 'Money Mode Pro Workflows');
+    return;
+    // var checkbox = document.getElementById('moneyMode');
+    // if (!checkbox) return;
+    // var row = checkbox.closest('.toggle-row');
+    // if (!row) return;
+    // var strong = row.querySelector('strong');
+    // if (!strong) return;
+    // addProBadge(strong, 'PRO', 'Money Mode Pro Workflows');
   }
 
   /* =================================================================
