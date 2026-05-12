@@ -132,34 +132,168 @@
     });
   }
 
-  /* adv-mirror-3: The Money Mode Pro panel (id #pmg-mmpro-panel from
-     pmg-money-mode-pro.js) mounts as a sibling of the ORIGINAL #moneyMode
-     toggle row inside the legacy (hidden) #settingsPanel. Since the user
-     now interacts with the mirror inside #pmgv3-epic-tuning, we relocate
-     that single panel beneath the mirror's Growth Mode row so it surfaces
-     where users can actually see it. We move (not clone) — there is only
-     one panel and only one source of truth for its state. */
-  function relocateMoneyModeProPanel() {
-    var panel = document.getElementById('pmg-mmpro-panel');
-    if (!panel) return false;
+  /* adv-mirror-4: The Money Mode Pro panel (#pmg-mmpro-panel from
+     pmg-money-mode-pro.js) mounts as a sibling of the original #moneyMode
+     toggle row inside the legacy #settingsPanel. We CLONE that panel
+     beneath the mirror's Growth Mode row (id #pmg-mmpro-panel-mirror) and
+     keep the two in two-way sync, the same way we mirror the three
+     toggles. The original is left in place; the clone is wired to forward
+     user actions (preset clicks, select changes, boost checkboxes,
+     upgrade CTA, tooltip) to the original, and a MutationObserver on the
+     original mirrors UI updates (locked state, is-active rows, feedback
+     line) back to the clone. */
+  var mmproWired = false;
+  var mmproObserver = null;
+
+  function ensureOriginalRestored(panel) {
+    /* Undo the adv-mirror-3 move if it's still in effect from a stale
+       cached script. */
+    if (panel.getAttribute('data-pmg-relocated-by') !== 'adv-mirror') return;
+    var moneyToggle = document.getElementById('moneyMode');
+    var origRow = moneyToggle && moneyToggle.closest('.toggle-row');
+    if (origRow && origRow.parentNode) {
+      origRow.parentNode.insertBefore(panel, origRow.nextSibling);
+    }
+    panel.removeAttribute('data-pmg-relocated-by');
+  }
+
+  function mirrorMoneyModeProPanel() {
+    var orig = document.getElementById('pmg-mmpro-panel');
+    if (!orig) return false;
     var mirrorRow = document.querySelector(
       '#' + MOUNT_ID + ' .pmg-adv-mirror-row[data-mirror-row="moneyMode"]'
     );
     if (!mirrorRow || !mirrorRow.parentNode) return false;
-    if (panel.previousElementSibling === mirrorRow) return true;
-    mirrorRow.parentNode.insertBefore(panel, mirrorRow.nextSibling);
-    panel.setAttribute('data-pmg-relocated-by', 'adv-mirror');
+    ensureOriginalRestored(orig);
+    if (document.getElementById('pmg-mmpro-panel-mirror')) return true;
+    var clone = orig.cloneNode(true);
+    clone.id = 'pmg-mmpro-panel-mirror';
+    clone.setAttribute('data-pmg-mmpro-clone', '1');
+    /* Suffix all child IDs and update <label for=> targets so the clone
+       has no duplicate IDs in the document. */
+    clone.querySelectorAll('[id]').forEach(function (el) {
+      el.id = el.id + '-mirror';
+    });
+    clone.querySelectorAll('label[for]').forEach(function (l) {
+      l.setAttribute('for', l.getAttribute('for') + '-mirror');
+    });
+    clone.querySelectorAll('[aria-controls]').forEach(function (el) {
+      el.setAttribute('aria-controls', el.getAttribute('aria-controls') + '-mirror');
+    });
+    mirrorRow.parentNode.insertBefore(clone, mirrorRow.nextSibling);
+    wireMmproClone(orig, clone);
     return true;
   }
 
+  function wireMmproClone(orig, clone) {
+    /* Selects: forward value changes to the original. */
+    clone.querySelectorAll('select[data-mmpro-field]').forEach(function (sel) {
+      sel.addEventListener('change', function () {
+        var origSel = orig.querySelector('select[data-mmpro-field="' + sel.dataset.mmproField + '"]');
+        if (origSel && origSel.value !== sel.value) {
+          origSel.value = sel.value;
+          try { origSel.dispatchEvent(new Event('change', { bubbles: true })); } catch (_) {}
+        }
+      });
+    });
+    /* Boost checkboxes: forward checked state. */
+    clone.querySelectorAll('input[data-mmpro-boost]').forEach(function (input) {
+      input.addEventListener('change', function () {
+        var origInput = orig.querySelector('input[data-mmpro-boost="' + input.dataset.mmproBoost + '"]');
+        if (origInput && origInput.checked !== input.checked) {
+          origInput.checked = input.checked;
+          try { origInput.dispatchEvent(new Event('change', { bubbles: true })); } catch (_) {}
+        }
+      });
+    });
+    /* Preset buttons: forward clicks to original presets. */
+    clone.querySelectorAll('.pmg-mmpro-preset-btn').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        var origBtn = orig.querySelector('.pmg-mmpro-preset-btn[data-preset-id="' + btn.dataset.presetId + '"]');
+        if (origBtn) origBtn.click();
+      });
+    });
+    /* Tooltip toggle (clone-local — no need to forward). */
+    var tipBtn = clone.querySelector('.pmg-mmpro-tooltip-toggle');
+    var tipBody = clone.querySelector('.pmg-mmpro-tooltip-body');
+    if (tipBtn && tipBody) {
+      tipBtn.addEventListener('click', function () {
+        var open = tipBody.hidden;
+        tipBody.hidden = !open;
+        tipBtn.setAttribute('aria-expanded', String(open));
+        tipBtn.textContent = open ? 'Hide explanation' : 'What does this do?';
+      });
+    }
+    /* Upgrade CTA in the locked overlay. */
+    var lockCta = clone.querySelector('.pmg-mmpro-locked-cta');
+    if (lockCta) {
+      lockCta.addEventListener('click', function (e) {
+        e.preventDefault();
+        var origCta = orig.querySelector('.pmg-mmpro-locked-cta');
+        if (origCta) origCta.click();
+      });
+    }
+
+    function reflectToClone() {
+      clone.classList.toggle('is-locked', orig.classList.contains('is-locked'));
+      clone.querySelectorAll('select[data-mmpro-field]').forEach(function (sel) {
+        var origSel = orig.querySelector('select[data-mmpro-field="' + sel.dataset.mmproField + '"]');
+        if (origSel && origSel.value !== sel.value) sel.value = origSel.value;
+      });
+      clone.querySelectorAll('input[data-mmpro-boost]').forEach(function (input) {
+        var id = input.dataset.mmproBoost;
+        var origInput = orig.querySelector('input[data-mmpro-boost="' + id + '"]');
+        if (origInput && origInput.checked !== input.checked) input.checked = origInput.checked;
+        var origRow = orig.querySelector('[data-boost-id="' + id + '"]');
+        var cloneRow = clone.querySelector('[data-boost-id="' + id + '"]');
+        if (origRow && cloneRow) {
+          cloneRow.classList.toggle('is-active', origRow.classList.contains('is-active'));
+        }
+      });
+      var origFb = orig.querySelector('#pmg-mmpro-feedback');
+      var cloneFb = clone.querySelector('#pmg-mmpro-feedback-mirror');
+      if (origFb && cloneFb) {
+        if (cloneFb.innerHTML !== origFb.innerHTML) cloneFb.innerHTML = origFb.innerHTML;
+        if (cloneFb.className !== origFb.className) cloneFb.className = origFb.className;
+      }
+    }
+    reflectToClone();
+    try {
+      mmproObserver = new MutationObserver(reflectToClone);
+      mmproObserver.observe(orig, {
+        subtree: true, attributes: true, childList: true, characterData: true,
+        attributeFilter: ['class', 'checked', 'value']
+      });
+    } catch (_) {}
+    /* Selects don't mutate attributes when their value changes, so also
+       listen on the original for change events to push back to the clone. */
+    orig.addEventListener('change', reflectToClone, true);
+    mmproWired = true;
+  }
+
   function watchMoneyModeProPanel() {
-    if (relocateMoneyModeProPanel()) return;
+    if (mirrorMoneyModeProPanel()) return;
     var ticks = 0;
     var iv = setInterval(function () {
       ticks++;
       if (ticks > 60) { clearInterval(iv); return; }
-      if (relocateMoneyModeProPanel()) clearInterval(iv);
+      if (mirrorMoneyModeProPanel()) clearInterval(iv);
     }, 250);
+  }
+
+  function disconnectAllObservers() {
+    /* Disconnect any observers from a previous mount so they don't
+       accumulate on the originals across self-heals. */
+    try {
+      origObservers.forEach(function (mo) { try { mo.disconnect(); } catch (_) {} });
+    } catch (_) {}
+    origObservers = [];
+    if (mmproObserver) {
+      try { mmproObserver.disconnect(); } catch (_) {}
+      mmproObserver = null;
+    }
+    mmproWired = false;
   }
 
   function tryMount() {
@@ -168,6 +302,11 @@
       var epicNow = document.getElementById('pmgv3-epic-tuning');
       if (existing && epicNow && !epicNow.contains(existing)) {
         try { existing.parentNode.removeChild(existing); } catch (_) {}
+        var staleClone = document.getElementById('pmg-mmpro-panel-mirror');
+        if (staleClone && staleClone.parentNode) {
+          try { staleClone.parentNode.removeChild(staleClone); } catch (_) {}
+        }
+        disconnectAllObservers();
         mounted = false;
       } else {
         return true;
