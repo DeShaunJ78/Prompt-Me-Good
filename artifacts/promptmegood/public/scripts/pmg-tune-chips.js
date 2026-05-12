@@ -326,8 +326,8 @@
     btn.type = 'button';
     btn.id = 'pmg-tune-and-build';
     btn.className = 'pmg-tune-and-build pmg-chip is-tune-build';
-    btn.innerHTML = '<span aria-hidden="true">🎛️</span> More tuning';
-    btn.title = 'Open every tuning option';
+    btn.innerHTML = '<span aria-hidden="true">🎛️</span> Prompt Tuning';
+    btn.title = 'Optional — open every tuning option';
 
     btn.addEventListener('click', function () {
       openFullTuning();
