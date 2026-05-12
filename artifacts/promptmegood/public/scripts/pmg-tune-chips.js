@@ -368,14 +368,42 @@
       // eslint-disable-next-line no-unused-expressions
       panel.offsetHeight;
     }
-    // Now scroll. The first call lands correctly because layout is
-    // already settled; the 380ms follow-up absorbs late mounts (epic
-    // tuning fields, Done bar) that grow the panel further.
+    // tc-9i: scrollIntoView({block:'start'}) was overshooting on mobile
+    // — when the panel is near the end of its scroll container, the
+    // browser scrolls to its max position to honor "align top to top",
+    // which lands the user at the bottom of the document (footer).
+    // Replaced with manual scroll math: find the nearest scrollable
+    // ancestor and scroll exactly enough to put the panel header 16px
+    // below the container's top edge.
     var doScroll = function () {
       var t = document.getElementById('tuning-panel') || document.getElementById('settingsPanel');
       if (!t) return;
-      try { t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-      catch (_) { t.scrollIntoView(); }
+      var container = t.parentElement;
+      while (container && container !== document.body && container !== document.documentElement) {
+        var oy = '';
+        try { oy = getComputedStyle(container).overflowY; } catch (_) {}
+        if (oy === 'auto' || oy === 'scroll') break;
+        container = container.parentElement;
+      }
+      if (!container || container === document.body) {
+        container = document.scrollingElement || document.documentElement;
+      }
+      try {
+        var pRect = t.getBoundingClientRect();
+        var cRect = (container === document.documentElement || container === document.scrollingElement)
+          ? { top: 0 }
+          : container.getBoundingClientRect();
+        var current = container.scrollTop || 0;
+        var target = current + (pRect.top - cRect.top) - 16;
+        if (target < 0) target = 0;
+        // Don't overscroll: cap at max scrollable distance.
+        var maxScroll = (container.scrollHeight || 0) - (container.clientHeight || 0);
+        if (maxScroll > 0 && target > maxScroll) target = maxScroll;
+        container.scrollTo({ top: target, behavior: 'smooth' });
+      } catch (_) {
+        try { t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        catch (__) { t.scrollIntoView(); }
+      }
     };
     requestAnimationFrame(function () {
       doScroll();
