@@ -460,7 +460,19 @@ router.post("/generate-stream", generateLimiter, generateCostCheck, async (req, 
 // model's response as Server-Sent Events. Distinct from /generate (which
 // builds an optimized prompt template) — this is the "run with AI" feature
 // that lets users see what their prompt actually produces, in-app.
-const RUN_MODEL = "gpt-4.1";
+//
+// pricing-rebalance-1 (2026-05-12): Free-tier users now route through
+// gpt-4.1-mini (~5x cheaper input, ~5x cheaper output) so the Free tier
+// is nearly costless to operate. Paid tiers (founding / pro) keep
+// gpt-4.1's higher quality. The model is chosen per-request from the
+// authenticated user's plan (see modelForPlan() below). This pairs with
+// the new tighter Free cap (2 Run/day) to make the Free tier a true
+// loss-leader rather than a margin sink.
+const RUN_MODEL_PAID = "gpt-4.1";
+const RUN_MODEL_FREE = "gpt-4.1-mini";
+function modelForPlan(plan: PmgPlan | undefined): string {
+  return plan === "founding" || plan === "pro" ? RUN_MODEL_PAID : RUN_MODEL_FREE;
+}
 // run-cap-2 (2026-05-12): bumped 8000 → 32000 input, 1000 → 4000 output.
 // Heavily ECC-tuned prompts (Architect + Diagnose + Tune layered on top
 // of Pro Tuning + Storyboard) routinely land at 10–20k chars. The old
@@ -507,8 +519,10 @@ router.post("/run", runLimiter, runCostCheck, userCapEnforce("run"), async (req,
 
   let total = 0;
   try {
+    const __runPlan = (req as Request & { pmgUser?: { plan: PmgPlan } }).pmgUser?.plan;
+    const __runModel = modelForPlan(__runPlan);
     const stream = await openai.chat.completions.create({
-      model: RUN_MODEL,
+      model: __runModel,
       max_completion_tokens: RUN_MAX_OUTPUT_TOKENS,
       stream: true,
       messages: [
@@ -725,7 +739,7 @@ router.post("/video", videoLimiter, userCapEnforce("vid", 1), async (req, res) =
     res.status(402).json({
       success: false,
       ok: false,
-      error: "🎬 Video generation is a Founding Member feature. Lock in lifetime access for $79.",
+      error: "🎬 Video generation is a paid feature. Lock in lifetime access for $79 (Founding Member, first 500), or grab Pro Monthly ($14/mo), Pro Yearly ($129/yr), or Pro Studio ($29/mo).",
       upgrade: true,
     });
     return;

@@ -2405,7 +2405,7 @@
     var section = document.getElementById('imageResultSection');
     if (!section) return;
     var meta = section.querySelector('.run-section-meta');
-    if (meta) meta.textContent = 'Created With DALL·E 3 · Free tier: 1 image per day. Founding Member: 15 per day. Fair use limits apply.';
+    if (meta) meta.textContent = 'Created With DALL·E 3 · Free tier: 1 image per day. Founding Member: 8 per day. Fair use limits apply.';
     var dl = document.getElementById('imageDownloadBtn');
     if (dl) dl.innerHTML = '⬇ Download Image';
     var again = document.getElementById('imageAgainBtn');
@@ -10758,7 +10758,7 @@
  *      (#pmg-t35-use-as-ref-desc — italic, centered, muted)
  *   2. "Download Will Activate Once Your Image Is Ready."
  *      (.pmg-t15-image-hint — left-aligned, default body color)
- *   3. "Created With DALL·E 3 · Free tier: 1 image per day. Founding Member: 15 per day. Fair use limits apply."
+ *   3. "Created With DALL·E 3 · Free tier: 1 image per day. Founding Member: 8 per day. Fair use limits apply."
  *      (#imageResultSection .run-section-meta — small, muted)
  * The user wants them centered, uniformed, and intentional — to read
  * as one cohesive footer block matching the rest of the site's calm,

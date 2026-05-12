@@ -48,10 +48,12 @@ router.get("/usage/check", async (req, res) => {
 
   const caps = effectiveCaps(ctx.plan, ctx.createdAtMs);
   const used = await getUserDay(ctx.userId);
+  const usedVid = used.vid ?? 0;
   const remaining = {
     run: Math.max(0, caps.run - used.run),
     img: Math.max(0, caps.img - used.img),
     analyze: Math.max(0, caps.analyze - used.analyze),
+    vid: Math.max(0, caps.vid - usedVid),
   };
 
   const now = new Date();
@@ -69,7 +71,7 @@ router.get("/usage/check", async (req, res) => {
       total_days: PMG_PRICING.TRIAL_DAYS,
     },
     caps,
-    used: { run: used.run, img: used.img, analyze: used.analyze },
+    used: { run: used.run, img: used.img, analyze: used.analyze, vid: usedVid },
     remaining,
     resets_at: tomorrowUtc.toISOString(),
   });

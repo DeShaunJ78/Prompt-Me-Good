@@ -298,7 +298,7 @@ router.get(
       // get their own (higher) fair-use caps from effectiveCaps.
       const caps = effectiveCaps(plan, user.createdAtMs);
       const day = await getUserDay(user.id);
-      const used = { run: day.run, img: day.img, analyze: day.analyze };
+      const used = { run: day.run, img: day.img, analyze: day.analyze, vid: day.vid ?? 0 };
       res.json({
         plan,
         subscription_status: profile.subscription_status,

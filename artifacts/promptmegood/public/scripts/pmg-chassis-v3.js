@@ -167,7 +167,7 @@
           '<button class="pmgv3-ico" id="pmgv3-business" type="button" title="Growth Mode — assemble a marketing prompt" aria-label="Open Growth Mode">💼</button>',
           '<button class="pmgv3-ico" id="pmgv3-vault" type="button" title="Vault" aria-label="Vault">🗄️</button>',
           '<button class="pmgv3-ico" id="pmgv3-settings" type="button" title="Settings" aria-label="Settings">⚙️</button>',
-          '<button class="pmgv3-upgrade" type="button" id="pmgv3-upgrade" title="See pricing — $79 one-time Founding Member (first 500, lifetime access) or Pro $9/mo">Upgrade</button>',
+          '<button class="pmgv3-upgrade" type="button" id="pmgv3-upgrade" title="See pricing — $79 one-time Founding Member (first 500, lifetime access) or Pro $14/mo">Upgrade</button>',
         '</div>',
       '</header>',
       '<nav class="pmgv3-tabs" role="tablist" aria-label="Module">',

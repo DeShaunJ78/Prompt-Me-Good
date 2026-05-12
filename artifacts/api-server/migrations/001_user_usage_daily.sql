@@ -19,10 +19,20 @@ create table if not exists public.user_usage_daily (
   run_count      integer     not null default 0,
   img_count      integer     not null default 0,
   analyze_count  integer     not null default 0,
+  -- pricing-rebalance-1 (2026-05-12): per-tier video caps require a
+  -- first-class video counter. Existing rows get 0 via the column default,
+  -- so no backfill is required when this is applied to a database that
+  -- already had the table.
+  vid_count      integer     not null default 0,
   first_seen_at  timestamptz not null default now(),
   updated_at     timestamptz not null default now(),
   primary key (user_id, usage_date)
 );
+
+-- Idempotent column add for databases that applied the original migration
+-- before the vid_count column was introduced.
+alter table public.user_usage_daily
+  add column if not exists vid_count integer not null default 0;
 
 -- Service-role writes only. RLS on, no public policies → no direct access
 -- from the browser; all reads/writes go through the api-server using the

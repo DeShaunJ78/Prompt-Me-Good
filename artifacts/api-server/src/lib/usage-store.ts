@@ -30,6 +30,13 @@ interface UserDay {
   run: number;
   img: number;
   analyze: number;
+  // pricing-rebalance-1 (2026-05-12): added when "vid" became a first-class
+  // PmgFeature alongside the per-tier video caps. Existing JSON-fallback
+  // rows and Supabase rows from before this column existed will read back
+  // as undefined → applyDelta() / reserveUserDay() coerce to 0 via the
+  // `(updated[feature] || 0)` guard, so older rows are forward-compatible
+  // without a backfill. Optional to avoid breaking the JSON-fallback shape.
+  vid?: number;
 }
 
 interface CacheEntry {
@@ -86,7 +93,7 @@ async function fetchFromSupabase(userId: string, date: string): Promise<UserDay 
   try {
     const { data, error } = await supabaseAdmin
       .from("user_usage_daily")
-      .select("usage_date, run_count, img_count, analyze_count")
+      .select("usage_date, run_count, img_count, analyze_count, vid_count")
       .eq("user_id", userId)
       .eq("usage_date", date)
       .maybeSingle();
@@ -105,19 +112,21 @@ async function fetchFromSupabase(userId: string, date: string): Promise<UserDay 
       return null;
     }
     if (!data) {
-      return { date, run: 0, img: 0, analyze: 0 };
+      return { date, run: 0, img: 0, analyze: 0, vid: 0 };
     }
     const row = data as {
       usage_date: string;
       run_count: number | null;
       img_count: number | null;
       analyze_count: number | null;
+      vid_count: number | null;
     };
     return {
       date: row.usage_date,
       run: row.run_count ?? 0,
       img: row.img_count ?? 0,
       analyze: row.analyze_count ?? 0,
+      vid: row.vid_count ?? 0,
     };
   } catch (err) {
     logger.warn(
@@ -155,6 +164,7 @@ async function flushPending(): Promise<void> {
             run_count: row.run,
             img_count: row.img,
             analyze_count: row.analyze,
+            vid_count: row.vid ?? 0,
             updated_at: new Date().toISOString(),
           },
           { onConflict: "user_id,usage_date" },
@@ -211,8 +221,8 @@ export async function getUserDay(userId: string): Promise<UserDay> {
     const fallback = jsonStore[userId];
     row =
       fallback && fallback.date === date
-        ? { ...fallback }
-        : { date, run: 0, img: 0, analyze: 0 };
+        ? { ...fallback, vid: fallback.vid ?? 0 }
+        : { date, run: 0, img: 0, analyze: 0, vid: 0 };
   }
   cache.set(key, { expires: now + CACHE_TTL_MS, row });
   return row;
