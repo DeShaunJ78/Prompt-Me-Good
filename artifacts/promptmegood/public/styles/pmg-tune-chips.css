@@ -196,6 +196,14 @@ html.pmg-chassis-v3 .pmg-tune-and-build.is-in-voice-row {
 /* "✓ Done — back to Build" bar appended to the bottom of .tuning-section
    when the user opens the full panel. Sends them back to the primary
    "Build My Prompt" CTA. */
+/* tc-9m: sticky bottom bar so "✓ Done — Build My Prompt" stays visible
+   regardless of the section's internal scroll state. Without this, on
+   mobile (where .tuning-section keeps its 360px cap) and on desktop in
+   the rare case where AOS + Money Mode Pro both expand past the
+   viewport cap, the Done button got buried below the internal scroll
+   fold and users couldn't find their way out of Tuning. position:sticky
+   pins it to the bottom edge of the scroll container so it's always
+   one tap away. */
 html.pmg-chassis-v3 .pmg-tune-done-bar {
   display: flex;
   align-items: center;
@@ -203,8 +211,14 @@ html.pmg-chassis-v3 .pmg-tune-done-bar {
   gap: 12px;
   flex-wrap: wrap;
   margin-top: 14px;
-  padding-top: 12px;
+  padding: 12px 4px 4px;
   border-top: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 18%, transparent);
+  position: sticky;
+  bottom: -16px; /* cancel the section's 16px bottom padding so the bar hugs the edge */
+  background: color-mix(in srgb, #0b1620 92%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 2;
 }
 
 /* Quiet "Open Expert Command Center" link inside the Done bar.

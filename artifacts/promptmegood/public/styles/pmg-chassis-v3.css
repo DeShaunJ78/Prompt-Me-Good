@@ -515,6 +515,17 @@ html.pmg-chassis-v3 .idea-section #goal:focus {
 .btn-analyze:active { transform: translateY(0); }
 
 /* ---- Tuning section (Step 4B) ---- */
+/* cv3-62: 360px max-height was originally chosen for the mobile
+   accordion. On desktop it buried the lower half of the section
+   (reasoning dropdown, audience input, AOS gear card, AND the
+   "✓ Done — Build My Prompt" button) below an internal scroll fold,
+   so the user opened the panel but never discovered the deeper
+   controls or the exit. Mobile keeps the 360px cap (small viewport,
+   accordion feel preferred). Desktop relaxes to viewport-bounded so
+   the typical state fits the screen with no internal scroll, and the
+   worst-case state (AOS + Money Mode Pro both expanded) still bounds
+   itself instead of pushing the page sky-high. The Done bar is sticky
+   (see pmg-tune-chips.css) so it stays visible regardless of cap. */
 .tuning-section {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(0, 200, 150, 0.18);
@@ -525,6 +536,11 @@ html.pmg-chassis-v3 .idea-section #goal:focus {
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 200, 150, 0.4) transparent;
+}
+@media (min-width: 769px) {
+  .tuning-section {
+    max-height: calc(100vh - 120px);
+  }
 }
 .tuning-section::-webkit-scrollbar { width: 6px; }
 .tuning-section::-webkit-scrollbar-thumb { background: rgba(0, 200, 150, 0.4); border-radius: 3px; }
