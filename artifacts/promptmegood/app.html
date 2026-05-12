@@ -11991,13 +11991,61 @@ Context:
 
       function $(id) { return document.getElementById(id); }
 
+      /* run-source-1 (2026-05-12): The Expert Command Center rewrites
+         #goal but deliberately does NOT auto-Build (so the user can
+         review the rewrite). Result: clicking "Run With AI Here" fired
+         /api/run with the STALE pre-tune #resultBox content (or empty),
+         making heavily-ECC-tuned prompts appear broken. Track whether
+         #goal has been edited since the last Build, and prefer the
+         freshest source. */
+      let goalDirtyAfterBuild = false;
+      function markGoalDirty() { goalDirtyAfterBuild = true; }
+      function markBuildClean() { goalDirtyAfterBuild = false; }
+      // Wire listeners after DOM is ready.
+      function wireFreshnessTracker() {
+        const goal = $('goal');
+        const result = $('resultBox');
+        if (goal && !goal.__pmgRunSrcWired) {
+          goal.__pmgRunSrcWired = true;
+          goal.addEventListener('input', markGoalDirty);
+        }
+        if (result && !result.__pmgRunSrcObs) {
+          result.__pmgRunSrcObs = true;
+          // Build / Auto-Boost / Rewrite all mutate #resultBox content.
+          // Any such change means we have a fresh built prompt — clear
+          // the dirty flag so getCurrentPrompt() trusts #resultBox again.
+          try {
+            const obs = new MutationObserver(markBuildClean);
+            obs.observe(result, { childList: true, characterData: true, subtree: true });
+          } catch (_) {}
+        }
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', wireFreshnessTracker);
+      } else {
+        wireFreshnessTracker();
+      }
+      // Re-arm in case chassis-v3 reparents resultBox after our first wire.
+      setTimeout(wireFreshnessTracker, 600);
+      setTimeout(wireFreshnessTracker, 1800);
+
       function getCurrentPrompt() {
         // #resultBox is a contenteditable <div>, NOT a textarea — read textContent.
-        // Fall back to innerText if textContent is somehow empty (rare, but safe).
+        // #goal is the textarea where users (and ECC) edit raw input.
         const box = $('resultBox');
-        if (!box) return '';
-        const text = (box.textContent || box.innerText || '').trim();
-        return text;
+        const goal = $('goal');
+        const builtRaw = box ? (box.textContent || box.innerText || '') : '';
+        const built = builtRaw.trim();
+        const goalRaw = goal ? (goal.value || '') : '';
+        const goalText = goalRaw.trim();
+        // run-source-1: if the user (or ECC) edited #goal after the
+        // last Build, that newer content is what they expect to run.
+        if (goalDirtyAfterBuild && goalText) return goalText;
+        // Otherwise prefer the explicit built prompt; fall back to goal
+        // when nothing has been built yet (e.g. user clicks Run before
+        // building — we'd rather surface SOMETHING than silently fail).
+        if (built) return built;
+        return goalText;
       }
 
       /* run-feedback-1: never let Run With AI fail silently. Tries the
