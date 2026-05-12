@@ -523,6 +523,7 @@
     relocateIntoVoiceRow();
     injectPanelEccLinks();
     armAutoOpenGuard();
+    armPanelSwitchAutoClose();
     return ok;
   }
 
@@ -551,6 +552,40 @@
     try {
       var mo = new MutationObserver(function () { enforce(); });
       mo.observe(panel, { attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
+    } catch (_) {}
+  }
+
+  // Close the text tuning panel automatically whenever the user
+  // switches away from the Text panel — keeps things tidy so coming
+  // back to Text doesn't dump them straight into Tuning view.
+  function armPanelSwitchAutoClose() {
+    if (armPanelSwitchAutoClose._armed) return;
+    // The active-panel attribute lives on `.pmgv3-body` inside the
+    // chassis root, NOT on `document.body`. Guard against the chassis
+    // not being built yet — the boot poller will retry.
+    var pmgBody = document.querySelector('.pmgv3-body[data-active-panel]');
+    if (!pmgBody) return;
+    armPanelSwitchAutoClose._armed = true;
+    var lastPanel = pmgBody.getAttribute('data-active-panel') || 'text';
+    var closeIfNeeded = function () {
+      if (!document.body.classList.contains('pmg-tune-section-shown')) return;
+      document.body.classList.remove('pmg-tune-section-shown');
+      var toggle = $('tuning-mobile-toggle');
+      if (toggle) {
+        var section = toggle.closest('.tuning-section');
+        if (section && section.classList.contains('is-mobile-open')) {
+          try { toggle.click(); } catch (_) {}
+        }
+      }
+    };
+    try {
+      var mo = new MutationObserver(function () {
+        var now = pmgBody.getAttribute('data-active-panel') || 'text';
+        if (now === lastPanel) return;
+        if (lastPanel === 'text' && now !== 'text') closeIfNeeded();
+        lastPanel = now;
+      });
+      mo.observe(pmgBody, { attributes: true, attributeFilter: ['data-active-panel'] });
     } catch (_) {}
   }
 
