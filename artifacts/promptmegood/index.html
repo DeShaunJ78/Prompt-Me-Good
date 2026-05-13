@@ -501,6 +501,73 @@
 
   <main id="main" class="hero">
     <div class="wrap">
+      <!-- post-checkout-banner-1 (audit-2 H1): when Stripe redirects back
+           to / with ?upgrade=success&tier=…, acknowledge the purchase by
+           tier name. Hidden by default; the inline script below shows it
+           only when the query param is present, then strips it from the
+           URL so a refresh doesn't re-trigger. Founding has its own
+           dedicated /founding-success.html, so this primarily covers Pro
+           Monthly / Pro Yearly / Pro Studio Monthly / Pro Studio Yearly
+           after the paywall flips on. Hard-coded styles + script keep it
+           dependency-free with the rest of index.html. -->
+      <div id="post-checkout-banner" role="status" aria-live="polite" hidden
+           style="display:none;margin:0 0 24px;padding:14px 18px;border-radius:14px;
+                  background:color-mix(in srgb, var(--brand, #0c8a92) 12%, transparent);
+                  border:1px solid color-mix(in srgb, var(--brand, #0c8a92) 38%, transparent);
+                  color:var(--ink, #ece9e2);display:flex;align-items:center;gap:12px;
+                  flex-wrap:wrap;font-size:0.95rem;line-height:1.45;">
+        <span aria-hidden="true" style="font-size:1.25rem;flex-shrink:0;">✓</span>
+        <span id="post-checkout-banner-text" style="flex:1;min-width:200px;">
+          Thanks for your purchase!
+        </span>
+        <a class="btn btn-primary" href="/app" style="margin:0;flex-shrink:0;">Open the App →</a>
+        <button type="button" id="post-checkout-banner-close" aria-label="Dismiss"
+                style="appearance:none;background:transparent;border:0;color:inherit;
+                       font-size:1.25rem;line-height:1;cursor:pointer;padding:4px 8px;
+                       opacity:0.7;flex-shrink:0;">×</button>
+      </div>
+      <script>
+        (function () {
+          try {
+            var params = new URLSearchParams(window.location.search);
+            if (params.get('upgrade') !== 'success') return;
+            var rawTier = (params.get('tier') || '').toLowerCase().replace(/-/g, '_');
+            var TIER_LABELS = {
+              'founding':            'Founding Member',
+              'pro':                 'Pro Monthly',
+              'pro_monthly':         'Pro Monthly',
+              'pro_yearly':          'Pro Yearly',
+              'pro_studio':          'Pro Studio Monthly',
+              'pro_studio_monthly':  'Pro Studio Monthly',
+              'pro_studio_yearly':   'Pro Studio Yearly'
+            };
+            var label = TIER_LABELS[rawTier] || '';
+            var banner = document.getElementById('post-checkout-banner');
+            var textEl = document.getElementById('post-checkout-banner-text');
+            var closeBtn = document.getElementById('post-checkout-banner-close');
+            if (!banner || !textEl) return;
+            textEl.textContent = label
+              ? 'Welcome to ' + label + '! Your purchase is confirmed — head into the app to start using your new plan.'
+              : 'Your purchase is confirmed — welcome aboard! Open the app to get started.';
+            banner.hidden = false;
+            banner.style.display = 'flex';
+            if (closeBtn) {
+              closeBtn.addEventListener('click', function () {
+                banner.hidden = true;
+                banner.style.display = 'none';
+              });
+            }
+            /* Strip the query so a refresh doesn't re-fire the banner. Keeps
+               session_id (if present) out of the address bar too. */
+            try {
+              if (window.history && window.history.replaceState) {
+                var clean = window.location.pathname + window.location.hash;
+                window.history.replaceState({}, '', clean);
+              }
+            } catch (_) {}
+          } catch (_) {}
+        })();
+      </script>
       <h1 class="headline"><em>Finally,</em> AI That Understands You</h1>
       <p class="lede">If your results feel off, it&rsquo;s not you &mdash; it&rsquo;s the prompt. <strong>Fix it instantly</strong> and get the answer you were actually looking for.</p>
       <div class="cta-row">

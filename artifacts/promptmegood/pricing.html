@@ -346,7 +346,7 @@
           </ul>
           <div class="tier-cta-row">
             <p class="tier-coming-soon-note"><strong>Not yet for sale.</strong> Pro Monthly opens at launch.</p>
-            <a class="btn btn-secondary" href="#pro-early-access">Notify Me When Pro Launches</a>
+            <a class="btn btn-secondary" href="#pro-early-access" data-pmg-upgrade="pro_monthly">Notify Me When Pro Launches</a>
           </div>
         </article>
 
@@ -374,7 +374,7 @@
           </ul>
           <div class="tier-cta-row">
             <p class="tier-coming-soon-note"><strong>Coming Soon.</strong> The yearly plan opens at launch.</p>
-            <a class="btn btn-secondary" href="#pro-early-access">Notify Me When Yearly Launches</a>
+            <a class="btn btn-secondary" href="#pro-early-access" data-pmg-upgrade="pro_yearly">Notify Me When Yearly Launches</a>
           </div>
         </article>
 
@@ -591,13 +591,27 @@
   </footer>
 
   <script>
-    /* Cancel-checkout banner — shown when Stripe redirects to ?upgrade=cancel. */
+    /* Cancel-checkout banner — shown when Stripe redirects to ?upgrade=cancel.
+       audit-2 M3: when a tier query is present, swap the banner copy for a
+       tier-specific acknowledgment so a Pro Yearly canceler doesn't read
+       generic "Pro Studio launches soon" copy that wasn't relevant to them. */
     (function () {
       try {
         var sp = new URLSearchParams(location.search);
         if (sp.get('upgrade') === 'cancel') {
           var n = document.getElementById('pmg-checkout-cancel-notice');
           if (n) {
+            var rawTier = (sp.get('tier') || '').toLowerCase().replace(/-/g, '_');
+            var TIER_COPY = {
+              'founding':           '<strong>Founding Member checkout canceled.</strong> No charge was made. The $79 one-time offer (price locked for life — first 500 buyers) is still here whenever you\'re ready, and it\'s the only one-time way to unlock the <strong>Expert Command Center</strong>. Questions? Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.',
+              'pro':                '<strong>Pro Monthly checkout canceled ($14/mo).</strong> No charge was made. You can come back any time, or lock in lifetime access with the <strong>Founding Member</strong> offer ($79 one-time, first 500 buyers, price locked for life). Questions? Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.',
+              'pro_monthly':        '<strong>Pro Monthly checkout canceled ($14/mo).</strong> No charge was made. You can come back any time, or lock in lifetime access with the <strong>Founding Member</strong> offer ($79 one-time, first 500 buyers, price locked for life). Questions? Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.',
+              'pro_yearly':         '<strong>Pro Yearly checkout canceled ($129/yr).</strong> No charge was made. You can come back any time, or lock in lifetime access with the <strong>Founding Member</strong> offer ($79 one-time, first 500 buyers, price locked for life). Questions? Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.',
+              'pro_studio':         '<strong>Pro Studio Monthly checkout canceled ($29/mo).</strong> No charge was made. The heavy-user tier is still here whenever you\'re ready — or lock in lifetime access with the <strong>Founding Member</strong> offer ($79 one-time, first 500 buyers, price locked for life). Questions? Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.',
+              'pro_studio_monthly': '<strong>Pro Studio Monthly checkout canceled ($29/mo).</strong> No charge was made. The heavy-user tier is still here whenever you\'re ready — or lock in lifetime access with the <strong>Founding Member</strong> offer ($79 one-time, first 500 buyers, price locked for life). Questions? Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.',
+              'pro_studio_yearly':  '<strong>Pro Studio Yearly checkout canceled ($290/yr).</strong> No charge was made. The heavy-user tier is still here whenever you\'re ready — or lock in lifetime access with the <strong>Founding Member</strong> offer ($79 one-time, first 500 buyers, price locked for life). Questions? Email <a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.'
+            };
+            if (TIER_COPY[rawTier]) n.innerHTML = TIER_COPY[rawTier];
             n.hidden = false;
             try { n.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
           }
