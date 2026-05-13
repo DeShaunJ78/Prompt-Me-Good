@@ -13,7 +13,7 @@ import { userCapEnforce, resolveUserFromJwt } from "../middlewares/userCaps";
 import type { PmgPlan } from "../lib/pricing-config";
 import { effectiveCaps, TEASER_DAILY_CAP } from "../lib/pricing-config";
 import { reserveUserDay, refundUserDay } from "../lib/usage-store";
-import { isPaywallActive } from "../lib/paywall";
+import { isPaywallActive, isOwnerUserId } from "../lib/paywall";
 
 const router: IRouter = Router();
 
@@ -371,7 +371,11 @@ async function denyExpertIfPaywalled(
   let plan: PmgPlan | null = null;
   if (m) {
     const ctx = await resolveUserFromJwt(m[1]!.trim());
-    if (ctx) plan = ctx.plan;
+    if (ctx) {
+      /* owner-bypass-1: owner is always allowed past the Expert gate. */
+      if (isOwnerUserId(ctx.userId)) return false;
+      plan = ctx.plan;
+    }
   }
   if (plan === null || plan === "free") {
     res.status(403).json({
@@ -553,6 +557,10 @@ async function runCapWithTeaser(
   const ctx = await resolveUserFromJwt(m[1]!.trim());
   if (!ctx) { next(); return; }
   req.pmgUser = ctx;
+
+  // Owner bypass: skip cap reservation entirely so the owner UUID never
+  // increments per-user day counters and never trips the teaser branch.
+  if (isOwnerUserId(ctx.userId)) { next(); return; }
 
   const caps = effectiveCaps(ctx.plan, ctx.createdAtMs);
   const reserved = await reserveUserDay(ctx.userId, "run", 1, caps.run);
@@ -1233,11 +1241,16 @@ router.post("/storyboard", generateLimiter, async (req, res) => {
     const header = req.headers.authorization || "";
     const m = /^Bearer\s+(.+)$/i.exec(header);
     let plan: PmgPlan | null = null;
+    let ownerBypass = false;
     if (m) {
       const ctx = await resolveUserFromJwt(m[1]!.trim());
-      if (ctx) plan = ctx.plan;
+      if (ctx) {
+        /* owner-bypass-1: owner always passes the storyboard gate. */
+        if (isOwnerUserId(ctx.userId)) ownerBypass = true;
+        else plan = ctx.plan;
+      }
     }
-    if (plan === null || plan === "free") {
+    if (!ownerBypass && (plan === null || plan === "free")) {
       res.status(403).json({
         success: false,
         ok: false,

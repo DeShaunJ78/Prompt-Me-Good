@@ -22,6 +22,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { supabaseAdmin } from "../lib/supabase-admin";
 import { logger } from "../lib/logger";
+import { isOwnerUserId } from "../lib/paywall";
 import {
   effectiveCaps,
   type PmgCapFeature,
@@ -112,6 +113,14 @@ export function userCapEnforce(
       return;
     }
     req.pmgUser = ctx;
+
+    /* owner-bypass-1: the configured OWNER_USER_ID always passes through
+       every per-user daily cap. No reservation, no refund, no counter
+       increment — owner activity simply does not consume the cap. */
+    if (isOwnerUserId(ctx.userId)) {
+      next();
+      return;
+    }
 
     let n = 1;
     try {

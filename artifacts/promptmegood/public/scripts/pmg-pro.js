@@ -461,7 +461,16 @@
                     && typeof __cfg2.FOUNDING_LIMIT === 'number';
     var __lock     = __cfg2.PRICE_LOCK_TAGLINE || 'price locked for life';
     var __deadline = __cfg2.FOUNDING_DEADLINE_COPY || '';
-    var __fcaps2   = (__cfg2.FOUNDING_DAILY_CAPS) || { run: 30, img: 15, analyze: 10 };
+    /* H-1 fix (audit-2): no fallbacks. If config is missing the daily
+       caps shape, abort this CTA entirely rather than render with stale
+       numbers (the prior fallback was pre-Pro-Studio and misleading). */
+    var __fcaps2   = __cfg2.FOUNDING_DAILY_CAPS;
+    if (!__fcaps2 || typeof __fcaps2.run !== 'number'
+                  || typeof __fcaps2.img !== 'number'
+                  || typeof __fcaps2.analyze !== 'number') {
+      if (typeof console !== 'undefined') console.warn('PMG_PRICING.FOUNDING_DAILY_CAPS missing — pmg-pro CTA aborted');
+      return;
+    }
     var __capStr2  = __fcaps2.run + ' Run With AI, ' + __fcaps2.img +
                      ' image generations, ' + __fcaps2.analyze + ' file analyses per day';
     var __pCopy;

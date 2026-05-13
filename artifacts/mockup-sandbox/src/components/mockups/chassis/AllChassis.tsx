@@ -1,3 +1,4 @@
+import type { ReactElement } from "react";
 import "./_group.css";
 import HomepageHero from "./HomepageHero";
 import { WelcomeBack } from "./WelcomeBack";
@@ -8,7 +9,7 @@ import { PhotoSuite } from "./PhotoSuite";
 import { Marketing } from "./Marketing";
 import { Pricing } from "./Pricing";
 
-const surfaces: Array<{ id: string; label: string; Comp: () => JSX.Element; note?: string }> = [
+const surfaces: Array<{ id: string; label: string; Comp: () => ReactElement; note?: string }> = [
   { id: "homepage", label: "1 · Homepage Hero & Seam", Comp: HomepageHero },
   { id: "welcome", label: "2 · Returning User — Welcome Back", Comp: WelcomeBack, note: "Designed for a 640px column" },
   { id: "workstation", label: "3 · Workstation Header + Goal", Comp: WorkstationHeader },

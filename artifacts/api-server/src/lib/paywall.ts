@@ -30,8 +30,22 @@ import { logger } from "./logger";
 
 const RAW_OPEN_BETA = (process.env["OPEN_BETA_MODE"] ?? "").trim().toLowerCase();
 const RAW_ACTIVATES_AT = (process.env["PAYWALL_ACTIVATES_AT"] ?? "").trim();
+const RAW_OWNER_ID = (process.env["OWNER_USER_ID"] ?? "").trim();
 
 const OPEN_BETA_MODE = RAW_OPEN_BETA === "true";
+const OWNER_USER_ID: string | null = RAW_OWNER_ID || null;
+
+/* owner-bypass-1 (2026-05-13): When the request's authenticated Supabase
+   user id matches OWNER_USER_ID (set in env), every plan/tier/cap gate
+   short-circuits to "allowed" — daily run/img/analyze/vid caps, the
+   storyboard gate, and the Expert Command Center gate alike. The owner
+   thus has effectively unlimited access regardless of what the profiles
+   table says about their plan. If OWNER_USER_ID is unset, this is a
+   no-op (returns false for every input). */
+export function isOwnerUserId(userId: string | null | undefined): boolean {
+  if (!OWNER_USER_ID || !userId) return false;
+  return userId === OWNER_USER_ID;
+}
 
 let activatesAtMs: number | null = null;
 if (RAW_ACTIVATES_AT) {

@@ -12484,12 +12484,29 @@
   function pmgHydrateJsonLd() {
     try {
       var cfg = window.PMG_PRICING;
-      if (!cfg) return;
-      var founding = String(cfg.FOUNDING_PRICE_USD       ?? '79');
-      var proM     = String(cfg.PRO_MONTHLY_USD          ?? '9');
-      var proY     = String(cfg.PRO_YEARLY_USD           ?? '79');
-      var psM      = String(cfg.PRO_STUDIO_MONTHLY_USD   ?? '29');
-      var psY      = String(cfg.PRO_STUDIO_YEARLY_USD    ?? '290');
+      /* H-1 fix (audit-2): no fallbacks. If config missing or incomplete,
+         fail loud and skip — better blank than wrong prices/caps that
+         silently differ from what billing.ts will actually charge. */
+      if (!cfg) {
+        if (typeof console !== 'undefined') console.warn('PMG_PRICING not loaded — JSON-LD hydration aborted');
+        return;
+      }
+      if (typeof cfg.FOUNDING_PRICE_USD !== 'number'
+          || typeof cfg.PRO_MONTHLY_USD !== 'number'
+          || typeof cfg.PRO_YEARLY_USD !== 'number'
+          || typeof cfg.PRO_STUDIO_MONTHLY_USD !== 'number'
+          || typeof cfg.PRO_STUDIO_YEARLY_USD !== 'number'
+          || !cfg.FREE_DAILY_CAPS
+          || !cfg.FOUNDING_DAILY_CAPS
+          || !cfg.TRIAL_DAILY_CAPS) {
+        if (typeof console !== 'undefined') console.warn('PMG_PRICING incomplete — JSON-LD hydration aborted');
+        return;
+      }
+      var founding = String(cfg.FOUNDING_PRICE_USD);
+      var proM     = String(cfg.PRO_MONTHLY_USD);
+      var proY     = String(cfg.PRO_YEARLY_USD);
+      var psM      = String(cfg.PRO_STUDIO_MONTHLY_USD);
+      var psY      = String(cfg.PRO_STUDIO_YEARLY_USD);
       var blocks = document.querySelectorAll('script[type="application/ld+json"]');
       for (var i = 0; i < blocks.length; i++) {
         var blk = blocks[i];
@@ -12503,9 +12520,13 @@
            surfaces stay in lock-step with PMG_PRICING. We target a
            narrow set of well-known phrasings (the only ones we author)
            to avoid touching unrelated text. */
-        var fc = cfg.FREE_DAILY_CAPS    || { run: 3,  img: 1,  analyze: 1  };
-        var foc = cfg.FOUNDING_DAILY_CAPS || { run: 30, img: 15, analyze: 10 };
-        var tc = cfg.TRIAL_DAILY_CAPS   || { run: 10, img: 5,  analyze: 3  };
+        /* H-1 fix (audit-2): no fallbacks. The completeness check above
+           already aborted hydration if any of these were missing, so by
+           this point cfg.{FREE,FOUNDING,TRIAL}_DAILY_CAPS are guaranteed
+           present and we can read them directly. */
+        var fc  = cfg.FREE_DAILY_CAPS;
+        var foc = cfg.FOUNDING_DAILY_CAPS;
+        var tc  = cfg.TRIAL_DAILY_CAPS;
         function hydrateDesc(text, caps) {
           if (typeof text !== 'string') return text;
           return text
@@ -12909,10 +12930,20 @@
        life). Numbers are sourced exclusively from window.PMG_PRICING —
        if config is unavailable we render a non-priced generic message
        so business constants never get duplicated in this file. */
+    /* H-1 fix (audit-2): no fallbacks. If config is missing the daily
+       caps shape, abort the inline CTA entirely rather than render with
+       stale numbers (the prior fallback `{ run:30, img:15, analyze:10 }`
+       was pre-Pro-Studio and silently misled users). */
     var __cfgCTA  = (typeof window !== 'undefined' && window.PMG_PRICING) || {};
     var __hasPx   = typeof __cfgCTA.FOUNDING_PRICE_USD === 'number'
                     && typeof __cfgCTA.FOUNDING_LIMIT === 'number';
-    var __fcaps   = (__cfgCTA.FOUNDING_DAILY_CAPS) || { run: 30, img: 15, analyze: 10 };
+    var __fcaps   = __cfgCTA.FOUNDING_DAILY_CAPS;
+    if (!__fcaps || typeof __fcaps.run !== 'number'
+                 || typeof __fcaps.img !== 'number'
+                 || typeof __fcaps.analyze !== 'number') {
+      if (typeof console !== 'undefined') console.warn('PMG_PRICING.FOUNDING_DAILY_CAPS missing — T41 inline CTA aborted');
+      return;
+    }
     var __capStr  = __fcaps.run + ' Run With AI executions, ' + __fcaps.img +
                     ' image generations, and ' + __fcaps.analyze + ' file analyses per day';
     var __ctaCopy;
