@@ -26,13 +26,20 @@
   <link rel="icon" type="image/png" href="/assets/pmg-logo.png?v=6" />
   <link rel="apple-touch-icon" href="/assets/pmg-logo.png?v=6" />
   <script>
+    /* brand-consistency-1: pricing.html runs its own theme system because it
+       does not load pmg-g-theme.css (where the rest of the site's dark-lock
+       lives). Default first-visit theme to dark so visitors arriving from
+       the dark-locked marketing site (/) and app (/app) don't get a jarring
+       white blast. The Light/Dark toggle in the topbar still respects user
+       preference and persists via localStorage['promptmegood:theme']. */
     (function () {
       try {
         var saved = localStorage.getItem('promptmegood:theme');
-        var theme = (saved === 'dark' || saved === 'light') ? saved
-          : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        var theme = (saved === 'dark' || saved === 'light') ? saved : 'dark';
         document.documentElement.setAttribute('data-theme', theme);
-      } catch (e) {}
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
     })();
   </script>
   <style>
