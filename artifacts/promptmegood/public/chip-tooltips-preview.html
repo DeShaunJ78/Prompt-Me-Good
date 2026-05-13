@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Chip tooltips preview</title>
+  <meta name="robots" content="noindex" />
+  <style>
+    :root {
+      --color-primary: #3ee0a0;
+      --color-text: #e8f5f0;
+      --color-text-muted: #9ad6c0;
+      --color-surface: #0f2a26;
+      --color-surface-2: #0a2420;
+      --color-border: #1f4a42;
+      --radius-md: 10px;
+      --radius-full: 999px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --text-sm: 14px;
+    }
+    body { margin: 0; background: #061513; color: var(--color-text); font: 14px system-ui, sans-serif; padding: 24px; }
+    h1 { font-size: 18px; margin: 0 0 8px; color: var(--color-primary); }
+    p.note { color: var(--color-text-muted); font-size: 13px; margin: 0 0 24px; }
+    .group {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    .group h2 { font-size: 14px; margin: 0 0 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-muted); }
+    .pmg-photo-group-body { display: flex; flex-wrap: wrap; gap: 10px 8px; padding-top: 30px; padding-bottom: 8px; }
+    .pmg-photo-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      font-size: var(--text-sm);
+      font-weight: 500;
+      background: var(--color-surface-2);
+      color: var(--color-text);
+      border: 1.5px solid var(--color-border);
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      user-select: none;
+    }
+    .pmg-photo-pill.is-active {
+      background: var(--color-primary);
+      color: #08231e;
+      border-color: var(--color-primary);
+    }
+    .pmg-photo-pill.is-active::before { content: "\2713"; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>Chip Tooltips — preview (force-pinned for screenshot)</h1>
+  <p class="note">A representative pill from each Photography Suite group, with the tooltip pinned open via <code>.is-tip-open</code> so all 7 are visible at once. In the live app: hover (desktop) or tap (mobile, 4s auto-dismiss).</p>
+
+  <div id="pmg-photo-suite">
+    <div class="group"><h2>🎨 Style</h2>
+      <div class="pmg-photo-group-body">
+        <button class="pmg-photo-pill is-tip-open">Cinematic</button>
+        <button class="pmg-photo-pill is-active is-tip-open">Editorial</button>
+        <button class="pmg-photo-pill">Documentary</button>
+      </div>
+    </div>
+
+    <div class="group"><h2>📷 Camera &amp; Lens</h2>
+      <div class="pmg-photo-group-body">
+        <button class="pmg-photo-pill is-tip-open">85mm Portrait</button>
+        <button class="pmg-photo-pill">f/1.4 Bokeh</button>
+        <button class="pmg-photo-pill">Kodak Portra 400</button>
+      </div>
+    </div>
+
+    <div class="group"><h2>💡 Lighting &amp; Mood</h2>
+      <div class="pmg-photo-group-body">
+        <button class="pmg-photo-pill is-tip-open">Golden Hour</button>
+        <button class="pmg-photo-pill">Cinematic Low-Key</button>
+        <button class="pmg-photo-pill">Neon Glow</button>
+      </div>
+    </div>
+
+    <div class="group"><h2>🖼️ Composition</h2>
+      <div class="pmg-photo-group-body">
+        <button class="pmg-photo-pill is-tip-open">Rule Of Thirds</button>
+        <button class="pmg-photo-pill">Leading Lines</button>
+        <button class="pmg-photo-pill">Negative Space</button>
+      </div>
+    </div>
+
+    <div class="group"><h2>📐 Camera Angle</h2>
+      <div class="pmg-photo-group-body">
+        <button class="pmg-photo-pill is-tip-open">Hero Angle</button>
+        <button class="pmg-photo-pill">Top-Down Flat Lay</button>
+        <button class="pmg-photo-pill">Over-The-Shoulder</button>
+      </div>
+    </div>
+
+    <div class="group"><h2>🎨 Color Palette</h2>
+      <div class="pmg-photo-group-body">
+        <button class="pmg-photo-pill is-tip-open">Teal &amp; Orange</button>
+        <button class="pmg-photo-pill">Pastel Soft</button>
+        <button class="pmg-photo-pill">Neon Saturated</button>
+      </div>
+    </div>
+
+    <div class="group"><h2>📐 Aspect Ratio</h2>
+      <div class="pmg-photo-group-body">
+        <button class="pmg-photo-pill is-tip-open">Portrait (3:4)</button>
+        <button class="pmg-photo-pill">Square (1:1)</button>
+        <button class="pmg-photo-pill">Auto</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/scripts/pmg-chip-tooltips.js?v=cti-1"></script>
+  <script>
+    /* Preview rig: the .is-tip-open pills above are pinned via static HTML
+       (so the screenshot shows all 7 tooltips at once). In the live app
+       the JS pin handler also runs alignTooltip() to add a left/right
+       edge-snap class. Replicate that here so leftmost pinned pills
+       don't get clipped in the screenshot. */
+    document.addEventListener('DOMContentLoaded', function () {
+      var pinned = document.querySelectorAll('.pmg-photo-pill.is-tip-open[data-pmg-tip], .pmg-photo-pill.is-tip-open');
+      pinned.forEach(function (p) {
+        var rect = p.getBoundingClientRect();
+        var vw = window.innerWidth || document.documentElement.clientWidth;
+        var center = rect.left + rect.width / 2;
+        if (center - 140 < 8) p.classList.add('pmg-tip-align-left');
+        else if (center + 140 > vw - 8) p.classList.add('pmg-tip-align-right');
+      });
+    });
+  </script>
+</body>
+</html>
