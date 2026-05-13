@@ -1277,6 +1277,16 @@
   }
 
   function composeDnaCard(imgSrc, promptText) {
+    /* dna-v2 delegation: when pmg-dna-card.js is loaded (default),
+       use the redesigned 1080×1350 card with quality score badge,
+       technique chips, and watermark. Falls through to the legacy
+       v1 composer below if v2 was killed via ?nodnacard or
+       localStorage.pmg_dna_card_disable='1'. */
+    try {
+      if (window.pmgDnaCardV2 && typeof window.pmgDnaCardV2.composeDnaCardV2 === 'function') {
+        return window.pmgDnaCardV2.composeDnaCardV2(imgSrc, promptText);
+      }
+    } catch (_) {}
     return new Promise(function (resolve) {
       var im = new Image();
       im.crossOrigin = 'anonymous';

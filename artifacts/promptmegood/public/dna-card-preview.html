@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>DNA Card v2 preview</title>
+  <meta name="robots" content="noindex" />
+  <style>
+    body { margin: 0; background: #0a1714; color: #e8f5f0; font: 14px system-ui, sans-serif; padding: 24px; }
+    h1 { font-size: 18px; margin: 0 0 12px; color: #3ee0a0; }
+    .row { display: flex; gap: 24px; flex-wrap: wrap; }
+    .card { display: flex; flex-direction: column; gap: 8px; }
+    .card img { width: 320px; height: auto; border: 1px solid rgba(62,224,160,0.25); border-radius: 8px; }
+    .label { font-weight: 600; color: #9ad6c0; }
+    .meta  { opacity: 0.7; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Prompt DNA Card v2 — preview (no network, no API spend)</h1>
+  <p class="meta">Renders three sample cards: high-quality prompt, medium prompt, vague prompt. Image panel uses the gradient fallback so we can verify the redesigned footer in isolation.</p>
+  <div class="row" id="cards"></div>
+
+  <script src="/scripts/pmg-dna-card.js?v=dna-v2-1"></script>
+  <script>
+    var SAMPLES = [
+      {
+        label: 'High quality (specific photography vocab)',
+        text: 'Cinematic portrait of an elderly fisherman at golden hour, weathered face, shallow depth of field at f/1.8, 85mm lens, warm color grade with teal-orange tones, film grain, documentary style, soft window light spilling from the left, negative space behind subject.'
+      },
+      {
+        label: 'Medium quality (some signal)',
+        text: 'A modern minimalist kitchen interior with marble countertops, morning light coming through tall windows, warm tones, shot from a wide angle.'
+      },
+      {
+        label: 'Vague (low score)',
+        text: 'a nice cool photo of some stuff'
+      }
+    ];
+
+    function build() {
+      var host = document.getElementById('cards');
+      SAMPLES.forEach(function (s) {
+        window.pmgDnaCardV2.composeDnaCardV2(null, s.text).then(function (dataUrl) {
+          var wrap = document.createElement('div');
+          wrap.className = 'card';
+          var lab = document.createElement('div');
+          lab.className = 'label';
+          lab.textContent = s.label;
+          var meta = document.createElement('div');
+          meta.className = 'meta';
+          var sc = window.pmgDnaCardV2.scorePrompt(s.text);
+          var techs = window.pmgDnaCardV2.detectTechniques(s.text);
+          meta.textContent = 'Score ' + sc.score + ' (' + sc.grade + ' · ' + sc.label + ') — Techniques: ' + (techs.join(', ') || '—');
+          var img = document.createElement('img');
+          img.src = dataUrl;
+          img.alt = s.label;
+          wrap.appendChild(lab);
+          wrap.appendChild(meta);
+          wrap.appendChild(img);
+          host.appendChild(wrap);
+        });
+      });
+    }
+    if (window.pmgDnaCardV2) build();
+    else window.addEventListener('load', build);
+  </script>
+</body>
+</html>
