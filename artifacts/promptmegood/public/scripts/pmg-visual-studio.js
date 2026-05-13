@@ -876,12 +876,27 @@
     var origLabel = btn ? btn.textContent : '';
     if (btn) { btn.disabled = true; btn.textContent = '⏳ Generating…'; }
     showImageLoading();
+    /* img-timeout-1: client-side 55s abort. /api/image is a long-running
+       sequence (gpt-4.1-mini enhancer + gpt-image-1 medium-quality
+       generation + 1-2MB base64 body transfer), routinely 25-50s.
+       Replit's deployment proxy can drop idle connections at ~30-60s,
+       and when it kills the connection mid-flight without RST the
+       browser fetch sits "pending" forever — no resolve, no reject,
+       spinner stuck, button locked. AbortController forces a clean
+       failure path so the user can retry. 55s is below the most
+       aggressive proxy timeouts we've seen and above the p95 successful
+       generation latency. Long-term fix: job-id + polling architecture
+       (Option 2). */
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var timeoutId = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (_) {} }, 55000) : null;
     try {
-      var res = await fetch('/api/image', {
+      var fetchOpts = {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({ prompt: prompt, size: window.__pmgAspectRatio || '1024x1024' }),
-      });
+      };
+      if (ctrl) fetchOpts.signal = ctrl.signal;
+      var res = await fetch('/api/image', fetchOpts);
       var data = await res.json().catch(function () { return {}; });
       if (!res.ok || !data.url) {
         showImageError(data.error || (res.status === 429 ? 'Daily image limit reached.' : 'Image generation failed.'));
@@ -889,8 +904,13 @@
       }
       showImageResult(data.url);
     } catch (e) {
-      showImageError('Network error. Check your connection.');
+      if (e && (e.name === 'AbortError' || e.code === 20)) {
+        showImageError('Image generation is taking longer than expected. Try again — it usually works on the second attempt.');
+      } else {
+        showImageError('Network error. Check your connection.');
+      }
     } finally {
+      if (timeoutId) { try { clearTimeout(timeoutId); } catch (_) {} }
       if (btn) { btn.disabled = false; btn.textContent = origLabel; }
     }
   }
