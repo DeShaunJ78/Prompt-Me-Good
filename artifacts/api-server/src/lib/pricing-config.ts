@@ -54,7 +54,16 @@ export const PMG_PRICING = {
   BETA_END: "2026-07-01T05:00:00.000Z",
 } as const;
 
-export type PmgFeature = "run" | "img" | "analyze" | "vid" | "teaser";
+/* caps-enforcement-1 (2026-05-13): split into two narrower types so
+   `userCapEnforce` only accepts the four real cap dimensions backed by
+   `DailyCaps`. The `teaser` feature is reserved/refunded directly via
+   `reserveUserDay(..., "teaser", 1, TEASER_DAILY_CAP)` from the inline
+   runCapWithTeaser path in ai.ts and never flows through userCapEnforce,
+   so it lives only on the wider PmgFeature union. Closes the typecheck
+   gap at userCaps.ts:131 where `caps[feature]` could otherwise be
+   indexed with "teaser" against a DailyCaps shape that doesn't have it. */
+export type PmgCapFeature = "run" | "img" | "analyze" | "vid";
+export type PmgFeature = PmgCapFeature | "teaser";
 
 /* cap-compare-1 (2026-05-13): when a free user hits the daily Run cap,
    the server attempts ONE real gpt-4.1 teaser (~80 tokens, non-streaming)

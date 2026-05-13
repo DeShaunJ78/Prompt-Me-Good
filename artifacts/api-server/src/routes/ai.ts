@@ -13,6 +13,7 @@ import { userCapEnforce, resolveUserFromJwt } from "../middlewares/userCaps";
 import type { PmgPlan } from "../lib/pricing-config";
 import { effectiveCaps, TEASER_DAILY_CAP } from "../lib/pricing-config";
 import { reserveUserDay, refundUserDay } from "../lib/usage-store";
+import { isPaywallActive } from "../lib/paywall";
 
 const router: IRouter = Router();
 
@@ -348,7 +349,44 @@ function getUserTextForSanitize(body: unknown): string {
   return "";
 }
 
+/* caps-enforcement-1 (2026-05-13): Expert Command Center paywall gate.
+   /api/generate is too generic to gate wholesale (it serves Auto-Boost,
+   Tuning, ad-hoc helpers, and the Expert drawer). The Expert frontend
+   tags its calls with `feature: "expert"` in the JSON body — this helper
+   is the single decision point. Pre-July-1 (`isPaywallActive() === false`)
+   every call passes through unchanged. Post-July-1, Expert calls from
+   anonymous or free-tier users return 403; all other /generate traffic
+   is unaffected. Returns true when the request was blocked (handler
+   should `return`); false to continue. */
+async function denyExpertIfPaywalled(
+  req: Request,
+  res: Response,
+): Promise<boolean> {
+  const feature = (req.body as { feature?: unknown } | null)?.feature;
+  if (feature !== "expert") return false;
+  if (!isPaywallActive()) return false;
+
+  const header = req.headers.authorization || "";
+  const m = /^Bearer\s+(.+)$/i.exec(header);
+  let plan: PmgPlan | null = null;
+  if (m) {
+    const ctx = await resolveUserFromJwt(m[1]!.trim());
+    if (ctx) plan = ctx.plan;
+  }
+  if (plan === null || plan === "free") {
+    res.status(403).json({
+      success: false,
+      ok: false,
+      error: "upgrade_required",
+      feature: "expert",
+    });
+    return true;
+  }
+  return false;
+}
+
 router.post("/generate", generateLimiter, generateCostCheck, async (req, res) => {
+  if (await denyExpertIfPaywalled(req, res)) return;
   const sanitized = sanitizeGoal(getUserTextForSanitize(req.body));
   if (!sanitized.ok) {
     res.status(sanitized.status).json({ success: false, ok: false, error: sanitized.error });
@@ -397,6 +435,7 @@ router.post("/generate", generateLimiter, generateCostCheck, async (req, res) =>
 });
 
 router.post("/generate-stream", generateLimiter, generateCostCheck, async (req, res) => {
+  if (await denyExpertIfPaywalled(req, res)) return;
   const sanitized = sanitizeGoal(getUserTextForSanitize(req.body));
   if (!sanitized.ok) {
     res.status(sanitized.status).json({ success: false, ok: false, error: sanitized.error });
@@ -1182,6 +1221,32 @@ router.post(
  * cap), so this route only counts against the per-IP rate limit.
  * ============================================================================ */
 router.post("/storyboard", generateLimiter, async (req, res) => {
+  /* caps-enforcement-1 (2026-05-13): Storyboard is a paywalled feature
+     (per pricing page: "unlimited during the open beta but become
+     metered paid features on July 1, 2026"). No new daily-cap dimension
+     is introduced — pure paywall + plan gate. Pre-July-1 every caller
+     passes through. Post-July-1 anonymous and free-tier callers get a
+     403 with the same { error: "upgrade_required", feature } shape used
+     by the Expert gate. The /image calls each panel triggers
+     downstream are still capped per the existing `img` cap. */
+  if (isPaywallActive()) {
+    const header = req.headers.authorization || "";
+    const m = /^Bearer\s+(.+)$/i.exec(header);
+    let plan: PmgPlan | null = null;
+    if (m) {
+      const ctx = await resolveUserFromJwt(m[1]!.trim());
+      if (ctx) plan = ctx.plan;
+    }
+    if (plan === null || plan === "free") {
+      res.status(403).json({
+        success: false,
+        ok: false,
+        error: "upgrade_required",
+        feature: "storyboard",
+      });
+      return;
+    }
+  }
   const goalRaw = typeof req.body?.goal === "string" ? req.body.goal : (typeof req.body?.prompt === "string" ? req.body.prompt : "");
   const goal = clampString(goalRaw, 1500);
   if (!goal) {

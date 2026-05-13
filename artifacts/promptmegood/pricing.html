@@ -260,7 +260,8 @@
       <span class="eyebrow">Pricing</span>
       <h1>Simple, Honest Pricing</h1>
       <p class="pricing-hero-lede">Start free. No signup, no credit card. All three panels — Text, Photography, Video — included.</p>
-      <p class="pricing-hero-sub">Lock in lifetime access for <strong><span data-pmg-price="founding">$79</span></strong> with our one-time <strong>Founding Member</strong> deal — first 500 buyers, price locked for life. Pro Monthly (<strong><span data-pmg-price="pro_monthly">$14</span>/mo</strong>), Pro Yearly (<strong><span data-pmg-price="pro_yearly">$129</span>/yr</strong>), and Pro Studio (<strong><span data-pmg-price="pro_studio_monthly">$29</span>/mo</strong> or <strong><span data-pmg-price="pro_studio_yearly">$290</span>/yr</strong>) for heavy users launch on <strong>July 1, 2026</strong>.</p>
+      <p class="pricing-hero-sub" data-pmg-beta-only>Lock in lifetime access for <strong><span data-pmg-price="founding">$79</span></strong> with our one-time <strong>Founding Member</strong> deal — first 500 buyers, price locked for life. Pro Monthly (<strong><span data-pmg-price="pro_monthly">$14</span>/mo</strong>), Pro Yearly (<strong><span data-pmg-price="pro_yearly">$129</span>/yr</strong>), and Pro Studio (<strong><span data-pmg-price="pro_studio_monthly">$29</span>/mo</strong> or <strong><span data-pmg-price="pro_studio_yearly">$290</span>/yr</strong>) for heavy users launch on <strong>July 1, 2026</strong>.</p>
+      <p class="pricing-hero-sub" data-pmg-post-launch hidden>Lock in lifetime access for <strong><span data-pmg-price="founding">$79</span></strong> with our one-time <strong>Founding Member</strong> deal — first 500 buyers, price locked for life. Or subscribe to Pro Monthly (<strong><span data-pmg-price="pro_monthly">$14</span>/mo</strong>), Pro Yearly (<strong><span data-pmg-price="pro_yearly">$129</span>/yr</strong>), or Pro Studio (<strong><span data-pmg-price="pro_studio_monthly">$29</span>/mo</strong> or <strong><span data-pmg-price="pro_studio_yearly">$290</span>/yr</strong>) for heavy users.</p>
     </section>
 
     <section class="container">
@@ -278,16 +279,16 @@
             <li>Text Prompts panel — unlimited prompt building</li>
             <li>Photography Suite pill pickers (Style, Camera &amp; Lens, Lighting, Composition, Palette) — unlimited tuning</li>
             <li>Video panel with Sora-style controls</li>
-            <li>Image Workshop photo enhancer <span style="color:var(--muted);font-size:0.88em;">(free through July 1, 2026)</span></li>
-            <li>Reverse Engine (image → prompt) <span style="color:var(--muted);font-size:0.88em;">(free through July 1, 2026; then 1/day)</span></li>
-            <li>5-shot Storyboard generator <span style="color:var(--muted);font-size:0.88em;">(free through July 1, 2026; then 1/day)</span></li>
+            <li>Image Workshop photo enhancer <span style="color:var(--muted);font-size:0.88em;" data-pmg-beta-only>(free through July 1, 2026)</span></li>
+            <li>Reverse Engine (image → prompt) <span style="color:var(--muted);font-size:0.88em;" data-pmg-beta-only>(free through July 1, 2026; then 1/day)</span><span style="color:var(--muted);font-size:0.88em;" data-pmg-post-launch hidden>(1/day)</span></li>
+            <li>5-shot Storyboard generator <span style="color:var(--muted);font-size:0.88em;" data-pmg-beta-only>(free through July 1, 2026; then 1/day)</span><span style="color:var(--muted);font-size:0.88em;" data-pmg-post-launch hidden>(1/day)</span></li>
             <li>Run With AI — <span data-pmg-cap="free:run">2</span> per day (powered by GPT-4.1-mini)</li>
             <li>Generate Image — <span data-pmg-cap="free:img">1</span> per day</li>
             <li>File / Image Analysis — <span data-pmg-cap="free:analyze">1</span> per day</li>
             <li>Prompt Vault on this device</li>
             <li>Export &amp; Import the Vault</li>
             <li>Open in ChatGPT, Claude, Perplexity, or Gemini</li>
-            <li style="opacity: 0.7;"><em>Expert Command Center — paid feature (free during open beta)</em></li>
+            <li style="opacity: 0.7;"><em>Expert Command Center — paid feature<span data-pmg-beta-only> (free during open beta)</span></em></li>
           </ul>
           <div class="tier-cta-row">
             <a class="btn btn-primary" href="/app">Open the App</a>
@@ -322,13 +323,14 @@
         </article>
 
         <article class="pricing-card" aria-labelledby="tier-pro-name">
-          <span class="pricing-badge">Coming Soon</span>
+          <span class="pricing-badge" data-pmg-beta-only>Coming Soon</span>
+          <span class="pricing-badge" data-pmg-post-launch hidden>Pro Monthly</span>
           <h2 class="tier-name" id="tier-pro-name">Pro Monthly</h2>
           <div class="tier-price">
             <span class="tier-price-amount" data-pmg-price="pro_monthly">$14</span>
             <span class="tier-price-period">/ month</span>
           </div>
-          <p class="tier-status">Ongoing premium · Launches July 1, 2026</p>
+          <p class="tier-status">Ongoing premium<span data-pmg-beta-only> · Launches July 1, 2026</span></p>
           <p class="tier-summary">A monthly plan for people who run on prompts every day. Generous daily caps and full access to the Expert Command Center.</p>
           <ul class="tier-features is-soon">
             <li>Everything in Free</li>
@@ -345,19 +347,25 @@
             <li>Fair use limits apply</li>
           </ul>
           <div class="tier-cta-row">
-            <p class="tier-coming-soon-note"><strong>Not yet for sale.</strong> Pro Monthly opens at launch.</p>
-            <a class="btn btn-secondary" href="#pro-early-access" data-pmg-upgrade="pro_monthly">Notify Me When Pro Launches</a>
+            <div data-pmg-beta-only>
+              <p class="tier-coming-soon-note"><strong>Not yet for sale.</strong> Pro Monthly opens at launch.</p>
+              <a class="btn btn-secondary" href="#pro-early-access" data-pmg-upgrade="pro_monthly">Notify Me When Pro Launches</a>
+            </div>
+            <div data-pmg-post-launch hidden>
+              <a class="btn btn-primary" data-pmg-upgrade="pro_monthly">Subscribe · <span data-pmg-price="pro_monthly">$14</span>/mo</a>
+            </div>
           </div>
         </article>
 
         <article class="pricing-card" aria-labelledby="tier-pro-yearly-name">
-          <span class="pricing-badge">Coming Soon</span>
+          <span class="pricing-badge" data-pmg-beta-only>Coming Soon</span>
+          <span class="pricing-badge" data-pmg-post-launch hidden>Best Value</span>
           <h2 class="tier-name" id="tier-pro-yearly-name">Pro Yearly</h2>
           <div class="tier-price">
             <span class="tier-price-amount" data-pmg-price="pro_yearly">$129</span>
             <span class="tier-price-period">/ year</span>
           </div>
-          <p class="tier-status">Save ~23% vs monthly · Launches July 1, 2026</p>
+          <p class="tier-status">Save ~23% vs monthly<span data-pmg-beta-only> · Launches July 1, 2026</span></p>
           <p class="tier-summary">All of Pro Monthly, billed yearly. Lock in your rate and save vs the monthly plan.</p>
           <ul class="tier-features is-soon">
             <li>Everything in Pro Monthly</li>
@@ -373,19 +381,25 @@
             <li>Fair use limits apply</li>
           </ul>
           <div class="tier-cta-row">
-            <p class="tier-coming-soon-note"><strong>Coming Soon.</strong> The yearly plan opens at launch.</p>
-            <a class="btn btn-secondary" href="#pro-early-access" data-pmg-upgrade="pro_yearly">Notify Me When Yearly Launches</a>
+            <div data-pmg-beta-only>
+              <p class="tier-coming-soon-note"><strong>Coming Soon.</strong> The yearly plan opens at launch.</p>
+              <a class="btn btn-secondary" href="#pro-early-access" data-pmg-upgrade="pro_yearly">Notify Me When Yearly Launches</a>
+            </div>
+            <div data-pmg-post-launch hidden>
+              <a class="btn btn-primary" data-pmg-upgrade="pro_yearly">Subscribe · <span data-pmg-price="pro_yearly">$129</span>/yr</a>
+            </div>
           </div>
         </article>
 
         <article class="pricing-card" aria-labelledby="tier-pro-studio-name">
-          <span class="pricing-badge">For Heavy Users · Coming Soon</span>
+          <span class="pricing-badge" data-pmg-beta-only>For Heavy Users · Coming Soon</span>
+          <span class="pricing-badge" data-pmg-post-launch hidden>For Heavy Users</span>
           <h2 class="tier-name" id="tier-pro-studio-name">Pro Studio Monthly</h2>
           <div class="tier-price">
             <span class="tier-price-amount" data-pmg-price="pro_studio_monthly">$29</span>
             <span class="tier-price-period">/ month</span>
           </div>
-          <p class="tier-status">For agencies, marketers, daily power users · Launches July 1, 2026</p>
+          <p class="tier-status">For agencies, marketers, daily power users<span data-pmg-beta-only> · Launches July 1, 2026</span></p>
           <p class="tier-summary">3× the daily caps of Pro for people who live in the workstation. The tier where heavy usage actually fits, instead of bumping into Pro caps every afternoon.</p>
           <ul class="tier-features is-soon">
             <li>Everything in Pro Monthly</li>
@@ -398,19 +412,25 @@
             <li>Fair use limits apply</li>
           </ul>
           <div class="tier-cta-row">
-            <p class="tier-coming-soon-note"><strong>Coming after Pro launch.</strong> Studio opens once Pro Monthly is live.</p>
-            <a class="btn btn-secondary" href="#pro-early-access" data-pmg-upgrade="pro_studio">Notify Me When Studio Launches</a>
+            <div data-pmg-beta-only>
+              <p class="tier-coming-soon-note"><strong>Coming after Pro launch.</strong> Studio opens once Pro Monthly is live.</p>
+              <a class="btn btn-secondary" href="#pro-early-access" data-pmg-upgrade="pro_studio">Notify Me When Studio Launches</a>
+            </div>
+            <div data-pmg-post-launch hidden>
+              <a class="btn btn-primary" data-pmg-upgrade="pro_studio">Subscribe · <span data-pmg-price="pro_studio_monthly">$29</span>/mo</a>
+            </div>
           </div>
         </article>
 
         <article class="pricing-card" aria-labelledby="tier-pro-studio-yearly-name">
-          <span class="pricing-badge">For Heavy Users · Coming Soon</span>
+          <span class="pricing-badge" data-pmg-beta-only>For Heavy Users · Coming Soon</span>
+          <span class="pricing-badge" data-pmg-post-launch hidden>For Heavy Users · Best Value</span>
           <h2 class="tier-name" id="tier-pro-studio-yearly-name">Pro Studio Yearly</h2>
           <div class="tier-price">
             <span class="tier-price-amount" data-pmg-price="pro_studio_yearly">$290</span>
             <span class="tier-price-period">/ year</span>
           </div>
-          <p class="tier-status">Save ~17% vs Studio monthly · Launches July 1, 2026</p>
+          <p class="tier-status">Save ~17% vs Studio monthly<span data-pmg-beta-only> · Launches July 1, 2026</span></p>
           <p class="tier-summary">All of Pro Studio Monthly, billed yearly. Lock in the heavy-user rate and save vs paying month-to-month.</p>
           <ul class="tier-features is-soon">
             <li>Everything in Pro Studio Monthly</li>
@@ -424,14 +444,20 @@
             <li>Fair use limits apply</li>
           </ul>
           <div class="tier-cta-row">
-            <p class="tier-coming-soon-note"><strong>Coming after Pro launch.</strong> The yearly Studio plan opens with Studio Monthly.</p>
-            <a class="btn btn-secondary" href="#pro-early-access" data-pmg-upgrade="pro_studio_yearly">Notify Me When Studio Yearly Launches</a>
+            <div data-pmg-beta-only>
+              <p class="tier-coming-soon-note"><strong>Coming after Pro launch.</strong> The yearly Studio plan opens with Studio Monthly.</p>
+              <a class="btn btn-secondary" href="#pro-early-access" data-pmg-upgrade="pro_studio_yearly">Notify Me When Studio Yearly Launches</a>
+            </div>
+            <div data-pmg-post-launch hidden>
+              <a class="btn btn-primary" data-pmg-upgrade="pro_studio_yearly">Subscribe · <span data-pmg-price="pro_studio_yearly">$290</span>/yr</a>
+            </div>
           </div>
         </article>
 
       </div>
 
-      <p class="pricing-footer-note">No credit card required for the Free tier. Founding Member is available now — a one-time $79 charge with no recurring billing, ever — limited to the first 500 buyers and price-locked for life. Pro Monthly ($14/month), Pro Yearly ($129/year), and Pro Studio ($29/month or $290/year, for heavy users) start billing at launch; waitlist members are notified before any charge. The <strong>Expert Command Center</strong> is included with every paid plan (free for everyone during the open beta). Fair use limits apply.</p>
+      <p class="pricing-footer-note" data-pmg-beta-only>No credit card required for the Free tier. Founding Member is available now — a one-time $79 charge with no recurring billing, ever — limited to the first 500 buyers and price-locked for life. Pro Monthly ($14/month), Pro Yearly ($129/year), and Pro Studio ($29/month or $290/year, for heavy users) start billing at launch; waitlist members are notified before any charge. The <strong>Expert Command Center</strong> is included with every paid plan (free for everyone during the open beta). Fair use limits apply.</p>
+      <p class="pricing-footer-note" data-pmg-post-launch hidden>No credit card required for the Free tier. Founding Member is a one-time $79 charge with no recurring billing, ever — limited to the first 500 buyers and price-locked for life. Pro Monthly ($14/month), Pro Yearly ($129/year), and Pro Studio ($29/month or $290/year, for heavy users) bill on the cadence you choose; cancel future renewals any time from your account. The <strong>Expert Command Center</strong> is included with every paid plan. Fair use limits apply.</p>
 
       <section class="container pricing-roadmap" aria-labelledby="pricing-roadmap-title">
         <div class="pricing-roadmap-head">

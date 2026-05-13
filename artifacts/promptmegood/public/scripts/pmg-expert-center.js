@@ -365,7 +365,13 @@
    * ===================================================================== */
   function aiGenerate(prompt) {
     return new Promise(function (resolve, reject) {
-      var body = JSON.stringify({ prompt: prompt });
+      /* caps-enforcement-1 (2026-05-13): tag Expert Command Center calls
+         with feature:"expert" so the backend's denyExpertIfPaywalled gate
+         in routes/ai.ts can isolate them from generic /api/generate
+         traffic (Auto-Boost, Tuning, etc.). Pre-July-1 the backend
+         ignores the field; post-July-1 it returns 403 to free/anonymous
+         users, matching the existing UI gate. */
+      var body = JSON.stringify({ prompt: prompt, feature: 'expert' });
       fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

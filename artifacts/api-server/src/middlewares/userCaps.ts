@@ -24,7 +24,7 @@ import { supabaseAdmin } from "../lib/supabase-admin";
 import { logger } from "../lib/logger";
 import {
   effectiveCaps,
-  type PmgFeature,
+  type PmgCapFeature,
   type PmgPlan,
 } from "../lib/pricing-config";
 import { refundUserDay, reserveUserDay } from "../lib/usage-store";
@@ -92,7 +92,7 @@ export interface UserCapsRequest extends Request {
  *  or a function of the request body — used by /image where one HTTP
  *  request may produce 1–4 images and must charge the cap accordingly. */
 export function userCapEnforce(
-  feature: PmgFeature,
+  feature: PmgCapFeature,
   cost: number | ((req: Request) => number) = 1,
 ) {
   return async function userCapEnforceMiddleware(
