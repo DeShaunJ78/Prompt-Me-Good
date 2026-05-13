@@ -13266,6 +13266,15 @@
     bar.id = BANNER_ID;
     bar.setAttribute('role', 'status');
     bar.setAttribute('aria-live', 'polite');
+    /* audit-2 M3 (build pass): defense-in-depth for the July 1 launch flip.
+       Primary gate is the paywallActive check in the IIFE that calls
+       renderBanner() (L13337+ of this file) — when /api/public-config returns
+       paywallActive: true, renderBanner is never called. This attribute adds
+       a SECOND independent guard: if the banner ever gets mounted by accident
+       (cached pmg-ux.js running before /api/public-config resolves, manual
+       call from console, etc.), pmg-launch-swap.js will still hide it on any
+       page that loads launch-swap. Cheap belt-and-suspenders. */
+    bar.setAttribute('data-pmg-beta-only', '');
 
     var msg = document.createElement('span');
     msg.className = 'pmg-t42-msg';

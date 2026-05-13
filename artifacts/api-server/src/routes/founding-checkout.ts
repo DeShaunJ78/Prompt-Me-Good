@@ -93,6 +93,17 @@ router.get("/founding-checkout/status", async (req, res) => {
     // to no-store guarantees the badge always reflects current seat count.
     // Cost is one extra DB COUNT per page load — negligible at our scale.
     res.set("Cache-Control", "no-store");
+    // audit-2 M4 (build pass): formal deprecation signal for the legacy alias.
+    // The canonical route is GET /api/founding/seats (added in audit-2 H-A,
+    // see L108-128 below). Both routes return identical payloads today and
+    // delegate to the same getFoundingSold() — but two endpoints means two
+    // chances to drift. Sunset = 2026-07-01T05:00:00Z (BETA_END). Per
+    // RFC 8594 Sunset is HTTP-date, RFC 9745 Deprecation is structured field
+    // (?1 = true). Operators / smart clients can now route around this
+    // endpoint before the cutover.
+    res.set("Deprecation", "true");
+    res.set("Sunset", "Tue, 01 Jul 2026 05:00:00 GMT");
+    res.set("Link", '</api/founding/seats>; rel="successor-version"');
     res.json({
       sold,
       limit,
