@@ -13202,15 +13202,17 @@
     var msg = document.createElement('span');
     msg.className = 'pmg-t42-msg';
     /* On pricing.html keep it as plain text — there's no need to link to the
-       page you're already on. Everywhere else, link "Founding Member Waitlist
-       Open" to the pricing page so the call-to-action is one click away. */
+       page you're already on. Everywhere else, link "Founding Member Checkout
+       Now Open" to the pricing page so the call-to-action is one click away.
+       audit-2 follow-up: copy flipped from "Waitlist Open" → "Checkout Now
+       Open · First 500 Buyers" now that Stripe checkout is actually live. */
     var onPricing = /\/pricing\.html(?:[?#]|$)/i.test(location.pathname + location.search);
     if (onPricing) {
       msg.innerHTML = 'Free Beta Access Until ' + dateLabel +
-        ' —<br class="pmg-t42-br"> Founding Member Waitlist Open';
+        ' —<br class="pmg-t42-br"> Founding Member Checkout Now Open · First 500 Buyers';
     } else {
       msg.innerHTML = 'Free Beta Access Until ' + dateLabel +
-        ' —<br class="pmg-t42-br"> <a href="./pricing.html">Founding Member Waitlist Open</a>';
+        ' —<br class="pmg-t42-br"> <a href="./pricing.html">Founding Member Checkout Now Open · First 500 Buyers</a>';
     }
     bar.appendChild(msg);
 
