@@ -55,7 +55,7 @@ export const PMG_PRICING = {
 } as const;
 
 export type PmgFeature = "run" | "img" | "analyze" | "vid";
-export type PmgPlan = "free" | "founding" | "pro";
+export type PmgPlan = "free" | "founding" | "pro" | "pro_studio";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -85,6 +85,7 @@ export function effectiveCaps(
   createdAtMs: number,
   now: number = Date.now(),
 ): DailyCaps {
+  if (plan === "pro_studio") return { ...PMG_PRICING.PRO_STUDIO_DAILY_CAPS };
   if (plan === "pro") return { ...PMG_PRICING.PRO_DAILY_CAPS };
   if (plan === "founding") return { ...PMG_PRICING.FOUNDING_DAILY_CAPS };
   return isInTrial(createdAtMs, now)

@@ -58,7 +58,7 @@ export async function resolveUserFromJwt(jwt: string): Promise<CachedUser | null
         .eq("user_id", u.id)
         .maybeSingle();
       const p = (prof as { plan?: string } | null)?.plan;
-      if (p === "founding" || p === "pro") plan = p;
+      if (p === "founding" || p === "pro" || p === "pro_studio") plan = p;
     } catch {
       /* profile lookup is best-effort; default to "free" */
     }

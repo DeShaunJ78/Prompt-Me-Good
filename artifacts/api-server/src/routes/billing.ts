@@ -114,26 +114,43 @@ router.post(
 
     // Pick the tier — defaults to 'pro' (monthly) for backward compat with
     // the original T41 button. Frontend sends
-    // { tier: 'pro' | 'pro_yearly' | 'founding' }.
+    // { tier: 'pro' | 'pro_yearly' | 'pro_studio' | 'pro_studio_yearly' | 'founding' }.
+    // pro_studio = Pro Studio Monthly ($29), pro_studio_yearly = Pro Studio Yearly ($290).
     const rawTier =
       typeof req.body === "object" && req.body && typeof req.body.tier === "string"
         ? req.body.tier.toLowerCase().replace("-", "_")
         : "pro";
-    const tier: "pro" | "founding" | "pro_yearly" =
+    const tier:
+      | "pro"
+      | "founding"
+      | "pro_yearly"
+      | "pro_studio"
+      | "pro_studio_yearly" =
       rawTier === "founding"
         ? "founding"
         : rawTier === "pro_yearly"
         ? "pro_yearly"
+        : rawTier === "pro_studio_yearly"
+        ? "pro_studio_yearly"
+        : rawTier === "pro_studio" || rawTier === "pro_studio_monthly"
+        ? "pro_studio"
         : "pro";
 
-    /* T43: During open beta both Pro recurring subscriptions (monthly and
-       yearly) are NOT yet for sale — only the lifetime Founding tier
-       ($79, price locked for life) is. Block any Pro checkout request
-       until the paywall flips on. The frontend already hides Pro CTAs in
-       beta mode, but we enforce here too so the API cannot be used to
-       purchase Pro early via direct calls or stale clients. Founding
+    /* T43: During open beta the recurring subscriptions (Pro Monthly,
+       Pro Yearly, Pro Studio Monthly, Pro Studio Yearly) are NOT yet
+       for sale — only the lifetime Founding tier ($79, price locked
+       for life) is. Block any subscription checkout request until the
+       paywall flips on. The frontend already hides paid CTAs in beta
+       mode, but we enforce here too so the API cannot be used to
+       purchase early via direct calls or stale clients. Founding
        always passes through. */
-    if ((tier === "pro" || tier === "pro_yearly") && !isPaywallActive()) {
+    if (
+      (tier === "pro" ||
+        tier === "pro_yearly" ||
+        tier === "pro_studio" ||
+        tier === "pro_studio_yearly") &&
+      !isPaywallActive()
+    ) {
       req.log?.info(
         { userId: user.id, tier },
         "blocked pro checkout during open beta",
@@ -180,13 +197,18 @@ router.post(
     /* Map tier → Stripe Price ID env var. STRIPE_PRO_MONTHLY_PRICE_ID is
        the canonical name; STRIPE_PRICE_ID is kept as a fallback so any
        existing deploys with the old secret name continue to work
-       unchanged. STRIPE_FOUNDING_PRICE_ID and STRIPE_PRO_YEARLY_PRICE_ID
+       unchanged. STRIPE_FOUNDING_PRICE_ID, STRIPE_PRO_YEARLY_PRICE_ID,
+       STRIPE_PRO_STUDIO_MONTHLY_PRICE_ID, and STRIPE_PRO_STUDIO_YEARLY_PRICE_ID
        are required for their respective tiers and have no fallback. */
     const priceId =
       tier === "founding"
         ? process.env["STRIPE_FOUNDING_PRICE_ID"]
         : tier === "pro_yearly"
         ? process.env["STRIPE_PRO_YEARLY_PRICE_ID"]
+        : tier === "pro_studio"
+        ? process.env["STRIPE_PRO_STUDIO_MONTHLY_PRICE_ID"]
+        : tier === "pro_studio_yearly"
+        ? process.env["STRIPE_PRO_STUDIO_YEARLY_PRICE_ID"]
         : process.env["STRIPE_PRO_MONTHLY_PRICE_ID"] ??
           process.env["STRIPE_PRICE_ID"];
     if (!priceId) {
@@ -195,6 +217,10 @@ router.post(
           ? "STRIPE_FOUNDING_PRICE_ID"
           : tier === "pro_yearly"
           ? "STRIPE_PRO_YEARLY_PRICE_ID"
+          : tier === "pro_studio"
+          ? "STRIPE_PRO_STUDIO_MONTHLY_PRICE_ID"
+          : tier === "pro_studio_yearly"
+          ? "STRIPE_PRO_STUDIO_YEARLY_PRICE_ID"
           : "STRIPE_PRO_MONTHLY_PRICE_ID";
       req.log?.error({ tier, which }, "price id not configured");
       res
@@ -291,7 +317,11 @@ router.get(
       const profile = await getOrCreateProfile(user.id, user.email);
       const planRaw = (profile.plan || "free").toLowerCase();
       const plan: PmgPlan =
-        planRaw === "pro" || planRaw === "founding" ? planRaw : "free";
+        planRaw === "pro" ||
+        planRaw === "founding" ||
+        planRaw === "pro_studio"
+          ? (planRaw as PmgPlan)
+          : "free";
       // Trial is anchored to the Supabase auth.users.created_at timestamp
       // (delivered via requireSupabaseUser) so it can't be reset by
       // clearing browser data. Founding/Pro users skip trial state and
@@ -314,6 +344,8 @@ router.get(
           founding_usd: PMG_PRICING.FOUNDING_PRICE_USD,
           pro_monthly_usd: PMG_PRICING.PRO_MONTHLY_USD,
           pro_yearly_usd: PMG_PRICING.PRO_YEARLY_USD,
+          pro_studio_monthly_usd: PMG_PRICING.PRO_STUDIO_MONTHLY_USD,
+          pro_studio_yearly_usd: PMG_PRICING.PRO_STUDIO_YEARLY_USD,
           founding_deadline: PMG_PRICING.FOUNDING_DEADLINE_COPY,
         },
       });

@@ -151,10 +151,20 @@ async function findProfileByCustomerId(
 }
 
 function planFromSubscription(sub: Stripe.Subscription): string {
-  // Active or trialing → pro. Anything else (past_due, unpaid, canceled,
-  // incomplete, incomplete_expired) → free, so a failed payment immediately
-  // removes Pro features.
-  return sub.status === "active" || sub.status === "trialing" ? "pro" : "free";
+  // Active or trialing → paid plan. Anything else (past_due, unpaid,
+  // canceled, incomplete, incomplete_expired) → free, so a failed
+  // payment immediately removes paid features.
+  const isActive = sub.status === "active" || sub.status === "trialing";
+  if (!isActive) return "free";
+  // Distinguish Pro Studio (higher caps) from regular Pro using the
+  // tier we stamped onto subscription_data.metadata at checkout. Existing
+  // Pro subs created before pro_studio existed have tier = "pro" or
+  // "pro_yearly", which fall through to "pro" — preserving backward compat.
+  const tier = (sub.metadata && sub.metadata["tier"]) || "";
+  if (tier === "pro_studio" || tier === "pro_studio_yearly") {
+    return "pro_studio";
+  }
+  return "pro";
 }
 
 async function handleCheckoutCompleted(
