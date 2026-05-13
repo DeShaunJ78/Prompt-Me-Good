@@ -163,6 +163,61 @@
     return { score: score, label: label, wc: wc, hits: hits, missing: missing, weakest: missing[0] || null, vagueWords: vagueWords };
   }
 
+  /* Plain-English coach verdict — built from scorePrompt() output, no AI call.
+     Returns "what's working" + "biggest fix" so the score feels earned, not arbitrary. */
+  var STRENGTH_NAMES = {
+    action:     'a clear action verb',
+    detail:     'enough detail to work with',
+    role:       'a defined role for the AI',
+    audience:   'a clear audience',
+    format:     'an output format',
+    tone:       'a tone direction',
+    constraint: 'specific rules and limits',
+    vague:      'no vague filler words'
+  };
+  var STRENGTH_PRIORITY = ['action', 'audience', 'format', 'role', 'constraint', 'tone', 'detail', 'vague'];
+  function verdictEnglish(s) {
+    if (!s || s.score === 0) return '';
+    var working = [];
+    for (var i = 0; i < STRENGTH_PRIORITY.length && working.length < 2; i++) {
+      var k = STRENGTH_PRIORITY[i];
+      if (s.hits[k]) working.push(STRENGTH_NAMES[k]);
+    }
+    var fixText = {
+      action:     'add a clear action verb (write, build, summarize…) so AI knows what to do',
+      detail:     'add more detail — even 30 words gives AI much more to work with',
+      role:       'tell AI who to act as ("Act as a senior copywriter…") — it shifts the whole answer',
+      audience:   'tell AI who the answer is for — that single change makes results feel custom-built',
+      format:     'tell AI the output format — list, table, paragraphs — so you don\'t have to reformat',
+      tone:       'add a tone direction (friendly, direct, professional) so the voice matches your need',
+      constraint: 'add a constraint or two (length, must-include, things to avoid) to sharpen the result',
+      vague:      'replace vague words like "' + (s.vagueWords[0] || 'stuff') + '" with something specific'
+    };
+    var fixKey = s.weakest && s.weakest.key;
+    var fix = fixKey ? fixText[fixKey] : null;
+    var opener;
+    if (s.score >= 80)      opener = 'Your prompt is in great shape.';
+    else if (s.score >= 55) opener = 'Your prompt is in solid shape.';
+    else if (s.score >= 30) opener = 'Your prompt needs work — AI may give you a generic answer.';
+    else                    opener = 'Your prompt is too vague — AI will probably guess wrong.';
+    var workingSent = '';
+    if (working.length === 2)      workingSent = ' You\'ve got ' + working[0] + ' and ' + working[1] + '.';
+    else if (working.length === 1) workingSent = ' You\'ve got ' + working[0] + '.';
+    if (s.score >= 80 && !fix) return opener + workingSent + ' AI will likely give you a useful, on-target answer.';
+    var fixSent = fix ? ' The single biggest thing you can do: ' + fix + '.' : '';
+    return opener + workingSent + fixSent;
+  }
+
+  /* Send-to destinations for Variations cards. Mirrors pmg-send-to.js URL
+     patterns; inlined here so this script doesn't depend on that one's
+     load order. Gemini has no working prefill — copy + open instead. */
+  var EC_SEND_DESTS = [
+    { id: 'chatgpt',    label: 'ChatGPT',    prefill: function (t) { return 'https://chat.openai.com/?q=' + encodeURIComponent(t); } },
+    { id: 'claude',     label: 'Claude',     prefill: function (t) { return 'https://claude.ai/new?q=' + encodeURIComponent(t); } },
+    { id: 'gemini',     label: 'Gemini',     prefill: null, url: 'https://gemini.google.com/app' },
+    { id: 'perplexity', label: 'Perplexity', prefill: function (t) { return 'https://www.perplexity.ai/search?q=' + encodeURIComponent(t); } }
+  ];
+
   /* =====================================================================
    * Engineer: structured sections (Off / Auto / Custom)
    * ===================================================================== */
@@ -564,14 +619,22 @@
       'Find what is weak, missing, or unclear before you run your prompt.'));
 
     var s = scorePrompt(goal);
-    var card = el('div', { class: 'pmg-ec-score-card' }, [
+    var verdictText = verdictEnglish(s);
+    var cardKids = [
       el('div', { class: 'pmg-ec-score-row' }, [
         el('span', { class: 'pmg-ec-score-num' }, String(s.score)),
         el('span', { class: 'pmg-ec-score-label' }, s.label),
         el('span', { class: 'pmg-ec-score-meta' }, s.wc + ' words')
-      ]),
-      el('div', { class: 'pmg-ec-bar', 'aria-hidden': 'true' }, el('span', { style: 'width:' + s.score + '%' }))
-    ]);
+      ])
+    ];
+    if (verdictText) {
+      cardKids.push(el('p', {
+        class: 'pmg-ec-verdict',
+        style: 'margin:8px 0 10px;color:var(--color-text,#0f172a);font-size:.92rem;line-height:1.5;'
+      }, verdictText));
+    }
+    cardKids.push(el('div', { class: 'pmg-ec-bar', 'aria-hidden': 'true' }, el('span', { style: 'width:' + s.score + '%' })));
+    var card = el('div', { class: 'pmg-ec-score-card' }, cardKids);
     pane.appendChild(el('div', { class: 'pmg-ec-section' }, [
       el('h3', null, 'Prompt Strength Analyzer'),
       el('p', { class: 'pmg-ec-section-helper' }, 'Scores your prompt and shows the biggest thing to fix.'),
@@ -835,7 +898,7 @@
     }
     pane.appendChild(el('p', { style: 'margin:0 0 12px;color:var(--color-text-muted,#475569);' },
       'Tap the button to generate three rewrites of your prompt in different styles. Use the one you like, or compare them side-by-side.'));
-    var status = el('div', { class: 'pmg-ec-status' });
+    var status = el('div', { class: 'pmg-ec-status', role: 'status', 'aria-live': 'polite' });
     var output = el('div');
     var genBtn = el('button', {
       type: 'button',
@@ -864,6 +927,42 @@
       results.forEach(function (r) {
         var pre = el('pre');
         pre.textContent = r.text;
+        var sendRow = el('div', {
+          style: 'display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center;'
+        }, [
+          el('span', { style: 'font-size:.78rem;color:var(--color-text-muted,#475569);font-weight:600;margin-right:2px;' }, 'Send to:')
+        ]);
+        EC_SEND_DESTS.forEach(function (dest) {
+          sendRow.appendChild(el('button', {
+            type: 'button',
+            'aria-label': 'Send "' + r.label + '" to ' + dest.label,
+            style: 'padding:6px 10px;border-radius:8px;border:1px solid var(--color-border,#e2e8f0);background:transparent;font-weight:600;cursor:pointer;font-size:.82rem;',
+            onclick: (function (d, text, lbl) { return function () {
+              var url = d.prefill ? d.prefill(text) : d.url;
+              try { window.open(url, '_blank', 'noopener,noreferrer'); } catch (e) {}
+              track('expert_center_variation_sendto', { variant: r.id, dest: d.id });
+              if (d.prefill) {
+                status.textContent = 'Opened ' + d.label + ' with "' + lbl + '" prefilled.';
+                return;
+              }
+              status.textContent = 'Opening ' + d.label + ' — copying "' + lbl + '"…';
+              try {
+                var p = navigator.clipboard && navigator.clipboard.writeText(text);
+                if (p && p.then) {
+                  p.then(function () {
+                    status.textContent = 'Copied "' + lbl + '" to clipboard. Paste into ' + d.label + ' when it opens.';
+                  }).catch(function () {
+                    status.textContent = 'Could not copy automatically — select the prompt above and copy it manually, then paste into ' + d.label + '.';
+                  });
+                } else {
+                  status.textContent = 'Could not copy automatically — select the prompt above and copy it manually, then paste into ' + d.label + '.';
+                }
+              } catch (e) {
+                status.textContent = 'Could not copy automatically — select the prompt above and copy it manually, then paste into ' + d.label + '.';
+              }
+            }; })(dest, r.text, r.label)
+          }, '↗ ' + dest.label));
+        });
         var card = el('div', { class: 'pmg-ec-variation' }, [
           el('header', null, [
             el('h3', null, r.label),
@@ -891,7 +990,8 @@
                 } catch (e) { status.textContent = 'Could not copy.'; }
               }
             }, 'Copy')
-          ])
+          ]),
+          sendRow
         ]);
         output.appendChild(card);
       });
