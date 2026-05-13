@@ -1,0 +1,22 @@
+Audit #3 Triage + Owner Bypass
+First — owner bypass (pending from last message):
+Before committing anything else, add the owner bypass to PR1. Check the Supabase auth.users table for the UUID associated with my account, tell me the UUID, then add OWNER_USER_ID to Replit secrets and add the bypass check to userCapEnforce and the storyboard/expert gates. Once confirmed, commit PR1 with the bypass included.
+Audit #3 findings — approved deploy order:
+Deploy 1 — H-1 (ship before PR2, high priority):
+Fix the stale hardcoded fallbacks in pmg-ux.js and pmg-pro.js. Use the preferred approach: drop the fallbacks entirely and emit a console.warn("PMG_PRICING not loaded — UI aborted") when PMG_PRICING is undefined. Failing loud is better than silently showing wrong prices. Four sites to fix: pmg-ux.js:12489, pmg-ux.js:12490, pmg-ux.js:12507, pmg-ux.js:12915, pmg-pro.js:464. Ship this as a standalone commit before resuming PR2.
+Deploy 2 — PR2 (launch-swap-1):
+Resume from .local/wip/launch-swap-1/RESUME.md. Finish the remaining ~30% of pricing.html + index.html tagging. Also add app.html to the scope — the audit found three additional beta-only surfaces there (JSON-LD FAQ #1 at L186, Photography Suite explainer at L210, 3 footer/inline pricing references) that weren't in the original Part B inventory. Tag those with data-pmg-beta-only in the same PR.
+Deploy 3 — M-3 + M-4:
+M-3: Wrap the three hardcoded prices in pricing.html:258 cancel banner with data-pmg-price spans
+M-4: Wire app.html JSON-LD FAQ prices/caps and Terms paragraphs (L5362, L5367) to data-pmg-price / data-pmg-cap — these will be indexed by search engines so accuracy matters
+Defer:
+M-5 (Pro Studio card layout) — defer until Studio conversion data exists
+M-6 (wire founding headline to live counter) — do this before seat 250, not now
+No action needed:
+L-7 through L-13 — all confirmed working, no changes
+Summary of what's in flight:
+Owner bypass → add to PR1 → commit PR1
+H-1 fix (drop stale fallbacks) → standalone commit
+PR2 finish + deploy (includes app.html additions)
+M-3 + M-4 → one PR
+What's the UUID on my account?

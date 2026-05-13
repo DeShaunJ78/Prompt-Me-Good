@@ -1,0 +1,44 @@
+Pre-Launch Work — Two Parts, One Session
+Part A: Backend Caps Enforcement
+Context: The paywall activates July 1, 2026 (BETA_END = 2026-07-01T05:00:00.000Z). All feature gates are currently UI-only. This needs to be server-enforced before July 1.
+Step 1 — Audit first, build second. Before writing any enforcement code, list every API route that powers a paywalled feature and its current gate status (guarded vs unguarded). Show me the table. I'll review before you write anything.
+Paywalled features to check:
+Expert Command Center
+Growth Mode
+Image Workshop (DALL·E generation)
+Reverse Engine
+Prompt DNA Card
+Storyboard Generator
+Run With AI (daily cap: 2/day free, 15/day Founding Member, 25/day Pro, 75/day Pro Studio)
+Step 2 — Add server-side enforcement to unguarded routes. For each unguarded route: if isPaywallActive() is true AND the user's tier doesn't include that feature, return 403 with { error: "upgrade_required", feature: "<feature_name>" }. If isPaywallActive() is false (before July 1), pass through as normal — do NOT activate the paywall early.
+Step 3 — Fix userCaps.ts:131 typecheck gap. PmgFeature includes 'teaser' but DailyCaps doesn't have a matching field. Fix shape parity in the same PR.
+Step 4 — Verify daily cap counter is server-side. Confirm Run With AI daily caps are tracked server-side per user per day, not just client-side. If client-side only, add server-side tracking.
+Step 5 — Smoke test. Free user hitting Run With AI 3x (3rd should cap), unauthenticated user hitting Expert Command Center API post-July 1 (should 403), Founding Member user (15 runs/day, all paywalled features accessible).
+Part B: Automatic July 1 Content Swap
+Context: There are 13+ hard-coded "free through July 1, 2026" strings, beta-era copy, and "Launches July 1, 2026" badges scattered across index.html and pricing.html. These do not update themselves. The goal is to make the content switch automatically on July 1 using the same isPaywallActive() flag as the paywall — no manual deploy required.
+The mechanism: The JS that reads /api/public-config on page load already exists and already exposes paywallActive. Extend it to drive DOM swaps:
+Any element tagged data-beta-only → hidden when paywallActive: true
+Any element tagged data-post-launch → shown when paywallActive: true
+What to tag as data-beta-only (hide on July 1):
+All "free through July 1, 2026" copy blocks in index.html and pricing.html
+"Launches July 1, 2026" badges on Pro and Pro Studio tier cards
+Beta-era urgency copy ("Free during beta", "Beta pricing", etc.)
+The "Founding Member Checkout Now Live · First 500 Buyers · $79 For Life" banner (replace with post-launch version)
+What to tag as data-post-launch (show on July 1):
+Post-launch versions of the Pro/Studio tier cards (without the "Launches July 1" badge, with live checkout buttons instead of "Notify Me")
+Updated hero copy that reflects the paywall being active
+Any "Now live" or "Upgrade" CTAs that replace beta-era copy
+Constraints for both parts:
+Do NOT change any layout or visual design
+Do NOT activate the paywall early — everything passes through until July 1
+Show me the audit table (Part A) and the full list of elements you plan to tag (Part B) before writing any code — I want to review both before you build
+Start with the audits for both parts simultaneously. Show me the results, then we build.
+That covers everything — caps enforcement, the typecheck fix, the daily counter verification, and the full automatic July 1 content swap. Nothing will need a manual deploy on launch day except the smoke test.
+
+
+Before committing PR1, add an owner bypass to the caps enforcement. Here's what I need:
+Find my Supabase user ID — query the users table (or auth.users) for the account associated with support@promptmegood.com (or whatever email I used to sign up). Tell me the UUID before proceeding.
+Add an owner bypass — in lib/paywall.ts (or wherever isPaywallActive() and userCapEnforce live), add a check: if the authenticated user's ID matches the owner UUID, skip all cap checks and paywall gates entirely. Return unlimited caps and treat all features as accessible regardless of isPaywallActive().
+Store the owner ID securely — as an environment variable OWNER_USER_ID in Replit secrets, not hardcoded in source. The check should be: if (ctx.userId === process.env.OWNER_USER_ID) return bypass.
+Scope of the bypass — it should cover: daily run caps, img caps, analyze caps, vid caps, the storyboard gate, and the expert gate. Essentially: if I'm the owner, I always get through, no matter what tier the DB says I'm on.
+Include this in PR1 before committing. Show me the owner UUID you find before writing any code.
