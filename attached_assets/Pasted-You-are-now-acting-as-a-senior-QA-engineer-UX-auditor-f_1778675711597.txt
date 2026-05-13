@@ -1,0 +1,261 @@
+You are now acting as a senior QA engineer, UX auditor, frontend architect, and production release specialist.
+
+Your mission is to fully debug, stabilize, optimize, and production-harden this website before public launch.
+
+Do NOT make surface-level cosmetic changes unless they directly improve usability, clarity, trust, responsiveness, accessibility, or conversion flow.
+
+Operate systematically and document every issue found.
+
+PRIMARY OBJECTIVE
+
+The website must:
+- feel intuitive immediately
+- reduce mental overload
+- guide users naturally
+- function flawlessly on mobile and desktop
+- eliminate trust-breaking inconsistencies
+- survive real-world user behavior
+- be stable enough for mass public traffic
+
+Focus heavily on:
+- onboarding flow
+- CTA clarity
+- quick-win experience
+- responsiveness
+- loading performance
+- AI interaction flow
+- state handling
+- error handling
+- user confusion points
+
+==================================================
+DEBUGGING PHASES
+==================================================
+
+PHASE 1 — FULL SITE AUDIT
+
+Perform a comprehensive audit of:
+- all pages
+- all routes
+- all forms
+- all buttons
+- all navigation
+- all API requests
+- all modals
+- all upload systems
+- all AI generation flows
+- all redirects
+- all animations
+- all mobile layouts
+- all responsive breakpoints
+
+Identify:
+- broken links
+- dead buttons
+- console errors
+- hydration mismatches
+- memory leaks
+- failed API requests
+- excessive rerenders
+- inconsistent spacing
+- overlapping UI
+- inaccessible elements
+- missing loading states
+- missing empty states
+- duplicate flows
+- confusing flows
+- unclear wording
+- inconsistent terminology
+- broken onboarding
+- visual clutter
+- trust leaks
+- oversized assets
+- performance bottlenecks
+
+Log every issue found before making fixes.
+
+==================================================
+
+PHASE 2 — MOBILE-FIRST STABILIZATION
+
+Treat mobile as the primary platform.
+
+Test:
+- iPhone viewport sizes
+- Android viewport sizes
+- Safari compatibility
+- Chrome mobile compatibility
+- keyboard interactions
+- touch interactions
+- scrolling behavior
+- sticky elements
+- modal behavior
+- responsive typography
+- spacing consistency
+
+Fix:
+- overflow
+- cutoff containers
+- cramped layouts
+- unreadable text
+- tap target issues
+- broken flex/grid behavior
+- viewport height bugs
+- horizontal scrolling
+
+==================================================
+
+PHASE 3 — UX SIMPLIFICATION
+
+The current system risks overwhelming new users.
+
+Audit the entire user experience for:
+- cognitive overload
+- competing CTAs
+- feature clutter
+- unclear hierarchy
+- confusing onboarding
+- unclear value proposition
+- excessive visual noise
+
+Prioritize:
+- one dominant action per screen
+- guided flow structure
+- simplified onboarding
+- progressive disclosure
+- cleaner information hierarchy
+- stronger visual focus
+- clearer user progression
+
+Do NOT remove important features.
+
+Instead:
+- reorganize them logically
+- hide advanced functionality behind progressive interaction
+- reduce immediate overwhelm
+
+==================================================
+
+PHASE 4 — AI FLOW HARDENING
+
+Audit every AI-powered feature.
+
+Test:
+- empty prompts
+- malformed prompts
+- spam clicking
+- simultaneous requests
+- failed responses
+- timeout handling
+- loading interruption
+- refresh during generation
+- session persistence
+- retry handling
+
+Ensure:
+- graceful failures
+- useful error messaging
+- proper loading states
+- request cancellation
+- no frozen UI states
+- no duplicated outputs
+- no infinite loops
+
+==================================================
+
+PHASE 5 — PERFORMANCE OPTIMIZATION
+
+Run deep optimization.
+
+Improve:
+- page load speed
+- hydration performance
+- bundle size
+- image optimization
+- lazy loading
+- render blocking
+- API efficiency
+- unnecessary dependencies
+- animation performance
+
+Target:
+- excellent Lighthouse scores
+- smooth scrolling
+- fast first paint
+- low layout shift
+- responsive interactions
+
+==================================================
+
+PHASE 6 — PRODUCTION HARDENING
+
+Prepare the application for real users.
+
+Implement or verify:
+- global error boundaries
+- fallback UI states
+- proper 404 handling
+- retry handling
+- analytics hooks
+- production-safe logging
+- environment variable protection
+- secure API usage
+- rate limiting safeguards
+- form validation
+- accessibility improvements
+- SEO metadata
+- canonical URLs
+- favicon consistency
+- SSL readiness
+
+==================================================
+
+PHASE 7 — SIMULATED USER TESTING
+
+Simulate real-world user behavior.
+
+Act like:
+- confused first-time users
+- impatient mobile users
+- non-technical users
+- distracted users
+- fast clickers
+- users with slow internet
+- users who ignore instructions
+
+Document:
+- hesitation points
+- confusion points
+- rage-click areas
+- abandonment risks
+- trust-breaking moments
+
+Then fix them.
+
+==================================================
+FINAL DELIVERABLES
+==================================================
+
+When complete, provide:
+
+1. Full issue report
+2. All fixes implemented
+3. Remaining risks
+4. Performance improvements
+5. UX improvements
+6. Mobile fixes
+7. AI flow fixes
+8. Production readiness checklist
+9. Lighthouse/performance summary
+10. Recommended next improvements after launch
+
+Do NOT stop after minor fixes.
+
+Continue iterating until the site feels:
+- production-ready
+- intuitive
+- stable
+- scalable
+- conversion-focused
+- mobile-optimized
+- psychologically clear for first-time users
