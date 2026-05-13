@@ -9,8 +9,10 @@ import { logger } from "../lib/logger";
 import { clampString, sanitizeGoal } from "../middlewares/sanitize";
 import { generateLimiter, runLimiter, rateLimit, imageLimiter, videoLimiter } from "../middlewares/rateLimit";
 import { chargeCost, generateCostCheck, runCostCheck, imageCheck, imageCheckMulti, chargeImage } from "../middlewares/costGuard";
-import { userCapEnforce } from "../middlewares/userCaps";
+import { userCapEnforce, resolveUserFromJwt } from "../middlewares/userCaps";
 import type { PmgPlan } from "../lib/pricing-config";
+import { effectiveCaps, TEASER_DAILY_CAP } from "../lib/pricing-config";
+import { reserveUserDay, refundUserDay } from "../lib/usage-store";
 
 const router: IRouter = Router();
 
@@ -489,7 +491,104 @@ const RUN_MAX_OUTPUT_TOKENS = 4000;
 const RUN_SYSTEM_PROMPT =
   "You are a helpful, direct AI assistant. Execute the user's prompt exactly as instructed. Be specific, practical, and thorough.";
 
-router.post("/run", runLimiter, runCostCheck, userCapEnforce("run"), async (req, res) => {
+/* cap-compare-1 (2026-05-13): bespoke cap middleware for /run. Mirrors
+   userCapEnforce("run") for the happy path, but on cap-hit it attempts
+   a one-shot gpt-4.1 teaser (~80 tokens) for the user's prompt and
+   embeds it in the 429 JSON. The teaser is gated by a SECOND daily
+   cap (TEASER_DAILY_CAP=1) so a refresh-spammer can't farm GPT-4.1
+   calls. Anonymous and paid users follow the original happy path
+   verbatim — only signed-in free users in the Run-cap branch see
+   the teaser logic. */
+const TEASER_MODEL = "gpt-4.1";
+const TEASER_MAX_TOKENS = 80;
+const TEASER_SYSTEM_PROMPT = RUN_SYSTEM_PROMPT;
+
+async function runCapWithTeaser(
+  req: Request & { pmgUser?: { userId: string; plan: PmgPlan; createdAtMs: number; email: string } },
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  const header = req.headers.authorization || "";
+  const m = /^Bearer\s+(.+)$/i.exec(header);
+  if (!m) { next(); return; }
+  const ctx = await resolveUserFromJwt(m[1]!.trim());
+  if (!ctx) { next(); return; }
+  req.pmgUser = ctx;
+
+  const caps = effectiveCaps(ctx.plan, ctx.createdAtMs);
+  const reserved = await reserveUserDay(ctx.userId, "run", 1, caps.run);
+  if (reserved) {
+    res.on("finish", () => {
+      if (res.statusCode >= 400) {
+        void refundUserDay(ctx.userId, "run", 1);
+      }
+    });
+    next();
+    return;
+  }
+
+  // Cap hit. Try the teaser path, then return enriched 429.
+  const promptForTeaser = typeof req.body?.prompt === "string"
+    ? String(req.body.prompt).trim().slice(0, RUN_MAX_INPUT)
+    : "";
+  let teaser:
+    | { model: string; preview: string; truncated: boolean }
+    | null = null;
+  let teaserExhausted = false;
+
+  if (promptForTeaser && ctx.plan === "free") {
+    const teaserReserved = await reserveUserDay(ctx.userId, "teaser", 1, TEASER_DAILY_CAP);
+    if (teaserReserved) {
+      try {
+        const completion = await openai.chat.completions.create({
+          model: TEASER_MODEL,
+          max_completion_tokens: TEASER_MAX_TOKENS,
+          stream: false,
+          messages: [
+            { role: "system", content: TEASER_SYSTEM_PROMPT },
+            { role: "user", content: promptForTeaser },
+          ],
+        });
+        const text = completion.choices?.[0]?.message?.content?.trim() || "";
+        const finishReason = completion.choices?.[0]?.finish_reason;
+        if (text) {
+          teaser = {
+            model: TEASER_MODEL,
+            preview: text,
+            // truncated when the response was cut by max_tokens, OR when
+            // we suspect mid-thought (no terminal punctuation on the
+            // final non-empty line).
+            truncated: finishReason === "length" || !/[.!?]\s*$/.test(text),
+          };
+        }
+      } catch (err) {
+        // Refund teaser counter on failure so the user isn't punished
+        // for our error.
+        void refundUserDay(ctx.userId, "teaser", 1);
+        logger.warn(
+          { err: err instanceof Error ? err.message : "unknown" },
+          "cap-compare-1: teaser generation failed",
+        );
+      }
+    } else {
+      teaserExhausted = true;
+    }
+  } else {
+    teaserExhausted = true;
+  }
+
+  res.status(429).json({
+    success: false,
+    ok: false,
+    error: "Daily limit reached for your plan. Resets at midnight UTC.",
+    cappedAt: "run",
+    runsCap: caps.run,
+    teaser,
+    teaserExhausted,
+  });
+}
+
+router.post("/run", runLimiter, runCostCheck, runCapWithTeaser, async (req, res) => {
   const promptRaw = req.body?.prompt;
   if (typeof promptRaw !== "string") {
     res.status(400).json({ success: false, ok: false, error: "A prompt is required." });

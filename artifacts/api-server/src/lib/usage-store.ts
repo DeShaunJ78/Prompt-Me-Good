@@ -37,6 +37,11 @@ interface UserDay {
   // `(updated[feature] || 0)` guard, so older rows are forward-compatible
   // without a backfill. Optional to avoid breaking the JSON-fallback shape.
   vid?: number;
+  // cap-compare-1 (2026-05-13): per-user daily counter for the gpt-4.1
+  // teaser preview returned in the /api/run 429 body when a free user
+  // hits their Run cap. Capped at TEASER_DAILY_CAP (1/day). Optional
+  // for the same forward-compat reason as `vid?` above.
+  teaser?: number;
 }
 
 interface CacheEntry {

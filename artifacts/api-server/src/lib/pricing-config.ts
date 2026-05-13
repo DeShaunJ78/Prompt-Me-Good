@@ -54,7 +54,15 @@ export const PMG_PRICING = {
   BETA_END: "2026-07-01T05:00:00.000Z",
 } as const;
 
-export type PmgFeature = "run" | "img" | "analyze" | "vid";
+export type PmgFeature = "run" | "img" | "analyze" | "vid" | "teaser";
+
+/* cap-compare-1 (2026-05-13): when a free user hits the daily Run cap,
+   the server attempts ONE real gpt-4.1 teaser (~80 tokens, non-streaming)
+   for their prompt and embeds it in the 429 body. Gated by a SEPARATE
+   per-user daily cap so refresh-spammers can't farm GPT-4.1 calls.
+   1/day is intentional — the panel is a conversion moment, not a feature.
+   Paid users never hit this code path. */
+export const TEASER_DAILY_CAP = 1;
 export type PmgPlan = "free" | "founding" | "pro" | "pro_studio";
 
 const DAY_MS = 24 * 60 * 60 * 1000;

@@ -4107,6 +4107,7 @@
   <link rel="stylesheet" href="/styles/pmg-chassis-v3.css?v=cta-color-token-2-sendto-2line-mhdr2-stream2-clamp1-runstatus1-cv3-62-desktop-cap" />
   <link rel="stylesheet" href="/styles/pmg-visual-studio.css?v=re-3" />
   <link rel="stylesheet" href="/styles/pmg-storyboard.css?v=sb-9" />
+  <link rel="stylesheet" href="/styles/pmg-cap-comparison.css?v=cap-compare-1" />
   <link rel="stylesheet" href="/styles/pmg-auto-boost.css?v=ab-8-under-strength" />
   <link rel="stylesheet" href="/styles/pmg-spark-panel.css?v=sp-5-visible" />
   <link rel="stylesheet" href="/styles/pmg-business-mode.css?v=bm-3" />
@@ -4139,6 +4140,7 @@
   <script src="/scripts/pmg-chip-tooltips.js?v=cti-1" defer></script>
   <script src="/scripts/pmg-visual-studio.js?v=re-3" defer></script>
   <script src="/scripts/pmg-storyboard.js?v=sb-11" defer></script>
+  <script src="/scripts/pmg-cap-comparison.js?v=cap-compare-1" defer></script>
   <script src="/scripts/pmg-spark-panel.js?v=sp-6-mobile-questions" defer></script>
   <script src="/scripts/pmg-business-mode.js?v=growth-mode-2-prompts" defer></script>
   <script src="/scripts/pmg-growth-actions.js?v=ga-1" defer></script>
@@ -12335,10 +12337,13 @@ Context:
 
         if (!res.ok) {
           let msg = 'Run failed. Please try again.';
+          // cap-compare-1: hoist `j` out of the try block so the cap-compare
+          // branch below can re-use the parsed body without a second read().
+          let j;
           try {
             const ct = res.headers.get('content-type') || '';
             if (ct.includes('application/json')) {
-              const j = await res.json();
+              j = await res.json();
               if (j && (j.error || j.message)) msg = String(j.error || j.message);
             } else {
               const txt = (await res.text()) || '';
@@ -12354,7 +12359,28 @@ Context:
           } catch (_) {}
           if (res.status === 429) msg = 'Rate limit reached. Please wait a bit before running again.';
           __pmgClearRunStatus();
-          if (out) out.textContent = msg;
+          // cap-compare-1: when the 429 is a Run-cap hit (cappedAt:"run")
+          // and the cap-comparison module is loaded + active, render the
+          // side-by-side comparison panel instead of the plain toast. The
+          // server includes a teaser preview (or teaserExhausted:true)
+          // so the panel can pick its layout. Fall back to the textContent
+          // path on any rendering failure or when the module is disabled.
+          var __ccDone = false;
+          try {
+            if (res.status === 429 && out && window.pmgCapComparison) {
+              const __ct = res.headers.get('content-type') || '';
+              if (__ct.includes('application/json')) {
+                // We already consumed the body above into `j` (best-effort).
+                // Re-fetch here is not possible — but the upstream try block
+                // assigns to `j` only when ct was JSON. Pull it back.
+                // (Defensive: if `j` wasn't captured for any reason, skip.)
+                if (typeof j !== 'undefined' && j && j.cappedAt === 'run') {
+                  __ccDone = window.pmgCapComparison.render(j, out, prompt);
+                }
+              }
+            }
+          } catch (_) { __ccDone = false; }
+          if (!__ccDone && out) out.textContent = msg;
           setRunning(false);
           return;
         }
