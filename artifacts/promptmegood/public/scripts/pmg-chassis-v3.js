@@ -179,6 +179,14 @@
           '<button class="pmgv3-ico" id="pmgv3-business" type="button" title="Growth Mode — assemble a marketing prompt" aria-label="Open Growth Mode"><span class="pmgv3-ico-glyph">💼</span><span class="pmgv3-ico-label">Growth</span></button>',
           '<button class="pmgv3-ico" id="pmgv3-vault" type="button" title="Vault — saved prompts" aria-label="Open Vault"><span class="pmgv3-ico-glyph">🗄️</span><span class="pmgv3-ico-label">Vault</span></button>',
           '<button class="pmgv3-ico" id="pmgv3-settings" type="button" title="Settings — Expert Command Center, theme, account" aria-label="Open Settings"><span class="pmgv3-ico-glyph">⚙️</span><span class="pmgv3-ico-label">Settings</span></button>',
+          /* H-1 (audit-2 deferred): the 4 icons above (Guide / Growth /
+             Vault / Settings) are CSS-hidden at ≤480px; this ⋮ button
+             takes their place and opens a small dropdown that proxies
+             clicks back to the (hidden) underlying buttons. Default
+             display: none — only visible on phones via the same media
+             query that hides the icons. Keeps brand text + ← Home +
+             Pricing + Lock In $79 visible at 360px without crowding. */
+          '<button class="pmgv3-more" id="pmgv3-more" type="button" aria-label="More" aria-haspopup="true" aria-expanded="false" title="More: Guide, Growth, Vault, Settings">⋮</button>',
           // L-C (audit-2 triage): during the open beta the only paid action
           // actually available is the Founding Member $79 one-time deal —
           // every other tier routes to the waitlist. "Upgrade" misrepresents
@@ -1810,6 +1818,73 @@
 
     bindIfPresent('pmgv3-upgrade', function () {
       window.location.href = '/pricing.html';
+    });
+
+    /* H-1 (audit-2 deferred): mobile "More" menu. Lazily injects a small
+       dropdown next to the ⋮ button containing the 4 icons (Guide /
+       Growth / Vault / Settings) that are CSS-hidden at ≤480px. Each
+       dropdown item dispatches a synthetic click on the (hidden)
+       underlying button so all existing wiring (vault drawer, settings
+       overlay, growth panel, guide tab) is reused — no duplicated
+       handlers. Click-outside + Escape close. */
+    bindIfPresent('pmgv3-more', function () {
+      var moreBtn = document.getElementById('pmgv3-more');
+      if (!moreBtn) return;
+      var existing = document.getElementById('pmgv3-more-menu');
+      if (existing) {
+        /* Toggle-close path. The shared closer attached to the menu
+           cleans up document listeners — calling it here ensures we
+           don't leak them on rapid open→close→open cycles. */
+        if (typeof existing.__pmgClose === 'function') existing.__pmgClose();
+        else { existing.remove(); moreBtn.setAttribute('aria-expanded', 'false'); }
+        return;
+      }
+      var menu = document.createElement('div');
+      menu.id = 'pmgv3-more-menu';
+      menu.setAttribute('role', 'menu');
+      menu.innerHTML =
+        '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-help"><span aria-hidden="true">❓</span> Guide</button>' +
+        '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-business"><span aria-hidden="true">💼</span> Growth</button>' +
+        '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-vault"><span aria-hidden="true">🗄️</span> Vault</button>' +
+        '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-settings"><span aria-hidden="true">⚙️</span> Settings</button>';
+      moreBtn.parentNode.appendChild(menu);
+      moreBtn.setAttribute('aria-expanded', 'true');
+
+      /* Shared closer used by every close path (item-click, outside-click,
+         Escape, and the toggle-close branch above). Idempotent — safe to
+         call twice. Removes both document listeners to avoid leaks. */
+      function close() {
+        moreBtn.setAttribute('aria-expanded', 'false');
+        document.removeEventListener('click', closeOnOutside, true);
+        document.removeEventListener('keydown', closeOnEsc, true);
+        if (menu.parentNode) menu.parentNode.removeChild(menu);
+      }
+      menu.__pmgClose = close;
+
+      function closeOnOutside(ev) {
+        if (ev.target === moreBtn || moreBtn.contains(ev.target)) return;
+        if (menu.contains(ev.target)) return;
+        close();
+      }
+      function closeOnEsc(ev) { if (ev.key === 'Escape') close(); }
+
+      menu.addEventListener('click', function (e) {
+        var item = e.target && e.target.closest && e.target.closest('[data-pmg-more-target]');
+        if (!item) return;
+        var targetId = item.getAttribute('data-pmg-more-target');
+        var underlying = document.getElementById(targetId);
+        close();
+        if (underlying) {
+          /* Use .click() so anchor (#pmgv3-help) follows href and
+             buttons fire their bound handlers identically. */
+          try { underlying.click(); } catch (_e) {}
+        }
+      });
+
+      setTimeout(function () {
+        document.addEventListener('click', closeOnOutside, true);
+        document.addEventListener('keydown', closeOnEsc, true);
+      }, 0);
     });
 
     /* L-C (audit-2 triage): swap "Lock In $79" → "Upgrade" once the open

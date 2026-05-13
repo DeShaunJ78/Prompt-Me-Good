@@ -13241,6 +13241,24 @@
       if (sessionStorage.getItem(SESSION_DISMISS_KEY) === '1') return;
     } catch (_) {}
 
+    /* M-1 (audit-2 deferred): one-shot inline rule for the mobile copy
+       swap. The matching rule lives in pmg-g-theme.css for /app and other
+       pages that load g-theme, but pricing.html intentionally skips
+       g-theme (see pricing.html L30 comment). Inject here so the swap
+       works wherever the banner mounts. id-guarded so it only runs once
+       per tab. */
+    if (!document.getElementById('pmg-t42-mobile-css')) {
+      var s = document.createElement('style');
+      s.id = 'pmg-t42-mobile-css';
+      s.textContent =
+        '#' + BANNER_ID + ' .pmg-banner-short{display:none}' +
+        '@media (max-width:480px){' +
+          '#' + BANNER_ID + ' .pmg-banner-long{display:none}' +
+          '#' + BANNER_ID + ' .pmg-banner-short{display:inline}' +
+        '}';
+      document.head.appendChild(s);
+    }
+
     injectStyles();
 
     var dateLabel = fmtActivationDate(activatesAtIso);
@@ -13257,12 +13275,20 @@
        audit-2 follow-up: copy flipped from "Waitlist Open" → "Checkout Now
        Open · First 500 Buyers" now that Stripe checkout is actually live. */
     var onPricing = /\/pricing\.html(?:[?#]|$)/i.test(location.pathname + location.search);
+    /* M-1 (audit-2 deferred): wrap the long-copy and short-copy variants
+       in two spans. CSS in pmg-g-theme.css hides .pmg-banner-long and
+       shows .pmg-banner-short below 480px. Pure CSS swap so it survives
+       orientation change without a JS resize listener. */
     if (onPricing) {
-      msg.innerHTML = 'Free Beta Access Until ' + dateLabel +
-        ' —<br class="pmg-t42-br"> Founding Member Checkout Now Open · First 500 Buyers';
+      msg.innerHTML =
+        '<span class="pmg-banner-long">Free Beta Access Until ' + dateLabel +
+        ' —<br class="pmg-t42-br"> Founding Member Checkout Now Open · First 500 Buyers</span>' +
+        '<span class="pmg-banner-short">Free Beta — Founding Checkout Open</span>';
     } else {
-      msg.innerHTML = 'Free Beta Access Until ' + dateLabel +
-        ' —<br class="pmg-t42-br"> <a href="./pricing.html">Founding Member Checkout Now Open · First 500 Buyers</a>';
+      msg.innerHTML =
+        '<span class="pmg-banner-long">Free Beta Access Until ' + dateLabel +
+        ' —<br class="pmg-t42-br"> <a href="./pricing.html">Founding Member Checkout Now Open · First 500 Buyers</a></span>' +
+        '<span class="pmg-banner-short">Free Beta — <a href="./pricing.html">Lock In $79</a></span>';
     }
     bar.appendChild(msg);
 

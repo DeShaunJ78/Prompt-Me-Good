@@ -177,6 +177,11 @@ html.pmg-chassis-v3 body {
   display: flex;
   align-items: center;
   gap: 8px;
+  /* H-1 (audit-2 deferred): positioning context for the ⋮ More dropdown
+     (#pmgv3-more-menu uses position:absolute and anchors to this row).
+     Without it, top:100% / right:0 resolved to #pmg-chassis-v3-root
+     and the menu rendered far below the topbar. */
+  position: relative;
 }
 .pmgv3-ico {
   /* 44x44 is the WCAG/Apple HIG minimum tap target WIDTH. Height is now
@@ -1895,15 +1900,67 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
    because the brand text + badge + 5 icons + Upgrade get squished
    on common phone widths (iPhone 13 mini = 375, Pixel 5 = 393,
    Galaxy S20 = 412, iPhone 14 Pro = 430). */
+/* H-1 (audit-2 deferred): default-hide the ⋮ More button on desktop —
+   only used at the ≤480px breakpoint when the 4 icons collapse. */
+.pmgv3-more {
+  display: none;
+  width: 44px; height: 44px; min-width: 44px;
+  align-items: center; justify-content: center;
+  background: transparent; color: inherit; border: 0;
+  font-size: 22px; line-height: 1; cursor: pointer;
+  border-radius: 8px; padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+.pmgv3-more:hover { background: rgba(0, 200, 150, 0.08); }
+.pmgv3-more:focus-visible { outline: 2px solid rgba(0, 200, 150, 0.55); outline-offset: 2px; }
+#pmgv3-more-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 180px;
+  background: #0d2b1e;
+  border: 1px solid rgba(0, 200, 150, 0.28);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  padding: 6px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+#pmgv3-more-menu button {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  color: #e6f7ee;
+  border: 0;
+  border-radius: 6px;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+#pmgv3-more-menu button:hover,
+#pmgv3-more-menu button:focus-visible {
+  background: rgba(0, 200, 150, 0.14);
+  color: #00c896;
+  outline: none;
+}
 @media (max-width: 480px) {
   .pmgv3-brand-beta { display: none; }
-  /* mhdr-1: hide the "PromptMeGood" wordmark on phones — the logo
-     icon alone is sufficient brand at this width and the freed
-     space stops the icon row + Upgrade button from getting squished
-     on iPhone Plus/Pro Max-class viewports (414–430px). The icon
-     and Beta badge are separate children, so scoping to span:not(.pmgv3-brand-beta)
-     leaves them intact. */
-  .pmgv3-brand > span:not(.pmgv3-brand-beta) { display: none; }
+  /* H-1 (audit-2 deferred): inverted strategy. Brand wordmark stays
+     visible — it's the strongest first-impression signal. The 4
+     glyph icons (Guide / Growth / Vault / Settings) collapse behind
+     the ⋮ More button instead. mhdr-1's "hide the wordmark" rule was
+     removed because hiding the brand to save 80px while keeping 4
+     icons that nobody understood was the wrong tradeoff. ← Home and
+     Pricing also stay visible per user direction (highest-value nav
+     for new users); they shrink in font-size at ≤400px below. */
+  .pmgv3-brand { min-width: 0; max-width: 100%; }
+  #pmgv3-help, #pmgv3-business, #pmgv3-vault, #pmgv3-settings { display: none; }
+  .pmgv3-more { display: inline-flex; }
   /* mhdr-2: distribute the 3 panel tabs evenly so "Video" never
      clips on iPhone 16 (393px), Pixel (393px), Galaxy S24 (360-412px),
      iPhone SE (375px), or iPhone SE 1st-gen (320px). The ≤768px rule
@@ -1960,6 +2017,12 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
   .pmgv3-brand { gap: 6px; font-size: 13px; }
   .pmgv3-brand img { width: 24px; height: 24px; }
   .pmgv3-brand-beta { display: none; }
+  /* H-1 (audit-2 deferred): user direction was to keep ← Home and
+     Pricing visible at all widths and shrink the font instead of
+     hiding them. The two ghost-links sit in .pmgv3-tb-r alongside
+     the ⋮ More button and the Lock In $79 CTA. */
+  .pmgv3-nav-home, .pmgv3-nav-pricing { font-size: 12px; padding: 4px 6px; }
+  .pmgv3-more { width: 36px; height: 36px; min-width: 36px; font-size: 20px; }
 }
 
 /* ====================================================================

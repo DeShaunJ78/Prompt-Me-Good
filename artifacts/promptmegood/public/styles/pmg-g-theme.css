@@ -326,6 +326,15 @@ dialog::backdrop, .modal-backdrop {
 #pmg-t42-beta-banner button.pmg-t42-close:hover {
   background: color-mix(in srgb, var(--color-primary) 16%, transparent) !important;
 }
+/* M-1 (audit-2 deferred): mobile copy swap. Default = long copy
+   visible. At ≤480px the long copy hides and the short variant
+   ("Free Beta — Founding Checkout Open" / "Free Beta — Lock In
+   $79") shows instead. Pure CSS, no JS resize listener needed. */
+#pmg-t42-beta-banner .pmg-banner-short { display: none; }
+@media (max-width: 480px) {
+  #pmg-t42-beta-banner .pmg-banner-long  { display: none; }
+  #pmg-t42-beta-banner .pmg-banner-short { display: inline; }
+}
 
 .global-search input,
 .site-search input,

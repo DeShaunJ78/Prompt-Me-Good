@@ -686,6 +686,13 @@
                               : 'var(--muted)';
       }
 
+      /* M-2 (audit-2 deferred): until at least LIVE_COUNTER_MIN_SOLD
+         seats are claimed, "0 of 500 claimed · 500 left" reads as
+         "nobody bought this" rather than scarcity. Show a brand-new
+         framing instead and let the live counter take over once
+         there's actual social proof to show. Threshold per the
+         original audit-1 spec. */
+      var LIVE_COUNTER_MIN_SOLD = 25;
       function renderCounter(s) {
         if (!counterEl) return;
         if (s.soldOut) {
@@ -694,6 +701,8 @@
           btn.disabled = true;
           btn.textContent = 'Sold out';
           setStatus('Founding Member is sold out — please join the Pro waitlist below.', 'error');
+        } else if (s.sold < LIVE_COUNTER_MIN_SOLD) {
+          counterEl.textContent = 'Brand new — be one of the first ' + s.limit;
         } else {
           counterEl.textContent = s.sold + ' of ' + s.limit + ' Founding seats claimed · '
             + s.remaining + ' left';

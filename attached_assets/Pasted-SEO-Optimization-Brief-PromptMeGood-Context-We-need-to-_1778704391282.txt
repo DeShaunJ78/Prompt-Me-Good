@@ -1,0 +1,32 @@
+SEO Optimization Brief: PromptMeGood
+Context: We need to fully optimize the site for organic search. We are targeting high-intent, long-tail keywords around ChatGPT prompt building, DALL-E image prompt generation, and AI prompt optimization.
+Target Keywords (Primary):
+"ChatGPT prompt builder free"
+"AI prompt optimizer tool"
+"DALL-E image prompt generator"
+"How to write better ChatGPT prompts"
+Target Keywords (Secondary / LSI):
+"Free AI prompt generator no signup"
+"Prompt engineering tool for beginners"
+"Reverse engineer image to prompt"
+Action Items for Replit:
+1. Update index.html (Homepage) Meta Tags
+Title Tag: <title>Free ChatGPT Prompt Builder & AI Prompt Optimizer | PromptMeGood</title>
+Meta Description: <meta name="description" content="Stop guessing what to type. Use our free AI prompt generator to build, optimize, and reverse-engineer perfect prompts for ChatGPT, Claude, and DALL-E. No signup required.">
+H1 Tag: Ensure the main <h1> on the homepage includes "Free AI Prompt Builder" or "ChatGPT Prompt Optimizer".
+2. Update pricing.html Meta Tags
+Title Tag: <title>Pricing | PromptMeGood - AI Prompt Generator Tool</title>
+Meta Description: <meta name="description" content="Start for free with our AI prompt builder. Upgrade to Founding Member for lifetime access to the Expert Command Center and advanced prompt optimization tools.">
+3. Update app.html (App Page) Meta Tags
+Title Tag: <title>PromptMeGood App | Free ChatGPT & DALL-E Prompt Generator</title>
+Meta Description: <meta name="description" content="Build better AI prompts instantly. Use our free prompt engineering tool to optimize text for ChatGPT or generate image prompts for DALL-E and Midjourney.">
+4. Implement JSON-LD Structured Data (Schema Markup)
+Add SoftwareApplication schema to index.html to tell Google exactly what this tool is.
+Include properties: name: "PromptMeGood", applicationCategory: "BusinessApplication", operatingSystem: "Web", offers: { price: "0", priceCurrency: "USD" }, and a description rich with our target keywords.
+5. Image Alt Text Sweep
+Audit all <img> tags across the site. Ensure they have descriptive alt text that naturally includes variations of the target keywords (e.g., alt="PromptMeGood AI prompt optimizer interface").
+Constraints:
+Do not change the visual layout or design of the pages.
+Do not break any existing functionality.
+Show me the exact HTML changes you plan to make for the Title, Meta Description, and H1 tags before committing them.
+Send this to Replit, and they will handle the HTML updates to get these keywords ranking.
