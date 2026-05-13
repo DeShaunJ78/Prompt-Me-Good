@@ -86,7 +86,13 @@ router.get("/founding-checkout/status", async (req, res) => {
     const sold = await getFoundingSold();
     const limit = PMG_PRICING.FOUNDING_LIMIT;
     const remaining = Math.max(0, limit - sold);
-    res.set("Cache-Control", "public, max-age=15");
+    // audit-2 M3: previously `public, max-age=15` — that 15-second window let
+    // a stale "X left" badge sit in the browser long enough for a buyer to
+    // click Buy on a sold-out tier and get a 409 from POST /founding-checkout.
+    // The server-side 409 still catches it, but the UX is jarring. Switching
+    // to no-store guarantees the badge always reflects current seat count.
+    // Cost is one extra DB COUNT per page load — negligible at our scale.
+    res.set("Cache-Control", "no-store");
     res.json({
       sold,
       limit,

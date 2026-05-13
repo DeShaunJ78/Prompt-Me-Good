@@ -22,6 +22,11 @@ import { PMG_PRICING } from "../lib/pricing-config";
  * ============================================================================ */
 const router: IRouter = Router();
 
+// audit-2 L1: only the `.js` variant is served. A bare GET /api/pricing-config
+// (no extension) intentionally 404s — Express has no matching route and the
+// fall-through 404 handler in routes/index.ts responds. Keep it that way:
+// pricing-config is a script tag include, not a JSON API, and adding a JSON
+// twin would split readers between two source-of-truth endpoints.
 router.get("/pricing-config.js", (_req, res) => {
   res.set("Content-Type", "application/javascript; charset=utf-8");
   res.set("Cache-Control", "public, max-age=60");

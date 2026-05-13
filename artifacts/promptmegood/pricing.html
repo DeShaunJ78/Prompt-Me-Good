@@ -260,7 +260,7 @@
       <span class="eyebrow">Pricing</span>
       <h1>Simple, Honest Pricing</h1>
       <p class="pricing-hero-lede">Start free. No signup, no credit card. All three panels — Text, Photography, Video — included.</p>
-      <p class="pricing-hero-sub">Lock in lifetime access for <strong>$79</strong> with our one-time <strong>Founding Member</strong> deal — first 500 buyers, price locked for life. Pro Monthly (<strong>$14/mo</strong>), Pro Yearly (<strong>$129/yr</strong>), and Pro Studio (<strong>$29/mo</strong> or <strong>$290/yr</strong>) for heavy users launch on <strong>July 1, 2026</strong>.</p>
+      <p class="pricing-hero-sub">Lock in lifetime access for <strong><span data-pmg-price="founding">$79</span></strong> with our one-time <strong>Founding Member</strong> deal — first 500 buyers, price locked for life. Pro Monthly (<strong><span data-pmg-price="pro_monthly">$14</span>/mo</strong>), Pro Yearly (<strong><span data-pmg-price="pro_yearly">$129</span>/yr</strong>), and Pro Studio (<strong><span data-pmg-price="pro_studio_monthly">$29</span>/mo</strong> or <strong><span data-pmg-price="pro_studio_yearly">$290</span>/yr</strong>) for heavy users launch on <strong>July 1, 2026</strong>.</p>
     </section>
 
     <section class="container">
@@ -657,7 +657,9 @@
         }
       }
 
-      // Fetch current count once on load. Cached server-side for 15s.
+      // Fetch current count once on load. Server now sends no-store
+      // (audit-2 M3) so this is always fresh; the click-handler also
+      // re-checks before POSTing to /api/founding-checkout.
       fetch('/api/founding-checkout/status', { headers: { 'Accept': 'application/json' } })
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (s) {
@@ -675,11 +677,28 @@
         btn.textContent = 'Opening checkout…';
         setStatus('', null);
 
-        fetch('/api/founding-checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({})
-        })
+        /* audit-2 M3: re-check seat count immediately before the POST. The
+           initial fetch above runs at page load; if a buyer sat on the page
+           for several minutes (or another buyer took the last seat in
+           between), we'd otherwise create a Stripe Checkout Session for a
+           sold-out tier. The POST handler also enforces this server-side
+           (returns 409), but skipping the Stripe round-trip is cleaner.
+           /api/founding-checkout/status is now no-store so this is fresh. */
+        fetch('/api/founding-checkout/status', { headers: { 'Accept': 'application/json' } })
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (s) {
+            if (s && s.soldOut) {
+              renderCounter(s);
+              setStatus('Founding Member just sold out — please join the Pro waitlist below.', 'error');
+              btn.textContent = 'Sold out';
+              return Promise.reject({ __soldOut: true });
+            }
+            return fetch('/api/founding-checkout', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+              body: JSON.stringify({})
+            });
+          })
           .then(function (r) {
             return r.json().then(function (j) { return { ok: r.ok, status: r.status, body: j }; });
           })
@@ -705,7 +724,10 @@
             btn.disabled = false;
             btn.textContent = originalText;
           })
-          .catch(function () {
+          .catch(function (err) {
+            // Sold-out short-circuit from the pre-flight status re-check.
+            // UI state was already set there; nothing else to do.
+            if (err && err.__soldOut) return;
             setStatus('Network error — please check your connection and try again.', 'error');
             btn.disabled = false;
             btn.textContent = originalText;

@@ -99,9 +99,8 @@ function parseJsLiteral(raw: string): unknown {
 }
 
 /** Keys we require to match exactly between the TS and JS sources.
- *  Caps objects on the JS side intentionally omit `vid` (frontend doesn't
- *  surface video caps in the same place), so we compare the keys that exist
- *  on both sides. */
+ *  audit-2 H2 (2026-05-13): `vid` is now mirrored into pmg-pricing-config.js
+ *  for shape parity, so the cap comparison covers all four fields. */
 const SCALAR_KEYS = [
   "FOUNDING_PRICE_USD",
   "PRO_MONTHLY_USD",
@@ -129,7 +128,7 @@ const CAP_KEYS = [
   "PRO_STUDIO_DAILY_CAPS",
 ] as const;
 
-const CAP_FIELDS_TO_COMPARE = ["run", "img", "analyze"] as const;
+const CAP_FIELDS_TO_COMPARE = ["run", "img", "analyze", "vid"] as const;
 
 /** Locate the pmg-pricing-config.js mirror file by walking up from this
  *  module's directory until we find the workspace root (the directory that

@@ -24,12 +24,15 @@
     FOUNDING_LIMIT: 500,
     FOUNDING_DEADLINE_COPY: 'First 500 Buyers Lock In $79 For Life',
     TRIAL_DAYS: 7,
-    /* Per-plan daily caps. Mirrors api-server/src/lib/pricing-config.ts. */
-    TRIAL_DAILY_CAPS:       { run: 6,  img: 3,  analyze: 2  },
-    FREE_DAILY_CAPS:        { run: 2,  img: 1,  analyze: 1  },
-    FOUNDING_DAILY_CAPS:    { run: 15, img: 8,  analyze: 5  },
-    PRO_DAILY_CAPS:         { run: 25, img: 12, analyze: 8  },
-    PRO_STUDIO_DAILY_CAPS:  { run: 75, img: 30, analyze: 20 },
+    /* Per-plan daily caps. Mirrors api-server/src/lib/pricing-config.ts.
+       audit-2 H2: `vid` added for shape parity with the TS source so the
+       boot-time sync check (pricing-config-sync-check.ts) can verify all
+       four cap fields, not just three. */
+    TRIAL_DAILY_CAPS:       { run: 6,  img: 3,  analyze: 2,  vid: 0  },
+    FREE_DAILY_CAPS:        { run: 2,  img: 1,  analyze: 1,  vid: 0  },
+    FOUNDING_DAILY_CAPS:    { run: 15, img: 8,  analyze: 5,  vid: 3  },
+    PRO_DAILY_CAPS:         { run: 25, img: 12, analyze: 8,  vid: 5  },
+    PRO_STUDIO_DAILY_CAPS:  { run: 75, img: 30, analyze: 20, vid: 10 },
     PRICE_LOCK_TAGLINE: 'price locked for life',
     /* ----- Feature gating ----- */
     /* Expert Command Center is a paid feature (Founding Member + Pro).
