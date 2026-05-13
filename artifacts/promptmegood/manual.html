@@ -122,7 +122,7 @@
 
         <h2 id="overview">1. Overview</h2>
         <p>PromptMeGood is a browser-based prompt workstation. Every feature runs at <code>/app</code>. There is nothing to install. You do not need an account to use the free tier.</p>
-        <p>The marketing site lives at <code>/</code>; the workstation lives at <code>/app</code>. Returning users are auto-redirected from <code>/</code> to <code>/app</code>; append <code>?stay=1</code> to the URL to override.</p>
+        <p>The marketing site lives at <code>/</code>; the workstation lives at <code>/app</code>. The two are independent — visiting <code>/</code> always shows the landing page, regardless of prior visits. Bookmark whichever surface you want to land on.</p>
         <p>All work is local-first. Your prompts, picks, and saved items live in your browser's <code>localStorage</code>. Only the inputs you submit to AI features (text prompts, image briefs, uploaded images for the Image Workshop or Reverse Engineer, video briefs) leave the device — they go to the AI provider over HTTPS, are not retained on PromptMeGood servers, and are never used to train models.</p>
 
         <h2 id="chassis">2. The chassis</h2>
@@ -287,7 +287,7 @@
           <tbody>
             <tr><td><code>?panel=photography</code></td><td>Auto-switch to the Photography panel after the chassis builds.</td></tr>
             <tr><td><code>?panel=video</code></td><td>Auto-switch to the Video panel.</td></tr>
-            <tr><td><code>?stay=1</code></td><td>On the marketing landing, do not auto-redirect returning users to <code>/app</code>.</td></tr>
+            <tr><td><code>?fresh=1</code></td><td>Wipe all session/draft state on load. Useful for starting from a clean slate, or for personal bookmarks where you don't want prior typing restored.</td></tr>
             <tr><td><code>?noautotune</code></td><td>Disable the Auto-Tune step that runs when you tap Build My Prompt.</td></tr>
             <tr><td><code>?noautoboost</code></td><td>Disable the ✨ Auto-Boost button.</td></tr>
           </tbody>
