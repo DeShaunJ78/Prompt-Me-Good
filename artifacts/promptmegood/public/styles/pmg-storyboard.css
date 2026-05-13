@@ -121,6 +121,20 @@
   padding: 3px 8px; border-radius: 999px;
   margin-bottom: 6px;
 }
+.pmg-sb-panel-text .pmg-sb-prompt-text { margin-bottom: 8px; }
+.pmg-sb-regen-btn {
+  appearance: none;
+  font-family: inherit; font-size: 0.78rem; font-weight: 600;
+  padding: 6px 10px; border-radius: 8px;
+  background: color-mix(in srgb, var(--g2-mint, #3ee0a0) 10%, transparent);
+  color: var(--g2-mint, #3ee0a0);
+  border: 1px solid color-mix(in srgb, var(--g2-mint, #3ee0a0) 28%, transparent);
+  cursor: pointer;
+  display: inline-flex; align-items: center; gap: 5px;
+  transition: background 120ms ease;
+}
+.pmg-sb-regen-btn:hover { background: color-mix(in srgb, var(--g2-mint, #3ee0a0) 22%, transparent); }
+.pmg-sb-regen-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
 .pmg-sb-actions {
   display: flex; flex-wrap: wrap; gap: 10px;

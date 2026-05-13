@@ -1,7 +1,9 @@
 /* ============================================================================
-   PromptMeGood — Storyboard Studio (sb-1)
+   PromptMeGood — Storyboard Studio (sb-2)
    Text concept → /api/storyboard returns 5 prompts → 5 parallel /api/image
    calls → render thumbnails → optional handoff to Visual Studio video tab.
+   sb-2 adds: per-frame 🔄 Regenerate button + 🖨 Export PDF (print-to-PDF
+   2-up portrait, zero deps).
    ============================================================================ */
 (function () {
   'use strict';
@@ -139,6 +141,23 @@
     }
   }
 
+  function panelImgInner(p, i) {
+    if (p.status === 'pending') return '<div class="pmg-sb-spinner" aria-hidden="true"></div>';
+    if (p.status === 'done')    return '<img src="' + escapeHtml(p.imageUrl) + '" alt="Storyboard panel ' + (i + 1) + '" />';
+    return '<div class="pmg-sb-fail">⚠️ ' + escapeHtml(p.error || 'Image failed.') + '</div>';
+  }
+
+  function panelTextInner(p, i) {
+    var regen = (p.status === 'pending')
+      ? '<button type="button" class="pmg-sb-regen-btn" data-sb-regen="' + i + '" disabled aria-label="Regenerating shot ' + (i + 1) + '">⏳ Regenerating…</button>'
+      : '<button type="button" class="pmg-sb-regen-btn" data-sb-regen="' + i + '" aria-label="Regenerate shot ' + (i + 1) + '">🔄 Regenerate</button>';
+    return (
+      '<span class="pmg-sb-shot-label">Shot ' + (i + 1) + '</span>' +
+      '<div class="pmg-sb-prompt-text">' + escapeHtml(p.prompt) + '</div>' +
+      regen
+    );
+  }
+
   function renderPanels() {
     var c = $('pmg-sb-content');
     if (!c) return;
@@ -146,21 +165,15 @@
     var panelsHtml = _currentPanels.map(function (p, i) {
       return (
         '<div class="pmg-sb-panel" data-sb-idx="' + i + '">' +
-          '<div class="pmg-sb-panel-img" data-sb-img-slot="' + i + '">' +
-            (p.status === 'pending'  ? '<div class="pmg-sb-spinner" aria-hidden="true"></div>' :
-             p.status === 'done'     ? '<img src="' + escapeHtml(p.imageUrl) + '" alt="Storyboard panel ' + (i + 1) + '" />' :
-             /* failed */              '<div class="pmg-sb-fail">⚠️ ' + escapeHtml(p.error || 'Image failed.') + '</div>') +
-          '</div>' +
-          '<div class="pmg-sb-panel-text">' +
-            '<span class="pmg-sb-shot-label">Shot ' + (i + 1) + '</span>' +
-            '<div>' + escapeHtml(p.prompt) + '</div>' +
-          '</div>' +
+          '<div class="pmg-sb-panel-img" data-sb-img-slot="' + i + '">' + panelImgInner(p, i) + '</div>' +
+          '<div class="pmg-sb-panel-text" data-sb-text-slot="' + i + '">' + panelTextInner(p, i) + '</div>' +
         '</div>'
       );
     }).join('');
     var actions =
       '<div class="pmg-sb-actions">' +
         '<button type="button" id="pmg-sb-send-to-video" class="pmg-sb-btn pmg-sb-btn-primary">🎬 Send to Video Studio</button>' +
+        '<button type="button" id="pmg-sb-export-pdf" class="pmg-sb-btn pmg-sb-btn-secondary">🖨 Export PDF</button>' +
         '<button type="button" id="pmg-sb-copy-prompts" class="pmg-sb-btn pmg-sb-btn-secondary">📋 Copy All Prompts</button>' +
       '</div>';
     c.innerHTML = concept +
@@ -169,15 +182,106 @@
   }
 
   function updatePanel(i) {
-    var slot = document.querySelector('[data-sb-img-slot="' + i + '"]');
-    if (!slot) return;
     var p = _currentPanels[i];
     if (!p) return;
-    if (p.status === 'done') {
-      slot.innerHTML = '<img src="' + escapeHtml(p.imageUrl) + '" alt="Storyboard panel ' + (i + 1) + '" />';
-    } else if (p.status === 'failed') {
-      slot.innerHTML = '<div class="pmg-sb-fail">⚠️ ' + escapeHtml(p.error || 'Image failed.') + '</div>';
+    var imgSlot = document.querySelector('[data-sb-img-slot="' + i + '"]');
+    if (imgSlot) imgSlot.innerHTML = panelImgInner(p, i);
+    var textSlot = document.querySelector('[data-sb-text-slot="' + i + '"]');
+    if (textSlot) textSlot.innerHTML = panelTextInner(p, i);
+  }
+
+  function regenerateOne(i) {
+    var p = _currentPanels[i];
+    if (!p || p.status === 'pending') return;
+    p.status = 'pending';
+    p.error = null;
+    p.imageUrl = null;
+    updatePanel(i);
+    // Reuse the live session token so the result lands in the open modal.
+    generateOne(i, _sessionId);
+  }
+
+  // Build a self-contained print document (2-up portrait) and open it in a
+  // new window. Browser's native print dialog handles the "Save as PDF"
+  // step. Zero deps. Pop-up blockers: triggered from a click handler so
+  // the user-gesture bypass applies.
+  function exportPdf() {
+    var dateStr = new Date().toLocaleDateString(undefined, {
+      year: 'numeric', month: 'long', day: 'numeric',
+    });
+    var titleText = 'Storyboard — ' + (_currentConcept.slice(0, 60) || 'Untitled');
+    var panelsHtml = _currentPanels.map(function (p, i) {
+      var inner;
+      if (p.status === 'done' && p.imageUrl) {
+        inner = '<img src="' + escapeHtml(p.imageUrl) + '" alt="Shot ' + (i + 1) + '" crossorigin="anonymous" />';
+      } else {
+        inner = '<div class="pmg-pdf-noimg">Image not generated</div>';
+      }
+      return (
+        '<div class="pmg-pdf-panel">' +
+          '<div class="pmg-pdf-shot">Shot ' + (i + 1) + '</div>' +
+          inner +
+          '<div class="pmg-pdf-prompt">' + escapeHtml(p.prompt) + '</div>' +
+        '</div>'
+      );
+    }).join('');
+
+    var doc =
+      '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8" />' +
+      '<title>' + escapeHtml(titleText) + '</title>' +
+      '<style>' +
+        '@page { size: letter portrait; margin: 0.6in 0.6in 0.8in; }' +
+        '* { box-sizing: border-box; }' +
+        'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color: #111; margin: 0; }' +
+        '.pmg-pdf-header { border-bottom: 2px solid #0a2420; padding-bottom: 14px; margin-bottom: 22px; }' +
+        '.pmg-pdf-header h1 { margin: 0; font-size: 11pt; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #0a2420; }' +
+        '.pmg-pdf-header .pmg-pdf-concept { font-size: 14pt; line-height: 1.35; color: #111; margin: 8px 0 0; font-weight: 600; }' +
+        '.pmg-pdf-header .pmg-pdf-meta { font-size: 9pt; color: #666; margin-top: 8px; letter-spacing: 0.02em; }' +
+        '.pmg-pdf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }' +
+        '.pmg-pdf-panel { break-inside: avoid; page-break-inside: avoid; border: 1px solid #d4d4d4; border-radius: 6px; padding: 10px; background: #fff; }' +
+        '.pmg-pdf-shot { font-size: 8pt; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #0a2420; margin-bottom: 6px; }' +
+        '.pmg-pdf-panel img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 4px; background: #eee; display: block; }' +
+        '.pmg-pdf-panel .pmg-pdf-noimg { width: 100%; aspect-ratio: 1 / 1; border: 1px dashed #c0c0c0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 9pt; background: #fafafa; }' +
+        '.pmg-pdf-panel .pmg-pdf-prompt { font-size: 9pt; line-height: 1.45; color: #333; margin-top: 8px; }' +
+        '.pmg-pdf-footer { position: fixed; bottom: 0.3in; left: 0.6in; right: 0.6in; text-align: center; font-size: 8pt; color: #888; border-top: 1px solid #e8e8e8; padding-top: 6px; }' +
+      '</style></head><body>' +
+        '<div class="pmg-pdf-header">' +
+          '<h1>🎞️ Storyboard</h1>' +
+          '<div class="pmg-pdf-concept">' + escapeHtml(_currentConcept) + '</div>' +
+          '<div class="pmg-pdf-meta">' + escapeHtml(dateStr) + ' · 5 shots</div>' +
+        '</div>' +
+        '<div class="pmg-pdf-grid">' + panelsHtml + '</div>' +
+        '<div class="pmg-pdf-footer">Built with PromptMeGood · promptmegood.com</div>' +
+        '<script>(function(){' +
+          'function go(){ try { window.focus(); window.print(); } catch(_) {} }' +
+          'window.addEventListener("load", function(){' +
+            'var imgs = document.images || [];' +
+            'var pending = imgs.length;' +
+            'if (!pending) { setTimeout(go, 200); return; }' +
+            'var done = function(){ if (--pending <= 0) setTimeout(go, 250); };' +
+            'for (var i = 0; i < imgs.length; i++) {' +
+              'if (imgs[i].complete) { done(); }' +
+              'else { imgs[i].addEventListener("load", done); imgs[i].addEventListener("error", done); }' +
+            '}' +
+            'setTimeout(function(){ try { go(); } catch(_) {} }, 6000);' +
+          '});' +
+        '})();<' + '/script>' +
+      '</body></html>';
+
+    var w = window.open('', '_blank');
+    if (!w) {
+      // Pop-up blocked — surface a friendly hint instead of failing silently.
+      var btn = document.getElementById('pmg-sb-export-pdf');
+      if (btn) {
+        var orig = btn.textContent;
+        btn.textContent = '⚠️ Pop-up blocked — allow & retry';
+        setTimeout(function () { btn.textContent = orig; }, 2600);
+      }
+      return;
     }
+    w.document.open();
+    w.document.write(doc);
+    w.document.close();
   }
 
   async function generateOne(i, sessionId) {
@@ -331,6 +435,13 @@
       if (e.target.closest('#pmg-close-storyboard')) { closeStoryboard(); return; }
       if (e.target === modal()) { closeStoryboard(); return; }
       if (e.target.closest('#pmg-sb-send-to-video')) { sendToVideoStudio(); return; }
+      if (e.target.closest('#pmg-sb-export-pdf')) { exportPdf(); return; }
+      var regenBtn = e.target.closest('[data-sb-regen]');
+      if (regenBtn) {
+        var idx = parseInt(regenBtn.getAttribute('data-sb-regen'), 10);
+        if (!isNaN(idx)) regenerateOne(idx);
+        return;
+      }
       if (e.target.closest('#pmg-sb-copy-prompts')) {
         if (navigator.clipboard) {
           var txt = _currentPanels.map(function (p, i) { return 'Shot ' + (i + 1) + ': ' + p.prompt; }).join('\n\n');
