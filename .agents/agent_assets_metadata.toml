@@ -245,3 +245,9 @@ id = "X1Sv7RqUjliWm42Qv9-x_"
 uri = "file://artifacts/promptmegood/public/opengraph.jpg"
 type = "image"
 title = "New OpenGraph image (1200x630)"
+
+[[outputs]]
+id = "Zkc6WBUaNimHTZOpCeauf"
+uri = "file://.local/audit/audit-2-triage.md"
+type = "text"
+title = "Audit #2 Triage Report"
