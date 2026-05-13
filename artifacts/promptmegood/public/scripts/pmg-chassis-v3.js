@@ -156,7 +156,7 @@
     root.innerHTML = [
       '<header class="pmgv3-topbar">',
         '<button type="button" class="pmgv3-brand" id="pmgv3-brand-home" title="Return to home — clears the current tab" aria-label="Return to home">',
-          '<img src="/assets/pmg-logo.png?v=6" alt="PromptMeGood" />',
+          '<img src="/assets/pmg-logo.png?v=7" alt="PromptMeGood" />',
           '<span>PromptMeGood</span>',
           '<span class="pmgv3-brand-beta">Beta</span>',
         '</button>',
