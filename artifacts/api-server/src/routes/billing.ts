@@ -118,7 +118,7 @@ router.post(
     // pro_studio = Pro Studio Monthly ($29), pro_studio_yearly = Pro Studio Yearly ($290).
     const rawTier =
       typeof req.body === "object" && req.body && typeof req.body.tier === "string"
-        ? req.body.tier.toLowerCase().replace("-", "_")
+        ? req.body.tier.toLowerCase().replace(/-/g, "_")
         : "pro";
     const tier:
       | "pro"

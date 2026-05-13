@@ -471,7 +471,9 @@ router.post("/generate-stream", generateLimiter, generateCostCheck, async (req, 
 const RUN_MODEL_PAID = "gpt-4.1";
 const RUN_MODEL_FREE = "gpt-4.1-mini";
 function modelForPlan(plan: PmgPlan | undefined): string {
-  return plan === "founding" || plan === "pro" ? RUN_MODEL_PAID : RUN_MODEL_FREE;
+  return plan === "founding" || plan === "pro" || plan === "pro_studio"
+    ? RUN_MODEL_PAID
+    : RUN_MODEL_FREE;
 }
 // run-cap-2 (2026-05-12): bumped 8000 → 32000 input, 1000 → 4000 output.
 // Heavily ECC-tuned prompts (Architect + Diagnose + Tune layered on top
@@ -735,7 +737,7 @@ router.post("/video", videoLimiter, userCapEnforce("vid", 1), async (req, res) =
     });
     return;
   }
-  if (ctx.plan !== "founding" && ctx.plan !== "pro") {
+  if (ctx.plan !== "founding" && ctx.plan !== "pro" && ctx.plan !== "pro_studio") {
     res.status(402).json({
       success: false,
       ok: false,

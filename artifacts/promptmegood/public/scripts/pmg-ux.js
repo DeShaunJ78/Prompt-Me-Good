@@ -12429,9 +12429,11 @@
       var cfg = window.PMG_PRICING;
       if (!cfg) return;
       var priceMap = {
-        founding:    typeof cfg.FOUNDING_PRICE_USD === 'number' ? '$' + cfg.FOUNDING_PRICE_USD : null,
-        pro_monthly: typeof cfg.PRO_MONTHLY_USD    === 'number' ? '$' + cfg.PRO_MONTHLY_USD    : null,
-        pro_yearly:  typeof cfg.PRO_YEARLY_USD     === 'number' ? '$' + cfg.PRO_YEARLY_USD     : null
+        founding:           typeof cfg.FOUNDING_PRICE_USD       === 'number' ? '$' + cfg.FOUNDING_PRICE_USD       : null,
+        pro_monthly:        typeof cfg.PRO_MONTHLY_USD          === 'number' ? '$' + cfg.PRO_MONTHLY_USD          : null,
+        pro_yearly:         typeof cfg.PRO_YEARLY_USD           === 'number' ? '$' + cfg.PRO_YEARLY_USD           : null,
+        pro_studio_monthly: typeof cfg.PRO_STUDIO_MONTHLY_USD   === 'number' ? '$' + cfg.PRO_STUDIO_MONTHLY_USD   : null,
+        pro_studio_yearly:  typeof cfg.PRO_STUDIO_YEARLY_USD    === 'number' ? '$' + cfg.PRO_STUDIO_YEARLY_USD    : null
       };
       var nodes = document.querySelectorAll('[data-pmg-price]');
       for (var i = 0; i < nodes.length; i++) {
@@ -12483,9 +12485,11 @@
     try {
       var cfg = window.PMG_PRICING;
       if (!cfg) return;
-      var founding = String(cfg.FOUNDING_PRICE_USD ?? '79');
-      var proM     = String(cfg.PRO_MONTHLY_USD    ?? '9');
-      var proY     = String(cfg.PRO_YEARLY_USD     ?? '79');
+      var founding = String(cfg.FOUNDING_PRICE_USD       ?? '79');
+      var proM     = String(cfg.PRO_MONTHLY_USD          ?? '9');
+      var proY     = String(cfg.PRO_YEARLY_USD           ?? '79');
+      var psM      = String(cfg.PRO_STUDIO_MONTHLY_USD   ?? '29');
+      var psY      = String(cfg.PRO_STUDIO_YEARLY_USD    ?? '290');
       var blocks = document.querySelectorAll('script[type="application/ld+json"]');
       for (var i = 0; i < blocks.length; i++) {
         var blk = blocks[i];
@@ -12522,10 +12526,17 @@
             var off = data.offers[j];
             if (!off || typeof off !== 'object') continue;
             var nm = String(off.name || '').toLowerCase();
+            /* Order matters: check the more-specific "pro studio" names
+               BEFORE the generic monthly/yearly fallbacks, so a Pro Studio
+               Yearly offer doesn't get rewritten to the Pro Yearly price. */
             if (nm.indexOf('founding') !== -1) {
               if (off.price !== founding) { off.price = founding; changed = true; }
               var nd = hydrateDesc(off.description, foc);
               if (nd !== off.description) { off.description = nd; changed = true; }
+            } else if (nm.indexOf('studio') !== -1 && nm.indexOf('yearly') !== -1) {
+              if (off.price !== psY) { off.price = psY; changed = true; }
+            } else if (nm.indexOf('studio') !== -1 && nm.indexOf('monthly') !== -1) {
+              if (off.price !== psM) { off.price = psM; changed = true; }
             } else if (nm.indexOf('yearly') !== -1 && off.price !== proY) {
               off.price = proY; changed = true;
             } else if (nm.indexOf('monthly') !== -1 && off.price !== proM) {
