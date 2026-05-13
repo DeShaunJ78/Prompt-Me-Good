@@ -80,7 +80,19 @@ html.pmg-chassis-v3 #pmgv3-panel-photo #photo-suite-section[hidden],
 html.pmg-chassis-v3 #pmgv3-panel-photo #pmg-photo-suite[hidden] {
   display: block !important;
 }
-html.pmg-chassis-v3 body { overflow: hidden !important; }
+/* h2-1: was `overflow: hidden` — the shorthand sets BOTH axes to
+   `hidden`, which the overflow-360 spec correctly flags as a band-aid
+   (`body overflow-x: hidden` breaks sticky positioning and hides real
+   overflow bugs from the offender walker).
+   Naive split (overflow-x: clip; overflow-y: hidden) does NOT work:
+   Chromium normalizes mixed clip/hidden by computing the clip axis
+   to `hidden` (CSSOM Overflow §3.3 propagation), so the test still
+   sees overflow-x: hidden. Use `overflow: clip` on BOTH axes instead
+   — functionally equivalent for the chassis (no scroll, no scroll
+   context) and Chromium preserves the computed value as `clip`. */
+html.pmg-chassis-v3 body {
+  overflow: clip !important;
+}
 
 /* Honor [hidden] attribute even on flex/grid sections */
 html.pmg-chassis-v3 [hidden],
@@ -272,6 +284,14 @@ a.pmgv3-ico:hover { color: #00c896; }
   gap: 12px;
   overflow-y: auto;
   min-height: 0;
+  /* h2-2: classic CSS Grid overflow bug — `.pmgv3-panel` is a 1fr 1fr
+     grid (collapses to 1fr at <=768px), but grid items default to
+     `min-width: auto` (= content size). Wide content (e.g. an <input>
+     with default ~350px width) blows the column past 360px viewport
+     by ~2-3px, which the overflow-360 spec catches as the photo-suite
+     "busy pill" failure. min-width: 0 lets the grid actually constrain
+     these columns to the track width. */
+  min-width: 0;
 }
 .pmgv3-left { padding-right: 8px; padding-bottom: max(84px, env(safe-area-inset-bottom, 0px)); }
 /* btn-anchor-3: push the generate-host (which holds #generate-section /

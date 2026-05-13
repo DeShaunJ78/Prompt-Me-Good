@@ -243,7 +243,14 @@ for (const { name, path } of PAGES) {
 }
 
 test.describe(`horizontal overflow @ ${VIEWPORT_WIDTH}px (homepage interactive states)`, () => {
-  test("mobile nav open does not overflow viewport horizontally", async ({
+  /* h2-stale-1: legacy `#nav-toggle` lives inside `.topbar`, which the
+     chassis-v3 universal hide rule (pmg-chassis-v3.css:51) `display: none`s
+     on /app. The chassis owns its own header (`.pmgv3-topbar`) and tab
+     row — there is no slide-out hamburger drawer in the new shell. This
+     test was authored before that cleanup landed and now targets a hidden
+     legacy element. Skipping until/unless a chassis-v3 mobile nav drawer
+     is added. */
+  test.skip("mobile nav open does not overflow viewport horizontally", async ({
     page,
   }) => {
     await installApiMocks(page);
@@ -266,7 +273,13 @@ test.describe(`horizontal overflow @ ${VIEWPORT_WIDTH}px (homepage interactive s
     await checkPage(page, "homepage + mobile nav open");
   });
 
-  test("Help Me Start modal open does not overflow viewport horizontally", async ({
+  /* h2-stale-2: `#guided-mode-dialog` (and the `#guided-mode-btn` that
+     opened it) were removed from app.html in cleanup cv2-43 — see the
+     marker comment at app.html ~line 5319 ("Help Me Start 4-step modal
+     removed"). The chassis-v3 onboarding is now the inline guided-intake
+     fields (`pmg-guided-intake.js`), which are covered by the photo-suite
+     scenario below. Skipping until/unless a replacement modal is added. */
+  test.skip("Help Me Start modal open does not overflow viewport horizontally", async ({
     page,
   }) => {
     await installApiMocks(page);
