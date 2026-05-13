@@ -336,12 +336,27 @@
       '<div class="photo-mode-container" id="photo-mode-reverse" role="tabpanel" style="display:none;">',
         '<section class="pmg-vs-inline-section">',
           '<label class="pmgv3-section-label">🔍 Reverse Engineer an Image</label>',
-          '<p style="margin:0 0 10px;font-size:12px;opacity:.7">Drop in any photo and we will read its DNA — composition, lighting, palette, lens — and turn it into a prompt you can reuse and tweak. After analysis you will jump back to <strong>Create New</strong> with the prompt and pills pre-filled.</p>',
+          '<p style="margin:0 0 4px;font-size:13px;font-weight:600;line-height:1.35">Steal any photo&rsquo;s look in one click.</p>',
+          '<p style="margin:0 0 10px;font-size:12px;opacity:.75;line-height:1.45">Drop a photo &rarr; get a prompt you can edit, riff on, and re-generate &mdash; composition, lighting, palette, and lens all decoded for you.</p>',
           '<div id="pmg-vs-reverse-dropzone" class="pmg-vs-dropzone pmg-vs-dropzone--inline">',
             '<button type="button" id="pmg-vs-reverse-engineer-btn" class="pmg-vs-btn pmg-vs-btn-secondary pmg-vs-full-width">📸 Reverse Engineer an Image · drop or click</button>',
             '<input type="file" id="pmg-vs-reverse-input" accept="image/jpeg,image/png,image/webp" hidden />',
           '</div>',
           '<div id="pmg-vs-reverse-status" class="pmg-vs-reverse-status" hidden></div>',
+          /* re-3: preview-with-discard. Replaces silent auto-inject with an
+             explicit "Use this prompt" / "Discard" choice so the user keeps
+             control and can reject a bad analysis without inheriting it. */
+          '<div id="pmg-vs-reverse-preview" class="pmg-vs-reverse-preview" hidden>',
+            '<div class="pmg-vs-reverse-preview-head">',
+              '<span class="pmg-vs-reverse-preview-eyebrow">✓ Decoded</span>',
+              '<span class="pmg-vs-reverse-preview-meta" id="pmg-vs-reverse-preview-meta"></span>',
+            '</div>',
+            '<textarea id="pmg-vs-reverse-preview-text" class="pmg-vs-reverse-preview-text" rows="5" readonly aria-label="Decoded prompt preview"></textarea>',
+            '<div class="pmg-vs-reverse-preview-actions">',
+              '<button type="button" id="pmg-vs-reverse-use-btn" class="pmg-vs-btn pmg-vs-btn-primary">Use this prompt →</button>',
+              '<button type="button" id="pmg-vs-reverse-discard-btn" class="pmg-vs-reverse-discard-link">Discard</button>',
+            '</div>',
+          '</div>',
         '</section>',
       '</div>',
     ].join('');
@@ -1169,12 +1184,28 @@
     input.click();
   }
 
+  /* re-3: pending decoded analysis awaiting user accept/discard. Cleared
+     on Discard or after Use this prompt successfully injects + jumps. */
+  var _pendingReverse = null;
+  /* re-3 race-guard: monotonic request token. Only the most-recent
+     handleReverseImage() call is allowed to mutate preview/state/status.
+     Prevents a slow first analyze from overwriting a fresh second one
+     (or resurrecting a discarded preview) when the user re-uploads
+     before the first request resolves. */
+  var _reverseReqSeq = 0;
+
   async function handleReverseImage(file) {
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) {
       setReverseStatus('⚠️ Image is over 10 MB. Please pick a smaller one.', 'err');
       return;
     }
+    // Bump the token BEFORE clearing preview / starting fetch so any
+    // in-flight prior request becomes stale immediately.
+    var myReq = ++_reverseReqSeq;
+    // Clear any prior preview so a re-drop doesn't show stale data while
+    // we re-analyze.
+    hideReversePreview();
     var btn = $('pmg-vs-reverse-engineer-btn');
     if (btn) { btn.disabled = true; btn.dataset.origLabel = btn.textContent; btn.textContent = '🔬 Analyzing image DNA…'; }
     setReverseStatus('🔬 Analyzing image DNA — reading composition, light, palette…', 'info');
@@ -1185,26 +1216,81 @@
       delete headers['Content-Type'];
       var res = await fetch('/api/vision-analyze', { method: 'POST', body: fd, headers: headers });
       var data = await res.json().catch(function () { return {}; });
+      // Stale response — a newer upload superseded us, or user
+      // discarded. Silently drop without touching DOM/state.
+      if (myReq !== _reverseReqSeq) return;
       if (!res.ok || !data.prompt) {
         setReverseStatus('⚠️ ' + (data.error || 'Could not analyze that image.'), 'err');
         return;
       }
-      var ta = $('pmg-vs-image-goal');
-      if (ta) {
-        ta.value = data.prompt;
-        ta.dispatchEvent(new Event('input', { bubbles: true }));
-      }
-      applySuiteSettings(data.suite_settings || {});
-      setReverseStatus('✓ Reverse engineered. Jumping back to Create New so you can tweak the prompt → Build → Generate.', 'ok');
-      // ps-1: auto-switch back to Create so the user actually sees the
-      // prefilled goal textarea (it lives inside the Create container).
-      try { setPhotoSubMode('create'); } catch (_) {}
+      // re-3: stash + show preview instead of silently auto-injecting.
+      _pendingReverse = { prompt: data.prompt, suite_settings: data.suite_settings || {} };
+      showReversePreview(_pendingReverse);
+      // Hide the small status line — the preview card is the new
+      // success surface.
+      var statusEl = $('pmg-vs-reverse-status');
+      if (statusEl) { statusEl.hidden = true; statusEl.textContent = ''; }
     } catch (e) {
+      if (myReq !== _reverseReqSeq) return;
       setReverseStatus('⚠️ Network error. Please try again.', 'err');
     } finally {
-      if (btn) { btn.disabled = false; btn.textContent = btn.dataset.origLabel || '📸 Reverse Engineer an Image'; }
+      // Button reset is safe even when stale — it just restores label.
+      if (btn && myReq === _reverseReqSeq) {
+        btn.disabled = false;
+        btn.textContent = btn.dataset.origLabel || '📸 Reverse Engineer an Image';
+      }
     }
   }
+
+  function showReversePreview(payload) {
+    var card = $('pmg-vs-reverse-preview');
+    var ta   = $('pmg-vs-reverse-preview-text');
+    var meta = $('pmg-vs-reverse-preview-meta');
+    if (!card || !ta) return;
+    ta.value = payload.prompt || '';
+    if (meta) {
+      var keys = Object.keys(payload.suite_settings || {}).filter(function (k) {
+        return String((payload.suite_settings || {})[k] || '').trim();
+      });
+      meta.textContent = keys.length
+        ? '+ ' + keys.length + ' suite preset' + (keys.length === 1 ? '' : 's')
+        : '';
+    }
+    card.hidden = false;
+    try { card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
+  }
+
+  function hideReversePreview() {
+    var card = $('pmg-vs-reverse-preview');
+    var ta   = $('pmg-vs-reverse-preview-text');
+    if (card) card.hidden = true;
+    if (ta) ta.value = '';
+    _pendingReverse = null;
+  }
+
+  function discardReversePreview() {
+    // re-3 race-guard: bump token so any in-flight analyze response
+    // can't resurrect the preview after user explicitly discarded.
+    _reverseReqSeq++;
+    hideReversePreview();
+    setReverseStatus('Discarded. Drop another photo to try again.', 'info');
+  }
+
+  function useReversePreview() {
+    if (!_pendingReverse) return;
+    var ta = $('pmg-vs-image-goal');
+    if (ta) {
+      ta.value = _pendingReverse.prompt;
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    applySuiteSettings(_pendingReverse.suite_settings || {});
+    _pendingReverse = null;
+    hideReversePreview();
+    // ps-1: jump back to Create so the user sees the prefilled goal.
+    try { setPhotoSubMode('create'); } catch (_) {}
+    setReverseStatus('✓ Prompt loaded into Create New — tweak, build, then Generate.', 'ok');
+  }
+
 
   function setReverseStatus(msg, kind) {
     var el = $('pmg-vs-reverse-status');
@@ -1432,6 +1518,9 @@
       }
       // Inline panel buttons
       if (e.target.closest('#pmg-vs-reverse-engineer-btn'))    { pickReverseImage(); return; }
+      // re-3: preview-with-discard buttons.
+      if (e.target.closest('#pmg-vs-reverse-use-btn'))         { useReversePreview(); return; }
+      if (e.target.closest('#pmg-vs-reverse-discard-btn'))     { discardReversePreview(); return; }
       // Image Workshop (vs-20)
       if (e.target.closest('#pmg-vs-edit-clear'))              { setEditFile(null); return; }
       if (e.target.closest('#pmg-vs-edit-go'))                 { runImageEdit(); return; }

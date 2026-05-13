@@ -373,6 +373,77 @@
   color: #ff8a8a;
 }
 
+/* re-3: preview-with-discard card. Shown after vision-analyze succeeds
+   so the user explicitly opts in (or discards) instead of inheriting a
+   silent auto-fill. */
+.pmg-vs-reverse-preview {
+  margin-top: 12px;
+  padding: 14px 14px 12px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--g2-mint, #3ee0a0) 38%, transparent);
+  background: color-mix(in srgb, var(--g2-mint, #3ee0a0) 10%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pmg-vs-reverse-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pmg-vs-reverse-preview-eyebrow {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--g2-mint, #3ee0a0);
+}
+.pmg-vs-reverse-preview-meta {
+  font-size: 0.78rem;
+  opacity: 0.75;
+}
+.pmg-vs-reverse-preview-text {
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--g2-mint, #3ee0a0) 22%, transparent);
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--color-text, #e8f5f0);
+  font: inherit;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+.pmg-vs-reverse-preview-text:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--g2-mint, #3ee0a0) 55%, transparent);
+}
+.pmg-vs-reverse-preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.pmg-vs-reverse-discard-link {
+  background: none;
+  border: none;
+  padding: 6px 4px;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--color-text, #e8f5f0);
+  opacity: 0.65;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.pmg-vs-reverse-discard-link:hover {
+  opacity: 1;
+  color: #ff8a8a;
+}
+
 .pmg-vs-actions-row {
   display: flex; flex-wrap: wrap; gap: 10px;
   margin-top: 12px;
