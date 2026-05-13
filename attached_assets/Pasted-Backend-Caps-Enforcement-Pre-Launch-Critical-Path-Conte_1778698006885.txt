@@ -1,0 +1,27 @@
+Backend Caps Enforcement — Pre-Launch Critical Path
+Context: The paywall activates July 1, 2026 (BETA_END = 2026-07-01T05:00:00.000Z). Right now all feature gates are UI-only — buttons are hidden/disabled for free users but there are no server-side checks blocking API calls. This needs to be server-enforced before July 1.
+Scope of work:
+1. Audit the current gate surface
+Check every API route that powers a paywalled feature and confirm whether it already calls isPaywallActive() + checks the user's tier. The paywalled features are:
+Expert Command Center
+Growth Mode
+Image Workshop (DALL·E generation)
+Reverse Engine
+Prompt DNA Card
+Storyboard Generator
+Run With AI above the free cap (2/day for free users, 15/day for Founding Member, 25/day for Pro, 75/day for Pro Studio)
+2. Add server-side enforcement to any unguarded routes
+For each unguarded route: if isPaywallActive() is true AND the user's tier doesn't include that feature, return a 403 with a JSON body like { error: "upgrade_required", feature: "<feature_name>" }. If isPaywallActive() is false (before July 1), pass through as normal.
+3. Fix the userCaps.ts:131 typecheck gap
+PmgFeature includes 'teaser' but DailyCaps doesn't have a matching field. Fix shape parity — add teaser to DailyCaps (or remove it from PmgFeature if it's not a real cap). Do this in the same PR since you'll be on the same surface.
+4. Verify the daily cap counter is wired end-to-end
+Confirm that the Run With AI daily cap (2/day free, 15/day Founding Member, 25/day Pro, 75/day Pro Studio) is tracked server-side per user per day, not just client-side. If it's only tracked client-side right now, add server-side tracking.
+5. Smoke test
+Free user hitting Run With AI 3x → 3rd call should return cap error (before July 1: passes through; after July 1: blocked)
+Unauthenticated user trying to call Expert Command Center API after July 1 → 403
+Founding Member user → 15 runs/day, all paywalled features accessible
+Constraints:
+Do NOT change any UI or layout — this is backend only
+Do NOT activate the paywall early — all gates should check isPaywallActive() first and pass through if it returns false
+Show me the audit results (which routes are guarded vs unguarded) before writing any new enforcement code — I want to review before you build
+Tell Replit: start with the audit only — list every paywalled API route and its current gate status. We review together before any code is written.
