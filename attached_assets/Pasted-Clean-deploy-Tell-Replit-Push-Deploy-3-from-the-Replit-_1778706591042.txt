@@ -1,0 +1,47 @@
+Clean deploy. Tell Replit:
+Push Deploy 3 from the Replit deploy panel now. After it lands, run the two verification commands to confirm H-1 is live:
+Plain Text
+# Expect: cache-control: no-cache, must-revalidate
+curl -sI https://www.promptmegood.com/api/pricing-config.js | grep -i cache-control
+
+# Expect: 304 Not Modified
+ETAG=$(curl -sI https://www.promptmegood.com/api/pricing-config.js | awk '/^[Ee]tag:/{print $2}' | tr -d '\r' )
+curl -sI -H "If-None-Match: $ETAG" https://www.promptmegood.com/api/pricing-config.js | head -1
+H-2 is silent on success — if the server is up after deploy, the Stripe env assertion passed.
+Once Deploy 3 is confirmed live, scope Deploy 4 (H-3 — persistent desktop "Lock In $79" pill in workstation chrome ). Discover the workstation-chrome anchor and the existing topbar-icon pattern, then show me the plan before building. Same review-before-build protocol.
+pasted_content_25.txt
+Text · 3.74 KB
+Reading now.
+Deploy 3 confirmed live. Tell Replit:
+Option B — promote the button visually. The ghost outline is invisible in a busy topbar. A solid filled pill will actually get clicked.
+Before building, verify the click handler is properly wired to /pricing.html#founding-checkout-card. If it's dead or missing, add location.href = '/pricing.html#founding-checkout-card' in the same change.
+Then update the CSS: change the button from background: transparent; border: 1px solid… to background: var(--pmg-accent); color: #001b14; font-weight: 600 with the same hover treatment. Check the two responsive overrides at L1759 and L2016 — if they only adjust padding/font-size they should be fine as-is.
+Take a quick before/after screenshot of the topbar to confirm the new color doesn't clash with the active-tab teal, then ship. Show me the screenshot before committing.
+Click handler is wired but goes to bare /pricing.html (not #founding-checkout-card per spec). I'll fix that in the same change. Taking the before screenshot first.
+
+
+2 actions
+--pmg-accent token didn't show up earlier — using the literal #00c896 already used elsewhere as the accent. Making both edits, then after-screenshot.
+
+
+3 actions
+Before vs After
+Before — Lock In $79 rendered as a low-contrast ghost outline (rgba bg + green text + green border). In the busy topbar full of green elements (logo glow, BETA badge, ❓ Guide, active Text Prompts tab), the eye skipped right past it.
+
+After — solid filled accent pill (#00c896 bg + #001b14 near-black text). It is now visibly the only fully-saturated element in the entire topbar — the eye lands on it before anything else. Confirms the audit-2 hypothesis: the button existed, it was just invisible.
+
+Color-clash check: the active Text Prompts tab below uses the same #00c896 accent but only as outline + text on a darker fill, not as a saturated background. So the new pill is the unique solid accent surface — no clash, clear visual hierarchy (pill = primary CTA, tab = active state).
+
+Click handler: also fixed to deep-link /pricing.html#founding-checkout-card instead of the bare /pricing.html — user lands directly on the buy button instead of having to scan past the hero.
+
+Responsive overrides at L1759 + L2016 — both only adjust padding and font-size (no color overrides), so they continue to work unchanged with the new fill. The pill stays solid green at all breakpoints.
+
+Want me to ship this? Once you say go I'll:
+
+Typecheck (frontend changes — should be a no-op).
+Restart the web workflow to confirm clean reload.
+Run the architect review on the H-3 change (CSS + click handler).
+Hand back.
+Then you push Deploy 4 from the deploy panel. Standing by for the green light.
+16:07
+Green light — ship it. Typecheck, restart, architect review, then hand back for Deploy 4.
