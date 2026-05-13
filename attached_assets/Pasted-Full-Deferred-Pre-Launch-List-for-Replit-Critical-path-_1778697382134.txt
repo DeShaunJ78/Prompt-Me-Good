@@ -1,0 +1,17 @@
+Full Deferred Pre-Launch List for Replit
+Critical path (must ship before July 1):
+Backend caps enforcement — Gate Expert Command Center, Growth Mode, Image Workshop, Reverse Engine, Prompt DNA Card, and Storyboard Generator behind isPaywallActive() post-July 1. While touching this surface, also resolve the userCaps.ts:131 typecheck gap: PmgFeature includes 'teaser' but DailyCaps doesn't have a matching field. Fix shape parity at the same time.
+Ship in June (timing-sensitive):
+Countdown timer to July 1 — Add to homepage and/or pricing page. Right time to add: ~June 17 (2 weeks out). Should auto-hide after July 1.
+In-app urgency badges — Small "Free during beta · Locks July 1" badges near each paywalled feature entry point (Expert Command Center, Growth Mode, Image Workshop, Reverse Engine, DNA Card, Storyboard). Should auto-hide after July 1.
+Ship before July 1 (not timing-sensitive):
+Cache-Control headers — Add proper Cache-Control headers to pricing.html and index.html responses (from audit #1 M2).
+Refund threshold clarification — Add clear refund policy language to the pricing page (e.g. what happens if someone buys Founding Member and the 500-seat limit is hit, or within X days).
+July 1 manual sweep — All hard-coded "free through July 1, 2026" literals documented in launch-playbook.md (index.html lines 22, 30, 649, 682; pricing.html lines 281-283, 453, 492, 496, 512, 516, 527). Replit should do this sweep on July 1 as part of the launch-day deploy.
+Polish (anytime, low urgency):
+Topbar text labels — Add "Growth" and "Vault" text labels next to their icons on desktop topbar.
+"See What's Possible" example cards — Make them clickable to preload the goal field with the example text.
+Part 5b: Photography Suite preset tooltips — Quick Style/Lighting/Lens/Palette/Composition preset tooltips (deferred from Part 5).
+Post-launch (deferred explicitly):
+Vibe Coder tab — 4th panel for AI coding tool users. Full spec drafted, deferred to post-launch.
+The userCaps.ts:131 typecheck fix is the one to watch — it's a silent type gap today but will cause real runtime issues the moment any code tries to read a teaser cap from DailyCaps. Fix it in the same PR as caps enforcement, not separately.
