@@ -1,0 +1,32 @@
+Triage Response for Replit
+Part 8 (cap comparison panel): (a) Finish and commit it. It's the last item in the 8-part backlog. CTA copy confirmed as Option 3: "You're 2/2 today. Unlock unlimited Runs → $79 lifetime." When teaser cap is also exhausted: Option 2 — hide right column, show one full-width upgrade card with copy: "You've hit your daily limit. Unlock 15 Runs/day with full GPT-4.1 — $79 once, lifetime access."
+Part 7 (Reverse Engine re-3): Deploy it now — it's already committed and there's no blocker.
+Audit #2 — Approved Deploy Order
+Deploy 1 (ship alone, highest priority):
+H1 — Replace the dead #pro-early-access span with a real waitlist form section. POST to the existing /api/waitlist route. Four CTAs on pricing.html (lines 349, 377, 402, 428) should anchor to it. Add a visible confirmation state ("You're on the list — we'll email you when it launches").
+Deploy 2 (bundle with H1 or immediately after):
+M3 — Lower cache-control: private, max-age=15 on /api/founding-checkout/status to max-age=0 now (don't wait for sold > 450 — simpler and safer). Also add a UI-side re-check guard: before redirecting to Stripe, re-fetch status and abort with a "Just sold out" message if soldOut: true.
+Deploy 3 (one PR, shared root cause):
+M1 — Bind the five hard-coded price literals in the pricing hero subhead ($79, $14/mo, $129/yr, $29/mo, $290/yr) to data-pmg-price attributes so pmg-pricing-config.js rewrites them on load. Same for the cancellation banner and meta description. Add a second sync-check pass that grep-validates the HTML literal block at boot.
+L3 — Pair with M1 since same root cause. Document all "free through July 1" literal locations in launch-playbook.md for the July 1 manual sweep (index.html lines 22, 30, 649, 682; pricing.html lines 281-283, 453, 492, 496, 512, 516, 527).
+Deploy 4 (bundle with Deploy 3):
+H2 — Add vid to the static pmg-pricing-config.js mirror caps objects for shape parity with the server-generated config. This eliminates the landmine without requiring a full deprecation of the static mirror.
+Defer / Operational:
+M2 — OG cache bust + Google Search Console re-submit. Operational, no code change. Do this after Deploy 1 is live.
+L1 — Document /api/pricing-config (no .js suffix) as intentional 404 in the route file. One-line comment, no urgency.
+L2 — No action. Stripe on live keys is expected and confirmed working.
+Also: Verify pmg-fixes-v6.js structural bugs
+Before or alongside Part 8, Replit should confirm whether the known structural bugs in pmg-fixes-v6.js were ever fixed:
+Malformed multi-line CSS string breaking array syntax (around line 124-128)
+Duplicate ]; array terminator (around line 128-134)
+resetAllFields, Auto-Bridge, and Smart Labels defined outside the IIFE (after line 1028)
+Bare injectStyles() call outside valid scope (around line 1175)
+These were reported previously but never confirmed fixed. If they're still present, fix them in the same deploy as Part 8 since they affect core functionality (Start Over button, Auto-Bridge, Smart Labels).
+Summary of what Replit should do next, in order:
+Fix pmg-fixes-v6.js structural bugs (if not already done)
+Finish + commit Part 8 (cap comparison panel, Option D teaser, Option 3 CTA, Option 2 exhausted state)
+Deploy Part 7 (already committed)
+Deploy H1 (waitlist form)
+Deploy M3 (founding status cache fix)
+Deploy M1 + L3 + H2 together
+Operational: M2 OG cache bust + GSC re-submit
