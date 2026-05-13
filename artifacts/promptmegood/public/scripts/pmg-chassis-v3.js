@@ -184,7 +184,6 @@
           // Sits between Vault and Settings so the icon order reads
           // Guide / Growth / Vault / Expert / Settings.
           '<button class="pmgv3-ico" id="pmgv3-expert" type="button" title="Expert Command Center — advanced prompt engineering tools" aria-label="Open Expert Command Center"><span class="pmgv3-ico-glyph">✦</span><span class="pmgv3-ico-label">Expert</span></button>',
-          '<button class="pmgv3-ico" id="pmgv3-settings" type="button" aria-label="Switch theme"><span class="pmgv3-ico-glyph" id="pmgv3-theme-glyph">🌙</span><span class="pmgv3-ico-label">Theme</span></button>',
           /* H-1 (audit-2 deferred): the 4 icons above (Guide / Growth /
              Vault / Settings) are CSS-hidden at ≤480px; this ⋮ button
              takes their place and opens a small dropdown that proxies
@@ -1773,32 +1772,14 @@
     // right-side drawer and reparent #history into it on first open).
     bindIfPresent('pmgv3-vault', function () { openVaultDrawer(); });
 
-    /* theme-toggle-1: the gear is now a light/dark theme toggle.
-       Expert Command Center has its own dedicated ✦ button (added in
-       expert-topbar-1) so the gear was redundant. Theme is persisted
-       in localStorage under 'promptmegood:theme' and applied via
-       documentElement[data-theme]. openSettings() and #settingsPanel
-       are intentionally untouched — they remain reachable via any
-       other entry points that still call them. */
-    (function () {
-      var THEME_KEY = 'promptmegood:theme';
-      function getTheme() { return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'; }
-      function renderThemeBtn(mode) {
-        var glyph = document.getElementById('pmgv3-theme-glyph');
-        if (glyph) glyph.textContent = mode === 'dark' ? '☀️' : '🌙';
-        var btn = document.getElementById('pmgv3-settings');
-        if (btn) btn.setAttribute('aria-label', mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
-      }
-      renderThemeBtn(getTheme());
-      bindIfPresent('pmgv3-settings', function () {
-        var next = getTheme() === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', next);
-        try { localStorage.setItem(THEME_KEY, next); } catch (_e) {}
-        renderThemeBtn(next);
-      });
-      window.__pmgv3SettingsDelegate = true;
-    }());
-
+    /* no-theme-1: removed the #pmgv3-settings slot entirely. Was a
+       gear → Expert (expert-topbar-1) → theme toggle (theme-toggle-1)
+       progression that ended up redundant: Expert has its own ✦ button
+       in the topbar, and the theme toggle was misleading because
+       pmg-g-theme.css force-locks both [data-theme] values to the
+       dark teal palette. openSettings() and #settingsPanel are still
+       defined and remain reachable via any other entry points that
+       call them. */
     bindIfPresent('pmgv3-upgrade', function () {
       // audit-2 H-3: deep-link straight to the founding-checkout card so the
       // user lands on the actual buy button instead of the top of the page
@@ -1833,8 +1814,7 @@
         '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-help"><span aria-hidden="true">❓</span> Guide</button>' +
         '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-business"><span aria-hidden="true">💼</span> Growth</button>' +
         '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-vault"><span aria-hidden="true">🗄️</span> Vault</button>' +
-        '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-expert"><span aria-hidden="true">✦</span> Expert</button>' +
-        '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-settings"><span aria-hidden="true">🌙</span> Theme</button>';
+        '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-expert"><span aria-hidden="true">✦</span> Expert</button>';
       moreBtn.parentNode.appendChild(menu);
       moreBtn.setAttribute('aria-expanded', 'true');
 
