@@ -1,0 +1,28 @@
+I've completed the full first-time user friction walkthrough, testing the app across desktop and mobile viewports. I found several critical friction points, including a major bug in the Photography suite that completely blocks image generation.
+Here is the prioritized friction report to send to Replit:
+First-Time User Friction Report
+Walkthrough context: Tested as a brand new user on desktop and mobile (360px) viewports. Tested core prompt building, Photography suite, Expert Command Center, and pricing page flows.
+🔴 Critical Friction (Fix Immediately)
+1. Photography Suite "Generate Image" is completely broken
+The Bug: When a user fills out the Photography fields (Subject, Environment, etc.) and clicks "Generate Image", the button changes to "Generating..." and a DALL-E loading spinner appears in the right panel. However, the image prompt is never actually generated in the left panel's "Your Refined Prompt" textarea.
+The Result: Because the refined prompt textarea remains empty, the DALL-E API call fails silently or hangs indefinitely. The user is stuck watching a spinner forever.
+To Reproduce: Go to Photography tab -> Type "a golden retriever puppy" in Subject -> Click "Generate Image". The button spins, the right panel spins, but the prompt textarea stays empty and no image ever appears.
+The Fix: The "Generate Image" button click handler must first trigger the prompt building logic to populate the #pmg-vs-image-refined textarea, and then trigger the DALL-E generation using that text.
+2. Mobile App Layout (360px) - Topbar Brand Cropping
+The Bug: At 360px viewport, the "PromptMeGood BETA" logo button is cropped to just the icon, and the text is invisible. The topbar is overcrowded with icons (Help, Growth, Vault, Settings, Upgrade).
+The Fix: Reserve minimum width for the brand name. Hide lower-priority icons (Settings, Vault, Help) behind a "More" (⋮) menu on screens below 480px to ensure the brand and "Upgrade" button remain visible and clickable.
+🟠 High Friction (Fix Next)
+3. "See What's Possible" Example Cards are Dead Ends
+The Issue: On the Text Prompts tab, the "See What's Possible" example cards show great before/after prompts, but they aren't clickable. A new user sees an example they like but has to manually retype it to try it.
+The Fix: Make the example cards clickable. Clicking a card should instantly populate the "Your Idea" textarea with the example's "Before" text, allowing the user to immediately click "Auto-Boost Prompt" and see the magic happen.
+4. No "Pricing" Link in App Topbar
+The Issue: Once inside the app, the only way to see pricing is to click "Upgrade" (which feels committal) or scroll to the very bottom footer.
+The Fix: Add a simple "Pricing" text link in the topbar, next to the Help icon or in the right-side cluster.
+🟡 Medium Friction (Polish)
+5. Pricing Page - Mobile Beta Banner
+The Issue: At 360px, the yellow beta banner at the top of the pricing page wraps to 3 lines and consumes too much vertical space above the fold.
+The Fix: Shorten the banner copy for mobile viewports (e.g., "Free Beta Until July 1 — Waitlist Open") or reduce the font size below 480px.
+6. Pricing Page - Founding Counter Copy
+The Issue: "0 of 500 Founding seats claimed" reads as "nobody is buying this," which kills social proof.
+The Fix: Change the copy to "Brand new — be one of the first 500" until at least 25 seats are sold, then switch to the live counter.
+Note to Replit: Start with the Photography Suite "Generate Image" bug. That is a hard blocker for a core feature. Do not write code for the other items until that bug is diagnosed and fixed.
