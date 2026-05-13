@@ -62,6 +62,13 @@ rg -n '\$(79|14|29|129|290)' artifacts/promptmegood/{index,pricing,app}.html
 ```
 Every result must be reviewed before merge.
 
+**Specific high-risk locations the grep above will surface** (added Audit #2 round 2; flagging by name so the reviewer doesn't skim past them):
+
+- `artifacts/promptmegood/index.html` ~L698 — the only beta-vs-post-launch marketing paragraph on the marketing home (`data-pmg-beta-only` + `data-pmg-post-launch hidden` siblings). Both halves must be edited together; updating only one creates a flip-day regression where the wrong copy is visible.
+- `artifacts/promptmegood/app.html` ~L186 — schema.org JSON-LD `FAQPage` answer (~350-word static string with all tier names, prices, and caps). Crawlers consume this directly; there is no DOM hydration. Already tracked under L2 (caps) and the Extended scope section above; re-listed here so the price half doesn't slip through.
+- `artifacts/promptmegood/app.html` ~L5362 — Terms `<p><strong>The Service.</strong>…</p>` paragraph: prose contains hardcoded tier prices around `data-pmg-cap` spans. Cap spans hydrate; surrounding "($14/month)" / "($129/year)" / "($29/month or $290/year)" do not.
+- `artifacts/promptmegood/app.html` ~L5367 — Terms `<p><strong>Payments &amp; Refunds.</strong>…</p>` paragraph: same pattern — refund/cancellation prose with hardcoded tier prices that do not auto-hydrate.
+
 ## Pre-Launch Checklist (run before flipping `OPEN_BETA_MODE` / `PAYWALL_ACTIVATES_AT`)
 
 Run these in order on July 1, 2026 (or whenever launch is). All steps are manual — no automation today.
@@ -85,7 +92,31 @@ Run these in order on July 1, 2026 (or whenever launch is). All steps are manual
    - **Verify:** after flipping `OPEN_BETA_MODE=false` (or moving `PAYWALL_ACTIVATES_AT` into the past), hard-refresh `https://www.promptmegood.com/`, `/pricing.html`, and `/app.html`. The banner must NOT be visible on any of the three. If it IS, check `/api/public-config` is returning `paywallActive: true` (curl it directly), then check browser console for `[pmg-launch-swap]` log line.
    - **Failure mode:** if the banner persists, set `localStorage.pmg_t42_disable = '1'` on the affected device as a manual override while you debug — do NOT roll the env var back unless the rest of the launch surface is also broken.
 
-3. **M1 · Pro Studio "COMING SOON" badge cleanup** (re-listed from above, do AFTER M2/M3 pass).
+3. **H-2 · Authenticated checkout dry-run for all 4 paid tiers (do this BEFORE flipping the env var).**
+   - Anonymous `curl` cannot validate Stripe price-id wiring for Pro tiers — `requireSupabaseUser` 401s before the price-id is touched. The only way to confirm `STRIPE_PRO_MONTHLY_PRICE_ID`, `STRIPE_PRO_YEARLY_PRICE_ID`, `STRIPE_PRO_STUDIO_MONTHLY_PRICE_ID`, and `STRIPE_PRO_STUDIO_YEARLY_PRICE_ID` each resolve to a live Stripe price is to run an authenticated checkout dry-run for each.
+   - Sign in as a test user, capture the Supabase access token (same as M2 step above), then for each of the 4 paid tiers:
+     ```
+     for tier in pro_monthly pro_yearly pro_studio_monthly pro_studio_yearly; do
+       echo "--- $tier ---"
+       curl -sS -X POST https://www.promptmegood.com/api/create-checkout-session \
+         -H "Content-Type: application/json" \
+         -H "Authorization: Bearer <token>" \
+         -d "{\"tier\":\"$tier\"}"
+       echo
+     done
+     ```
+   - **Expected:** every tier returns `200` with a `url` field beginning `https://checkout.stripe.com/c/pay/cs_live_…`. Any `400 missing_price_id` or `500` is a launch-blocker — fix the env var BEFORE flipping `OPEN_BETA_MODE`.
+   - Why a separate step from M2: M2 confirms the auth path works; H-2 confirms each Stripe price ID actually resolves. Different failure modes.
+
+4. **M-2 · Cancel-checkout banner tier-key round-trip.**
+   - When Stripe Checkout is canceled, the user is redirected to `/pricing.html?upgrade=cancel&tier=<key>`. The IIFE at the bottom of `pricing.html` reads `tier` from the query string, lowercases it, replaces `-` with `_`, and looks up tier-specific copy in a `TIER_COPY` map with these 7 keys: `founding`, `pro`, `pro_monthly`, `pro_yearly`, `pro_studio`, `pro_studio_monthly`, `pro_studio_yearly`. Any unknown key silently falls back to the generic banner.
+   - **Verify before launch:** in `artifacts/api-server/src/routes/billing.ts`, find the `cancel_url` field on each `stripe.checkout.sessions.create({...})` call. Confirm the `tier=` query param emitted matches one of the 7 keys above EXACTLY for every paid tier (founding, pro_monthly, pro_yearly, pro_studio_monthly, pro_studio_yearly). A mismatch (e.g., `prostudio`, `pro-studio`, `proStudio`) will silently fall through to the generic copy on cancel — not user-visible-broken, but loses the tier-aware messaging the M3 audit shipped.
+
+5. **M-3 · Waitlist tier-capture round-trip.**
+   - Pro Monthly / Pro Yearly / Pro Studio Monthly / Pro Studio Yearly cards each have a "Notify Me" CTA carrying `data-pmg-upgrade="<tier>"`. The waitlist form's hidden `#early-access-tier` field is populated by the click handler from that attribute. The 4 values it can carry are `pro_monthly`, `pro_yearly`, `pro_studio_monthly`, `pro_studio_yearly`.
+   - **Verify before launch:** check the server route receiving the waitlist POST (likely `/api/early-access` or wherever `early-access-form` posts). Confirm its accepted-tier enum / Zod schema includes ALL 4 values above. A missing entry will reject the row server-side OR drop the tier silently into the DB as `null`, breaking the marketing-segmentation use case the hidden field exists for.
+
+6. **M1 · Pro Studio "COMING SOON" badge cleanup** (re-listed from above, do AFTER M2/M3/H-2/M-2/M-3 pass).
    - Same PR that flips `OPEN_BETA_MODE` must also remove "COMING SOON" / "Launches July 1, 2026" badges from Pro Monthly, Pro Yearly, Pro Studio Monthly, Pro Studio Yearly cards in `pricing.html`. The `data-pmg-beta-only` / `data-pmg-post-launch` swap handles most of it; verify by visual diff of pricing.html after the swap runs.
 
-4. **Sweep all hard-coded literals** (see "Hard-coded Price Literal Locations" section above) one more time — the launch PR is the highest-stakes pricing PR there will ever be.
+7. **Sweep all hard-coded literals** (see "Hard-coded Price Literal Locations" section above) one more time — the launch PR is the highest-stakes pricing PR there will ever be.

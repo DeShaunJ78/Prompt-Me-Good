@@ -178,7 +178,13 @@
           // Click is wired by /scripts/pmg-business-mode.js.
           '<button class="pmgv3-ico" id="pmgv3-business" type="button" title="Growth Mode — assemble a marketing prompt" aria-label="Open Growth Mode"><span class="pmgv3-ico-glyph">💼</span><span class="pmgv3-ico-label">Growth</span></button>',
           '<button class="pmgv3-ico" id="pmgv3-vault" type="button" title="Vault — saved prompts" aria-label="Open Vault"><span class="pmgv3-ico-glyph">🗄️</span><span class="pmgv3-ico-label">Vault</span></button>',
-          '<button class="pmgv3-ico" id="pmgv3-settings" type="button" title="Settings — Expert Command Center, theme, account" aria-label="Open Settings"><span class="pmgv3-ico-glyph">⚙️</span><span class="pmgv3-ico-label">Settings</span></button>',
+          // expert-topbar-1 (audit-2 round 2): dedicated Expert Command Center
+          // entry point in the workstation topbar. Click is wired by
+          // pmg-expert-center.js wireEntryPoints (looks for #pmgv3-expert).
+          // Sits between Vault and Settings so the icon order reads
+          // Guide / Growth / Vault / Expert / Settings.
+          '<button class="pmgv3-ico" id="pmgv3-expert" type="button" title="Expert Command Center — advanced prompt engineering tools" aria-label="Open Expert Command Center"><span class="pmgv3-ico-glyph">✦</span><span class="pmgv3-ico-label">Expert</span></button>',
+          '<button class="pmgv3-ico" id="pmgv3-settings" type="button" title="Settings — theme, account" aria-label="Open Settings"><span class="pmgv3-ico-glyph">⚙️</span><span class="pmgv3-ico-label">Settings</span></button>',
           /* H-1 (audit-2 deferred): the 4 icons above (Guide / Growth /
              Vault / Settings) are CSS-hidden at ≤480px; this ⋮ button
              takes their place and opens a small dropdown that proxies
@@ -1850,6 +1856,7 @@
         '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-help"><span aria-hidden="true">❓</span> Guide</button>' +
         '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-business"><span aria-hidden="true">💼</span> Growth</button>' +
         '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-vault"><span aria-hidden="true">🗄️</span> Vault</button>' +
+        '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-expert"><span aria-hidden="true">✦</span> Expert</button>' +
         '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-settings"><span aria-hidden="true">⚙️</span> Settings</button>';
       moreBtn.parentNode.appendChild(menu);
       moreBtn.setAttribute('aria-expanded', 'true');

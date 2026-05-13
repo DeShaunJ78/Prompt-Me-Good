@@ -1473,6 +1473,15 @@
       clone3.__pmgEcWired = true;
       clone3.addEventListener('click', function (e) { e.preventDefault(); requestOpen(); });
     }
+    /* expert-topbar-1 (audit-2 round 2): dedicated Expert button in the
+       chassis-v3 workstation topbar (#pmgv3-expert). chassis-v3 builds
+       the topbar after this script runs, so retry-poll until it appears
+       (mirrors pmg-business-mode.js pattern for #pmgv3-business). */
+    var topbar = $('#pmgv3-expert');
+    if (topbar && !topbar.__pmgEcWired) {
+      topbar.__pmgEcWired = true;
+      topbar.addEventListener('click', function (e) { e.preventDefault(); requestOpen(); });
+    }
     /* Hero link in the marketing section. */
     var hero = $('#hero-expert-link-btn');
     if (hero && !hero.__pmgEcWired) {
