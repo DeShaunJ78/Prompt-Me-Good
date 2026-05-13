@@ -1,9 +1,12 @@
 /* ============================================================================
-   PromptMeGood — Storyboard Studio (sb-2)
+   PromptMeGood — Storyboard Studio (sb-3)
    Text concept → /api/storyboard returns 5 prompts → 5 parallel /api/image
    calls → render thumbnails → optional handoff to Visual Studio video tab.
-   sb-2 adds: per-frame 🔄 Regenerate button + 🖨 Export PDF (print-to-PDF
+   sb-2 added: per-frame 🔄 Regenerate button + 🖨 Export PDF (print-to-PDF
    2-up portrait, zero deps).
+   sb-3 adds: per-frame ✏️ Edit Prompt (inline DOM swap, no modal — edits
+   become canonical) + 💾 Save to Vault (paired built+storyboard entries,
+   silent save with null for unfinished frames, 10s dedupe guard).
    ============================================================================ */
 (function () {
   'use strict';
@@ -148,14 +151,68 @@
   }
 
   function panelTextInner(p, i) {
-    var regen = (p.status === 'pending')
+    var pending = p.status === 'pending';
+    var regen = pending
       ? '<button type="button" class="pmg-sb-regen-btn" data-sb-regen="' + i + '" disabled aria-label="Regenerating shot ' + (i + 1) + '">⏳ Regenerating…</button>'
       : '<button type="button" class="pmg-sb-regen-btn" data-sb-regen="' + i + '" aria-label="Regenerate shot ' + (i + 1) + '">🔄 Regenerate</button>';
+    var edit = pending
+      ? '<button type="button" class="pmg-sb-edit-btn" data-sb-edit="' + i + '" disabled aria-label="Edit shot ' + (i + 1) + ' prompt">✏️ Edit</button>'
+      : '<button type="button" class="pmg-sb-edit-btn" data-sb-edit="' + i + '" aria-label="Edit shot ' + (i + 1) + ' prompt">✏️ Edit</button>';
     return (
       '<span class="pmg-sb-shot-label">Shot ' + (i + 1) + '</span>' +
       '<div class="pmg-sb-prompt-text">' + escapeHtml(p.prompt) + '</div>' +
-      regen
+      '<div class="pmg-sb-btn-row">' + regen + edit + '</div>'
     );
+  }
+
+  // Edit mode markup: textarea prefilled with current prompt + Save / Cancel.
+  function panelEditorInner(p, i) {
+    return (
+      '<span class="pmg-sb-shot-label">Shot ' + (i + 1) + ' · Editing</span>' +
+      '<textarea class="pmg-sb-edit-textarea" data-sb-edit-textarea="' + i + '" rows="4" aria-label="Edit prompt for shot ' + (i + 1) + '">' + escapeHtml(p.prompt) + '</textarea>' +
+      '<div class="pmg-sb-btn-row">' +
+        '<button type="button" class="pmg-sb-regen-btn pmg-sb-edit-save-btn" data-sb-edit-save="' + i + '">🔄 Regenerate with this prompt</button>' +
+        '<button type="button" class="pmg-sb-edit-btn" data-sb-edit-cancel="' + i + '">Cancel</button>' +
+      '</div>'
+    );
+  }
+
+  function enterEdit(i) {
+    var p = _currentPanels[i];
+    if (!p || p.status === 'pending') return;
+    var slot = document.querySelector('[data-sb-text-slot="' + i + '"]');
+    if (!slot) return;
+    slot.innerHTML = panelEditorInner(p, i);
+    var ta = slot.querySelector('[data-sb-edit-textarea="' + i + '"]');
+    if (ta) {
+      try { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } catch (_) {}
+    }
+  }
+
+  function cancelEdit(i) {
+    updatePanel(i);
+  }
+
+  function submitEdit(i) {
+    var p = _currentPanels[i];
+    if (!p) return;
+    var slot = document.querySelector('[data-sb-text-slot="' + i + '"]');
+    if (!slot) return;
+    var ta = slot.querySelector('[data-sb-edit-textarea="' + i + '"]');
+    var newText = ta ? (ta.value || '').trim() : '';
+    if (!newText) {
+      // Empty submit — shake + bail. Don't mutate the panel.
+      if (ta) {
+        ta.classList.remove('pmg-sb-shake');
+        // Reflow then re-add to retrigger the animation.
+        void ta.offsetWidth;
+        ta.classList.add('pmg-sb-shake');
+        try { ta.focus(); } catch (_) {}
+      }
+      return;
+    }
+    p.prompt = newText;
+    regenerateOne(i);
   }
 
   function renderPanels() {
@@ -173,6 +230,7 @@
     var actions =
       '<div class="pmg-sb-actions">' +
         '<button type="button" id="pmg-sb-send-to-video" class="pmg-sb-btn pmg-sb-btn-primary">🎬 Send to Video Studio</button>' +
+        '<button type="button" id="pmg-sb-save-vault" class="pmg-sb-btn pmg-sb-btn-secondary">💾 Save to Vault</button>' +
         '<button type="button" id="pmg-sb-export-pdf" class="pmg-sb-btn pmg-sb-btn-secondary">🖨 Export PDF</button>' +
         '<button type="button" id="pmg-sb-copy-prompts" class="pmg-sb-btn pmg-sb-btn-secondary">📋 Copy All Prompts</button>' +
       '</div>';
@@ -199,6 +257,126 @@
     updatePanel(i);
     // Reuse the live session token so the result lands in the open modal.
     generateOne(i, _sessionId);
+  }
+
+  // -----------------------------------------------------------------
+  // Save to Vault — paired (built parent + storyboard child) entries.
+  // Mirrors the pmg-save-result.js Run-With-AI shape so existing Vault
+  // code (renderHistory, stats, draft-recovery) keeps working. Failed
+  // / pending frames save with imageUrl: null. 10s dedupe guard prevents
+  // double-tap spam — same parentId within 10s is treated as already saved.
+  // -----------------------------------------------------------------
+  var VAULT_KEY = 'promptmegood:history:v1';
+  var DEDUPE_MS = 10000;
+
+  function vaultLoad() {
+    try {
+      var raw = localStorage.getItem(VAULT_KEY);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (_) { return []; }
+  }
+  function vaultWrite(items) {
+    try { localStorage.setItem(VAULT_KEY, JSON.stringify(items)); return true; }
+    catch (_) { return false; }
+  }
+  function vaultNotify() {
+    try { document.dispatchEvent(new Event('pmg:vault-saved')); } catch (_) {}
+    try { if (typeof window.renderHistory === 'function') window.renderHistory(); } catch (_) {}
+  }
+  function vaultNewId() {
+    return 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  }
+  function vaultBuilderDefaults(concept) {
+    return {
+      goal: concept,
+      category: 'other',
+      skillLevel: 'beginner',
+      tone: 'bold-direct',
+      outputFormat: 'step-by-step',
+      details: '',
+      'rules or limits': '',
+      maxLength: null,
+      moneyMode: false,
+      humanTone: false,
+      clarityBoost: false,
+      outputLanguage: 'english',
+      personality: 'none',
+    };
+  }
+
+  function saveStoryboardToVault() {
+    var btn = document.getElementById('pmg-sb-save-vault');
+    if (!btn || !_currentConcept || !_currentPanels.length) return;
+
+    var items = vaultLoad();
+    var now = Date.now();
+
+    // Dedupe: scan for a prior storyboard child with the same concept saved
+    // within the last DEDUPE_MS. Catches double-taps without blocking
+    // intentional re-saves of refined storyboards.
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      if (it && it.kind === 'storyboard' && it.concept === _currentConcept &&
+          (now - (it.savedAt || 0)) < DEDUPE_MS) {
+        flashVaultBtn(btn, '✓ Already in Vault');
+        return;
+      }
+    }
+
+    var parentId = vaultNewId();
+    var childId = vaultNewId();
+    var snapshotData = vaultBuilderDefaults(_currentConcept);
+
+    var parentEntry = {
+      id: parentId,
+      savedAt: now,
+      kind: 'built',
+      data: snapshotData,
+      prompt: _currentConcept,
+      favorite: false,
+      storyboardParent: true,
+    };
+    var childEntry = {
+      id: childId,
+      savedAt: now,
+      kind: 'storyboard',
+      data: snapshotData,
+      prompt: _currentConcept,
+      favorite: false,
+      parentId: parentId,
+      concept: _currentConcept,
+      panels: _currentPanels.map(function (p) {
+        return {
+          prompt: p.prompt,
+          imageUrl: (p.status === 'done' && p.imageUrl) ? p.imageUrl : null,
+          status: p.status,
+        };
+      }),
+    };
+    // Insert child first so it appears above its parent in the timeline.
+    items.unshift(childEntry);
+    items.unshift(parentEntry);
+
+    if (!vaultWrite(items)) {
+      flashVaultBtn(btn, '⚠️ Storage full');
+      return;
+    }
+    flashVaultBtn(btn, '✓ Saved to Vault');
+    vaultNotify();
+  }
+
+  function flashVaultBtn(btn, label) {
+    if (!btn) return;
+    var orig = btn.getAttribute('data-orig-label') || btn.textContent;
+    btn.setAttribute('data-orig-label', orig);
+    btn.textContent = label;
+    btn.disabled = true;
+    setTimeout(function () {
+      btn.textContent = orig;
+      btn.disabled = false;
+    }, 1800);
   }
 
   // Build a self-contained print document (2-up portrait) and open it in a
@@ -436,6 +614,25 @@
       if (e.target === modal()) { closeStoryboard(); return; }
       if (e.target.closest('#pmg-sb-send-to-video')) { sendToVideoStudio(); return; }
       if (e.target.closest('#pmg-sb-export-pdf')) { exportPdf(); return; }
+      if (e.target.closest('#pmg-sb-save-vault')) { saveStoryboardToVault(); return; }
+      var editSaveBtn = e.target.closest('[data-sb-edit-save]');
+      if (editSaveBtn) {
+        var iSave = parseInt(editSaveBtn.getAttribute('data-sb-edit-save'), 10);
+        if (!isNaN(iSave)) submitEdit(iSave);
+        return;
+      }
+      var editCancelBtn = e.target.closest('[data-sb-edit-cancel]');
+      if (editCancelBtn) {
+        var iCancel = parseInt(editCancelBtn.getAttribute('data-sb-edit-cancel'), 10);
+        if (!isNaN(iCancel)) cancelEdit(iCancel);
+        return;
+      }
+      var editBtn = e.target.closest('[data-sb-edit]');
+      if (editBtn && !editBtn.hasAttribute('data-sb-edit-save') && !editBtn.hasAttribute('data-sb-edit-cancel')) {
+        var iEdit = parseInt(editBtn.getAttribute('data-sb-edit'), 10);
+        if (!isNaN(iEdit)) enterEdit(iEdit);
+        return;
+      }
       var regenBtn = e.target.closest('[data-sb-regen]');
       if (regenBtn) {
         var idx = parseInt(regenBtn.getAttribute('data-sb-regen'), 10);
@@ -456,9 +653,23 @@
     }, true);
 
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && modal() && !modal().hasAttribute('hidden')) {
-        closeStoryboard();
+      if (!modal() || modal().hasAttribute('hidden')) return;
+      // Esc inside an open edit textarea: cancel the edit, do NOT close the modal.
+      var ta = e.target && e.target.closest && e.target.closest('[data-sb-edit-textarea]');
+      if (ta && e.key === 'Escape') {
+        var iCancel = parseInt(ta.getAttribute('data-sb-edit-textarea'), 10);
+        e.stopPropagation();
+        if (!isNaN(iCancel)) cancelEdit(iCancel);
+        return;
       }
+      // Cmd/Ctrl+Enter inside the edit textarea submits.
+      if (ta && e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+        var iSave = parseInt(ta.getAttribute('data-sb-edit-textarea'), 10);
+        e.preventDefault();
+        if (!isNaN(iSave)) submitEdit(iSave);
+        return;
+      }
+      if (e.key === 'Escape') closeStoryboard();
     });
 
     // Re-attempt injection after dynamic UI changes, then disconnect as
