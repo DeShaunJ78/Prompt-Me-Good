@@ -1,0 +1,58 @@
+/* pmg-growth-actions.css (ga-1)
+ * Action row mounted above #resultBox when result came from Growth Mode.
+ * Inherits dark teal theme tokens from pmg-g-theme.css. */
+
+#pmg-growth-actions-row.pmg-ga-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--color-primary, #0f766e) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary, #0f766e) 24%, transparent);
+  border-radius: 10px;
+}
+
+#pmg-growth-actions-row .pmg-ga-btn {
+  appearance: none;
+  border: 1px solid color-mix(in srgb, var(--color-primary, #0f766e) 36%, transparent);
+  background: color-mix(in srgb, var(--color-primary, #0f766e) 12%, transparent);
+  color: var(--color-text, #e6f7ee);
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.2;
+  transition: background 120ms ease, transform 80ms ease;
+}
+#pmg-growth-actions-row .pmg-ga-btn:hover:not(:disabled),
+#pmg-growth-actions-row .pmg-ga-btn:focus-visible {
+  background: color-mix(in srgb, var(--color-primary, #0f766e) 22%, transparent);
+  outline: none;
+}
+#pmg-growth-actions-row .pmg-ga-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+#pmg-growth-actions-row .pmg-ga-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+#pmg-growth-actions-row .pmg-ga-status {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--color-text-muted, rgba(230, 247, 238, 0.65));
+  min-height: 1em;
+}
+
+@media (max-width: 540px) {
+  #pmg-growth-actions-row .pmg-ga-status {
+    margin-left: 0;
+    width: 100%;
+  }
+}

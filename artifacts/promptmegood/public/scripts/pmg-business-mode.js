@@ -31,17 +31,50 @@
     'Funny',
   ];
 
+  /* Tone playbook (gm-prompts-1): each tone gets a one-line behavior
+     definition the AI can actually act on. Without these, "Luxury" or
+     "Direct-Response" is just a label the model has to guess at. */
+  var TONE_PLAYBOOK = {
+    'Professional':    'Confident, polished, and precise. Short sentences. No slang, no emojis.',
+    'Casual':          'Conversational and warm — like a friend texting. Contractions, varied sentence length, light personality.',
+    'Luxury':          'Aspirational, restrained, premium. Short sentences. No hype words ("amazing", "incredible"). Imply, do not announce.',
+    'Direct-Response': 'Lead with the promise. Hard, specific CTA. Honest urgency. Cut every word that does not move the reader to act.',
+    'Educational':     'Clear, structured, beginner-friendly. Define jargon. One idea per sentence. Examples beat abstractions.',
+    'Founder-Led':     'First person ("I", "we"). Specific moments and numbers. Skip the brand voice — sound like a real human typing fast.',
+    'Funny':           'Punchlines over polish. Concrete absurdity, not vague jokes. One real insight underneath the humor or it falls flat.',
+  };
+
+  /* Per-platform conventions used by both Pack and Platform builders. */
+  var PLATFORM_RULES = {
+    'TikTok':    { length: 'Under 90 words. 3-second visual hook in the first line.',           hashtags: '3 niche hashtags max.', notes: 'Spoken-word rhythm — read it out loud and cut what trips you up.' },
+    'Instagram': { length: 'Caption under 220 characters for Reels, under 600 for feed posts.', hashtags: '5 mid-tail hashtags.',  notes: 'First line is the scroll-stopper; everything after it earns the read.' },
+    'YouTube':   { length: 'Title under 60 characters. Description: hook in first 2 lines, then structured body.', hashtags: '3 hashtags at the end.', notes: 'Hook must work without thumbnail context.' },
+    'LinkedIn':  { length: 'Hook line + 4-6 short paragraphs. Under 1,300 characters.',          hashtags: '3 specific hashtags. No emojis unless tone is Casual or Funny.', notes: 'No "Excited to share…" openers. Lead with insight, story, or contrarian take.' },
+    'X':         { length: 'Single post under 280 characters, or numbered thread (1/, 2/, …) of 5-9 posts.', hashtags: '0-2 hashtags max.', notes: 'Every post must stand on its own. No "and finally…" wind-down.' },
+  };
+
+  /* Platform sets per Social Pack — used to inject per-platform conventions
+     into the Pack prompt so the model produces native copy, not generic. */
   var SOCIAL_PACKS = {
-    launch:     { label: 'Launch Pack',            platforms: 'TikTok, Instagram, LinkedIn, X, and an email announcement' },
-    ecommerce:  { label: 'Ecommerce Product Pack', platforms: 'a TikTok product demo, an Instagram Reel, a Pinterest pin, and a Facebook post' },
-    founder:    { label: 'Founder Content Pack',   platforms: 'a LinkedIn post, an X thread, and a YouTube Short script' },
-    local:      { label: 'Local Business Pack',    platforms: 'a Facebook post, an Instagram caption, and a Google Business update' },
-    viral:      { label: 'Viral Short-Form Pack',  platforms: 'TikTok, Instagram Reels, and YouTube Shorts' },
+    launch:     { label: 'Launch Pack',            platforms: 'TikTok, Instagram, LinkedIn, X, and an email announcement', includes: ['TikTok', 'Instagram', 'LinkedIn', 'X'] },
+    ecommerce:  { label: 'Ecommerce Product Pack', platforms: 'a TikTok product demo, an Instagram Reel, a Pinterest pin, and a Facebook post', includes: ['TikTok', 'Instagram'] },
+    founder:    { label: 'Founder Content Pack',   platforms: 'a LinkedIn post, an X thread, and a YouTube Short script', includes: ['LinkedIn', 'X', 'YouTube'] },
+    local:      { label: 'Local Business Pack',    platforms: 'a Facebook post, an Instagram caption, and a Google Business update', includes: ['Instagram'] },
+    viral:      { label: 'Viral Short-Form Pack',  platforms: 'TikTok, Instagram Reels, and YouTube Shorts', includes: ['TikTok', 'Instagram', 'YouTube'] },
   };
 
   var PLATFORMS    = ['TikTok', 'Instagram', 'YouTube', 'LinkedIn', 'X'];
   var CONTENT_TYPES = ['Hook', 'Script', 'Caption', 'Thread', 'Ad Copy'];
   var GOALS        = ['Awareness', 'Engagement', 'Leads', 'Sales', 'Education'];
+
+  /* Goal playbook — sharper CTA shape per growth goal. */
+  var GOAL_PLAYBOOK = {
+    'Awareness':  'End with a memorable single line — a hook the reader will repeat. No CTA.',
+    'Engagement': 'End with one specific question that begs an opinionated reply — not "thoughts?".',
+    'Leads':      'End with a soft CTA toward a free resource or DM. Make the next step take under 10 seconds.',
+    'Sales':      'End with one clear, specific next action — never "check it out" or "link in bio". Name the offer and the action.',
+    'Education':  'End with a one-sentence summary the reader could screenshot. Optional: "Save this for later."',
+  };
 
   /* ---------------------------------------------------------------- *
    * Helpers
@@ -249,11 +282,10 @@
   /* ---------------------------------------------------------------- *
    * Assemble + dispatch
    * ---------------------------------------------------------------- */
-  function brandSuffix() {
-    /* Read LIVE values from the drawer inputs (if mounted) so a Build
-       Prompt click immediately after typing in Brand Voice never
-       races the 250ms debounced localStorage save. Falls back to
-       localStorage when the drawer isn't built yet. */
+  /* Returns { audience, tone } — reads live drawer values, falling back
+     to localStorage. Force-flushes the debounced save so the values the
+     user just typed survive. */
+  function readBrand() {
     var audIn = $('pmg-bm-audience');
     var toneIn = $('pmg-bm-tone');
     var audience = audIn ? audIn.value.trim() : '';
@@ -263,14 +295,19 @@
       audience = b.audience;
       tone = b.tone;
     } else {
-      /* Force-flush any pending debounced save so the next session
-         restore reads what the user just typed. */
       saveBrand(audience, tone);
     }
-    var parts = [];
-    if (audience) parts.push('My target audience is ' + audience + '.');
-    if (tone)     parts.push('My brand tone is ' + tone + '.');
-    return parts.length ? ' ' + parts.join(' ') : '';
+    return { audience: audience, tone: tone };
+  }
+
+  function brandBlock(brand) {
+    var lines = [];
+    if (brand.audience) lines.push('Audience: ' + brand.audience + '.');
+    if (brand.tone) {
+      var play = TONE_PLAYBOOK[brand.tone] || '';
+      lines.push('Tone: ' + brand.tone + (play ? ' — ' + play : '.'));
+    }
+    return lines.length ? lines.join('\n') : '';
   }
 
   function onBuildPack() {
@@ -283,9 +320,32 @@
     if (!packKey) { if (errEl) errEl.textContent = 'Pick a pack first.'; return; }
     if (!offer)   { if (errEl) errEl.textContent = 'Tell us what you\'re promoting or talking about.'; return; }
     var pack = SOCIAL_PACKS[packKey];
-    var goal = 'I need a ' + pack.label + ' for: ' + offer +
-               '. Generate distinct, platform-native copy for ' + pack.platforms + '.' +
-               brandSuffix();
+    var brand = readBrand();
+
+    /* Build per-platform "rules block" so the model gets native conventions
+       for each platform in the pack instead of generic instructions. */
+    var includes = pack.includes || [];
+    var ruleLines = [];
+    includes.forEach(function (p) {
+      var r = PLATFORM_RULES[p];
+      if (!r) return;
+      ruleLines.push('**' + p + '** — ' + r.length + ' ' + r.hashtags + ' ' + r.notes);
+    });
+    var rulesBlock = ruleLines.length ? '\n\nPer-platform conventions:\n' + ruleLines.join('\n') : '';
+    var brandBlk = brandBlock(brand);
+
+    var goal =
+      'Act as a senior social-media copywriter who has shipped 10,000+ posts. ' +
+      'Write a ' + pack.label + ' for: ' + offer + '. ' +
+      'Cover ' + pack.platforms + '.' +
+      (brandBlk ? '\n\n' + brandBlk : '') +
+      rulesBlock +
+      '\n\nOutput rules:\n' +
+      '- One clearly labeled section per platform (use **Platform Name** as the header).\n' +
+      '- Each section must feel native to its platform — no copy-paste between sections.\n' +
+      '- Lead with the strongest hook; cut every filler word.\n' +
+      '- No "Sure! Here\'s…" intro. Start directly with the first section header.';
+
     dispatchToText(goal);
   }
 
@@ -308,14 +368,38 @@
       if (errEl) errEl.textContent = 'Tell us what you\'re promoting or talking about.';
       return;
     }
-    var goal = 'Write a ' + platform + ' ' + ctype +
-               ' aimed at ' + pgoal.toLowerCase() +
-               ' for: ' + offer + '.' +
-               brandSuffix();
+
+    var brand = readBrand();
+    var brandBlk = brandBlock(brand);
+    var rules = PLATFORM_RULES[platform];
+    var goalPlay = GOAL_PLAYBOOK[pgoal] || '';
+
+    var rulesBlk = rules
+      ? '\n\nPlatform conventions:\n- Length: ' + rules.length + '\n- Hashtags: ' + rules.hashtags + '\n- ' + rules.notes
+      : '';
+
+    var goal =
+      'Act as a senior ' + platform + ' ' + ctype.toLowerCase() + ' writer. ' +
+      'Write a ' + platform + ' ' + ctype + ' for: ' + offer + '. ' +
+      'Goal: ' + pgoal + (goalPlay ? ' — ' + goalPlay : '.') +
+      (brandBlk ? '\n\n' + brandBlk : '') +
+      rulesBlk +
+      '\n\nOpening: lead with a hook the audience would stop scrolling for. No preamble. ' +
+      'No "Sure! Here\'s…" intro — start with the first line of the post itself.';
+
     dispatchToText(goal);
   }
 
   function dispatchToText(goalText) {
+    /* gm-source-flag-1: Mark this generation as Growth-Mode-sourced so
+       pmg-growth-actions.js mounts the Copy All / Export PDF row above
+       the eventual #resultBox content. Stamp time too so we can age out
+       stale flags (e.g. user navigates and a non-Growth result lands). */
+    try {
+      window.__pmgLastSource = 'growth';
+      window.__pmgLastSourceAt = Date.now();
+    } catch (_) {}
+
     closeDrawer();
     /* Switch to Text Prompts tab so the user lands on the right surface. */
     try {
