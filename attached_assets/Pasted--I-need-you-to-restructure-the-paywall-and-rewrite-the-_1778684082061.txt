@@ -1,0 +1,29 @@
+"I need you to restructure the paywall and rewrite the pricing page copy before July 1st. Here's exactly what to do:
+PART 1 — Paywall Restructure
+Update the feature gating so the following features are FREE during beta but lock behind paid on July 1st:
+Expert Command Center (all 5 tabs: Diagnose, Architect, Tune, Variations, Save)
+Growth Mode (Brand Voice, Social Packs, Platform Builder)
+Photography Suite power tools
+Prompt DNA Card (the 1080×1350 shareable PNG)
+Storyboard Generator — cap free users at 1/day, Founding Member and Pro get 5/day
+The following stay free forever, no change:
+Build My Prompt, Auto-Tune, Auto-Boost (unlimited)
+All 3 panels: Text, Photography, Video
+Prompt Vault (local only)
+Open in ChatGPT / Claude / Perplexity / Gemini
+Basic Run With AI: 2/day on GPT-4.1-mini (free), 15/day full GPT-4.1 (Founding), 25/day full GPT-4.1 (Pro)
+Basic Generate Image: 1/day free, 8/day Founding, 12/day Pro
+Cap these more aggressively on free tier and make the caps visible in the UI:
+Reverse Engine: 1/day free, 5/day Founding, 8/day Pro
+File / Image Analysis: 1/day free (already set), make sure it's enforced
+When a free user hits a paywalled feature after July 1st, show a clean non-aggressive paywall card — not a hard block. The card should say something like: 'You've been using this for free during the open beta. It's now a paid feature. Founding Member unlocks it forever for $79 — or go Pro at $14/month.' Include a direct link to the pricing page.
+PART 2 — Pricing Page Copy Rewrite
+Rewrite the pricing page to make three things viscerally clear:
+The July 1st cliff — Add a prominent callout box near the top of the page (below the hero, above the tier cards) that reads something like: 'Expert Command Center, Growth Mode, Photography Suite power tools, Prompt DNA Card, and the Storyboard Generator are free for everyone right now. On July 1st, they become paid features. Founding Members lock them in forever for $79 — one time, no renewal.'
+The model quality difference — Under every Run With AI line item in the tier cards, add a one-line explanation: Free tier uses GPT-4.1-mini. Paid tiers use full GPT-4.1 — noticeably sharper, more detailed outputs especially on complex prompts.
+The Founding Member math — Add one line directly under the $79 price: '$79 once = less than 6 months of Pro. After that, yours forever.' Make it feel like the obvious smart move.
+Fix the top banner — Change 'Founding Member Waitlist Open' to 'Founding Member Checkout Now Live · First 500 Buyers · $79 For Life'
+Fix the 'When does checkout open?' FAQ — Checkout is open. Rewrite that question to 'Is checkout open now?' with the answer: 'Yes — Founding Member checkout is live right now. Pay $79 once and lock in lifetime access. First 500 buyers only.'
+PART 3 — In-App Urgency Messaging
+Add a subtle but persistent urgency indicator in the app workstation for free users. A small banner or badge near the Expert Command Center, Growth Mode, and other features that will be paywalled — something like: 'Free during beta · Locks July 1' with a link to pricing. Keep it non-intrusive. It should feel like a helpful reminder, not a sales pitch.
+Show me all changes before deploying."
