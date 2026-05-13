@@ -1817,7 +1817,11 @@
     }
 
     bindIfPresent('pmgv3-upgrade', function () {
-      window.location.href = '/pricing.html';
+      // audit-2 H-3: deep-link straight to the founding-checkout card so the
+      // user lands on the actual buy button instead of the top of the page
+      // (where they'd have to scan past the hero + counter to find it). The
+      // anchor ID is `founding-checkout-card` per pricing.html L580.
+      window.location.href = '/pricing.html#founding-checkout-card';
     });
 
     /* H-1 (audit-2 deferred): mobile "More" menu. Lazily injects a small

@@ -270,17 +270,24 @@ a.pmgv3-ico:hover { color: #00c896; }
 }
 /* Topbar tap targets are now hard-set to 44x44 with !important on the
    base .pmgv3-ico rule above (no longer media-query-gated). */
+/* audit-2 H-3 (Option B): promoted from low-contrast ghost outline to a solid
+   filled accent pill. The previous `background: rgba(0,200,150,0.12)` + green
+   text rendered nearly invisible next to the dark teal topbar and the active
+   teal tab below it — eyes skipped right past it. The filled pill is the only
+   element in the topbar with a fully-saturated accent fill, so it now reads
+   as the primary call-to-action instead of yet another ghost-link in a row of
+   ghost-links. Same hover pattern (slight darken on hover for affordance). */
 .pmgv3-upgrade {
   padding: 8px 14px;
   border-radius: 8px;
   border: 1px solid #00c896;
-  background: rgba(0, 200, 150, 0.12);
-  color: #00c896;
-  font-weight: 700;
+  background: #00c896;
+  color: #001b14;
+  font-weight: 600;
   font-size: 13px;
   cursor: pointer;
 }
-.pmgv3-upgrade:hover { background: rgba(0, 200, 150, 0.22); }
+.pmgv3-upgrade:hover { background: #00b186; border-color: #00b186; }
 
 /* ---- Module tabs (Step 3) ---- */
 .pmgv3-tabs {
