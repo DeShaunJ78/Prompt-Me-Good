@@ -27,6 +27,7 @@ pnpm workspaces · Node v24 · TS 5.9 · Express 5 · Drizzle ORM · Zod · Orva
     *   `pmg-guided-intake.{css,js}` — Guided 4-field intake (Subject/Environment/Action/Style) above `#pmg-vs-image-goal` / `#pmg-vs-video-goal`, with ↻ toggle to freeform.
     *   `pmg-adv-mirror.{css,js}` — Mirrors `<details id="advanced-options">` (Growth Mode / Human Voice / Clarity Boost) inside `#tuning-panel`. See [adv-mirror gotchas](./docs/gotchas.md#adv-mirror-gotchas-pmg-adv-mirrorcssjs).
     *   `pmg-tune-chips.{css,js}` — "Prompt Tuning" pill in voice row → opens full `.tuning-section`. See [tune-chips gotchas](./docs/gotchas.md#tune-chips-gotchas-pmg-tune-chipscssjs).
+    *   `pmg-std-examples.js` — Makes "See The Difference" before/after rows clickable; populates `#goal` with the Before text, switches to Text panel, scrolls + pulses the textarea. Stops short of auto-generating.
 *   `artifacts/promptmegood/public/sitemap.xml` + `robots.txt` — SEO surface (AI crawlers allowed).
 *   `artifacts/promptmegood/playwright.config.ts` — Frontend test config.
 

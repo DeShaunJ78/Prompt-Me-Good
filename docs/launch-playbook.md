@@ -35,3 +35,16 @@ Verification: after editing, grep `\$79\|\$14\|\$29\|\$129\|\$290` across these 
 ## Watch List (passive monitoring; don't fix unless drift appears)
 
 - **L2 · JSON-LD FAQ caps in `app.html`.** The big FAQ-answer string around L186 hand-encodes every cap (`2 / 1 / 1`, `15 / 8 / 5 / 3`, `25 / 12 / 8 / 5`, `75 / 30 / 20 / 10`). It's currently correct but is **not** driven by the `data-pmg-cap` hooks (JSON-LD can't be DOM-hydrated by `pricing-config.js` at runtime, since crawlers don't execute it). Any future caps change must be hand-mirrored here. Long-term fix: server-render JSON-LD from `pricing-config.ts` so it can never drift. Until then, add this file to the checklist whenever caps change.
+
+## SEO copy / pricing-literal coupling (added May 13, 2026)
+
+The keyword-optimized SEO surfaces shipped this session reference specific tier prices and free-tier framing in the page metadata. Any future pricing PR — Stripe price-id swap, tier rename, free-tier policy change, "no signup required" reversal — **must manually update these four lines** or the SEO copy will go stale and search snippets will misrepresent the product:
+
+- `artifacts/promptmegood/index.html` L21 — `<title>` (currently mentions "Free ChatGPT Prompt Builder & AI Prompt Optimizer")
+- `artifacts/promptmegood/index.html` L22 — `<meta name="description">` (currently mentions "free AI prompt generator", "no signup required")
+- `artifacts/promptmegood/pricing.html` L12 — `<title>` (currently mentions "AI Prompt Generator Tool")
+- `artifacts/promptmegood/pricing.html` L13 — `<meta name="description">` (currently mentions "Founding Member for lifetime access")
+
+The JSON-LD `SoftwareApplication` block at `index.html` L26-41 also hardcodes `"price": "0", "priceCurrency": "USD"` for the free-tier offer — flip that if free-tier ever becomes paid.
+
+No automated guard exists today. Suggested future hardening: CODEOWNERS check, or a CI grep that fails any PR touching `pricing-config.ts` without also touching these four lines (analogous to the `\$79\|\$14\|\$29\|\$129\|\$290` sweep documented above).
