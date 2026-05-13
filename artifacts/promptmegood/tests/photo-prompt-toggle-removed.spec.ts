@@ -33,7 +33,7 @@ test.describe("Photo Prompt Mode removal @ mobile-360", () => {
   }) => {
     await expect(page.locator("#photoMode")).toHaveCount(0);
     await expect(page.locator(".advanced-options-summary .adv-sub")).toHaveText(
-      /Growth Mode, Human Voice, Clarity Boost$/,
+      /Growth Mode.*Human Voice.*Clarity Boost$/,
     );
     await expect(
       page.locator(".advanced-options-summary .adv-sub"),

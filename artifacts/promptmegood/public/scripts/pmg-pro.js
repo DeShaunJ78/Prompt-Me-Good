@@ -503,7 +503,18 @@
            a graceful fallback after a short tick. */
         setTimeout(function () {
           if (!primaryBtn.__pmgStripeWired) {
-            try { window.location.href = './pricing.html'; } catch (_) {}
+            /* H2 (audit-2 deeper): deep-link to the relevant tier card
+               instead of dumping the user at the top of /pricing.html.
+               During beta → Founding checkout card. After beta flips →
+               Pro Monthly card. Detect via window.PMG_PRICING.BETA_END. */
+            var deepHash = '#founding-checkout-card';
+            try {
+              var beCfg = (window.PMG_PRICING && window.PMG_PRICING.BETA_END) || '';
+              if (beCfg && Date.now() >= Date.parse(beCfg)) {
+                deepHash = '#tier-pro-name';
+              }
+            } catch (_) {}
+            try { window.location.href = '/pricing.html' + deepHash; } catch (_) {}
           }
         }, 250);
       });

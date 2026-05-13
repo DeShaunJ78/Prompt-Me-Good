@@ -12860,6 +12860,25 @@
       if (btn.getAttribute(INJECTED_FLAG) === '1') return;
       btn.setAttribute(INJECTED_FLAG, '1');
       btn.classList.add(BUTTON_CLASS);
+      /* H1 (audit-2 deeper): "Notify Me When Pro Launches" buttons share
+         the [data-pmg-upgrade] hook with the live Founding checkout, but
+         during beta the /api/create-checkout-session endpoint 403s on Pro
+         tiers (paywall not yet active). Detect non-founding tiers + beta
+         mode and let the anchor href (#pro-early-access) scroll to the
+         waitlist form instead of triggering a doomed Stripe call.
+         Founding stays wired regardless — its checkout is live now. */
+      var tier = (btn.getAttribute('data-pmg-upgrade') || '').toLowerCase();
+      var cfgBE = (window.PMG_PRICING && window.PMG_PRICING.BETA_END) || '';
+      var betaActive = false;
+      try {
+        if (cfgBE) betaActive = Date.now() < Date.parse(cfgBE);
+      } catch (_) {}
+      if (tier !== 'founding' && betaActive) {
+        /* Don't preventDefault — let the href anchor work. Don't mark
+           __pmgStripeWired either, so pmg-pro.js's modal fallback knows
+           Stripe isn't wired here and uses its deep-link redirect. */
+        return;
+      }
       /* Mark this button so pmg-pro.js's upgrade-modal fallback can detect
          that Stripe wiring is in place and skip its own pricing-page
          redirect. Without this flag the fallback timer in pmg-pro.js will
