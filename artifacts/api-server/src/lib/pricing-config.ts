@@ -33,7 +33,7 @@ export const PMG_PRICING = {
   PRO_STUDIO_MONTHLY_USD: 29,
   PRO_STUDIO_YEARLY_USD: 290,
   FOUNDING_LIMIT: 500,
-  FOUNDING_DEADLINE_COPY: "Checkout Opening Soon (First 500 Buyers Lock In $79 For Life)",
+  FOUNDING_DEADLINE_COPY: "First 500 Buyers Lock In $79 For Life",
   TRIAL_DAYS: 7,
   // Per-day per-feature caps for every plan. None of the paid tiers are
   // unlimited — they have generous fair-use caps so unit economics stay
@@ -51,7 +51,7 @@ export const PMG_PRICING = {
   // can still open it; outside beta the gate kicks in. Mirrors the
   // matching constants in pmg-pricing-config.js for the frontend.
   EXPERT_CENTER_PAID_TIERS: ["founding", "pro_monthly", "pro_yearly", "pro_studio_monthly", "pro_studio_yearly"] as const,
-  BETA_END: "2026-06-01T05:00:00.000Z",
+  BETA_END: "2026-07-01T05:00:00.000Z",
 } as const;
 
 export type PmgFeature = "run" | "img" | "analyze" | "vid";

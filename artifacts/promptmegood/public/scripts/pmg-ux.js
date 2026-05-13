@@ -13079,7 +13079,7 @@
      or T41 plan-sync) from "beta unlock" (set by T42). When the paywall
      activates we MUST revoke the beta unlock without touching genuine paid
      entitlements — otherwise users who visited during beta would keep
-     full access forever after June 1. */
+     full access forever after July 1. */
   var BETA_MARKER = 'promptmegood:t42-beta-unlock:v1';
 
   /* Dev-only console.log gate. Production deployments live on *.replit.app

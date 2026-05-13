@@ -22,7 +22,7 @@
     PRO_STUDIO_MONTHLY_USD: 29,
     PRO_STUDIO_YEARLY_USD: 290,
     FOUNDING_LIMIT: 500,
-    FOUNDING_DEADLINE_COPY: 'Checkout Opening Soon (First 500 Buyers Lock In $79 For Life)',
+    FOUNDING_DEADLINE_COPY: 'First 500 Buyers Lock In $79 For Life',
     TRIAL_DAYS: 7,
     /* Per-plan daily caps. Mirrors api-server/src/lib/pricing-config.ts. */
     TRIAL_DAILY_CAPS:       { run: 6,  img: 3,  analyze: 2  },
@@ -37,6 +37,6 @@
        can still open it; outside beta the gate kicks in. The drawer code
        reads BETA_END to decide whether to show the upgrade paywall. */
     EXPERT_CENTER_PAID_TIERS: ['founding', 'pro_monthly', 'pro_yearly', 'pro_studio_monthly', 'pro_studio_yearly'],
-    BETA_END: '2026-06-01T05:00:00.000Z'
+    BETA_END: '2026-07-01T05:00:00.000Z'
   };
 })();
