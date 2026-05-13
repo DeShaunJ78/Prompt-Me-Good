@@ -1,0 +1,19 @@
+Audit #2 (Deeper) Triage Decisions
+Deploy 1 — Do it now (already merged, just needs a deploy push):
+Ship current main. This fixes B-1 (/api/founding/seats 404), ships the mobile topbar fix, banner copy, founding counter threshold, and the cap-compare-1 panel all in one push. No new code needed — just deploy.
+Deploy 2 — B-2 (Waitlist endpoint + form) — HIGHEST PRIORITY after Deploy 1:
+This is a revenue blocker. Four "Notify Me" buttons on the Pro/Pro Studio cards are dead right now — every click bounces. Build:
+A real <form> block under #pro-early-access in pricing.html with email input, tier capture (using the canonical pro_monthly / pro_yearly / pro_studio_monthly / pro_studio_yearly values), and a visible success confirmation state
+A /api/waitlist POST route that saves { email, tier, created_at } to the waitlist_signups table (already in the DB schema per waitlist.ts:74)
+Turnstile gating (same pattern as the existing founding form)
+Show me the form HTML and route code before committing.
+Deploy 3 — H-2 + H-1 cache fix (bundle together):
+H-2: Add a startup assertion that checks all 5 Stripe Price ID env vars exist at boot. Log clearly and crash if any are missing. One-time, prevents a launch-day 500 for the first paying Pro customer.
+H-1: Change /api/pricing-config.js response header to Cache-Control: no-store. One line.
+Deploy 4 — H-3 (In-app upgrade CTA, desktop):
+The mobile topbar "Lock In $79" fix already shipped. But on desktop, there is zero passive conversion surface inside /app during normal use — only the cap-hit panel (which requires hitting the cap first). Add a persistent "Lock In $79" pill in the workstation chrome on desktop, visible at all times, not just on cap-hit. Position it in the topbar next to the existing icons. This is the biggest passive conversion gap on the site right now.
+Defer (no action needed now):
+M-1 (meta description price literals) — document the manual sweep in launch-playbook.md for any price change PR. No code needed.
+M-2, M-3, M-4, L-3, L-4 — polish, revisit after launch.
+L-5 — diagnostic note only, no action.
+Start with Deploy 1 (push current main now), then immediately scope Deploy 2 (B-2 waitlist form). Show me the B-2 plan before building.
