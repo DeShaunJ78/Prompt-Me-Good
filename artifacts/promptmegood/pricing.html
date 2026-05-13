@@ -593,6 +593,11 @@
         <form class="early-access-form" id="early-access-form" novalidate>
           <label class="visually-hidden" for="early-access-email">Email address</label>
           <input id="early-access-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="Email address" required />
+          <!-- M-4 (audit-2 triage): tier capture. Populated by the click
+               handler below from data-pmg-upgrade on the source button so
+               marketing can segment the waitlist. Empty when the user
+               types an email directly without clicking a tier card. -->
+          <input id="early-access-tier" name="tier" type="hidden" value="" />
           <button type="submit" class="btn btn-primary">Notify Me</button>
         </form>
         <!-- Cloudflare Turnstile widget mount. Rendered explicitly by the
@@ -817,6 +822,27 @@
       var turnstileToken = '';
       if (!form) return;
       var btn = form.querySelector('button[type="submit"], button:not([type])');
+
+      /* M-4 (audit-2 triage): when a user clicks one of the four pricing-card
+         "Notify Me When [tier] Launches" anchor links (which scroll to this
+         form via href="#pro-early-access"), capture the data-pmg-upgrade
+         tier and stash it in the hidden #early-access-tier input. The form
+         submit handler below reads that field and includes it in the POST
+         payload so marketing can segment the waitlist. */
+      var tierInput = document.getElementById('early-access-tier');
+      var TIER_LINKS = document.querySelectorAll('a[href="#pro-early-access"][data-pmg-upgrade]');
+      TIER_LINKS.forEach(function (link) {
+        link.addEventListener('click', function () {
+          if (!tierInput) return;
+          var t = (link.getAttribute('data-pmg-upgrade') || '').trim();
+          if (t) tierInput.value = t;
+          // Move keyboard focus to the email input so the user lands ready to type.
+          setTimeout(function () {
+            var emailEl = document.getElementById('early-access-email');
+            if (emailEl) try { emailEl.focus({ preventScroll: true }); } catch (e) { emailEl.focus(); }
+          }, 250);
+        });
+      });
       var originalBtnText = btn ? btn.textContent : '';
 
       function loadScript(src) {
@@ -912,7 +938,14 @@
           setStatus('Please complete the verification check above.', 'error');
           return;
         }
+        /* M-4 (audit-2 triage): include tier captured from whichever
+           Notify-Me-by-tier button the user clicked. Empty string is
+           normalized to undefined so the server's enum validation
+           doesn't reject the submission. */
+        var tierField = document.getElementById('early-access-tier');
+        var tierVal = (tierField && tierField.value || '').trim();
         var payload = { email: value, source: 'pricing', turnstileToken: turnstileToken };
+        if (tierVal) payload.tier = tierVal;
         fetch(SUBMIT_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },

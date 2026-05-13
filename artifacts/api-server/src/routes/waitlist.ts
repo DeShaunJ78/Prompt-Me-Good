@@ -82,9 +82,14 @@ router.post("/waitlist", waitlistLimiter, async (req, res) => {
     return res.status(400).json({ ok: false, error: "turnstile_failed" });
   }
 
+  /* M-4 (audit-2 triage): accept optional `tier` so marketing can segment
+     the waitlist by which Pro tier the user clicked Notify Me on. The
+     enum on the schema rejects unknown values silently (Zod drops the
+     field), so junk input doesn't leak into the table. */
   const parsed = insertWaitlistSignupSchema.safeParse({
     email: typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "",
     source: typeof req.body?.source === "string" ? req.body.source.slice(0, 64) : "pricing",
+    tier: typeof req.body?.tier === "string" && req.body.tier ? req.body.tier : undefined,
     userAgent: req.get("user-agent")?.slice(0, 500),
     referrer: req.get("referer")?.slice(0, 500),
   });
@@ -105,6 +110,7 @@ router.post("/waitlist", waitlistLimiter, async (req, res) => {
       {
         emailFp: emailFingerprint(parsed.data.email),
         source: parsed.data.source,
+        tier: parsed.data.tier ?? null,
         duplicate,
       },
       "waitlist signup",
