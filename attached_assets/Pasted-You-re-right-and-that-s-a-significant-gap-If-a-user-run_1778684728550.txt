@@ -1,0 +1,39 @@
+You're right and that's a significant gap. If a user runs a great prompt through the AI and gets a result they love, there's currently no obvious way to save that result alongside the prompt that generated it. They'd have to manually copy it somewhere. That's friction that kills retention — people close the tab and lose their work, then don't come back because they can't find what they built.
+Let me fold this into the full Replit command along with all the feature upgrades. Here's the complete command — send this:
+"I have a batch of feature upgrades and one important gap to fill. Here's everything:
+PART 1 — Save Run With AI Results
+Users currently have no way to save their 'Run With AI' output alongside the prompt that generated it. This needs to be fixed.
+When a Run With AI result is generated, show two buttons below the output:
+'Save to Vault' — saves the prompt AND the AI result together as a paired entry in the Prompt Vault, labeled with the date and a snippet of the prompt as the title. The saved entry should show both the original prompt and the AI output when opened.
+'Copy Result' — one-click copy of just the AI output text.
+For free users, saving to Vault is local only (already how the Vault works). For paid users, it syncs to cloud Vault when that feature is live.
+Also add a 'Save Prompt' button to the main Build My Prompt output area if one doesn't already exist — so users can save a built prompt to Vault even without running it through AI. The Vault entry should clearly distinguish between 'Built Prompt' and 'AI Result' entries so users can tell them apart.
+PART 2 — Expert Command Center Upgrades
+In the Diagnose tab: replace or supplement the score with a plain-English verdict — one sentence that tells the user exactly what's weak about their prompt and why it matters. Example: 'Your prompt is missing a role and a success criteria — without these, the AI will guess at your intent and produce generic output.' Make it feel like a real expert is reading their prompt, not a scoring algorithm.
+In the Variations tab (Fast & Simple, Detailed & Strategic, Bold & Persuasive): add a 'Send to ChatGPT' button on each variation card that opens ChatGPT in a new tab with that variation pre-loaded as the prompt.
+PART 3 — Growth Mode Upgrades
+Audit the system prompts behind Growth Mode outputs (Brand Voice, Social Packs, Platform Builder). The outputs need to feel like they came from a professional strategist writing for the user's specific brand — not a generic template. Sharpen the prompts to produce more specific, brand-aware, actionable copy.
+Add a 'Copy All' button and an 'Export as PDF' button to Growth Mode output panels so users can take their full social pack or brand voice document away as a deliverable in one click.
+PART 4 — Prompt DNA Card Redesign
+Redesign the Prompt DNA Card from a utility screenshot into a branded shareable artifact. The card should include:
+The prompt title or first line as a headline
+A prompt quality score badge (pulled from the Diagnose tab if available)
+3–5 key techniques or elements detected in the prompt (e.g. 'Role defined · Audience specified · Output format set')
+A clean 'Built with PromptMeGood' watermark at the bottom that drives organic referrals
+Keep the 1080×1350 format
+The goal is a card people actually want to post on LinkedIn or X because it makes them look like a prompt engineering expert.
+PART 5 — Photography Suite Power Tools
+Add a one-line outcome-focused tooltip to each power tool chip. The tooltip should describe what the chip does in plain English from the user's perspective — the outcome, not the mechanism. Example for Bokeh Depth: 'Adds professional background blur — the effect that makes phone photos look like they were shot on a $3,000 camera.' Write outcome tooltips for every chip.
+Optionally: add a small static before/after example image for the 3–5 most popular chips to show the visual effect.
+PART 6 — Storyboard Generator Upgrades
+Add an 'Export as PDF' button that generates a formatted storyboard PDF with all 5 frames, the prompt that generated them, a title block, and the date. Make it look like a professional production document.
+Add a 'Regenerate this frame' button on each individual frame so users can fix one frame without regenerating all 5.
+PART 7 — Reverse Engine Upgrades
+Update the label and description to be outcome-focused. Instead of 'Reverse Engine — image → prompt' use: 'Reverse Engineer Any Image — Upload a photo you love and get the exact prompt that would recreate it in any AI image tool.'
+Add a 'Use this prompt' button on the Reverse Engine result that pre-loads the generated prompt directly into the Build My Prompt goal field with one click — no copy-paste required.
+PART 8 — Run With AI Cap Upgrade
+When a free user hits their daily Run With AI cap (2/day), instead of just showing a generic 'limit reached' message, show a side-by-side comparison panel:
+Left side: their GPT-4.1-mini result (what they got)
+Right side: a teaser showing what full GPT-4.1 would produce — either blurred, truncated after 2–3 sentences, or labeled 'Preview — upgrade to see full result'
+The goal is to let them feel the quality gap between free and paid at the exact moment they're most motivated to upgrade. Include a direct 'Unlock with Founding Member · $79' CTA below the comparison.
+Show me all changes before deploying. Flag every file touched so I have a complete list."
