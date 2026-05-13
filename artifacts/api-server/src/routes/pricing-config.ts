@@ -29,7 +29,16 @@ const router: IRouter = Router();
 // twin would split readers between two source-of-truth endpoints.
 router.get("/pricing-config.js", (_req, res) => {
   res.set("Content-Type", "application/javascript; charset=utf-8");
-  res.set("Cache-Control", "public, max-age=60");
+  // audit-2 H-B: 5-minute browser TTL with 24h stale-while-revalidate.
+  // Returning users get an instant render from the SWR cache and the
+  // browser revalidates in the background, so a price change propagates
+  // within ~5 minutes for fresh sessions and ~one navigation for warm
+  // sessions. Replaces the prior `max-age=60` (too aggressive a refetch
+  // on a config that changes once a quarter) and `max-age=86400` (too
+  // sticky for an emergency price correction). The `?v=...` query-string
+  // bump on the <script> tag in pricing.html / app.html remains as a
+  // break-glass for forced invalidation on a same-day pricing change.
+  res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=86400");
   // Inlining JSON.stringify(PMG_PRICING) is safe because every value is a
   // number, string, or POJO of those types — no user data, no executable
   // tokens. Frozen so consumers can't accidentally mutate the shared config.

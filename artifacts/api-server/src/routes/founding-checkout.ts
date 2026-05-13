@@ -106,6 +106,33 @@ router.get("/founding-checkout/status", async (req, res) => {
 });
 
 /* =========================================================================
+ * GET /api/founding/seats
+ * audit-2 H-A alias: cleaner public route name for the same {sold, limit,
+ * remaining, soldOut} payload that pricing.html (and any future surface)
+ * needs to render the live "X of 500 claimed" badge. Delegates to the same
+ * getFoundingSold() helper so there is exactly one source of truth for the
+ * count. /api/founding-checkout/status stays in place as a deprecated
+ * alias — both routes return identical responses.
+ * ===================================================================== */
+router.get("/founding/seats", async (req, res) => {
+  try {
+    const sold = await getFoundingSold();
+    const limit = PMG_PRICING.FOUNDING_LIMIT;
+    const remaining = Math.max(0, limit - sold);
+    res.set("Cache-Control", "no-store");
+    res.json({
+      sold,
+      limit,
+      remaining,
+      soldOut: sold >= limit,
+    });
+  } catch (err) {
+    req.log?.error({ err }, "founding/seats failed");
+    res.status(500).json({ error: "status_unavailable" });
+  }
+});
+
+/* =========================================================================
  * POST /api/founding-checkout
  * Public, unauthenticated, rate-limited. Creates a one-time-payment Stripe
  * Checkout Session for the Founding tier and returns { url } for the

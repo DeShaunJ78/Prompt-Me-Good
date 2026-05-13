@@ -1,0 +1,15 @@
+Audit #2 Triage Decisions
+C-2 — Fix the HTML (Option A). Change pricing.html L417 from data-pmg-upgrade="pro_studio" to data-pmg-upgrade="pro_studio_monthly". One-line fix, consistent with billing.ts L135. Ship it immediately — every Pro Studio Monthly waitlist signup since launch has been saving with tier=null.
+H-A — Build the /api/founding/seats endpoint. Don't delete the hydrate block — that's future social proof. Ship a tiny endpoint that returns { sold: <count>, limit: 500 } by querying the founding purchases table (same source billing.ts already reads). Once 25+ seats are sold, the live counter becomes a real conversion driver. Until then it shows "0 of 500" which is fine — it's honest and the static fallback copy already handles it gracefully.
+C-1 — Skip the incognito-on-cellular test. The cache-control: no-store, no-cache, must-revalidate header is already on pricing.html. The stale render was a Firecrawl artifact. Real users on modern browsers will get the correct page. Not worth the time to chase.
+H-B — Drop config cache to max-age=300, stale-while-revalidate=86400. Don't rely on the manual ?v= bump — that's a human error waiting to happen on a pricing change day. The 5-minute TTL with background revalidation is the right long-term fix. Add a note to the release checklist that the ?v= param is a break-glass option for emergency cache busts only.
+M-A — Canonical tier name sweep. Use pro_studio_monthly as the canonical value everywhere. Grep-replace data-pmg-upgrade="pro_studio" across all HTML files and normalize the Zod enum to match. Bundle this with the C-2 fix in the same PR.
+L-B — Add "Pricing" to the /index.html topbar nav. Small addition, high value — users on the landing page shouldn't have to scroll to the footer to find pricing.
+L-C — Rename "Upgrade" button to "Lock In $79" during beta. More honest, more specific, and it reinforces the scarcity of the Founding Member deal. Switch back to "Upgrade" on July 1 when the full tier ladder is live (this can be wired to the same paywallActive flag as the launch swap).
+WIP cap-compare-1 — hold for now, ship after this batch.
+Deploy order:
+C-2 + M-A in one PR (tier name fix + canonical sweep)
+H-A (/api/founding/seats endpoint)
+H-B (config cache TTL drop)
+L-B + L-C in one PR (topbar "Pricing" link + "Lock In $79" button rename)
+No code until I confirm — go ahead and build.

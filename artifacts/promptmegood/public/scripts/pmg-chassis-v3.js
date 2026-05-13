@@ -179,7 +179,16 @@
           '<button class="pmgv3-ico" id="pmgv3-business" type="button" title="Growth Mode — assemble a marketing prompt" aria-label="Open Growth Mode"><span class="pmgv3-ico-glyph">💼</span><span class="pmgv3-ico-label">Growth</span></button>',
           '<button class="pmgv3-ico" id="pmgv3-vault" type="button" title="Vault — saved prompts" aria-label="Open Vault"><span class="pmgv3-ico-glyph">🗄️</span><span class="pmgv3-ico-label">Vault</span></button>',
           '<button class="pmgv3-ico" id="pmgv3-settings" type="button" title="Settings — Expert Command Center, theme, account" aria-label="Open Settings"><span class="pmgv3-ico-glyph">⚙️</span><span class="pmgv3-ico-label">Settings</span></button>',
-          '<button class="pmgv3-upgrade" type="button" id="pmgv3-upgrade" title="See pricing — $79 one-time Founding Member (first 500, lifetime access) or Pro $14/mo">Upgrade</button>',
+          // L-C (audit-2 triage): during the open beta the only paid action
+          // actually available is the Founding Member $79 one-time deal —
+          // every other tier routes to the waitlist. "Upgrade" misrepresents
+          // that. Render "Lock In $79" while now < BETA_END, swap back to
+          // "Upgrade" once the full tier ladder goes live. Default text is
+          // beta-mode ("Lock In $79") because that's the active state today;
+          // the post-mount swap below promotes it to "Upgrade" if BETA_END
+          // has already passed. Same idea as the launch swap that toggles
+          // data-pmg-beta-only / data-pmg-post-launch elsewhere on the page.
+          '<button class="pmgv3-upgrade" type="button" id="pmgv3-upgrade" title="Lock in lifetime access for $79 — Founding Member, first 500 buyers, price locked for life">Lock In $79</button>',
         '</div>',
       '</header>',
       '<nav class="pmgv3-tabs" role="tablist" aria-label="Module">',
@@ -1802,6 +1811,27 @@
     bindIfPresent('pmgv3-upgrade', function () {
       window.location.href = '/pricing.html';
     });
+
+    /* L-C (audit-2 triage): swap "Lock In $79" → "Upgrade" once the open
+       beta has ended. Until BETA_END the only paid action available is the
+       Founding Member $79 one-time deal, so the more specific label is
+       honest and reinforces scarcity. After BETA_END the full tier ladder
+       (Pro / Pro Yearly / Pro Studio / Pro Studio Yearly) is live and
+       "Upgrade" is the right umbrella term again. Reads BETA_END from
+       window.PMG_PRICING (loaded via /api/pricing-config.js); silently
+       no-ops if the config hasn't loaded yet — the default "Lock In $79"
+       text is the safer fallback during beta. */
+    try {
+      var upBtn = document.getElementById('pmgv3-upgrade');
+      var betaEndIso = (window.PMG_PRICING && window.PMG_PRICING.BETA_END) || '';
+      if (upBtn && betaEndIso) {
+        var betaEndMs = Date.parse(betaEndIso);
+        if (isFinite(betaEndMs) && Date.now() >= betaEndMs) {
+          upBtn.textContent = 'Upgrade';
+          upBtn.title = 'See pricing — Founding Member, Pro, or Pro Studio';
+        }
+      }
+    } catch (_e) {}
   }
 
   /* -------------------- Vault drawer overlay -------------------- */

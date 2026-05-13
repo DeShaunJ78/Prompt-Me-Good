@@ -422,10 +422,10 @@
           <div class="tier-cta-row">
             <div data-pmg-beta-only>
               <p class="tier-coming-soon-note"><strong>Coming after Pro launch.</strong> Studio opens once Pro Monthly is live.</p>
-              <a class="btn btn-secondary" href="#pro-early-access" data-pmg-upgrade="pro_studio">Notify Me When Studio Launches</a>
+              <a class="btn btn-secondary" href="#pro-early-access" data-pmg-upgrade="pro_studio_monthly">Notify Me When Studio Launches</a>
             </div>
             <div data-pmg-post-launch hidden>
-              <a class="btn btn-primary" data-pmg-upgrade="pro_studio">Subscribe · <span data-pmg-price="pro_studio_monthly">$29</span>/mo</a>
+              <a class="btn btn-primary" data-pmg-upgrade="pro_studio_monthly">Subscribe · <span data-pmg-price="pro_studio_monthly">$29</span>/mo</a>
             </div>
           </div>
         </article>
@@ -700,10 +700,13 @@
         }
       }
 
-      // Fetch current count once on load. Server now sends no-store
-      // (audit-2 M3) so this is always fresh; the click-handler also
-      // re-checks before POSTing to /api/founding-checkout.
-      fetch('/api/founding-checkout/status', { headers: { 'Accept': 'application/json' } })
+      // Fetch current count once on load. Server sends no-store so this is
+      // always fresh; the click-handler also re-checks before POSTing to
+      // /api/founding-checkout. audit-2 H-A: the canonical endpoint is now
+      // /api/founding/seats (returns the same {sold, limit, remaining,
+      // soldOut} shape). The older /api/founding-checkout/status remains as
+      // a deprecated alias so any in-flight pages don't break.
+      fetch('/api/founding/seats', { headers: { 'Accept': 'application/json' } })
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (s) {
           if (s && typeof s.sold === 'number') renderCounter(s);
