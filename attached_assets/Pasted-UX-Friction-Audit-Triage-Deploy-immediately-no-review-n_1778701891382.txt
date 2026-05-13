@@ -1,0 +1,20 @@
+UX Friction Audit Triage
+Deploy immediately (no review needed):
+B-1 — Pricing nav collision — "PricingLight Mode" rendering with no space between the nav link and theme toggle. One CSS line. Ship it now — this is the highest-conversion page and it looks broken.
+H-2 — Turnstile sitekey whitelist — Before writing any code, check the Cloudflare Turnstile dashboard and confirm promptmegood.com is whitelisted. If it's not, every Pro waitlist signup since launch has been silently dropped. This is a dashboard fix, not a code change. Confirm it's working on prod and report back.
+Deploy next (one PR):
+H-3 — Topbar icon labels — Add visible text micro-labels under the five right-side icons on desktop: 💼 Growth, 🗄️ Vault, ⚙️ Settings, ❓ Guide, and keep ← Home as-is. On mobile (< 480px) these can collapse — just needs to work on desktop. No layout change, just small labels below each icon.
+H-4 — Add "Pricing" link to app topbar — Users inside the app have no way to reach the pricing page except clicking "Upgrade" (which feels committal) or scrolling to the footer. Add a small "Pricing" text link in the topbar, next to ← Home or in the right-side cluster.
+M-4 — Waitlist tier capture — All four "Notify Me" buttons collapse to one form with no tier field. Add a hidden <input name="tier"> that the click handler populates from data-pmg-upgrade before submission. Marketing needs to know which tier each signup is interested in.
+Deploy after (second PR):
+H-1 — Mobile topbar brand cropping — At 360px the logo is cropped to a sliver and the brand name is invisible. Reserve minimum width for the brand name, and hide lower-priority icons (Settings, maybe Vault) behind a "More" menu below 480px.
+M-1 — Mobile beta banner — At 360px the banner wraps to 3 lines and consumes the entire above-the-fold viewport. Shorten the banner copy for mobile or reduce font size below 480px.
+M-2 — Founding counter copy — "0 of 500 Founding seats claimed · 500 left" reads as "nobody is buying this." Change to "Brand new — be one of the first 500" until at least 25–50 seats are sold, then switch to the live counter.
+Defer for now:
+M-3 (pricing card order/hierarchy) — defer until we have conversion data
+M-5 (launch-swap JSON-LD on app.html) — already on the deferred list, confirmed
+L-3 (contact page "Open The App" capitalization) — one-character fix, bundle with next deploy
+L-4 (guide.html light theme flash) — low priority, already opens in new tab
+L-5 (no in-product beta countdown) — this is the urgency badge item already on the deferred list, do it in June
+L-7 (sample card copy) — defer, not a friction issue
+Start with B-1 and H-2 — ship B-1 immediately, confirm H-2 Turnstile status first before anything else.

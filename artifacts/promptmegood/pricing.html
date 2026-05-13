@@ -246,7 +246,15 @@
         <a class="ghost-link" href="./guide.html">Guide</a>
         <a class="ghost-link is-current" href="./pricing.html" aria-current="page">Pricing</a>
         <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Switch theme">
-          <span id="theme-toggle-label">Dark Mode</span>
+          <!-- B-1 fix: pmg-ux.js forces .theme-toggle to a 44x44 icon-only circle
+               and hides .theme-toggle-label. Pricing's label was id-only with no
+               inner <svg>, so the rule missed and the "Light Mode" text overflowed
+               the empty circle, colliding with the "Pricing" link as
+               "PricingLight Mode". Added the class so the label hides for sighted
+               users (still announced via aria-label) and a placeholder <svg> so
+               syncIcon() can populate the sun/moon glyph like the rest of the site. -->
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"></svg>
+          <span id="theme-toggle-label" class="theme-toggle-label">Dark Mode</span>
         </button>
       </div>
     </div>
