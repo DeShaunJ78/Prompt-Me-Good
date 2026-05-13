@@ -1,0 +1,115 @@
+/* pmg-save-result.css — Save Prompt + Save AI Result to Vault
+   Disable: localStorage.pmg_saveresult_disable='1' OR ?saveresult=off
+   Owns: #pmg-save-prompt-btn, .pmg-save-ai-btn, .pmg-save-confirm,
+         .history-item-ai-result (rendered by app.html renderHistory)
+*/
+
+#pmg-save-prompt-btn,
+.pmg-save-ai-btn {
+  font-size: 13px;
+  padding: 6px 12px;
+  min-height: 34px;
+}
+
+#pmg-save-prompt-btn[data-state="saved"],
+.pmg-save-ai-btn[data-state="saved"] {
+  background: rgba(0, 200, 150, 0.18);
+  border-color: rgba(0, 200, 150, 0.55);
+  color: #7af5c4;
+}
+
+#pmg-save-prompt-btn[disabled],
+.pmg-save-ai-btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Inline confirm popover for "Replace / Save as New / Cancel" */
+.pmg-save-confirm {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  margin: 10px 0;
+  background: rgba(15, 30, 40, 0.96);
+  border: 1px solid rgba(0, 200, 150, 0.45);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  max-width: 460px;
+}
+
+.pmg-save-confirm__msg {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-text, #e8f0f5);
+}
+
+.pmg-save-confirm__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pmg-save-confirm__row .btn {
+  font-size: 13px;
+  padding: 6px 12px;
+  min-height: 32px;
+}
+
+/* Toast/inline status pill */
+.pmg-save-toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding: 4px 10px;
+  margin-left: 8px;
+  border-radius: 999px;
+  background: rgba(0, 200, 150, 0.18);
+  color: #7af5c4;
+  vertical-align: middle;
+  opacity: 0;
+  transform: translateY(-2px);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.pmg-save-toast.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Vault entry: AI Result block (rendered inline by renderHistory) */
+.history-item-ai-result {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(0, 200, 150, 0.06);
+  border: 1px solid rgba(0, 200, 150, 0.22);
+  border-radius: 8px;
+}
+
+.history-item-ai-result-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #7af5c4;
+  margin-bottom: 6px;
+}
+
+.history-item-ai-result-body {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text, #e8f0f5);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.history-item.is-ai-result-entry .history-item-goal::before {
+  content: "🤖 ";
+}
