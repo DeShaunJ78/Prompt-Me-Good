@@ -1,0 +1,20 @@
+Answers to Replit's Open Questions
+Q1 — Expert Command Center: how to gate /generate?
+/generate is too generic to gate wholesale — it serves non-Expert flows too. Instead, add a feature flag in the request body: the Expert Command Center frontend already sends a distinct payload (it's in pmg-expert-center.js). Add a feature: "expert" field to those calls, then in the route handler check: if feature === "expert" AND isPaywallActive() AND user is free tier → 403. All other /generate calls pass through unchanged. Same pattern for /generate-stream.
+Q2 — Storyboard: new cap or paywall gate?
+Gate it behind paywall + plan check — no new cap needed. Post-July 1: free users blocked (403), all paid tiers allowed. The /image calls inside storyboard are already capped per the img cap, so that's covered. Keep it simple.
+Q3 — Auto-Boost & friends (/boost, /clarify, /auto-tune, /refine-prompt, /image-prompt, /generate-prompt):
+Leave as IP-only for now. These are core free-tier helpers — Auto-Boost and Auto-Tune are explicitly listed as "unlimited free forever" features. Capping them would break the product promise. The margin leak is real but acceptable pre-launch. Revisit post-launch if abuse patterns emerge.
+Q4 — Anonymous users post-July 1:
+Keep the current behavior — no auth = IP rate limit only, full free-tier access. Requiring sign-in for everything would kill the "no signup required" value prop that's front and center on the homepage. Anonymous users get the free tier caps (2 runs/day, 1 image/day) enforced by IP. That's fine.
+Q5 — userCaps.ts:131 fix flavor:
+Option (a) — split the type so userCapEnforce only accepts "run"|"img"|"analyze"|"vid". More honest about the actual contract. teaser stays as a separate direct call path via reserveUserDay(..., "teaser", 1, TEASER_DAILY_CAP) and doesn't need to be in DailyCaps.
+One Addition: Part B (Automatic July 1 Content Swap)
+The audit didn't cover Part B yet. Once the caps enforcement PR is scoped, also audit index.html and pricing.html for all elements that need the data-beta-only / data-post-launch tagging approach. Specifically:
+All "free through July 1, 2026" copy blocks
+"Launches July 1, 2026" badges on Pro/Studio tier cards
+Beta-era urgency copy
+The Founding Member banner (needs a post-launch variant)
+Pro/Studio tier cards need post-launch versions with live checkout buttons instead of "Notify Me"
+Show me the element list before tagging anything. Same review-before-build protocol.
+Go ahead and scope the PR now based on these answers.
