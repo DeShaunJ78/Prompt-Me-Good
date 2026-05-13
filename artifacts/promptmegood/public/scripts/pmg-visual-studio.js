@@ -856,9 +856,22 @@
   }
 
   async function generateImage() {
-    var ta = $('pmg-vs-image-refined');
-    var prompt = (ta && ta.value || '').trim();
-    if (!prompt) { ta && ta.focus(); return; }
+    /* Bug fix: if the user types into the goal box and clicks Generate
+       without first clicking Refine, the refined textarea is empty and
+       the original code silently focused an off-screen empty box (looked
+       like the button was dead). Fall back to the goal box so the button
+       always works. The refined value still wins when present so users
+       who DID refine get the polished prompt sent to DALL-E. */
+    var refinedTa = $('pmg-vs-image-refined');
+    var goalTa    = $('pmg-vs-image-goal');
+    var refined = (refinedTa && refinedTa.value || '').trim();
+    var goal    = (goalTa    && goalTa.value    || '').trim();
+    var prompt  = refined || goal;
+    if (!prompt) {
+      // Both empty — focus the goal box (the input the user actually sees first).
+      (goalTa || refinedTa) && (goalTa || refinedTa).focus();
+      return;
+    }
     var btn = $('pmg-vs-image-generate-btn');
     var origLabel = btn ? btn.textContent : '';
     if (btn) { btn.disabled = true; btn.textContent = '⏳ Generating…'; }
