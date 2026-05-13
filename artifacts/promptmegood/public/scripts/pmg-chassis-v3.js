@@ -184,7 +184,7 @@
           // Sits between Vault and Settings so the icon order reads
           // Guide / Growth / Vault / Expert / Settings.
           '<button class="pmgv3-ico" id="pmgv3-expert" type="button" title="Expert Command Center — advanced prompt engineering tools" aria-label="Open Expert Command Center"><span class="pmgv3-ico-glyph">✦</span><span class="pmgv3-ico-label">Expert</span></button>',
-          '<button class="pmgv3-ico" id="pmgv3-settings" type="button" title="Settings — theme, account" aria-label="Open Settings"><span class="pmgv3-ico-glyph">⚙️</span><span class="pmgv3-ico-label">Settings</span></button>',
+          '<button class="pmgv3-ico" id="pmgv3-settings" type="button" aria-label="Switch theme"><span class="pmgv3-ico-glyph" id="pmgv3-theme-glyph">🌙</span><span class="pmgv3-ico-label">Theme</span></button>',
           /* H-1 (audit-2 deferred): the 4 icons above (Guide / Growth /
              Vault / Settings) are CSS-hidden at ≤480px; this ⋮ button
              takes their place and opens a small dropdown that proxies
@@ -1773,54 +1773,31 @@
     // right-side drawer and reparent #history into it on first open).
     bindIfPresent('pmgv3-vault', function () { openVaultDrawer(); });
 
-    // Settings icon → open the Expert Command Center (Diagnose / Engineer /
-    // Tune / Variations / Save). The in-flow tuning accordion is still
-    // reachable via its own "🎛️ Tune Your Prompt" header, so the gear
-    // is reserved for the power-user surface. Falls back to the legacy
-    // tuning-panel scroll if the Expert Center script hasn't loaded.
-    bindIfPresent('pmgv3-settings', function () {
-      try {
-        if (window.PMGExpertCenter && typeof window.PMGExpertCenter.requestOpen === 'function') {
-          window.PMGExpertCenter.requestOpen();
-          return;
-        }
-      } catch (_e) {}
-      openSettings();
-    });
-    /* Defense-in-depth: even if the gear button is re-rendered or
-       PMGExpertCenter loads after wireActions(), a document-level
-       capture-phase delegate guarantees the gear always does
-       *something*. Idempotent (no-op if already attached).
-
-       Two improvements over the previous version:
-       1. stopImmediatePropagation() prevents the bindIfPresent
-          bubble-phase listener above from firing a second time when
-          PMGExpertCenter exists (was causing a double-open).
-       2. If PMGExpertCenter has not loaded yet, we still fall back
-          to openSettings() so the click is never silently swallowed. */
-    if (!window.__pmgv3SettingsDelegate) {
+    /* theme-toggle-1: the gear is now a light/dark theme toggle.
+       Expert Command Center has its own dedicated ✦ button (added in
+       expert-topbar-1) so the gear was redundant. Theme is persisted
+       in localStorage under 'promptmegood:theme' and applied via
+       documentElement[data-theme]. openSettings() and #settingsPanel
+       are intentionally untouched — they remain reachable via any
+       other entry points that still call them. */
+    (function () {
+      var THEME_KEY = 'promptmegood:theme';
+      function getTheme() { return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'; }
+      function renderThemeBtn(mode) {
+        var glyph = document.getElementById('pmgv3-theme-glyph');
+        if (glyph) glyph.textContent = mode === 'dark' ? '☀️' : '🌙';
+        var btn = document.getElementById('pmgv3-settings');
+        if (btn) btn.setAttribute('aria-label', mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+      }
+      renderThemeBtn(getTheme());
+      bindIfPresent('pmgv3-settings', function () {
+        var next = getTheme() === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        try { localStorage.setItem(THEME_KEY, next); } catch (_e) {}
+        renderThemeBtn(next);
+      });
       window.__pmgv3SettingsDelegate = true;
-      document.addEventListener('click', function (e) {
-        var hit = e.target && e.target.closest && e.target.closest('#pmgv3-settings');
-        if (!hit) return;
-        e.preventDefault();
-        try { e.stopImmediatePropagation(); } catch (_e) {}
-        try {
-          if (window.PMGExpertCenter && typeof window.PMGExpertCenter.requestOpen === 'function') {
-            /* skipWarning: the warning <dialog> lives deep inside the
-               legacy footer, which the chassis hides via the body > *
-               universal-hide rule. Calling showModal() on a hidden
-               dialog throws and the click gets silently swallowed.
-               The gear is a deliberate power-user click — go straight
-               to the drawer. Paywall gating still applies inside
-               requestOpen(). */
-            window.PMGExpertCenter.requestOpen({ skipWarning: true });
-            return;
-          }
-        } catch (_e) {}
-        try { openSettings(); } catch (_e) {}
-      }, true);
-    }
+    }());
 
     bindIfPresent('pmgv3-upgrade', function () {
       // audit-2 H-3: deep-link straight to the founding-checkout card so the
@@ -1857,7 +1834,7 @@
         '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-business"><span aria-hidden="true">💼</span> Growth</button>' +
         '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-vault"><span aria-hidden="true">🗄️</span> Vault</button>' +
         '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-expert"><span aria-hidden="true">✦</span> Expert</button>' +
-        '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-settings"><span aria-hidden="true">⚙️</span> Settings</button>';
+        '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-settings"><span aria-hidden="true">🌙</span> Theme</button>';
       moreBtn.parentNode.appendChild(menu);
       moreBtn.setAttribute('aria-expanded', 'true');
 
