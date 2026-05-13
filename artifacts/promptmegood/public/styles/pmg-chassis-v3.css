@@ -204,6 +204,26 @@ html.pmg-chassis-v3 body {
 a.pmgv3-ico { text-decoration: none; }
 a.pmgv3-ico:visited { color: rgba(255, 255, 255, 0.7); }
 a.pmgv3-ico:hover { color: #00c896; }
+/* nav-home-1: visible "← Home" text link, small + unobtrusive but always
+   readable. Sits to the left of the ❓ help icon. The logo glyph alone
+   is not a strong-enough home affordance for first-time / mobile users. */
+.pmgv3-nav-home {
+  height: 44px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.pmgv3-nav-home:hover { background: rgba(0, 200, 150, 0.08); color: #00c896; border-color: rgba(0, 200, 150, 0.3); }
 /* Topbar tap targets are now hard-set to 44x44 with !important on the
    base .pmgv3-ico rule above (no longer media-query-gated). */
 .pmgv3-upgrade {

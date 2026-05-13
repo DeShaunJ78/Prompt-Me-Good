@@ -161,6 +161,7 @@
           '<span class="pmgv3-brand-beta">Beta</span>',
         '</button>',
         '<div class="pmgv3-tb-r">',
+          '<button class="pmgv3-nav-home" id="pmgv3-nav-home" type="button" title="Return to home" aria-label="Return to home">← Home</button>',
           '<a class="pmgv3-ico" id="pmgv3-help" href="/guide.html" target="_blank" rel="noopener" title="Quick Guide — opens in a new tab" aria-label="Open the PromptMeGood quick guide in a new tab">❓</a>',
           // bm-2: Business Mode is a header-icon panel (NOT a 4th tab).
           // Click is wired by /scripts/pmg-business-mode.js.
@@ -1502,31 +1503,13 @@
     var brandHome = document.getElementById('pmgv3-brand-home');
     if (brandHome) {
       brandHome.addEventListener('click', function () {
-        // Close vault drawer if open
-        try {
-          var vd = document.getElementById('pmgv3-vault-drawer');
-          var vo = document.getElementById('pmgv3-vault-overlay');
-          if (vd) vd.classList.remove('is-open');
-          if (vo) { vo.classList.remove('is-open'); vo.style.setProperty('display', 'none', 'important'); }
-        } catch (e) {}
-        // Close Expert Command Center if open
-        try {
-          if (window.PMGExpertCenter && typeof window.PMGExpertCenter.close === 'function') {
-            window.PMGExpertCenter.close();
-          }
-        } catch (e) {}
-        // Close any storyboard / body-appended overlays
-        try {
-          var ovs = document.querySelectorAll('[data-pmg-overlay-root].is-open, [data-pmg-overlay-root][style*="display: flex"], [data-pmg-overlay-root][style*="display:flex"]');
-          Array.prototype.forEach.call(ovs, function (o) {
-            o.classList.remove('is-open');
-            o.style.setProperty('display', 'none', 'important');
-          });
-        } catch (e) {}
-        // Back to Text tab
-        try { setActivePanel('text'); } catch (e) {}
-        // Hard reset the active tab
-        doStartOver();
+        window.location.href = '/';
+      });
+    }
+    var navHome = document.getElementById('pmgv3-nav-home');
+    if (navHome) {
+      navHome.addEventListener('click', function () {
+        window.location.href = '/';
       });
     }
 
