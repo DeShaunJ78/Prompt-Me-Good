@@ -29,16 +29,22 @@ const router: IRouter = Router();
 // twin would split readers between two source-of-truth endpoints.
 router.get("/pricing-config.js", (_req, res) => {
   res.set("Content-Type", "application/javascript; charset=utf-8");
-  // audit-2 H-B: 5-minute browser TTL with 24h stale-while-revalidate.
-  // Returning users get an instant render from the SWR cache and the
-  // browser revalidates in the background, so a price change propagates
-  // within ~5 minutes for fresh sessions and ~one navigation for warm
-  // sessions. Replaces the prior `max-age=60` (too aggressive a refetch
-  // on a config that changes once a quarter) and `max-age=86400` (too
-  // sticky for an emergency price correction). The `?v=...` query-string
-  // bump on the <script> tag in pricing.html / app.html remains as a
-  // break-glass for forced invalidation on a same-day pricing change.
-  res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=86400");
+  // audit-2 H-1 (triaged decision): no-cache + must-revalidate.
+  // Browsers AND shared caches MAY store the response (no-cache permits
+  // storage, no `no-store`/`private` directive forbids it), but every
+  // subsequent request must revalidate with the origin via `If-None-Match`
+  // and may only reuse the cached body on a 304. Express auto-generates an
+  // ETag on `res.send(string)` (weak ETag by default), so unchanged config
+  // returns a 304 instead of the full ~1.6KB payload — same correctness as
+  // `no-store` (instant propagation after a deploy) with a fraction of the
+  // bandwidth cost. Allowing shared-cache storage is fine here: the payload
+  // is public pricing config with no user data. Previous header was
+  // `public, max-age=300, stale-while-revalidate=86400`, which let pricing
+  // drift be invisible to returning users for up to 24h via SWR — too
+  // sticky for a launch surface that may need an emergency price correction.
+  // The `?v=...` query-string bump on the <script> tag in pricing.html /
+  // app.html remains as a belt-and-braces break-glass for forced invalidation.
+  res.set("Cache-Control", "no-cache, must-revalidate");
   // Inlining JSON.stringify(PMG_PRICING) is safe because every value is a
   // number, string, or POJO of those types — no user data, no executable
   // tokens. Frozen so consumers can't accidentally mutate the shared config.

@@ -2,6 +2,15 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { logPaywallStatusOnce } from "./lib/paywall";
 import { assertPricingConfigsInSync } from "./lib/pricing-config-sync-check";
+import { assertStripePriceIdsConfigured } from "./lib/stripe-env-check";
+
+// audit-2 H-2: validate every Stripe Price ID env var BEFORE binding the port.
+// If any are missing or malformed (e.g. a `prod_*` Product ID pasted into a
+// `STRIPE_*_PRICE_ID` slot), throw now so Replit's deploy health check refuses
+// to flip prod traffic onto a broken release. The first paying Pro customer
+// should not be the canary that discovers a misconfigured env var.
+// Skipped automatically when STRIPE_SECRET_KEY is unset (dev / preview / CI).
+assertStripePriceIdsConfigured();
 
 const rawPort = process.env["PORT"];
 
