@@ -1,0 +1,52 @@
+Planning checklist item integration (18 seconds)
+Building. First a verification pass — Item 4 was shipped last turn so I need to confirm it meets all the new requirements (role/tabindex/aria-label, mobile hint, keyboard handler), and the dead-image-mode cleanup needs careful re-verification since the architect rejected my last attempt with a real concern (chassis-v3 still toggles body.image-mode live). Let me check whether the consumers actually depend on it before nuking.
+
+
+4 actions
+Item 4 is already complete (verified: keydown handler ✓, role/tabindex/aria-label ✓, mobile hint ✓, pulse + focus + scroll ✓). Pulling banner construction code + the css file before batching writes. Also flagging the image-mode item — architect's prior concern was real and the user might want a narrower scope.
+
+
+5 actions
+Confirmed: every isImageMode() check in those 5 files is LIVE. Removing them will regress Photo panel (text result-state overlay leaking, share/undo mislabeling, photo-edit-link tab order, #pmg-build-image-btn inert gate, text-feedback CSS leak). I'll batch the safe items (M-1 doc, M3 banner, M2 smoke, M4 deprecation) now and flag the image-mode item with concrete evidence rather than execute a regression.
+
+
+4 actions
+Found it — banner is already gated by paywallActive at L13337-13362, so it auto-hides post-launch via /api/public-config. Adding data-pmg-beta-only is defense-in-depth. Now executing all 4 safe items in parallel.
+
+
+5 actions
+All 4 safe items written. Restarting api-server to pick up the deprecation headers and verifying live.
+
+
+4 actions
+All 4 safe items shipped + verified live. Headers correct (deprecation only on alias, not canonical), both typechecks pass.
+
+Done in this PR:
+
+M-1 doc note (extended) — appended ### Extended scope section to docs/launch-playbook.md covering app.html's 22 hard-coded literals + the combined grep recipe.
+M3 banner — added data-pmg-beta-only attr to the dynamically-created banner element in pmg-ux.js L13280 (defense-in-depth; primary gate at L13337-13362 was already correct). Added M3 verification step to the new Pre-Launch Checklist.
+M2 smoke test — added as step 1 of the new Pre-Launch Checklist with the exact curl command + expected behavior on both sides of the env-var flip.
+M4 deprecation headers — /api/founding-checkout/status now serves Deprecation: true, Sunset: Tue, 01 Jul 2026 05:00:00 GMT, Link: </api/founding/seats>; rel="successor-version". Verified live; canonical /api/founding/seats is clean.
+Item 4 — already shipped last turn; verified meets all new requirements (role/tabindex/aria-label on the 3 rows, Enter/Space keydown handler, "Tap to try this prompt →" mobile hint via ::after, #goal.focus() + smooth scroll + 1.2s pulse).
+One item I did NOT execute — flagging for your decision:
+
+5. Dead image-mode cleanup. I traced every isImageMode caller in the 6 files you named. None of them are dead. Concrete evidence:
+
+File	Line(s)	What the check actually does
+pmg-result-states.js	204, 237, 258	Guards 3 spots so the text-mode result-state overlay (empty/loading/error) does NOT fire over the Photo panel — image-fix.js owns Photo states. Remove → text overlay leaks into photo flow.
+pmg-text-flow-v2.js	359	Decides whether to add body.pmg-text-sibling (which gates text-flow-v2 CSS). Remove → text-flow CSS injects into Photo panel layout.
+pmg-share.js	174, 211, 773	Labels share payloads as m: 'image' | 'text' and skips redundant mode toggles. Remove → DNA Card screenshots mislabel mode + share toggles double-fire.
+pmg-undo.js	238, 240	Labels mode-switch undo entries (prev/next = 'image' | 'write') so undo/redo can replay mode flips. Remove → undo replays the wrong mode.
+app.html	8662 → consumed at 8810 + 8872	Gates .pmg-photo-edit-link tab order + #pmg-build-image-btn .inert. Remove → photo edit links become un-tabbable in text mode + image-build button stays interactive when hidden.
+pmg-text-feedback.css	19	body.image-mode #pmg-text-feedback { display: none } — hides text-feedback chip in Photo. Remove → text feedback bleeds into Photo.
+pmg-chassis-v3.js L2134/2140 still actively writes body.classList.add/remove('image-mode') on every panel switch, so the class is the LIVE coordination signal between chassis-v3 and these consumers. This matches the architect's prior rejection.
+
+Two paths forward — your call:
+
+Option A (recommended): Skip the cleanup. The "dead" framing is wrong — image-mode is the live mode signal. Mark follow-ups #146/#147 obsolete. Ship the PR as-is (4 items + Item 4).
+
+Option B: Migrate first, then cleanup. New PR: introduce a single canonical signal (e.g., body.dataset.pmgPanel = 'text' | 'photography' | 'video') in chassis-v3 alongside image-mode, update all 6 consumers to read the new signal, then a second PR removes the legacy class. Bigger change, two-PR sequence, no regression risk. ~2-3 hours.
+
+Option C: Force the cleanup anyway. I will execute exactly what you wrote. Photo panel WILL regress — text overlay leaking, share/undo mislabel, photo-edit-link a11y broken, build-image-btn inert wrong, text-feedback chip leak. I have to be explicit about this so you can decide with full info.
+
+Tell me A/B/C and I'll either hand back now or continue. The 4 safe items are ready to push regardless.
