@@ -16,6 +16,7 @@
  *      plaintext PII in logs.
  * ============================================================================ */
 import { Router, type IRouter } from "express";
+import nodemailer, { type Transporter } from "nodemailer";
 import { db, waitlistSignupsTable, insertWaitlistSignupSchema } from "@workspace/db";
 import { makeRateLimiter } from "../middlewares/rateLimit";
 
@@ -51,34 +52,74 @@ async function verifyTurnstile(
   }
 }
 
-/* formsubmit-relay-1: restore the per-signup email notification that the
-   prior formsubmit.co integration provided. The DB write remains the
-   source of truth; this relay is a fire-and-forget side-effect so the
-   owner gets an inbox ping for each new lead. Skipped on duplicate
-   inserts and on relay failure (logged, never throws to the client). */
-const FORMSUBMIT_ENDPOINT =
-  "https://formsubmit.co/ajax/support@promptmegood.com";
+/* zoho-smtp-1: per-signup notification via Zoho SMTP using nodemailer.
+   Replaces the formsubmit.co relay (deliverability + branding control).
+   The DB write remains the source of truth; this send is fire-and-forget
+   so the API responds immediately and never fails the client on email
+   trouble. Skipped on duplicate inserts. Requires env:
+     ZOHO_SMTP_HOST, ZOHO_SMTP_PORT, ZOHO_SMTP_USER, ZOHO_SMTP_PASS
+   When any are missing the relay is a no-op (one warn log, then quiet). */
+const NOTIFY_TO = "support@promptmegood.com";
+let cachedTransporter: Transporter | null = null;
+let smtpConfigWarned = false;
 
-function relayToFormsubmit(
+function getTransporter(
+  log: { warn: (o: unknown, m: string) => void },
+): Transporter | null {
+  if (cachedTransporter) return cachedTransporter;
+  const host = process.env["ZOHO_SMTP_HOST"];
+  const portStr = process.env["ZOHO_SMTP_PORT"];
+  const user = process.env["ZOHO_SMTP_USER"];
+  const pass = process.env["ZOHO_SMTP_PASS"];
+  if (!host || !portStr || !user || !pass) {
+    if (!smtpConfigWarned) {
+      smtpConfigWarned = true;
+      log.warn(
+        { hasHost: !!host, hasPort: !!portStr, hasUser: !!user, hasPass: !!pass },
+        "zoho smtp not fully configured — waitlist email relay disabled",
+      );
+    }
+    return null;
+  }
+  const port = Number(portStr);
+  cachedTransporter = nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465, // 465 = implicit TLS, 587 = STARTTLS
+    auth: { user, pass },
+  });
+  return cachedTransporter;
+}
+
+function notifyOwnerOfSignup(
   log: { warn: (o: unknown, m: string) => void },
   payload: { email: string; source: string; tier?: string | null },
 ): void {
-  fetch(FORMSUBMIT_ENDPOINT, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({
-      email: payload.email,
-      _subject: `New PromptMeGood waitlist signup (${payload.tier ?? payload.source})`,
-      source: payload.source,
-      tier: payload.tier ?? "",
-    }),
-    signal: AbortSignal.timeout(5000),
-  }).catch((err: unknown) => {
-    log.warn(
-      { err: err instanceof Error ? err.message : String(err) },
-      "formsubmit relay failed (DB write succeeded)",
-    );
-  });
+  const transporter = getTransporter(log);
+  if (!transporter) return;
+  const from = process.env["ZOHO_SMTP_USER"]!;
+  const ts = new Date().toISOString();
+  const tierLine = payload.tier ?? "(none)";
+  const text =
+    `New PromptMeGood waitlist signup\n\n` +
+    `Email:     ${payload.email}\n` +
+    `Source:    ${payload.source}\n` +
+    `Tier:      ${tierLine}\n` +
+    `Timestamp: ${ts}\n`;
+  void transporter
+    .sendMail({
+      from: `"PromptMeGood Waitlist" <${from}>`,
+      to: NOTIFY_TO,
+      replyTo: payload.email,
+      subject: `New waitlist signup: ${payload.email}`,
+      text,
+    })
+    .catch((err: unknown) => {
+      log.warn(
+        { err: err instanceof Error ? err.message : String(err) },
+        "zoho smtp send failed (DB write succeeded)",
+      );
+    });
 }
 
 // Public unauthenticated POST — keep abuse modest.
@@ -159,7 +200,7 @@ router.post("/waitlist", waitlistLimiter, async (req, res) => {
        don't spam the inbox. Awaiting is intentional — the relay runs in
        the background and the client gets its response immediately. */
     if (!duplicate) {
-      relayToFormsubmit(log, {
+      notifyOwnerOfSignup(log, {
         email: parsed.data.email,
         source: parsed.data.source,
         tier: parsed.data.tier ?? null,
