@@ -70,6 +70,37 @@
     .grid { display: grid; gap: 8px; margin: 0 0 1rem; }
     .row { padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; background: color-mix(in srgb, var(--primary) 4%, transparent); }
     .row strong { display: inline-block; min-width: 180px; color: var(--text); }
+    /* contact form (cf-1) */
+    .pmg-cf-form { display: grid; gap: 14px; margin: 1rem 0 1.25rem; }
+    .pmg-cf-row { display: grid; gap: 6px; }
+    .pmg-cf-row label { font-weight: 600; font-size: 0.95rem; color: var(--text); }
+    .pmg-cf-row input, .pmg-cf-row select, .pmg-cf-row textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 10px; background: var(--bg); color: var(--text);
+      font: inherit; font-size: 1rem; line-height: 1.4;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    .pmg-cf-row input:focus, .pmg-cf-row select:focus, .pmg-cf-row textarea:focus {
+      outline: none; border-color: var(--primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 25%, transparent);
+    }
+    .pmg-cf-row textarea { min-height: 160px; resize: vertical; font-family: inherit; }
+    .pmg-cf-row small { color: var(--muted); font-size: 0.85rem; }
+    /* Honeypot — visually hidden but still in the DOM so bots fill it. */
+    .pmg-cf-honey { position: absolute; left: -9999px; top: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+    .pmg-cf-submit {
+      padding: 12px 22px; background: var(--primary); color: #fff;
+      border: none; border-radius: 10px; font: inherit; font-weight: 700;
+      font-size: 1rem; cursor: pointer; transition: background .15s ease;
+      justify-self: start;
+    }
+    .pmg-cf-submit:hover:not(:disabled) { background: var(--primary-hover); }
+    .pmg-cf-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+    .pmg-cf-status { padding: 12px 14px; border-radius: 10px; font-size: 0.95rem; display: none; }
+    .pmg-cf-status[data-state="ok"] { display: block; background: color-mix(in srgb, var(--primary) 15%, transparent); border: 1px solid var(--primary); color: var(--text); }
+    .pmg-cf-status[data-state="err"] { display: block; background: #5a1f1f; border: 1px solid #9b3030; color: #ffe9e9; }
+    .pmg-cf-fineprint { color: var(--muted); font-size: 0.88rem; margin: 0.25rem 0 0.5rem; }
+    .pmg-cf-fineprint code { background: color-mix(in srgb, var(--primary) 8%, transparent); padding: 2px 6px; border-radius: 4px; font-size: 0.95em; }
     .site-footer { padding: 1.5rem 0; border-top: 1px solid var(--border); background: var(--surface); margin-top: auto; text-align: center; }
     .site-footer-tagline { color: var(--muted); font-size: 0.9rem; }
     .site-footer-link { color: var(--primary); text-decoration: none; font-size: 0.9rem; margin: 0 6px; }
@@ -91,26 +122,46 @@
         <h1>Contact</h1>
         <p class="lede">We are a small team and we read every message. Most replies go out within 1–2 business days.</p>
 
-        <p>Email is the fastest way to reach us. Pick the address that fits your question — anything else can go to <a href="mailto:support@promptmegood.com">support@promptmegood.com</a> and we'll route it.</p>
+        <p>Send us a message below and it lands straight in our inbox. For faster help on bugs, include your browser, device, and the steps you took. For billing, use the email you checked out with.</p>
 
-        <a class="cta" href="mailto:support@promptmegood.com?subject=PromptMeGood%20support">✉️ Email support@promptmegood.com</a>
+        <form id="pmg-contact-form" class="pmg-cf-form" novalidate>
+          <div class="pmg-cf-row">
+            <label for="pmg-cf-name">Your name</label>
+            <input id="pmg-cf-name" name="name" type="text" autocomplete="name" required maxlength="100" />
+          </div>
+          <div class="pmg-cf-row">
+            <label for="pmg-cf-email">Your email</label>
+            <input id="pmg-cf-email" name="email" type="email" autocomplete="email" required maxlength="254" />
+            <small>We'll only use this to reply to you.</small>
+          </div>
+          <div class="pmg-cf-row">
+            <label for="pmg-cf-subject">What's it about?</label>
+            <select id="pmg-cf-subject" name="subject">
+              <option value="General">General question</option>
+              <option value="Billing">Billing &amp; refunds</option>
+              <option value="Bug report">Bug report</option>
+              <option value="Feature request">Feature request</option>
+              <option value="Privacy request">Privacy / data request</option>
+              <option value="Press">Press / partnerships</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="pmg-cf-row">
+            <label for="pmg-cf-message">Your message</label>
+            <textarea id="pmg-cf-message" name="message" required minlength="10" maxlength="5000" placeholder="Tell us what's going on. The more detail, the better."></textarea>
+          </div>
+          <!-- Honeypot: hidden from humans (CSS-positioned off-screen).
+               Bots tend to fill every field; the server silently drops
+               submissions where this is non-empty. Do NOT remove. -->
+          <div class="pmg-cf-honey" aria-hidden="true">
+            <label for="pmg-cf-website">Website (leave empty)</label>
+            <input id="pmg-cf-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+          </div>
+          <div id="pmg-cf-status" class="pmg-cf-status" role="status" aria-live="polite"></div>
+          <button type="submit" class="pmg-cf-submit" id="pmg-cf-submit-btn">Send message</button>
+        </form>
 
-        <h2>Where to send what</h2>
-        <div class="grid">
-          <div class="row"><strong>General support</strong><a href="mailto:support@promptmegood.com">support@promptmegood.com</a></div>
-          <div class="row"><strong>Billing &amp; refunds</strong><a href="mailto:support@promptmegood.com?subject=Billing">support@promptmegood.com</a> &middot; subject "Billing"</div>
-          <div class="row"><strong>Bug reports</strong><a href="mailto:support@promptmegood.com?subject=Bug%20report">support@promptmegood.com</a> &middot; subject "Bug report"</div>
-          <div class="row"><strong>Feature requests</strong><a href="mailto:support@promptmegood.com?subject=Feature%20request">support@promptmegood.com</a> &middot; subject "Feature request"</div>
-          <div class="row"><strong>Privacy / data</strong><a href="mailto:support@promptmegood.com?subject=Privacy%20request">support@promptmegood.com</a> &middot; subject "Privacy request"</div>
-          <div class="row"><strong>Press / partnerships</strong><a href="mailto:support@promptmegood.com?subject=Press">support@promptmegood.com</a> &middot; subject "Press"</div>
-        </div>
-
-        <h2>How to help us help you faster</h2>
-        <ul>
-          <li><strong>Bugs:</strong> tell us your browser, device, and the steps you took right before the issue. A screenshot or short screen recording is gold.</li>
-          <li><strong>Billing:</strong> use the email you checked out with and include the date of purchase. We never ask for card details over email.</li>
-          <li><strong>Privacy / data deletion:</strong> send the email tied to your account so we can verify and act on the request.</li>
-        </ul>
+        <p class="pmg-cf-fineprint">Prefer your own mail app? You can also write to us at <code>support@promptmegood.com</code>.</p>
 
         <h2>Before you write</h2>
         <p>Many questions are answered in the <a href="./guide.html">Quick Start Guide</a> or the full <a href="./manual.html">User Manual</a>. Plan and pricing details live on the <a href="./pricing.html">Pricing page</a>; our policies are in <a href="./privacy.html">Privacy</a> and <a href="./terms.html">Terms</a>.</p>
@@ -134,6 +185,81 @@
       </div>
     </div>
   </footer>
+<script>
+  /* contact form submit (cf-1)
+   * POST /api/contact with the form fields. The honeypot field is included.
+   * On success: clears form, shows green status. On error: shows red status
+   * with a short reason. Submit button disables during the request to prevent
+   * double-fires. */
+  (function () {
+    'use strict';
+    var form = document.getElementById('pmg-contact-form');
+    if (!form) return;
+    var statusEl = document.getElementById('pmg-cf-status');
+    var btn = document.getElementById('pmg-cf-submit-btn');
+
+    function setStatus(state, msg) {
+      statusEl.setAttribute('data-state', state);
+      statusEl.textContent = msg;
+    }
+    function clearStatus() {
+      statusEl.removeAttribute('data-state');
+      statusEl.textContent = '';
+    }
+
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      clearStatus();
+
+      var data = {
+        name: form.name.value.trim(),
+        email: form.email.value.trim(),
+        subject: form.subject.value,
+        message: form.message.value.trim(),
+        website: form.website.value, // honeypot
+      };
+
+      if (!data.name || !data.email || !data.message) {
+        setStatus('err', 'Please fill in your name, email, and message.');
+        return;
+      }
+      if (data.message.length < 10) {
+        setStatus('err', 'Message is too short — please add a bit more detail.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+
+      fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(data),
+      })
+        .then(function (r) { return r.json().then(function (j) { return { status: r.status, body: j }; }); })
+        .then(function (res) {
+          if (res.status === 200 && res.body && res.body.ok) {
+            setStatus('ok', "Thanks — your message is on its way. We'll get back to you within 1–2 business days.");
+            form.reset();
+          } else if (res.status === 429) {
+            setStatus('err', 'You have sent a few messages already. Please wait a few minutes and try again.');
+          } else if (res.status === 503) {
+            setStatus('err', "Our email system is temporarily unavailable. Please try again in a few minutes, or write to support@promptmegood.com from your own mail app.");
+          } else {
+            var reason = (res.body && res.body.error) ? res.body.error.replace(/_/g, ' ') : 'something went wrong';
+            setStatus('err', 'Could not send: ' + reason + '. Please try again, or write to support@promptmegood.com from your own mail app.');
+          }
+        })
+        .catch(function () {
+          setStatus('err', 'Network error — please check your connection and try again.');
+        })
+        .finally(function () {
+          btn.disabled = false;
+          btn.textContent = 'Send message';
+        });
+    });
+  })();
+</script>
 <script src="/scripts/pmg-mailto-fallback.js?v=mlf-1" defer></script>
 </body>
 </html>

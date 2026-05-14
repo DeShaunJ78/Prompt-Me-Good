@@ -7,6 +7,7 @@ import pricingConfigRouter from "./pricing-config";
 import billingRouter from "./billing";
 import usageRouter from "./usage";
 import waitlistRouter from "./waitlist";
+import contactRouter from "./contact";
 import foundingCheckoutRouter from "./founding-checkout";
 
 const router: IRouter = Router();
@@ -18,6 +19,7 @@ router.use(pricingConfigRouter);
 router.use(billingRouter);
 router.use(usageRouter);
 router.use(waitlistRouter);
+router.use(contactRouter);
 router.use(foundingCheckoutRouter);
 
 // Dev-only Claude code-review endpoint. Mounted only when NODE_ENV !==

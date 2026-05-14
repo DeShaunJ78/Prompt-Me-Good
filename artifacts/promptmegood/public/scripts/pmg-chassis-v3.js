@@ -405,7 +405,7 @@
           '<span class="pmgv3-trust-sep" aria-hidden="true">·</span>',
           '<a href="/pricing.html">Pricing</a>',
           '<span class="pmgv3-trust-sep" aria-hidden="true">·</span>',
-          '<a href="mailto:support@promptmegood.com">Contact</a>',
+          '<a href="/contact.html">Contact</a>',
           '<span class="pmgv3-trust-sep" aria-hidden="true">·</span>',
           '<a href="/privacy.html">Privacy</a>',
           '<span class="pmgv3-trust-sep" aria-hidden="true">·</span>',
