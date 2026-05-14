@@ -9,27 +9,6 @@ args = ["pnpm", "store", "prune"]
 env = { "CI" = "true" }
 
 [workflows]
-runButton = "Project"
-
-[[workflows.workflow]]
-name = "Project"
-mode = "parallel"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "overflow-360"
-
-[[workflows.workflow]]
-name = "overflow-360"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "pnpm --filter @workspace/promptmegood run test:overflow"
-
-[workflows.workflow.metadata]
-isValidation = true
 
 [agent]
 stack = "PNPM_WORKSPACE"
