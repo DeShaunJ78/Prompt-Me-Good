@@ -4281,7 +4281,8 @@
 
     /* ── Scrollable body ── */
     .pmg-fs-overlay .pmg-fs-body {
-      flex: 1 !important;
+      flex: 1 1 0% !important;
+      min-height: 0 !important;
       overflow-y: auto !important;
       -webkit-overflow-scrolling: touch !important;
       padding: 16px !important;
@@ -4289,6 +4290,32 @@
       flex-direction: column !important;
       gap: 12px !important;
       visibility: visible !important;
+    }
+    /* ── Reset margins on elements moved into overlay body ── */
+    .pmg-fs-overlay .pmg-fs-body > * {
+      flex-shrink: 0 !important;
+    }
+    .pmg-fs-overlay .pmg-fs-body #improve-block,
+    .pmg-fs-overlay .pmg-fs-body #what-next,
+    .pmg-fs-overlay .pmg-fs-body #resultBox {
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+      border-top: none !important;
+      box-sizing: border-box !important;
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+    /* ── Improve block inside overlay: clean up workstation-style padding ── */
+    .pmg-fs-overlay .pmg-fs-body #improve-block {
+      padding: 0 !important;
+      background: transparent !important;
+    }
+    /* ── Result box inside overlay: full width, no fixed height ── */
+    .pmg-fs-overlay .pmg-fs-body #resultBox {
+      min-height: 120px !important;
+      max-height: none !important;
+      height: auto !important;
+      resize: none !important;
     }
 
     /* ── Section label inside body ── */
@@ -13954,9 +13981,9 @@ document.addEventListener("DOMContentLoaded", function () {
       var ib = $('improve-block');
       if (ib) moveOut('improve-block', body);
 
-      /* -- What next block (move real node) -- */
-      var wn = $('what-next');
-      if (wn) moveOut('what-next', body);
+      /* -- What next block: intentionally NOT moved into overlay --
+         It’s a “What Next?” tips section that adds clutter and overlap.
+         It stays in the original page DOM and is hidden by body.pmg-fs-active. */
 
       /* -- Send To row (clone open-in-btn anchors) -- */
       var openInBtns = document.querySelectorAll('.open-in-btn');
@@ -13985,8 +14012,14 @@ document.addEventListener("DOMContentLoaded", function () {
       runPrimary.className = 'pmg-fs-primary-btn';
       runPrimary.innerHTML = '&#9654; Run With AI';
       runPrimary.addEventListener('click', function () {
-        var orig = $('runBtn') || $('run-with-ai-btn');
-        if (orig) orig.click();
+        /* Call runWithAI directly — more reliable than clicking a potentially
+           hidden DOM button. Falls back to clicking #runBtn if needed. */
+        if (typeof window.runWithAI === 'function') {
+          window.runWithAI();
+        } else {
+          var orig = $('runBtn') || $('run-with-ai-btn');
+          if (orig) orig.click();
+        }
       });
       footer.appendChild(runPrimary);
 
@@ -14026,7 +14059,7 @@ document.addEventListener("DOMContentLoaded", function () {
       restore('strength-score');
       restore('resultBox');
       restore('improve-block');
-      restore('what-next');
+      /* what-next was not moved, no restore needed */
 
       /* Clear cloned content */
       $('pmg-fs-prompt-body').innerHTML   = '';
