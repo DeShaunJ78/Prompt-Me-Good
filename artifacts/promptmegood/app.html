@@ -4219,12 +4219,18 @@
     .pmg-fs-overlay {
       display: none !important;
       position: fixed !important;
-      inset: 0 !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
       z-index: 10001 !important;
       background: var(--color-bg, #0a1f1c) !important;
       flex-direction: column !important;
       visibility: visible !important;
       overflow: hidden !important;
+      -webkit-overflow-scrolling: touch !important;
     }
     .pmg-fs-overlay.is-open {
       display: flex !important;
@@ -4426,6 +4432,139 @@
       visibility: visible !important;
     }
 
+  }
+
+  /* ── Non-media-query fallback: applies whenever overlay is open ──
+     These rules fire regardless of viewport width, ensuring the
+     overlay always looks correct even if the media query fails to
+     match (e.g. desktop testing, viewport detection edge cases).
+     They only activate when the overlay has .is-open, so they
+     never affect the page in its normal state.
+  ============================================================ */
+  .pmg-fs-overlay.is-open {
+    display: flex !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 10001 !important;
+    background: var(--color-bg, #0a1f1c) !important;
+    flex-direction: column !important;
+    visibility: visible !important;
+    overflow: hidden !important;
+  }
+  .pmg-fs-overlay.is-open .pmg-fs-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 14px 16px 12px !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+    flex-shrink: 0 !important;
+    visibility: visible !important;
+  }
+  .pmg-fs-overlay.is-open .pmg-fs-header-title {
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    color: var(--color-text, #e8f5f0) !important;
+    visibility: visible !important;
+  }
+  .pmg-fs-overlay.is-open .pmg-fs-header-actions {
+    display: flex !important;
+    gap: 8px !important;
+    visibility: visible !important;
+  }
+  .pmg-fs-overlay.is-open .pmg-fs-tune-btn,
+  .pmg-fs-overlay.is-open .pmg-fs-close-btn,
+  .pmg-fs-overlay.is-open .pmg-fs-back-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    padding: 7px 13px !important;
+    border-radius: 20px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    background: rgba(255,255,255,0.08) !important;
+    color: var(--color-text, #e8f5f0) !important;
+    visibility: visible !important;
+  }
+  .pmg-fs-overlay.is-open .pmg-fs-tune-btn {
+    background: rgba(20,184,166,0.18) !important;
+    border-color: rgba(20,184,166,0.4) !important;
+    color: #14b8a6 !important;
+  }
+  .pmg-fs-overlay.is-open .pmg-fs-body {
+    flex: 1 1 0% !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    visibility: visible !important;
+    min-height: 0 !important;
+  }
+  .pmg-fs-overlay.is-open .pmg-fs-footer {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    padding: 12px 16px !important;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+    border-top: 1px solid rgba(255,255,255,0.08) !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    background: var(--color-bg, #0a1f1c) !important;
+    visibility: visible !important;
+  }
+  .pmg-fs-overlay.is-open .pmg-fs-primary-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    padding: 15px !important;
+    border-radius: 12px !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    border: none !important;
+    background: linear-gradient(135deg, #14b8a6, #0e9488) !important;
+    color: #fff !important;
+    visibility: visible !important;
+    box-sizing: border-box !important;
+  }
+  .pmg-fs-overlay.is-open .pmg-fs-secondary-row {
+    display: flex !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    visibility: visible !important;
+  }
+  .pmg-fs-overlay.is-open .pmg-fs-secondary-row button,
+  .pmg-fs-overlay.is-open .pmg-fs-secondary-row a {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    padding: 10px 16px !important;
+    border-radius: 10px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    border: 1px solid rgba(255,255,255,0.18) !important;
+    background: rgba(255,255,255,0.07) !important;
+    color: var(--color-text, #e8f5f0) !important;
+    flex-shrink: 0 !important;
+    visibility: visible !important;
+  }
+  .pmg-fs-overlay.is-open * {
+    visibility: visible !important;
   }
   </style>
 
