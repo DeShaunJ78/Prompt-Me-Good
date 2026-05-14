@@ -661,6 +661,17 @@
       var topBtn = $('pmg-vs-build-image-prompt-btn');
       if (topBtn) topBtn.style.display = 'none';
       ta.focus();
+      // scroll-image-result-1: bring the refined section into view so the
+      // user actually sees what they generated. Without this, ta.focus()
+      // alone doesn't reliably scroll on iOS/Chromium when the section
+      // sits below the fold. Honors prefers-reduced-motion via PMG_A11Y.
+      if (sec && typeof sec.scrollIntoView === 'function') {
+        try {
+          var beh = (window.PMG_A11Y && window.PMG_A11Y.scrollBehavior)
+            ? window.PMG_A11Y.scrollBehavior() : 'smooth';
+          sec.scrollIntoView({ behavior: beh, block: 'start' });
+        } catch (e) { try { sec.scrollIntoView(); } catch (__) {} }
+      }
     }
     // Auto-trigger the actual API call so the rename "Generate Image"
     // does what it says on the tin. The user can still edit the refined
@@ -730,6 +741,16 @@
       var topBtn = $('pmg-vs-build-video-prompt-btn');
       if (topBtn) topBtn.style.display = 'none';
       ta.focus();
+      // scroll-video-result-1: mirror the image-panel fix so the refined
+      // video prompt scrolls into view after generation. Honors
+      // prefers-reduced-motion via PMG_A11Y.
+      if (sec && typeof sec.scrollIntoView === 'function') {
+        try {
+          var beh = (window.PMG_A11Y && window.PMG_A11Y.scrollBehavior)
+            ? window.PMG_A11Y.scrollBehavior() : 'smooth';
+          sec.scrollIntoView({ behavior: beh, block: 'start' });
+        } catch (e) { try { sec.scrollIntoView(); } catch (__) {} }
+      }
     }
     if (typeof generateVideo === 'function') generateVideo();
   }
