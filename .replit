@@ -47,7 +47,7 @@ localPort = 20882
 externalPort = 3000
 
 [nix]
-packages = ["run", "gh"]
+packages = ["gh", "run"]
 channel = "stable-25_05"
 
 [userenv]
