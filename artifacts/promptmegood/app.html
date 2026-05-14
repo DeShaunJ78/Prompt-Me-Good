@@ -4193,9 +4193,9 @@
     html.pmg-splash-done #pmg-splash { opacity: 0; pointer-events: none; }
   </style>
 
-  <!-- pmg-mfs-1: Mobile Auto-Fullscreen UX Overhaul (≤768px only) -->
+  <!-- pmg-mfs-1: Mobile Auto-Fullscreen UX Overhaul (≤1024px — phones + tablets) -->
   <style id="pmg-mobile-fs-styles">
-    @media (max-width: 768px) {
+    @media (max-width: 1024px) {
       body.pmg-fs-active { overflow: hidden; }
       body.pmg-fs-active #aiResponseToggle { display: none !important; }
       .ai-response-actions-top { display: none !important; }
@@ -13606,7 +13606,7 @@ document.addEventListener("DOMContentLoaded", function () {
   'use strict';
 
   function $(id) { return document.getElementById(id); }
-  function isMobile() { return window.innerWidth <= 768; }
+  function isMobile() { return window.innerWidth <= 1024; }
 
   var _promptFsOpen = false, _aiFsOpen = false, _imageFsOpen = false;
   var _movedPlaceholders = {}; // id -> placeholder element

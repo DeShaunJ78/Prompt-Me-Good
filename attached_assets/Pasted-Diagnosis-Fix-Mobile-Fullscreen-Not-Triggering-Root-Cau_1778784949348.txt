@@ -1,0 +1,60 @@
+Diagnosis & Fix — Mobile Fullscreen Not Triggering
+Root Cause Confirmed
+The code is deployed correctly. All three overlay divs exist in the live DOM. The JS logic is loaded and functional. The CSS is applied correctly.
+
+The issue is one thing: `window.innerWidth <= 768` is the mobile guard, and the `isMobile()` check is working correctly — it is blocking the fullscreen on desktop (1280px), which is correct behavior.
+
+The fullscreen ONLY activates on screens 768px wide or narrower. This is by design and was explicitly specified in the build instructions. The feature is not broken — it is working exactly as built.
+
+
+Why the user sees “nothing”
+The user is testing on a desktop browser or a tablet-sized window wider than 768px. On those devices, the fullscreen intentionally does not activate. This is correct behavior.
+
+To see the fullscreen working right now:
+
+	•	Open Chrome DevTools → Toggle Device Toolbar (Ctrl+Shift+M) → Set width to 375px (iPhone)
+	•	Type a goal and hit “Build My Prompt”
+	•	The fullscreen will snap open automatically when the prompt generates
+
+
+The Real Problem: The `isMobile()` threshold may be too narrow
+The current guard is `window.innerWidth <= 768`. Many real-world phones have viewport widths of:
+
+	•	iPhone 14 Pro: 393px
+	•	iPhone SE: 375px
+	•	Samsung Galaxy S23: 360px
+	•	iPad Mini: 768px
+
+However, many users also use the app on tablets (768–1024px) or small laptop windows. If the user is testing on an iPad or a resized browser window at 800–1000px, they would see nothing.
+
+The fix is to raise the breakpoint from 768px to 1024px so the fullscreen activates on all phones AND tablets. This is the standard “mobile + tablet” breakpoint used by most modern apps.
+
+
+Fix Instructions for Replit Agent
+Make the following two changes in `app.html` only. No other files need to be touched.
+
+Change 1 — CSS media query breakpoint
+Find this line in the `<style id="pmg-mobile-fs-styles">` block:
+
+
+￼
+Change it to:
+
+
+￼
+Change 2 — JavaScript isMobile() function
+Find this line in the `<script id="pmg-mobile-fs-js">` block:
+
+
+￼
+Change it to:
+
+
+￼
+That is the entire fix. Two numbers changed. Nothing else.
+
+
+Verification after the fix
+After deploying, open the live site in a browser window narrowed to 900px wide (or on a real phone). Type a goal, hit “Build My Prompt”, and the fullscreen should snap open automatically when the prompt finishes generating.
+
+The fullscreen will still NOT activate on full desktop widths (1280px+), which is correct — desktop users do not need it because everything is visible without scrolling.
