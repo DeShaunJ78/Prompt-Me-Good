@@ -1,0 +1,72 @@
+Spec Corrections — Verified Against Actual Codebase
+Proceed with Option 3 — adapt the spec where it conflicts with the real DOM. I have verified every claim against the actual source files. Here are the exact corrections needed before you implement anything.
+
+
+Correction 1 — Your claim that `#aiResponseToggle` does not exist is wrong
+`#aiResponseToggle` exists in `app.html` at line 4949 and is actively referenced in JS at lines 8534–8555. The spec’s rule to hide it on mobile is correct as written. Do not remove it.
+
+
+Correction 2 — Your claim that `.ai-response-actions-top` does not exist is wrong
+`.ai-response-actions-top` exists in `app.html` at line 4944 (HTML) and line 1670 (CSS). The spec’s rule to hide it on mobile is correct as written. Do not remove it.
+
+
+Correction 3 — Screen 3 image trigger needs to cover BOTH image flows
+The app has two separate image generation flows:
+
+	•	Legacy flow (Text Prompts tab): `generateImage()` function → result appears in `#imageResultWrap` inside `#imageResultSection`
+	•	Visual Studio flow (Photography tab): `showImageResult()` function → result appears in `#pmg-vs-generated-image` inside `#pmg-vs-image-actions`
+
+The spec only covers the legacy flow. Screen 3 must trigger on BOTH. Add a second MutationObserver watching `#pmg-vs-generated-image` for its `hidden` attribute being removed (i.e., `hidden` going from `true` to `false`). When that fires on mobile, open the image fullscreen and pull the image src from `document.getElementById('pmg-vs-generated-image').src`. The bottom bar for this path should show: ⬇ Open Image (the `#pmg-vs-image-save` anchor), 🔄 Regenerate (`#pmg-vs-image-regen`), and 🧬 DNA Card (`#pmg-vs-download-dna`).
+
+
+Correction 4 — `#resultBox` is a `contenteditable` div, not a textarea
+`#resultBox` is declared as:
+
+
+￼
+The spec’s clone sync uses `.value` which does not exist on a div. Change the sync-back logic to use `.innerText` instead:
+
+
+￼
+
+Correction 5 — Use move-with-placeholder instead of cloneNode for live elements
+The spec’s `cloneNode(true)` approach for `#improve-block`, `#strength-score`, and `#what-next` will desync the moment `pmg-result-states.js`, `pmg-fix-diff.js`, or `pmg-image-fix.js` mutate the originals. Use move-with-placeholder instead:
+
+	•	On fullscreen open: insert a `<div id="pmg-fs-placeholder-[name]" style="display:none" aria-hidden="true"></div>` in place of each element, then `appendChild` the real element into the overlay body.
+	•	On fullscreen close: remove the placeholder and `insertBefore` the real element back to its original position.
+
+This keeps all existing MutationObservers, event listeners, and state management working on the real nodes. No desync risk.
+
+
+Correction 6 — Refine pills use `data-remix`, not `data-refine`
+The spec wires refine pill buttons using `[data-refine]`. The actual attribute in the HTML is `data-remix`. The three values are:
+
+	•	`data-remix="detailed"` → More Detailed
+	•	`data-remix="bold-direct"` → More Bold & Direct
+	•	`data-remix="beginner"` → Beginner Friendly
+
+Change all `querySelector('[data-refine]')` and `getAttribute('data-refine')` calls in the spec to `[data-remix]` and `getAttribute('data-remix')`.
+
+
+Everything else in the spec is verified correct
+The following elements and assumptions were confirmed against the actual codebase and require no changes:
+
+	•	`body.pmg-has-result` class as the Screen 1 trigger — confirmed set by `pmg-chassis-v3.js` line 822
+	•	`#aiResponseSection` and `#aiResponseOutput` — both confirmed present
+	•	`#improve-block` — confirmed at `app.html` line 4853
+	•	`#strength-score` — confirmed present
+	•	`#what-next` — confirmed at `app.html` line 4889
+	•	`#fine-tune-input`, `#fine-tune-btn`, `#undo-btn` — all confirmed present
+	•	`#check-quality-btn`, `#quality-row` — both confirmed present
+	•	`#copy-btn`, `#download-prompt-btn`, `#print-btn`, `#clear-prompt-btn` — all confirmed present
+	•	`#runBtn` / `#run-with-ai-btn` — both confirmed present
+	•	`#copyResponseBtn`, `#runAgainBtn` — both confirmed present
+	•	`.open-in-block` with `.open-in-btn` anchors — confirmed present
+	•	`#imageResultSection`, `#imageResultWrap`, `#imageDownloadBtn`, `#imageAgainBtn`, `#copyImagePromptBtn` — all confirmed present (legacy flow)
+	•	`window.pmgTuneChips` / `tuning-mobile-toggle` for the Tune button hookup — confirmed present
+	•	`body.pmg-fs-active` scroll lock approach — safe, no conflicts found
+	•	All new code in two new blocks in `app.html` only — confirmed correct approach, no other files need to be touched
+
+
+Summary of changes needed
+
