@@ -36,6 +36,36 @@ async function gotoApp(page: Page): Promise<void> {
     undefined,
     { timeout: 10_000 },
   );
+  /* Chassis-v3 boots into the Text panel by default; the Photography
+     Suite (which hosts #pmg-photo-suite) is hidden until the user
+     activates the Photography panel. Switch programmatically before
+     waiting for the suite to become visible. */
+  await page.waitForFunction(
+    () =>
+      !!(window as unknown as { pmgChassisV3?: { setActivePanel?: unknown } })
+        .pmgChassisV3?.setActivePanel,
+    undefined,
+    { timeout: 10_000 },
+  );
+  await page.evaluate(() => {
+    (window as unknown as {
+      pmgChassisV3: { setActivePanel: (n: string) => void };
+    }).pmgChassisV3.setActivePanel("photography");
+  });
+  /* On mobile-360 the photo-suite lives inside #pmg-vs-photo-accordion
+     which is collapsed by default (no `.is-mobile-open` class). Expand
+     it so #pmg-photo-suite becomes visible. The toggle button is
+     created by pmg-visual-studio.js after the panel mounts; poll for
+     it before clicking. */
+  await page.waitForSelector("#pmg-vs-photo-acc-toggle", { timeout: 10_000 });
+  await page.evaluate(() => {
+    const acc = document.getElementById("pmg-vs-photo-accordion");
+    const btn = document.getElementById("pmg-vs-photo-acc-toggle");
+    if (acc && !acc.classList.contains("is-mobile-open")) {
+      acc.classList.add("is-mobile-open");
+    }
+    if (btn) btn.setAttribute("aria-expanded", "true");
+  });
   await page.waitForSelector("#pmg-photo-suite", { timeout: 10_000 });
   await page.waitForSelector("#pmg-photo-suggest-row", {
     state: "attached",

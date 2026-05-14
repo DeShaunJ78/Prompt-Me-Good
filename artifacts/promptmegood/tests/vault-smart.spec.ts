@@ -90,11 +90,21 @@ async function dismissOnboarding(page: Page) {
   }
 }
 
+async function openVaultDrawer(page: Page) {
+  /* Chassis-v3 hides legacy DOM (including #history-list) via the
+     universal-hide rule. The Vault drawer is what surfaces history;
+     opening it makes #history-list visible to interaction. */
+  await page.waitForSelector("#pmgv3-vault", { timeout: 10_000 });
+  await page.locator("#pmgv3-vault").click();
+  await page.waitForSelector("#pmgv3-vault-drawer.is-open", { timeout: 5_000 });
+}
+
 async function gotoHistory(page: Page) {
   await installApiMocks(page);
   await page.goto(BASE_URL + "/app", { waitUntil: "domcontentloaded" });
-  await page.waitForSelector("#history-list", { timeout: 10_000 });
   await dismissOnboarding(page);
+  await openVaultDrawer(page);
+  await page.waitForSelector("#history-list", { timeout: 10_000 });
   /* Give renderHistory a tick. */
   await page.waitForTimeout(150);
 }
@@ -167,8 +177,9 @@ test.describe("Smart Vault @ mobile-360", () => {
     /* Reload — the <select> should still read 'most-used' and the
        same item should remain first without re-selecting. */
     await page.reload({ waitUntil: "domcontentloaded" });
-    await page.waitForSelector("#history-list");
     await dismissOnboarding(page);
+    await openVaultDrawer(page);
+    await page.waitForSelector("#history-list");
     await page.waitForTimeout(150);
 
     await expect(page.locator("#history-sort")).toHaveValue("most-used");
@@ -262,8 +273,9 @@ test.describe("Smart Vault @ mobile-360", () => {
     );
     await installApiMocks(page);
     await page.goto(BASE_URL + "/app", { waitUntil: "domcontentloaded" });
-    await page.waitForSelector("#history-list");
     await dismissOnboarding(page);
+    await openVaultDrawer(page);
+    await page.waitForSelector("#history-list");
     await page.waitForTimeout(150);
 
     await page.locator("#compare-two").click();

@@ -155,6 +155,11 @@
     pip.id = PIP_ID;
     pip.setAttribute('role', 'status');
     pip.setAttribute('aria-live', 'polite');
+    /* Chassis-v3 universal-hide hides anything appended directly under
+       <body> unless it carries data-pmg-overlay-root. Without this the
+       pip technically toggles its `is-visible` class but stays
+       display:none, so users (and tests) never see it. */
+    pip.setAttribute('data-pmg-overlay-root', '');
     pip.innerHTML = '<span class="pmg-undo-pip-icon" aria-hidden="true">↶</span><span class="pmg-undo-pip-text"></span>';
     document.body.appendChild(pip);
     return pip;
@@ -229,7 +234,7 @@
     }
   }, true);
 
-  /* -------- Instrumentation: window.setMode -------- */
+  /* -------- Instrumentation: window.setMode (legacy) -------- */
   function wrapSetMode() {
     var orig = window.setMode;
     if (typeof orig !== 'function') return false;
@@ -249,6 +254,35 @@
     };
     wrapped.__pmgUndoWrapped = true;
     try { window.setMode = wrapped; } catch (_) { return false; }
+    return true;
+  }
+
+  /* -------- Instrumentation: pmgChassisV3.setActivePanel --------
+     Task #140 removed window.setMode in favour of the chassis-v3
+     three-panel architecture (Text / Photography / Video). Wrap the
+     new entry point so panel switches still land on the undo stack
+     and the body.image-mode toggle (which gates the Photography
+     Suite) remains undoable. */
+  function wrapSetActivePanel() {
+    var api = window.pmgChassisV3;
+    if (!api || typeof api.setActivePanel !== 'function') return false;
+    if (api.setActivePanel.__pmgUndoWrapped) return true;
+    var orig = api.setActivePanel;
+    var wrapped = function (name) {
+      var prev = (document.body && document.body.getAttribute('data-active-panel')) || 'text';
+      var ret = orig.apply(this, arguments);
+      var next = (document.body && document.body.getAttribute('data-active-panel')) || 'text';
+      if (suppressDepth === 0 && prev !== next) {
+        push({
+          label: 'panel switch',
+          undo: function () { try { orig.call(api, prev); } catch (_) {} },
+          redo: function () { try { orig.call(api, next); } catch (_) {} }
+        });
+      }
+      return ret;
+    };
+    wrapped.__pmgUndoWrapped = true;
+    try { api.setActivePanel = wrapped; } catch (_) { return false; }
     return true;
   }
 
@@ -460,20 +494,24 @@
     injectStyles();
     var ok1 = wrapSetMode();
     var ok2 = wrapSetPromptText();
+    var ok3 = wrapSetActivePanel();
     setupImageObserver();
     /* If a wrap target wasn't ready yet, retry briefly. Some inline
        scripts in index.html define their globals at the very tail of
        parsing; defer scripts run after parsing, but we also tolerate
        the rare case where a global is overwritten by a later module
        (e.g. command palette wrapping setMode). Re-wrapping is
-       idempotent thanks to the __pmgUndoWrapped marker. */
-    if (!ok1 || !ok2) {
+       idempotent thanks to the __pmgUndoWrapped marker.
+       wrapSetMode is allowed to remain false forever after Task #140;
+       the new chassis-v3 wrap (ok3) is what matters in practice. */
+    if (!ok2 || !ok3) {
       var tries = 0;
       var iv = setInterval(function () {
         tries++;
-        var a = wrapSetMode();
+        wrapSetMode();
         var b = wrapSetPromptText();
-        if ((a && b) || tries > 20) {
+        var c = wrapSetActivePanel();
+        if ((b && c) || tries > 20) {
           clearInterval(iv);
         }
       }, 200);

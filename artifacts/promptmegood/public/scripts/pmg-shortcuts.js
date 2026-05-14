@@ -260,6 +260,9 @@
     btn.setAttribute('aria-controls', PANEL_ID);
     btn.title = 'Keyboard Shortcuts (?)';
     btn.textContent = '?';
+    /* Chassis-v3 universal-hide hides anything appended directly under
+       <body> unless it carries data-pmg-overlay-root. */
+    btn.setAttribute('data-pmg-overlay-root', '');
     btn.addEventListener('click', function (e) {
       e.preventDefault();
       togglePanel();
@@ -273,6 +276,8 @@
     var backdrop = document.createElement('div');
     backdrop.id = BACKDROP_ID;
     backdrop.setAttribute('role', 'presentation');
+    /* Chassis-v3 universal-hide — see ensureTrigger above. */
+    backdrop.setAttribute('data-pmg-overlay-root', '');
 
     var panel = document.createElement('div');
     panel.id = PANEL_ID;

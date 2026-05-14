@@ -18,7 +18,7 @@ type UndoApi = {
 type Win = Window & {
   __pmgUndo?: UndoApi;
   __pmgText?: { setPromptText: (s: string) => void };
-  setMode?: (m: string) => void;
+  pmgChassisV3?: { setActivePanel: (name: string) => void };
 };
 
 async function gotoApp(page: Page) {
@@ -115,9 +115,9 @@ test.describe("Global undo stack @ mobile-360", () => {
   test("mode switches are undoable across both modes", async ({ page }) => {
     await gotoApp(page);
     /* Image -> Write -> Image, expecting undo to walk back two steps. */
-    await page.evaluate(() => (window as unknown as Win).setMode!("image"));
-    await page.evaluate(() => (window as unknown as Win).setMode!("write"));
-    await page.evaluate(() => (window as unknown as Win).setMode!("image"));
+    await page.evaluate(() => (window as unknown as Win).pmgChassisV3!.setActivePanel("photography"));
+    await page.evaluate(() => (window as unknown as Win).pmgChassisV3!.setActivePanel("text"));
+    await page.evaluate(() => (window as unknown as Win).pmgChassisV3!.setActivePanel("photography"));
     expect(await page.evaluate(() => document.body.classList.contains("image-mode"))).toBe(true);
 
     const stackLen = await page.evaluate(
@@ -158,6 +158,11 @@ test.describe("Global undo stack @ mobile-360", () => {
       pill.setAttribute("data-value", "Cinematic");
       pill.id = "pmg-test-pill";
       pill.textContent = "Cinematic";
+      /* Chassis-v3 universal-hide hides anything appended directly
+         under <body> unless it carries data-pmg-overlay-root. The
+         test pill is synthetic, not part of the real Photography
+         Suite, so flag it as an overlay-root so it stays visible. */
+      pill.setAttribute("data-pmg-overlay-root", "");
       pill.addEventListener("click", () => {
         pill.classList.toggle("is-active");
       });
@@ -312,8 +317,8 @@ test.describe("Global undo stack @ mobile-360", () => {
 
   test("undo / redo do not self-record under suppression", async ({ page }) => {
     await gotoApp(page);
-    /* Drive a setMode change through the wrapped API. */
-    await page.evaluate(() => (window as unknown as Win).setMode!("image"));
+    /* Drive a panel switch through the wrapped API. */
+    await page.evaluate(() => (window as unknown as Win).pmgChassisV3!.setActivePanel("photography"));
     const startLen = await page.evaluate(
       () => (window as unknown as Win).__pmgUndo!.getStack().length,
     );
