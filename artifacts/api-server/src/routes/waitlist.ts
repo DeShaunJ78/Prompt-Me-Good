@@ -51,6 +51,36 @@ async function verifyTurnstile(
   }
 }
 
+/* formsubmit-relay-1: restore the per-signup email notification that the
+   prior formsubmit.co integration provided. The DB write remains the
+   source of truth; this relay is a fire-and-forget side-effect so the
+   owner gets an inbox ping for each new lead. Skipped on duplicate
+   inserts and on relay failure (logged, never throws to the client). */
+const FORMSUBMIT_ENDPOINT =
+  "https://formsubmit.co/ajax/support@promptmegood.com";
+
+function relayToFormsubmit(
+  log: { warn: (o: unknown, m: string) => void },
+  payload: { email: string; source: string; tier?: string | null },
+): void {
+  fetch(FORMSUBMIT_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({
+      email: payload.email,
+      _subject: `New PromptMeGood waitlist signup (${payload.tier ?? payload.source})`,
+      source: payload.source,
+      tier: payload.tier ?? "",
+    }),
+    signal: AbortSignal.timeout(5000),
+  }).catch((err: unknown) => {
+    log.warn(
+      { err: err instanceof Error ? err.message : String(err) },
+      "formsubmit relay failed (DB write succeeded)",
+    );
+  });
+}
+
 // Public unauthenticated POST — keep abuse modest.
 // 5 signups / 10 minutes per IP is generous for legitimate use
 // (one person resubmitting after a typo) but caps spam volume.
@@ -125,6 +155,16 @@ router.post("/waitlist", waitlistLimiter, async (req, res) => {
       },
       "waitlist signup",
     );
+    /* Fire-and-forget owner notification. Skip duplicates so re-submits
+       don't spam the inbox. Awaiting is intentional — the relay runs in
+       the background and the client gets its response immediately. */
+    if (!duplicate) {
+      relayToFormsubmit(log, {
+        email: parsed.data.email,
+        source: parsed.data.source,
+        tier: parsed.data.tier ?? null,
+      });
+    }
     return res.json({ ok: true, duplicate });
   } catch (err) {
     log.error({ err }, "waitlist insert failed");
