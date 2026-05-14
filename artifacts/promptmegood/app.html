@@ -4192,6 +4192,243 @@
     }
     html.pmg-splash-done #pmg-splash { opacity: 0; pointer-events: none; }
   </style>
+
+  <!-- ============================================================
+       PMG MOBILE FULLSCREEN UX — CSS
+       Activates on screens ≤1024px only. All rules scoped under
+       .pmg-fs-overlay to guarantee specificity over other sheets.
+       z-index: 10001 sits above chassis max of 10000.
+  ============================================================ -->
+  <style id="pmg-mobile-fs-styles">
+  @media (max-width: 1024px) {
+
+    /* ── Body scroll lock when any fullscreen is open ── */
+    body.pmg-fs-active {
+      overflow: hidden !important;
+    }
+
+    /* ── Hide duplicate top button row in AI response section ── */
+    .ai-response-actions-top {
+      display: none !important;
+    }
+    #aiResponseToggle {
+      display: none !important;
+    }
+
+    /* ── Overlay base ── */
+    .pmg-fs-overlay {
+      display: none !important;
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 10001 !important;
+      background: var(--color-bg, #0a1f1c) !important;
+      flex-direction: column !important;
+      visibility: visible !important;
+      overflow: hidden !important;
+    }
+    .pmg-fs-overlay.is-open {
+      display: flex !important;
+    }
+
+    /* ── Header bar ── */
+    .pmg-fs-overlay .pmg-fs-header {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      padding: 14px 16px 12px !important;
+      border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+      flex-shrink: 0 !important;
+      visibility: visible !important;
+    }
+    .pmg-fs-overlay .pmg-fs-header-title {
+      font-size: 17px !important;
+      font-weight: 700 !important;
+      color: var(--color-text, #e8f5f0) !important;
+      visibility: visible !important;
+    }
+    .pmg-fs-overlay .pmg-fs-header-actions {
+      display: flex !important;
+      gap: 8px !important;
+      visibility: visible !important;
+    }
+    .pmg-fs-overlay .pmg-fs-tune-btn,
+    .pmg-fs-overlay .pmg-fs-close-btn,
+    .pmg-fs-overlay .pmg-fs-back-btn {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 5px !important;
+      padding: 7px 13px !important;
+      border-radius: 20px !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      border: 1px solid rgba(255,255,255,0.18) !important;
+      background: rgba(255,255,255,0.07) !important;
+      color: var(--color-text, #e8f5f0) !important;
+      visibility: visible !important;
+    }
+    .pmg-fs-overlay .pmg-fs-tune-btn {
+      background: rgba(20,184,166,0.18) !important;
+      border-color: rgba(20,184,166,0.45) !important;
+      color: #5eead4 !important;
+    }
+
+    /* ── Scrollable body ── */
+    .pmg-fs-overlay .pmg-fs-body {
+      flex: 1 !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      padding: 16px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 12px !important;
+      visibility: visible !important;
+    }
+
+    /* ── Section label inside body ── */
+    .pmg-fs-overlay .pmg-fs-section-label {
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.08em !important;
+      text-transform: uppercase !important;
+      color: rgba(255,255,255,0.45) !important;
+      margin-bottom: 4px !important;
+      visibility: visible !important;
+    }
+
+    /* ── Mirror output box for AI response ── */
+    .pmg-fs-overlay .pmg-fs-ai-mirror {
+      background: var(--color-surface, rgba(255,255,255,0.05)) !important;
+      border: 1px solid rgba(255,255,255,0.1) !important;
+      border-radius: 10px !important;
+      padding: 14px !important;
+      font-size: 15px !important;
+      line-height: 1.65 !important;
+      color: var(--color-text, #e8f5f0) !important;
+      white-space: pre-wrap !important;
+      word-break: break-word !important;
+      visibility: visible !important;
+    }
+
+    /* ── Send To label and row ── */
+    .pmg-fs-overlay .pmg-fs-send-label {
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.08em !important;
+      text-transform: uppercase !important;
+      color: rgba(255,255,255,0.45) !important;
+      visibility: visible !important;
+    }
+    .pmg-fs-overlay .pmg-fs-send-row {
+      display: flex !important;
+      gap: 8px !important;
+      flex-wrap: wrap !important;
+      visibility: visible !important;
+    }
+    .pmg-fs-overlay .pmg-fs-send-row a,
+    .pmg-fs-overlay .pmg-fs-send-row button {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      padding: 8px 14px !important;
+      border-radius: 8px !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      text-decoration: none !important;
+      border: 1px solid rgba(255,255,255,0.15) !important;
+      background: rgba(255,255,255,0.07) !important;
+      color: var(--color-text, #e8f5f0) !important;
+      visibility: visible !important;
+    }
+
+    /* ── Sticky footer ── */
+    .pmg-fs-overlay .pmg-fs-footer {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+      padding: 12px 16px !important;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+      border-top: 1px solid rgba(255,255,255,0.08) !important;
+      flex-shrink: 0 !important;
+      background: var(--color-bg, #0a1f1c) !important;
+      visibility: visible !important;
+    }
+
+    /* ── Primary CTA button (Run With AI / Download) ── */
+    .pmg-fs-overlay .pmg-fs-footer .pmg-fs-primary-btn {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 8px !important;
+      width: 100% !important;
+      padding: 15px !important;
+      border-radius: 12px !important;
+      font-size: 16px !important;
+      font-weight: 700 !important;
+      cursor: pointer !important;
+      border: none !important;
+      background: linear-gradient(135deg, #14b8a6, #0e9488) !important;
+      color: #fff !important;
+      visibility: visible !important;
+    }
+
+    /* ── Secondary button row (Copy, Download, Print, Clear) ── */
+    .pmg-fs-overlay .pmg-fs-footer .pmg-fs-secondary-row {
+      display: flex !important;
+      gap: 8px !important;
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      scrollbar-width: none !important;
+      visibility: visible !important;
+    }
+    .pmg-fs-overlay .pmg-fs-footer .pmg-fs-secondary-row::-webkit-scrollbar {
+      display: none !important;
+    }
+    .pmg-fs-overlay .pmg-fs-footer .pmg-fs-secondary-row button,
+    .pmg-fs-overlay .pmg-fs-footer .pmg-fs-secondary-row a {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      white-space: nowrap !important;
+      padding: 10px 16px !important;
+      border-radius: 10px !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      text-decoration: none !important;
+      border: 1px solid rgba(255,255,255,0.18) !important;
+      background: rgba(255,255,255,0.07) !important;
+      color: var(--color-text, #e8f5f0) !important;
+      flex-shrink: 0 !important;
+      visibility: visible !important;
+    }
+
+    /* ── Image fullscreen ── */
+    .pmg-fs-overlay .pmg-fs-image-wrap {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      flex: 1 !important;
+      padding: 8px !important;
+      visibility: visible !important;
+    }
+    .pmg-fs-overlay .pmg-fs-image-wrap img {
+      max-width: 100% !important;
+      max-height: 100% !important;
+      border-radius: 12px !important;
+      object-fit: contain !important;
+      visibility: visible !important;
+    }
+
+    /* ── Ensure all direct children of overlay are visible ── */
+    .pmg-fs-overlay * {
+      visibility: visible !important;
+    }
+
+  }
+  </style>
+
 </head>
 <body class="pmg-workstation-promote">
   <div id="pmg-splash" role="status" aria-live="polite" aria-label="Loading PromptMeGood">
@@ -13455,5 +13692,563 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <script src="/scripts/pmg-mailto-fallback.js?v=mlf-1" defer></script>
 <script src="/scripts/pmg-contact-modal.js?v=cm-1" defer></script>
+
+  <!-- ============================================================
+       PMG MOBILE FULLSCREEN UX — OVERLAY CONTAINERS
+       Three overlay screens: Generated Prompt, AI Response, Image.
+       Each has data-pmg-overlay-root to exempt from chassis hide rule.
+       DOM nodes are moved INTO these at runtime by pmg-mobile-fs-js.
+  ============================================================ -->
+
+  <!-- Screen 1: Generated Prompt -->
+  <div id="pmg-fs-prompt" class="pmg-fs-overlay" data-pmg-overlay-root aria-modal="true" role="dialog" aria-label="Your Engineered Prompt">
+    <div class="pmg-fs-header">
+      <span class="pmg-fs-header-title">Your Engineered Prompt</span>
+      <div class="pmg-fs-header-actions">
+        <button type="button" class="pmg-fs-tune-btn" id="pmg-fs-tune-btn" aria-label="Open Prompt Tuning">🎛️ Tune</button>
+        <button type="button" class="pmg-fs-close-btn" id="pmg-fs-prompt-close" aria-label="Close fullscreen">✕ Close</button>
+      </div>
+    </div>
+    <div class="pmg-fs-body" id="pmg-fs-prompt-body"></div>
+    <div class="pmg-fs-footer" id="pmg-fs-prompt-footer"></div>
+  </div>
+
+  <!-- Screen 2: AI Response -->
+  <div id="pmg-fs-ai" class="pmg-fs-overlay" data-pmg-overlay-root aria-modal="true" role="dialog" aria-label="AI Response">
+    <div class="pmg-fs-header">
+      <span class="pmg-fs-header-title">AI Response</span>
+      <div class="pmg-fs-header-actions">
+        <button type="button" class="pmg-fs-back-btn" id="pmg-fs-ai-back" aria-label="Back to prompt">← Back</button>
+        <button type="button" class="pmg-fs-close-btn" id="pmg-fs-ai-close" aria-label="Close fullscreen">✕ Close</button>
+      </div>
+    </div>
+    <div class="pmg-fs-body" id="pmg-fs-ai-body"></div>
+    <div class="pmg-fs-footer" id="pmg-fs-ai-footer"></div>
+  </div>
+
+  <!-- Screen 3: Generated Image -->
+  <div id="pmg-fs-image" class="pmg-fs-overlay" data-pmg-overlay-root aria-modal="true" role="dialog" aria-label="Generated Image">
+    <div class="pmg-fs-header">
+      <span class="pmg-fs-header-title">Generated Image</span>
+      <div class="pmg-fs-header-actions">
+        <button type="button" class="pmg-fs-back-btn" id="pmg-fs-image-back" aria-label="Back">← Back</button>
+        <button type="button" class="pmg-fs-close-btn" id="pmg-fs-image-close" aria-label="Close fullscreen">✕ Close</button>
+      </div>
+    </div>
+    <div class="pmg-fs-body" id="pmg-fs-image-body"></div>
+    <div class="pmg-fs-footer" id="pmg-fs-image-footer"></div>
+  </div>
+
+
+
+  <!-- ============================================================
+       PMG MOBILE FULLSCREEN UX — JAVASCRIPT
+       Three screens: Generated Prompt, AI Response, Generated Image.
+       Uses move-with-placeholder for live DOM nodes.
+       All logic gated on isMobile() — desktop is completely unaffected.
+  ============================================================ -->
+  <script id="pmg-mobile-fs-js">
+  (function () {
+    'use strict';
+
+    /* ── Helpers ── */
+    function isMobile() { return window.innerWidth <= 1024; }
+    function $(id) { return document.getElementById(id); }
+
+    /* ── State flags (prevent double-open loops) ── */
+    var _promptOpen = false;
+    var _aiOpen     = false;
+    var _imageOpen  = false;
+
+    /* ── Move-with-placeholder: physically moves a real DOM node into
+          the overlay body, leaving a hidden placeholder in its place.
+          Restoring puts it back exactly where it was. ── */
+    function moveOut(elId, targetParent) {
+      var el = $(elId);
+      if (!el) return;
+      var ph = document.createElement('div');
+      ph.id = 'pmg-fs-ph-' + elId;
+      ph.hidden = true;
+      ph.setAttribute('aria-hidden', 'true');
+      el.parentNode.insertBefore(ph, el);
+      targetParent.appendChild(el);
+    }
+
+    function restore(elId) {
+      var el = $(elId);
+      var ph = $('pmg-fs-ph-' + elId);
+      if (!el || !ph) return;
+      ph.parentNode.insertBefore(el, ph);
+      ph.parentNode.removeChild(ph);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       SCREEN 1 — Generated Prompt Fullscreen
+    ═══════════════════════════════════════════════════════════ */
+    function openPromptFullscreen() {
+      if (!isMobile() || _promptOpen) return;
+      var resultBox = $('resultBox');
+      if (!resultBox || !resultBox.textContent.trim() ||
+          resultBox.textContent.trim() === 'Your fixed prompt will appear here.') return;
+
+      _promptOpen = true;
+      var overlay = $('pmg-fs-prompt');
+      var body    = $('pmg-fs-prompt-body');
+      var footer  = $('pmg-fs-prompt-footer');
+      body.innerHTML   = '';
+      footer.innerHTML = '';
+
+      /* -- Strength score (move real node) -- */
+      var ss = $('strength-score');
+      if (ss && !ss.hidden) moveOut('strength-score', body);
+
+      /* -- Section label -- */
+      var lbl = document.createElement('div');
+      lbl.className = 'pmg-fs-section-label';
+      lbl.textContent = 'YOUR ENGINEERED PROMPT';
+      body.appendChild(lbl);
+
+      /* -- Result box (move real node) -- */
+      moveOut('resultBox', body);
+
+      /* -- Improve block (move real node — fine-tune is a child, comes along) -- */
+      var ib = $('improve-block');
+      if (ib) moveOut('improve-block', body);
+
+      /* -- What next block (move real node) -- */
+      var wn = $('what-next');
+      if (wn) moveOut('what-next', body);
+
+      /* -- Send To row (clone open-in-btn anchors) -- */
+      var openInBtns = document.querySelectorAll('.open-in-btn');
+      if (openInBtns.length) {
+        var sendLabel = document.createElement('div');
+        sendLabel.className = 'pmg-fs-send-label';
+        sendLabel.textContent = 'SEND YOUR PROMPT TO';
+        body.appendChild(sendLabel);
+        var sendRow = document.createElement('div');
+        sendRow.className = 'pmg-fs-send-row';
+        openInBtns.forEach(function (btn) {
+          var clone = btn.cloneNode(true);
+          clone.addEventListener('click', function (e) {
+            e.preventDefault();
+            btn.click();
+          });
+          sendRow.appendChild(clone);
+        });
+        body.appendChild(sendRow);
+      }
+
+      /* ── Footer: primary Run With AI + secondary row ── */
+      /* Primary */
+      var runPrimary = document.createElement('button');
+      runPrimary.type = 'button';
+      runPrimary.className = 'pmg-fs-primary-btn';
+      runPrimary.innerHTML = '&#9654; Run With AI';
+      runPrimary.addEventListener('click', function () {
+        var orig = $('runBtn') || $('run-with-ai-btn');
+        if (orig) orig.click();
+      });
+      footer.appendChild(runPrimary);
+
+      /* Secondary row */
+      var secRow = document.createElement('div');
+      secRow.className = 'pmg-fs-secondary-row';
+
+      var secBtns = [
+        { id: 'copy-btn',          label: '📋 Copy' },
+        { id: 'download-prompt-btn', label: '⬇ Download' },
+        { id: 'print-btn',         label: '🖨 Print' },
+        { id: 'clear-prompt-btn',  label: '🗑 Clear' }
+      ];
+      secBtns.forEach(function (def) {
+        var orig = $(def.id);
+        if (!orig) return;
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = def.label;
+        btn.addEventListener('click', function () { orig.click(); });
+        secRow.appendChild(btn);
+      });
+      footer.appendChild(secRow);
+
+      /* ── Open overlay ── */
+      overlay.classList.add('is-open');
+      document.body.classList.add('pmg-fs-active');
+    }
+
+    function closePromptFullscreen() {
+      if (!_promptOpen) return;
+      _promptOpen = false;
+      var overlay = $('pmg-fs-prompt');
+      overlay.classList.remove('is-open');
+
+      /* Restore moved nodes */
+      restore('strength-score');
+      restore('resultBox');
+      restore('improve-block');
+      restore('what-next');
+
+      /* Clear cloned content */
+      $('pmg-fs-prompt-body').innerHTML   = '';
+      $('pmg-fs-prompt-footer').innerHTML = '';
+
+      if (!_aiOpen && !_imageOpen) document.body.classList.remove('pmg-fs-active');
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       SCREEN 2 — AI Response Fullscreen
+    ═══════════════════════════════════════════════════════════ */
+    function openAIFullscreen() {
+      if (!isMobile() || _aiOpen) return;
+      var aiOutput = $('aiResponseOutput');
+      if (!aiOutput || !aiOutput.textContent.trim()) return;
+
+      _aiOpen = true;
+      var overlay = $('pmg-fs-ai');
+      var body    = $('pmg-fs-ai-body');
+      var footer  = $('pmg-fs-ai-footer');
+      body.innerHTML   = '';
+      footer.innerHTML = '';
+
+      /* -- Mirror the AI output content -- */
+      var mirror = document.createElement('div');
+      mirror.className = 'pmg-fs-ai-mirror';
+      mirror.innerHTML = aiOutput.innerHTML;
+      body.appendChild(mirror);
+
+      /* Keep mirror in sync as streaming continues */
+      var mirrorObs = new MutationObserver(function () {
+        mirror.innerHTML = aiOutput.innerHTML;
+      });
+      mirrorObs.observe(aiOutput, { childList: true, subtree: true, characterData: true });
+      overlay._mirrorObs = mirrorObs;
+
+      /* -- Send To row (clone open-in-btn anchors) -- */
+      var openInBtns = document.querySelectorAll('.open-in-btn');
+      if (openInBtns.length) {
+        var sendLabel = document.createElement('div');
+        sendLabel.className = 'pmg-fs-send-label';
+        sendLabel.textContent = 'SEND TO';
+        body.appendChild(sendLabel);
+        var sendRow = document.createElement('div');
+        sendRow.className = 'pmg-fs-send-row';
+        openInBtns.forEach(function (btn) {
+          var clone = btn.cloneNode(true);
+          clone.addEventListener('click', function (e) {
+            e.preventDefault();
+            btn.click();
+          });
+          sendRow.appendChild(clone);
+        });
+        body.appendChild(sendRow);
+      }
+
+      /* ── Footer: Copy Response + Run Again ── */
+      var secRow = document.createElement('div');
+      secRow.className = 'pmg-fs-secondary-row';
+
+      var copyBtn = document.createElement('button');
+      copyBtn.type = 'button';
+      copyBtn.textContent = '📋 Copy Response';
+      copyBtn.addEventListener('click', function () {
+        var orig = $('copyResponseBtn');
+        if (orig) orig.click();
+      });
+      secRow.appendChild(copyBtn);
+
+      var runAgainBtn = document.createElement('button');
+      runAgainBtn.type = 'button';
+      runAgainBtn.textContent = '▶ Run Again';
+      runAgainBtn.addEventListener('click', function () {
+        var orig = $('runAgainBtn');
+        if (orig) orig.click();
+      });
+      secRow.appendChild(runAgainBtn);
+
+      footer.appendChild(secRow);
+
+      /* ── Open overlay ── */
+      overlay.classList.add('is-open');
+      document.body.classList.add('pmg-fs-active');
+    }
+
+    function closeAIFullscreen() {
+      if (!_aiOpen) return;
+      _aiOpen = false;
+      var overlay = $('pmg-fs-ai');
+
+      /* Disconnect mirror observer */
+      if (overlay._mirrorObs) { overlay._mirrorObs.disconnect(); overlay._mirrorObs = null; }
+
+      overlay.classList.remove('is-open');
+      $('pmg-fs-ai-body').innerHTML   = '';
+      $('pmg-fs-ai-footer').innerHTML = '';
+
+      if (!_promptOpen && !_imageOpen) document.body.classList.remove('pmg-fs-active');
+
+      /* If prompt result still exists, re-open prompt screen */
+      if (document.body.classList.contains('pmg-has-result')) {
+        setTimeout(openPromptFullscreen, 150);
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       SCREEN 3 — Generated Image Fullscreen
+    ═══════════════════════════════════════════════════════════ */
+    function openImageFullscreen(mode) {
+      if (!isMobile() || _imageOpen) return;
+      _imageOpen = true;
+
+      var overlay = $('pmg-fs-image');
+      var body    = $('pmg-fs-image-body');
+      var footer  = $('pmg-fs-image-footer');
+      body.innerHTML   = '';
+      footer.innerHTML = '';
+
+      /* -- Image display -- */
+      var imgWrap = document.createElement('div');
+      imgWrap.className = 'pmg-fs-image-wrap';
+
+      if (mode === 'visual-studio') {
+        var vsImg = $('pmg-vs-generated-image');
+        if (vsImg && vsImg.src) {
+          var img = document.createElement('img');
+          img.src = vsImg.src;
+          img.alt = 'Generated image';
+          imgWrap.appendChild(img);
+        }
+      } else {
+        /* legacy mode — clone the imageResultWrap */
+        var wrap = $('imageResultWrap');
+        if (wrap) {
+          var imgEl = wrap.querySelector('img');
+          if (imgEl) {
+            var img2 = document.createElement('img');
+            img2.src = imgEl.src;
+            img2.alt = 'Generated image';
+            imgWrap.appendChild(img2);
+          }
+        }
+      }
+      body.appendChild(imgWrap);
+
+      /* ── Footer buttons ── */
+      var secRow = document.createElement('div');
+      secRow.className = 'pmg-fs-secondary-row';
+
+      if (mode === 'visual-studio') {
+        var saveBtn = $('pmg-vs-image-save');
+        if (saveBtn) {
+          var saveClone = document.createElement('a');
+          saveClone.textContent = '⬇ Save Image';
+          saveClone.href = saveBtn.href || '#';
+          saveClone.download = saveBtn.download || 'promptmegood-image.png';
+          secRow.appendChild(saveClone);
+        }
+        var regenBtn = $('pmg-vs-image-regen');
+        if (regenBtn) {
+          var regenClone = document.createElement('button');
+          regenClone.type = 'button';
+          regenClone.textContent = '🔄 Regenerate';
+          regenClone.addEventListener('click', function () { regenBtn.click(); });
+          secRow.appendChild(regenClone);
+        }
+        var dnaBtn = $('pmg-vs-download-dna');
+        if (dnaBtn) {
+          var dnaClone = document.createElement('button');
+          dnaClone.type = 'button';
+          dnaClone.textContent = '🧬 DNA Card';
+          dnaClone.addEventListener('click', function () { dnaBtn.click(); });
+          secRow.appendChild(dnaClone);
+        }
+      } else {
+        var dlBtn = $('imageDownloadBtn');
+        if (dlBtn) {
+          var dlClone = document.createElement('a');
+          dlClone.textContent = '⬇ Download';
+          dlClone.href = dlBtn.href || '#';
+          dlClone.download = dlBtn.download || 'promptmegood-image.png';
+          secRow.appendChild(dlClone);
+        }
+        var againBtn = $('imageAgainBtn');
+        if (againBtn) {
+          var againClone = document.createElement('button');
+          againClone.type = 'button';
+          againClone.textContent = '🔄 Regenerate';
+          againClone.addEventListener('click', function () { againBtn.click(); });
+          secRow.appendChild(againClone);
+        }
+        var copyImgBtn = $('copyImagePromptBtn');
+        if (copyImgBtn) {
+          var copyImgClone = document.createElement('button');
+          copyImgClone.type = 'button';
+          copyImgClone.textContent = '📋 Copy Prompt';
+          copyImgClone.addEventListener('click', function () { copyImgBtn.click(); });
+          secRow.appendChild(copyImgClone);
+        }
+      }
+
+      footer.appendChild(secRow);
+
+      /* ── Open overlay ── */
+      overlay.classList.add('is-open');
+      document.body.classList.add('pmg-fs-active');
+    }
+
+    function closeImageFullscreen() {
+      if (!_imageOpen) return;
+      _imageOpen = false;
+      var overlay = $('pmg-fs-image');
+      overlay.classList.remove('is-open');
+      $('pmg-fs-image-body').innerHTML   = '';
+      $('pmg-fs-image-footer').innerHTML = '';
+      if (!_promptOpen && !_aiOpen) document.body.classList.remove('pmg-fs-active');
+    }
+
+    function closeAll() {
+      closePromptFullscreen();
+      closeAIFullscreen();
+      closeImageFullscreen();
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       TRIGGERS — Watch for generation completion events
+    ═══════════════════════════════════════════════════════════ */
+
+    /* Trigger 1: body.pmg-has-result added → open prompt fullscreen */
+    var promptObs = new MutationObserver(function (mutations) {
+      if (!isMobile()) return;
+      mutations.forEach(function (m) {
+        if (m.type === 'attributes' && m.attributeName === 'class') {
+          if (document.body.classList.contains('pmg-has-result') && !_promptOpen) {
+            setTimeout(openPromptFullscreen, 400);
+          }
+          /* Reset: pmg-has-result removed → close all */
+          if (!document.body.classList.contains('pmg-has-result')) {
+            closeAll();
+          }
+        }
+      });
+    });
+    promptObs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+    /* Trigger 2: #aiResponseSection becomes visible → wait for streaming to finish → open AI fullscreen */
+    var aiSection = $('aiResponseSection');
+    if (aiSection) {
+      var aiObs = new MutationObserver(function (mutations) {
+        if (!isMobile()) return;
+        mutations.forEach(function (m) {
+          if (m.type === 'attributes' && m.attributeName === 'hidden') {
+            if (!aiSection.hidden && !_aiOpen) {
+              /* Wait for streaming to finish (is-streaming class removed) */
+              var aiOutput = $('aiResponseOutput');
+              if (!aiOutput) { setTimeout(openAIFullscreen, 600); return; }
+              var streamWatcher = new MutationObserver(function () {
+                if (!aiOutput.classList.contains('is-streaming')) {
+                  streamWatcher.disconnect();
+                  setTimeout(openAIFullscreen, 600);
+                }
+              });
+              streamWatcher.observe(aiOutput, { attributes: true, attributeFilter: ['class'] });
+              /* If not streaming at all right now, open immediately */
+              if (!aiOutput.classList.contains('is-streaming')) {
+                streamWatcher.disconnect();
+                setTimeout(openAIFullscreen, 600);
+              }
+            }
+          }
+        });
+      });
+      aiObs.observe(aiSection, { attributes: true, attributeFilter: ['hidden'] });
+    }
+
+    /* Trigger 3a: Legacy image result — img appears in #imageResultWrap */
+    var imgWrapEl = $('imageResultWrap');
+    if (imgWrapEl) {
+      var imgObs = new MutationObserver(function () {
+        if (!isMobile()) return;
+        var img = imgWrapEl.querySelector('img[src]:not([src=""])');
+        if (img && !_imageOpen) {
+          img.complete
+            ? setTimeout(function () { openImageFullscreen('legacy'); }, 400)
+            : img.addEventListener('load', function () { setTimeout(function () { openImageFullscreen('legacy'); }, 400); }, { once: true });
+        }
+      });
+      imgObs.observe(imgWrapEl, { childList: true, subtree: true });
+    }
+
+    /* Trigger 3b: Visual Studio image — #pmg-vs-generated-image hidden attr removed */
+    var vsImgEl = $('pmg-vs-generated-image');
+    if (vsImgEl) {
+      var vsObs = new MutationObserver(function (mutations) {
+        if (!isMobile()) return;
+        mutations.forEach(function (m) {
+          if (m.type === 'attributes' && m.attributeName === 'hidden') {
+            if (!vsImgEl.hidden && !_imageOpen) {
+              setTimeout(function () { openImageFullscreen('visual-studio'); }, 400);
+            }
+          }
+        });
+      });
+      vsObs.observe(vsImgEl, { attributes: true, attributeFilter: ['hidden'] });
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       CLOSE HANDLERS
+    ═══════════════════════════════════════════════════════════ */
+    document.addEventListener('click', function (e) {
+      var t = e.target.closest('#pmg-fs-prompt-close') ||
+              e.target.closest('#pmg-fs-ai-close') ||
+              e.target.closest('#pmg-fs-ai-back') ||
+              e.target.closest('#pmg-fs-image-close') ||
+              e.target.closest('#pmg-fs-image-back');
+      if (!t) return;
+
+      var id = t.id;
+      if (id === 'pmg-fs-prompt-close')                     closePromptFullscreen();
+      else if (id === 'pmg-fs-ai-close')                    closeAIFullscreen();
+      else if (id === 'pmg-fs-ai-back')                     closeAIFullscreen();
+      else if (id === 'pmg-fs-image-close' || id === 'pmg-fs-image-back') closeImageFullscreen();
+    });
+
+    /* Tune button → open existing Prompt Tuning overlay */
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('#pmg-fs-tune-btn')) return;
+      var toggle = $('tuning-mobile-toggle');
+      if (toggle) { toggle.click(); return; }
+      if (window.pmgTuneChips && typeof window.pmgTuneChips.openOverlay === 'function') {
+        window.pmgTuneChips.openOverlay();
+      }
+    });
+
+    /* Clear prompt button → close all fullscreens */
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('#clear-prompt-btn')) closeAll();
+    });
+
+    /* Escape key → close topmost open fullscreen */
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      if (_aiOpen)     { closeAIFullscreen(); return; }
+      if (_imageOpen)  { closeImageFullscreen(); return; }
+      if (_promptOpen) { closePromptFullscreen(); return; }
+    });
+
+    /* ── Debug surface ── */
+    window.pmgMobileFS = {
+      openPrompt:  openPromptFullscreen,
+      closePrompt: closePromptFullscreen,
+      openAI:      openAIFullscreen,
+      closeAI:     closeAIFullscreen,
+      openImage:   function (m) { openImageFullscreen(m || 'legacy'); },
+      closeImage:  closeImageFullscreen,
+      closeAll:    closeAll,
+      state:       function () { return { prompt: _promptOpen, ai: _aiOpen, image: _imageOpen }; }
+    };
+
+  })();
+  </script>
+
 </body>
 </html>
