@@ -13565,7 +13565,7 @@ document.addEventListener("DOMContentLoaded", function () {
 <script src="/scripts/pmg-contact-modal.js?v=cm-1" defer></script>
 
 <!-- pmg-mfs-1: Mobile Fullscreen Overlays (≤768px). Empty containers; populated at runtime. -->
-<div id="pmg-fs-prompt" class="pmg-fs-overlay" hidden role="dialog" aria-modal="true" aria-label="Generated Prompt" tabindex="-1">
+<div id="pmg-fs-prompt" class="pmg-fs-overlay" data-pmg-overlay-root="1" hidden role="dialog" aria-modal="true" aria-label="Generated Prompt" tabindex="-1">
   <div class="pmg-fs-header">
     <h2 class="pmg-fs-header-title">Your Engineered Prompt</h2>
     <div class="pmg-fs-header-actions">
@@ -13577,7 +13577,7 @@ document.addEventListener("DOMContentLoaded", function () {
   <div id="pmg-fs-prompt-footer" class="pmg-fs-footer"></div>
 </div>
 
-<div id="pmg-fs-ai" class="pmg-fs-overlay" hidden role="dialog" aria-modal="true" aria-label="AI Response" tabindex="-1">
+<div id="pmg-fs-ai" class="pmg-fs-overlay" data-pmg-overlay-root="1" hidden role="dialog" aria-modal="true" aria-label="AI Response" tabindex="-1">
   <div class="pmg-fs-header">
     <button type="button" id="pmg-fs-ai-back" class="pmg-fs-back-btn" aria-label="Back to prompt">← Back</button>
     <h2 class="pmg-fs-header-title">AI Response</h2>
@@ -13589,7 +13589,7 @@ document.addEventListener("DOMContentLoaded", function () {
   <div id="pmg-fs-ai-footer" class="pmg-fs-footer"></div>
 </div>
 
-<div id="pmg-fs-image" class="pmg-fs-overlay" hidden role="dialog" aria-modal="true" aria-label="Generated Image" tabindex="-1">
+<div id="pmg-fs-image" class="pmg-fs-overlay" data-pmg-overlay-root="1" hidden role="dialog" aria-modal="true" aria-label="Generated Image" tabindex="-1">
   <div class="pmg-fs-header">
     <button type="button" id="pmg-fs-image-back" class="pmg-fs-back-btn" aria-label="Back">← Back</button>
     <h2 class="pmg-fs-header-title">Generated Image</h2>
