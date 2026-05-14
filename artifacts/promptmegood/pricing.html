@@ -938,14 +938,13 @@
         if (!ok) { setStatus('Please enter a valid email address.', 'error'); return; }
         setStatus('', null);
         setBusy(true);
-        // If Turnstile is rendered but no token yet (user hasn't completed
-        // the challenge), block submit with a friendly nudge. Skip the
-        // check when the widget never rendered (no site key configured).
-        if (turnstileSiteKey && turnstileWidgetId !== null && !turnstileToken) {
-          setBusy(false);
-          setStatus('Please complete the verification check above.', 'error');
-          return;
-        }
+        /* ts-soft-allow-1: previously blocked submission when Turnstile had
+           no token. The widget fails to render visibly for many users
+           (mobile Safari, ad-blockers, CF site-key/domain mismatch),
+           making "Notify Me" appear broken and tanking conversion. The
+           server now soft-allows missing/failed tokens (flags the row
+           as `-unverified` for review) so we always submit and trust
+           the server's response. */
         /* M-4 (audit-2 triage): include tier captured from whichever
            Notify-Me-by-tier button the user clicked. Empty string is
            normalized to undefined so the server's enum validation

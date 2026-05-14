@@ -77,18 +77,28 @@ router.post("/waitlist", waitlistLimiter, async (req, res) => {
   const turnstileToken =
     typeof req.body?.turnstileToken === "string" ? req.body.turnstileToken : "";
   const verify = await verifyTurnstile(turnstileToken, req.ip);
-  if (!verify.ok) {
-    log.warn({ reason: verify.reason }, "waitlist turnstile rejected");
-    return res.status(400).json({ ok: false, error: "turnstile_failed" });
+  /* ts-soft-allow-1: the Turnstile widget fails to render visibly for some
+     users (mobile Safari with strict tracking prevention, ad-blockers,
+     site-key/domain mismatches in CF). Hard-blocking the submission was
+     bleeding conversion (user reported "Notify Me does nothing" while the
+     widget was invisible). Soft-allow: still attempt the insert, but
+     suffix the source with `-unverified` so the team can review/clean up
+     unverified entries later. The per-IP rate limiter (5/10min) caps abuse. */
+  const turnstileFailed = !verify.ok;
+  if (turnstileFailed) {
+    log.warn({ reason: verify.reason }, "waitlist turnstile failed — soft-allowing");
   }
 
   /* M-4 (audit-2 triage): accept optional `tier` so marketing can segment
      the waitlist by which Pro tier the user clicked Notify Me on. The
      enum on the schema rejects unknown values silently (Zod drops the
      field), so junk input doesn't leak into the table. */
+  const rawSource =
+    typeof req.body?.source === "string" ? req.body.source.slice(0, 48) : "pricing";
+  const sourceWithFlag = turnstileFailed ? `${rawSource}-unverified` : rawSource;
   const parsed = insertWaitlistSignupSchema.safeParse({
     email: typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "",
-    source: typeof req.body?.source === "string" ? req.body.source.slice(0, 64) : "pricing",
+    source: sourceWithFlag,
     tier: typeof req.body?.tier === "string" && req.body.tier ? req.body.tier : undefined,
     userAgent: req.get("user-agent")?.slice(0, 500),
     referrer: req.get("referer")?.slice(0, 500),
