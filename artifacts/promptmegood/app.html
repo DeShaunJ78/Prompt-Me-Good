@@ -4364,7 +4364,7 @@
       align-items: center !important;
       gap: 6px !important;
       padding: 8px 14px !important;
-      border-radius: 8px !important;
+      border-radius: 20px !important;
       font-size: 13px !important;
       font-weight: 600 !important;
       cursor: pointer !important;
@@ -4373,6 +4373,11 @@
       background: rgba(255,255,255,0.07) !important;
       color: var(--color-text, #e8f5f0) !important;
       visibility: visible !important;
+      /* Override .open-in-btn width:100% so buttons stay compact pills */
+      width: auto !important;
+      flex-shrink: 0 !important;
+      white-space: nowrap !important;
+      min-height: auto !important;
     }
 
     /* ── Sticky footer ── */
@@ -4563,6 +4568,25 @@
     color: #fff !important;
     visibility: visible !important;
     box-sizing: border-box !important;
+  }
+  /* Send To row: override .open-in-btn width:100% so buttons are compact pills */
+  .pmg-fs-overlay.is-open .pmg-fs-send-row {
+    display: flex !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+    visibility: visible !important;
+  }
+  .pmg-fs-overlay.is-open .pmg-fs-send-row a,
+  .pmg-fs-overlay.is-open .pmg-fs-send-row button {
+    width: auto !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    min-height: auto !important;
+    padding: 8px 14px !important;
+    border-radius: 20px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    visibility: visible !important;
   }
   .pmg-fs-overlay.is-open .pmg-fs-secondary-row {
     display: flex !important;
@@ -13977,6 +14001,10 @@ document.addEventListener("DOMContentLoaded", function () {
       /* -- Result box (move real node) -- */
       moveOut('resultBox', body);
 
+      /* -- Auto-Boost button (dynamically created by pmg-auto-boost.js) -- */
+      var abBtn = $('pmg-ab-btn-text');
+      if (abBtn) moveOut('pmg-ab-btn-text', body);
+
       /* -- Improve block (move real node — fine-tune is a child, comes along) -- */
       var ib = $('improve-block');
       if (ib) moveOut('improve-block', body);
@@ -14058,6 +14086,7 @@ document.addEventListener("DOMContentLoaded", function () {
       /* Restore moved nodes */
       restore('strength-score');
       restore('resultBox');
+      restore('pmg-ab-btn-text');
       restore('improve-block');
       /* what-next was not moved, no restore needed */
 
@@ -14384,14 +14413,15 @@ document.addEventListener("DOMContentLoaded", function () {
       else if (id === 'pmg-fs-image-close' || id === 'pmg-fs-image-back') closeImageFullscreen();
     });
 
-    /* Tune button → open existing Prompt Tuning overlay */
+    /* Tune button → open existing Prompt Tuning overlay.
+       #pmg-tune-and-build is the chip that calls openFullTuning() internally.
+       Falls back to #tuning-mobile-toggle if the chip isn’t present. */
     document.addEventListener('click', function (e) {
       if (!e.target.closest('#pmg-fs-tune-btn')) return;
+      var tuneChip = $('pmg-tune-and-build');
+      if (tuneChip) { tuneChip.click(); return; }
       var toggle = $('tuning-mobile-toggle');
       if (toggle) { toggle.click(); return; }
-      if (window.pmgTuneChips && typeof window.pmgTuneChips.openOverlay === 'function') {
-        window.pmgTuneChips.openOverlay();
-      }
     });
 
     /* Clear prompt button → close all fullscreens */
