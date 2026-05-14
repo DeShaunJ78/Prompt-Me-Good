@@ -8504,6 +8504,23 @@ Context:
       function clampResultBox() {
         if (!resultBoxEl || !resultBoxToggle) return;
         window.setTimeout(function () {
+          // fs-1: button is now a fullscreen trigger — always show it whenever
+          // there is real prompt content (not the placeholder).
+          var txt = (resultBoxEl.textContent || '').trim();
+          var hasContent = txt.length > 0 && txt !== 'Your fixed prompt will appear here.';
+          if (window.pmgFullscreen) {
+            if (hasContent) {
+              resultBoxToggle.classList.add('is-visible');
+              resultBoxToggle.textContent = '\uD83D\uDD0D Open Fullscreen';
+              resultBoxToggle.setAttribute('aria-expanded', 'false');
+            } else {
+              resultBoxToggle.classList.remove('is-visible');
+            }
+            // also strip any legacy clamp class so the box never visually clamps
+            resultBoxEl.classList.remove('is-clamped');
+            return;
+          }
+          // legacy fallback (kill-switch case)
           if (resultBoxEl.scrollHeight > RESULT_CLAMP_HEIGHT + 40) {
             resultBoxEl.classList.add('is-clamped');
             resultBoxToggle.classList.add('is-visible');
@@ -8538,6 +8555,22 @@ Context:
       function clampAiResponse() {
         var output = document.getElementById('aiResponseOutput');
         if (!output || !aiResponseToggle) return;
+        // fs-1: same treatment as clampResultBox — show button as fullscreen
+        // trigger whenever there is content, regardless of length.
+        if (window.pmgFullscreen) {
+          var hasContent = (output.textContent || '').trim().length > 0;
+          if (hasContent) {
+            aiResponseToggle.classList.add('is-visible');
+            aiResponseToggle.textContent = '\uD83D\uDD0D Open Fullscreen';
+            aiResponseToggle.setAttribute('aria-expanded', 'false');
+            if (aiResponseBottom) aiResponseBottom.classList.add('is-visible');
+          } else {
+            aiResponseToggle.classList.remove('is-visible');
+            if (aiResponseBottom) aiResponseBottom.classList.remove('is-visible');
+          }
+          output.classList.remove('is-clamped');
+          return;
+        }
         if (output.scrollHeight > AI_CLAMP_HEIGHT + 40) {
           output.classList.add('is-clamped');
           aiResponseToggle.classList.add('is-visible');
