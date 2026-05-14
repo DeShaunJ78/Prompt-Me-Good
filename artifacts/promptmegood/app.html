@@ -9036,6 +9036,24 @@ Context:
             window.__pmgStrengthScore.render(data, promptText);
           }
           scrollToResult();
+          // scroll-firstgen-1: scrollToResult's internal ensurePromptVisible
+          // retry loop early-exits when the result-panel TOP is in viewport,
+          // even if the prompt content extends below the fold. On the first
+          // generation the panel grows from an empty 80px placeholder into a
+          // full prompt as content streams in, so the loop exits while only
+          // the placeholder was visible — leaving the actual prompt below
+          // the fold. Force one more scroll to #resultBox once content is
+          // final so users see the start of their prompt. Idempotent on
+          // subsequent generations (already at top → no visual jump).
+          window.setTimeout(function () {
+            var rb = document.getElementById('resultBox');
+            if (!rb) return;
+            try {
+              var beh = (window.PMG_A11Y && window.PMG_A11Y.scrollBehavior)
+                ? window.PMG_A11Y.scrollBehavior() : 'smooth';
+              rb.scrollIntoView({ behavior: beh, block: 'start' });
+            } catch (e) { try { rb.scrollIntoView(); } catch (__) {} }
+          }, 350);
           clampResultBox();
           const generateBtnEl = document.getElementById('generateBtn');
           if (generateBtnEl) {
