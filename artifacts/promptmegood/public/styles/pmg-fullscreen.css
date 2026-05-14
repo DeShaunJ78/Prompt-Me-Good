@@ -140,6 +140,40 @@ body.pmg-fs-open { overflow: hidden; }
   background: color-mix(in srgb, var(--color-primary, #2dd4bf) 8%, transparent);
 }
 
+/* Inline trigger floating on the prompt box (top-right inlay) */
+.pmg-fs-inline-trigger {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  appearance: none;
+  border: 1px solid var(--color-primary, #2dd4bf);
+  background: color-mix(in srgb, var(--color-bg, #07171c) 80%, transparent);
+  backdrop-filter: blur(4px);
+  color: var(--color-primary, #2dd4bf);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1;
+  box-shadow: 0 2px 6px color-mix(in srgb, #000 30%, transparent);
+}
+.pmg-fs-inline-trigger:hover {
+  background: color-mix(in srgb, var(--color-primary, #2dd4bf) 14%, var(--color-bg, #07171c));
+}
+.pmg-fs-inline-trigger:focus-visible {
+  outline: 2px solid var(--color-primary, #2dd4bf);
+  outline-offset: 2px;
+}
+@media (max-width: 480px) {
+  .pmg-fs-inline-trigger { font-size: 11px; padding: 5px 8px; }
+  .pmg-fs-inline-trigger span { display: none; }
+}
+
 @media (max-width: 520px) {
   .pmg-fs-header { padding: 12px 14px; }
   .pmg-fs-body { padding: 18px 14px; }

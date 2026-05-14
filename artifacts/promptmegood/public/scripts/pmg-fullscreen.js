@@ -157,15 +157,40 @@
     });
   }
 
+  // Inject a floating "Open Fullscreen" pill INTO .pmgv3-output-host so the
+  // trigger lives on the prompt box itself (the original #resultBoxToggle
+  // sibling stays hidden by chassis-v3 universal hide rule).
+  function injectInlineTrigger() {
+    var host = document.querySelector('.pmgv3-output-host');
+    if (!host || host.querySelector('.pmg-fs-inline-trigger')) return;
+    var rb = document.getElementById('resultBox');
+    if (!rb) return;
+    if (host.style.position !== 'absolute' && host.style.position !== 'fixed') {
+      host.style.position = 'relative';
+    }
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pmg-fs-inline-trigger';
+    btn.setAttribute('aria-label', 'Open prompt in fullscreen');
+    btn.title = 'Open prompt in fullscreen (ESC to close)';
+    btn.innerHTML = '\uD83D\uDD0D <span>Fullscreen</span>';
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      open(rb, { title: 'Your Generated Prompt' });
+    });
+    host.appendChild(btn);
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { autoBind(); });
+    document.addEventListener('DOMContentLoaded', function () { autoBind(); injectInlineTrigger(); });
   } else {
     autoBind();
+    injectInlineTrigger();
   }
 
   // Re-scan when DOM changes (visual studio panels mount async).
   if ('MutationObserver' in window) {
-    var mo = new MutationObserver(function () { autoBind(); });
+    var mo = new MutationObserver(function () { autoBind(); injectInlineTrigger(); });
     mo.observe(document.body || document.documentElement, { childList: true, subtree: true });
   }
 
