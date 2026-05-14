@@ -85,6 +85,19 @@
     '#' + ROOT_ID + ' .pmg-cm-aside h3 { margin:0 0 4px; font-size:0.95rem; color:#ece9e2; font-weight:600; }',
     '#' + ROOT_ID + ' .pmg-cm-aside a { color:#5ba8b0; text-decoration:none; }',
     '#' + ROOT_ID + ' .pmg-cm-aside a:hover { text-decoration:underline; color:#73b8bf; }',
+    '#' + ROOT_ID + ' details.pmg-cm-help { margin:14px 0 0; border:1px solid #34312d; border-radius:9px; background:rgba(91,168,176,.06); }',
+    '#' + ROOT_ID + ' details.pmg-cm-help > summary { cursor:pointer; padding:10px 14px; font-weight:600; color:#5ba8b0; list-style:none; user-select:none; font-size:0.92rem; }',
+    '#' + ROOT_ID + ' details.pmg-cm-help > summary::-webkit-details-marker { display:none; }',
+    '#' + ROOT_ID + ' details.pmg-cm-help > summary::before { content:"\\25B8 "; display:inline-block; transition:transform .15s ease; margin-right:4px; }',
+    '#' + ROOT_ID + ' details.pmg-cm-help[open] > summary::before { transform:rotate(90deg); }',
+    '#' + ROOT_ID + ' details.pmg-cm-help > summary:hover { color:#73b8bf; }',
+    '#' + ROOT_ID + ' .pmg-cm-help-body { padding:4px 14px 14px; color:#b9b4ab; font-size:0.88rem; }',
+    '#' + ROOT_ID + ' .pmg-cm-help-body h4 { margin:10px 0 4px; font-size:0.9rem; color:#ece9e2; font-weight:600; }',
+    '#' + ROOT_ID + ' .pmg-cm-help-body ul { margin:0 0 6px; padding-left:18px; }',
+    '#' + ROOT_ID + ' .pmg-cm-help-body li { margin:0 0 4px; }',
+    '#' + ROOT_ID + ' .pmg-cm-help-body a { color:#5ba8b0; text-decoration:none; }',
+    '#' + ROOT_ID + ' .pmg-cm-help-body a:hover { text-decoration:underline; color:#73b8bf; }',
+    '#' + ROOT_ID + ' .pmg-cm-help-body code { background:rgba(91,168,176,.12); padding:1px 5px; border-radius:4px; font-size:0.92em; color:#ece9e2; }',
     '@media (max-width:480px) {',
     '  #' + ROOT_ID + ' .pmg-cm-dialog { padding:20px 16px 18px; width:94vw; }',
     '}',
@@ -130,10 +143,30 @@
         '<button type="submit" class="pmg-cm-submit" id="pmg-cm-submit-btn">Send message</button>' +
       '</form>' +
       '<p class="pmg-cm-fineprint">Prefer your own mail app? You can also write to us at <code>support@promptmegood.com</code>.</p>' +
-      '<div class="pmg-cm-aside">' +
-        '<h3>Before you write</h3>' +
-        '<p>Many questions are answered in the <a href="/guide.html">Quick Start Guide</a> or the <a href="/manual.html">User Manual</a>. Plan and pricing details live on the <a href="/pricing.html">Pricing page</a>; our policies are in <a href="/privacy.html">Privacy</a> and <a href="/terms.html">Terms</a>.</p>' +
-      '</div>' +
+      '<details class="pmg-cm-help">' +
+        '<summary>Having issues? Try these fixes first</summary>' +
+        '<div class="pmg-cm-help-body">' +
+          '<h4>Tips that help us help you faster</h4>' +
+          '<ul>' +
+            '<li><strong>For bugs:</strong> include your browser, device, and the exact steps you took right before the issue. A screenshot or short screen recording is gold.</li>' +
+            '<li><strong>For billing questions:</strong> include the email used at checkout and the date of purchase. We never ask for card details over email.</li>' +
+            '<li><strong>For privacy / data deletion requests:</strong> send the email tied to your account so we can verify and act on it.</li>' +
+            '<li><strong>App acting strange?</strong> Hard-refresh the page (<code>Ctrl/Cmd + Shift + R</code>). The workstation rebuilds itself on every reload, so this clears most stuck states.</li>' +
+            '<li><strong>Generation stuck or empty?</strong> Check that your prompt has actual content in the goal box, then try Auto-Boost or switch panels (Text / Photography / Video) and back.</li>' +
+          '</ul>' +
+          '<h4>Pick the right subject above</h4>' +
+          '<ul>' +
+            '<li><strong>General:</strong> anything that does not fit the others.</li>' +
+            '<li><strong>Billing &amp; refunds:</strong> charges, plan changes, cancellations.</li>' +
+            '<li><strong>Bug report:</strong> something broken or behaving unexpectedly.</li>' +
+            '<li><strong>Feature request:</strong> something you wish PromptMeGood did.</li>' +
+            '<li><strong>Privacy / data request:</strong> account deletion, data export.</li>' +
+            '<li><strong>Press / partnerships:</strong> media, integrations, collaborations.</li>' +
+          '</ul>' +
+          '<h4>Self-serve resources</h4>' +
+          '<p>Many answers live in the <a href="/guide.html">Quick Start Guide</a> or the full <a href="/manual.html">User Manual</a>. Plan and pricing details are on the <a href="/pricing.html">Pricing page</a>; our policies are in <a href="/privacy.html">Privacy</a> and <a href="/terms.html">Terms</a>.</p>' +
+        '</div>' +
+      '</details>' +
     '</div>';
 
   function inject() {
