@@ -598,13 +598,9 @@
                marketing can segment the waitlist. Empty when the user
                types an email directly without clicking a tier card. -->
           <input id="early-access-tier" name="tier" type="hidden" value="" />
+          <div id="early-access-turnstile" class="early-access-turnstile"></div>
           <button type="submit" class="btn btn-primary">Notify Me</button>
         </form>
-        <!-- Cloudflare Turnstile widget mount. Rendered explicitly by the
-             waitlist IIFE below once /api/public-config supplies the site
-             key. Hidden until a key is present so the empty box doesn't
-             show on dev environments without Turnstile configured. -->
-        <div id="early-access-turnstile" class="early-access-turnstile" hidden></div>
         <p class="early-access-status" id="early-access-status" role="status" aria-live="polite"></p>
       </div>
     </section>
