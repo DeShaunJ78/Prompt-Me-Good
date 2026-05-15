@@ -4243,7 +4243,7 @@
 
   <link rel="stylesheet" href="/styles/pmg-guided-intake.css?v=gi-1" />
   <link rel="stylesheet" href="/styles/pmg-tune-chips.css?v=double-cta-1-revert" />
-  <link rel="stylesheet" href="/styles/pmg-stepper.css?v=stepper-2" />
+  <link rel="stylesheet" href="/styles/pmg-stepper.css?v=stepper-3" />
   <script>
     /* refresh-clears-1: a true browser reload (F5 / Cmd-R / pull-to-refresh)
        wipes the persisted workstation state BEFORE chassis-v3.js boots and
@@ -4704,6 +4704,9 @@
                   The more specific you are, the better your result.
                   <span class="helper-example"><em>Try: &ldquo;Write a 3-day onboarding email sequence for a new SaaS user who just signed up for a free trial.&rdquo;</em></span>
                 </p>
+                <p class="helper" style="margin-top:4px;opacity:0.8;font-size:0.85em;">
+                  <strong>Tip:</strong> include budget, timeline, platform, audience, or constraints in your goal if relevant.
+                </p>
               </div>
 
               <div class="field upload-field" id="upload-field">
@@ -4748,9 +4751,17 @@
               </p>
               <p class="demo-helper" hidden inert style="display:none">Not Sure Where To Start? <button type="button" class="link-btn demo-helper-link" id="demo-helper-link">See It In Action</button> <button type="button" class="guidance-show-link" id="guidance-show-link" data-action="show-tips">Show Tips</button></p>
 
-              <section id="settingsPanel" class="settings-panel pmg-prompt-tuning pmg-stack-card" aria-labelledby="settingsPanel-title">
+              <details id="settingsPanel" class="settings-panel pmg-prompt-tuning pmg-stack-card pmg-settings-disclosure" aria-labelledby="settingsPanel-title" data-testid="pmg-settings-disclosure">
+                <summary class="pmg-settings-disclosure-summary">
+                  <span class="pmg-settings-disclosure-icon" aria-hidden="true">🎛️</span>
+                  <span class="pmg-settings-disclosure-text">
+                    <span class="pmg-settings-disclosure-title">Customize prompt tuning</span>
+                    <span class="pmg-settings-disclosure-sub">Optional — Auto-Optimize fills these in for you.</span>
+                  </span>
+                  <span class="pmg-settings-disclosure-chevron" aria-hidden="true">▾</span>
+                </summary>
                 <div class="pmg-stack-card-head">
-                  <span class="pmg-eyebrow">Step 1</span>
+                  <span class="pmg-eyebrow">Optional</span>
                   <h2 id="settingsPanel-title">🎛️ Prompt Tuning</h2>
                 </div>
                 <p class="pmg-stack-helper">Shape Tone, Detail, And Structure Before You Fix Your Prompt.</p>
@@ -4867,7 +4878,14 @@
                 <p class="helper">Choose The Kind Of Voice You Want The AI Response To Have.</p>
               </div>
 
-              <div class="field">
+              <!-- Audit-C (2026-05-15): "Extra Details" textarea hidden as
+                   redundant — its example ("I have $50, I'm using Shopify…")
+                   is exactly the kind of context users naturally type into
+                   #goal. Kept in the DOM (not deleted) because 6+ scripts +
+                   tests read getElementById('details').value. Hidden field
+                   returns "" so all reads still work. Hint moved into a
+                   one-liner under the Goal helper. -->
+              <div class="field" hidden data-pmg-hidden-by="audit-C">
                 <div class="field-label-row">
                   <label for="details">Extra Details <span class="helper">(Optional)</span></label>
                   <button type="button" class="btn-clear" id="clear-details-btn" aria-label="Clear extra details" data-clear-target="details">Clear</button>
@@ -4933,7 +4951,7 @@
                 </div>
               </details>
                 </div>
-              </section>
+              </details>
               <div class="expert-mode-link-row">
                 <button id="expert-mode-link" type="button" class="expert-mode-link" aria-pressed="false">Open Expert Command Center &rarr;</button>
               </div>
@@ -8992,9 +9010,18 @@ Context:
           if (mkt) { var mktR = mkt.getBoundingClientRect(); setTabReversible(mkt, mktR.width === 0 || mktR.height === 0); }
 
           // Settings panel tune pills on mobile: inert when settings is collapsed
+          // Audit-A (2026-05-15): #settingsPanel is now a <details>. Browser-native
+          // closed-state already keeps non-summary children non-interactive while
+          // leaving the <summary> trigger fully focusable/clickable. Setting inert
+          // on the <details> would BLOCK the summary too, breaking the disclosure.
+          // So skip the inert toggle entirely when it's a <details>.
           if (isMobile) {
             var sp2 = document.getElementById('settingsPanel');
-            if (sp2 && !sp2.open) sp2.inert = true; else if (sp2) sp2.inert = false;
+            if (sp2 && sp2.tagName !== 'DETAILS') {
+              if (!sp2.open) sp2.inert = true; else sp2.inert = false;
+            } else if (sp2) {
+              sp2.inert = false;
+            }
           }
 
           // Mobile collapsed upload field

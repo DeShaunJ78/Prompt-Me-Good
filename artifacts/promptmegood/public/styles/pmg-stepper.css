@@ -170,3 +170,75 @@
 @media (prefers-reduced-motion: reduce) {
   #resultBox.pmg-output-pulse { animation: none; }
 }
+
+/* ============================================================
+   Audit A (2026-05-15): Settings disclosure
+   Wraps #settingsPanel in a closed <details> by default. The
+   pmg-tune-chips voice-row pill (#pmg-tune-and-build) remains
+   the primary opener via its own overlay; this disclosure is
+   the secondary, in-flow opener for users who scroll past it.
+   ============================================================ */
+.pmg-settings-disclosure {
+  margin: 16px 0 12px;
+}
+.pmg-settings-disclosure > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(45, 212, 191, 0.06);
+  border: 1px solid rgba(45, 212, 191, 0.25);
+  border-radius: 12px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  user-select: none;
+}
+.pmg-settings-disclosure > summary::-webkit-details-marker { display: none; }
+.pmg-settings-disclosure > summary:hover {
+  background: rgba(45, 212, 191, 0.1);
+  border-color: rgba(45, 212, 191, 0.4);
+}
+.pmg-settings-disclosure > summary:focus-visible {
+  outline: 2px solid var(--color-primary, #2dd4bf);
+  outline-offset: 2px;
+}
+.pmg-settings-disclosure-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+.pmg-settings-disclosure-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.pmg-settings-disclosure-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text, #e6fffb);
+}
+.pmg-settings-disclosure-sub {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  color: var(--color-text-muted, #9ca3af);
+}
+.pmg-settings-disclosure-chevron {
+  flex: 0 0 auto;
+  font-size: 1rem;
+  opacity: 0.6;
+  transition: transform 0.2s ease;
+}
+.pmg-settings-disclosure[open] > summary .pmg-settings-disclosure-chevron {
+  transform: rotate(180deg);
+}
+.pmg-settings-disclosure[open] > summary {
+  background: rgba(45, 212, 191, 0.1);
+  border-color: rgba(45, 212, 191, 0.4);
+  margin-bottom: 12px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pmg-settings-disclosure-chevron { transition: none; }
+}

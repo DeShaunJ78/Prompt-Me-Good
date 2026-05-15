@@ -50,8 +50,14 @@
     });
     var genBtnHide = document.getElementById('generateBtn');
     if (genBtnHide) genBtnHide.style.setProperty('display', 'none', 'important');
+    /* Audit-A (2026-05-15): #settingsPanel is now a <details> element.
+       The browser's native closed-state hides all children except <summary>,
+       so the explicit display:none is no longer needed AND would also hide
+       the summary button (defeating the disclosure UX). Skipping. */
     var settingsHide = document.getElementById('settingsPanel');
-    if (settingsHide) settingsHide.style.setProperty('display', 'none', 'important');
+    if (settingsHide && settingsHide.tagName !== 'DETAILS') {
+      settingsHide.style.setProperty('display', 'none', 'important');
+    }
     // ph-1 (Placeholder Fix Brief): ensure the empty-state placeholder is
     // visible on a fresh boot. Some legacy code paths may have left
     // body.pmg-has-result set from a previous interaction, which the CSS
@@ -77,8 +83,11 @@
       if (gb) gb.style.setProperty('display', 'none', 'important');
       var gs = document.getElementById('generate-section');
       if (gs) gs.style.setProperty('display', 'none', 'important');
+      /* Audit-A (2026-05-15): skip if it's a <details> — closed state
+         already hides children, and forcing display:none would hide the
+         summary button too. */
       var sp = document.getElementById('settingsPanel');
-      if (sp) sp.style.setProperty('display', 'none', 'important');
+      if (sp && sp.tagName !== 'DETAILS') sp.style.setProperty('display', 'none', 'important');
       var tp = document.getElementById('tuning-panel');
       if (tp) tp.style.setProperty('display', 'none', 'important');
     }, 200);
@@ -447,8 +456,14 @@
       if (tuningHost && settings.parentNode !== tuningHost) {
         tuningHost.appendChild(settings);
       }
-      settings.style.setProperty('display', 'none', 'important');
-      settings.setAttribute('data-pmgv3-collapsed', '1');
+      /* Audit-A (2026-05-15): #settingsPanel is now a <details>. Native
+         closed state already hides children except <summary> — applying
+         display:none here would also hide the summary trigger and defeat
+         the disclosure UX. Skip when tag is DETAILS. */
+      if (settings.tagName !== 'DETAILS') {
+        settings.style.setProperty('display', 'none', 'important');
+        settings.setAttribute('data-pmgv3-collapsed', '1');
+      }
     }
 
     // 3. Move #generateBtn into generate-section. Keep it inside #prompt-form for submit semantics
