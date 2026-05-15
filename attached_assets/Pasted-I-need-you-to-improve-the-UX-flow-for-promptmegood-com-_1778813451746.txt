@@ -1,0 +1,77 @@
+I need you to improve the UX flow for promptmegood.com, especially the /app page. The current app uses button-triggered scrolling to move users through sections, but users can lose visual context because the page or panel scrolls away from the thing they were just working on.
+
+Goal:
+Make the app feel like a contained guided workspace, not a long page that jumps around. Whenever a user clicks a button, the next relevant action should become visible while the previous context remains easy to recover.
+
+Focus on these changes:
+
+1. Keep the user's original idea visible after they move forward
+- When the user enters text and clicks the first CTA, do not let the original input disappear completely.
+- Add a sticky compact recap bar at the top of the left panel once the user moves into tuning.
+- The bar should say something like: "Your idea: [first 80 characters of their input]..."
+- Clicking the recap bar should smoothly scroll the left panel back to the original textarea.
+- This bar should stay visible while the user is editing tuning options.
+
+2. Clarify the two-step flow
+- Rename the first button from "Build My Prompt" to "Tune My Prompt".
+- Rename the final generation button to "Generate Now".
+- Add a small 3-step progress indicator near the top of the left panel:
+  - Step 1: Describe
+  - Step 2: Tune
+  - Step 3: Output
+- Update the active step as the user progresses.
+- The user should always understand whether they are describing, tuning, or viewing the final output.
+
+3. Add a quick path for users who do not want tuning
+- Add a secondary ghost-style button near the first CTA labeled "Quick Generate".
+- Clicking "Quick Generate" should skip the tuning panel and immediately generate the optimized prompt.
+- Keep the primary path as "Tune My Prompt" for users who want more control.
+
+4. Make the generated output impossible to miss
+- When the optimized prompt appears in the right panel, automatically bring the output container into view.
+- Add a brief visual highlight to the generated prompt container, such as a subtle green border pulse for 600ms.
+- Do not make the animation excessive. It should simply signal, "Your result is here."
+- If the layout is mobile or single-column, scroll directly to the output section after generation.
+
+5. Avoid disorienting full-page scroll jumps
+- Prefer scrolling only inside the relevant panel or container instead of moving the entire page when possible.
+- If scrollIntoView is used, use:
+  behavior: "smooth",
+  block: "nearest"
+  or
+  block: "start"
+  only when the section needs to be clearly positioned.
+- Do not scroll the user so far that the previous step vanishes with no visible breadcrumb or recap.
+
+6. Improve section anchoring on the homepage
+- Add IDs to important homepage sections:
+  - #how-it-works
+  - #features
+  - #trust
+  - #app-preview if applicable
+- Add a "See How It Works" CTA near the hero that smoothly scrolls to #how-it-works.
+- If navbar links scroll to sections, make sure the active section remains visually clear.
+- Use smooth scrolling, but avoid dumping the user into the middle of a section with no heading visible.
+
+7. Add guardrails for scroll behavior
+- After every button-triggered scroll, the user should be able to answer:
+  - Where am I?
+  - What did I just do?
+  - What do I do next?
+- If the answer is not visually obvious, add a sticky label, stepper, highlighted card, or short helper text.
+- Do not rely on users manually scrolling up and down to rediscover context.
+
+Implementation notes:
+- This should be a frontend UX improvement only.
+- Do not change the core prompt generation logic unless necessary.
+- Preserve the current visual style, dark mode, and layout.
+- Make the changes responsive for desktop and mobile.
+- Add or preserve data-testid attributes on all new interactive elements.
+- Test the full flow:
+  1. User enters an idea.
+  2. User clicks "Tune My Prompt".
+  3. Tuning options appear while the idea recap remains visible.
+  4. User clicks "Generate Now".
+  5. Output becomes visible and briefly highlights.
+  6. User can still return to the original idea easily.
+  7. User can alternatively click "Quick Generate" and go straight to output.
