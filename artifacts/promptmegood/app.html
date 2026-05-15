@@ -2995,6 +2995,90 @@
          mobile browser bar */
       .app-section:last-of-type { padding-bottom: calc(var(--space-12) + env(safe-area-inset-bottom, 0px)); }
       body { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+      /* rwa-safari-toolbar-1 (2026-05-15, re-applied after revert 206ee5f):
+         on iPhone Safari the bottom URL/tab toolbar is ~88px tall and
+         overlaps content beyond safe-area-inset-bottom (which only
+         accounts for the home indicator, ~34px). Reported symptom:
+         Run With AI button "folded under the screen, taps do nothing"
+         because Safari's hit-test routes the tap to its toolbar, not
+         the button. Fix: scroll-margin-bottom + padding-bottom of
+         ~120px on the run buttons and their containers so they always
+         sit above the toolbar. */
+      #runBtn, #run-with-ai-btn,
+      #aiResponseSection, #aiResponseOutput,
+      .pmgv3-output-host {
+        scroll-margin-bottom: max(120px, calc(env(safe-area-inset-bottom, 0px) + 96px));
+      }
+      .pmgv3-output-host,
+      #runSection,
+      #aiResponseSection {
+        padding-bottom: max(96px, calc(env(safe-area-inset-bottom, 0px) + 80px));
+      }
+
+      /* mob-compact-1 (2026-05-15): post-generate stack reflow.
+         User reported the post-generate action chrome (Edit/Rewrite/Save,
+         Strength meter, Auto-Boost, Run With AI, send-to grid) does not
+         fit on iPhone 14 Pro Max without scrolling. CSS-only fix scoped
+         to mobile — caps #resultBox height with internal scroll, hides
+         decorative chrome (divider + label + nudge text), collapses the
+         2x2 send-to grid into a single horizontal 4-up pill row, and
+         compacts the Edit/Rewrite/Save buttons so they stay visible
+         (per user pushback against burying them behind a "More" menu).
+         No JS or markup changes — every existing handler still works. */
+
+      /* 1. Cap engineered prompt result box; scroll INSIDE the box.
+            240px ≈ 8 lines @ 14px line-height, comfortable for reading. */
+      html.pmg-chassis-v3 .pmgv3-output-host #resultBox,
+      html.pmg-chassis-v3 .pmgv3-output-host #resultBox.is-clamped {
+        max-height: 240px !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* 2. Hide decorative dividers + send-to label + nudge — they eat
+            ~140px combined and add no information on mobile. */
+      .next-step-divider,
+      html.pmg-chassis-v3 .next-step-divider,
+      html.pmg-chassis-v3 .pmgv3-send-label,
+      .pmgv3-send-label,
+      html.pmg-chassis-v3 .pmgv3-send-nudge,
+      .pmgv3-send-nudge {
+        display: none !important;
+      }
+
+      /* 3. Send-to grid: 2x2 → single horizontal row of 4 compact pills.
+            Hide the long descriptions ("General purpose · most popular"
+            etc) — the AI names are self-explanatory on mobile. */
+      .pmgv3-send-grid,
+      .send-to-row {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 6px !important;
+      }
+      html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to {
+        padding: 8px 4px !important;
+        min-height: 52px !important;
+        font-size: 12px !important;
+      }
+      html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to .pmgv3-send-name {
+        font-size: 12px !important;
+        line-height: 1.15 !important;
+      }
+      html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to .pmgv3-send-desc {
+        display: none !important;
+      }
+
+      /* 4. Edit / Rewrite / Save Draft: keep VISIBLE per user feedback,
+            just shrink padding + font so the row takes ~50% less height. */
+      .prompt-actions {
+        gap: 6px !important;
+      }
+      .prompt-actions .btn-secondary {
+        padding: 8px 8px !important;
+        font-size: 12px !important;
+        min-height: 38px !important;
+      }
     }
 
     /* ===== Interaction feedback polish =====
