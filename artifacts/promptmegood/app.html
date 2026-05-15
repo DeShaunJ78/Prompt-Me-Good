@@ -3086,6 +3086,11 @@
         font-size: 12px !important;
         min-height: 38px !important;
       }
+      /* mob-gap-1 (2026-05-15): small breathing room between the
+         Edit/Rewrite/Save row and Run With AI so the visual hierarchy
+         reads "tweak the prompt → THEN run it / send it." Was flush
+         which made Run With AI look like part of the action row. */
+      .prompt-actions { margin-bottom: 14px !important; }
 
       /* 5. Reposition + restyle the pmg-fullscreen inline trigger.
             Default lives INSIDE #resultBox at top:8 right:8 (covers
