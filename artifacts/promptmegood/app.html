@@ -3086,6 +3086,37 @@
         font-size: 12px !important;
         min-height: 38px !important;
       }
+
+      /* 5. Reposition + restyle the pmg-fullscreen inline trigger.
+            Default lives INSIDE #resultBox at top:8 right:8 (covers
+            prompt text). User wants it OUTSIDE the box, above the
+            top-right edge, small + plain text. JS already sets
+            innerHTML to "Read full prompt ↗". Host has position:relative
+            so absolute coords place this OUTSIDE the resultBox by
+            using a negative top. */
+      .pmgv3-output-host .pmg-fs-inline-trigger,
+      html.pmg-chassis-v3 .pmgv3-output-host .pmg-fs-inline-trigger {
+        position: absolute !important;
+        top: -26px !important;
+        right: 0 !important;
+        background: transparent !important;
+        backdrop-filter: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 2px 4px !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        line-height: 1.2 !important;
+        color: var(--color-primary, #3ee0a0) !important;
+        opacity: 0.85;
+      }
+      .pmgv3-output-host .pmg-fs-inline-trigger:hover {
+        opacity: 1;
+        text-decoration: underline;
+      }
+      /* Override the @media (max-width:480px) rule from pmg-fullscreen.css
+         that hides the inner span (button now has plain text, no span). */
+      .pmgv3-output-host .pmg-fs-inline-trigger span { display: inline !important; }
     }
 
     /* ===== Interaction feedback polish =====

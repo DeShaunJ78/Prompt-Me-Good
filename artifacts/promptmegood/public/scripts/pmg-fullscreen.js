@@ -171,9 +171,9 @@
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'pmg-fs-inline-trigger';
-    btn.setAttribute('aria-label', 'Open prompt in fullscreen');
-    btn.title = 'Open prompt in fullscreen (ESC to close)';
-    btn.innerHTML = '\uD83D\uDD0D <span>Fullscreen</span>';
+    btn.setAttribute('aria-label', 'Read full prompt in distraction-free view');
+    btn.title = 'Read full prompt (ESC to close)';
+    btn.innerHTML = 'Read full prompt \u2197';
     btn.addEventListener('click', function (e) {
       e.preventDefault();
       open(rb, { title: 'Your Generated Prompt' });
