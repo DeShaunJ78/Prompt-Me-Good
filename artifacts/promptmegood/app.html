@@ -3006,11 +3006,16 @@
          ~120px on the run buttons and their containers so they always
          sit above the toolbar. */
       #runBtn, #run-with-ai-btn,
-      #aiResponseSection, #aiResponseOutput,
-      .pmgv3-output-host {
+      #aiResponseSection, #aiResponseOutput {
         scroll-margin-bottom: max(120px, calc(env(safe-area-inset-bottom, 0px) + 96px));
       }
-      .pmgv3-output-host,
+      /* mob-fill-1 (2026-05-15): pulled .pmgv3-output-host OUT of the
+         padding-bottom rule below — that container is a SIBLING of
+         .prompt-actions (Edit/Rewrite/Save), so a fat padding-bottom
+         on it pushed those buttons ~96px down and showed as empty
+         green space between the result box and the action row.
+         Safari-toolbar clearance only needs to live on the run-section
+         containers below. */
       #runSection,
       #aiResponseSection {
         padding-bottom: max(96px, calc(env(safe-area-inset-bottom, 0px) + 80px));
@@ -3028,10 +3033,12 @@
          No JS or markup changes — every existing handler still works. */
 
       /* 1. Cap engineered prompt result box; scroll INSIDE the box.
-            240px ≈ 8 lines @ 14px line-height, comfortable for reading. */
+            mob-fill-1: bumped 240→360 to use the empty real estate
+            previously wasted as padding below the box. ~12 lines of
+            prompt text visible without scrolling inside the box. */
       html.pmg-chassis-v3 .pmgv3-output-host #resultBox,
       html.pmg-chassis-v3 .pmgv3-output-host #resultBox.is-clamped {
-        max-height: 240px !important;
+        max-height: 360px !important;
         overflow-y: auto !important;
         overflow-x: hidden !important;
         -webkit-overflow-scrolling: touch;
