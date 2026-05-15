@@ -4243,6 +4243,7 @@
 
   <link rel="stylesheet" href="/styles/pmg-guided-intake.css?v=gi-1" />
   <link rel="stylesheet" href="/styles/pmg-tune-chips.css?v=double-cta-1-revert" />
+  <link rel="stylesheet" href="/styles/pmg-stepper.css?v=stepper-2" />
   <script>
     /* refresh-clears-1: a true browser reload (F5 / Cmd-R / pull-to-refresh)
        wipes the persisted workstation state BEFORE chassis-v3.js boots and
@@ -4275,6 +4276,7 @@
   <script src="/scripts/pmg-growth-actions.js?v=ga-1" defer></script>
   <script src="/scripts/pmg-guided-intake.js?v=gi-2" defer></script>
   <script src="/scripts/pmg-tune-chips.js?v=tc-9p-overlay-api1" defer></script>
+  <script src="/scripts/pmg-stepper.js?v=stepper-2" defer></script>
   <link rel="stylesheet" href="/styles/pmg-adv-mirror.css?v=adv-mirror-9-touch-action" />
   <link rel="stylesheet" href="/styles/pmg-save-result.css?v=saveresult-1" />
   <script src="/scripts/pmg-adv-mirror.js?v=adv-mirror-11b-smart-exit-restore" defer></script>
@@ -12338,7 +12340,7 @@ Context:
              can be undefined at boot, leading to a true silent failure.
              showRunFeedback ALWAYS surfaces a message (toast → fallback
              to a transient inline banner → fallback to alert). */
-          showRunFeedback('Build a prompt first (click ✨ Build My Prompt), then run it here.');
+          showRunFeedback('Build a prompt first (click ✨ Fix My Prompt), then run it here.');
           return;
         }
         // cv3-61: clear any prior length-warning state up-front so a
@@ -13485,7 +13487,7 @@ document.addEventListener("DOMContentLoaded", function () {
      ================================================================
      tr-3: Pre-fill the goal textarea with a high-quality example on
            the very first visit so the user only has to click
-           "Build My Prompt" to see the tool's value.
+           "Fix My Prompt" to see the tool's value.
      tr-5: After the first successful generation+copy, show a one-shot
            Vault toast so the user discovers retention at peak value.
      Both gated on first-run flags in localStorage; subsequent visits

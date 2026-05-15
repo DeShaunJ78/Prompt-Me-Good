@@ -1,0 +1,172 @@
+/* pmg-stepper.css — Audit B (2026-05-15)
+ * Styles for: 3-step stepper, sticky "Your idea" recap bar,
+ * #resultBox green-border pulse on first content arrival.
+ *
+ * Tokens consumed (chassis-v3 / pmg-g-theme):
+ *   --color-primary  (#2dd4bf-ish teal)
+ *   --color-bg       (#07171c-ish dark)
+ *   --color-fg       (#e6f1f4-ish ink)
+ */
+
+.pmg-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 14px;
+}
+.pmg-progress-wrap[hidden] { display: none !important; }
+
+/* ---------- Stepper ---------- */
+
+.pmg-stepper {
+  list-style: none;
+  margin: 0;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid color-mix(in srgb, var(--color-primary, #2dd4bf) 22%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-bg, #07171c) 65%, transparent);
+}
+.pmg-stepper-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--color-fg, #e6f1f4) 55%, transparent);
+  flex: 0 0 auto;
+}
+.pmg-stepper-step + .pmg-stepper-step::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 1px;
+  background: color-mix(in srgb, var(--color-primary, #2dd4bf) 30%, transparent);
+  margin: 0 6px 0 0;
+  flex-shrink: 0;
+}
+.pmg-stepper-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--color-primary, #2dd4bf) 35%, transparent);
+  font-size: 11px;
+  font-weight: 700;
+  background: transparent;
+  color: inherit;
+  flex-shrink: 0;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+.pmg-stepper-step.is-active {
+  color: var(--color-primary, #2dd4bf);
+}
+.pmg-stepper-step.is-active .pmg-stepper-num {
+  background: color-mix(in srgb, var(--color-primary, #2dd4bf) 18%, transparent);
+  border-color: var(--color-primary, #2dd4bf);
+  color: var(--color-primary, #2dd4bf);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #2dd4bf) 14%, transparent);
+}
+.pmg-stepper-step.is-done {
+  color: color-mix(in srgb, var(--color-fg, #e6f1f4) 75%, transparent);
+}
+.pmg-stepper-step.is-done .pmg-stepper-num {
+  background: var(--color-primary, #2dd4bf);
+  border-color: var(--color-primary, #2dd4bf);
+  color: var(--color-bg, #07171c);
+  font-size: 0; /* hide the digit, replace with check */
+}
+.pmg-stepper-step.is-done .pmg-stepper-num::after {
+  content: '✓';
+  font-size: 12px;
+  font-weight: 800;
+}
+
+@media (max-width: 480px) {
+  .pmg-stepper { padding: 6px 8px; gap: 4px; }
+  .pmg-stepper-step { font-size: 11px; }
+  .pmg-stepper-step + .pmg-stepper-step::before { width: 10px; margin: 0 4px 0 0; }
+  .pmg-stepper-num { width: 20px; height: 20px; font-size: 10px; }
+}
+
+/* ---------- Recap bar (sticky "Your idea") ---------- */
+
+.pmg-recap-bar {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--color-primary, #2dd4bf) 28%, transparent);
+  background: color-mix(in srgb, var(--color-primary, #2dd4bf) 7%, var(--color-bg, #07171c));
+  color: var(--color-fg, #e6f1f4);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+  position: sticky;
+  top: 8px;
+  z-index: 4;
+}
+.pmg-recap-bar[hidden] { display: none !important; }
+.pmg-recap-bar:hover {
+  background: color-mix(in srgb, var(--color-primary, #2dd4bf) 14%, var(--color-bg, #07171c));
+  border-color: color-mix(in srgb, var(--color-primary, #2dd4bf) 50%, transparent);
+}
+.pmg-recap-bar:focus-visible {
+  outline: 2px solid var(--color-primary, #2dd4bf);
+  outline-offset: 2px;
+}
+.pmg-recap-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-primary, #2dd4bf);
+  flex-shrink: 0;
+}
+.pmg-recap-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.35;
+  color: color-mix(in srgb, var(--color-fg, #e6f1f4) 88%, transparent);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pmg-recap-jump {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-primary, #2dd4bf);
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+@media (max-width: 480px) {
+  .pmg-recap-bar { padding: 6px 10px; gap: 6px; top: 4px; }
+  .pmg-recap-eyebrow { font-size: 9px; }
+  .pmg-recap-text { font-size: 12px; }
+  .pmg-recap-jump { font-size: 10px; }
+}
+
+/* ---------- #resultBox green pulse on first arrival ---------- */
+
+@keyframes pmg-output-pulse-kf {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary, #2dd4bf) 75%, transparent); }
+  60%  { box-shadow: 0 0 0 10px color-mix(in srgb, var(--color-primary, #2dd4bf) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary, #2dd4bf) 0%, transparent); }
+}
+#resultBox.pmg-output-pulse {
+  animation: pmg-output-pulse-kf 900ms ease-out 1;
+  border-color: var(--color-primary, #2dd4bf) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  #resultBox.pmg-output-pulse { animation: none; }
+}
