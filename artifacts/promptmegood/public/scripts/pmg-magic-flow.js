@@ -59,6 +59,23 @@
   var GENERATE_TIMEOUT_MS = 30000;
   var STYLE_ID = 'pmg-magic-flow-style';
   var BAR_ID = 'pmg-magic-progress';
+  /* takeover-1 (2026-05-15): full-screen takeover during the entire
+     magic flow (Phase 1 tuning + Phase 2 generation). Replaces the
+     missed-opportunity inline button-state UX with a dedicated
+     "Writing a great prompt for: <goal>" experience. Stays visible
+     until body.pmg-has-result lands or the user hits Cancel/Esc. */
+  var TAKEOVER_ID = 'pmg-magic-takeover';
+  var TAKEOVER_HEADING = 'Writing a great prompt for:';
+  var STATUS_LINES = [
+    'Analyzing your goal…',
+    'Picking the right tone & format…',
+    'Selecting structure & depth…',
+    'Engineering your prompt…',
+    'Polishing the wording…',
+    'Almost ready…'
+  ];
+  var STATUS_ROTATE_MS = 1400;
+  var GOAL_ECHO_MAX = 140;
 
   var state = {
     active: false,
@@ -66,7 +83,12 @@
     tuneTimer: null,
     completionObserver: null,
     completionTimer: null,
-    progressBar: null
+    progressBar: null,
+    takeoverEl: null,
+    statusTimer: null,
+    statusIdx: 0,
+    lastFocused: null,
+    escHandler: null
   };
 
   function ensureStyles() {
@@ -110,9 +132,234 @@
       'body.pmg-magic-active #analyze-btn {',
       '  cursor: progress;',
       '  opacity: 0.92;',
+      '}',
+      /* takeover-1: full-screen takeover. Z-index sits above the
+         existing overlay stack (tune overlay = ~9999, fullscreen
+         reader = 99999) so it owns the screen while active. */
+      '#' + TAKEOVER_ID + ' {',
+      '  position: fixed; inset: 0; z-index: 100000;',
+      '  background: radial-gradient(ellipse at center,',
+      '    color-mix(in srgb, var(--color-primary, #3ee0a0) 8%, var(--color-bg, #07171c)) 0%,',
+      '    var(--color-bg, #07171c) 70%);',
+      '  display: flex; flex-direction: column;',
+      '  align-items: center; justify-content: center;',
+      '  padding: 32px 24px;',
+      '  opacity: 0;',
+      '  transition: opacity 200ms ease-out;',
+      '  overflow-y: auto;',
+      '}',
+      '#' + TAKEOVER_ID + '.is-visible { opacity: 1; }',
+      '#' + TAKEOVER_ID + '[hidden] { display: none; }',
+      '.pmg-mt-icon {',
+      '  font-size: 56px; line-height: 1; margin-bottom: 18px;',
+      '  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--color-primary, #3ee0a0) 60%, transparent));',
+      '  animation: pmgMtIconPulse 2.4s ease-in-out infinite;',
+      '}',
+      '@keyframes pmgMtIconPulse {',
+      '  0%, 100% { transform: scale(1); opacity: 0.95; }',
+      '  50% { transform: scale(1.08); opacity: 1; }',
+      '}',
+      '.pmg-mt-heading {',
+      '  font-size: 1.05rem; font-weight: 600; letter-spacing: 0.02em;',
+      '  color: color-mix(in srgb, var(--color-text, #e6fffb) 75%, transparent);',
+      '  text-transform: none; margin: 0 0 14px; text-align: center;',
+      '}',
+      '.pmg-mt-goal {',
+      '  font-size: clamp(1.25rem, 3.6vw, 1.85rem);',
+      '  font-weight: 700; line-height: 1.35;',
+      '  color: var(--color-primary, #3ee0a0);',
+      '  text-align: center; max-width: min(680px, 92vw);',
+      '  margin: 0 0 36px; word-break: break-word;',
+      '  text-shadow: 0 0 24px color-mix(in srgb, var(--color-primary, #3ee0a0) 35%, transparent);',
+      '}',
+      '.pmg-mt-status {',
+      '  font-size: 0.95rem; font-weight: 500;',
+      '  color: color-mix(in srgb, var(--color-text, #e6fffb) 88%, transparent);',
+      '  min-height: 1.4em; text-align: center;',
+      '  margin: 0 0 14px;',
+      '  animation: pmgMtStatusGlow 1.6s ease-in-out infinite;',
+      '}',
+      '@keyframes pmgMtStatusGlow {',
+      '  0%, 100% { opacity: 0.55; }',
+      '  50% { opacity: 1; }',
+      '}',
+      '.pmg-mt-dots { display: inline-flex; gap: 6px; margin-top: 6px; }',
+      '.pmg-mt-dots span {',
+      '  width: 7px; height: 7px; border-radius: 50%;',
+      '  background: var(--color-primary, #3ee0a0);',
+      '  animation: pmgMtDot 1.2s ease-in-out infinite;',
+      '}',
+      '.pmg-mt-dots span:nth-child(2) { animation-delay: 0.18s; }',
+      '.pmg-mt-dots span:nth-child(3) { animation-delay: 0.36s; }',
+      '@keyframes pmgMtDot {',
+      '  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }',
+      '  40% { transform: scale(1); opacity: 1; }',
+      '}',
+      '.pmg-mt-cancel {',
+      '  position: absolute; bottom: 28px; left: 50%;',
+      '  transform: translateX(-50%);',
+      '  appearance: none; background: transparent;',
+      '  border: 1px solid color-mix(in srgb, var(--color-text, #e6fffb) 22%, transparent);',
+      '  color: color-mix(in srgb, var(--color-text, #e6fffb) 70%, transparent);',
+      '  padding: 9px 22px; border-radius: 999px; cursor: pointer;',
+      '  font-size: 0.85rem; font-weight: 500; letter-spacing: 0.02em;',
+      '  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;',
+      '}',
+      '.pmg-mt-cancel:hover {',
+      '  background: color-mix(in srgb, var(--color-text, #e6fffb) 8%, transparent);',
+      '  color: var(--color-text, #e6fffb);',
+      '  border-color: color-mix(in srgb, var(--color-text, #e6fffb) 40%, transparent);',
+      '}',
+      '.pmg-mt-cancel:focus-visible {',
+      '  outline: 2px solid var(--color-primary, #3ee0a0);',
+      '  outline-offset: 3px;',
+      '}',
+      'body.pmg-magic-takeover-open { overflow: hidden; }',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  #' + TAKEOVER_ID + ' { transition: none; }',
+      '  .pmg-mt-icon, .pmg-mt-status, .pmg-mt-dots span { animation: none; }',
+      '}',
+      '@media (max-width: 480px) {',
+      '  .pmg-mt-icon { font-size: 44px; margin-bottom: 14px; }',
+      '  .pmg-mt-heading { font-size: 0.95rem; margin-bottom: 10px; }',
+      '  .pmg-mt-goal { margin-bottom: 28px; }',
+      '  .pmg-mt-cancel { bottom: 20px; }',
       '}'
     ].join('\n');
     document.head.appendChild(s);
+  }
+
+  function truncate(txt, max) {
+    if (!txt) return '';
+    if (txt.length <= max) return txt;
+    return txt.slice(0, max - 1).trimEnd() + '…';
+  }
+
+  function showTakeover(goalText) {
+    if (state.takeoverEl && document.body.contains(state.takeoverEl)) return;
+    var el = document.createElement('div');
+    el.id = TAKEOVER_ID;
+    /* data-pmg-overlay-root: chassis universal-hide rule erases body-
+       level elements without this marker. */
+    el.setAttribute('data-pmg-overlay-root', '1');
+    el.setAttribute('role', 'dialog');
+    el.setAttribute('aria-modal', 'true');
+    el.setAttribute('aria-labelledby', TAKEOVER_ID + '-heading');
+    el.setAttribute('aria-describedby', TAKEOVER_ID + '-status');
+
+    var icon = document.createElement('div');
+    icon.className = 'pmg-mt-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = '✨';
+
+    var heading = document.createElement('p');
+    heading.className = 'pmg-mt-heading';
+    heading.id = TAKEOVER_ID + '-heading';
+    heading.textContent = TAKEOVER_HEADING;
+
+    var goal = document.createElement('p');
+    goal.className = 'pmg-mt-goal';
+    goal.textContent = '"' + truncate(goalText, GOAL_ECHO_MAX) + '"';
+
+    var status = document.createElement('p');
+    status.className = 'pmg-mt-status';
+    status.id = TAKEOVER_ID + '-status';
+    status.setAttribute('aria-live', 'polite');
+    status.setAttribute('aria-atomic', 'true');
+    status.textContent = STATUS_LINES[0];
+
+    var dots = document.createElement('div');
+    dots.className = 'pmg-mt-dots';
+    dots.setAttribute('aria-hidden', 'true');
+    dots.innerHTML = '<span></span><span></span><span></span>';
+
+    var cancel = document.createElement('button');
+    cancel.type = 'button';
+    cancel.className = 'pmg-mt-cancel';
+    cancel.textContent = 'Cancel';
+    cancel.setAttribute('aria-label', 'Cancel and return to the form');
+    cancel.addEventListener('click', function () { endFlow(); });
+
+    el.appendChild(icon);
+    el.appendChild(heading);
+    el.appendChild(goal);
+    el.appendChild(status);
+    el.appendChild(dots);
+    el.appendChild(cancel);
+    document.body.appendChild(el);
+    document.body.classList.add('pmg-magic-takeover-open');
+    state.takeoverEl = el;
+
+    /* Fade-in next frame so transition fires. */
+    requestAnimationFrame(function () { el.classList.add('is-visible'); });
+
+    /* Rotate status lines. */
+    state.statusIdx = 0;
+    state.statusTimer = setInterval(function () {
+      state.statusIdx = (state.statusIdx + 1) % STATUS_LINES.length;
+      var s = document.getElementById(TAKEOVER_ID + '-status');
+      if (s) s.textContent = STATUS_LINES[state.statusIdx];
+    }, STATUS_ROTATE_MS);
+
+    /* Esc key → cancel. Tab/Shift+Tab → focus trap (cancel is the
+       only focusable element in the dialog, so any Tab attempt
+       wraps back to it). */
+    state.escHandler = function (e) {
+      if (e.key === 'Escape') { e.preventDefault(); endFlow(); return; }
+      if (e.key === 'Tab') {
+        var dlg = state.takeoverEl;
+        if (!dlg) return;
+        /* If focus has escaped the dialog, or there's nowhere else
+           to go, force focus back to the cancel button. */
+        if (!dlg.contains(document.activeElement) || document.activeElement === cancel) {
+          e.preventDefault();
+          try { cancel.focus(); } catch (err) {}
+        }
+      }
+    };
+    document.addEventListener('keydown', state.escHandler, true);
+    /* pagehide / beforeunload defensive cleanup so the takeover
+       doesn't linger across navigation (e.g. user clicks a logo
+       link mid-flow). */
+    if (!state.pagehideHandler) {
+      state.pagehideHandler = function () { endFlow(); };
+      window.addEventListener('pagehide', state.pagehideHandler);
+    }
+
+    /* Focus management: remember last focused, focus cancel button so
+       keyboard users have a clear escape route. */
+    try {
+      state.lastFocused = document.activeElement;
+      setTimeout(function () { try { cancel.focus(); } catch (e) {} }, 60);
+    } catch (e) {}
+  }
+
+  function hideTakeover() {
+    if (state.statusTimer) { clearInterval(state.statusTimer); state.statusTimer = null; }
+    if (state.escHandler) {
+      document.removeEventListener('keydown', state.escHandler, true);
+      state.escHandler = null;
+    }
+    if (state.pagehideHandler) {
+      try { window.removeEventListener('pagehide', state.pagehideHandler); } catch (e) {}
+      state.pagehideHandler = null;
+    }
+    document.body.classList.remove('pmg-magic-takeover-open');
+    var el = state.takeoverEl;
+    state.takeoverEl = null;
+    if (!el) return;
+    /* Fade out, then remove from DOM. */
+    el.classList.remove('is-visible');
+    setTimeout(function () {
+      if (el && el.parentNode) el.parentNode.removeChild(el);
+    }, 220);
+    /* Restore focus. */
+    try {
+      if (state.lastFocused && typeof state.lastFocused.focus === 'function') {
+        state.lastFocused.focus();
+      }
+    } catch (e) {}
+    state.lastFocused = null;
   }
 
   function ensureProgressBar() {
@@ -171,6 +418,7 @@
     }
     document.body.classList.remove('pmg-magic-active');
     hideProgress();
+    hideTakeover();
     var btn = document.getElementById('analyze-btn');
     if (btn && state.originalText) setBtnLabel(btn, state.originalText);
     state.active = false;
@@ -215,6 +463,10 @@
     document.body.classList.add('pmg-magic-active');
     showProgress();
     setBtnLabel(btn, TUNING_LABEL);
+    /* takeover-1: full-screen takeover stays through both phases
+       (tuning + generation) and tears down on body.pmg-has-result
+       via watchForCompletion()'s endFlow(), or on Esc/Cancel. */
+    showTakeover(idea);
 
     state.tuneTimer = setTimeout(function () {
       var fired = fireGenerate();
