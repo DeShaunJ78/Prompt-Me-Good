@@ -8585,10 +8585,27 @@ Context:
       const resultPanel = document.getElementById('result-panel');
       function scrollToResult() {
         if (!resultPanel) return;
+        /* scroll-compose-1 (2026-05-16): prefer the chassis strength
+           bar slot as the scroll anchor. Previously scrolled to
+           #result-panel — but the strength bar is INJECTED into a
+           separate chassis slot (#pmgv3-strength-slot), not inside
+           #result-panel. Targeting the strength slot puts the bar at
+           the top of viewport, with the prompt result + actions +
+           Run With AI button stacking below it (so all three compose
+           into a single view on tall enough viewports; scroll-hint
+           handles overflow on short viewports). Apply a top offset
+           for the sticky chassis topbar so the bar isn't tucked
+           behind it. */
+        var scrollTarget = document.getElementById('pmgv3-strength-slot') || resultPanel;
+        var topbarEl = document.querySelector('.pmgv3-topbar');
+        var topbarH = topbarEl ? Math.round(topbarEl.getBoundingClientRect().height) : 64;
         try {
-          resultPanel.scrollIntoView({ behavior: window.PMG_A11Y.scrollBehavior(), block: 'start' });
+          var rect = scrollTarget.getBoundingClientRect();
+          var absTop = (window.pageYOffset || document.documentElement.scrollTop || 0) + rect.top;
+          var destY = Math.max(0, absTop - topbarH - 12);
+          window.scrollTo({ top: destY, behavior: window.PMG_A11Y.scrollBehavior() });
         } catch (e) {
-          resultPanel.scrollIntoView();
+          try { scrollTarget.scrollIntoView({ block: 'start' }); } catch (_) {}
         }
         resultPanel.classList.remove('is-highlight');
         void resultPanel.offsetWidth;
@@ -13229,7 +13246,7 @@ Context:
        a prompt is generated when there's still content below the viewport
        (Run With AI, Edit/Rewrite/Save actions). Auto-hides on scroll near
        bottom. Kill switches: ?noscrollhint, localStorage.pmg_scrollhint_disable. -->
-  <script src="/scripts/pmg-scroll-hint.js?v=sh-1" defer></script>
+  <script src="/scripts/pmg-scroll-hint.js?v=sh-2" defer></script>
   <!-- Expert Command Center: hidden 5-tab drawer (Diagnose / Engineer / Tune /
        Variations / Save) that owns every Expert Mode entry point. Loaded
        AFTER pmg-analytics.js so window.__pmgTrack is available, and after

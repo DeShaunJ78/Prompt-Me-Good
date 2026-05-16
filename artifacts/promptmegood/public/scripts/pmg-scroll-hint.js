@@ -1,4 +1,4 @@
-/* pmg-scroll-hint.js (sh-1)
+/* pmg-scroll-hint.js (sh-2)
    ------------------------------------------------------------------
    Subtle "↓ More below" indicator that appears after a prompt is
    generated when there's content below the user's viewport (the post-
@@ -178,6 +178,7 @@
   function boot() {
     ensureStyles();
     watchResultClass();
+    try { console.log('[pmg-scroll-hint] ready (sh-2)'); } catch (e) {}
   }
 
   if (document.readyState === 'loading') {

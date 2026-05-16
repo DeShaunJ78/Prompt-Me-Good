@@ -52,6 +52,24 @@ html.pmg-chassis-v3 body > *:not(#pmg-chassis-v3-root):not(script):not(style):no
   display: none !important;
   visibility: hidden !important;
 }
+
+/* bars-dedup-2 (2026-05-16): kill the legacy #strength-score bar
+   even when the legacy render() function in app.html sets
+   wrap.style.display='block'. The inline-style attribute approach
+   was defeated because .style.display='block' wipes inline
+   !important; an external !important rule wins over an inline
+   non-important declaration per the CSS cascade. The element stays
+   in the DOM so existing consumers (#strength-score-pct,
+   #strength-score-fill, #strength-score-insights) keep updating
+   silently — only the visible duplicate is suppressed. The chassis
+   #strength-fill bar in #pmgv3-strength-slot is the single visible
+   prompt-strength bar. Children also forced hidden in case the
+   legacy script tries to unhide a child individually. */
+html.pmg-chassis-v3 #strength-score,
+html.pmg-chassis-v3 #strength-score * {
+  display: none !important;
+  visibility: hidden !important;
+}
 /* Belt-and-suspenders: any element flagged as v3-collapsed must stay hidden */
 html.pmg-chassis-v3 [data-pmgv3-collapsed="1"] {
   display: none !important;
