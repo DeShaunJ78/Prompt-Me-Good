@@ -1,4 +1,4 @@
-/* pmg-magic-flow.js (mf-1)
+/* pmg-magic-flow.js (mf-4)
    ------------------------------------------------------------------
    One-Click Magic Flow: turns the existing two-step Build → Generate
    into a single click that auto-bridges through Auto-Tune to a final
@@ -76,6 +76,16 @@
   ];
   var STATUS_ROTATE_MS = 1400;
   var GOAL_ECHO_MAX = 140;
+  /* takeover-2 (2026-05-16): when generation runs longer than this
+     window, swap to the reassurance status set so the user knows we
+     are still working, not frozen. Normal generation is 5-12s; this
+     only fires on slow paths. */
+  var SLOW_THRESHOLD_MS = 15000;
+  var SLOW_STATUS_LINES = [
+    'Taking a little longer than expected…',
+    'Still working on it — almost there…',
+    'Finalising your prompt…'
+  ];
 
   var state = {
     active: false,
@@ -87,6 +97,8 @@
     takeoverEl: null,
     statusTimer: null,
     statusIdx: 0,
+    statusLines: null,
+    slowTimer: null,
     lastFocused: null,
     escHandler: null
   };
@@ -319,7 +331,8 @@
     status.id = TAKEOVER_ID + '-status';
     status.setAttribute('aria-live', 'polite');
     status.setAttribute('aria-atomic', 'true');
-    status.textContent = STATUS_LINES[0];
+    state.statusLines = STATUS_LINES;
+    status.textContent = state.statusLines[0];
 
     var dots = document.createElement('div');
     dots.className = 'pmg-mt-dots';
@@ -346,12 +359,14 @@
     /* Fade-in next frame so transition fires. */
     requestAnimationFrame(function () { el.classList.add('is-visible'); });
 
-    /* Rotate status lines. */
+    /* Rotate status lines. Reads from state.statusLines so the slow
+       failsafe can swap to SLOW_STATUS_LINES without re-mounting. */
     state.statusIdx = 0;
     state.statusTimer = setInterval(function () {
-      state.statusIdx = (state.statusIdx + 1) % STATUS_LINES.length;
+      var lines = state.statusLines || STATUS_LINES;
+      state.statusIdx = (state.statusIdx + 1) % lines.length;
       var s = document.getElementById(TAKEOVER_ID + '-status');
-      if (s) s.textContent = STATUS_LINES[state.statusIdx];
+      if (s) s.textContent = lines[state.statusIdx];
     }, STATUS_ROTATE_MS);
 
     /* Esc key → cancel. Tab/Shift+Tab → focus trap (cancel is the
@@ -389,6 +404,8 @@
 
   function hideTakeover() {
     if (state.statusTimer) { clearInterval(state.statusTimer); state.statusTimer = null; }
+    if (state.slowTimer) { clearTimeout(state.slowTimer); state.slowTimer = null; }
+    state.statusLines = null;
     if (state.escHandler) {
       document.removeEventListener('keydown', state.escHandler, true);
       state.escHandler = null;
@@ -478,22 +495,63 @@
   }
 
   function watchForCompletion() {
-    /* If the result already landed (rare race), end immediately. */
-    if (document.body.classList.contains('pmg-has-result')) {
+    /* takeover-2 (2026-05-16): the prior trigger (body.pmg-has-result)
+       fires at stream-START — i.e. as soon as the result panel becomes
+       visible to receive streamed tokens. That tore the takeover down
+       1-2s into a 10-15s stream, exposing the streaming animation
+       under the hood (the very thing the takeover was meant to hide).
+
+       The true end-of-stream signal is #resultBox losing the
+       `is-streaming` class (set at stream-start, removed at finalize/
+       fallback/error — see app.html lines 9371 + 9433). We watch BOTH
+       the body class AND #resultBox class, and only tear down when
+       BOTH conditions hold: result has landed AND streaming is done.
+
+       Non-streaming local-built path: #resultBox never gets
+       is-streaming, so the body.pmg-has-result signal alone is enough.
+    */
+    var resultBox = document.getElementById('resultBox');
+
+    function isReallyDone() {
+      if (!document.body.classList.contains('pmg-has-result')) return false;
+      /* If a stream was started, wait for it to finish. If never
+         started (local path), pmg-has-result is sufficient. */
+      if (resultBox && resultBox.classList.contains('is-streaming')) return false;
+      return true;
+    }
+
+    if (isReallyDone()) {
       setTimeout(endFlow, 250);
       return;
     }
+
     var mo = new MutationObserver(function () {
-      if (document.body.classList.contains('pmg-has-result')) {
-        /* Brief delay so the user sees the "Generating…" label hand off
-           gracefully rather than blinking. */
+      if (isReallyDone()) {
+        /* Brief delay so the takeover hands off gracefully rather
+           than blinking. */
         setTimeout(endFlow, 250);
       }
     });
     mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    if (resultBox) {
+      mo.observe(resultBox, { attributes: true, attributeFilter: ['class'] });
+    }
     state.completionObserver = mo;
+
+    /* 15s reassurance failsafe: if we're still streaming after this
+       window, swap the rotating status lines to SLOW_STATUS_LINES so
+       the user sees "Taking a little longer than expected…" rather
+       than the same five lines on repeat. */
+    state.slowTimer = setTimeout(function () {
+      if (!state.active) return;
+      state.statusLines = SLOW_STATUS_LINES;
+      state.statusIdx = 0;
+      var s = document.getElementById(TAKEOVER_ID + '-status');
+      if (s) s.textContent = SLOW_STATUS_LINES[0];
+    }, SLOW_THRESHOLD_MS);
+
     /* Hard ceiling: even if /api/generate hangs or errors silently,
-       the flow ends after 30s so the UI doesn't sit in "Generating…"
+       the flow ends after 30s so the UI doesn't sit on the overlay
        forever. */
     state.completionTimer = setTimeout(endFlow, GENERATE_TIMEOUT_MS);
   }

@@ -250,8 +250,26 @@
   ];
 
   /* -------- Build trigger + panel DOM (idempotent) -------- */
+  /* shortcuts-hide-touch-1 (2026-05-16): detect coarse-pointer (touch)
+     devices. The "?" circle opens a keyboard-shortcuts cheat-sheet,
+     which is meaningless on phones/tablets where there's no physical
+     keyboard. Keep on desktop, hide entirely on touch. */
+  function isTouchDevice() {
+    try {
+      if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return true;
+      if (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) return true;
+      /* Width-only fallback for narrow viewports where a physical
+         keyboard is unlikely to be in use (phones, small tablets,
+         narrow desktop windows where the cheat-sheet would just be
+         in the way). */
+      if ((window.innerWidth || 0) < 768) return true;
+    } catch (e) {}
+    return false;
+  }
+
   function ensureTrigger() {
     if (document.getElementById(TRIGGER_ID)) return;
+    if (isTouchDevice()) return;
     var btn = document.createElement('button');
     btn.id = TRIGGER_ID;
     btn.type = 'button';

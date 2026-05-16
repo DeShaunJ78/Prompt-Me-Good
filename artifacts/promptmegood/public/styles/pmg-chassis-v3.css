@@ -1983,8 +1983,12 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
   .pmgv3-tab {
     flex: 1 1 0;
     min-width: 0;
-    padding: 6px 8px;
-    font-size: 13px;
+    /* pills-shrink-1: tighter padding + smaller font + smaller radius
+       so the three tabs read as a clean compact strip and stop
+       overlapping at narrow widths. */
+    padding: 4px 10px;
+    border-radius: 14px;
+    font-size: 12px;
     text-align: center;
     overflow: hidden;
     text-overflow: ellipsis;

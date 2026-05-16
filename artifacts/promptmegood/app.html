@@ -5045,7 +5045,13 @@
               </ul>
             </aside>
             <div id="tour-final-actions" class="tour-final-actions pmg-post-gen">
-            <div class="strength-score" id="strength-score" role="status" aria-live="polite" hidden>
+            <!-- bars-dedup-1 (2026-05-16): legacy #strength-score bar
+                 removed. It rendered the same prompt-quality score as
+                 the chassis-v3 #strength-fill bar (in #pmgv3-strength-slot,
+                 injected by pmg-chassis-v3.js), producing a visible
+                 duplicate stacked under the chassis bar after generate.
+                 Chassis bar is now the single source of truth. -->
+            <div class="strength-score" id="strength-score" role="status" aria-live="polite" hidden style="display:none !important">
               <div class="strength-score-head">
                 <span class="strength-score-title">Prompt Strength</span>
                 <span class="strength-score-pct" id="strength-score-pct">0%</span>
@@ -13218,7 +13224,12 @@ Context:
   <script src="/scripts/pmg-coach.js?v=coach-1" defer></script>
   <script src="/scripts/pmg-quick-chips.js?v=chips-1" defer></script>
   <script src="/scripts/pmg-target-platform.js?v=tp-1" defer></script>
-  <script src="/scripts/pmg-magic-flow.js?v=mf-3" defer></script>
+  <script src="/scripts/pmg-magic-flow.js?v=mf-4" defer></script>
+  <!-- pmg-scroll-hint (sh-1): subtle "↓ More below" pill that appears after
+       a prompt is generated when there's still content below the viewport
+       (Run With AI, Edit/Rewrite/Save actions). Auto-hides on scroll near
+       bottom. Kill switches: ?noscrollhint, localStorage.pmg_scrollhint_disable. -->
+  <script src="/scripts/pmg-scroll-hint.js?v=sh-1" defer></script>
   <!-- Expert Command Center: hidden 5-tab drawer (Diagnose / Engineer / Tune /
        Variations / Save) that owns every Expert Mode entry point. Loaded
        AFTER pmg-analytics.js so window.__pmgTrack is available, and after
