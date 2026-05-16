@@ -150,27 +150,75 @@
       '}',
       '#' + TAKEOVER_ID + '.is-visible { opacity: 1; }',
       '#' + TAKEOVER_ID + '[hidden] { display: none; }',
-      '.pmg-mt-icon {',
-      '  font-size: 56px; line-height: 1; margin-bottom: 18px;',
-      '  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--color-primary, #3ee0a0) 60%, transparent));',
-      '  animation: pmgMtIconPulse 2.4s ease-in-out infinite;',
+      /* Spinning ring — mirrors .pmg-stream-status__spinner from
+         pmg-chassis-v3.css so the takeover feels like the same family
+         of "we are working" UI as Run-With-AI. */
+      '.pmg-mt-spinner {',
+      '  width: 48px; height: 48px; border-radius: 50%;',
+      '  border: 3px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 18%, transparent);',
+      '  border-top-color: var(--color-primary, #3ee0a0);',
+      '  margin-bottom: 22px;',
+      '  animation: pmgMtSpin 0.9s linear infinite;',
+      '  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--color-primary, #3ee0a0) 45%, transparent));',
       '}',
-      '@keyframes pmgMtIconPulse {',
-      '  0%, 100% { transform: scale(1); opacity: 0.95; }',
-      '  50% { transform: scale(1.08); opacity: 1; }',
-      '}',
+      '@keyframes pmgMtSpin { to { transform: rotate(360deg); } }',
       '.pmg-mt-heading {',
       '  font-size: 1.05rem; font-weight: 600; letter-spacing: 0.02em;',
       '  color: color-mix(in srgb, var(--color-text, #e6fffb) 75%, transparent);',
       '  text-transform: none; margin: 0 0 14px; text-align: center;',
       '}',
+      /* Goal card — the box now pulses (border glow breathes) AND
+         has a sheen sweep across it, the same vibe as
+         #resultBox.is-streaming::before sheen in chassis-v3. */
+      '.pmg-mt-card {',
+      '  position: relative; overflow: hidden;',
+      '  max-width: min(680px, 92vw);',
+      '  padding: 22px 26px;',
+      '  margin: 0 0 36px;',
+      '  border-radius: 16px;',
+      '  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 35%, transparent);',
+      '  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 6%, var(--color-bg, #07171c));',
+      '  box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary, #3ee0a0) 35%, transparent),',
+      '    0 8px 28px color-mix(in srgb, #000 35%, transparent);',
+      '  animation: pmgMtCardBreathe 2.4s ease-in-out infinite;',
+      '}',
+      '@keyframes pmgMtCardBreathe {',
+      '  0%, 100% {',
+      '    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary, #3ee0a0) 0%, transparent),',
+      '      0 8px 28px color-mix(in srgb, #000 35%, transparent);',
+      '    border-color: color-mix(in srgb, var(--color-primary, #3ee0a0) 30%, transparent);',
+      '  }',
+      '  50% {',
+      '    box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-primary, #3ee0a0) 18%, transparent),',
+      '      0 12px 36px color-mix(in srgb, var(--color-primary, #3ee0a0) 22%, transparent);',
+      '    border-color: color-mix(in srgb, var(--color-primary, #3ee0a0) 65%, transparent);',
+      '  }',
+      '}',
+      '.pmg-mt-card::before {',
+      '  content: ""; position: absolute; inset: 0;',
+      '  background: linear-gradient(110deg,',
+      '    transparent 0%,',
+      '    transparent 35%,',
+      '    color-mix(in srgb, var(--color-primary, #3ee0a0) 22%, transparent) 50%,',
+      '    transparent 65%,',
+      '    transparent 100%);',
+      '  background-size: 240% 100%;',
+      '  background-position: 120% 0;',
+      '  animation: pmgMtSheen 2.6s linear infinite;',
+      '  pointer-events: none;',
+      '}',
+      '@keyframes pmgMtSheen {',
+      '  0%   { background-position: 120% 0; }',
+      '  100% { background-position: -120% 0; }',
+      '}',
       '.pmg-mt-goal {',
-      '  font-size: clamp(1.25rem, 3.6vw, 1.85rem);',
-      '  font-weight: 700; line-height: 1.35;',
+      '  position: relative; z-index: 1;',
+      '  font-size: clamp(1.2rem, 3.4vw, 1.7rem);',
+      '  font-weight: 700; line-height: 1.4;',
       '  color: var(--color-primary, #3ee0a0);',
-      '  text-align: center; max-width: min(680px, 92vw);',
-      '  margin: 0 0 36px; word-break: break-word;',
-      '  text-shadow: 0 0 24px color-mix(in srgb, var(--color-primary, #3ee0a0) 35%, transparent);',
+      '  text-align: center; margin: 0;',
+      '  word-break: break-word;',
+      '  text-shadow: 0 0 18px color-mix(in srgb, var(--color-primary, #3ee0a0) 30%, transparent);',
       '}',
       '.pmg-mt-status {',
       '  font-size: 0.95rem; font-weight: 500;',
@@ -217,7 +265,8 @@
       'body.pmg-magic-takeover-open { overflow: hidden; }',
       '@media (prefers-reduced-motion: reduce) {',
       '  #' + TAKEOVER_ID + ' { transition: none; }',
-      '  .pmg-mt-icon, .pmg-mt-status, .pmg-mt-dots span { animation: none; }',
+      '  .pmg-mt-spinner { animation: none; border-top-color: var(--color-primary, #3ee0a0); }',
+      '  .pmg-mt-card, .pmg-mt-card::before, .pmg-mt-status, .pmg-mt-dots span { animation: none; }',
       '}',
       '@media (max-width: 480px) {',
       '  .pmg-mt-icon { font-size: 44px; margin-bottom: 14px; }',
@@ -247,19 +296,23 @@
     el.setAttribute('aria-labelledby', TAKEOVER_ID + '-heading');
     el.setAttribute('aria-describedby', TAKEOVER_ID + '-status');
 
-    var icon = document.createElement('div');
-    icon.className = 'pmg-mt-icon';
-    icon.setAttribute('aria-hidden', 'true');
-    icon.textContent = '✨';
+    var spinner = document.createElement('div');
+    spinner.className = 'pmg-mt-spinner';
+    spinner.setAttribute('aria-hidden', 'true');
 
     var heading = document.createElement('p');
     heading.className = 'pmg-mt-heading';
     heading.id = TAKEOVER_ID + '-heading';
     heading.textContent = TAKEOVER_HEADING;
 
+    /* Goal echo wrapped in a breathing/sheening card so the box
+       itself feels alive (matches Run-With-AI loader vibe). */
+    var card = document.createElement('div');
+    card.className = 'pmg-mt-card';
     var goal = document.createElement('p');
     goal.className = 'pmg-mt-goal';
     goal.textContent = '"' + truncate(goalText, GOAL_ECHO_MAX) + '"';
+    card.appendChild(goal);
 
     var status = document.createElement('p');
     status.className = 'pmg-mt-status';
@@ -280,9 +333,9 @@
     cancel.setAttribute('aria-label', 'Cancel and return to the form');
     cancel.addEventListener('click', function () { endFlow(); });
 
-    el.appendChild(icon);
+    el.appendChild(spinner);
     el.appendChild(heading);
-    el.appendChild(goal);
+    el.appendChild(card);
     el.appendChild(status);
     el.appendChild(dots);
     el.appendChild(cancel);
