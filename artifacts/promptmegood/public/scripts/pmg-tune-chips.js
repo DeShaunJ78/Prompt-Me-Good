@@ -593,13 +593,11 @@
     var bar = document.createElement('div');
     bar.className = 'pmg-tune-done-bar';
 
-    var ecc = document.createElement('button');
-    ecc.type = 'button';
-    ecc.id = 'pmg-tune-ecc-link';
-    ecc.className = 'pmg-tune-ecc-link';
-    ecc.innerHTML = '<span aria-hidden="true">⚙</span> Open Expert Command Center';
-    ecc.title = 'Power-user controls (Founding / Pro)';
-    ecc.addEventListener('click', openExpertCenter);
+    // qm-15 follow-up (expert-dedupe-2): the orphan
+    // "⚙ Open Expert Command Center" button that used to sit beside
+    // Done was a fourth+ duplicate mention of Expert Command Center
+    // inside the same overlay. The Expert section card already owns
+    // the toggle switch — this bottom CTA is redundant. Removed.
 
     var done = document.createElement('button');
     done.type = 'button';
@@ -608,7 +606,6 @@
     done.innerHTML = '<span aria-hidden="true">✓</span> Done — Build My Prompt';
     done.addEventListener('click', closeFullTuningAndBuild);
 
-    bar.appendChild(ecc);
     bar.appendChild(done);
     section.appendChild(bar);
   }
