@@ -3403,9 +3403,41 @@
        box is sufficient cue that more content exists. */
     /* ai-fs-restore-1 (2026-05-17): user asked for the fullscreen toggle
        back. Hide by default, show ONLY when JS adds .is-visible (after the
-       response has rendered). The previous force-hide rule is retired. */
-    .ai-response-toggle { display: none; }
+       response has rendered). The previous force-hide rule is retired.
+       ai-fs-seamless-1 (2026-05-17): user feedback "the black background
+       looks tacky and out of place — needs to blend in". Replaced the
+       default button chrome with a transparent teal text-link so it
+       reads as a quiet affordance inside the response card. */
+    .ai-response-toggle {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      margin: 6px 0 0 2px;
+      padding: 4px 2px;
+      background: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      color: var(--color-primary, #2dd4bf);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      text-decoration: none;
+      opacity: 0.85;
+      transition: opacity 120ms ease;
+    }
     .ai-response-toggle.is-visible { display: inline-flex !important; }
+    .ai-response-toggle:hover,
+    .ai-response-toggle:focus-visible {
+      opacity: 1;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .ai-response-toggle:focus-visible {
+      outline: 2px solid var(--color-primary, #2dd4bf);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
     
     /* History controls: compact row instead of full-width pills */
     .history-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }

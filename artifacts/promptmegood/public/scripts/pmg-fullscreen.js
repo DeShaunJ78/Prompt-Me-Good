@@ -200,8 +200,12 @@
     btn.type = 'button';
     btn.className = 'pmg-fs-inline-trigger pmg-fs-air-trigger';
     btn.setAttribute('aria-label', 'Expand AI response in distraction-free view');
-    btn.title = 'Expand AI response (ESC to close)';
-    btn.innerHTML = 'Expand response \u2197';
+    btn.title = 'Expand response (ESC to close)';
+    /* air-icon-1 (2026-05-17): user feedback "the expand response pill
+       is huge and competes with the changes overlay". Shrunk to an
+       icon-only fullscreen glyph so it never visually clashes with the
+       green diff bar that also lives at the top of the response card. */
+    btn.innerHTML = '\u26F6';
     btn.addEventListener('click', function (e) {
       e.preventDefault();
       open(out, { title: 'AI Response', editable: false });
