@@ -8624,7 +8624,23 @@ Context:
         } catch (e) {
           try { scrollTarget.scrollIntoView({ block: 'start' }); } catch (_) {}
         }
+        // Cancel the corrective scroll if the user takes control first
+        // (wheel/touch/key/mousedown). Otherwise a 3.5s delayed scroll
+        // would feel like the page is fighting them. Same pattern as
+        // pmg-fix-diff.js. cancelled flag is captured by the closure.
+        var pmgAnchorCancelled = false;
+        var cancelEvents = ['wheel', 'touchstart', 'keydown', 'mousedown'];
+        function pmgCancelAnchor() { pmgAnchorCancelled = true; }
+        cancelEvents.forEach(function (evt) {
+          window.addEventListener(evt, pmgCancelAnchor, { once: true, passive: true });
+        });
         window.setTimeout(function pmgFinalAnchor() {
+          cancelEvents.forEach(function (evt) {
+            try { window.removeEventListener(evt, pmgCancelAnchor); } catch (_) {}
+          });
+          if (pmgAnchorCancelled) return;
+          // Bail if user navigated away from the text panel
+          if (document.body.getAttribute('data-active-panel') !== 'text') return;
           var slot = document.getElementById('pmgv3-strength-slot');
           if (!slot) return;
           var slotRect = slot.getBoundingClientRect();
