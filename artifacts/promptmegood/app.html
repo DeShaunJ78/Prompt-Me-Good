@@ -8597,11 +8597,25 @@ Context:
            for the sticky chassis topbar so the bar isn't tucked
            behind it. */
         var scrollTarget = document.getElementById('pmgv3-strength-slot') || resultPanel;
-        /* scroll-compose-3 (2026-05-16): native scrollIntoView + CSS
-           scroll-margin-top on .strength-bar-container owns the offset.
-           Replaces fragile getBoundingClientRect() math (compose-1/2)
-           that under-counted iOS sticky chrome (topbar + tabs + safe-
-           area-inset). Browser handles all of it. */
+        /* scroll-compose-6 (2026-05-16): GROUND-TRUTH FIX based on
+           dbg-3 capture from iPhone Safari. Findings:
+             1. window.pageYOffset stays at 40 the whole post-generate
+                window — the chassis body (.pmgv3-body) is the real
+                scroll container, NOT window. So scrollIntoView fires
+                inside the nested container, where iOS Safari either
+                ignores scroll-margin-top or computes it wrong: target
+                overshoots from y=542 to y=-131 (271px past where it
+                should land).
+             2. After my scroll fires, THREE other scrolls fire later:
+                pmg-fix-diff.js landOnDiff() at +19953ms and +20506ms,
+                plus a resultBox scroll at app.html:9307. They keep
+                overwriting our anchor.
+           Strategy: do an initial scrollIntoView, then schedule a
+           FINAL CORRECTIVE scroll at t=3500ms (after all competitors
+           have finished) that uses explicit container.scrollTop math
+           — bypassing scrollIntoView entirely, accounting for the
+           nested scroll context, and landing the strength slot at
+           exactly y=130 in window space (below topbar+tabs row). */
         try {
           scrollTarget.scrollIntoView({
             block: 'start',
@@ -8610,6 +8624,36 @@ Context:
         } catch (e) {
           try { scrollTarget.scrollIntoView({ block: 'start' }); } catch (_) {}
         }
+        window.setTimeout(function pmgFinalAnchor() {
+          var slot = document.getElementById('pmgv3-strength-slot');
+          if (!slot) return;
+          var slotRect = slot.getBoundingClientRect();
+          var topbarEl = document.querySelector('.pmgv3-topbar');
+          var tabsEl = document.querySelector('.pmgv3-tabs');
+          var topbarH = topbarEl ? Math.round(topbarEl.getBoundingClientRect().height) : 64;
+          var tabsH = tabsEl ? Math.round(tabsEl.getBoundingClientRect().height) : 44;
+          var desiredY = topbarH + tabsH + 16; // breathing room below tabs
+          var delta = slotRect.top - desiredY;
+          if (Math.abs(delta) < 4) return; // already in position
+          // Walk up to find the actual scrollable ancestor (.pmgv3-body
+          // on mobile per chassis CSS). Fallback to window if none.
+          var el = slot.parentElement;
+          var container = null;
+          while (el && el !== document.documentElement) {
+            var cs = window.getComputedStyle(el);
+            var oy = cs.overflowY;
+            if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight) {
+              container = el;
+              break;
+            }
+            el = el.parentElement;
+          }
+          if (container) {
+            container.scrollTop = Math.max(0, container.scrollTop + delta);
+          } else {
+            window.scrollBy(0, delta);
+          }
+        }, 3500);
         resultPanel.classList.remove('is-highlight');
         void resultPanel.offsetWidth;
         resultPanel.classList.add('is-highlight');
