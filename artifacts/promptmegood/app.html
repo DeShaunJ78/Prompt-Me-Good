@@ -12711,7 +12711,11 @@ Context:
             try {
               var behavior = (window.PMG_A11Y && typeof window.PMG_A11Y.scrollBehavior === 'function')
                 ? window.PMG_A11Y.scrollBehavior() : 'smooth';
-              __scrollTarget.scrollIntoView({ behavior: behavior, block: 'center' });
+              /* viewport-ios-1 (2026-05-17): was block:'center' which on
+                 iOS could yank the page far enough to slide the topbar
+                 under the status bar. 'nearest' brings the AI response
+                 into view without recentering the whole document. */
+              __scrollTarget.scrollIntoView({ behavior: behavior, block: 'nearest' });
             } catch (_) {
               try { __scrollTarget.scrollIntoView(); } catch (__) {}
             }

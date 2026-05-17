@@ -124,11 +124,21 @@ html.pmg-chassis-v3 .ai-response-box.is-collapsed {
 }
 
 /* ============ SHELL (Step 1 — workstation chassis) ============ */
+/* viewport-ios-1 (2026-05-17): On iOS Safari `100vh` is the height of
+   the screen INCLUDING the area behind the URL bar and notch — so the
+   body ends up taller than the actually-visible viewport. After a
+   generate/run action's scrollIntoView fires and the magic-takeover's
+   overflow flips back, iOS lets the body itself scroll up by the size
+   of that gap, sliding the topbar (logo / tabs / Lock-In pill) under
+   the system status bar. `100dvh` (dynamic viewport height) tracks
+   the visible viewport correctly. We keep `100vh` as a fallback for
+   any engine that hasn't shipped dvh yet. */
 html.pmg-chassis-v3 body.app-page,
 html.pmg-chassis-v3 body {
   display: flex !important;
   flex-direction: column !important;
   height: 100vh !important;
+  height: 100dvh !important;
   margin: 0 !important;
   background: #0d2b1e !important;
   color: #fff !important;
@@ -147,16 +157,24 @@ html.pmg-chassis-v3 body {
 }
 
 /* ---- Topbar (Step 2) ---- */
+/* viewport-ios-1 (2026-05-17): respect the iOS safe-area inset at the
+   top so the brand / tabs / Lock-In pill never sit under the notch or
+   Dynamic Island. min-height keeps the bar's content area at 52px and
+   pushes the chrome down by the inset on devices that report one. */
 .pmgv3-topbar {
-  height: 52px;
+  min-height: 52px;
+  padding-top: env(safe-area-inset-top, 0px);
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 0;
   background: #0a2218;
   border-bottom: 1px solid rgba(0, 200, 150, 0.15);
   z-index: 50;
+  box-sizing: content-box;
 }
 .pmgv3-brand {
   display: flex;
