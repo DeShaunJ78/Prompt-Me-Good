@@ -1655,6 +1655,12 @@
       border-radius: var(--radius-md);
       padding: 16px;
       min-height: 120px;
+      /* ai-scroll-internal-1 (2026-05-17): scroll INSIDE the box so the
+         "Save to Vault / Copy / Run Again" buttons + send-to row below
+         remain on-screen instead of being pushed past the fold. */
+      max-height: 52vh;
+      overflow-y: auto;
+      overscroll-behavior: contain;
       font-size: var(--text-sm);
       line-height: 1.7;
       white-space: pre-wrap;
@@ -1667,9 +1673,11 @@
       font-style: italic;
     }
     .ai-response-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-    .ai-response-actions-top { margin-top: 0; margin-bottom: 10px; }
-    .ai-response-actions-bottom { display: none; }
-    .ai-response-actions-bottom.is-visible { display: flex; }
+    /* ai-actions-dedupe-1 (2026-05-17): the top action row (Copy + Run Again)
+       was redundant with the bottom row (Save to Vault + Copy + Run Again).
+       Always-hide the top row; always-show the bottom row. */
+    .ai-response-actions-top { display: none !important; }
+    .ai-response-actions-bottom { display: flex; }
     .ai-response-actions .btn { flex: 1; min-width: 140px; }
     @media (max-width: 480px) {
       .ai-response-actions .btn { flex: 1 1 100%; }
@@ -3072,8 +3080,25 @@
         font-size: 12px !important;
         line-height: 1.15 !important;
       }
+      /* send-desc-mob-1 (2026-05-17): UN-hide the per-platform descriptions
+         on mobile. User reported they had been removed and users had no
+         idea which AI tool to pick. Tighter font + line-height so the
+         pills stay compact in the 4-up row. */
+      html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to {
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 2px !important;
+        padding: 8px 4px !important;
+        min-height: 64px !important;
+      }
       html.pmg-chassis-v3 .pmgv3-send-grid .btn-send-to .pmgv3-send-desc {
-        display: none !important;
+        display: block !important;
+        font-size: 10px !important;
+        line-height: 1.15 !important;
+        opacity: 0.75;
+        text-align: center;
+        margin-top: 2px;
       }
 
       /* 4. Edit / Rewrite / Save Draft: keep VISIBLE per user feedback,
@@ -3092,35 +3117,34 @@
          which made Run With AI look like part of the action row. */
       .prompt-actions { margin-bottom: 14px !important; }
 
-      /* 5. Reposition + restyle the pmg-fullscreen inline trigger.
-            Default lives INSIDE #resultBox at top:8 right:8 (covers
-            prompt text). User wants it OUTSIDE the box, above the
-            top-right edge, small + plain text. JS already sets
-            innerHTML to "Read full prompt ↗". Host has position:relative
-            so absolute coords place this OUTSIDE the resultBox by
-            using a negative top. */
+      /* 5. Restyle the pmg-fullscreen inline trigger as a proper PILL
+         matching .ai-response-toggle ("Show Full Response ▾"). Was a
+         tiny plain-text link floating above the box at top:-26px which
+         looked unprofessional. Now sits BELOW the resultBox as a real
+         pill button, in-flow, consistent with the AI Response pill.
+         (read-full-pill-1, 2026-05-17) */
       .pmgv3-output-host .pmg-fs-inline-trigger,
       html.pmg-chassis-v3 .pmgv3-output-host .pmg-fs-inline-trigger {
-        position: absolute !important;
-        top: -26px !important;
-        right: 0 !important;
-        background: transparent !important;
-        backdrop-filter: none !important;
-        border: none !important;
-        box-shadow: none !important;
-        padding: 2px 4px !important;
-        font-size: 11px !important;
+        position: static !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        margin: 8px 0 0 !important;
+        padding: 6px 14px !important;
+        font-size: 13px !important;
         font-weight: 600 !important;
         line-height: 1.2 !important;
+        border: 1px solid var(--color-border) !important;
+        border-radius: var(--radius-md, 8px) !important;
+        background: var(--color-surface) !important;
         color: var(--color-primary, #3ee0a0) !important;
-        opacity: 0.85;
+        backdrop-filter: none !important;
+        box-shadow: none !important;
+        opacity: 1 !important;
       }
       .pmgv3-output-host .pmg-fs-inline-trigger:hover {
-        opacity: 1;
-        text-decoration: underline;
+        background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)) !important;
+        text-decoration: none !important;
       }
-      /* Override the @media (max-width:480px) rule from pmg-fullscreen.css
-         that hides the inner span (button now has plain text, no span). */
       .pmgv3-output-host .pmg-fs-inline-trigger span { display: inline !important; }
     }
 
@@ -3368,15 +3392,20 @@
     .result-top-btn#result-top-run { background: var(--color-primary); color: #fff; border: 1.5px solid var(--color-primary); }
     .result-top-btn#result-top-copy { background: var(--color-surface); color: var(--color-primary); border: 1.5px solid var(--color-primary); }
     @media (max-width: 760px) { .result-top-actions { flex-direction: column; } .result-top-btn { width: 100%; } }
-    .ai-response-output.is-clamped { max-height: 320px; overflow: hidden; position: relative; }
+    /* ai-scroll-internal-1: clamping is OBSOLETE now that .ai-response-output
+       scrolls internally. Keep the rule a no-op so the toggle script (which
+       still adds .is-clamped) doesn't visually fight the new behavior. */
+    .ai-response-output.is-clamped { max-height: 52vh; overflow-y: auto; position: relative; }
     /* Fade-out gradient removed: the box's actual background didn't match
        --color-surface, so any tinted gradient terminated at a slightly
        different shade and read as a visible horizontal band cutting through
        the last lines of text. The "Show Full Response" button below the
        box is sufficient cue that more content exists. */
-    .ai-response-toggle { display: none; margin: 6px 0 0; padding: 6px 14px; font-size: 13px; font-weight: 600; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-primary); cursor: pointer; }
-    .ai-response-toggle:hover { background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)); }
-    .ai-response-toggle.is-visible { display: inline-flex; }
+    /* ai-scroll-internal-1 (2026-05-17): toggle made obsolete — box now
+       scrolls internally so the user never needs to expand it. Force-hidden
+       even when the toggle script adds .is-visible. */
+    .ai-response-toggle,
+    .ai-response-toggle.is-visible { display: none !important; }
     
     /* History controls: compact row instead of full-width pills */
     .history-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
