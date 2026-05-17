@@ -264,20 +264,26 @@
     }, 100);
   }
 
+  // pmg-tune-chips.js exposes TWO open paths that surface the tuning
+  // section to the user: openOverlay() (adds `pmg-tune-overlay-open`)
+  // and openFullTuning() (adds `pmg-tune-section-shown`). The "Prompt
+  // Tuning" pill on /app currently uses the latter, so we must observe
+  // BOTH classes or the 5-section build will never run.
+  function isOverlayOpen() {
+    var b = document.body;
+    return !!b && (
+      b.classList.contains('pmg-tune-overlay-open') ||
+      b.classList.contains('pmg-tune-section-shown')
+    );
+  }
+
   function observeOverlayOpen() {
     if (!document.body) return;
-    // If overlay already open at script init time, build immediately.
-    if (document.body.classList.contains('pmg-tune-overlay-open')) {
-      scheduleBuildInsideOverlay();
-    }
+    if (isOverlayOpen()) scheduleBuildInsideOverlay();
     var mo = new MutationObserver(function (records) {
       for (var i = 0; i < records.length; i++) {
-        if (records[i].attributeName === 'class') {
-          if (document.body.classList.contains('pmg-tune-overlay-open')) {
-            scheduleBuildInsideOverlay();
-            // Keep observing — overlay may close+reopen and the
-            // sections persist (sectionsBuilt latch prevents rebuild).
-          }
+        if (records[i].attributeName === 'class' && isOverlayOpen()) {
+          scheduleBuildInsideOverlay();
         }
       }
     });

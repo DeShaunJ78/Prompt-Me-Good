@@ -145,21 +145,40 @@ html.pmg-chassis-v3 #tuning-mobile-toggle {
    ONLY while the chip overlay is open. On the homepage the legacy
    <details> stays collapsed, so the tuning content does not bleed
    into the page (which was the IA-restructure-2 regression). */
-html.pmg-chassis-v3 body.pmg-tune-overlay-open #settingsPanel {
+html.pmg-chassis-v3 body.pmg-tune-overlay-open #settingsPanel,
+html.pmg-chassis-v3 body.pmg-tune-section-shown #settingsPanel {
   display: block;
 }
-html.pmg-chassis-v3 body.pmg-tune-overlay-open #settingsPanel > *:not(summary) {
+html.pmg-chassis-v3 body.pmg-tune-overlay-open #settingsPanel > *:not(summary),
+html.pmg-chassis-v3 body.pmg-tune-section-shown #settingsPanel > *:not(summary) {
   display: revert;
 }
 html.pmg-chassis-v3 body.pmg-tune-overlay-open #settingsPanel .pmg-settings-disclosure-summary,
 html.pmg-chassis-v3 body.pmg-tune-overlay-open #settingsPanel .pmg-stack-card-head,
-html.pmg-chassis-v3 body.pmg-tune-overlay-open #settingsPanel .pmg-stack-helper {
+html.pmg-chassis-v3 body.pmg-tune-overlay-open #settingsPanel .pmg-stack-helper,
+html.pmg-chassis-v3 body.pmg-tune-section-shown #settingsPanel .pmg-settings-disclosure-summary,
+html.pmg-chassis-v3 body.pmg-tune-section-shown #settingsPanel .pmg-stack-card-head,
+html.pmg-chassis-v3 body.pmg-tune-section-shown #settingsPanel .pmg-stack-helper {
   display: none !important;
 }
 /* chassis-v3.css:23 globally hides .auto-optimize-row. Override ONLY
-   for the in-settings mirror, and ONLY while overlay is open. */
-html.pmg-chassis-v3 body.pmg-tune-overlay-open #auto-optimize-row-inside-settings.auto-optimize-row {
+   for the in-settings mirror, and ONLY while either overlay is open. */
+html.pmg-chassis-v3 body.pmg-tune-overlay-open #auto-optimize-row-inside-settings.auto-optimize-row,
+html.pmg-chassis-v3 body.pmg-tune-section-shown #auto-optimize-row-inside-settings.auto-optimize-row {
   display: flex !important;
+}
+/* The legacy "Tune Your Prompt · 7 picks" disclosure (#tuning-mobile-toggle
+   = button.tuning-header) is redundant inside the overlay — each of the
+   5 section cards carries its own title. pmg-tune-chips.css:333 force-
+   shows .tuning-header with display:flex !important when the overlay
+   opens, so we need a higher-specificity + !important rule to suppress
+   it. Also hide the legacy .tuning-hint subhead for the same reason. */
+html.pmg-chassis-v3 body.pmg-tune-overlay-open #tuning-panel button.tuning-header,
+html.pmg-chassis-v3 body.pmg-tune-section-shown #tuning-panel button.tuning-header,
+html.pmg-chassis-v3 body.pmg-tune-overlay-open #tuning-panel .tuning-hint,
+html.pmg-chassis-v3 body.pmg-tune-section-shown #tuning-panel .tuning-hint {
+  display: none !important;
+  visibility: hidden !important;
 }
 
 /* IA-restructure-3: 5-section cards inside the chip overlay. */
