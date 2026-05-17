@@ -408,19 +408,16 @@
 
     var footer = document.createElement('div');
     footer.className = 'pmg-tune-overlay-footer';
-    var ecc = document.createElement('button');
-    ecc.type = 'button';
-    ecc.id = 'pmg-tune-overlay-ecc';
-    ecc.className = 'pmg-tune-ecc-link';
-    ecc.innerHTML = '<span aria-hidden="true">⚙</span> Open Expert Command Center';
-    ecc.addEventListener('click', openExpertCenter);
+    // tc-9r: removed sticky-footer "Open Expert Command Center" button.
+    // The Expert section card inside the overlay body already owns the
+    // toggle switch — duplicating it in the footer was the dashed-border
+    // orphan the user flagged.
     var done = document.createElement('button');
     done.type = 'button';
     done.id = 'pmg-tune-overlay-done';
     done.className = 'pmg-tune-done pmg-tune-done--primary';
     done.innerHTML = '<span aria-hidden="true">✓</span> Done — Build My Prompt';
     done.addEventListener('click', function () { closeOverlay(true); });
-    footer.appendChild(ecc);
     footer.appendChild(done);
 
     panel.appendChild(hdr);
