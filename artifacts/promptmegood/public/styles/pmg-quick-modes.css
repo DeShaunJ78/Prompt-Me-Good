@@ -120,3 +120,33 @@ html.pmg-chassis-v3 .pmg-pref-divider__sub {
   html.pmg-chassis-v3 .pmg-qm-row { padding: 10px 12px 12px; }
   html.pmg-chassis-v3 .pmg-qm-chip { padding: 8px 11px; font-size: 13px; }
 }
+
+/* IA-restructure-1 follow-up — kill the two redundant collapsed headers
+   that survived consolidation. The "Prompt Tuning" pill is now the only
+   entry point, so:
+     (a) Hide the legacy <summary> on #settingsPanel ("Customize prompt
+         tuning · Optional — Auto-Optimize fills these in for you.") that
+         still appears below the textbox on the main page.
+     (b) Hide the chassis "🎛️ Tune Your Prompt · 7 picks ▾" header
+         (#tuning-mobile-toggle) shown INSIDE the overlay — it suggests
+         it's clickable but the body below is already open, so tapping
+         it does nothing visible.
+   The contents (selects, switches, audience field) stay reachable
+   through the Pill → overlay. Rollback: delete this block. */
+html.pmg-chassis-v3 #settingsPanel > summary.pmg-settings-disclosure-summary,
+html.pmg-chassis-v3 #settingsPanel summary[class*="settings-disclosure-summary"] {
+  display: none !important;
+}
+html.pmg-chassis-v3 #tuning-mobile-toggle {
+  display: none !important;
+}
+/* Belt-and-suspenders: with the <summary> hidden, the <details> still
+   needs the `open` attribute or the body is display:none. JS sets it,
+   but this CSS forces the children to render via display:contents in
+   case the JS is gated off. */
+html.pmg-chassis-v3 #settingsPanel:not([open]) {
+  display: block;
+}
+html.pmg-chassis-v3 #settingsPanel:not([open]) > *:not(summary) {
+  display: revert;
+}

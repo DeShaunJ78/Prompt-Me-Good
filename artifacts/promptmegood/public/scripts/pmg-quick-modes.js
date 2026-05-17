@@ -171,7 +171,20 @@
     return true;
   }
 
+  /* IA-restructure-1 follow-up: force the legacy <details id="settingsPanel">
+     open so its body always renders. With the Pill as the only entry
+     point, the collapsed disclosure was redundant — CSS hides the
+     <summary>, and this keeps the body visible regardless of toggle
+     state. Idempotent. */
+  function forceSettingsPanelOpen() {
+    var sp = document.getElementById('settingsPanel');
+    if (sp && sp.tagName === 'DETAILS' && !sp.hasAttribute('open')) {
+      try { sp.open = true; } catch (_) {}
+    }
+  }
+
   function tick() {
+    forceSettingsPanelOpen();
     var a = mountModesRow();
     var b = mountPreferencesDivider();
     return a && b;
