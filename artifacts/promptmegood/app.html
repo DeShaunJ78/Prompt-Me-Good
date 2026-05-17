@@ -4231,7 +4231,7 @@
     }
   </style>
   <link rel="stylesheet" href="/styles/pmg-g-theme.css?v=g2-teal-2" />
-  <link rel="stylesheet" href="/styles/pmg-chassis-v3.css?v=cta-color-token-2-sendto-2line-mhdr2-stream2-clamp1-runstatus1-cv3-62-desktop-cap" />
+  <link rel="stylesheet" href="/styles/pmg-chassis-v3.css?v=cta-color-token-2-sendto-2line-mhdr2-stream2-clamp1-runstatus1-cv3-62-desktop-cap-scrollcompose3" />
   <link rel="stylesheet" href="/styles/pmg-visual-studio.css?v=re-3" />
   <link rel="stylesheet" href="/styles/pmg-storyboard.css?v=sb-9" />
   <link rel="stylesheet" href="/styles/pmg-cap-comparison.css?v=cap-compare-1" />
@@ -8597,20 +8597,16 @@ Context:
            for the sticky chassis topbar so the bar isn't tucked
            behind it. */
         var scrollTarget = document.getElementById('pmgv3-strength-slot') || resultPanel;
-        var topbarEl = document.querySelector('.pmgv3-topbar');
-        var topbarH = topbarEl ? Math.round(topbarEl.getBoundingClientRect().height) : 64;
-        /* scroll-compose-2 (2026-05-16): also subtract the tabs row
-           (.pmgv3-tabs) height. Previously only topbarH was subtracted,
-           causing the strength bar to land under the sticky tabs row on
-           mobile (occluded). Add a small 16px breathing-room buffer so
-           the "Prompt Strength" header isn't kissing the tabs row. */
-        var tabsEl = document.querySelector('.pmgv3-tabs');
-        var tabsH = tabsEl ? Math.round(tabsEl.getBoundingClientRect().height) : 0;
+        /* scroll-compose-3 (2026-05-16): native scrollIntoView + CSS
+           scroll-margin-top on .strength-bar-container owns the offset.
+           Replaces fragile getBoundingClientRect() math (compose-1/2)
+           that under-counted iOS sticky chrome (topbar + tabs + safe-
+           area-inset). Browser handles all of it. */
         try {
-          var rect = scrollTarget.getBoundingClientRect();
-          var absTop = (window.pageYOffset || document.documentElement.scrollTop || 0) + rect.top;
-          var destY = Math.max(0, absTop - topbarH - tabsH - 16);
-          window.scrollTo({ top: destY, behavior: window.PMG_A11Y.scrollBehavior() });
+          scrollTarget.scrollIntoView({
+            block: 'start',
+            behavior: window.PMG_A11Y.scrollBehavior(),
+          });
         } catch (e) {
           try { scrollTarget.scrollIntoView({ block: 'start' }); } catch (_) {}
         }

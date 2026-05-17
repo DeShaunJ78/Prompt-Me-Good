@@ -1188,6 +1188,14 @@ html.pmg-chassis-v3 .generate-section #generateBtn:hover {
   flex-direction: column;
   gap: 6px;
   margin-bottom: 12px;
+  /* scroll-compose-3 (2026-05-16): native browser scroll offset.
+     scrollIntoView() in app.html targets this element; scroll-margin-top
+     tells the browser to leave this much room ABOVE it when scrolling.
+     Value covers chassis topbar (~64px) + tabs row (~44px) + safe-area
+     + breathing buffer. This is the robust replacement for the manual
+     getBoundingClientRect() math that kept under-counting fixed chrome
+     (scroll-compose-1/2 attempts). iOS Safari + Android Chrome support. */
+  scroll-margin-top: 140px;
 }
 .strength-header {
   display: flex;
