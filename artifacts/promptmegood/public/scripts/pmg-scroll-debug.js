@@ -132,8 +132,12 @@
           setTimeout(function () { panel.style.background = 'rgba(0,0,0,0.92)'; }, 400);
         } catch (_) {}
       });
-      if (document.body) document.body.appendChild(panel);
-      else document.addEventListener('DOMContentLoaded', function () { document.body.appendChild(panel); });
+      /* dbg-3: append to <html>, NOT <body>. The chassis-v3 universal-
+         hide rule `body > *:not(#pmg-chassis-v3-root):not(script)`
+         display:none's anything else appended to body. As a sibling
+         of body, the panel escapes that rule entirely. position:fixed
+         in cssText keeps it visually pinned to the viewport. */
+      (document.documentElement || document.body).appendChild(panel);
     }
     if (panel) {
       panel.textContent = 'SCROLL DEBUG (tap to copy)\n' + log.join('\n');
