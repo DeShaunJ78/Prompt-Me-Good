@@ -8631,6 +8631,20 @@ Context:
         function ensurePromptVisible() {
           tries++;
           var vh = window.innerHeight || document.documentElement.clientHeight;
+          /* scroll-compose-4 (2026-05-16): if the chassis strength bar is
+             already visible in the viewport, the composed layout the user
+             wants (strength bar + Auto-Boost + YEP + prompt + Edit/Rewrite
+             + Run-With-AI all stacked from the top) has been achieved by
+             scroll-compose-3. Bail out — do NOT re-scroll to #resultBox,
+             which would push the strength bar back off the top of the
+             viewport. */
+          var strengthSlot = document.getElementById('pmgv3-strength-slot');
+          if (strengthSlot) {
+            var ss = strengthSlot.getBoundingClientRect();
+            if (ss.width > 0 && ss.height > 0 && ss.top >= 0 && ss.top < vh - 40) {
+              return;
+            }
+          }
           // Prefer the diff Suggested pane (newly generated prompt content
           // shown as the visible diff) when the diff UI is rendered.
           var diff = document.getElementById('pmg-fix-diff');
