@@ -192,8 +192,53 @@ html.pmg-chassis-v3 .pmg-section-card {
 html.pmg-chassis-v3 .pmg-section-card__head {
   margin: 0 0 12px;
   display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+html.pmg-chassis-v3 .pmg-section-card__head-text {
+  flex: 1 1 auto;
+  display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
+}
+
+/* Collapsible cards: hide native marker, summary is the full clickable
+   row, body collapses via [open]. Rotating chevron on the right. */
+html.pmg-chassis-v3 .pmg-section-card--collapsible {
+  padding-bottom: 14px;
+}
+html.pmg-chassis-v3 .pmg-section-card--collapsible > summary.pmg-section-card__head {
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+html.pmg-chassis-v3 .pmg-section-card--collapsible > summary.pmg-section-card__head::-webkit-details-marker { display: none; }
+html.pmg-chassis-v3 .pmg-section-card--collapsible > summary.pmg-section-card__head::marker { content: ''; }
+html.pmg-chassis-v3 .pmg-section-card__chev {
+  flex: 0 0 auto;
+  align-self: center;
+  font-size: 14px;
+  line-height: 1;
+  color: color-mix(in srgb, var(--color-text, #e8f3ec) 60%, transparent);
+  transition: transform 180ms ease;
+}
+html.pmg-chassis-v3 .pmg-section-card--collapsible[open] .pmg-section-card__chev {
+  transform: rotate(180deg);
+}
+html.pmg-chassis-v3 .pmg-section-card--collapsible:not([open]) > .pmg-section-card__body {
+  display: none;
+}
+html.pmg-chassis-v3 .pmg-section-card--collapsible[open] > .pmg-section-card__head {
+  margin: 0 0 12px;
+}
+html.pmg-chassis-v3 .pmg-section-card--collapsible > summary.pmg-section-card__head:focus-visible {
+  outline: 2px solid var(--color-primary, #3ee0a0);
+  outline-offset: 3px;
+  border-radius: 8px;
 }
 html.pmg-chassis-v3 .pmg-section-card__title {
   margin: 0;

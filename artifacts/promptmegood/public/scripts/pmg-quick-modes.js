@@ -134,12 +134,31 @@
   }
 
   // ----- 5-section card build (inside the open chip overlay) -----
+  // The first four cards collapse by default so the overlay reads as a
+  // scannable menu — tap the section you want, leave the rest closed.
+  // Expert Command Center stays open (collapsible: false) as the
+  // always-visible standout at the bottom.
   var SECTIONS = [
-    { id: 'pmg-section-modes',  variant: 'modes',  title: 'Quick modes',           sub: 'Tap a chip to toggle.' },
-    { id: 'pmg-section-style',  variant: 'style',  title: 'Style',                 sub: 'How it sounds and how it thinks.' },
-    { id: 'pmg-section-output', variant: 'output', title: 'Output',                sub: "How it's delivered." },
-    { id: 'pmg-section-prefs',  variant: 'prefs',  title: 'Your preferences',      sub: 'Set once — stays the same across prompts.' },
-    { id: 'pmg-section-expert', variant: 'expert', title: 'Expert Command Center', sub: 'Full control for power users.' }
+    {
+      id: 'pmg-section-modes', variant: 'modes', collapsible: true, title: 'Quick modes',
+      sub: 'Three one-tap style toggles: Growth (sales/conversion phrasing), Human (less robotic), Clear (easier to scan and act on).'
+    },
+    {
+      id: 'pmg-section-style', variant: 'style', collapsible: true, title: 'Style',
+      sub: 'How the AI thinks (reasoning depth + fact-checking), who it\u2019s writing for, plus voice and tone.'
+    },
+    {
+      id: 'pmg-section-output', variant: 'output', collapsible: true, title: 'Output',
+      sub: 'Format (list, table, markdown\u2026), maximum length, output language, and the platform you\u2019re publishing to.'
+    },
+    {
+      id: 'pmg-section-prefs', variant: 'prefs', collapsible: true, title: 'Your preferences',
+      sub: 'Set\u2011once defaults: Auto\u2011Optimize, your topic category, and your experience level. These carry across every prompt.'
+    },
+    {
+      id: 'pmg-section-expert', variant: 'expert', collapsible: false, title: 'Expert Command Center',
+      sub: 'Full control for power users.'
+    }
   ];
 
   // DOM routing: id -> section variant
@@ -151,16 +170,35 @@
   }
 
   function makeSectionCard(def) {
-    var card = document.createElement('section');
-    card.id = def.id;
-    card.className = 'pmg-section-card pmg-section-card--' + def.variant;
-    card.setAttribute('data-section', def.variant);
-    card.innerHTML =
-      '<header class="pmg-section-card__head">' +
-        '<h3 class="pmg-section-card__title">' + def.title + '</h3>' +
-        '<p class="pmg-section-card__sub">' + def.sub + '</p>' +
-      '</header>' +
-      '<div class="pmg-section-card__body" data-section-body="' + def.variant + '"></div>';
+    var card;
+    if (def.collapsible) {
+      card = document.createElement('details');
+      card.id = def.id;
+      card.className = 'pmg-section-card pmg-section-card--' + def.variant + ' pmg-section-card--collapsible';
+      card.setAttribute('data-section', def.variant);
+      card.innerHTML =
+        '<summary class="pmg-section-card__head">' +
+          '<div class="pmg-section-card__head-text">' +
+            '<h3 class="pmg-section-card__title">' + def.title + '</h3>' +
+            '<p class="pmg-section-card__sub">' + def.sub + '</p>' +
+          '</div>' +
+          '<span class="pmg-section-card__chev" aria-hidden="true">\u25be</span>' +
+        '</summary>' +
+        '<div class="pmg-section-card__body" data-section-body="' + def.variant + '"></div>';
+    } else {
+      card = document.createElement('section');
+      card.id = def.id;
+      card.className = 'pmg-section-card pmg-section-card--' + def.variant;
+      card.setAttribute('data-section', def.variant);
+      card.innerHTML =
+        '<header class="pmg-section-card__head">' +
+          '<div class="pmg-section-card__head-text">' +
+            '<h3 class="pmg-section-card__title">' + def.title + '</h3>' +
+            '<p class="pmg-section-card__sub">' + def.sub + '</p>' +
+          '</div>' +
+        '</header>' +
+        '<div class="pmg-section-card__body" data-section-body="' + def.variant + '"></div>';
+    }
     return card;
   }
 
