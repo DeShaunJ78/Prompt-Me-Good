@@ -115,7 +115,6 @@
         '</div>' +
       '</div>' +
       '<div class="pmg-coach__row pmg-coach__row--info">' +
-        '<span class="pmg-coach__tokens" id="pmg-coach-tokens">~0 tokens · $0</span>' +
         '<span class="pmg-coach__chips" id="pmg-coach-chips"></span>' +
       '</div>';
     return root;
@@ -190,12 +189,10 @@
     document.body.classList.add(BODY_CLASS);
 
     var s = score(t);
-    var tc = tokenCost(t);
 
     var fill = document.getElementById('pmg-coach-fill');
     var sc   = document.getElementById('pmg-coach-score');
     var lab  = document.getElementById('pmg-coach-label');
-    var tok  = document.getElementById('pmg-coach-tokens');
     var chips = document.getElementById('pmg-coach-chips');
 
     if (fill) {
@@ -205,7 +202,6 @@
     }
     if (sc)  sc.textContent  = String(s.score);
     if (lab) lab.textContent = strengthLabel(s.score);
-    if (tok) tok.textContent = '~' + tc.tokens + ' tokens · ' + fmtCost(tc.cost);
     if (chips) renderChips(chips, s.gaps, goalEl);
   }
 
