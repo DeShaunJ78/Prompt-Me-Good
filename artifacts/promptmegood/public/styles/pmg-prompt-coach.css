@@ -1,0 +1,112 @@
+/* pmg-prompt-coach.css — Phase 2 (coach-1)
+   Hidden by default. Shown only when body.pmg-coach-on (i.e. user
+   has typed >= 2 chars in #goal). Slides up + fades in. */
+
+#pmg-coach-root {
+  display: none;
+}
+html.pmg-chassis-v3 body.pmg-coach-on #pmg-coach-root {
+  display: block;
+  margin: 12px 0 4px;
+  padding: 10px 14px 12px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 18%, transparent);
+  animation: pmg-coach-slide-in 280ms ease-out;
+}
+
+@keyframes pmg-coach-slide-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.pmg-coach__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pmg-coach__row--meter { margin-bottom: 8px; }
+.pmg-coach__row--info  {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+
+/* ----- strength bar ----- */
+.pmg-coach__bar {
+  flex: 1 1 auto;
+  height: 6px;
+  background: color-mix(in srgb, var(--color-text, #e8f3ec) 10%, transparent);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.pmg-coach__fill {
+  height: 100%;
+  width: 0;
+  background: #ff9f43;
+  border-radius: 999px;
+  transition: width 260ms ease, background-color 260ms ease;
+}
+.pmg-coach__fill[data-band="weak"] { background: #ff7a59; }
+.pmg-coach__fill[data-band="ok"]   { background: #f7c948; }
+.pmg-coach__fill[data-band="good"] { background: #3ee0a0; }
+
+.pmg-coach__meta {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 110px;
+  justify-content: flex-end;
+}
+.pmg-coach__score {
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--color-text, #e8f3ec);
+  font-variant-numeric: tabular-nums;
+}
+.pmg-coach__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--color-text, #e8f3ec) 70%, transparent);
+}
+
+/* ----- token + cost line ----- */
+.pmg-coach__tokens {
+  font-size: 12px;
+  color: color-mix(in srgb, var(--color-text, #e8f3ec) 65%, transparent);
+  font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
+}
+
+/* ----- adaptive chips ----- */
+.pmg-coach__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+}
+.pmg-coach__chip {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 12%, transparent);
+  color: var(--color-text, #e8f3ec);
+  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 30%, transparent);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 150ms ease, transform 120ms ease;
+}
+.pmg-coach__chip:hover,
+.pmg-coach__chip:focus-visible {
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 22%, transparent);
+  outline: none;
+}
+.pmg-coach__chip:active { transform: scale(0.97); }
+
+@media (max-width: 480px) {
+  .pmg-coach__chip { padding: 5px 11px; font-size: 12px; }
+}
