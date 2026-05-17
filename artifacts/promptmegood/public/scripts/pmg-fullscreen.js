@@ -157,65 +157,28 @@
     });
   }
 
-  // Inject a floating "Open Fullscreen" pill INTO .pmgv3-output-host so the
-  // trigger lives on the prompt box itself (the original #resultBoxToggle
-  // sibling stays hidden by chassis-v3 universal hide rule).
-  function injectInlineTrigger() {
-    var host = document.querySelector('.pmgv3-output-host');
-    if (!host || host.querySelector('.pmg-fs-inline-trigger')) return;
-    var rb = document.getElementById('resultBox');
-    if (!rb) return;
-    if (host.style.position !== 'absolute' && host.style.position !== 'fixed') {
-      host.style.position = 'relative';
-    }
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'pmg-fs-inline-trigger';
-    btn.setAttribute('aria-label', 'Read full prompt in distraction-free view');
-    btn.title = 'Read full prompt (ESC to close)';
-    btn.innerHTML = 'Read full prompt \u2197';
-    btn.addEventListener('click', function (e) {
-      e.preventDefault();
-      open(rb, { title: 'Your Generated Prompt' });
-    });
-    host.appendChild(btn);
-  }
+  /* corner-pill-retire-1 (2026-05-17): user feedback —
+       "I see a toggle [text-link] that expands and collapses the screen.
+        That's what I wanted. The corner pill is redundant — remove it."
+     Both the prompt box and the AI response box already have their own
+     'Open Fullscreen' text-link (#resultBoxToggle and #aiResponseToggle)
+     that calls the same overlay. The floating corner pills duplicate
+     that entry point and visually compete with the green diff bar.
+     injectInlineTrigger() and injectAiResponseTrigger() are retired;
+     kept as no-ops in case other modules still call injectAllTriggers.
+     Also clean up any previously-injected pills on the page. */
+  function injectInlineTrigger() { /* no-op (corner-pill-retire-1) */ }
+  function injectAiResponseTrigger() { /* no-op (corner-pill-retire-1) */ }
 
-  /* ai-fs-trigger-1 (2026-05-17): mirror injectInlineTrigger() for the
-     Run-With-AI response box. The streamed GPT response lives in
-     #aiResponseOutput inside #aiResponseSection (mounted into
-     .pmgv3-air-host by chassis-v3). Anchor an "Expand response" pill on
-     the section so users can pop long AI replies into the same
-     distraction-free overlay used by the prompt box. */
-  function injectAiResponseTrigger() {
-    var section = document.getElementById('aiResponseSection');
-    if (!section || section.querySelector('.pmg-fs-inline-trigger.pmg-fs-air-trigger')) return;
-    var out = document.getElementById('aiResponseOutput');
-    if (!out) return;
-    var pos = section.style.position;
-    if (pos !== 'absolute' && pos !== 'fixed' && pos !== 'relative') {
-      section.style.position = 'relative';
+  function removeLegacyCornerPills() {
+    var pills = document.querySelectorAll('.pmg-fs-inline-trigger');
+    for (var i = 0; i < pills.length; i++) {
+      if (pills[i].parentNode) pills[i].parentNode.removeChild(pills[i]);
     }
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'pmg-fs-inline-trigger pmg-fs-air-trigger';
-    btn.setAttribute('aria-label', 'Expand AI response in distraction-free view');
-    btn.title = 'Expand response (ESC to close)';
-    /* air-icon-1 (2026-05-17): user feedback "the expand response pill
-       is huge and competes with the changes overlay". Shrunk to an
-       icon-only fullscreen glyph so it never visually clashes with the
-       green diff bar that also lives at the top of the response card. */
-    btn.innerHTML = '\u26F6';
-    btn.addEventListener('click', function (e) {
-      e.preventDefault();
-      open(out, { title: 'AI Response', editable: false });
-    });
-    section.appendChild(btn);
   }
 
   function injectAllTriggers() {
-    injectInlineTrigger();
-    injectAiResponseTrigger();
+    removeLegacyCornerPills();
   }
 
   if (document.readyState === 'loading') {
