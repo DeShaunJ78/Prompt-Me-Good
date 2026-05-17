@@ -140,66 +140,123 @@ html.pmg-chassis-v3 #settingsPanel summary[class*="settings-disclosure-summary"]
 html.pmg-chassis-v3 #tuning-mobile-toggle {
   display: none !important;
 }
-/* Belt-and-suspenders: with the <summary> hidden, the <details> still
-   needs the `open` attribute or the body is display:none. JS sets it,
-   but this CSS forces the children to render via display:contents in
-   case the JS is gated off. */
-html.pmg-chassis-v3 #settingsPanel:not([open]) {
+
+/* IA-restructure-3: reveal #settingsPanel + the Auto-Optimize mirror
+   ONLY while the chip overlay is open. On the homepage the legacy
+   <details> stays collapsed, so the tuning content does not bleed
+   into the page (which was the IA-restructure-2 regression). */
+html.pmg-chassis-v3 body.pmg-tune-overlay-open #settingsPanel {
   display: block;
 }
-html.pmg-chassis-v3 #settingsPanel:not([open]) > *:not(summary) {
+html.pmg-chassis-v3 body.pmg-tune-overlay-open #settingsPanel > *:not(summary) {
   display: revert;
 }
+html.pmg-chassis-v3 body.pmg-tune-overlay-open #settingsPanel .pmg-settings-disclosure-summary,
+html.pmg-chassis-v3 body.pmg-tune-overlay-open #settingsPanel .pmg-stack-card-head,
+html.pmg-chassis-v3 body.pmg-tune-overlay-open #settingsPanel .pmg-stack-helper {
+  display: none !important;
+}
+/* chassis-v3.css:23 globally hides .auto-optimize-row. Override ONLY
+   for the in-settings mirror, and ONLY while overlay is open. */
+html.pmg-chassis-v3 body.pmg-tune-overlay-open #auto-optimize-row-inside-settings.auto-optimize-row {
+  display: flex !important;
+}
 
-/* IA-restructure-2: two-zone cards inside the tuning overlay.
-   Quiet teal-tinted containers; the card title carries the zone label
-   so the legacy chassis "Tune Your Prompt · 7 picks" header is no
-   longer needed (already CSS-hidden above). */
-html.pmg-chassis-v3 .pmg-zone-card {
-  margin: 0 0 16px;
+/* IA-restructure-3: 5-section cards inside the chip overlay. */
+html.pmg-chassis-v3 .pmg-section-card {
+  margin: 0 0 14px;
   padding: 14px 14px 16px;
   background: color-mix(in srgb, var(--color-primary, #3ee0a0) 4%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 16%, transparent);
   border-radius: 14px;
 }
-html.pmg-chassis-v3 .pmg-zone-card__head {
+html.pmg-chassis-v3 .pmg-section-card__head {
   margin: 0 0 12px;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
-html.pmg-chassis-v3 .pmg-zone-card__title {
+html.pmg-chassis-v3 .pmg-section-card__title {
   margin: 0;
   font-size: 15px;
   font-weight: 700;
   color: var(--color-text, #e8f3ec);
   letter-spacing: 0.01em;
 }
-html.pmg-chassis-v3 .pmg-zone-card__sub {
+html.pmg-chassis-v3 .pmg-section-card__sub {
   margin: 0;
   font-size: 12px;
   line-height: 1.4;
   color: color-mix(in srgb, var(--color-text, #e8f3ec) 55%, transparent);
 }
-html.pmg-chassis-v3 .pmg-zone-card__body {
+html.pmg-chassis-v3 .pmg-section-card__body {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* When the Quick Modes row lives INSIDE a zone card, drop its own
-   card chrome so it doesn't read as a card-within-a-card. */
-html.pmg-chassis-v3 .pmg-zone-card .pmg-qm-row {
+/* Variant tints — quiet, two-step gradient down the overlay so each
+   card reads as its own zone without shouting. */
+html.pmg-chassis-v3 .pmg-section-card--modes  { background: color-mix(in srgb, var(--color-primary, #3ee0a0) 5%, transparent); }
+html.pmg-chassis-v3 .pmg-section-card--style  { background: color-mix(in srgb, var(--color-primary, #3ee0a0) 4%, transparent); }
+html.pmg-chassis-v3 .pmg-section-card--output { background: color-mix(in srgb, var(--color-text,    #e8f3ec) 3%,  transparent); border-color: color-mix(in srgb, var(--color-text, #e8f3ec) 12%, transparent); }
+html.pmg-chassis-v3 .pmg-section-card--prefs  { background: color-mix(in srgb, var(--color-text,    #e8f3ec) 3%,  transparent); border-color: color-mix(in srgb, var(--color-text, #e8f3ec) 12%, transparent); }
+
+/* Expert card — the standout. Brighter teal accent, glow ring,
+   slightly elevated. No badge: the visual treatment IS the signal. */
+html.pmg-chassis-v3 .pmg-section-card--expert {
+  margin-top: 18px;
+  padding: 18px 16px 20px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-primary, #3ee0a0) 14%, transparent),
+    color-mix(in srgb, var(--color-primary, #3ee0a0) 6%,  transparent)
+  );
+  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 45%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-primary, #3ee0a0) 18%, transparent),
+    0 6px 22px -8px color-mix(in srgb, var(--color-primary, #3ee0a0) 30%, transparent);
+}
+html.pmg-chassis-v3 .pmg-section-card--expert .pmg-section-card__title {
+  font-size: 16px;
+  color: var(--color-primary, #3ee0a0);
+}
+html.pmg-chassis-v3 .pmg-section-card--expert .pmg-section-card__sub {
+  color: color-mix(in srgb, var(--color-text, #e8f3ec) 75%, transparent);
+}
+html.pmg-chassis-v3 .pmg-section-card--expert .expert-mode-toggle {
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 8%, transparent);
+}
+html.pmg-chassis-v3 .pmg-expert-cta-row {
+  margin-top: 4px;
+  display: flex;
+  justify-content: stretch;
+}
+html.pmg-chassis-v3 .pmg-expert-cta-row .expert-mode-link {
+  flex: 1 1 auto;
+  text-align: center;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--color-primary, #3ee0a0);
+  color: #0a1a14;
+  font-weight: 700;
+  border: 0;
+  cursor: pointer;
+}
+html.pmg-chassis-v3 .pmg-expert-cta-row .expert-mode-link:hover {
+  filter: brightness(1.05);
+}
+
+/* When the Quick Modes row lives INSIDE a section card, drop its own
+   chrome and hide its internal heading (the section card carries
+   both the title and the sub-line now). */
+html.pmg-chassis-v3 .pmg-section-card .pmg-qm-row {
   margin: 0;
-  padding: 0 0 4px;
+  padding: 0;
   background: transparent;
   border: 0;
   border-radius: 0;
 }
-
-/* Pref card has a slightly cooler tint so the two zones are visually
-   distinct without being loud. */
-html.pmg-chassis-v3 .pmg-zone-card--pref {
-  background: color-mix(in srgb, var(--color-text, #e8f3ec) 3%, transparent);
-  border-color: color-mix(in srgb, var(--color-text, #e8f3ec) 12%, transparent);
+html.pmg-chassis-v3 .pmg-section-card .pmg-qm-row__heading {
+  display: none;
 }

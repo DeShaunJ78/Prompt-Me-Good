@@ -1,18 +1,28 @@
-/* pmg-quick-modes.js — IA-restructure-1
+/* pmg-quick-modes.js — IA-restructure-3 (5-section overlay)
  *
- * Replaces the Advanced Output Settings drop-down (now hidden + its
- * mirror disabled) with a single quiet chip row at the top of the
- * #tuning-panel .tuning-section. Each chip toggles an existing legacy
- * checkbox (#moneyMode, #humanTone, #clarityBoost, plus the calibrated-
- * confidence toggle if present) so every downstream prompt-injection
- * path keeps working unchanged.
+ * Builds the /app "Prompt Tuning" overlay as FIVE conceptual section
+ * cards so users can scan-and-pick instead of facing a wall of fields.
  *
- * Also injects a small "Your preferences · set once" divider before
- * #category inside the same section so the overlay reads as TWO zones:
- *   (1) tune this prompt   (2) personal preferences
+ * Sections (top to bottom):
+ *   1. Quick modes      — 3 chip toggles (Growth / Human / Clear)
+ *   2. Style            — How AI thinks + Strict Fact-Check + Audience
+ *                         + Voice + Tone
+ *   3. Output           — Output Format + Max Length + Language +
+ *                         Target Platform
+ *   4. Your preferences — Auto-Optimize + Category + Experience Level
+ *   5. Expert Command   — Highlighted card at bottom (the standout);
+ *      Center             no badge — the visual treatment IS the signal.
  *
- * Visual aesthetic: matches existing .pmg-chip pills. No loud emoji,
- * no big colored panels. Active chips fill with the primary token.
+ * IA-restructure-3 fixes the homepage bleed introduced by IA-restructure-2.
+ * Strategy: do NOT force the legacy <details id="settingsPanel"> open
+ * on boot. Instead, wait for the chip overlay to open (body class
+ * `pmg-tune-overlay-open`), then build the sections inside the already-
+ * reparented #tuning-panel. The companion CSS reveals #settingsPanel's
+ * body and the Auto-Optimize mirror ONLY while the overlay is open.
+ *
+ * Chip row still mounts on boot inside #tuning-panel — that panel is
+ * CSS-hidden on the homepage so the chips are DOM-present but invisible
+ * until the overlay shows the panel.
  *
  * Kill switches:
  *   ?noqm   |   localStorage.pmg_quick_modes_disable = '1'
@@ -26,12 +36,8 @@
     if (window.localStorage && localStorage.getItem('pmg_quick_modes_disable') === '1') return;
   } catch (_) {}
 
-  // IA-restructure-2: Fact-check chip removed. The "Strict Fact-Checking
-  // Mode" labeled toggle inside #pmgv3-epic-tuning is the single
-  // discoverable entry point for the same underlying checkbox
-  // (#pmgv3-calibrated-confidence). The toggle has space for the full
-  // explainer text that a chip + tooltip can't show on mobile.
-  // Chips are now strictly STYLE knobs (Growth / Human / Clear).
+  // Chips = STYLE only (Growth / Human / Clear). Fact-check absorbed
+  // by the labeled Strict Fact-Checking toggle in #pmgv3-epic-tuning.
   var MODES = [
     { id: 'moneyMode',    label: 'Growth', hint: 'Biases output toward sales, marketing, and conversion-focused phrasing.' },
     { id: 'humanTone',    label: 'Human',  hint: 'Adds natural phrasing and reduces obvious robotic patterns.' },
@@ -41,9 +47,6 @@
   function $(id) { return document.getElementById(id); }
 
   function resolveSource(id) {
-    // Tolerate either the canonical id, a chassis-prefixed one, or a
-    // camelCase/kebab-case sibling — the chassis sometimes exposes
-    // controls under different naming conventions.
     var kebab = id.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
     return $(id) ||
            $('pmg-' + id) ||
@@ -93,14 +96,14 @@
       reflect(chip, src);
     });
 
-    // Two-way sync: if anything else toggles the underlying checkbox,
-    // mirror the visual state back onto the chip.
     src.addEventListener('change', function () { reflect(chip, src); });
     src.addEventListener('input',  function () { reflect(chip, src); });
 
     return chip;
   }
 
+  // ----- Chip row (mounted inside #tuning-panel on boot; hidden by
+  // ----- the panel's own hide rule until overlay shows the panel) -----
   var modesMounted = false;
   function mountModesRow() {
     if (modesMounted) return true;
@@ -115,18 +118,7 @@
     row.setAttribute('role', 'group');
     row.setAttribute('aria-label', 'Quick modes');
 
-    var heading = document.createElement('div');
-    heading.className = 'pmg-qm-row__heading';
-    var h = document.createElement('span');
-    h.className = 'pmg-qm-row__title';
-    h.textContent = 'Quick modes';
-    var sub = document.createElement('span');
-    sub.className = 'pmg-qm-row__sub';
-    sub.textContent = 'Tap a chip to toggle. Hover for what it does.';
-    heading.appendChild(h);
-    heading.appendChild(sub);
-    row.appendChild(heading);
-
+    // No internal heading — the parent section card carries the title.
     var chipWrap = document.createElement('div');
     chipWrap.className = 'pmg-qm-chips';
     var made = 0;
@@ -141,169 +133,170 @@
     return true;
   }
 
-  var prefDividerMounted = false;
-  function mountPreferencesDivider() {
-    if (prefDividerMounted) return true;
-    var panel = $('tuning-panel');
-    if (!panel) return false;
-    var cat = panel.querySelector('#category');
-    if (!cat) return false;
-    if (panel.querySelector('#pmg-pref-divider')) { prefDividerMounted = true; return true; }
+  // ----- 5-section card build (inside the open chip overlay) -----
+  var SECTIONS = [
+    { id: 'pmg-section-modes',  variant: 'modes',  title: 'Quick modes',           sub: 'Tap a chip to toggle.' },
+    { id: 'pmg-section-style',  variant: 'style',  title: 'Style',                 sub: 'How it sounds and how it thinks.' },
+    { id: 'pmg-section-output', variant: 'output', title: 'Output',                sub: "How it's delivered." },
+    { id: 'pmg-section-prefs',  variant: 'prefs',  title: 'Your preferences',      sub: 'Set once — stays the same across prompts.' },
+    { id: 'pmg-section-expert', variant: 'expert', title: 'Expert Command Center', sub: 'Full control for power users.' }
+  ];
 
-    // Walk up to the closest "row-ish" wrapper that is a direct child
-    // of the tuning-section, so the divider lands ABOVE the whole
-    // Category form-field group rather than mid-field.
-    var section = panel.querySelector('.tuning-section') || panel;
-    var anchor = cat;
-    while (anchor && anchor.parentNode && anchor.parentNode !== section) {
-      anchor = anchor.parentNode;
-    }
-    if (!anchor || anchor === section) anchor = cat;
-
-    var div = document.createElement('div');
-    div.id = 'pmg-pref-divider';
-    div.className = 'pmg-pref-divider';
-    var t = document.createElement('h4');
-    t.className = 'pmg-pref-divider__title';
-    t.textContent = 'Your preferences';
-    var s = document.createElement('p');
-    s.className = 'pmg-pref-divider__sub';
-    s.textContent = 'Set these once — they stay the same across prompts.';
-    div.appendChild(t);
-    div.appendChild(s);
-    anchor.parentNode.insertBefore(div, anchor);
-    prefDividerMounted = true;
-    return true;
-  }
-
-  /* IA-restructure-1 follow-up: force the legacy <details id="settingsPanel">
-     open so its body always renders. With the Pill as the only entry
-     point, the collapsed disclosure was redundant — CSS hides the
-     <summary>, and this keeps the body visible regardless of toggle
-     state. Idempotent. */
-  function forceSettingsPanelOpen() {
-    var sp = document.getElementById('settingsPanel');
-    if (sp && sp.tagName === 'DETAILS' && !sp.hasAttribute('open')) {
-      try { sp.open = true; } catch (_) {}
-    }
-  }
-
-  /* IA-restructure-2: build the two-zone cards inside #tuning-panel.
-     "Tune this prompt" wraps Quick Modes + epic-tuning + per-prompt
-     fields (Voice/Tone/Format/Length). "Your preferences" wraps the
-     Auto-Optimize meta toggle + set-once fields (Category/Experience/
-     Language). Reorders the .field children inside #settingsPanel's
-     .settings-grid so the two cards read conceptually. Idempotent. */
-  var PROMPT_FIELD_IDS = ['personality', 'tone', 'outputFormat', 'maxLength'];
-  var PREF_FIELD_IDS   = ['category', 'skillLevel', 'outputLanguage'];
-
-  function fieldWrapper(grid, id) {
-    var el = grid.querySelector('#' + id);
+  // DOM routing: id -> section variant
+  function fieldWrapper(scope, id) {
+    var el = scope.querySelector('#' + CSS.escape(id));
     if (!el) return null;
     var wrap = el.closest ? el.closest('.field') : null;
     return wrap || el.parentNode;
   }
 
-  var zonesBuilt = false;
-  function buildTwoZoneCards() {
-    if (zonesBuilt) return true;
+  function makeSectionCard(def) {
+    var card = document.createElement('section');
+    card.id = def.id;
+    card.className = 'pmg-section-card pmg-section-card--' + def.variant;
+    card.setAttribute('data-section', def.variant);
+    card.innerHTML =
+      '<header class="pmg-section-card__head">' +
+        '<h3 class="pmg-section-card__title">' + def.title + '</h3>' +
+        '<p class="pmg-section-card__sub">' + def.sub + '</p>' +
+      '</header>' +
+      '<div class="pmg-section-card__body" data-section-body="' + def.variant + '"></div>';
+    return card;
+  }
+
+  var sectionsBuilt = false;
+  function buildFiveSections() {
+    if (sectionsBuilt) return true;
     var panel = $('tuning-panel');
     if (!panel) return false;
+
+    // Wait for chassis to have finished injecting #pmgv3-epic-tuning.
+    if (!panel.querySelector('#pmgv3-epic-tuning #pmgv3-reasoning-select')) return false;
+
     var section = panel.querySelector('.tuning-section') || panel;
-    if (section.querySelector('#pmg-zone-prompt')) { zonesBuilt = true; return true; }
+    if (section.querySelector('#pmg-section-modes')) { sectionsBuilt = true; return true; }
 
     var sp = panel.querySelector('#settingsPanel');
     if (!sp) return false;
-    var grid = sp.querySelector('.settings-grid');
-    if (!grid) return false;
+    var grid = sp.querySelector('.settings-grid') || sp;
 
-    /* Race guard: chassis-v3 mounts #pmgv3-epic-tuning (Reasoning +
-       Strict Fact-Checking + Audience) AFTER its boot. If we run
-       before that, the prompt card would be built without it and the
-       zonesBuilt latch would prevent retry. Defer until the chassis
-       has populated the container — we detect by checking for the
-       reasoning select that lives inside it. The poll keeps ticking
-       (up to 16s) so this just retries on the next tick. */
-    var epicReady = panel.querySelector('#pmgv3-epic-tuning #pmgv3-reasoning-select');
-    if (!epicReady) return false;
+    // Build all 5 cards, insert at top of section in order.
+    var cards = {};
+    var i;
+    for (i = SECTIONS.length - 1; i >= 0; i--) {
+      var c = makeSectionCard(SECTIONS[i]);
+      section.insertBefore(c, section.firstChild);
+      cards[SECTIONS[i].variant] = c.querySelector('.pmg-section-card__body');
+    }
 
-    var promptCard = document.createElement('section');
-    promptCard.id = 'pmg-zone-prompt';
-    promptCard.className = 'pmg-zone-card pmg-zone-card--prompt';
-    promptCard.innerHTML =
-      '<header class="pmg-zone-card__head">' +
-        '<h3 class="pmg-zone-card__title">Tune this prompt</h3>' +
-        '<p class="pmg-zone-card__sub">These can change every time.</p>' +
-      '</header>' +
-      '<div class="pmg-zone-card__body" data-zone="prompt"></div>';
-
-    var prefCard = document.createElement('section');
-    prefCard.id = 'pmg-zone-pref';
-    prefCard.className = 'pmg-zone-card pmg-zone-card--pref';
-    prefCard.innerHTML =
-      '<header class="pmg-zone-card__head">' +
-        '<h3 class="pmg-zone-card__title">Your preferences</h3>' +
-        '<p class="pmg-zone-card__sub">Set these once \u2014 they stay the same across prompts.</p>' +
-      '</header>' +
-      '<div class="pmg-zone-card__body" data-zone="pref"></div>';
-
-    // Insert both cards at the top of the section so they appear above
-    // anything else the chassis renders. Order matters: prompt first.
-    section.insertBefore(prefCard, section.firstChild);
-    section.insertBefore(promptCard, section.firstChild);
-
-    var promptBody = promptCard.querySelector('[data-zone="prompt"]');
-    var prefBody   = prefCard.querySelector('[data-zone="pref"]');
-
-    // 1. Quick Modes row at the very top of the prompt card.
+    // ----- Section 1: Quick modes (chip row) -----
     var qm = section.querySelector('#pmg-qm-row');
-    if (qm) promptBody.appendChild(qm);
+    if (qm) cards.modes.appendChild(qm);
 
-    // 2. Epic-tuning (Reasoning + Strict Fact-Checking + Audience).
+    // ----- Section 2: Style (epic-tuning + Voice + Tone) -----
     var epic = panel.querySelector('#pmgv3-epic-tuning');
-    if (epic) promptBody.appendChild(epic);
-
-    // 3. Per-prompt fields in declared order.
-    PROMPT_FIELD_IDS.forEach(function (id) {
+    if (epic) cards.style.appendChild(epic);
+    ['personality', 'tone'].forEach(function (id) {
       var w = fieldWrapper(grid, id);
-      if (w) promptBody.appendChild(w);
+      if (w) cards.style.appendChild(w);
     });
 
-    // 4. Pref card: Auto-Optimize mirror first (set-once meta control),
-    //    then the three pref fields. The mirror is the ONLY visible
-    //    Auto-Optimize entry point in chassis-v3 (the canonical row is
-    //    CSS-hidden) so we KEEP it, just relocate it visually.
-    var autoOptMirror = grid.querySelector('#auto-optimize-row-inside-settings');
-    if (autoOptMirror) prefBody.appendChild(autoOptMirror);
-    PREF_FIELD_IDS.forEach(function (id) {
+    // ----- Section 3: Output (Format / Length / Language / Platform) -----
+    ['outputFormat', 'maxLength', 'outputLanguage'].forEach(function (id) {
       var w = fieldWrapper(grid, id);
-      if (w) prefBody.appendChild(w);
+      if (w) cards.output.appendChild(w);
+    });
+    // Platform field is mounted by pmg-target-platform.js as a wrap
+    // (id "pmg-target-platform-field"), not via the standard .field
+    // pattern — look for it directly.
+    var platformWrap = document.getElementById('pmg-target-platform-field');
+    if (platformWrap) cards.output.appendChild(platformWrap);
+
+    // ----- Section 4: Preferences (Auto-Optimize mirror first, then
+    // Category + Experience). Auto-Optimize mirror is the ONLY visible
+    // entry point because chassis-v3 globally hides .auto-optimize-row;
+    // companion CSS re-reveals it within the overlay-open scope. -----
+    var autoOpt = grid.querySelector('#auto-optimize-row-inside-settings');
+    if (autoOpt) cards.prefs.appendChild(autoOpt);
+    ['category', 'skillLevel'].forEach(function (id) {
+      var w = fieldWrapper(grid, id);
+      if (w) cards.prefs.appendChild(w);
     });
 
-    // The legacy "Your preferences" divider from IA-restructure-1 is
-    // now redundant — the pref card title replaces it. Clean it up.
+    // ----- Section 5: Expert Command Center (the standout) -----
+    // INVARIANT (IA-restructure-3): the expert nodes are intentionally
+    // relocated PERMANENTLY into the overlay on first open. The chip
+    // overlay is now their single home — the builder header no longer
+    // surfaces an Expert entry point. Do not add a "restore on close"
+    // path; that would re-introduce the visual noise we just removed.
+    // Other scripts (pmg-expert-center, pmg-ux, post-spec) query the
+    // nodes by global ID so the move is wiring-safe.
+    var expertHint = document.getElementById('builder-expert-hint');
+    var expertToggleWrap = document.getElementById('expert-mode-toggle-wrap');
+    var expertLink = document.getElementById('expert-mode-link');
+    if (expertHint) cards.expert.appendChild(expertHint);
+    if (expertToggleWrap) cards.expert.appendChild(expertToggleWrap);
+    if (expertLink) {
+      var linkRow = document.createElement('div');
+      linkRow.className = 'pmg-expert-cta-row';
+      linkRow.appendChild(expertLink);
+      cards.expert.appendChild(linkRow);
+    }
+
+    // Clean up the now-redundant IA-restructure-1 divider if present
+    // (it sat above #category and is replaced by the prefs card head).
     var oldDivider = section.querySelector('#pmg-pref-divider');
     if (oldDivider) oldDivider.remove();
 
-    zonesBuilt = true;
+    sectionsBuilt = true;
     return true;
   }
 
-  function tick() {
-    forceSettingsPanelOpen();
-    var a = mountModesRow();
-    var b = mountPreferencesDivider();
-    var c = buildTwoZoneCards();
-    return a && b && c;
+  // ----- Overlay-open observer: triggers section build only inside the
+  // ----- chip overlay so the homepage stays clean. Idempotent + retries
+  // ----- for up to ~6 seconds in case chassis injection lags. ---------
+  function scheduleBuildInsideOverlay() {
+    if (sectionsBuilt) return;
+    var attempts = 0;
+    var iv = setInterval(function () {
+      attempts++;
+      if (buildFiveSections() || attempts > 60) clearInterval(iv);
+    }, 100);
+  }
+
+  function observeOverlayOpen() {
+    if (!document.body) return;
+    // If overlay already open at script init time, build immediately.
+    if (document.body.classList.contains('pmg-tune-overlay-open')) {
+      scheduleBuildInsideOverlay();
+    }
+    var mo = new MutationObserver(function (records) {
+      for (var i = 0; i < records.length; i++) {
+        if (records[i].attributeName === 'class') {
+          if (document.body.classList.contains('pmg-tune-overlay-open')) {
+            scheduleBuildInsideOverlay();
+            // Keep observing — overlay may close+reopen and the
+            // sections persist (sectionsBuilt latch prevents rebuild).
+          }
+        }
+      }
+    });
+    mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  function tickChips() {
+    return mountModesRow();
   }
 
   function boot() {
-    if (tick()) return;
-    var tries = 0;
-    var iv = setInterval(function () {
-      tries++;
-      if (tick() || tries > 80) clearInterval(iv);
-    }, 200);
+    if (!tickChips()) {
+      var tries = 0;
+      var iv = setInterval(function () {
+        tries++;
+        if (tickChips() || tries > 80) clearInterval(iv);
+      }, 200);
+    }
+    observeOverlayOpen();
   }
 
   if (document.readyState === 'loading') {
