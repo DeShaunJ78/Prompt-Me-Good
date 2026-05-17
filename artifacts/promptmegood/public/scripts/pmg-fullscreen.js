@@ -181,16 +181,49 @@
     host.appendChild(btn);
   }
 
+  /* ai-fs-trigger-1 (2026-05-17): mirror injectInlineTrigger() for the
+     Run-With-AI response box. The streamed GPT response lives in
+     #aiResponseOutput inside #aiResponseSection (mounted into
+     .pmgv3-air-host by chassis-v3). Anchor an "Expand response" pill on
+     the section so users can pop long AI replies into the same
+     distraction-free overlay used by the prompt box. */
+  function injectAiResponseTrigger() {
+    var section = document.getElementById('aiResponseSection');
+    if (!section || section.querySelector('.pmg-fs-inline-trigger.pmg-fs-air-trigger')) return;
+    var out = document.getElementById('aiResponseOutput');
+    if (!out) return;
+    var pos = section.style.position;
+    if (pos !== 'absolute' && pos !== 'fixed' && pos !== 'relative') {
+      section.style.position = 'relative';
+    }
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pmg-fs-inline-trigger pmg-fs-air-trigger';
+    btn.setAttribute('aria-label', 'Expand AI response in distraction-free view');
+    btn.title = 'Expand AI response (ESC to close)';
+    btn.innerHTML = 'Expand response \u2197';
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      open(out, { title: 'AI Response', editable: false });
+    });
+    section.appendChild(btn);
+  }
+
+  function injectAllTriggers() {
+    injectInlineTrigger();
+    injectAiResponseTrigger();
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { autoBind(); injectInlineTrigger(); });
+    document.addEventListener('DOMContentLoaded', function () { autoBind(); injectAllTriggers(); });
   } else {
     autoBind();
-    injectInlineTrigger();
+    injectAllTriggers();
   }
 
   // Re-scan when DOM changes (visual studio panels mount async).
   if ('MutationObserver' in window) {
-    var mo = new MutationObserver(function () { autoBind(); injectInlineTrigger(); });
+    var mo = new MutationObserver(function () { autoBind(); injectAllTriggers(); });
     mo.observe(document.body || document.documentElement, { childList: true, subtree: true });
   }
 
