@@ -629,7 +629,14 @@ async function resolvePremiumGenerateModel(req: Request): Promise<PremiumGenerat
     const m = /^Bearer\s+(.+)$/i.exec(header);
     if (!m) return { model: GENERATE_MODEL, premiumUserId: undefined };
     const ctx = await resolveUserFromJwt(m[1]!.trim());
-    if (!ctx || ctx.plan !== "pro_studio") {
+    if (!ctx) return { model: GENERATE_MODEL, premiumUserId: undefined };
+    // owner-bypass-1: owner always gets GPT-5 on Expert and never
+    // consumes the PRO_STUDIO_GPT5_DAILY_CAP counter (premiumUserId
+    // stays undefined so refundPremium is a no-op).
+    if (isOwnerUserId(ctx.userId)) {
+      return { model: PREMIUM_TEXT_MODEL, premiumUserId: undefined };
+    }
+    if (ctx.plan !== "pro_studio") {
       return { model: GENERATE_MODEL, premiumUserId: undefined };
     }
     const reserved = await reservePremium(ctx.userId);
@@ -792,11 +799,17 @@ router.post("/run", runLimiter, runCostCheck, runCapWithTeaser, async (req, res)
   // standard paid model (gpt-4.1). Reservation is refunded in the catch
   // block / empty-stream branch so failed runs don't burn premium quota.
   let __runPremiumReservedFor: string | undefined;
-  if (__runPlan === "pro_studio" && __runUser?.userId) {
+  // owner-bypass-1: owner always gets GPT-5 on /run and never consumes
+  // the PRO_STUDIO_GPT5_DAILY_CAP counter (no reservation, no refund).
+  const __runIsOwner = isOwnerUserId(__runUser?.userId);
+  if (!__runIsOwner && __runPlan === "pro_studio" && __runUser?.userId) {
     const ok = await reservePremium(__runUser.userId);
     if (ok) __runPremiumReservedFor = __runUser.userId;
   }
-  const __runModel = __runPremiumReservedFor ? PREMIUM_TEXT_MODEL : modelForPlan(__runPlan);
+  const __runModel =
+    __runIsOwner || __runPremiumReservedFor
+      ? PREMIUM_TEXT_MODEL
+      : modelForPlan(__runPlan);
   // premium-model-sub-cap-1 fix: idempotency guard for stream paths that
   // can refund from empty-stream AND then throw on res.write/res.end.
   let __runPremiumRefunded = false;
