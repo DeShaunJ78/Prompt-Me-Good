@@ -266,24 +266,24 @@
     });
 
     // ----- Section 5: Expert Command Center (the standout) -----
-    // INVARIANT (IA-restructure-3): the expert nodes are intentionally
-    // relocated PERMANENTLY into the overlay on first open. The chip
-    // overlay is now their single home — the builder header no longer
-    // surfaces an Expert entry point. Do not add a "restore on close"
-    // path; that would re-introduce the visual noise we just removed.
-    // Other scripts (pmg-expert-center, pmg-ux, post-spec) query the
-    // nodes by global ID so the move is wiring-safe.
+    // INVARIANT (IA-restructure-3): expert nodes are PERMANENTLY relocated
+    // into the overlay on first open. The chip overlay is now their single
+    // home. Other scripts (pmg-expert-center, pmg-ux, post-spec) query the
+    // nodes by global ID, so we keep them in the DOM either way.
+    //
+    // qm-15 (expert-dedupe-1): The card already says "Expert Command
+    // Center" twice (section title + switch label "Expert Command
+    // Center"). The legacy hint "Power user? Open the Expert Command
+    // Center for full control." and the CTA button "Open Expert
+    // Command Center →" added two more redundant mentions. Hide them
+    // (display:none keeps them queryable by other scripts) and leave
+    // ONLY the toggle switch inside the Expert card.
     var expertHint = document.getElementById('builder-expert-hint');
     var expertToggleWrap = document.getElementById('expert-mode-toggle-wrap');
     var expertLink = document.getElementById('expert-mode-link');
-    if (expertHint) cards.expert.appendChild(expertHint);
+    if (expertHint) expertHint.style.setProperty('display', 'none', 'important');
+    if (expertLink) expertLink.style.setProperty('display', 'none', 'important');
     if (expertToggleWrap) cards.expert.appendChild(expertToggleWrap);
-    if (expertLink) {
-      var linkRow = document.createElement('div');
-      linkRow.className = 'pmg-expert-cta-row';
-      linkRow.appendChild(expertLink);
-      cards.expert.appendChild(linkRow);
-    }
 
     // Clean up the now-redundant IA-restructure-1 divider if present
     // (it sat above #category and is replaced by the prefs card head).
