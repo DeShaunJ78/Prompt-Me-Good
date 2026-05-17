@@ -28,17 +28,20 @@
     if (window.localStorage && localStorage.getItem('pmg_tune_chips_disable') === '1') return;
   } catch (_) {}
 
-  // 4 main chips + 3 in the "More" popover.
+  // IA-restructure-1: Personality renamed → "Voice" (the dropdown still
+  // writes to the underlying #personality select). Tone moved into MORE
+  // as a per-prompt knob users rarely tweak. Category/Experience/Language
+  // are demoted into a "Your preferences (set once)" group inside MORE.
   var MAIN = [
-    { id: 'personality',   label: 'Personality' },
-    { id: 'tone',          label: 'Tone' },
+    { id: 'personality',   label: 'Voice' },
     { id: 'outputFormat',  label: 'Format' },
     { id: 'maxLength',     label: 'Length' }
   ];
   var MORE = [
-    { id: 'category',       label: 'Category' },
-    { id: 'skillLevel',     label: 'Experience' },
-    { id: 'outputLanguage', label: 'Language' }
+    { id: 'tone',           label: 'Tone',       group: 'prompt' },
+    { id: 'category',       label: 'Category',   group: 'pref' },
+    { id: 'skillLevel',     label: 'Experience', group: 'pref' },
+    { id: 'outputLanguage', label: 'Language',   group: 'pref' }
   ];
 
   var openPopover = null;          // currently visible popover element
@@ -193,9 +196,22 @@
     title.textContent = 'More tuning';
     pop.appendChild(title);
 
+    // IA-restructure-1: render MORE in two zones — "Tune this prompt"
+    // items first, then a quiet divider, then "Your preferences (set once)".
+    var lastGroup = null;
     MORE.forEach(function (def) {
       var sel = $(def.id);
       if (!sel) return;
+      var grp = def.group || 'prompt';
+      if (grp !== lastGroup) {
+        var hdr = document.createElement('div');
+        hdr.className = 'pmg-chip-pop__group';
+        hdr.textContent = (grp === 'pref')
+          ? 'Your preferences · set once'
+          : 'Tune this prompt';
+        pop.appendChild(hdr);
+        lastGroup = grp;
+      }
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'pmg-chip-pop__opt';

@@ -584,8 +584,11 @@ html.pmg-chassis-v3 .idea-section .field-label-row { display: none; }
 html.pmg-chassis-v3 .idea-section .helper { display: none; }
 html.pmg-chassis-v3 .idea-section #goal {
   width: 100%;
-  min-height: 100px;
-  max-height: 160px;
+  /* IA-restructure-1: bigger textbox since the Advanced Output Settings
+     drop-down beneath it is gone (replaced by Quick Modes chips in the
+     tuning overlay). The textbox is the hero — give it room. */
+  min-height: 150px;
+  max-height: 240px;
   resize: vertical;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(0, 200, 150, 0.3);
@@ -602,6 +605,14 @@ html.pmg-chassis-v3 .idea-section #goal:focus {
   border-color: var(--color-primary, #3ee0a0);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #3ee0a0) 22%, transparent);
 }
+/* IA-restructure-1: hide the legacy Advanced Output Settings <details>.
+   Its 3 toggles (#moneyMode / #humanTone / #clarityBoost) are still in
+   the DOM and fully functional — the new Quick Modes chip row inside
+   #tuning-panel (pmg-quick-modes.js) writes to them directly. Rolling
+   back: delete this rule + restore adv-mirror via
+   localStorage.pmg_adv_mirror_force='1'. */
+html.pmg-chassis-v3 #advanced-options,
+html.pmg-chassis-v3 details.advanced-options { display: none !important; }
 .btn-analyze {
   width: 100%;
   padding: 12px;

@@ -9,6 +9,19 @@
     if (localStorage.getItem('pmg_adv_mirror_disable') === '1') return;
   } catch (_) {}
 
+  /* IA-restructure-1: Advanced Output Settings mirror is REPLACED by
+     the Quick Modes chip row at the top of #tuning-panel
+     (pmg-quick-modes.js). Disabled by default to keep the main form
+     focused on the prompt textarea. Toggles are still functional —
+     the chips write to the same #moneyMode / #humanTone / #clarityBoost
+     checkboxes the mirror used to write to. To temporarily re-enable
+     this mirror (for debugging or rollback), set:
+       localStorage.pmg_adv_mirror_force = '1'
+     Rolling back further: delete this guard. */
+  try {
+    if (localStorage.getItem('pmg_adv_mirror_force') !== '1') return;
+  } catch (_) { return; }
+
   var FIELDS = [
     {
       mirrorId: 'pmg-adv-mirror-money',

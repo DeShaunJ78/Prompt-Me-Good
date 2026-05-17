@@ -1,0 +1,122 @@
+/* pmg-quick-modes.css — IA-restructure-1
+   Calm, uniform Quick Modes chip row at the top of the tuning overlay.
+   Matches the existing .pmg-chip aesthetic so nothing feels grafted on. */
+
+html.pmg-chassis-v3 .pmg-qm-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px 14px;
+  margin: 0 0 14px;
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 3%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 14%, transparent);
+  border-radius: 12px;
+}
+
+html.pmg-chassis-v3 .pmg-qm-row__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+html.pmg-chassis-v3 .pmg-qm-row__title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text, #e8f3ec) 75%, transparent);
+}
+
+html.pmg-chassis-v3 .pmg-qm-row__sub {
+  font-size: 11px;
+  color: color-mix(in srgb, var(--color-text, #e8f3ec) 50%, transparent);
+  line-height: 1.35;
+}
+
+html.pmg-chassis-v3 .pmg-qm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Inherit the existing chip pill shape (.pmg-chip) but suppress the
+   dropdown caret styling and add a small status dot on the left. */
+html.pmg-chassis-v3 .pmg-qm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--color-text, #e8f3ec) 82%, transparent);
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 22%, transparent);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+html.pmg-chassis-v3 .pmg-qm-chip:hover {
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 11%, transparent);
+  border-color: color-mix(in srgb, var(--color-primary, #3ee0a0) 38%, transparent);
+}
+
+html.pmg-chassis-v3 .pmg-qm-chip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #3ee0a0) 32%, transparent);
+}
+
+html.pmg-chassis-v3 .pmg-qm-chip__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-text, #e8f3ec) 25%, transparent);
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+  flex: 0 0 auto;
+}
+
+html.pmg-chassis-v3 .pmg-qm-chip__label {
+  line-height: 1;
+}
+
+html.pmg-chassis-v3 .pmg-qm-chip.is-on {
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 18%, transparent);
+  border-color: color-mix(in srgb, var(--color-primary, #3ee0a0) 55%, transparent);
+  color: var(--color-text, #e8f3ec);
+}
+
+html.pmg-chassis-v3 .pmg-qm-chip.is-on .pmg-qm-chip__dot {
+  background: var(--color-primary, #3ee0a0);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #3ee0a0) 24%, transparent);
+}
+
+/* "Your preferences" zone divider — quiet, just a labeled rule. */
+html.pmg-chassis-v3 .pmg-pref-divider {
+  margin: 22px 0 12px;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 14%, transparent);
+}
+
+html.pmg-chassis-v3 .pmg-pref-divider__title {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text, #e8f3ec) 75%, transparent);
+}
+
+html.pmg-chassis-v3 .pmg-pref-divider__sub {
+  margin: 0;
+  font-size: 11px;
+  color: color-mix(in srgb, var(--color-text, #e8f3ec) 50%, transparent);
+  line-height: 1.4;
+}
+
+@media (max-width: 480px) {
+  html.pmg-chassis-v3 .pmg-qm-row { padding: 10px 12px 12px; }
+  html.pmg-chassis-v3 .pmg-qm-chip { padding: 8px 11px; font-size: 13px; }
+}

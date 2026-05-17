@@ -1,3 +1,15 @@
+/* IA-restructure-1: "Your preferences · set once" group header inside
+   the More popover. Quiet uppercase mini-label, no border, just spacing. */
+html.pmg-chassis-v3 .pmg-chip-pop__group {
+  padding: 10px 4px 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text, #e8f3ec) 55%, transparent);
+}
+html.pmg-chassis-v3 .pmg-chip-pop__group:first-of-type { padding-top: 4px; }
+
 /* pmg-tune-chips.css — quick-access tuning chip row + Tune & Build button.
    Lives directly under the #goal textarea. Two-way bound to the existing
    <select> elements inside #settingsPanel (id="category|skillLevel|tone|
