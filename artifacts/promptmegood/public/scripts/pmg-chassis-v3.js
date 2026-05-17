@@ -1330,6 +1330,31 @@
         el.classList.remove('is-mobile-open');
         el.style.setProperty('display', 'none', 'important');
       });
+      /* cv3-startover-tune-fix (2026-05-17): The "Prompt Tuning" pill
+         adds body.pmg-tune-section-shown, which the pmg-tune-chips CSS
+         uses to force #tuning-panel + #settingsPanel to display:block
+         with !important — beating the inline display:none we just set
+         above. Result: user pressed Start Over and the "Customize prompt
+         tuning" disclosure card was still visible. Drop the body class
+         so the override no longer applies, collapse the <details> so
+         even if it re-mounts it isn't in the open state, and close the
+         full-screen tune overlay if it's still up. */
+      try { document.body.classList.remove('pmg-tune-section-shown'); } catch (e) {}
+      var spReset = document.getElementById('settingsPanel');
+      if (spReset && spReset.tagName === 'DETAILS') {
+        try { spReset.open = false; } catch (e) {}
+        try { spReset.removeAttribute('open'); } catch (e) {}
+      }
+      try {
+        var tuneOv = document.getElementById('pmg-tune-overlay');
+        if (tuneOv && tuneOv.classList.contains('is-open')
+            && window.pmgTuneChips && typeof window.pmgTuneChips.close === 'function') {
+          window.pmgTuneChips.close(false);
+        }
+      } catch (e) {}
+      /* Also dismiss any lingering ECC changes banner from a prior Apply,
+         since Start Over means a blank slate. */
+      try { if (window.pmgEccChanges && window.pmgEccChanges.hide) window.pmgEccChanges.hide(); } catch (e) {}
       // 5. Restore Analyze button + drop the post-analyze adornments
       var aBtn = document.getElementById('analyze-btn');
       if (aBtn) aBtn.style.removeProperty('display');
