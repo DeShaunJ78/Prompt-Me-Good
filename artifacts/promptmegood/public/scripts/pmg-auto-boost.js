@@ -368,6 +368,12 @@
   async function doBoost(scope, prompt, answers) {
     inFlight[scope] = true;
     setBtnState(scope, 'thinking', 'Adding expert structure…');
+    /* abt-1 (2026-05-17): full-screen takeover during /api/boost. Shows
+       what's happening + reassures the user the result is stronger.
+       Safe-fails silently if the takeover script isn't loaded. */
+    var takeover = window.pmgAutoBoostTakeover;
+    try { if (takeover && takeover.show) takeover.show(prompt); } catch (_) {}
+    var boostFailed = false;
     try {
       var body = { prompt: prompt, scope: scope };
       if (answers && Object.keys(answers).length) body.answers = answers;
@@ -378,15 +384,23 @@
       });
       var data = await res.json().catch(function () { return {}; });
       if (!res.ok || !data.result) {
+        boostFailed = true;
         toast(data.error || 'Boost failed. Try again.');
         return;
       }
       SUITES[scope].write(data.result);
       celebrateStrength();
-      toast('Boosted to Expert Level ⚡');
+      try { if (takeover && takeover.succeed) takeover.succeed(data.result); } catch (_) {}
+      /* Toast is redundant with the takeover's success state — skip it
+         when the takeover handled the reassurance. */
+      if (!takeover || !takeover.succeed) toast('Boosted to Expert Level ⚡');
     } catch (e) {
+      boostFailed = true;
       toast('Network error. Try again.');
     } finally {
+      if (boostFailed) {
+        try { if (takeover && takeover.fail) takeover.fail(); } catch (_) {}
+      }
       resetBtn(scope);
       inFlight[scope] = false;
     }
