@@ -11,7 +11,7 @@ import { generateLimiter, runLimiter, rateLimit, imageLimiter, videoLimiter } fr
 import { chargeCost, generateCostCheck, runCostCheck, imageCheck, imageCheckMulti, chargeImage } from "../middlewares/costGuard";
 import { userCapEnforce, resolveUserFromJwt } from "../middlewares/userCaps";
 import type { PmgPlan } from "../lib/pricing-config";
-import { effectiveCaps, TEASER_DAILY_CAP } from "../lib/pricing-config";
+import { effectiveCaps, TEASER_DAILY_CAP, PRO_STUDIO_GPT5_DAILY_CAP } from "../lib/pricing-config";
 import { reserveUserDay, refundUserDay } from "../lib/usage-store";
 import { isPaywallActive, isOwnerUserId } from "../lib/paywall";
 
@@ -417,12 +417,21 @@ router.post("/generate", generateLimiter, generateCostCheck, async (req, res) =>
   // premium-model-1 (2026-05-17): Pro Studio gets GPT-5 ONLY on Expert
   // Command Center calls (feature:"expert", tagged in pmg-expert-center.js).
   // All other /generate traffic (Auto-Boost, Tuning, chassis flows) stays
-  // on GENERATE_MODEL to protect margin.
-  const __genModel = await resolvePremiumGenerateModel(req);
+  // on GENERATE_MODEL to protect margin. premium-model-sub-cap-1: also
+  // capped at PRO_STUDIO_GPT5_DAILY_CAP/day per user.
+  const __genResolved = await resolvePremiumGenerateModel(req);
+  // premium-model-sub-cap-1 fix: idempotency guard so empty-response +
+  // exception paths can't double-refund and undercount the user's quota.
+  let __genPremiumRefunded = false;
+  const refundGenPremiumOnce = async () => {
+    if (__genPremiumRefunded) return;
+    __genPremiumRefunded = true;
+    await refundPremium(__genResolved.premiumUserId);
+  };
   try {
     const completion = await openai.chat.completions.create(
       {
-        model: __genModel,
+        model: __genResolved.model,
         max_completion_tokens: sampling.max_tokens,
         temperature: sampling.temperature,
         top_p: sampling.top_p,
@@ -432,6 +441,7 @@ router.post("/generate", generateLimiter, generateCostCheck, async (req, res) =>
     );
     const text = completion.choices[0]?.message?.content?.trim() ?? "";
     if (!text) {
+      await refundGenPremiumOnce();
       res.status(502).json({
         success: false,
         ok: false,
@@ -442,6 +452,7 @@ router.post("/generate", generateLimiter, generateCostCheck, async (req, res) =>
     bumpPromptCount();
     res.json({ success: true, ok: true, output: text, prompt: text, result: text });
   } catch (err) {
+    await refundGenPremiumOnce();
     logger.error({ err: err instanceof Error ? err.message : "unknown" }, "generate failed");
     res.status(502).json({
       success: false,
@@ -478,12 +489,22 @@ router.post("/generate-stream", generateLimiter, generateCostCheck, async (req, 
   }
 
   // premium-model-1 (2026-05-17): same Expert-only GPT-5 gate as /generate.
-  const __streamModel = await resolvePremiumGenerateModel(req);
+  const __streamResolved = await resolvePremiumGenerateModel(req);
+  // premium-model-sub-cap-1 fix: idempotency guard. Streams can refund
+  // from the empty-stream branch AND then have res.write/res.end throw
+  // into the catch; without this guard the second refund would
+  // undercount the user's daily quota.
+  let __streamPremiumRefunded = false;
+  const refundStreamPremiumOnce = async () => {
+    if (__streamPremiumRefunded) return;
+    __streamPremiumRefunded = true;
+    await refundPremium(__streamResolved.premiumUserId);
+  };
   let total = 0;
   try {
     const stream = await openai.chat.completions.create(
       {
-        model: __streamModel,
+        model: __streamResolved.model,
         max_completion_tokens: sampling.max_tokens,
         temperature: sampling.temperature,
         top_p: sampling.top_p,
@@ -500,10 +521,15 @@ router.post("/generate-stream", generateLimiter, generateCostCheck, async (req, 
         res.write(`data: ${JSON.stringify({ text })}\n\n`);
       }
     }
-    if (total > 0) bumpPromptCount();
+    if (total > 0) {
+      bumpPromptCount();
+    } else {
+      await refundStreamPremiumOnce();
+    }
     res.write("data: [DONE]\n\n");
     res.end();
   } catch (err) {
+    await refundStreamPremiumOnce();
     const message = err instanceof Error ? err.message : "AI service error";
     logger.error({ err: message }, "generate-stream failed");
     try {
@@ -550,27 +576,67 @@ function premiumModelForPlan(plan: PmgPlan | undefined): string {
   return plan === "pro_studio" ? PREMIUM_TEXT_MODEL : modelForPlan(plan);
 }
 
+/* premium-model-sub-cap-1 (2026-05-17): atomic per-user daily reservation
+   for GPT-5 calls. Returns true on success (caller may use GPT-5 and
+   should refundPremium() if the call later fails). Returns false when
+   the user has hit PRO_STUDIO_GPT5_DAILY_CAP — caller must fall back
+   to the non-premium model silently. Anonymous/non-pro_studio callers
+   short-circuit to false without touching the store. */
+async function reservePremium(userId: string | undefined): Promise<boolean> {
+  if (!userId) return false;
+  try {
+    const row = await reserveUserDay(userId, "gpt5", 1, PRO_STUDIO_GPT5_DAILY_CAP);
+    return row !== null;
+  } catch (err) {
+    logger.warn(
+      { err: err instanceof Error ? err.message : "unknown" },
+      "premium gpt5 reservation failed; falling back",
+    );
+    return false;
+  }
+}
+async function refundPremium(userId: string | undefined): Promise<void> {
+  if (!userId) return;
+  try {
+    await refundUserDay(userId, "gpt5", 1);
+  } catch {
+    /* best-effort */
+  }
+}
+
 /* Resolves the model for /generate and /generate-stream. Returns GPT-5 only
-   when BOTH conditions hold: (1) the request body tags feature:"expert"
-   (Expert Command Center / Fix Like A Prompt Architect), and (2) the
-   authenticated user's plan is "pro_studio". Otherwise returns the
-   default GENERATE_MODEL (gpt-4.1-mini) — protects margin on the high-
-   volume Auto-Boost / Tuning / chassis traffic that also hits /generate.
-   Plan resolution is best-effort: if the JWT is missing, invalid, or
-   Supabase is unreachable, we fall through to the default without
-   throwing — the user just doesn't get the premium upgrade. */
-async function resolvePremiumGenerateModel(req: Request): Promise<string> {
+   when ALL conditions hold: (1) the request body tags feature:"expert"
+   (Expert Command Center / Fix Like A Prompt Architect), (2) the
+   authenticated user's plan is "pro_studio", and (3) the user has not
+   exhausted PRO_STUDIO_GPT5_DAILY_CAP today (atomic reservation via
+   reserveUserDay). Otherwise returns GENERATE_MODEL (gpt-4.1-mini) —
+   protects margin on the high-volume Auto-Boost / Tuning / chassis
+   traffic that also hits /generate. Plan resolution is best-effort:
+   missing/invalid JWT or Supabase outage all fall through silently.
+   Returned `premiumUserId` is set only when a GPT-5 reservation was
+   actually consumed; caller passes it to refundPremium() if the
+   downstream OpenAI call fails so we don't burn the user's daily
+   GPT-5 quota on failed work. */
+interface PremiumGenerateResolution {
+  model: string;
+  premiumUserId: string | undefined;
+}
+async function resolvePremiumGenerateModel(req: Request): Promise<PremiumGenerateResolution> {
   try {
     const feature = (req.body as { feature?: unknown } | undefined)?.feature;
-    if (feature !== "expert") return GENERATE_MODEL;
+    if (feature !== "expert") return { model: GENERATE_MODEL, premiumUserId: undefined };
     const header = req.headers.authorization || "";
     const m = /^Bearer\s+(.+)$/i.exec(header);
-    if (!m) return GENERATE_MODEL;
+    if (!m) return { model: GENERATE_MODEL, premiumUserId: undefined };
     const ctx = await resolveUserFromJwt(m[1]!.trim());
-    if (!ctx) return GENERATE_MODEL;
-    return ctx.plan === "pro_studio" ? PREMIUM_TEXT_MODEL : GENERATE_MODEL;
+    if (!ctx || ctx.plan !== "pro_studio") {
+      return { model: GENERATE_MODEL, premiumUserId: undefined };
+    }
+    const reserved = await reservePremium(ctx.userId);
+    if (!reserved) return { model: GENERATE_MODEL, premiumUserId: undefined };
+    return { model: PREMIUM_TEXT_MODEL, premiumUserId: ctx.userId };
   } catch {
-    return GENERATE_MODEL;
+    return { model: GENERATE_MODEL, premiumUserId: undefined };
   }
 }
 // run-cap-2 (2026-05-12): bumped 8000 → 32000 input, 1000 → 4000 output.
@@ -718,10 +784,29 @@ router.post("/run", runLimiter, runCostCheck, runCapWithTeaser, async (req, res)
     (res as unknown as { flushHeaders: () => void }).flushHeaders();
   }
 
+  const __runUser = (req as Request & { pmgUser?: { plan: PmgPlan; userId: string } }).pmgUser;
+  const __runPlan = __runUser?.plan;
+  // premium-model-sub-cap-1 (2026-05-17): pro_studio gets GPT-5 only when
+  // their per-day GPT-5 quota (PRO_STUDIO_GPT5_DAILY_CAP) has capacity.
+  // On exhaustion or any reservation error, silently fall back to the
+  // standard paid model (gpt-4.1). Reservation is refunded in the catch
+  // block / empty-stream branch so failed runs don't burn premium quota.
+  let __runPremiumReservedFor: string | undefined;
+  if (__runPlan === "pro_studio" && __runUser?.userId) {
+    const ok = await reservePremium(__runUser.userId);
+    if (ok) __runPremiumReservedFor = __runUser.userId;
+  }
+  const __runModel = __runPremiumReservedFor ? PREMIUM_TEXT_MODEL : modelForPlan(__runPlan);
+  // premium-model-sub-cap-1 fix: idempotency guard for stream paths that
+  // can refund from empty-stream AND then throw on res.write/res.end.
+  let __runPremiumRefunded = false;
+  const refundRunPremiumOnce = async () => {
+    if (__runPremiumRefunded) return;
+    __runPremiumRefunded = true;
+    await refundPremium(__runPremiumReservedFor);
+  };
   let total = 0;
   try {
-    const __runPlan = (req as Request & { pmgUser?: { plan: PmgPlan } }).pmgUser?.plan;
-    const __runModel = premiumModelForPlan(__runPlan);
     const stream = await openai.chat.completions.create({
       model: __runModel,
       max_completion_tokens: RUN_MAX_OUTPUT_TOKENS,
@@ -739,10 +824,15 @@ router.post("/run", runLimiter, runCostCheck, runCapWithTeaser, async (req, res)
         res.write(`data: ${JSON.stringify({ text })}\n\n`);
       }
     }
-    if (total > 0) bumpRunCount();
+    if (total > 0) {
+      bumpRunCount();
+    } else {
+      await refundRunPremiumOnce();
+    }
     res.write("data: [DONE]\n\n");
     res.end();
   } catch (err) {
+    await refundRunPremiumOnce();
     const message = err instanceof Error ? err.message : "AI execution failed. Please try again.";
     logger.error({ err: message }, "run failed");
     try {

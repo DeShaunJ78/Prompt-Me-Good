@@ -42,6 +42,11 @@ interface UserDay {
   // hits their Run cap. Capped at TEASER_DAILY_CAP (1/day). Optional
   // for the same forward-compat reason as `vid?` above.
   teaser?: number;
+  // premium-model-sub-cap-1 (2026-05-17): per-user daily counter for
+  // GPT-5 calls (Pro Studio only, across Run With AI + Expert Command
+  // Center). Capped at PRO_STUDIO_GPT5_DAILY_CAP (25/day). Optional
+  // for the same forward-compat reason as `vid?` / `teaser?` above.
+  gpt5?: number;
 }
 
 interface CacheEntry {
@@ -98,7 +103,7 @@ async function fetchFromSupabase(userId: string, date: string): Promise<UserDay 
   try {
     const { data, error } = await supabaseAdmin
       .from("user_usage_daily")
-      .select("usage_date, run_count, img_count, analyze_count, vid_count")
+      .select("usage_date, run_count, img_count, analyze_count, vid_count, gpt5_count")
       .eq("user_id", userId)
       .eq("usage_date", date)
       .maybeSingle();
@@ -117,7 +122,7 @@ async function fetchFromSupabase(userId: string, date: string): Promise<UserDay 
       return null;
     }
     if (!data) {
-      return { date, run: 0, img: 0, analyze: 0, vid: 0 };
+      return { date, run: 0, img: 0, analyze: 0, vid: 0, gpt5: 0 };
     }
     const row = data as {
       usage_date: string;
@@ -125,6 +130,10 @@ async function fetchFromSupabase(userId: string, date: string): Promise<UserDay 
       img_count: number | null;
       analyze_count: number | null;
       vid_count: number | null;
+      // premium-model-sub-cap-1 (2026-05-17): nullable to remain
+      // forward-compatible with databases that have not yet applied
+      // migration 002_user_usage_gpt5.sql.
+      gpt5_count: number | null;
     };
     return {
       date: row.usage_date,
@@ -132,6 +141,7 @@ async function fetchFromSupabase(userId: string, date: string): Promise<UserDay 
       img: row.img_count ?? 0,
       analyze: row.analyze_count ?? 0,
       vid: row.vid_count ?? 0,
+      gpt5: row.gpt5_count ?? 0,
     };
   } catch (err) {
     logger.warn(
@@ -170,6 +180,12 @@ async function flushPending(): Promise<void> {
             img_count: row.img,
             analyze_count: row.analyze,
             vid_count: row.vid ?? 0,
+            // premium-model-sub-cap-1 (2026-05-17): persisted alongside
+            // the other counters. If migration 002_user_usage_gpt5.sql
+            // has not been applied yet, Supabase will reject the column
+            // with PGRST204 / 42703 — caught generically below and
+            // logged; the JSON fallback still records the value.
+            gpt5_count: row.gpt5 ?? 0,
             updated_at: new Date().toISOString(),
           },
           { onConflict: "user_id,usage_date" },
@@ -226,8 +242,8 @@ export async function getUserDay(userId: string): Promise<UserDay> {
     const fallback = jsonStore[userId];
     row =
       fallback && fallback.date === date
-        ? { ...fallback, vid: fallback.vid ?? 0 }
-        : { date, run: 0, img: 0, analyze: 0, vid: 0 };
+        ? { ...fallback, vid: fallback.vid ?? 0, gpt5: fallback.gpt5 ?? 0 }
+        : { date, run: 0, img: 0, analyze: 0, vid: 0, gpt5: 0 };
   }
   cache.set(key, { expires: now + CACHE_TTL_MS, row });
   return row;

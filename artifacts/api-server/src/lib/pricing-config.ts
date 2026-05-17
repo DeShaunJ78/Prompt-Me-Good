@@ -63,7 +63,14 @@ export const PMG_PRICING = {
    gap at userCaps.ts:131 where `caps[feature]` could otherwise be
    indexed with "teaser" against a DailyCaps shape that doesn't have it. */
 export type PmgCapFeature = "run" | "img" | "analyze" | "vid";
-export type PmgFeature = PmgCapFeature | "teaser";
+/* premium-model-sub-cap-1 (2026-05-17): "gpt5" tracks daily GPT-5 usage
+   for Pro Studio users across both premium surfaces (Run With AI and
+   Expert Command Center). Reserved/refunded directly via reserveUserDay
+   in ai.ts — never flows through userCapEnforce. Capped at
+   PRO_STUDIO_GPT5_DAILY_CAP per user/day so margin holds even when the
+   user maxes their main Run cap; once exhausted, premium surfaces fall
+   back to gpt-4.1 silently. */
+export type PmgFeature = PmgCapFeature | "teaser" | "gpt5";
 
 /* cap-compare-1 (2026-05-13): when a free user hits the daily Run cap,
    the server attempts ONE real gpt-4.1 teaser (~80 tokens, non-streaming)
@@ -72,6 +79,12 @@ export type PmgFeature = PmgCapFeature | "teaser";
    1/day is intentional — the panel is a conversion moment, not a feature.
    Paid users never hit this code path. */
 export const TEASER_DAILY_CAP = 1;
+
+/* premium-model-sub-cap-1 (2026-05-17): Pro Studio GPT-5 daily cap.
+   25 calls/day at ~$0.012/call ≈ $0.30/day = ~$9/mo worst case per
+   Pro Studio user. Floors monthly margin at ~$15/user even on max
+   abusers. Free/Pro/Founding never reach this code path. */
+export const PRO_STUDIO_GPT5_DAILY_CAP = 25;
 export type PmgPlan = "free" | "founding" | "pro" | "pro_studio";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
