@@ -176,7 +176,11 @@
     var section = panel.querySelector('.tuning-section') || panel;
     if (section.querySelector('#pmg-section-modes')) { sectionsBuilt = true; return true; }
 
-    var sp = panel.querySelector('#settingsPanel');
+    // ARCHITECTURE NOTE: chassis-v3 keeps #settingsPanel inside
+    // #pmgv3-idea-host (the goal-field slot) — NOT inside #tuning-panel.
+    // So we have to look it up globally, then physically move its
+    // children into our section cards that live inside #tuning-panel.
+    var sp = document.getElementById('settingsPanel');
     if (!sp) return false;
     var grid = sp.querySelector('.settings-grid') || sp;
 
@@ -253,14 +257,20 @@
   }
 
   // ----- Overlay-open observer: triggers section build only inside the
-  // ----- chip overlay so the homepage stays clean. Idempotent + retries
-  // ----- for up to ~6 seconds in case chassis injection lags. ---------
+  // ----- chip overlay so the homepage stays clean. Idempotent + a SINGLE
+  // ----- shared retry loop so MutationObserver re-fires don't spawn
+  // ----- parallel intervals (previous build hit 54k attempts in 3s). --
+  var _retryIv = null;
+  var _retryAttempts = 0;
   function scheduleBuildInsideOverlay() {
-    if (sectionsBuilt) return;
-    var attempts = 0;
-    var iv = setInterval(function () {
-      attempts++;
-      if (buildFiveSections() || attempts > 60) clearInterval(iv);
+    if (sectionsBuilt || _retryIv) return;
+    _retryAttempts = 0;
+    _retryIv = setInterval(function () {
+      _retryAttempts++;
+      if (buildFiveSections() || _retryAttempts > 60) {
+        clearInterval(_retryIv);
+        _retryIv = null;
+      }
     }, 100);
   }
 
