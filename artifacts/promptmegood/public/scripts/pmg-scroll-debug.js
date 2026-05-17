@@ -21,13 +21,14 @@
 (function () {
   'use strict';
 
-  var enabled = false;
+  /* dbg-2 (2026-05-16): kill the URL gate. User visited /app?dbgscroll=1
+     and reported "no scan occurred, no printed page" — most likely the
+     param didn't survive a redirect or they tapped a link that stripped
+     it. For this debug session ONLY, always run. Removed immediately
+     after data capture. To disable: localStorage.pmg_scroll_debug='off' */
   try {
-    var qs = (location.search || '').toLowerCase();
-    if (qs.indexOf('dbgscroll=1') !== -1) enabled = true;
-    if (!enabled && localStorage.getItem('pmg_scroll_debug') === '1') enabled = true;
+    if (localStorage.getItem('pmg_scroll_debug') === 'off') return;
   } catch (_) {}
-  if (!enabled) return;
 
   var log = [];
   var t0 = Date.now();
