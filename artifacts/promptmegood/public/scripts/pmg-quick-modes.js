@@ -26,11 +26,16 @@
     if (window.localStorage && localStorage.getItem('pmg_quick_modes_disable') === '1') return;
   } catch (_) {}
 
+  // IA-restructure-2: Fact-check chip removed. The "Strict Fact-Checking
+  // Mode" labeled toggle inside #pmgv3-epic-tuning is the single
+  // discoverable entry point for the same underlying checkbox
+  // (#pmgv3-calibrated-confidence). The toggle has space for the full
+  // explainer text that a chip + tooltip can't show on mobile.
+  // Chips are now strictly STYLE knobs (Growth / Human / Clear).
   var MODES = [
-    { id: 'moneyMode',    label: 'Growth',     hint: 'Biases output toward sales, marketing, and conversion-focused phrasing.' },
-    { id: 'humanTone',    label: 'Human',      hint: 'Adds natural phrasing and reduces obvious robotic patterns.' },
-    { id: 'clarityBoost', label: 'Clear',      hint: 'Improves structure and makes the response easier to scan and act on.' },
-    { id: 'pmgv3-calibrated-confidence', label: 'Fact-check', hint: 'Asks the model to flag uncertain claims instead of guessing.' }
+    { id: 'moneyMode',    label: 'Growth', hint: 'Biases output toward sales, marketing, and conversion-focused phrasing.' },
+    { id: 'humanTone',    label: 'Human',  hint: 'Adds natural phrasing and reduces obvious robotic patterns.' },
+    { id: 'clarityBoost', label: 'Clear',  hint: 'Improves structure and makes the response easier to scan and act on.' }
   ];
 
   function $(id) { return document.getElementById(id); }
@@ -183,11 +188,113 @@
     }
   }
 
+  /* IA-restructure-2: build the two-zone cards inside #tuning-panel.
+     "Tune this prompt" wraps Quick Modes + epic-tuning + per-prompt
+     fields (Voice/Tone/Format/Length). "Your preferences" wraps the
+     Auto-Optimize meta toggle + set-once fields (Category/Experience/
+     Language). Reorders the .field children inside #settingsPanel's
+     .settings-grid so the two cards read conceptually. Idempotent. */
+  var PROMPT_FIELD_IDS = ['personality', 'tone', 'outputFormat', 'maxLength'];
+  var PREF_FIELD_IDS   = ['category', 'skillLevel', 'outputLanguage'];
+
+  function fieldWrapper(grid, id) {
+    var el = grid.querySelector('#' + id);
+    if (!el) return null;
+    var wrap = el.closest ? el.closest('.field') : null;
+    return wrap || el.parentNode;
+  }
+
+  var zonesBuilt = false;
+  function buildTwoZoneCards() {
+    if (zonesBuilt) return true;
+    var panel = $('tuning-panel');
+    if (!panel) return false;
+    var section = panel.querySelector('.tuning-section') || panel;
+    if (section.querySelector('#pmg-zone-prompt')) { zonesBuilt = true; return true; }
+
+    var sp = panel.querySelector('#settingsPanel');
+    if (!sp) return false;
+    var grid = sp.querySelector('.settings-grid');
+    if (!grid) return false;
+
+    /* Race guard: chassis-v3 mounts #pmgv3-epic-tuning (Reasoning +
+       Strict Fact-Checking + Audience) AFTER its boot. If we run
+       before that, the prompt card would be built without it and the
+       zonesBuilt latch would prevent retry. Defer until the chassis
+       has populated the container — we detect by checking for the
+       reasoning select that lives inside it. The poll keeps ticking
+       (up to 16s) so this just retries on the next tick. */
+    var epicReady = panel.querySelector('#pmgv3-epic-tuning #pmgv3-reasoning-select');
+    if (!epicReady) return false;
+
+    var promptCard = document.createElement('section');
+    promptCard.id = 'pmg-zone-prompt';
+    promptCard.className = 'pmg-zone-card pmg-zone-card--prompt';
+    promptCard.innerHTML =
+      '<header class="pmg-zone-card__head">' +
+        '<h3 class="pmg-zone-card__title">Tune this prompt</h3>' +
+        '<p class="pmg-zone-card__sub">These can change every time.</p>' +
+      '</header>' +
+      '<div class="pmg-zone-card__body" data-zone="prompt"></div>';
+
+    var prefCard = document.createElement('section');
+    prefCard.id = 'pmg-zone-pref';
+    prefCard.className = 'pmg-zone-card pmg-zone-card--pref';
+    prefCard.innerHTML =
+      '<header class="pmg-zone-card__head">' +
+        '<h3 class="pmg-zone-card__title">Your preferences</h3>' +
+        '<p class="pmg-zone-card__sub">Set these once \u2014 they stay the same across prompts.</p>' +
+      '</header>' +
+      '<div class="pmg-zone-card__body" data-zone="pref"></div>';
+
+    // Insert both cards at the top of the section so they appear above
+    // anything else the chassis renders. Order matters: prompt first.
+    section.insertBefore(prefCard, section.firstChild);
+    section.insertBefore(promptCard, section.firstChild);
+
+    var promptBody = promptCard.querySelector('[data-zone="prompt"]');
+    var prefBody   = prefCard.querySelector('[data-zone="pref"]');
+
+    // 1. Quick Modes row at the very top of the prompt card.
+    var qm = section.querySelector('#pmg-qm-row');
+    if (qm) promptBody.appendChild(qm);
+
+    // 2. Epic-tuning (Reasoning + Strict Fact-Checking + Audience).
+    var epic = panel.querySelector('#pmgv3-epic-tuning');
+    if (epic) promptBody.appendChild(epic);
+
+    // 3. Per-prompt fields in declared order.
+    PROMPT_FIELD_IDS.forEach(function (id) {
+      var w = fieldWrapper(grid, id);
+      if (w) promptBody.appendChild(w);
+    });
+
+    // 4. Pref card: Auto-Optimize mirror first (set-once meta control),
+    //    then the three pref fields. The mirror is the ONLY visible
+    //    Auto-Optimize entry point in chassis-v3 (the canonical row is
+    //    CSS-hidden) so we KEEP it, just relocate it visually.
+    var autoOptMirror = grid.querySelector('#auto-optimize-row-inside-settings');
+    if (autoOptMirror) prefBody.appendChild(autoOptMirror);
+    PREF_FIELD_IDS.forEach(function (id) {
+      var w = fieldWrapper(grid, id);
+      if (w) prefBody.appendChild(w);
+    });
+
+    // The legacy "Your preferences" divider from IA-restructure-1 is
+    // now redundant — the pref card title replaces it. Clean it up.
+    var oldDivider = section.querySelector('#pmg-pref-divider');
+    if (oldDivider) oldDivider.remove();
+
+    zonesBuilt = true;
+    return true;
+  }
+
   function tick() {
     forceSettingsPanelOpen();
     var a = mountModesRow();
     var b = mountPreferencesDivider();
-    return a && b;
+    var c = buildTwoZoneCards();
+    return a && b && c;
   }
 
   function boot() {

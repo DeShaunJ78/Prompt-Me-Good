@@ -150,3 +150,56 @@ html.pmg-chassis-v3 #settingsPanel:not([open]) {
 html.pmg-chassis-v3 #settingsPanel:not([open]) > *:not(summary) {
   display: revert;
 }
+
+/* IA-restructure-2: two-zone cards inside the tuning overlay.
+   Quiet teal-tinted containers; the card title carries the zone label
+   so the legacy chassis "Tune Your Prompt · 7 picks" header is no
+   longer needed (already CSS-hidden above). */
+html.pmg-chassis-v3 .pmg-zone-card {
+  margin: 0 0 16px;
+  padding: 14px 14px 16px;
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 16%, transparent);
+  border-radius: 14px;
+}
+html.pmg-chassis-v3 .pmg-zone-card__head {
+  margin: 0 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+html.pmg-chassis-v3 .pmg-zone-card__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text, #e8f3ec);
+  letter-spacing: 0.01em;
+}
+html.pmg-chassis-v3 .pmg-zone-card__sub {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: color-mix(in srgb, var(--color-text, #e8f3ec) 55%, transparent);
+}
+html.pmg-chassis-v3 .pmg-zone-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* When the Quick Modes row lives INSIDE a zone card, drop its own
+   card chrome so it doesn't read as a card-within-a-card. */
+html.pmg-chassis-v3 .pmg-zone-card .pmg-qm-row {
+  margin: 0;
+  padding: 0 0 4px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+/* Pref card has a slightly cooler tint so the two zones are visually
+   distinct without being loud. */
+html.pmg-chassis-v3 .pmg-zone-card--pref {
+  background: color-mix(in srgb, var(--color-text, #e8f3ec) 3%, transparent);
+  border-color: color-mix(in srgb, var(--color-text, #e8f3ec) 12%, transparent);
+}
