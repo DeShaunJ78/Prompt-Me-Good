@@ -189,6 +189,19 @@ html.pmg-chassis-v3 .pmg-section-card {
   border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 16%, transparent);
   border-radius: 14px;
 }
+/* qm-14 (empty-pill-1): #settingsPanel is the legacy <details>
+   disclosure ("🎛️ Customize…") rendered inside #pmgv3-idea-host.
+   After IA-restructure-3 all of its tuning fields are owned by the
+   Prompt Tuning overlay's 5 section cards (built by this file). The
+   collapsed summary was the empty pill the user saw above the Build
+   button. Hide the panel permanently on the homepage — display:none
+   keeps the children in the DOM so buildFiveSections can still move
+   them into the overlay cards when the overlay opens. Safe: no legacy
+   code opens/scrolls #settingsPanel on the homepage. */
+html.pmg-chassis-v3 #settingsPanel {
+  display: none !important;
+}
+
 html.pmg-chassis-v3 .pmg-section-card__head {
   margin: 0 0 12px;
   display: flex;
