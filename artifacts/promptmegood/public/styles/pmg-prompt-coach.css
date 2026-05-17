@@ -110,5 +110,85 @@ html.pmg-chassis-v3 body.pmg-coach-on #pmg-coach-root {
 }
 .pmg-coach__chip:active { transform: scale(0.97); }
 
+/* ----- mini-picker (coach-4) ----- */
+.pmg-coach__picker {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: pmg-coach-fade 180ms ease-out;
+}
+.pmg-coach__picker-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pmg-coach__picker-back {
+  font: inherit;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: transparent;
+  color: color-mix(in srgb, var(--color-text, #e8f3ec) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-text, #e8f3ec) 18%, transparent);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.pmg-coach__picker-back:hover { color: var(--color-text, #e8f3ec); }
+.pmg-coach__picker-q {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text, #e8f3ec);
+}
+.pmg-coach__picker-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pmg-coach__chip--opt,
+.pmg-coach__chip--type {
+  font-size: 12px;
+  padding: 4px 10px;
+}
+.pmg-coach__chip--type {
+  border-style: dashed;
+  color: color-mix(in srgb, var(--color-text, #e8f3ec) 75%, transparent);
+  border-color: color-mix(in srgb, var(--color-text, #e8f3ec) 30%, transparent);
+}
+.pmg-coach__picker-input {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+}
+.pmg-coach__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: var(--color-text, #e8f3ec);
+  background: color-mix(in srgb, var(--color-text, #e8f3ec) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 35%, transparent);
+  outline: none;
+}
+.pmg-coach__input:focus {
+  border-color: color-mix(in srgb, var(--color-primary, #3ee0a0) 70%, transparent);
+}
+.pmg-coach__input-go {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: var(--color-primary, #3ee0a0);
+  color: #0a1714;
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.pmg-coach__input-go:active { transform: scale(0.97); }
+
 /* Retire legacy v1 strength pill — pmg-prompt-coach supersedes it. */
 html.pmg-chassis-v3 #pmg-strength-pill { display: none !important; }

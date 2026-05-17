@@ -70,30 +70,111 @@
     };
   }
 
-  // ---------- token + cost estimate ----------
-  // chars/4 ≈ tokens for English. GPT-4o-mini input is $0.15 / 1M tokens.
-  function tokenCost(text) {
-    var t = (text || '');
-    var tokens = Math.max(0, Math.ceil(t.length / 4));
-    var cost = tokens * 0.15 / 1000000; // USD
-    return { tokens: tokens, cost: cost };
+  // ---------- adaptive chip catalog (coach-4 mini-pickers) ----------
+  // Each chip opens a one-line picker beneath the bar with 3-6
+  // suggested answers plus a "Type your own…" affordance. Each option
+  // (or custom text) is inserted into #goal via a chip-specific
+  // grammar-aware joiner — never a blind append. This avoids the
+  // "...for new shoe launch to existing customers for " dangling
+  // tail that Option A's user feedback exposed.
+
+  // Strip trailing prepositions / conjunctions / whitespace so we
+  // don't double-up joiners ("...for for beginners").
+  var TRAILING_JOIN_RE = /(?:\s+(?:for|to|with|by|in|on|at|about|as|of|and|or)\s*[,.!?:;]?)+\s*$/i;
+  function stripTrailingJoin(text) {
+    return (text || '').replace(TRAILING_JOIN_RE, '').replace(/\s+$/, '');
   }
-  function fmtCost(c) {
-    if (c <= 0)        return '$0';
-    if (c < 0.0001)    return '<$0.001';
-    if (c < 0.01)      return '$' + c.toFixed(4);
-    return '$' + c.toFixed(3);
+  function endsWithSentence(text) { return /[.!?]\s*$/.test(text); }
+
+  function articleFor(word) {
+    return /^[aeiou]/i.test((word || '').trim()) ? 'an' : 'a';
   }
 
-  // ---------- adaptive chip catalog ----------
-  // Single short tip per gap. Tapping a chip appends a scaffold to #goal.
   var CHIPS = {
-    detail:    { label: 'Add detail',     hint: ' (include 1–2 specifics about what you want)' },
-    verb:      { label: 'Use an action verb', hint: 'Write a ' },
-    audience:  { label: 'Who is it for?', hint: ' for ' },
-    format:    { label: 'Pick a format',  hint: ' as a bulleted list' },
-    specifics: { label: 'Add specifics',  hint: ' (e.g. exact numbers, named brand, audience size)' },
-    trim:      { label: 'Trim it down',   hint: null }   // info-only
+    verb: {
+      label: 'Use an action verb',
+      question: 'What action?',
+      options: ['Write', 'Create', 'Explain', 'Plan', 'Summarize', 'Compare'],
+      custom: true,
+      apply: function (text, choice) {
+        var t = (text || '').replace(/^\s+/, '');
+        // Replace an existing leading weak verb / article if present.
+        t = t.replace(/^(write|create|build|generate|design|plan|draft|outline|summari[sz]e|explain|analy[sz]e|compare|list|describe|make|produce|translate|edit|review|rewrite|improve|optimi[sz]e)\s+(a |an |the )?/i, '');
+        // Lowercase the very first word so the sentence reads cleanly.
+        t = t.replace(/^([A-Z])/, function (_, c) { return c.toLowerCase(); });
+        var lead = articleFor(t.split(/\s+/)[0] || '');
+        return choice + ' ' + lead + ' ' + t;
+      }
+    },
+    audience: {
+      label: 'Who is it for?',
+      question: "Who's it for?",
+      options: ['Beginners', 'Customers', 'My team', 'Executives', 'Kids'],
+      custom: true,
+      apply: function (text, choice) {
+        var clean = stripTrailingJoin(text);
+        var lc = (choice || '').toLowerCase().trim();
+        return clean + ' for ' + lc;
+      }
+    },
+    format: {
+      label: 'Pick a format',
+      question: 'What format?',
+      options: ['Email', 'Bullet list', 'Table', 'Short paragraph', 'Step-by-step'],
+      custom: true,
+      apply: function (text, choice) {
+        var clean = stripTrailingJoin(text);
+        var lc = (choice || '').toLowerCase().trim();
+        var phrase;
+        if (lc === 'step-by-step')      phrase = ' as a step-by-step guide';
+        else if (lc === 'bullet list')  phrase = ' as a bulleted list';
+        else if (lc === 'short paragraph') phrase = ' as a short paragraph';
+        else                            phrase = ' as ' + articleFor(lc) + ' ' + lc;
+        return clean + phrase;
+      }
+    },
+    specifics: {
+      label: 'Add specifics',
+      question: 'What specific detail?',
+      options: ['A number', 'A brand', 'A deadline', 'A tone'],
+      custom: true,
+      customRequired: true, // options just seed the placeholder
+      placeholderFor: function (opt) {
+        if (!opt) return 'e.g. 5 bullet points, by Friday, brand: Nike…';
+        if (/number/i.test(opt))   return 'e.g. 5 bullet points, 200 words…';
+        if (/brand/i.test(opt))    return 'e.g. Nike Air Max, Apple…';
+        if (/deadline/i.test(opt)) return 'e.g. by Friday, this quarter…';
+        if (/tone/i.test(opt))     return 'e.g. friendly, formal, punchy…';
+        return '';
+      },
+      apply: function (text, _opt, customText) {
+        if (!customText) return text;
+        var clean = stripTrailingJoin(text);
+        var sep = endsWithSentence(clean) ? ' ' : ' — ';
+        return clean + sep + customText.trim();
+      }
+    },
+    detail: {
+      label: 'Add detail',
+      question: 'What detail to add?',
+      options: [],
+      custom: true,
+      customRequired: true,
+      placeholderFor: function () { return 'Add one specific thing you want…'; },
+      apply: function (text, _opt, customText) {
+        if (!customText) return text;
+        var clean = stripTrailingJoin(text);
+        var sep = endsWithSentence(clean) ? ' ' : ' — ';
+        return clean + sep + customText.trim();
+      }
+    },
+    trim: {
+      label: 'Trim it down',
+      question: 'Your prompt is long — keep going or shorten it?',
+      options: ['Keep as-is'],
+      custom: false,
+      apply: function (text) { return text; } // no-op; the question itself is the nudge
+    }
   };
 
   // ---------- DOM build ----------
@@ -147,8 +228,134 @@
     return 'Excellent';
   }
 
-  // ---------- chip wiring ----------
+  // ---------- chip wiring (coach-4 mini-picker) ----------
+  function applyAndClose(host, goalEl, key, option, customText) {
+    var def = CHIPS[key];
+    if (!def || !goalEl) return;
+    var next = def.apply(goalEl.value || '', option, customText);
+    if (typeof next === 'string') {
+      goalEl.value = next;
+      goalEl.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    delete host.dataset.pickerOpen;
+    goalEl.focus();
+    // Move cursor to end for natural continuation.
+    try { goalEl.setSelectionRange(goalEl.value.length, goalEl.value.length); } catch (_) {}
+  }
+
+  function openPicker(host, goalEl, key) {
+    var def = CHIPS[key];
+    if (!def) return;
+    host.dataset.pickerOpen = key;
+    host.innerHTML = '';
+
+    var picker = document.createElement('div');
+    picker.className = 'pmg-coach__picker';
+
+    // Header row: ← back  |  Question
+    var head = document.createElement('div');
+    head.className = 'pmg-coach__picker-head';
+    var back = document.createElement('button');
+    back.type = 'button';
+    back.className = 'pmg-coach__picker-back';
+    back.setAttribute('aria-label', 'Back');
+    back.innerHTML = '←';
+    back.addEventListener('click', function () {
+      delete host.dataset.pickerOpen;
+      lastText = null; // force a re-render
+      update(goalEl);
+    });
+    var q = document.createElement('span');
+    q.className = 'pmg-coach__picker-q';
+    q.textContent = def.question;
+    head.appendChild(back);
+    head.appendChild(q);
+    picker.appendChild(head);
+
+    // Options row.
+    var opts = document.createElement('div');
+    opts.className = 'pmg-coach__picker-opts';
+
+    (def.options || []).forEach(function (opt) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'pmg-coach__chip pmg-coach__chip--opt';
+      b.textContent = opt;
+      b.addEventListener('click', function () {
+        if (def.customRequired) {
+          // Open custom input pre-seeded with this option's placeholder.
+          showCustomInput(picker, host, goalEl, key, opt);
+        } else {
+          applyAndClose(host, goalEl, key, opt);
+        }
+      });
+      opts.appendChild(b);
+    });
+
+    if (def.custom) {
+      var typeOwn = document.createElement('button');
+      typeOwn.type = 'button';
+      typeOwn.className = 'pmg-coach__chip pmg-coach__chip--type';
+      typeOwn.innerHTML = '<span aria-hidden="true">✏️</span> Type your own';
+      typeOwn.addEventListener('click', function () {
+        showCustomInput(picker, host, goalEl, key, null);
+      });
+      opts.appendChild(typeOwn);
+    }
+
+    picker.appendChild(opts);
+    host.appendChild(picker);
+
+    // For chips where custom is required (detail, specifics), auto-open
+    // the input so the user doesn't need an extra tap.
+    if (def.customRequired) showCustomInput(picker, host, goalEl, key, null);
+  }
+
+  function showCustomInput(picker, host, goalEl, key, seedOpt) {
+    var def = CHIPS[key];
+    // Remove any previous input row.
+    var prev = picker.querySelector('.pmg-coach__picker-input');
+    if (prev) prev.remove();
+
+    var row = document.createElement('div');
+    row.className = 'pmg-coach__picker-input';
+
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'pmg-coach__input';
+    input.placeholder = (def.placeholderFor ? def.placeholderFor(seedOpt) : '') || 'Type and press Enter…';
+    input.setAttribute('autocomplete', 'off');
+    input.setAttribute('autocapitalize', 'sentences');
+
+    var go = document.createElement('button');
+    go.type = 'button';
+    go.className = 'pmg-coach__input-go';
+    go.textContent = 'Add';
+
+    function submit() {
+      var v = (input.value || '').trim();
+      if (!v) { input.focus(); return; }
+      applyAndClose(host, goalEl, key, seedOpt, v);
+    }
+    go.addEventListener('click', submit);
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); submit(); }
+      if (e.key === 'Escape') {
+        delete host.dataset.pickerOpen;
+        lastText = null;
+        update(goalEl);
+      }
+    });
+
+    row.appendChild(input);
+    row.appendChild(go);
+    picker.appendChild(row);
+    setTimeout(function () { input.focus(); }, 30);
+  }
+
   function renderChips(host, gaps, goalEl) {
+    // Don't blow away an open picker on re-render (e.g. while user typing).
+    if (host.dataset.pickerOpen) return;
     host.innerHTML = '';
     var picks = gaps.slice(0, 2);
     picks.forEach(function (key) {
@@ -159,17 +366,7 @@
       b.className = 'pmg-coach__chip';
       b.setAttribute('data-coach-chip', key);
       b.textContent = def.label;
-      b.addEventListener('click', function () {
-        if (!def.hint || !goalEl) return;
-        // Append-style scaffold for most chips; prepend for the 'verb' chip.
-        if (key === 'verb') {
-          goalEl.value = def.hint + (goalEl.value || '');
-        } else {
-          goalEl.value = (goalEl.value || '').replace(/\s+$/, '') + def.hint;
-        }
-        goalEl.focus();
-        goalEl.dispatchEvent(new Event('input', { bubbles: true }));
-      });
+      b.addEventListener('click', function () { openPicker(host, goalEl, key); });
       host.appendChild(b);
     });
   }
