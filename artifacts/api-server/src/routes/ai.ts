@@ -17,7 +17,13 @@ import { isPaywallActive, isOwnerUserId } from "../lib/paywall";
 
 const router: IRouter = Router();
 
-const TEXT_MODEL = "gpt-5.4";
+/* model-fix-1 (2026-05-17): TEXT_MODEL was the string "gpt-5.4" — not a real
+   OpenAI model. The 6 routes that use it (/generate-prompt, /clarify,
+   /boost, /auto-tune, /refine-prompt, /image-prompt) were all silently
+   failing or being aliased by the upstream proxy. Pointed at gpt-4.1 to
+   match the rest of the file and the model labels we advertise on the
+   marketing pages and pricing card. */
+const TEXT_MODEL = "gpt-4.1";
 const IMAGE_MODEL = "gpt-image-1";
 
 // Stats counter: tracks both promptCount (generations) and runCount (executions).
@@ -98,7 +104,9 @@ const GENERATE_MAX_INPUT = 4000;
 const GENERATE_GOAL_MAX = 8000;
 const GENERATE_MAX_OUTPUT_TOKENS = 600;
 const GENERATE_MODEL = "gpt-4.1-mini";
-const STREAM_MODEL = "gpt-4.1-mini";
+/* STREAM_MODEL removed 2026-05-17 (premium-model-1): /generate-stream now
+   resolves its model via resolvePremiumGenerateModel() so Pro Studio
+   Expert calls get GPT-5 and everything else stays on GENERATE_MODEL. */
 
 // SYSTEM_PROMPT is the single source of truth for prompt-building behavior.
 // It is shared by /generate, /generate-stream, and /generate-prompt so the app
@@ -406,10 +414,15 @@ router.post("/generate", generateLimiter, generateCostCheck, async (req, res) =>
   const sampling = isCreativeRequest(isStructuredPayload(req.body) ? (req.body as StructuredPayload) : null)
     ? SAMPLING_CREATIVE
     : SAMPLING_DEFAULT;
+  // premium-model-1 (2026-05-17): Pro Studio gets GPT-5 ONLY on Expert
+  // Command Center calls (feature:"expert", tagged in pmg-expert-center.js).
+  // All other /generate traffic (Auto-Boost, Tuning, chassis flows) stays
+  // on GENERATE_MODEL to protect margin.
+  const __genModel = await resolvePremiumGenerateModel(req);
   try {
     const completion = await openai.chat.completions.create(
       {
-        model: GENERATE_MODEL,
+        model: __genModel,
         max_completion_tokens: sampling.max_tokens,
         temperature: sampling.temperature,
         top_p: sampling.top_p,
@@ -464,11 +477,13 @@ router.post("/generate-stream", generateLimiter, generateCostCheck, async (req, 
     (res as unknown as { flushHeaders: () => void }).flushHeaders();
   }
 
+  // premium-model-1 (2026-05-17): same Expert-only GPT-5 gate as /generate.
+  const __streamModel = await resolvePremiumGenerateModel(req);
   let total = 0;
   try {
     const stream = await openai.chat.completions.create(
       {
-        model: STREAM_MODEL,
+        model: __streamModel,
         max_completion_tokens: sampling.max_tokens,
         temperature: sampling.temperature,
         top_p: sampling.top_p,
@@ -519,6 +534,44 @@ function modelForPlan(plan: PmgPlan | undefined): string {
   return plan === "founding" || plan === "pro" || plan === "pro_studio"
     ? RUN_MODEL_PAID
     : RUN_MODEL_FREE;
+}
+
+/* premium-model-1 (2026-05-17): Pro Studio ($29/mo, $290/yr) gets GPT-5
+   on the two highest-perceived-value text surfaces:
+     - Run With AI    (this file, /run handler — premiumModelForPlan)
+     - Fix Like A Prompt Architect  (/generate when feature === "expert")
+   Everyone else (free / founding / pro) stays on 4.1 / 4.1-mini per the
+   existing modelForPlan() matrix. Rationale: GPT-5 is ~5–8× more
+   expensive per token than 4.1 — gating it to pro_studio + the two
+   premium surfaces preserves margin while giving the top tier a
+   marketable upgrade ("Pro Studio includes GPT-5 access"). */
+const PREMIUM_TEXT_MODEL = "gpt-5";
+function premiumModelForPlan(plan: PmgPlan | undefined): string {
+  return plan === "pro_studio" ? PREMIUM_TEXT_MODEL : modelForPlan(plan);
+}
+
+/* Resolves the model for /generate and /generate-stream. Returns GPT-5 only
+   when BOTH conditions hold: (1) the request body tags feature:"expert"
+   (Expert Command Center / Fix Like A Prompt Architect), and (2) the
+   authenticated user's plan is "pro_studio". Otherwise returns the
+   default GENERATE_MODEL (gpt-4.1-mini) — protects margin on the high-
+   volume Auto-Boost / Tuning / chassis traffic that also hits /generate.
+   Plan resolution is best-effort: if the JWT is missing, invalid, or
+   Supabase is unreachable, we fall through to the default without
+   throwing — the user just doesn't get the premium upgrade. */
+async function resolvePremiumGenerateModel(req: Request): Promise<string> {
+  try {
+    const feature = (req.body as { feature?: unknown } | undefined)?.feature;
+    if (feature !== "expert") return GENERATE_MODEL;
+    const header = req.headers.authorization || "";
+    const m = /^Bearer\s+(.+)$/i.exec(header);
+    if (!m) return GENERATE_MODEL;
+    const ctx = await resolveUserFromJwt(m[1]!.trim());
+    if (!ctx) return GENERATE_MODEL;
+    return ctx.plan === "pro_studio" ? PREMIUM_TEXT_MODEL : GENERATE_MODEL;
+  } catch {
+    return GENERATE_MODEL;
+  }
 }
 // run-cap-2 (2026-05-12): bumped 8000 → 32000 input, 1000 → 4000 output.
 // Heavily ECC-tuned prompts (Architect + Diagnose + Tune layered on top
@@ -668,7 +721,7 @@ router.post("/run", runLimiter, runCostCheck, runCapWithTeaser, async (req, res)
   let total = 0;
   try {
     const __runPlan = (req as Request & { pmgUser?: { plan: PmgPlan } }).pmgUser?.plan;
-    const __runModel = modelForPlan(__runPlan);
+    const __runModel = premiumModelForPlan(__runPlan);
     const stream = await openai.chat.completions.create({
       model: __runModel,
       max_completion_tokens: RUN_MAX_OUTPUT_TOKENS,
