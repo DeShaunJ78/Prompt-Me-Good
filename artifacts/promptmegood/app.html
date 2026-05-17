@@ -8677,7 +8677,21 @@ Context:
           }
           if (tries < maxTries) window.setTimeout(ensurePromptVisible, 250);
         }
-        window.setTimeout(ensurePromptVisible, 400);
+        /* scroll-compose-5 (2026-05-16): disable ensurePromptVisible
+           entirely. It was added to keep #resultBox on screen when long
+           prompts pushed actions below the fold — but #resultBox now
+           has its own max-height:360px overflow-y:auto on mobile so
+           that problem no longer exists. Meanwhile this retry loop was
+           the actual cause of the post-generate scroll landing in the
+           wrong place: it fired 400ms AFTER scroll-compose-3 anchored
+           the strength bar, then scrolled to #resultBox (below the
+           strength bar), pushing the strength bar off the top of the
+           viewport. The compose-4 conditional bailout was fragile
+           (ss.top could be slightly negative due to scroll-margin-top
+           rounding). Killing the whole call is the correct, robust fix.
+           Kept the function definition so any other module that
+           references it doesn't ReferenceError. */
+        // window.setTimeout(ensurePromptVisible, 400);
       }
 
       // --- Result box clamping: cap long prompts so actions stay visible ---
