@@ -8648,10 +8648,25 @@ Context:
             }
             el = el.parentElement;
           }
+          // Smooth the correction so it doesn't look choppy. Fall back
+          // to instant if the browser doesn't support smooth on the
+          // method (older Safari) or if a11y prefers-reduced-motion.
+          var prefersReduced = window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          var behavior = prefersReduced ? 'auto' : 'smooth';
           if (container) {
-            container.scrollTop = Math.max(0, container.scrollTop + delta);
+            var targetTop = Math.max(0, container.scrollTop + delta);
+            try {
+              container.scrollTo({ top: targetTop, behavior: behavior });
+            } catch (_) {
+              container.scrollTop = targetTop;
+            }
           } else {
-            window.scrollBy(0, delta);
+            try {
+              window.scrollBy({ top: delta, left: 0, behavior: behavior });
+            } catch (_) {
+              window.scrollBy(0, delta);
+            }
           }
         }, 3500);
         resultPanel.classList.remove('is-highlight');
