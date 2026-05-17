@@ -3401,11 +3401,11 @@
        different shade and read as a visible horizontal band cutting through
        the last lines of text. The "Show Full Response" button below the
        box is sufficient cue that more content exists. */
-    /* ai-scroll-internal-1 (2026-05-17): toggle made obsolete — box now
-       scrolls internally so the user never needs to expand it. Force-hidden
-       even when the toggle script adds .is-visible. */
-    .ai-response-toggle,
-    .ai-response-toggle.is-visible { display: none !important; }
+    /* ai-fs-restore-1 (2026-05-17): user asked for the fullscreen toggle
+       back. Hide by default, show ONLY when JS adds .is-visible (after the
+       response has rendered). The previous force-hide rule is retired. */
+    .ai-response-toggle { display: none; }
+    .ai-response-toggle.is-visible { display: inline-flex !important; }
     
     /* History controls: compact row instead of full-width pills */
     .history-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
@@ -4274,6 +4274,7 @@
   <link rel="stylesheet" href="/styles/pmg-tune-chips.css?v=double-cta-1-revert" />
   <link rel="stylesheet" href="/styles/pmg-quick-modes.css?v=qm-15-expert-dedupe" />
   <link rel="stylesheet" href="/styles/pmg-prompt-coach.css?v=coach-4-mini-picker" />
+  <link rel="stylesheet" href="/styles/pmg-diff.css?v=diff-1b-trusted" />
   <link rel="stylesheet" href="/styles/pmg-stepper.css?v=stepper-3" />
   <script>
     /* refresh-clears-1: a true browser reload (F5 / Cmd-R / pull-to-refresh)
@@ -4309,6 +4310,7 @@
   <script src="/scripts/pmg-tune-chips.js?v=tc-9r-no-footer-ecc" defer></script>
   <script src="/scripts/pmg-quick-modes.js?v=qm-15-expert-dedupe" defer></script>
   <script src="/scripts/pmg-prompt-coach.js?v=coach-4-mini-picker" defer></script>
+  <script src="/scripts/pmg-diff.js?v=diff-1b-trusted" defer></script>
   <script src="/scripts/pmg-stepper.js?v=stepper-2" defer></script>
   <link rel="stylesheet" href="/styles/pmg-adv-mirror.css?v=adv-mirror-9-touch-action" />
   <link rel="stylesheet" href="/styles/pmg-save-result.css?v=saveresult-1" />
