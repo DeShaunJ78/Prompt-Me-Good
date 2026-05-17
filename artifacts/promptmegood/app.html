@@ -8599,10 +8599,17 @@ Context:
         var scrollTarget = document.getElementById('pmgv3-strength-slot') || resultPanel;
         var topbarEl = document.querySelector('.pmgv3-topbar');
         var topbarH = topbarEl ? Math.round(topbarEl.getBoundingClientRect().height) : 64;
+        /* scroll-compose-2 (2026-05-16): also subtract the tabs row
+           (.pmgv3-tabs) height. Previously only topbarH was subtracted,
+           causing the strength bar to land under the sticky tabs row on
+           mobile (occluded). Add a small 16px breathing-room buffer so
+           the "Prompt Strength" header isn't kissing the tabs row. */
+        var tabsEl = document.querySelector('.pmgv3-tabs');
+        var tabsH = tabsEl ? Math.round(tabsEl.getBoundingClientRect().height) : 0;
         try {
           var rect = scrollTarget.getBoundingClientRect();
           var absTop = (window.pageYOffset || document.documentElement.scrollTop || 0) + rect.top;
-          var destY = Math.max(0, absTop - topbarH - 12);
+          var destY = Math.max(0, absTop - topbarH - tabsH - 16);
           window.scrollTo({ top: destY, behavior: window.PMG_A11Y.scrollBehavior() });
         } catch (e) {
           try { scrollTarget.scrollIntoView({ block: 'start' }); } catch (_) {}
