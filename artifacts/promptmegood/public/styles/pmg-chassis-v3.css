@@ -1251,6 +1251,14 @@ html.pmg-chassis-v3 .pmgv3-output-host #resultBox {
   margin-top: 6px;
   white-space: pre-wrap;
   word-break: break-word;
+  /* overflow-wrap-1 (2026-05-17): iOS Safari sometimes ignores
+     word-break:break-word for long unbroken strings (URLs, code
+     tokens, hashes), letting them push past the box and force the
+     user to pinch-zoom. overflow-wrap:anywhere is the modern,
+     spec-compliant fallback that breaks at any character when
+     needed. Belt-and-suspenders with word-break above. */
+  overflow-wrap: anywhere;
+  max-width: 100%;
   outline: none;
 }
 html.pmg-chassis-v3 .pmgv3-output-host #resultBox:focus {
@@ -1758,6 +1766,15 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
      since cv3-17 hides .pmgv3-bottom on mobile. */
   .pmgv3-body {
     overflow-y: auto;
+    /* lock-mob-1 (2026-05-17): kill iOS Safari rubber-band bounce and
+       any horizontal wobble. User reported "the whole box moves up and
+       down like the screen is scrolling" on accidental taps/drags;
+       this prevents the elastic overshoot that exaggerates small drags
+       into a full-page bounce, and prevents sideways drift entirely.
+       overscroll-behavior:contain also stops scroll chaining to <html>
+       so the page can't pull/refresh underneath. */
+    overscroll-behavior: contain;
+    overflow-x: hidden;
     padding: 12px;
     padding-bottom: 32px;
   }
