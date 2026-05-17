@@ -8624,15 +8624,22 @@ Context:
         } catch (e) {
           try { scrollTarget.scrollIntoView({ block: 'start' }); } catch (_) {}
         }
-        // Cancel the corrective scroll if the user takes control first
-        // (wheel/touch/key/mousedown). Otherwise a 3.5s delayed scroll
-        // would feel like the page is fighting them. Same pattern as
-        // pmg-fix-diff.js. cancelled flag is captured by the closure.
+        // Cancel the corrective scroll only on a REAL scroll gesture.
+        // First pass used touchstart/mousedown but those fire on any
+        // tap (incl. tapping to look at the result, or the tail end
+        // of the Generate-button tap), which cancelled compose-6
+        // unnecessarily and broke the fix. Now: only wheel (mouse
+        // wheel, trackpad two-finger), Page Up/Down/Home/End/Space,
+        // and touchmove (actual swipe, not a tap).
         var pmgAnchorCancelled = false;
-        var cancelEvents = ['wheel', 'touchstart', 'keydown', 'mousedown'];
-        function pmgCancelAnchor() { pmgAnchorCancelled = true; }
+        var SCROLL_KEYS = { PageUp: 1, PageDown: 1, Home: 1, End: 1, ' ': 1, ArrowUp: 1, ArrowDown: 1 };
+        function pmgCancelAnchor(e) {
+          if (e && e.type === 'keydown' && !SCROLL_KEYS[e.key]) return;
+          pmgAnchorCancelled = true;
+        }
+        var cancelEvents = ['wheel', 'touchmove', 'keydown'];
         cancelEvents.forEach(function (evt) {
-          window.addEventListener(evt, pmgCancelAnchor, { once: true, passive: true });
+          window.addEventListener(evt, pmgCancelAnchor, { passive: true });
         });
         window.setTimeout(function pmgFinalAnchor() {
           cancelEvents.forEach(function (evt) {
