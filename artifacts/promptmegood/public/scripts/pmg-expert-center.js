@@ -686,12 +686,27 @@
     pane.appendChild(buildCtaRow([
       { label: 'Switch To Architect', primary: false, onclick: function () { switchTab('engineer'); } },
       { label: 'Apply To Main Prompt', primary: true, onclick: function () {
+          var __prevGoal = getGoalText();
           var built = buildEngineeredPrompt(getGoalText().trim(), _state.engineer);
           var tuned = buildTunedPrompt(built, _state.tune);
           setGoalText(tuned);
           showStatusPill('Expert Settings Applied');
           track('expert_center_apply', { source: 'diagnose' });
           applyAndClose();
+          /* eccb-1: surface a "what + why" banner under #goal after the
+             drawer closes (applyAndClose has an ~80ms scroll delay). */
+          setTimeout(function () {
+            try {
+              if (window.pmgEccChanges && window.pmgEccChanges.showSettings) {
+                window.pmgEccChanges.showSettings({
+                  source: 'diagnose',
+                  previousGoal: __prevGoal,
+                  engineer: _state.engineer,
+                  tune: _state.tune
+                });
+              }
+            } catch (_) {}
+          }, 220);
         } }
     ]));
   }
@@ -699,16 +714,31 @@
   function fixLikeEngineer(statusEl) {
     var goal = getGoalText().trim();
     if (!goal) { statusEl.textContent = 'Type a goal first.'; return; }
+    var __prevGoal = getGoalText();
     statusEl.innerHTML = '<span class="pmg-ec-loading"></span>Rewriting like a prompt architect…';
     var instruction = 'You are a senior prompt engineer. Rewrite the request below as a high-quality prompt that any modern AI assistant could answer well. ' +
       'Add: a clear role for the AI to play, the target audience, the desired output format, the tone, 2-3 useful constraints, and a one-line success criterion. ' +
       'Keep the original intent. Output ONLY the rewritten prompt — no preamble, no explanation, no markdown fences.\n\nORIGINAL REQUEST:\n' + goal;
     aiGenerate(instruction).then(function (text) {
-      setGoalText(text.trim());
+      var __newGoal = text.trim();
+      setGoalText(__newGoal);
       showStatusPill('Prompt Rewritten');
       track('expert_center_fix_engineer');
       statusEl.textContent = 'Done. Your prompt has been rewritten in the main goal box.';
       window.setTimeout(function () { renderActivePane(); }, 50);
+      /* eccb-1: rewrite-mode banner. Wait long enough for the drawer to
+         close if the user dismisses it, then surface the diff banner. */
+      setTimeout(function () {
+        try {
+          if (window.pmgEccChanges && window.pmgEccChanges.showRewrite) {
+            window.pmgEccChanges.showRewrite({
+              source: 'diagnose',
+              previousGoal: __prevGoal,
+              newGoal: __newGoal
+            });
+          }
+        } catch (_) {}
+      }, 400);
     }).catch(function (err) {
       statusEl.textContent = 'Could not rewrite right now: ' + (err && err.message ? err.message : 'unknown error');
     });
@@ -785,11 +815,24 @@
       { label: 'Apply This Structure', primary: true, onclick: function () {
           var goal = getGoalText().trim();
           if (!goal) { window.alert('Type a goal in the main prompt box first.'); return; }
+          var __prevGoal = getGoalText();
           var built = buildEngineeredPrompt(goal, _state.engineer);
           setGoalText(built);
           showStatusPill('Architect Structure Applied');
           track('expert_center_apply', { source: 'engineer' });
           applyAndClose();
+          setTimeout(function () {
+            try {
+              if (window.pmgEccChanges && window.pmgEccChanges.showSettings) {
+                window.pmgEccChanges.showSettings({
+                  source: 'engineer',
+                  previousGoal: __prevGoal,
+                  engineer: _state.engineer,
+                  tune: { toggles: {}, sliders: {} }
+                });
+              }
+            } catch (_) {}
+          }, 220);
         } }
     ]));
   }
@@ -881,12 +924,25 @@
       { label: 'Apply Tuning', primary: true, onclick: function () {
           var goal = getGoalText().trim();
           if (!goal) { window.alert('Type a goal in the main prompt box first.'); return; }
+          var __prevGoal = getGoalText();
           var built = buildEngineeredPrompt(goal, _state.engineer);
           var tuned = buildTunedPrompt(built, _state.tune);
           setGoalText(tuned);
           showStatusPill('Tuning Applied');
           track('expert_center_apply', { source: 'tune' });
           applyAndClose();
+          setTimeout(function () {
+            try {
+              if (window.pmgEccChanges && window.pmgEccChanges.showSettings) {
+                window.pmgEccChanges.showSettings({
+                  source: 'tune',
+                  previousGoal: __prevGoal,
+                  engineer: _state.engineer,
+                  tune: _state.tune
+                });
+              }
+            } catch (_) {}
+          }, 220);
         } }
     ]));
   }
