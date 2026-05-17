@@ -1,22 +1,24 @@
-/* pmg-prompt-coach.css — Phase 2 (coach-1)
-   Hidden by default. Shown only when body.pmg-coach-on (i.e. user
-   has typed >= 2 chars in #goal). Slides up + fades in. */
+/* pmg-prompt-coach.css — Phase 2 (coach-2)
+   Hidden by default. Shown only when body.pmg-coach-on (set by JS
+   once #goal has 2+ chars). De-boxed: blends directly under the
+   textarea with no card/border/background — just a thin bar, a
+   word, the token line, and chips. */
 
 #pmg-coach-root {
   display: none;
 }
 html.pmg-chassis-v3 body.pmg-coach-on #pmg-coach-root {
   display: block;
-  margin: 12px 0 4px;
-  padding: 10px 14px 12px;
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 6%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 18%, transparent);
-  animation: pmg-coach-slide-in 280ms ease-out;
+  margin: 8px 2px 4px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  animation: pmg-coach-fade 220ms ease-out;
 }
 
-@keyframes pmg-coach-slide-in {
-  from { opacity: 0; transform: translateY(6px); }
+@keyframes pmg-coach-fade {
+  from { opacity: 0; transform: translateY(2px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -25,17 +27,17 @@ html.pmg-chassis-v3 body.pmg-coach-on #pmg-coach-root {
   align-items: center;
   gap: 10px;
 }
-.pmg-coach__row--meter { margin-bottom: 8px; }
+.pmg-coach__row--meter { margin-bottom: 6px; }
 .pmg-coach__row--info  {
   justify-content: space-between;
   flex-wrap: wrap;
   row-gap: 6px;
 }
 
-/* ----- strength bar ----- */
+/* ----- strength bar (slimmer, borderless) ----- */
 .pmg-coach__bar {
   flex: 1 1 auto;
-  height: 6px;
+  height: 4px;
   background: color-mix(in srgb, var(--color-text, #e8f3ec) 10%, transparent);
   border-radius: 999px;
   overflow: hidden;
@@ -56,30 +58,31 @@ html.pmg-chassis-v3 body.pmg-coach-on #pmg-coach-root {
   display: flex;
   align-items: baseline;
   gap: 6px;
-  min-width: 110px;
+  min-width: 100px;
   justify-content: flex-end;
 }
 .pmg-coach__score {
-  font-weight: 800;
-  font-size: 16px;
+  font-weight: 700;
+  font-size: 13px;
   color: var(--color-text, #e8f3ec);
   font-variant-numeric: tabular-nums;
+  opacity: 0.85;
 }
 .pmg-coach__label {
   font-size: 12px;
   font-weight: 600;
-  color: color-mix(in srgb, var(--color-text, #e8f3ec) 70%, transparent);
+  color: color-mix(in srgb, var(--color-text, #e8f3ec) 65%, transparent);
 }
 
-/* ----- token + cost line ----- */
+/* ----- token + cost line (whisper-quiet) ----- */
 .pmg-coach__tokens {
-  font-size: 12px;
-  color: color-mix(in srgb, var(--color-text, #e8f3ec) 65%, transparent);
+  font-size: 11px;
+  color: color-mix(in srgb, var(--color-text, #e8f3ec) 50%, transparent);
   font-variant-numeric: tabular-nums;
   flex: 0 0 auto;
 }
 
-/* ----- adaptive chips ----- */
+/* ----- adaptive chips (small, ghost-style so they read as hints) ----- */
 .pmg-coach__chips {
   display: flex;
   flex-wrap: wrap;
@@ -89,24 +92,23 @@ html.pmg-chassis-v3 body.pmg-coach-on #pmg-coach-root {
 }
 .pmg-coach__chip {
   font: inherit;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  padding: 4px 10px;
+  padding: 3px 9px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 12%, transparent);
-  color: var(--color-text, #e8f3ec);
-  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 30%, transparent);
+  background: transparent;
+  color: color-mix(in srgb, var(--color-primary, #3ee0a0) 90%, white);
+  border: 1px solid color-mix(in srgb, var(--color-primary, #3ee0a0) 35%, transparent);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition: background-color 150ms ease, transform 120ms ease;
 }
 .pmg-coach__chip:hover,
 .pmg-coach__chip:focus-visible {
-  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 22%, transparent);
+  background: color-mix(in srgb, var(--color-primary, #3ee0a0) 14%, transparent);
   outline: none;
 }
 .pmg-coach__chip:active { transform: scale(0.97); }
 
-@media (max-width: 480px) {
-  .pmg-coach__chip { padding: 5px 11px; font-size: 12px; }
-}
+/* Retire legacy v1 strength pill — pmg-prompt-coach supersedes it. */
+html.pmg-chassis-v3 #pmg-strength-pill { display: none !important; }

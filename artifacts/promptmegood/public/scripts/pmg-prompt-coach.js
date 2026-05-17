@@ -123,14 +123,20 @@
 
   function mount() {
     if (document.getElementById(ROOT_ID)) return true;
-    // Anchor before #generate-section if present (keeps coach above Build),
-    // otherwise after #pmg-templates-trigger or as last child of idea-section.
-    var anchor =
-      document.getElementById('generate-section') ||
-      document.querySelector('.idea-section .pmgv3-idea-host');
-    if (!anchor || !anchor.parentNode) return false;
+    // coach-2: mount directly UNDER the #goal textarea, in the exact
+    // slot the legacy #pmg-strength-pill used to occupy. Previous anchor
+    // (#generate-section) put the coach BELOW the Build button on
+    // mobile, which felt disconnected. We also retire the legacy pill
+    // here since this widget supersedes it.
+    var goal = document.getElementById('goal');
+    if (!goal || !goal.parentNode) return false;
+
+    var legacy = document.getElementById('pmg-strength-pill');
+    if (legacy) legacy.style.display = 'none';
+
     var widget = buildWidget();
-    anchor.parentNode.insertBefore(widget, anchor);
+    // Insert immediately after the textarea (before any helper text).
+    goal.parentNode.insertBefore(widget, goal.nextSibling);
     return true;
   }
 
