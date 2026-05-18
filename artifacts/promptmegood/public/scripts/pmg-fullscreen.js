@@ -206,7 +206,17 @@
         if (node.parentNode) node.parentNode.removeChild(node);
       }
     }
-    if (keptInLive) return;
+    if (keptInLive) {
+      // Re-sync overlay top each tick so the trigger tracks the target
+      // even when other host children resize/appear (in-box-overlay-1).
+      try {
+        var existingBtn = liveParent.querySelector(sel);
+        if (existingBtn && target && typeof target.offsetTop === 'number') {
+          existingBtn.style.top = (target.offsetTop + 8) + 'px';
+        }
+      } catch (_e) {}
+      return;
+    }
     ensureRelative(liveParent);
     var btn = document.createElement('button');
     btn.type = 'button';
@@ -232,6 +242,13 @@
       open(live, { title: opts.title });
     });
     liveParent.insertBefore(btn, target);
+    // Anchor overlay vertically to target (host may have siblings above
+    // it — in-box-overlay-1, 2026-05-18).
+    try {
+      if (typeof target.offsetTop === 'number') {
+        btn.style.top = (target.offsetTop + 8) + 'px';
+      }
+    } catch (_e) {}
   }
 
   function injectInlineTrigger() {
@@ -276,7 +293,42 @@
         injectAllTriggers();
       }, 50);
     });
-    mo.observe(document.body || document.documentElement, { childList: true, subtree: true });
+    mo.observe(document.body || document.documentElement, {
+      childList: true, subtree: true, characterData: true
+    });
+  }
+
+  /* anchor-resync-1 (2026-05-18): the absolute-positioned in-box overlay
+     trigger needs to track #resultBox / #aiResponseOutput vertical
+     position as siblings above them grow during streaming output. A
+     MutationObserver alone misses characterData-only changes inside
+     existing siblings; ResizeObserver fires on every layout-affecting
+     size change, so attach one to each known host. Cheap: just calls
+     injectAllTriggers() which is idempotent + debounced internally via
+     the keptInLive resync path. */
+  if ('ResizeObserver' in window) {
+    var _roTimer = null;
+    var ro = new ResizeObserver(function () {
+      if (_roTimer) return;
+      _roTimer = setTimeout(function () {
+        _roTimer = null;
+        injectAllTriggers();
+      }, 50);
+    });
+    var roTargets = ['.pmgv3-output-host', '.ai-response-section'];
+    var attachRo = function () {
+      roTargets.forEach(function (sel) {
+        document.querySelectorAll(sel).forEach(function (el) {
+          if (!el.__pmgFsRoBound) {
+            try { ro.observe(el); el.__pmgFsRoBound = true; } catch (_e) {}
+          }
+        });
+      });
+    };
+    attachRo();
+    // Re-attempt once after MO has had a chance to mount async panels.
+    setTimeout(attachRo, 500);
+    setTimeout(attachRo, 2000);
   }
 
   window.pmgFullscreen = {
