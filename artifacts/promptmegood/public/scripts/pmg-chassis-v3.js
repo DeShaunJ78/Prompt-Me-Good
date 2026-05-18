@@ -73,6 +73,7 @@
     deleteTargets();
     setupInspirationFeed();
     wireWhispererToggle();
+    wireFirstPaintFocus();
     // Re-apply the hide on a short tick in case any late legacy script flips display
     var hideTicks = 0;
     var hideTick = setInterval(function () {
@@ -91,6 +92,66 @@
       var tp = document.getElementById('tuning-panel');
       if (tp) tp.style.setProperty('display', 'none', 'important');
     }, 200);
+  }
+
+  /* audit-3 §9: first-paint autofocus on #goal so a brand-new user can
+     start typing immediately — directly serves the documented prior intent
+     (see wireWhispererToggle comment) of "textarea + Generate should
+     dominate the first impression". Hard guards:
+       - Desktop only (window.innerWidth >= 768). Mobile autofocus pops the
+         soft keyboard, which on short screens pushes the Build button
+         below the fold AND hides the right-column value-prop steps.
+       - Skip if Draft Recovery banner is showing — focus would steal from
+         the banner's primary CTA.
+       - Skip if the field already has content (session/draft restore).
+       - One-shot, idempotent via window.__pmgv3FocusDone.
+       - Polled briefly because reparent + late legacy scripts can re-mount
+         #goal after buildShell. */
+  function wireFirstPaintFocus() {
+    if (window.__pmgv3FocusDone) return;
+    try {
+      /* <= 768 catches iPad portrait (exactly 768px) which also has a
+         soft keyboard — autofocus there would shove the Build CTA and
+         the value-prop column below the fold. */
+      if (window.innerWidth && window.innerWidth <= 768) {
+        window.__pmgv3FocusDone = true;
+        return;
+      }
+    } catch (_) {}
+    var tries = 0;
+    var iv = setInterval(function () {
+      tries++;
+      if (tries > 30 || window.__pmgv3FocusDone) { clearInterval(iv); return; }
+      var goal = document.getElementById('goal');
+      if (!goal) return;
+      /* Hidden element guard: if a deep-link panel switch
+         (?panel=photography|video) re-parented #goal into a non-active
+         panel, offsetParent is null and focusing it would create a
+         "ghost focus" that breaks keyboard nav. */
+      if (goal.offsetParent === null) {
+        window.__pmgv3FocusDone = true;
+        clearInterval(iv);
+        return;
+      }
+      if (goal.value && goal.value.length > 0) {
+        window.__pmgv3FocusDone = true;
+        clearInterval(iv);
+        return;
+      }
+      /* Correct banner id: wireDraftRecovery() injects #pmg-draft-recovery
+         (no v3). Architect-flagged: prior version checked the wrong id. */
+      var dr = document.getElementById('pmg-draft-recovery');
+      if (dr && !dr.hidden) {
+        window.__pmgv3FocusDone = true;
+        clearInterval(iv);
+        return;
+      }
+      try { goal.focus({ preventScroll: true }); } catch (_) {
+        try { goal.focus(); } catch (__) {}
+      }
+      window.__pmgv3FocusDone = true;
+      clearInterval(iv);
+    }, 150);
   }
 
   /* mux-3 (Section 1): Whisperer is collapsed by default. The small
