@@ -286,6 +286,17 @@
   </style>
   <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/satoshi-400.woff2" crossorigin />
   <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/satoshi-700.woff2" crossorigin />
+  <!-- audit-4 §4 perf-1: preconnect to the Supabase CDN host (jsdelivr).
+       /app loads the Supabase client lib from cdn.jsdelivr.net (search
+       "supabase-js@2" below). Browsers normally open the TCP+TLS
+       connection only when the <script> tag is reached during parse —
+       which on a deferred script with 65 siblings can land ~1.5-2s
+       into page load. preconnect warms DNS + TCP + TLS in parallel
+       with HTML parse, typically saving 100-300ms on cold visits.
+       crossorigin attribute required because the script load itself
+       uses CORS. /app is the only page that talks to Supabase; the
+       marketing pages don't need this hint. -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <!-- Photography Suite Surprise Me click-stability hardening.
        The Surprise Me button is moved into #pmg-t34-surprise-top-row at
        runtime by pmg-ux.js (T34). Several styles already apply to it
