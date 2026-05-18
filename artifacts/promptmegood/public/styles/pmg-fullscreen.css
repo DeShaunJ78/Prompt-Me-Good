@@ -213,75 +213,13 @@ body.pmg-fs-open { overflow: hidden; }
   }
 }
 
-/* in-box-overlay-1 (2026-05-18): labeled variant — sits INSIDE the
-   top-right corner of #resultBox / #aiResponseOutput as a floating
-   overlay so it does not expand layout. Requires its parent container
-   to be position:relative (handled below for .pmgv3-output-host and
-   .ai-response-section). The `.has-label` class keeps the "🔍 Open
-   Fullscreen" text so the affordance stays discoverable. */
-.pmg-fs-inline-trigger.pmg-fs-air-trigger.has-label {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 5;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  width: auto;
-  height: auto;
-  min-width: 0;
-  padding: 6px 10px;
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.2;
-  white-space: nowrap;
-}
-.pmg-fs-inline-trigger.pmg-fs-air-trigger.has-label span {
-  display: inline;
-}
-@media (max-width: 480px) {
-  .pmg-fs-inline-trigger.pmg-fs-air-trigger.has-label {
-    padding: 8px 12px;
-    font-size: 12px;
-    top: 6px;
-    right: 6px;
-  }
-}
-
-/* Make the host containers positioned so the overlay anchors correctly,
-   and reserve top padding on the target boxes so the first line of text
-   does not collide with the floating trigger. */
-.pmgv3-output-host,
-.ai-response-section {
-  position: relative;
-}
-.pmgv3-output-host #resultBox,
-.ai-response-section #aiResponseOutput {
-  padding-top: 44px;
-}
-
-/* Override the chassis app.html L3168 rule that forces .pmg-fs-inline-trigger
-   to position:static !important inside .pmgv3-output-host. That rule was
-   written for the previous in-flow pill design (read-full-pill-1) and
-   defeats absolute overlay positioning. Higher specificity + !important
-   restores the overlay for the labeled variant only. */
-.pmgv3-output-host .pmg-fs-inline-trigger.has-label,
-html.pmg-chassis-v3 .pmgv3-output-host .pmg-fs-inline-trigger.has-label {
-  position: absolute !important;
-  top: 8px !important;
-  right: 8px !important;
-  margin: 0 !important;
-  padding: 6px 10px !important;
-  font-size: 12px !important;
-}
-@media (max-width: 480px) {
-  .pmgv3-output-host .pmg-fs-inline-trigger.has-label,
-  html.pmg-chassis-v3 .pmgv3-output-host .pmg-fs-inline-trigger.has-label {
-    padding: 8px 12px !important;
-    top: 6px !important;
-    right: 6px !important;
-  }
-}
+/* in-box-toggle-1 (2026-05-18): the injected .pmg-fs-air-trigger is no
+   longer used for #resultBox / #aiResponseOutput — the native
+   #resultBoxToggle and #aiResponseToggle now serve as the in-box icon
+   overlays (styled in app.html). The .has-label / in-box-overlay-1 CSS
+   blocks from the previous iteration were removed because the injection
+   helpers (injectInlineTrigger / injectAiResponseTrigger) are now no-ops
+   in pmg-fullscreen.js. */
 
 @media (max-width: 520px) {
   .pmg-fs-header { padding: 12px 14px; }

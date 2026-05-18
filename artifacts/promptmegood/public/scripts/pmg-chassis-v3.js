@@ -554,12 +554,18 @@
       }
     }
 
-    // 4. Move #resultBox into prompt output host
+    // 4. Move #resultBox into prompt output host. wrap-aware-1 (2026-05-18):
+    //    #resultBox may be wrapped in .result-box-wrap (in-box-toggle-1) so
+    //    its sibling #resultBoxToggle can anchor as an absolute overlay.
+    //    Move the WRAP into outHost, not the inner box alone — otherwise we
+    //    rip #resultBox out of the wrap and strand the toggle.
     var resultBox = document.getElementById('resultBox');
     if (resultBox) {
       var outHost = rootEl.querySelector('.pmgv3-output-host');
-      if (outHost && resultBox.parentNode !== outHost) {
-        outHost.appendChild(resultBox);
+      var wrap = resultBox.closest('.result-box-wrap');
+      var moveTarget = wrap || resultBox;
+      if (outHost && moveTarget.parentNode !== outHost) {
+        outHost.appendChild(moveTarget);
       }
       // Spec uses #output as the textarea ID; provide an alias getter on the global so
       // any spec-conformant code that tries document.getElementById('output') succeeds.

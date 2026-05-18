@@ -251,19 +251,15 @@
     } catch (_e) {}
   }
 
-  function injectInlineTrigger() {
-    injectTriggerFor('resultBox', {
-      aria: 'Expand prompt to fullscreen',
-      title: 'Generated Prompt'
-    });
-  }
-
-  function injectAiResponseTrigger() {
-    injectTriggerFor('aiResponseOutput', {
-      aria: 'Expand AI response to fullscreen',
-      title: 'AI Response'
-    });
-  }
+  /* in-box-toggle-1 (2026-05-18): native #resultBoxToggle and
+     #aiResponseToggle (icon overlays inside their boxes) are now the
+     primary affordance per user direction. The injected
+     .pmg-fs-air-trigger pill is no longer needed for either target and
+     would render as a duplicate button. Helpers kept as no-ops in case
+     anything still calls them. The injectTriggerFor() helper itself is
+     preserved for any future targets. */
+  function injectInlineTrigger() { /* disabled — native #resultBoxToggle handles this */ }
+  function injectAiResponseTrigger() { /* disabled — native #aiResponseToggle handles this */ }
 
   function injectAllTriggers() {
     try { injectInlineTrigger(); } catch (_e) {}

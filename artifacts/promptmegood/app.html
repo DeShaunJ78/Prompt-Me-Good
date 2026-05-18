@@ -3423,9 +3423,51 @@
     .result-box:empty, .result-box[data-empty] { min-height: 80px !important; max-height: 120px; }
     .result-panel:not(.has-result) .result-box { min-height: 80px !important; }
     .result-box.is-clamped { max-height: 280px; overflow-y: auto; position: relative; }
-    .result-box-toggle { display: none; margin: 6px 0 0; padding: 6px 14px; font-size: 13px; font-weight: 600; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-primary); cursor: pointer; }
-    .result-box-toggle:hover { background: color-mix(in srgb, var(--color-primary) 8%, var(--color-surface)); }
-    .result-box-toggle.is-visible { display: inline-flex; }
+    /* in-box-toggle-1 (2026-05-18): toggle is now an absolute overlay at
+       the top-right of its box (wrapped in .result-box-wrap). Shared
+       rules between #resultBoxToggle and #aiResponseToggle are below
+       .ai-response-toggle. .result-box-wrap is the positioning context. */
+    .result-box-wrap { position: relative; }
+    .result-box-toggle,
+    .ai-response-output .ai-response-toggle {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 2;
+      margin: 0;
+      padding: 5px;
+      width: 28px;
+      height: 28px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      line-height: 1;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      color: var(--color-primary);
+      cursor: pointer;
+      opacity: 0.45;
+      transition: opacity 120ms ease;
+    }
+    .result-box-toggle.is-visible,
+    .ai-response-output .ai-response-toggle.is-visible {
+      display: inline-flex;
+    }
+    .result-box-toggle:hover,
+    .result-box-toggle:focus-visible,
+    .ai-response-output .ai-response-toggle:hover,
+    .ai-response-output .ai-response-toggle:focus-visible {
+      opacity: 1;
+      background: var(--color-surface);
+      text-decoration: none;
+    }
+    .result-box-toggle:focus-visible,
+    .ai-response-output .ai-response-toggle:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
     .pmg-result-actions-row { border-top: 1px solid var(--color-border); padding-top: 12px; margin-top: 8px; }
     .pmg-result-actions-row .btn { font-size: 13px; padding: 6px 12px; min-height: 34px; }
     .image-result-actions .btn:disabled { opacity: 0.45; cursor: not-allowed; }
@@ -3450,36 +3492,11 @@
        looks tacky and out of place — needs to blend in". Replaced the
        default button chrome with a transparent teal text-link so it
        reads as a quiet affordance inside the response card. */
-    .ai-response-toggle {
-      display: none;
-      align-items: center;
-      gap: 6px;
-      margin: 6px 0 0 2px;
-      padding: 4px 2px;
-      background: transparent !important;
-      border: 0 !important;
-      box-shadow: none !important;
-      color: var(--color-primary, #2dd4bf);
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.01em;
-      cursor: pointer;
-      text-decoration: none;
-      opacity: 0.85;
-      transition: opacity 120ms ease;
-    }
-    .ai-response-toggle.is-visible { display: inline-flex !important; }
-    .ai-response-toggle:hover,
-    .ai-response-toggle:focus-visible {
-      opacity: 1;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
-    .ai-response-toggle:focus-visible {
-      outline: 2px solid var(--color-primary, #2dd4bf);
-      outline-offset: 3px;
-      border-radius: 4px;
-    }
+    /* in-box-toggle-1 (2026-05-18): the previous text-link styling
+       ("Show Full Response ▾") for #aiResponseToggle is retired. The
+       toggle is now an icon overlay inside #aiResponseOutput — styled
+       jointly with .result-box-toggle in the shared block above
+       (L3433+). No standalone .ai-response-toggle rules needed. */
     
     /* History controls: compact row instead of full-width pills */
     .history-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
@@ -4338,7 +4355,7 @@
   <link rel="stylesheet" href="/styles/pmg-visual-studio.css?v=re-3" />
   <link rel="stylesheet" href="/styles/pmg-storyboard.css?v=sb-9" />
   <link rel="stylesheet" href="/styles/pmg-cap-comparison.css?v=cap-compare-1" />
-  <link rel="stylesheet" href="/styles/pmg-fullscreen.css?v=fs-7-resize-track" />
+  <link rel="stylesheet" href="/styles/pmg-fullscreen.css?v=fs-8-native-inbox" />
   <link rel="stylesheet" href="/styles/pmg-auto-boost.css?v=ab-8-under-strength" />
   <link rel="stylesheet" href="/styles/pmg-spark-panel.css?v=sp-5-visible" />
   <link rel="stylesheet" href="/styles/pmg-business-mode.css?v=bm-3" />
@@ -4376,7 +4393,7 @@
   <script src="/scripts/pmg-visual-studio.js?v=img-timeout-1" defer></script>
   <script src="/scripts/pmg-storyboard.js?v=sb-11" defer></script>
   <script src="/scripts/pmg-cap-comparison.js?v=cap-compare-1" defer></script>
-  <script src="/scripts/pmg-fullscreen.js?v=fs-7-resize-track" defer></script>
+  <script src="/scripts/pmg-fullscreen.js?v=fs-8-native-inbox" defer></script>
   <script src="/scripts/pmg-spark-panel.js?v=sp-6-mobile-questions" defer></script>
   <script src="/scripts/pmg-business-mode.js?v=growth-mode-2-prompts" defer></script>
   <script src="/scripts/pmg-growth-actions.js?v=ga-1" defer></script>
@@ -5104,8 +5121,15 @@
               <div id="pinned-note-text"></div>
               <div class="pinned-note-source" id="pinned-note-source"></div>
             </div>
-            <button type="button" class="result-box-toggle" id="resultBoxToggle" aria-expanded="false" aria-controls="resultBox">Show Full Prompt ▾</button>
-            <div class="result-box" id="resultBox" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Generated prompt (editable)">Your fixed prompt will appear here.</div>
+            <!-- in-box-toggle-1 (2026-05-18): wrap so the absolute-positioned
+                 toggle anchors to the box, not to the parent column. #resultBox
+                 is contenteditable so the button cannot live inside it.
+                 chassis-v3.js reparent() is wrap-aware (moves the wrap into
+                 .pmgv3-output-host instead of #resultBox alone). -->
+            <div class="result-box-wrap">
+              <button type="button" class="result-box-toggle" id="resultBoxToggle" aria-expanded="false" aria-controls="resultBox" aria-label="Open fullscreen" title="Open fullscreen">⛶</button>
+              <div class="result-box" id="resultBox" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Generated prompt (editable)">Your fixed prompt will appear here.</div>
+            </div>
             <div class="result-edit-row">
               <span class="result-edit-indicator" id="result-edit-indicator" hidden>Edited manually</span>
             </div>
@@ -5210,8 +5234,14 @@
                 <button class="btn btn-secondary" type="button" id="copyResponseBtn" onclick="copyAIResponse()">Copy Response</button>
                 <button class="btn btn-secondary" type="button" id="runAgainBtn" onclick="runWithAI()">Run Again</button>
               </div>
-              <div class="ai-response-output" id="aiResponseOutput" aria-live="polite" aria-atomic="false"></div>
-              <button type="button" class="ai-response-toggle" id="aiResponseToggle" aria-expanded="false">Show Full Response ▾</button>
+              <!-- in-box-toggle-1 (2026-05-18): toggle moved INSIDE the
+                   output div so it pins to the box top-right via absolute
+                   positioning. #aiResponseOutput is a plain div (not
+                   contenteditable) so this nesting is safe. No code in the
+                   repo clears the output via innerHTML=''; the toggle
+                   survives regenerations. clampAiResponse() defensively
+                   re-inserts it if anything ever wipes the children. -->
+              <div class="ai-response-output" id="aiResponseOutput" aria-live="polite" aria-atomic="false"><button type="button" class="ai-response-toggle" id="aiResponseToggle" aria-expanded="false" aria-label="Open fullscreen" title="Open fullscreen">⛶</button></div>
               <div class="ai-response-actions ai-response-actions-bottom">
                 <button class="btn btn-secondary" type="button" onclick="copyAIResponse()">Copy Response</button>
                 <button class="btn btn-secondary" type="button" onclick="runWithAI()">Run Again</button>
@@ -8881,7 +8911,7 @@ Context:
           if (window.pmgFullscreen) {
             if (hasContent) {
               resultBoxToggle.classList.add('is-visible');
-              resultBoxToggle.textContent = '\uD83D\uDD0D Open Fullscreen';
+              // in-box-toggle-1: icon-only button, no textContent override
               resultBoxToggle.setAttribute('aria-expanded', 'false');
             } else {
               resultBoxToggle.classList.remove('is-visible');
@@ -8895,7 +8925,7 @@ Context:
             resultBoxEl.classList.add('is-clamped');
             resultBoxToggle.classList.add('is-visible');
             resultBoxToggle.setAttribute('aria-expanded', 'false');
-            resultBoxToggle.textContent = 'Show Full Prompt \u25BE';
+            // in-box-toggle-1: icon-only button, no textContent override
           } else {
             resultBoxEl.classList.remove('is-clamped');
             resultBoxToggle.classList.remove('is-visible');
@@ -8912,11 +8942,11 @@ Context:
           var expanded = resultBoxEl.classList.contains('is-clamped');
           if (expanded) {
             resultBoxEl.classList.remove('is-clamped');
-            resultBoxToggle.textContent = 'Collapse Prompt \u25B4';
+            // in-box-toggle-1: icon-only button, no textContent override
             resultBoxToggle.setAttribute('aria-expanded', 'true');
           } else {
             resultBoxEl.classList.add('is-clamped');
-            resultBoxToggle.textContent = 'Show Full Prompt \u25BE';
+            // in-box-toggle-1: icon-only button, no textContent override
             resultBoxToggle.setAttribute('aria-expanded', 'false');
           }
         });
@@ -8925,13 +8955,26 @@ Context:
       function clampAiResponse() {
         var output = document.getElementById('aiResponseOutput');
         if (!output || !aiResponseToggle) return;
+        // in-box-toggle-1 (2026-05-18): toggle lives INSIDE #aiResponseOutput.
+        // No code in the repo wipes the output's children today, but be
+        // defensive: if the button got detached for any reason, re-insert
+        // it as the first child so it stays anchored at the top-right.
+        if (aiResponseToggle.parentNode !== output) {
+          try { output.insertBefore(aiResponseToggle, output.firstChild); } catch (_e) {}
+        }
         // fs-1: same treatment as clampResultBox — show button as fullscreen
         // trigger whenever there is content, regardless of length.
+        // in-box-toggle-1: subtract the toggle's own text from the content
+        // check, otherwise the button's "⛶" char keeps hasContent true and
+        // the affordance shows before the AI has actually responded.
         if (window.pmgFullscreen) {
-          var hasContent = (output.textContent || '').trim().length > 0;
+          var rawText = (output.textContent || '');
+          var btnText = aiResponseToggle ? (aiResponseToggle.textContent || '') : '';
+          var contentText = btnText ? rawText.replace(btnText, '') : rawText;
+          var hasContent = contentText.trim().length > 0;
           if (hasContent) {
             aiResponseToggle.classList.add('is-visible');
-            aiResponseToggle.textContent = '\uD83D\uDD0D Open Fullscreen';
+            // in-box-toggle-1: icon-only button, no textContent override
             aiResponseToggle.setAttribute('aria-expanded', 'false');
             if (aiResponseBottom) aiResponseBottom.classList.add('is-visible');
           } else {
@@ -8945,7 +8988,7 @@ Context:
           output.classList.add('is-clamped');
           aiResponseToggle.classList.add('is-visible');
           aiResponseToggle.setAttribute('aria-expanded', 'false');
-          aiResponseToggle.textContent = 'Show Full Response \u25BE';
+          // in-box-toggle-1: icon-only button, no textContent override
           if (aiResponseBottom) aiResponseBottom.classList.add('is-visible');
         } else {
           output.classList.remove('is-clamped');
@@ -8965,11 +9008,11 @@ Context:
           var expanded = output.classList.contains('is-clamped');
           if (expanded) {
             output.classList.remove('is-clamped');
-            aiResponseToggle.textContent = 'Collapse Response \u25B4';
+            // in-box-toggle-1: icon-only button, no textContent override
             aiResponseToggle.setAttribute('aria-expanded', 'true');
           } else {
             output.classList.add('is-clamped');
-            aiResponseToggle.textContent = 'Show Full Response \u25BE';
+            // in-box-toggle-1: icon-only button, no textContent override
             aiResponseToggle.setAttribute('aria-expanded', 'false');
           }
         });

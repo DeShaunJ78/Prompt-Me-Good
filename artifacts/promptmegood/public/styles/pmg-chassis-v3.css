@@ -1709,7 +1709,12 @@ html.pmg-chassis-v3 #result-panel {
 html.pmg-chassis-v3 #result-panel .panel-head,
 html.pmg-chassis-v3 #result-panel .pill-row,
 html.pmg-chassis-v3 #result-panel #pinned-note,
-html.pmg-chassis-v3 #result-panel .result-box-toggle,
+/* in-box-toggle-1 (2026-05-18): .result-box-toggle is now an in-box
+   overlay anchored at top-right of #resultBox (wrapped in .result-box-wrap).
+   It needs to render under the chassis — was previously force-hidden here
+   because the legacy in-flow pill duplicated the chassis trigger. The
+   wrap moves with #resultBox into .pmgv3-output-host so this selector no
+   longer matches anyway, but removing the rule documents the intent. */
 html.pmg-chassis-v3 #result-panel .improve-block,
 html.pmg-chassis-v3 #result-panel .what-next,
 html.pmg-chassis-v3 #result-panel .quality-row,
