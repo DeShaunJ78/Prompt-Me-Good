@@ -328,6 +328,14 @@
             <span class="tier-price-amount" data-pmg-price="founding">$79</span>
             <span class="tier-price-period">/ one-time, price locked for life</span>
           </div>
+          <!-- audit-3 §10: anchor pricing. Compares the one-time $79 against
+               the ongoing Pro Monthly price ($14) using real numbers from
+               data-pmg-price tokens above. Math: $79 ÷ $14 ≈ 5.6 months to
+               break even, then free forever. Defensible — no fabricated
+               competitor price or fake strikethrough. -->
+          <p class="tier-price-anchor" style="margin: 4px 0 8px; font-size: 0.86rem; color: var(--muted);">
+            Breaks even vs Pro Monthly (<span data-pmg-price="pro_monthly">$14</span>/mo) in under 6 months — then free forever.
+          </p>
           <p class="tier-status" style="color: var(--primary);">Available Now · <span data-pmg-deadline>First 500 Buyers Lock In $79 For Life</span></p>
           <p class="tier-summary">One payment. Lifetime access to core features. No monthly bill, no renewal — and if Pro prices ever go up, yours never does.</p>
           <ul class="tier-features">
@@ -602,7 +610,24 @@
         <p class="founding-counter" id="founding-counter" aria-live="polite" style="margin: 0 0 14px; font-size: 0.92rem; color: var(--muted);">Loading availability…</p>
         <button type="button" id="founding-buy-btn" class="btn btn-primary" style="font-size: 1rem; padding: 12px 28px;">Buy Founding Member · $79</button>
         <p class="founding-status" id="founding-buy-status" role="status" aria-live="polite" style="margin: 10px 0 0; font-size: 0.9rem; min-height: 1.2em;"></p>
-        <p style="margin: 14px 0 0; font-size: 0.78rem; color: var(--muted);">Secure checkout by Stripe · Refundable within 14 days if you change your mind.</p>
+        <!-- audit-3 §10: visual trust strip. Inline SVG icons (no asset
+             download, no new dep) + factual copy. Replaces the previous
+             plain-text Stripe/refund line with a more visible row so the
+             reassurance is captured by a glance, not by reading. -->
+        <div class="trust-strip" style="display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:center; margin:16px 0 0; font-size:0.82rem; color:var(--muted);">
+          <span style="display:inline-flex; align-items:center; gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            Secure checkout by <strong style="color:var(--text);">Stripe</strong>
+          </span>
+          <span style="display:inline-flex; align-items:center; gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            14-day refund
+          </span>
+          <span style="display:inline-flex; align-items:center; gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>
+            No subscription
+          </span>
+        </div>
       </div>
 
       <div class="early-access" id="early-access" style="margin-top: 28px;">
