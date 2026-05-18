@@ -157,28 +157,70 @@
     });
   }
 
-  /* corner-pill-retire-1 (2026-05-17): user feedback —
-       "I see a toggle [text-link] that expands and collapses the screen.
-        That's what I wanted. The corner pill is redundant — remove it."
-     Both the prompt box and the AI response box already have their own
-     'Open Fullscreen' text-link (#resultBoxToggle and #aiResponseToggle)
-     that calls the same overlay. The floating corner pills duplicate
-     that entry point and visually compete with the green diff bar.
-     injectInlineTrigger() and injectAiResponseTrigger() are retired;
-     kept as no-ops in case other modules still call injectAllTriggers.
-     Also clean up any previously-injected pills on the page. */
-  function injectInlineTrigger() { /* no-op (corner-pill-retire-1) */ }
-  function injectAiResponseTrigger() { /* no-op (corner-pill-retire-1) */ }
-
-  function removeLegacyCornerPills() {
-    var pills = document.querySelectorAll('.pmg-fs-inline-trigger');
-    for (var i = 0; i < pills.length; i++) {
-      if (pills[i].parentNode) pills[i].parentNode.removeChild(pills[i]);
+  /* corner-pill-restore-1 (2026-05-18): user feedback reversed —
+       "Restore expand on Text panel. Make it identical to the AI
+        response box for uniformity throughout the site."
+     The May 17 corner-pill removal (corner-pill-retire-1) left only
+     the in-flow text-link toggles, which the user found insufficiently
+     discoverable. We restore the floating corner triggers on BOTH the
+     prompt box (#resultBox) and the AI response box (#aiResponseOutput)
+     using the SAME icon-only 28x28 .pmg-fs-air-trigger variant so they
+     are visually identical. The Photography (#pmg-vs-image-refined) and
+     Video (#pmg-vs-video-refined) panels already ship their own
+     .pmg-fs-trigger "Expand Fullscreen" buttons in an actions row
+     (see pmg-visual-studio.js:324, :518) — same overlay, same UX.
+     Text-link toggles (#resultBoxToggle, #aiResponseToggle) are
+     preserved as a complementary "Show Full / Collapse" expand-in-place
+     affordance and do not conflict. */
+  function ensureRelative(el) {
+    if (!el) return;
+    var cs = window.getComputedStyle ? window.getComputedStyle(el) : null;
+    if (cs && cs.position === 'static') {
+      el.style.position = 'relative';
     }
   }
 
+  function injectInlineTrigger() {
+    var target = document.getElementById('resultBox');
+    if (!target || !target.parentNode) return;
+    if (target.parentNode.querySelector('.pmg-fs-inline-trigger[data-pmg-fs-for="resultBox"]')) return;
+    ensureRelative(target.parentNode);
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pmg-fs-inline-trigger pmg-fs-air-trigger';
+    btn.setAttribute('data-pmg-fs-for', 'resultBox');
+    btn.setAttribute('aria-label', 'Expand prompt to fullscreen');
+    btn.setAttribute('title', 'Expand to fullscreen');
+    btn.textContent = '\uD83D\uDD0D';
+    btn.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      open(target, { title: 'Generated Prompt' });
+    });
+    target.parentNode.appendChild(btn);
+  }
+
+  function injectAiResponseTrigger() {
+    var target = document.getElementById('aiResponseOutput');
+    if (!target || !target.parentNode) return;
+    if (target.parentNode.querySelector('.pmg-fs-inline-trigger[data-pmg-fs-for="aiResponseOutput"]')) return;
+    ensureRelative(target.parentNode);
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pmg-fs-inline-trigger pmg-fs-air-trigger';
+    btn.setAttribute('data-pmg-fs-for', 'aiResponseOutput');
+    btn.setAttribute('aria-label', 'Expand AI response to fullscreen');
+    btn.setAttribute('title', 'Expand to fullscreen');
+    btn.textContent = '\uD83D\uDD0D';
+    btn.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      open(target, { title: 'AI Response' });
+    });
+    target.parentNode.appendChild(btn);
+  }
+
   function injectAllTriggers() {
-    removeLegacyCornerPills();
+    try { injectInlineTrigger(); } catch (_e) {}
+    try { injectAiResponseTrigger(); } catch (_e) {}
   }
 
   if (document.readyState === 'loading') {
@@ -189,8 +231,21 @@
   }
 
   // Re-scan when DOM changes (visual studio panels mount async).
+  // mo-debounce-1 (2026-05-18): the observer fires on every subtree
+  // mutation — including our own button appends. The querySelector
+  // guard prevents loops but each tick still runs DOM lookups for
+  // every trigger. 50ms debounce keeps catch-up behavior without
+  // hammering the DOM during streaming output writes.
   if ('MutationObserver' in window) {
-    var mo = new MutationObserver(function () { autoBind(); injectAllTriggers(); });
+    var _moTimer = null;
+    var mo = new MutationObserver(function () {
+      if (_moTimer) return;
+      _moTimer = setTimeout(function () {
+        _moTimer = null;
+        autoBind();
+        injectAllTriggers();
+      }, 50);
+    });
     mo.observe(document.body || document.documentElement, { childList: true, subtree: true });
   }
 

@@ -2063,12 +2063,36 @@
       var es = document.createElement('div');
       es.id = 'pmgv3-vault-empty';
       es.style.cssText = 'padding: 28px 8px; text-align: center; color: #9bccb6; font-size: 14px; line-height: 1.55;';
+      /* vault-empty-import-1 (2026-05-18): an empty Vault used to offer
+         zero path to populate itself. Users with a JSON backup (from a
+         prior device, or PromptPerfect-style migration) had no visible
+         Import affordance because the populated-state action row (which
+         contains #import-history) never renders without items. Surface
+         a primary "Import Prompts" CTA right here in the empty state.
+         Clicks proxy to the hidden #import-history-file input, which is
+         already wired to the existing JSON parser at app.html:7344. */
       es.innerHTML = [
         '<div style="font-size: 36px; margin-bottom: 10px;" aria-hidden="true">🗄️</div>',
         '<div style="font-weight: 700; color: #e6f7ee; margin-bottom: 6px;">Your Vault Is Empty</div>',
-        '<div>Generate a prompt and tap <strong style="color:#3ee0a0;">💾 Save Draft</strong> to keep it here for later.</div>'
+        '<div style="margin-bottom: 18px;">Generate a prompt and tap <strong style="color:#3ee0a0;">💾 Save Draft</strong> to keep it here for later.</div>',
+        '<div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px; margin-top: 4px;">',
+          '<div style="font-weight:600; color:#e6f7ee; margin-bottom:4px; font-size:13px;">Already have saved prompts?</div>',
+          '<div style="margin-bottom:12px; font-size:12px; color:#9bccb6;">Restore a JSON backup exported from PromptMeGood.</div>',
+          '<button type="button" id="pmgv3-vault-empty-import" style="appearance:none; border:1px solid #00c896; background:transparent; color:#3ee0a0; font-size:13px; font-weight:700; padding:10px 18px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">⬆ Import Prompts</button>',
+        '</div>'
       ].join('');
       body.appendChild(es);
+      var importBtn = document.getElementById('pmgv3-vault-empty-import');
+      if (importBtn) {
+        importBtn.addEventListener('click', function () {
+          var fileInput = document.getElementById('import-history-file');
+          if (fileInput && typeof fileInput.click === 'function') {
+            fileInput.click();
+          } else {
+            try { window.alert('Import is unavailable — please refresh and try again.'); } catch (_e) {}
+          }
+        });
+      }
     } else if (body) {
       // If real content is now present, remove any stale empty-state node.
       var stale = document.getElementById('pmgv3-vault-empty');
