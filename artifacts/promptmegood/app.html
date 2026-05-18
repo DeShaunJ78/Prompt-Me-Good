@@ -3429,45 +3429,51 @@
        .ai-response-toggle. .result-box-wrap is the positioning context. */
     .result-box-wrap,
     .ai-response-output-wrap { position: relative; }
+    /* bare-icon-1 (2026-05-18): per user direction — strip the button
+       chrome (background, border, padded square). Just the ⛶ glyph in
+       the top-right corner of the box, the way Notion / Google Docs /
+       video players render their tiny "expand" icons. Faint highlight
+       only on hover/focus for affordance. Browser tooltip via title="".
+       Discoverability comes from icon convention + tooltip, not chrome. */
     .result-box-toggle,
     .ai-response-output-wrap .ai-response-toggle {
       position: absolute;
-      top: 8px;
+      top: 6px;
       right: 8px;
       z-index: 2;
       margin: 0;
-      padding: 5px;
-      width: 28px;
-      height: 28px;
+      padding: 2px 4px;
+      width: auto;
+      height: auto;
       display: none;
       align-items: center;
       justify-content: center;
-      font-size: 15px;
+      font-size: 16px;
       line-height: 1;
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: 6px;
+      background: transparent;
+      border: 0;
+      border-radius: 4px;
       color: var(--color-primary);
       cursor: pointer;
-      opacity: 0.45;
-      transition: opacity 120ms ease;
+      opacity: 0.65;
+      transition: opacity 120ms ease, background 120ms ease;
     }
     .result-box-toggle.is-visible,
     .ai-response-output-wrap .ai-response-toggle.is-visible {
       display: inline-flex;
     }
     .result-box-toggle:hover,
-    .result-box-toggle:focus-visible,
-    .ai-response-output-wrap .ai-response-toggle:hover,
-    .ai-response-output-wrap .ai-response-toggle:focus-visible {
+    .ai-response-output-wrap .ai-response-toggle:hover {
       opacity: 1;
-      background: var(--color-surface);
+      background: rgba(255, 255, 255, 0.06);
       text-decoration: none;
     }
     .result-box-toggle:focus-visible,
     .ai-response-output-wrap .ai-response-toggle:focus-visible {
+      opacity: 1;
       outline: 2px solid var(--color-primary);
-      outline-offset: 2px;
+      outline-offset: 1px;
+      background: rgba(255, 255, 255, 0.06);
     }
     .pmg-result-actions-row { border-top: 1px solid var(--color-border); padding-top: 12px; margin-top: 8px; }
     .pmg-result-actions-row .btn { font-size: 13px; padding: 6px 12px; min-height: 34px; }
@@ -4351,7 +4357,7 @@
   <link rel="stylesheet" href="/styles/pmg-visual-studio.css?v=re-3" />
   <link rel="stylesheet" href="/styles/pmg-storyboard.css?v=sb-9" />
   <link rel="stylesheet" href="/styles/pmg-cap-comparison.css?v=cap-compare-1" />
-  <link rel="stylesheet" href="/styles/pmg-fullscreen.css?v=fs-13-cleanup" />
+  <link rel="stylesheet" href="/styles/pmg-fullscreen.css?v=fs-14-bare-icon" />
   <link rel="stylesheet" href="/styles/pmg-auto-boost.css?v=ab-8-under-strength" />
   <link rel="stylesheet" href="/styles/pmg-spark-panel.css?v=sp-5-visible" />
   <link rel="stylesheet" href="/styles/pmg-business-mode.css?v=bm-3" />
@@ -4389,7 +4395,7 @@
   <script src="/scripts/pmg-visual-studio.js?v=img-timeout-1" defer></script>
   <script src="/scripts/pmg-storyboard.js?v=sb-11" defer></script>
   <script src="/scripts/pmg-cap-comparison.js?v=cap-compare-1" defer></script>
-  <script src="/scripts/pmg-fullscreen.js?v=fs-13-cleanup" defer></script>
+  <script src="/scripts/pmg-fullscreen.js?v=fs-14-bare-icon" defer></script>
   <script src="/scripts/pmg-spark-panel.js?v=sp-6-mobile-questions" defer></script>
   <script src="/scripts/pmg-business-mode.js?v=growth-mode-2-prompts" defer></script>
   <script src="/scripts/pmg-growth-actions.js?v=ga-1" defer></script>
