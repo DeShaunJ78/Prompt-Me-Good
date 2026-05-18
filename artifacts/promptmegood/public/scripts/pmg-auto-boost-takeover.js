@@ -32,11 +32,11 @@
   var SUCCESS_DISMISS_MS = 1900;
 
   var STATUS_LINES = [
-    'Analyzing your prompt…',
-    'Identifying weak spots…',
-    'Adding expert structure…',
-    'Strengthening clarity & tone…',
-    'Polishing the wording…',
+    'Reading your prompt…',
+    'Finding opportunities to strengthen it…',
+    'Adding expert structure & framing…',
+    'Sharpening clarity, tone & specificity…',
+    'Polishing every word…',
     'Almost ready…'
   ];
 
@@ -253,7 +253,7 @@
     var heading = document.createElement('p');
     heading.className = 'pmg-abt-heading';
     heading.id = OVERLAY_ID + '-heading';
-    heading.textContent = 'Boosting your prompt to Expert Level';
+    heading.textContent = 'Boosting your prompt…';
 
     var card = document.createElement('div');
     card.className = 'pmg-abt-card';
@@ -347,10 +347,10 @@
     var pct = state.originalLen > 0 ? Math.round((delta / state.originalLen) * 100) : 0;
 
     var heading = state.el.querySelector('.pmg-abt-heading');
-    if (heading) heading.textContent = 'Your prompt is now stronger';
+    if (heading) heading.textContent = 'Your prompt just levelled up';
 
     var status = document.getElementById(OVERLAY_ID + '-status');
-    if (status) status.textContent = '✓ Boosted to Expert Level';
+    if (status) status.textContent = '✓ Boost complete';
 
     var reassure = document.getElementById(OVERLAY_ID + '-reassure');
     if (reassure) {

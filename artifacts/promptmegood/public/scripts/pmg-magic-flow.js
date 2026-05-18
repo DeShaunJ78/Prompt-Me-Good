@@ -53,8 +53,8 @@
     if (localStorage.getItem('pmg_magic_disable') === '1') return;
   } catch (e) {}
 
-  var TUNING_LABEL = '✨ Tuning your idea…';
-  var GENERATING_LABEL = '✨ Generating your prompt…';
+  var TUNING_LABEL = '✨ Crafting your prompt…';
+  var GENERATING_LABEL = '✨ Engineering your prompt…';
   var AUTO_TUNE_CAP_MS = 3500;
   var GENERATE_TIMEOUT_MS = 30000;
   var STYLE_ID = 'pmg-magic-flow-style';
@@ -65,13 +65,13 @@
      "Writing a great prompt for: <goal>" experience. Stays visible
      until body.pmg-has-result lands or the user hits Cancel/Esc. */
   var TAKEOVER_ID = 'pmg-magic-takeover';
-  var TAKEOVER_HEADING = 'Writing a great prompt for:';
+  var TAKEOVER_HEADING = 'Engineering your prompt for:';
   var STATUS_LINES = [
-    'Analyzing your goal…',
-    'Picking the right tone & format…',
-    'Selecting structure & depth…',
-    'Engineering your prompt…',
-    'Polishing the wording…',
+    'Reading your goal…',
+    'Choosing the right tone & format…',
+    'Structuring for maximum clarity…',
+    'Adding expert context & framing…',
+    'Polishing every word…',
     'Almost ready…'
   ];
   var STATUS_ROTATE_MS = 1400;
@@ -82,9 +82,9 @@
      only fires on slow paths. */
   var SLOW_THRESHOLD_MS = 15000;
   var SLOW_STATUS_LINES = [
-    'Taking a little longer than expected…',
-    'Still working on it — almost there…',
-    'Finalising your prompt…'
+    'Still crafting — worth the wait…',
+    'Putting the finishing touches on it…',
+    'Almost there — nearly done…'
   ];
 
   var state = {
