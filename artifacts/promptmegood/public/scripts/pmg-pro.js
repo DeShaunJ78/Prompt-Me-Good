@@ -481,7 +481,7 @@
         __cfg2.FOUNDING_LIMIT + ' buyers, ' + __lock + '.' +
         (__deadline ? ' ' + __deadline : '') +
         ' Pro Monthly ($' + __cfg2.PRO_MONTHLY_USD + '/month) and Pro Yearly ($' +
-        __cfg2.PRO_YEARLY_USD + '/year) launch soon. Fair use limits apply.';
+        __cfg2.PRO_YEARLY_USD + '/year) launch July 1, 2026. Fair use limits apply.';
     } else {
       __pCopy =
         'Unlock higher daily caps on this feature. Founding Member is a one-time payment for lifetime access to core features — see pricing for current details. Fair use limits apply.';

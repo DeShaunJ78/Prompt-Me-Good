@@ -843,7 +843,7 @@
     if (!ph) return;
     ph.hidden = false;
     ph.innerHTML = '<div class="pmg-vs-spinner" aria-hidden="true"></div>' +
-                   '<span>⏳ Generating image with DALL·E 3…</span>' +
+                   '<span>⏳ Generating image with gpt-image-1…</span>' +
                    '<span class="pmg-vs-sub">This can take 10–30 seconds.</span>';
     var img = $('pmg-vs-generated-image'); if (img) img.hidden = true;
     var act = $('pmg-vs-image-actions'); if (act) act.hidden = true;
