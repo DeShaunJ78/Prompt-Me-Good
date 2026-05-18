@@ -191,7 +191,7 @@ body.pmg-fs-open { overflow: hidden; }
 /* air-icon-1 (2026-05-17): The AI Response variant is icon-only so it
    does not compete with the green diff bar at the top of the response
    card. Square, compact, same teal-on-glass treatment. */
-.pmg-fs-inline-trigger.pmg-fs-air-trigger {
+.pmg-fs-inline-trigger.pmg-fs-air-trigger:not(.has-label) {
   width: 28px;
   height: 28px;
   min-width: 28px;
@@ -203,13 +203,45 @@ body.pmg-fs-open { overflow: hidden; }
   right: 10px;
 }
 @media (max-width: 480px) {
-  .pmg-fs-inline-trigger.pmg-fs-air-trigger {
+  .pmg-fs-inline-trigger.pmg-fs-air-trigger:not(.has-label) {
     width: 26px;
     height: 26px;
     min-width: 26px;
     font-size: 14px;
     top: 8px;
     right: 8px;
+  }
+}
+
+/* mobile-discover-1 (2026-05-18): labeled variant — sits ABOVE the
+   target box (script uses insertBefore), full pill with "🔍 Open
+   Fullscreen" text. Defaults work for desktop; mobile guarantees a
+   comfortable 44px tap target per WCAG. Inside .pmgv3-output-host the
+   chassis override at app.html ~L3162 already makes it position:static
+   with proper pill chrome; this rule layers in size + spacing only. */
+.pmg-fs-inline-trigger.pmg-fs-air-trigger.has-label {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  padding: 8px 14px;
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.pmg-fs-inline-trigger.pmg-fs-air-trigger.has-label span {
+  display: inline;
+}
+@media (max-width: 480px) {
+  .pmg-fs-inline-trigger.pmg-fs-air-trigger.has-label {
+    padding: 10px 16px;
+    font-size: 14px;
+    min-height: 44px;
+    margin: 0 0 10px;
   }
 }
 

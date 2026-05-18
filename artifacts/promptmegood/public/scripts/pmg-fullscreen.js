@@ -210,11 +210,20 @@
     ensureRelative(liveParent);
     var btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'pmg-fs-inline-trigger pmg-fs-air-trigger';
+    /* mobile-discover-1 (2026-05-18): user couldn't find the trigger on
+       mobile — after a long generated prompt fills #resultBox, the trigger
+       was appended BELOW the box and ended up at viewport y=704 in a
+       720-tall mobile viewport (test-verified), often fully under the
+       iOS Safari bottom URL bar. Also: the prior icon-only '🔍' content
+       gave no signal what the button does. Fix: insertBefore(target) so
+       the trigger sits ABOVE the box (always visible, right where eyes
+       land), and use an icon+label so its purpose is obvious. The .has-label
+       class lets CSS pad it slightly wider than the icon-only variant. */
+    btn.className = 'pmg-fs-inline-trigger pmg-fs-air-trigger has-label';
     btn.setAttribute('data-pmg-fs-for', targetId);
     btn.setAttribute('aria-label', opts.aria);
     btn.setAttribute('title', 'Expand to fullscreen');
-    btn.textContent = '\uD83D\uDD0D';
+    btn.innerHTML = '\uD83D\uDD0D <span>Open Fullscreen</span>';
     btn.addEventListener('click', function (ev) {
       ev.preventDefault();
       // re-resolve live target at click time so reparenting after
@@ -222,7 +231,7 @@
       var live = document.getElementById(targetId) || target;
       open(live, { title: opts.title });
     });
-    liveParent.appendChild(btn);
+    liveParent.insertBefore(btn, target);
   }
 
   function injectInlineTrigger() {
