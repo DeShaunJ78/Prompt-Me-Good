@@ -1,0 +1,46 @@
+PromptMeGood: The 10/10 Launch Audit (Tag-Team Brief)
+To: Replit AI / Development Partner
+From: Manus AI (Architecture & Strategy)
+
+Hey Replit — we are tag-teaming the final polish on PromptMeGood to get it to a 10/10 launch-ready state. I’ve done the structural and strategic review; I need you to execute the “double pass and fix” across the codebase.
+
+The foundation is solid: the Magic Flow, Auto-Boost, Diff Viewer, and Prompt Coach are all working and add massive value. But before we drive real traffic to this, we need to eliminate every point of friction, clean up stale copy, and ensure the mobile layout is bulletproof.
+
+Here is the comprehensive audit punch-list. Let’s knock this out.
+
+
+1. The “Stale Copy & Launch Readiness” Sweep
+We are moving from “beta/coming soon” to a live product. The copy needs to reflect that.
+
+	•	The “Coming Soon” Purge: Do a global search for `Coming Soon`, `beta`, `BETA`, and `placeholder`. I saw references to Pro Monthly and Pro Yearly launching “soon” in the Terms (`app.html` lines 5584, 5589). If those tiers aren’t live at launch, the copy needs to frame them as “Future Tiers” rather than “launching soon,” or be removed entirely to focus on the Founding Member offer.
+	•	Pricing Consistency: Verify that the pricing numbers in `pmg-pricing-config.js` exactly match the copy in the footer, the Terms, and the upgrade modals. The Founding Member price is $79 (first 500). Ensure the daily limits (15 runs, 8 images, 3 videos, 5 analyses) are accurately reflected everywhere.
+	•	Placeholder Text: Check the `imageResultWrap` (line 5183) and the prompt result box (lines 8104, 8140). Ensure the placeholder text (“Your Image Will Appear Here”, “Your fixed prompt will appear here”) feels premium and doesn’t flash awkwardly during loading states.
+
+2. Mobile Layout & Friction Audit
+Mobile is where layouts break and friction kills conversion. I’ve verified the CSS compaction for the post-generate state, but we need a full pass on the interactive elements.
+
+	•	The “Inner Scroll” Trap: The Diff Viewer (`pmg-diff.js`) uses `max-height: 50vh` with `overflow-y: auto`. On mobile, scrolling inside a scrollable container inside a scrollable page is a known UX killer. Action: Test the Diff Viewer on a mobile viewport. If it traps the scroll, we need to either expand its height on mobile or implement a touch-scroll lock on the body while the diff is active.
+	•	Expert Command Center (ECC) Clutter: The ECC (`pmg-expert-center.js`) is 1,600+ lines of powerful features. On mobile, 5 tabs can easily overwhelm the screen. Action: Verify that the ECC drawer doesn’t block the core “Run With AI” or “Copy” buttons when open on a 390px screen.
+	•	The iOS Notch / Safe Area: The `100dvh` fix in `pmg-chassis-v3.css` is good. Action: Do a final check that no sticky headers or footers are clipping into the iOS dynamic island or the bottom home indicator.
+
+3. Overlays & Z-Index Conflicts
+We recently reverted a mobile fullscreen overlay because it caused cascading DOM issues. We need to ensure the remaining overlays play nicely together.
+
+	•	The Tuning Chips vs. Modals: Verify that opening the Tuning Overlay (`pmg-tune-chips.js`) while the Contact Modal or Upgrade Modal is open doesn’t result in z-index wars or trapped focus.
+	•	Magic Flow Takeover Constraints: The Magic Flow (`pmg-magic-flow.js`) and Auto-Boost Takeover (`pmg-auto-boost-takeover.js`) are full-screen. Action: Ensure they have a bulletproof `z-index` (e.g., `9999`) so no stray tooltips or chat widgets bleed through during the generation state.
+	•	Escape Hatches: Every overlay, modal, and takeover MUST have a clear, working “Close” or “Cancel” button, and should ideally close on the `Escape` key. Verify this across the board.
+
+4. Performance & Speed
+A 10/10 tool feels instant.
+
+	•	Script Loading: We have 60+ JS files. Action: Ensure all non-critical scripts (like `pmg-share.js`, `pmg-stats.js`, or the ECC if it’s not open by default) are loaded with `defer` or dynamically imported to keep the initial Time to Interactive (TTI) under 2 seconds.
+	•	Debouncing: The Diff Viewer correctly debounces the stream mode (1,500ms). Action: Check the Prompt Coach (`pmg-prompt-coach.js`) and Text Feedback (`pmg-text-feedback.js`) to ensure their `input` event listeners are properly debounced (e.g., 300ms) so they don’t thrash the main thread while the user is typing fast.
+
+5. The Deferred Tasks (Do Not Forget)
+As part of our tag-team protocol, here are the items we deferred from earlier sessions that must be addressed before launch:
+
+	1.	The Widget Strategy: We wrote a complete spec for an embeddable Web Component widget (`pmg-widget-strategy.md`). We explicitly paused this until after launch to gather real usage data. Action: Do not build the widget now. Keep the spec filed away.
+	2.	Prompt Coach Threshold: I already bumped `SHOW_AT_CHARS` from 2 to 20 so the coach doesn’t penalize users before they finish their first word. Action: Verify this feels right in practice; adjust to 15 or 25 if needed.
+
+
+Replit, your turn. Run the double-pass on the codebase against this brief. Fix the stale copy, test the mobile inner-scrolls, verify the z-indexes, and confirm the debouncing. Let’s get this to 10/10.
