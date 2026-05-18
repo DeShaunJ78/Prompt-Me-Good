@@ -180,42 +180,63 @@
     }
   }
 
-  function injectInlineTrigger() {
-    var target = document.getElementById('resultBox');
+  /* orphan-sweep-1 (2026-05-18): chassis-v3 reparents #resultBox and
+     #aiResponseOutput into chassis hosts AFTER this script's first
+     pass. The original parents kept stale corner triggers, and the
+     MutationObserver would inject fresh ones into the new parents —
+     leaving DUPLICATE buttons. The orphan still "fires" (closure
+     captures the live element) but sits in a stale container with
+     stale chassis CSS (position:absolute instead of in-flow static),
+     producing the "I click and nothing happens" report. Fix: scope
+     dedup checks to the document, and on every pass remove any
+     trigger whose parentNode is not the live target's current parent. */
+  function injectTriggerFor(targetId, opts) {
+    var target = document.getElementById(targetId);
     if (!target || !target.parentNode) return;
-    if (target.parentNode.querySelector('.pmg-fs-inline-trigger[data-pmg-fs-for="resultBox"]')) return;
-    ensureRelative(target.parentNode);
+    var sel = '.pmg-fs-inline-trigger[data-pmg-fs-for="' + targetId + '"]';
+    var existing = document.querySelectorAll(sel);
+    var liveParent = target.parentNode;
+    var keptInLive = false;
+    for (var i = 0; i < existing.length; i++) {
+      var node = existing[i];
+      if (node.parentNode === liveParent && !keptInLive) {
+        keptInLive = true; // first live-parent button wins
+      } else {
+        // orphan in stale parent OR duplicate in live parent — remove
+        if (node.parentNode) node.parentNode.removeChild(node);
+      }
+    }
+    if (keptInLive) return;
+    ensureRelative(liveParent);
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'pmg-fs-inline-trigger pmg-fs-air-trigger';
-    btn.setAttribute('data-pmg-fs-for', 'resultBox');
-    btn.setAttribute('aria-label', 'Expand prompt to fullscreen');
+    btn.setAttribute('data-pmg-fs-for', targetId);
+    btn.setAttribute('aria-label', opts.aria);
     btn.setAttribute('title', 'Expand to fullscreen');
     btn.textContent = '\uD83D\uDD0D';
     btn.addEventListener('click', function (ev) {
       ev.preventDefault();
-      open(target, { title: 'Generated Prompt' });
+      // re-resolve live target at click time so reparenting after
+      // injection doesn't break the call.
+      var live = document.getElementById(targetId) || target;
+      open(live, { title: opts.title });
     });
-    target.parentNode.appendChild(btn);
+    liveParent.appendChild(btn);
+  }
+
+  function injectInlineTrigger() {
+    injectTriggerFor('resultBox', {
+      aria: 'Expand prompt to fullscreen',
+      title: 'Generated Prompt'
+    });
   }
 
   function injectAiResponseTrigger() {
-    var target = document.getElementById('aiResponseOutput');
-    if (!target || !target.parentNode) return;
-    if (target.parentNode.querySelector('.pmg-fs-inline-trigger[data-pmg-fs-for="aiResponseOutput"]')) return;
-    ensureRelative(target.parentNode);
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'pmg-fs-inline-trigger pmg-fs-air-trigger';
-    btn.setAttribute('data-pmg-fs-for', 'aiResponseOutput');
-    btn.setAttribute('aria-label', 'Expand AI response to fullscreen');
-    btn.setAttribute('title', 'Expand to fullscreen');
-    btn.textContent = '\uD83D\uDD0D';
-    btn.addEventListener('click', function (ev) {
-      ev.preventDefault();
-      open(target, { title: 'AI Response' });
+    injectTriggerFor('aiResponseOutput', {
+      aria: 'Expand AI response to fullscreen',
+      title: 'AI Response'
     });
-    target.parentNode.appendChild(btn);
   }
 
   function injectAllTriggers() {
