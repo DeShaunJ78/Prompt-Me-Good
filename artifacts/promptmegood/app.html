@@ -5128,8 +5128,8 @@
                  is contenteditable so the button cannot live inside it.
                  chassis-v3.js reparent() is wrap-aware (moves the wrap into
                  .pmgv3-output-host instead of #resultBox alone). -->
-            <div class="result-box-wrap">
-              <button type="button" class="result-box-toggle" id="resultBoxToggle" aria-expanded="false" aria-controls="resultBox" aria-label="Open fullscreen" title="Open fullscreen">⛶</button>
+            <div class="result-box-wrap" style="position:relative;display:block;">
+              <button type="button" class="result-box-toggle" id="resultBoxToggle" aria-expanded="false" aria-controls="resultBox" aria-label="Open fullscreen" title="Open fullscreen" style="position:absolute;top:6px;right:8px;z-index:100;background:transparent;border:0;padding:2px 4px;font-size:16px;line-height:1;color:#7ad6b7;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;opacity:0.7;">⛶</button>
               <div class="result-box" id="resultBox" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="Generated prompt (editable)">Your fixed prompt will appear here.</div>
             </div>
             <div class="result-edit-row">
@@ -5249,8 +5249,8 @@
                    positioned descendants. Also `out.textContent = ''` in
                    the Run-With-AI stream wipes children. The wrap keeps
                    the toggle outside both problems. -->
-              <div class="ai-response-output-wrap">
-                <button type="button" class="ai-response-toggle" id="aiResponseToggle" aria-expanded="false" aria-label="Open fullscreen" title="Open fullscreen">⛶</button>
+              <div class="ai-response-output-wrap" style="position:relative;display:block;">
+                <button type="button" class="ai-response-toggle" id="aiResponseToggle" aria-expanded="false" aria-label="Open fullscreen" title="Open fullscreen" style="position:absolute;top:6px;right:8px;z-index:100;background:transparent;border:0;padding:2px 4px;font-size:16px;line-height:1;color:#7ad6b7;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;opacity:0.7;">⛶</button>
                 <div class="ai-response-output" id="aiResponseOutput" aria-live="polite" aria-atomic="false"></div>
               </div>
               <div class="ai-response-actions ai-response-actions-bottom">
