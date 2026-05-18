@@ -175,15 +175,16 @@ body.pmg-fs-open { overflow: hidden; }
 }
 
 /* corner-pill-restore-1 (2026-05-18): reserve right-edge padding on
-   the two boxes that host an absolute-positioned air-trigger so the
-   first line of text never collides with the 28×28 corner button. */
-#resultBox,
-#aiResponseOutput {
+   the prompt box (#resultBox) since the toggle is inside .result-box-wrap
+   which directly wraps #resultBox.
+   in-box-toggle-2 (2026-05-18): #aiResponseOutput is no longer included —
+   the AI response toggle now lives in .ai-response-output-wrap as a
+   sibling of the output, so no padding reservation is needed there. */
+#resultBox {
   padding-right: 44px;
 }
 @media (max-width: 480px) {
-  #resultBox,
-  #aiResponseOutput {
+  #resultBox {
     padding-right: 40px;
   }
 }

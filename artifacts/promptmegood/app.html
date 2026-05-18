@@ -3427,9 +3427,10 @@
        the top-right of its box (wrapped in .result-box-wrap). Shared
        rules between #resultBoxToggle and #aiResponseToggle are below
        .ai-response-toggle. .result-box-wrap is the positioning context. */
-    .result-box-wrap { position: relative; }
+    .result-box-wrap,
+    .ai-response-output-wrap { position: relative; }
     .result-box-toggle,
-    .ai-response-output .ai-response-toggle {
+    .ai-response-output-wrap .ai-response-toggle {
       position: absolute;
       top: 8px;
       right: 8px;
@@ -3452,19 +3453,19 @@
       transition: opacity 120ms ease;
     }
     .result-box-toggle.is-visible,
-    .ai-response-output .ai-response-toggle.is-visible {
+    .ai-response-output-wrap .ai-response-toggle.is-visible {
       display: inline-flex;
     }
     .result-box-toggle:hover,
     .result-box-toggle:focus-visible,
-    .ai-response-output .ai-response-toggle:hover,
-    .ai-response-output .ai-response-toggle:focus-visible {
+    .ai-response-output-wrap .ai-response-toggle:hover,
+    .ai-response-output-wrap .ai-response-toggle:focus-visible {
       opacity: 1;
       background: var(--color-surface);
       text-decoration: none;
     }
     .result-box-toggle:focus-visible,
-    .ai-response-output .ai-response-toggle:focus-visible {
+    .ai-response-output-wrap .ai-response-toggle:focus-visible {
       outline: 2px solid var(--color-primary);
       outline-offset: 2px;
     }
@@ -4355,7 +4356,7 @@
   <link rel="stylesheet" href="/styles/pmg-visual-studio.css?v=re-3" />
   <link rel="stylesheet" href="/styles/pmg-storyboard.css?v=sb-9" />
   <link rel="stylesheet" href="/styles/pmg-cap-comparison.css?v=cap-compare-1" />
-  <link rel="stylesheet" href="/styles/pmg-fullscreen.css?v=fs-8-native-inbox" />
+  <link rel="stylesheet" href="/styles/pmg-fullscreen.css?v=fs-9-wrap-fix" />
   <link rel="stylesheet" href="/styles/pmg-auto-boost.css?v=ab-8-under-strength" />
   <link rel="stylesheet" href="/styles/pmg-spark-panel.css?v=sp-5-visible" />
   <link rel="stylesheet" href="/styles/pmg-business-mode.css?v=bm-3" />
@@ -4393,7 +4394,7 @@
   <script src="/scripts/pmg-visual-studio.js?v=img-timeout-1" defer></script>
   <script src="/scripts/pmg-storyboard.js?v=sb-11" defer></script>
   <script src="/scripts/pmg-cap-comparison.js?v=cap-compare-1" defer></script>
-  <script src="/scripts/pmg-fullscreen.js?v=fs-8-native-inbox" defer></script>
+  <script src="/scripts/pmg-fullscreen.js?v=fs-9-wrap-fix" defer></script>
   <script src="/scripts/pmg-spark-panel.js?v=sp-6-mobile-questions" defer></script>
   <script src="/scripts/pmg-business-mode.js?v=growth-mode-2-prompts" defer></script>
   <script src="/scripts/pmg-growth-actions.js?v=ga-1" defer></script>
@@ -5241,7 +5242,16 @@
                    repo clears the output via innerHTML=''; the toggle
                    survives regenerations. clampAiResponse() defensively
                    re-inserts it if anything ever wipes the children. -->
-              <div class="ai-response-output" id="aiResponseOutput" aria-live="polite" aria-atomic="false"><button type="button" class="ai-response-toggle" id="aiResponseToggle" aria-expanded="false" aria-label="Open fullscreen" title="Open fullscreen">⛶</button></div>
+              <!-- in-box-toggle-2 (2026-05-18): toggle MUST be a sibling
+                   of #aiResponseOutput, not a child. The output box has
+                   overflow-y:auto (chassis L1688) which clips absolutely-
+                   positioned descendants. Also `out.textContent = ''` in
+                   the Run-With-AI stream wipes children. The wrap keeps
+                   the toggle outside both problems. -->
+              <div class="ai-response-output-wrap">
+                <button type="button" class="ai-response-toggle" id="aiResponseToggle" aria-expanded="false" aria-label="Open fullscreen" title="Open fullscreen">⛶</button>
+                <div class="ai-response-output" id="aiResponseOutput" aria-live="polite" aria-atomic="false"></div>
+              </div>
               <div class="ai-response-actions ai-response-actions-bottom">
                 <button class="btn btn-secondary" type="button" onclick="copyAIResponse()">Copy Response</button>
                 <button class="btn btn-secondary" type="button" onclick="runWithAI()">Run Again</button>
@@ -8955,23 +8965,12 @@ Context:
       function clampAiResponse() {
         var output = document.getElementById('aiResponseOutput');
         if (!output || !aiResponseToggle) return;
-        // in-box-toggle-1 (2026-05-18): toggle lives INSIDE #aiResponseOutput.
-        // No code in the repo wipes the output's children today, but be
-        // defensive: if the button got detached for any reason, re-insert
-        // it as the first child so it stays anchored at the top-right.
-        if (aiResponseToggle.parentNode !== output) {
-          try { output.insertBefore(aiResponseToggle, output.firstChild); } catch (_e) {}
-        }
-        // fs-1: same treatment as clampResultBox — show button as fullscreen
-        // trigger whenever there is content, regardless of length.
-        // in-box-toggle-1: subtract the toggle's own text from the content
-        // check, otherwise the button's "⛶" char keeps hasContent true and
-        // the affordance shows before the AI has actually responded.
+        // in-box-toggle-2 (2026-05-18): toggle now lives in .ai-response-output-wrap
+        // as a SIBLING of #aiResponseOutput (not a child), so no defensive
+        // re-insert is needed and we can read output.textContent directly
+        // without subtracting the button's glyph.
         if (window.pmgFullscreen) {
-          var rawText = (output.textContent || '');
-          var btnText = aiResponseToggle ? (aiResponseToggle.textContent || '') : '';
-          var contentText = btnText ? rawText.replace(btnText, '') : rawText;
-          var hasContent = contentText.trim().length > 0;
+          var hasContent = (output.textContent || '').trim().length > 0;
           if (hasContent) {
             aiResponseToggle.classList.add('is-visible');
             // in-box-toggle-1: icon-only button, no textContent override
