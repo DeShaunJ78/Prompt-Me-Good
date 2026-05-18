@@ -291,7 +291,14 @@
       '.pmg-upgrade-overlay {',
       '  position: fixed; inset: 0;',
       '  background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);',
-      '  z-index: 200; display: flex; align-items: center; justify-content: center;',
+      /* audit-3 §3 overlays-1: was z-index 200. Magic Flow takeover and
+         Auto-Boost takeover both render at z-index 100000. When the
+         cap-intercept wrapper (pmg-cap-intercept.js) fires the upgrade
+         modal in response to a 429 mid-takeover, the modal was
+         invisible BEHIND the takeover backdrop — user saw an infinite
+         spinner. 100001 lifts it above the takeovers but stays below
+         the toast (100002) and the contact-modal sentinel (2.1B). */
+      '  z-index: 100001; display: flex; align-items: center; justify-content: center;',
       '  padding: var(--space-4, 16px); animation: pmgProFadeIn 200ms ease;',
       '}',
       '@keyframes pmgProFadeIn { from { opacity: 0; } to { opacity: 1; } }',

@@ -56,6 +56,12 @@ Concise, direct communication. Iterative dev — explain high-level impact befor
 *   Collect real testimonials from the first 10 paying Founding Members (with permission to publish) and add a social-proof block to `index.html` and `pricing.html`. Until then, zero fabricated testimonials/user counts/star ratings — see §10 audit notes.
 *   Privacy.html DNT/GPC documentation (deferred from §15 audit).
 *   Remove the dead legacy image-mode code path (follow-up refs #146, #147).
+*   **§3 overlay architecture refactor** (audit deferred 2026-05-18). Three known issues need deliberate work, not a single-line patch:
+    1.  **Scroll-lock counter.** Today every overlay sets `body { overflow:hidden }` as a binary toggle. When modals stack (e.g. Business Mode drawer → Upgrade modal), closing the inner modal removes the lock even though the parent is still open, leaking background scroll. Fix: implement a refcount stack on `document.body` (e.g. `data-pmg-scroll-locks="N"`) so the lock only releases when the count hits zero.
+    2.  **ESC key discipline.** Multiple overlays register global ESC listeners without `stopPropagation` or open-stack checks. ESC closes too many things (e.g. Command Palette on top of Expert Center closes both). Fix: a shared `pmg-overlay-stack` module that owns the ESC listener and dispatches to the top-most open surface only.
+    3.  **Backdrop over-dismissal.** Stacked modals each render their own scrim; clicking the inner scrim sometimes dismisses both. Fix: route backdrop clicks through the same overlay-stack module, so each scrim only closes its own surface.
+
+    Single-value z-index fixes shipped in §3 (upgrade modal 200→100001, toast 9999→100002) cover the most visible bug (cap modal hidden behind Magic Flow takeover). The three items above are real but each requires a refactor touching multiple files — flag, don't patch.
 
 ## Gotchas
 
