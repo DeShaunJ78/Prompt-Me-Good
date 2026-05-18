@@ -148,16 +148,9 @@ router.post("/waitlist", waitlistLimiter, async (req, res) => {
   const turnstileToken =
     typeof req.body?.turnstileToken === "string" ? req.body.turnstileToken : "";
   const verify = await verifyTurnstile(turnstileToken, req.ip);
-  /* ts-soft-allow-1: the Turnstile widget fails to render visibly for some
-     users (mobile Safari with strict tracking prevention, ad-blockers,
-     site-key/domain mismatches in CF). Hard-blocking the submission was
-     bleeding conversion (user reported "Notify Me does nothing" while the
-     widget was invisible). Soft-allow: still attempt the insert, but
-     suffix the source with `-unverified` so the team can review/clean up
-     unverified entries later. The per-IP rate limiter (5/10min) caps abuse. */
-  const turnstileFailed = !verify.ok;
-  if (turnstileFailed) {
-    log.warn({ reason: verify.reason }, "waitlist turnstile failed — soft-allowing");
+  if (!verify.ok) {
+    log.warn({ reason: verify.reason }, "waitlist turnstile failed — rejecting");
+    return res.status(403).json({ ok: false, error: "bot_check_failed" });
   }
 
   /* M-4 (audit-2 triage): accept optional `tier` so marketing can segment
@@ -166,10 +159,9 @@ router.post("/waitlist", waitlistLimiter, async (req, res) => {
      field), so junk input doesn't leak into the table. */
   const rawSource =
     typeof req.body?.source === "string" ? req.body.source.slice(0, 48) : "pricing";
-  const sourceWithFlag = turnstileFailed ? `${rawSource}-unverified` : rawSource;
   const parsed = insertWaitlistSignupSchema.safeParse({
     email: typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "",
-    source: sourceWithFlag,
+    source: rawSource,
     tier: typeof req.body?.tier === "string" && req.body.tier ? req.body.tier : undefined,
     userAgent: req.get("user-agent")?.slice(0, 500),
     referrer: req.get("referer")?.slice(0, 500),

@@ -7,8 +7,9 @@
  *
  * Defenses (defense-in-depth):
  *   1. Cloudflare Turnstile token verification (when TURNSTILE_SECRET_KEY is
- *      set). Soft-allow on failure (matches waitlist ts-soft-allow-1) so a
- *      misbehaving widget doesn't bleed legitimate contact form submissions.
+ *      set). Hard-block on failure: returns 403 bot_check_failed before any
+ *      SMTP send. Client surfaces collect and submit the token. TURNSTILE_SECRET_KEY
+ *      must be set in production or startup will throw (see index.ts guard).
  *   2. Per-IP rate limiter: 3 submissions / 15 min. Lower than waitlist
  *      because each submission costs an actual email send.
  *   3. Honeypot field (`website`): if filled, silently 200 and drop. Bots
@@ -140,12 +141,12 @@ router.post("/contact", contactLimiter, async (req, res) => {
   }
 
   const verify = await verifyTurnstile(turnstileToken ?? "", req.ip);
-  const turnstileFailed = !verify.ok;
-  if (turnstileFailed) {
+  if (!verify.ok) {
     log.warn(
       { reason: verify.reason },
-      "contact turnstile failed — soft-allowing",
+      "contact turnstile failed — rejecting",
     );
+    return res.status(403).json({ ok: false, error: "bot_check_failed" });
   }
 
   const transporter = getTransporter(log);
@@ -155,16 +156,13 @@ router.post("/contact", contactLimiter, async (req, res) => {
 
   const from = process.env["ZOHO_SMTP_USER"]!;
   const ts = new Date().toISOString();
-  const verificationLine = turnstileFailed
-    ? `(turnstile: failed — ${verify.reason ?? "unknown"})`
-    : "(turnstile: ok)";
   const text =
     `New contact form submission\n\n` +
     `Name:    ${name}\n` +
     `Email:   ${email}\n` +
     `Subject: ${subject}\n` +
     `When:    ${ts}\n` +
-    `${verificationLine}\n\n` +
+    `(turnstile: ok)\n\n` +
     `--- Message ---\n${message}\n`;
 
   try {

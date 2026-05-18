@@ -139,6 +139,7 @@
           '<label for="pmg-cm-website">Website (leave empty)</label>' +
           '<input id="pmg-cm-website" name="website" type="text" tabindex="-1" autocomplete="off" />' +
         '</div>' +
+        '<div id="pmg-cm-ts-mount" hidden style="margin:4px 0;"></div>' +
         '<div id="pmg-cm-status" class="pmg-cm-status" role="status" aria-live="polite"></div>' +
         '<button type="submit" class="pmg-cm-submit" id="pmg-cm-submit-btn">Send message</button>' +
       '</form>' +
@@ -169,6 +170,31 @@
       '</details>' +
     '</div>';
 
+  var TURNSTILE_JS = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+  var cmTurnstileToken = '';
+  var cmTurnstileWidgetId = null;
+
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      if (document.querySelector('script[src="' + src + '"]')) { resolve(); return; }
+      var s = document.createElement('script');
+      s.src = src; s.async = true; s.defer = true;
+      s.onload = function () { resolve(); };
+      s.onerror = function () { reject(new Error('script load failed: ' + src)); };
+      document.head.appendChild(s);
+    });
+  }
+  function whenTurnstileReady() {
+    return new Promise(function (resolve, reject) {
+      var deadline = Date.now() + 8000;
+      (function poll() {
+        if (window.turnstile && typeof window.turnstile.render === 'function') return resolve();
+        if (Date.now() > deadline) return reject(new Error('turnstile_timeout'));
+        setTimeout(poll, 100);
+      })();
+    });
+  }
+
   function inject() {
     if (injected) return;
     injected = true;
@@ -190,6 +216,28 @@
         close();
       }
     });
+
+    // Turnstile: render widget inside the modal after injection
+    var tsMount = root.querySelector('#pmg-cm-ts-mount');
+    fetch('/api/public-config', { headers: { 'Accept': 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : {}; })
+      .then(function (cfg) {
+        var siteKey = (cfg && cfg.turnstileSiteKey) || '';
+        if (!siteKey || !tsMount || cmTurnstileWidgetId !== null) return;
+        return loadScript(TURNSTILE_JS).then(whenTurnstileReady).then(function () {
+          try {
+            cmTurnstileWidgetId = window.turnstile.render(tsMount, {
+              sitekey: siteKey,
+              theme: 'auto',
+              callback: function (token) { cmTurnstileToken = token || ''; },
+              'expired-callback': function () { cmTurnstileToken = ''; },
+              'error-callback': function () { cmTurnstileToken = ''; },
+            });
+            tsMount.hidden = false;
+          } catch (e) { /* widget render failed — fall through */ }
+        });
+      })
+      .catch(function () { /* silent — degrade gracefully */ });
 
     // Submit handler
     var form = root.querySelector('#pmg-cm-form');
@@ -214,6 +262,7 @@
         subject: form.subject.value,
         message: form.message.value.trim(),
         website: form.website.value,
+        turnstileToken: cmTurnstileToken,
       };
       if (!data.name || !data.email || !data.message) {
         setStatus('err', 'Please fill in your name, email, and message.');
@@ -235,8 +284,18 @@
           if (res.status === 200 && res.body && res.body.ok) {
             setStatus('ok', "Thanks \u2014 your message is on its way. We'll get back to you within 1\u20132 business days.");
             form.reset();
+            cmTurnstileToken = '';
+            if (cmTurnstileWidgetId !== null && window.turnstile) {
+              try { window.turnstile.reset(cmTurnstileWidgetId); } catch (e) {}
+            }
           } else if (res.status === 429) {
             setStatus('err', 'You have sent a few messages already. Please wait a few minutes and try again.');
+          } else if (res.status === 403) {
+            setStatus('err', 'Bot check failed \u2014 please complete the verification above and try again. You can also write directly to support@promptmegood.com.');
+            cmTurnstileToken = '';
+            if (cmTurnstileWidgetId !== null && window.turnstile) {
+              try { window.turnstile.reset(cmTurnstileWidgetId); } catch (e) {}
+            }
           } else if (res.status === 503) {
             setStatus('err', 'Our email system is temporarily unavailable. Please try again in a few minutes, or write to support@promptmegood.com from your own mail app.');
           } else {

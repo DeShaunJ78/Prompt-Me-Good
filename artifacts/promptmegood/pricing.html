@@ -982,13 +982,12 @@
         if (!ok) { setStatus('Please enter a valid email address.', 'error'); return; }
         setStatus('', null);
         setBusy(true);
-        /* ts-soft-allow-1: previously blocked submission when Turnstile had
-           no token. The widget fails to render visibly for many users
-           (mobile Safari, ad-blockers, CF site-key/domain mismatch),
-           making "Notify Me" appear broken and tanking conversion. The
-           server now soft-allows missing/failed tokens (flags the row
-           as `-unverified` for review) so we always submit and trust
-           the server's response. */
+        /* The server now hard-rejects missing/invalid tokens with 403
+           bot_check_failed. The Turnstile widget is rendered above if the
+           site key is available; when not available (ad-blockers, CF
+           site-key/domain mismatch), the server also has no secret key
+           configured in that environment and will bypass verification.
+           Submit always includes whatever token has been collected. */
         /* M-4 (audit-2 triage): include tier captured from whichever
            Notify-Me-by-tier button the user clicked. Empty string is
            normalized to undefined so the server's enum validation
@@ -1010,9 +1009,9 @@
           .then(function (out) {
             var data = out.data || {};
             if (!out.res.ok || data.ok !== true) {
-              if (data.error === 'turnstile_failed') {
+              if (data.error === 'bot_check_failed') {
                 resetTurnstile();
-                throw new Error('Verification failed. Please try the check again.');
+                throw new Error('Verification failed. Please complete the bot check and try again.');
               }
               throw new Error('Submission rejected');
             }

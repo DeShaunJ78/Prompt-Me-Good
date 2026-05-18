@@ -12,6 +12,18 @@ import { assertStripePriceIdsConfigured } from "./lib/stripe-env-check";
 // Skipped automatically when STRIPE_SECRET_KEY is unset (dev / preview / CI).
 assertStripePriceIdsConfigured();
 
+// task-153: TURNSTILE_SECRET_KEY must be set in production so contact and
+// waitlist routes hard-block bots. Without it both public intake endpoints
+// fall back to fail-open (verifyTurnstile returns {ok:true} when the secret
+// is absent), recreating the abuse path this fix closed. Skip in dev/preview
+// where STRIPE_SECRET_KEY is also absent (same convention as Stripe guard above).
+if (process.env["STRIPE_SECRET_KEY"] && !process.env["TURNSTILE_SECRET_KEY"]) {
+  throw new Error(
+    "TURNSTILE_SECRET_KEY must be set in production. " +
+    "Without it, POST /api/contact and POST /api/waitlist fail open to bots.",
+  );
+}
+
 const rawPort = process.env["PORT"];
 
 if (!rawPort) {
