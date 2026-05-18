@@ -229,6 +229,24 @@
   <link rel="manifest" href="/site.webmanifest" />
   <meta name="theme-color" content="#0a2420" />
   <script type="text/javascript">
+    /* pwa-sw-1 (2026-05-18): register the service worker so the PWA /
+       "Add to Home Screen" shortcut launches instantly on repeat opens.
+       Without this, every launch was a cold ~1MB JS fetch. The SW caches
+       assets stale-while-revalidate (instant from cache, refresh in bg)
+       and HTML network-first (always tries fresh, falls back offline).
+       Disable: localStorage.pmg_sw_disable='1'. */
+    (function () {
+      try {
+        if (localStorage.getItem('pmg_sw_disable') === '1') return;
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+          });
+        }
+      } catch (_e) {}
+    })();
+  </script>
+  <script type="text/javascript">
     /* audit-3 §7: cookieless privacy gate around Microsoft Clarity. Skip
        the SDK load entirely (no script tag inserted, no cookies set, no
        session-replay network calls) when the user has opted out at the

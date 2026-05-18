@@ -58,6 +58,21 @@
   <link rel="shortcut icon" href="/favicon.ico" />
   <link rel="apple-touch-icon" href="/assets/pmg-logo.png?v=7" />
   <link rel="manifest" href="/site.webmanifest" />
+  <script type="text/javascript">
+    /* pwa-sw-1 (2026-05-18): register SW on marketing page too so users
+       who land here first get the cache warmed before they install the
+       PWA. Disable: localStorage.pmg_sw_disable='1'. */
+    (function () {
+      try {
+        if (localStorage.getItem('pmg_sw_disable') === '1') return;
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+          });
+        }
+      } catch (_e) {}
+    })();
+  </script>
   <style>
     :root {
       --bg: #0a2420;
