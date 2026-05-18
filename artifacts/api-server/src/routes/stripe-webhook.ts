@@ -27,12 +27,13 @@
  * ============================================================================ */
 import express, { Router, type IRouter } from "express";
 import type Stripe from "stripe";
-import { eq as drizzleEq } from "drizzle-orm";
+import { count, eq as drizzleEq, sql } from "drizzle-orm";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { stripe } from "../lib/stripe-client";
 import { supabaseAdmin } from "../lib/supabase-admin";
 import { db, foundingPurchasesTable } from "@workspace/db";
 import { logger } from "../lib/logger";
+import { PMG_PRICING } from "../lib/pricing-config";
 
 /* Anon-key client used ONLY for the existing-user magic-link fallback
    in inviteOrLinkFoundingUser. signInWithOtp({shouldCreateUser:false})
@@ -205,17 +206,33 @@ async function handleCheckoutCompleted(
     session.payment_status === "paid";
 
   /* ============================================================
-   * Step 1: Record the Founding purchase in our own table FIRST.
-   * Idempotent via UNIQUE(stripe_session_id) — Stripe webhook
-   * redeliveries become no-ops. This is the seat-counter source
-   * of truth read by /api/founding-checkout/status.
+   * Step 1: Record the Founding purchase in our own table FIRST,
+   * inside a transaction that atomically checks the seat cap.
    *
-   * `inserted.length === 0` means this exact session_id was already
-   * recorded by an earlier delivery — we skip every downstream side
-   * effect (invite send, profile upsert) so duplicate webhook calls
-   * don't spam invite emails or churn profile rows.
+   * WHY a transaction: the pre-checkout seat check in
+   * founding-checkout.ts / billing.ts runs before the Stripe
+   * session is created and does NOT reserve a seat. A bot (or
+   * concurrent buyers) can mint many valid sessions while count
+   * is still < FOUNDING_LIMIT and complete them later, bypassing
+   * the advertised 500-seat cap. By re-checking the count inside
+   * a DB transaction here at fulfillment time, we ensure that
+   * provisioning never happens for sessions completed after the
+   * cap is truly reached, regardless of how many sessions were
+   * issued beforehand.
+   *
+   * Over-cap sessions: we return 200 to Stripe (so it does not
+   * retry), log loudly for the operator to issue a manual refund,
+   * and skip all provisioning side-effects. The payment IS real —
+   * the operator must refund it via the Stripe dashboard.
+   *
+   * `inserted.length === 0` on a non-over-cap path means this
+   * exact session_id was already recorded by an earlier delivery
+   * (idempotent via UNIQUE(stripe_session_id)) — we skip every
+   * downstream side effect so duplicate webhook calls don't spam
+   * invite emails or churn profile rows.
    * ============================================================ */
   let isFreshPurchase = false;
+  let overCap = false;
   if (isFoundingPaid) {
     const buyerEmail = session.customer_details?.email || null;
     if (!buyerEmail) {
@@ -224,21 +241,76 @@ async function handleCheckoutCompleted(
         "founding checkout completed without buyer email — refusing to record",
       );
     }
-    const inserted = await db
-      .insert(foundingPurchasesTable)
-      .values({
-        stripeSessionId: session.id,
-        stripeCustomerId: customerId,
-        stripePaymentIntentId: paymentIntentId,
-        email: buyerEmail.toLowerCase(),
-        flow: flow === "anonymous" ? "anonymous" : "authenticated",
-        supabaseUserId: userId,
-      })
-      .onConflictDoNothing({
-        target: foundingPurchasesTable.stripeSessionId,
-      })
-      .returning({ id: foundingPurchasesTable.id });
-    isFreshPurchase = inserted.length > 0;
+    await db.transaction(async (tx) => {
+      /* Acquire a transaction-level advisory lock keyed on a stable integer
+         derived from the string 'pmg_founding_seat_alloc'. This serializes
+         ALL concurrent webhook handlers that reach this code — only one
+         transaction can hold the lock at a time. Under Postgres READ
+         COMMITTED (the default), two concurrent handlers can both read
+         sold < 500 before either inserts, producing more than 500 fulfilled
+         seats. The advisory lock closes that window: the second handler
+         blocks on pg_advisory_xact_lock until the first transaction commits,
+         at which point the committed row is visible and the count reflects
+         reality. The lock is automatically released on transaction commit or
+         rollback — no manual cleanup needed, no deadlock risk. */
+      await tx.execute(
+        sql`SELECT pg_advisory_xact_lock(hashtext('pmg_founding_seat_alloc'))`,
+      );
+
+      /* Step 1a: Redelivery detection — check for existing stripe_session_id
+         BEFORE the cap check. If this session is already recorded, mark it as
+         a redelivery and exit early. Without this ordering, a Stripe retry
+         arriving after the cap is reached would be misclassified as overCap
+         and logged as "manual refund required" even though the seat was
+         legitimately fulfilled on the first delivery. */
+      const existing = await tx
+        .select({ id: foundingPurchasesTable.id })
+        .from(foundingPurchasesTable)
+        .where(drizzleEq(foundingPurchasesTable.stripeSessionId, session.id))
+        .limit(1);
+      if (existing.length > 0) {
+        // This exact stripe_session_id was already recorded — redelivery.
+        isFreshPurchase = false;
+        return;
+      }
+
+      /* Step 1b: Cap check — only reached for new (never-before-seen) sessions. */
+      const rows = await tx
+        .select({ n: count() })
+        .from(foundingPurchasesTable);
+      const sold = Number(rows[0]?.n ?? 0);
+
+      if (sold >= PMG_PRICING.FOUNDING_LIMIT) {
+        // Seat cap already reached at fulfillment time. The session was
+        // issued before the cap was hit but completed after. Do NOT
+        // provision the account. Flag for operator refund.
+        overCap = true;
+        return;
+      }
+
+      /* Step 1c: Insert the new purchase row. */
+      await tx
+        .insert(foundingPurchasesTable)
+        .values({
+          stripeSessionId: session.id,
+          stripeCustomerId: customerId,
+          stripePaymentIntentId: paymentIntentId,
+          email: buyerEmail.toLowerCase(),
+          flow: flow === "anonymous" ? "anonymous" : "authenticated",
+          supabaseUserId: userId,
+        });
+      isFreshPurchase = true;
+    });
+
+    if (overCap) {
+      // OPERATOR ACTION REQUIRED: refund this session via the Stripe dashboard.
+      logger.error(
+        { stripeSessionId: session.id, email: hashEmail(buyerEmail) },
+        "FOUNDING SEAT CAP EXCEEDED — payment accepted by Stripe but seat NOT provisioned; manual refund required",
+      );
+      return; // Return 200 to Stripe; do not retry.
+    }
+
     if (!isFreshPurchase) {
       logger.info(
         { stripeSessionId: session.id },

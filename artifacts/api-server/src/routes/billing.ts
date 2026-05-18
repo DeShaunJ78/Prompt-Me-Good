@@ -35,8 +35,40 @@ import {
   type PmgPlan,
 } from "../lib/pricing-config";
 import { getUserDay } from "../lib/usage-store";
+import { makeRateLimiter } from "../middlewares/rateLimit";
+import type { Request, Response, NextFunction } from "express";
 
 const router: IRouter = Router();
+
+/* ----------------------------------------------------------------- */
+/* Rate limit — 5 founding checkout attempts / 10 min / IP.          */
+/* Mirrors the limit on the anonymous founding-checkout endpoint.     */
+/* Throttles session-minting abuse on the authenticated path.        */
+/* Only applied when the request body contains tier='founding';       */
+/* non-founding tiers pass through without being counted.            */
+/* ----------------------------------------------------------------- */
+const _baseFoundingLimiter = makeRateLimiter({
+  windowMs: 10 * 60 * 1000,
+  max: 5,
+  label: "general",
+});
+function foundingCheckoutLimiter(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
+  const rawTier =
+    typeof req.body === "object" &&
+    req.body !== null &&
+    typeof req.body.tier === "string"
+      ? req.body.tier.toLowerCase()
+      : "pro";
+  if (rawTier !== "founding") {
+    next();
+    return;
+  }
+  _baseFoundingLimiter(req, res, next);
+}
 
 /* ----------------------------------------------------------------- */
 /* Return-URL allowlist                                              */
@@ -112,6 +144,7 @@ async function getOrCreateProfile(
 router.post(
   "/create-checkout-session",
   requireSupabaseUser,
+  foundingCheckoutLimiter,
   async (req: AuthedRequest, res) => {
     const user = req.user!;
 
