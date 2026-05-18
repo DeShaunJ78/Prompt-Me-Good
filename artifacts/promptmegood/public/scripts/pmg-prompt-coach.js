@@ -21,7 +21,7 @@
     if (localStorage.getItem('pmg_coach_disable') === '1') return;
   } catch (_) {}
 
-  var SHOW_AT_CHARS = 2;          // first signal appears almost immediately
+  var SHOW_AT_CHARS = 20;         // wait for a partial thought before showing coach
   var DEBOUNCE_MS   = 120;
   var ROOT_ID       = 'pmg-coach-root';
   var BODY_CLASS    = 'pmg-coach-on';
