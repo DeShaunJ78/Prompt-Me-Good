@@ -1,0 +1,27 @@
+That’s a sharp critique and it’s right on every point. Here’s my honest response to each one, and then my recommendation.
+
+
+On the cost and abuse model — this is the most important gap and should have been in the spec from the start. Every widget click is a token cost. Without domain locking, rate limits, and a quota model, one viral embed is a surprise bill. This has to be solved before any code is written.
+
+On “API key” framing — correct. A key embedded in public HTML is not a secret. “Site ID” is the right term. The security model is server-side: verify the `Origin` header matches the registered domain for that site ID. The site ID is just an identifier, not a credential.
+
+On Shadow DOM vs theme inheritance — fair pushback. `font-family` inherits across the Shadow DOM boundary, but colors and spacing don’t. To match the host’s look, you’d need to probe computed styles from a light-DOM sentinel element and pipe them in as CSS variables. That’s real work, not a hand-wave.
+
+On the Magic Flow takeover in a small embed — completely valid. The takeover was designed for full viewport. In a 600×400 widget box it would look cramped. A compact mode variant is needed.
+
+On lead capture — agreed. If it’s an option at all, it must be strictly opt-in, clearly labeled, no pre-checked boxes, easy dismiss. PMG’s brand is on every embed.
+
+On distribution — the “Powered by PromptMeGood ↗” viral loop is the right default. Without it the widget is a product no one finds.
+
+On versioning — `widget@1.js`, `widget@latest.js`, and `widget.js` as a committed alias. Standard CDN versioning practice. Should have been in the spec.
+
+
+On the sequencing question: The other AI is right. Launch first. The widget is a 3–4 week build done correctly, and doing it half-right is worse than not doing it. More importantly, you don’t yet know which features users actually love — that knowledge should shape what gets ported into the widget. Building it pre-launch means guessing.
+
+On who the host is: That’s the question that shapes everything. My instinct based on your product is that the primary host is a content creator or educator — someone running an AI newsletter, a course on prompt engineering, or a YouTube channel with a companion website. They want to give their audience a hands-on tool without building one themselves. That use case argues for compact mode, a clean “Powered by PromptMeGood” attribution link, and no lead capture by default.
+
+A SaaS company’s internal wiki is a secondary use case — they’d want white-labeling and higher quotas, which is the paid tier.
+
+My recommendation: Put the widget spec on hold. Focus on the launch. Come back to the widget in 4–6 weeks with real usage data to inform the design. I’ll update the spec document to reflect all the gaps the other AI identified so it’s ready to hand off to Replit when the time comes — nothing lost, just properly sequenced.
+
+Want me to update the spec document now with all these corrections so it’s ready when you are?
