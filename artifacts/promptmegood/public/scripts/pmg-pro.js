@@ -305,6 +305,12 @@
       '  border: 1px solid color-mix(in srgb, var(--color-primary) 25%, var(--color-border));',
       '  text-align: center; animation: pmgProSlideUp 250ms ease;',
       '  box-sizing: border-box;',
+      /* audit-3 §6 (mobile): on short viewports (e.g. iPhone SE landscape,
+         402×500 split-screen) icon + h3 + p + 3 CTAs can push the primary
+         "Upgrade" button below the fold. Cap the modal at viewport height
+         and let it scroll internally so the CTA is always reachable. */
+      '  max-height: calc(100vh - 32px);',
+      '  overflow-y: auto;',
       '}',
       '@keyframes pmgProSlideUp {',
       '  from { opacity: 0; transform: translateY(16px); }',

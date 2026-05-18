@@ -13374,6 +13374,9 @@ Context:
   <script src="/scripts/pmg-result-states.js?v=2-refocus" defer></script>
   <script src="/scripts/pmg-history-states.js?v=3-task42" defer></script>
   <script src="/scripts/pmg-pro.js?v=pro-pill-fit-1-no-money-badge" defer></script>
+  <!-- audit-3 §6: global /api 429 → upgrade modal interceptor. Must load
+       AFTER pmg-pro.js so window.showUpgradeModal is defined when needed. -->
+  <script src="/scripts/pmg-cap-intercept.js?v=cap-1" defer></script>
   <script src="/scripts/pmg-money-mode-pro.js?v=1" defer></script>
   <script src="/scripts/pmg-linear-flow.js?v=3-refocus" defer></script>
   <script src="/scripts/pmg-shortcuts.js?v=11-overlay-root" defer></script>

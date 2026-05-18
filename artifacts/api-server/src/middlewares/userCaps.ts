@@ -139,10 +139,28 @@ export function userCapEnforce(
     // failed work doesn't burn the user's daily quota.
     const reserved = await reserveUserDay(ctx.userId, feature, n, caps[feature]);
     if (!reserved) {
+      // audit-3 §6: enrich the 429 response so the frontend can render an
+      // actionable cap-hit UX without hard-coded business logic.
+      //   - Retry-After header: seconds until next UTC midnight. Standard
+      //     HTTP signal; CDNs, fetch wrappers, and curl all understand it.
+      //   - feature / limit / reset_at: lets the upgrade modal say
+      //     "you've used N of N today" + "resets at HH:MM your time".
+      //   - upgrade_url: the global fetch interceptor (pmg-cap-intercept.js)
+      //     uses this so the CTA target is owned by the server, not the
+      //     client — one place to change when checkout URLs move.
+      const resetAt = new Date();
+      resetAt.setUTCHours(24, 0, 0, 0);
+      const retryAfterSec = Math.max(1, Math.ceil((resetAt.getTime() - Date.now()) / 1000));
+      res.setHeader("Retry-After", String(retryAfterSec));
       res.status(429).json({
         success: false,
         ok: false,
         error: "Daily limit reached for your plan. Resets at midnight UTC.",
+        feature,
+        limit: caps[feature],
+        plan: ctx.plan,
+        reset_at: resetAt.toISOString(),
+        upgrade_url: "/pricing.html#early-access",
       });
       return;
     }
