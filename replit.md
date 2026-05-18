@@ -51,6 +51,12 @@ Three Panels (Text / Photography / Video) · Image Workshop (15 enhancement chip
 
 Concise, direct communication. Iterative dev — explain high-level impact before details. Ask before major architectural changes or new external dependencies.
 
+## Post-launch backlog
+
+*   Collect real testimonials from the first 10 paying Founding Members (with permission to publish) and add a social-proof block to `index.html` and `pricing.html`. Until then, zero fabricated testimonials/user counts/star ratings — see §10 audit notes.
+*   Privacy.html DNT/GPC documentation (deferred from §15 audit).
+*   Remove the dead legacy image-mode code path (follow-up refs #146, #147).
+
 ## Gotchas
 
 Hard-won invariants — universal rules, architecture details, state persistence, send-to/handoff, Visual Studio, adv-mirror, tune-chips, overlays, and backend-touching features — live in [`docs/gotchas.md`](./docs/gotchas.md). Read the relevant section before editing the surface it covers.

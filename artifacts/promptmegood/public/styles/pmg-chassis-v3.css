@@ -613,7 +613,11 @@ html.pmg-chassis-v3 .idea-section #goal {
   border-radius: 10px;
   padding: 12px;
   color: #fff;
-  font-size: 15px;
+  /* audit-3 §2 mobile-fold-1: 16px (was 15px) prevents iOS Safari auto-zoom
+     on focus. Below 16px, Safari forcibly zooms the entire viewport to
+     fit the input, which is jarring and leaves the page mis-scrolled
+     when the keyboard dismisses. 16px is the documented zoom threshold. */
+  font-size: 16px;
   line-height: 1.5;
   font-family: inherit;
   box-sizing: border-box;
@@ -1827,6 +1831,15 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
     gap: 8px;
   }
   .pmgv3-tab { white-space: nowrap; padding: 6px 16px; font-size: 14px; }
+  /* audit-3 §2 mobile-fold-1: shrink #goal min-height on mobile so the
+     Build button ("Build My Prompt", #analyze-btn) sits above the fold
+     on iPhone SE (375x667, ~600px usable after browser chrome). Desktop
+     keeps the 150px hero treatment. 110px still comfortably holds 4
+     lines of placeholder + typed text. Users can drag to expand
+     (resize:vertical) or just keep typing — max-height stays 240px. */
+  html.pmg-chassis-v3 .idea-section #goal {
+    min-height: 110px;
+  }
   .pmgv3-brand { font-size: 14px; min-width: 0; overflow: hidden; }
   .pmgv3-brand > span:first-of-type {
     overflow: hidden;

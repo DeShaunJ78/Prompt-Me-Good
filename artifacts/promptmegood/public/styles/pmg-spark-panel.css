@@ -75,7 +75,10 @@ input[type="text"].whisperer-input {
   border: none;
   border-bottom: 1px solid rgba(0, 200, 150, 0.3) !important;
   color: #fff !important;
-  font-size: 15px;
+  /* audit-3 §2 mobile-fold-1: 16px (was 15px) prevents iOS Safari auto-zoom
+     on focus. Whisperer typewriter overlay below also bumped to match so
+     the placeholder still visually aligns with typed text. */
+  font-size: 16px;
   padding: 6px 4px;
   outline: none;
   font-family: inherit;
@@ -104,7 +107,10 @@ input[type="text"].whisperer-input:focus {
      keeps the placeholder feel without disappearing. */
   color: rgba(180, 240, 220, 0.78);
   font-style: italic;
-  font-size: 15px;
+  /* audit-3 §2 mobile-fold-1: matches .whisperer-input bump (15→16px) so
+     the typewriter placeholder doesn't visually misalign when typed text
+     replaces it. */
+  font-size: 16px;
   pointer-events: none;
   z-index: 1;
   white-space: nowrap;
