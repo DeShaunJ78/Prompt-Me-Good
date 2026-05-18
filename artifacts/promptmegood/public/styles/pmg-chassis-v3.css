@@ -1718,6 +1718,17 @@ html.pmg-chassis-v3 #result-panel {
 html.pmg-chassis-v3 .pmgv3-output-host .result-box-wrap {
   position: relative;
 }
+/* toggle-anchor-fix-4 (2026-05-18): same treatment for the AI response
+   wrap — app.html's `.ai-response-output-wrap { position: relative }`
+   (specificity 0,1,0) is defeated by chassis rules under the
+   .pmgv3-air-host namespace, which strands the absolute
+   #aiResponseToggle on the wrong positioned ancestor (it then lands
+   in the diff-bar pill row above the AI response box). */
+html.pmg-chassis-v3 .pmgv3-air-host .ai-response-output-wrap,
+html.pmg-chassis-v3 #aiResponseSection .ai-response-output-wrap,
+html.pmg-chassis-v3 .ai-response-section .ai-response-output-wrap {
+  position: relative;
+}
 html.pmg-chassis-v3 #result-panel .panel-head,
 html.pmg-chassis-v3 #result-panel .pill-row,
 html.pmg-chassis-v3 #result-panel #pinned-note,
