@@ -1,0 +1,37 @@
+Replit is right on all counts. Here is my take on each point before you decide.
+
+
+Point 1: Origin Is Spoofable — Agree Completely
+Replit is correct and I should have flagged this. The per-domain cap does exactly one job: protect you from a legitimate embed going viral and accidentally burning your budget. It does zero abuse protection. The global cap is the only real financial guard.
+
+The spec should say this plainly so there is no false confidence baked in. The per-domain cap is a viral traffic limiter, not a security control. Label it that way.
+
+
+Point 2: Turnstile — Agree, and It Is Already Wired
+This is the most important flag Replit raised. Your app already has Cloudflare Turnstile configured — the secrets are in your environment. Adding an invisible Turnstile challenge to the widget’s generate call is a one-line addition to the widget JS and a middleware check on the backend. No UX cost to real users. Kills automated abuse before it touches your budget.
+
+Without it, your $10/day global cap will trip from bots before a single real user sees the widget. That is not hypothetical — it is what happens to every unauthenticated AI endpoint within hours of going public.
+
+This is a launch blocker for the widget, not a nice-to-have. The widget should not go live without Turnstile on the generate call.
+
+
+The Minor Points — All Correct
+Badge removability: Agreed — do not oversell it. The badge is a social contract for the 95% case, not a technical lock. The spec should say “unremovable for standard CSS” and leave it there.
+
+Per-IP rate limiting under the per-domain cap: Correct and necessary. The pattern is: global cap → per-domain cap → per-IP rate limit, in that order. A single user on a popular embed should not be able to eat the host’s daily allotment. A reasonable per-IP limit is 20 widget calls per hour — enough for any legitimate user testing prompts, not enough for a script.
+
+CORS behavior: Replit is right to call this out. The spec needs to be explicit:
+
+	•	Echo the `Origin` header (not `*`) so cookies and auth headers work correctly if you ever add them
+	•	Explicitly allow `OPTIONS` preflight on the widget generate endpoint
+	•	Set `Access-Control-Max-Age` to 86400 so browsers cache the preflight and do not add latency on every widget call
+
+
+The Revised Defense Stack
+
+￼
+These four layers in sequence mean a bot has to solve a Turnstile challenge, stay under 20 calls per hour from one IP, and stay under 500 calls per day from one domain — all before touching the global cap. Real users never notice any of it.
+
+
+Decision for You
+Do you want me to write the updated widget spec with all of Replit’s corrections folded in — Turnstile as a launch requirement, honest Origin cap labeling, per-IP limiting, and explicit CORS behavior — so you can hand Replit one clean document to build from?
