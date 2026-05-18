@@ -1,0 +1,27 @@
+The Right Widget Strategy for Your Situation
+The widget should be free, limited, and branded. Here is exactly what that means.
+
+Free means no API key required for the host site. Anyone can paste the script tag and it works. This is how you get distribution — friction kills adoption. PromptBase requires approval. PromptPerfect requires a developer. You just work.
+
+Limited means the widget only runs the generate endpoint, not Run With AI. Users get the engineered prompt. To run it through AI and see the response, they click a “Run in PromptMeGood →” button that opens your app. That is your conversion funnel. The widget is the top of it.
+
+Branded means the widget has a small “Powered by PromptMeGood” badge. Every embed is a backlink and a brand impression. This is how PromptMeGood gets discovered by the PromptPerfect migration wave — their users land on sites that already have your widget embedded.
+
+
+The Daily Cap That Protects You
+Add a per-domain daily cap of 500 widget calls stored server-side by the referring domain. No API key needed from the host — you track it by `Origin` header. At $0.004 each, 500 calls = $2.00/day per domain. You can absorb that. If a domain goes viral and hits the cap, widget calls return a graceful “Try again tomorrow or sign up free” message with a link to PMG.
+
+A global widget cap of $10/day across all domains gives you 2,500 widget calls per day before the circuit breaker fires. That is plenty for launch. Raise it as revenue grows.
+
+
+What to Tell Replit
+The widget strategy doc is already in your repo at `docs/pmg-widget-strategy.md`. The architecture is right — Web Component, Shadow DOM, single script tag. What needs to be added to that spec before Replit builds it:
+
+	1.	No API key required from host sites at launch — track by `Origin` header instead
+	2.	Widget calls generate endpoint only — $0.004/call, not the run endpoint
+	3.	Per-domain cap: 500 calls/day — tracked server-side by Origin, no auth needed
+	4.	Global widget cap: $10/day — circuit breaker, same pattern as the video cap dial
+	5.	“Powered by PromptMeGood” badge — unremovable in the free tier, links back to your site
+	6.	CTA button in result box: “Run With AI in PromptMeGood →” — opens your app with the prompt pre-loaded, drives signups
+
+Want me to write the updated Replit spec with these additions folded into the existing widget strategy doc?
