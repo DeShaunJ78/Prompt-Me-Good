@@ -229,11 +229,26 @@
   <link rel="manifest" href="/site.webmanifest" />
   <meta name="theme-color" content="#0a2420" />
   <script type="text/javascript">
-    (function(c,l,a,r,i,t,y){
-        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-    })(window, document, "clarity", "script", "wgs6567cte");
+    /* audit-3 §7: cookieless privacy gate around Microsoft Clarity. Skip
+       the SDK load entirely (no script tag inserted, no cookies set, no
+       session-replay network calls) when the user has opted out at the
+       browser/OS level via Do Not Track or Global Privacy Control. Matches
+       PromptMeGood's "local-first" privacy positioning without requiring
+       a consent banner. pmg-analytics.js applies the same gate to its
+       dataLayer mirror so opted-out users are fully silent end-to-end. */
+    (function () {
+      try {
+        var nav = window.navigator || {};
+        var dnt = nav.doNotTrack === '1' || window.doNotTrack === '1' || nav.msDoNotTrack === '1';
+        var gpc = nav.globalPrivacyControl === true;
+        if (dnt || gpc) { window.__pmgClarityOptedOut = true; return; }
+      } catch (_) {}
+      (function(c,l,a,r,i,t,y){
+          c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      })(window, document, "clarity", "script", "wgs6567cte");
+    })();
   </script>
   <!-- Self-hosted Satoshi (was Fontshare CDN). Eliminates external CORS
        failures on .woff2/.woff/.ttf and the resulting fallback FOUT.
@@ -12160,6 +12175,14 @@ Context:
             const err = (data && data.error) ? data.error : ERR_MSG;
             throw new Error(err);
           }
+          // audit-3 §7 funnel event #4: prompt successfully built via the
+          // non-streaming path. Low-cardinality payload only — never the
+          // prompt text itself (privacy + Clarity tag-cardinality limits).
+          try {
+            if (typeof window.__pmgTrack === 'function') {
+              window.__pmgTrack('prompt_generated', { mode: 'oneshot' });
+            }
+          } catch (_) {}
           return data.output || data.prompt || data.result || '';
         } finally {
           window.clearTimeout(timeoutId);
@@ -12241,6 +12264,13 @@ Context:
           }
           if (streamErr) throw streamErr;
           if (!full || !full.trim()) throw new Error('AI returned an empty response.');
+          // audit-3 §7 funnel event #4: prompt successfully built via the
+          // streaming path. Sibling to the oneshot tracker in callGenerate.
+          try {
+            if (typeof window.__pmgTrack === 'function') {
+              window.__pmgTrack('prompt_generated', { mode: 'stream' });
+            }
+          } catch (_) {}
           return full;
         } finally {
           window.clearTimeout(overallTimeoutId);
@@ -13397,6 +13427,37 @@ Context:
   <script src="/scripts/pmg-image-actions-gate.js?v=task135-1" defer></script>
   <script src="/scripts/pmg-postgen-actions.js?v=task61-2" defer></script>
   <script src="/scripts/pmg-analytics.js?v=task93-1" defer></script>
+  <script>
+    /* audit-3 §7 funnel events #2 + #3: app_opened (page-view parity with
+       the dataLayer mirror) + build_clicked (#generateBtn). Delegated
+       capture-phase listener fires BEFORE the existing inline handlers so
+       the event lands even if the button's own handler later preventDefaults.
+       No-ops silently if __pmgTrack is missing (DNT/GPC opted-out). */
+    (function () {
+      function fire(name, payload) {
+        try {
+          if (typeof window.__pmgTrack === 'function') {
+            window.__pmgTrack(name, payload || null);
+          }
+        } catch (_) {}
+      }
+      function init() {
+        fire('app_opened', { path: '/app' });
+        var btn = document.getElementById('generateBtn');
+        if (btn && !btn.__pmgFunnelWired) {
+          btn.__pmgFunnelWired = true;
+          btn.addEventListener('click', function () {
+            fire('build_clicked');
+          }, true);
+        }
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init, { once: true });
+      } else {
+        init();
+      }
+    })();
+  </script>
   <script src="/scripts/pmg-mount-bus.js?v=mb-1" defer></script>
   <script src="/scripts/pmg-voice.js?v=vox-1" defer></script>
   <script src="/scripts/pmg-cheatsheet.js?v=cs-1" defer></script>

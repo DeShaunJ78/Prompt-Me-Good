@@ -41,6 +41,17 @@
     if (/[?&]noanalytics\b/.test(qs)) disabled = true;
     if (localStorage.getItem('pmg_disable_analytics') === '1') disabled = true;
     if (localStorage.getItem('pmg_disable') === '1') disabled = true;
+    /* audit-3 §7: cookieless privacy gate. Honor browser-level opt-out
+       signals — Do Not Track (legacy) and Global Privacy Control (the
+       modern CCPA/GDPR-aligned successor) — so users who have set the
+       OS/browser preference are excluded from BOTH the dataLayer mirror
+       AND the in-page event queue. The Clarity SDK itself is gated
+       separately (in each page's <head>) so the script never even loads
+       for opted-out users — no cookies, no replay, no network call. */
+    var nav = window.navigator || {};
+    var dnt = nav.doNotTrack === '1' || window.doNotTrack === '1' || nav.msDoNotTrack === '1';
+    var gpc = nav.globalPrivacyControl === true;
+    if (dnt || gpc) disabled = true;
   } catch (_) {}
 
   var MAX_RECENT = 50;

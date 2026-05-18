@@ -498,6 +498,25 @@
       }
     }
   </style>
+  <script type="text/javascript">
+    /* audit-3 §7: cookieless privacy gate around Microsoft Clarity. Skips
+       SDK load entirely when the user has set Do Not Track / Global Privacy
+       Control. Matches app.html's gate so opt-out is consistent across the
+       marketing site and the workstation. */
+    (function () {
+      try {
+        var nav = window.navigator || {};
+        var dnt = nav.doNotTrack === '1' || window.doNotTrack === '1' || nav.msDoNotTrack === '1';
+        var gpc = nav.globalPrivacyControl === true;
+        if (dnt || gpc) { window.__pmgClarityOptedOut = true; return; }
+      } catch (_) {}
+      (function(c,l,a,r,i,t,y){
+          c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+      })(window, document, "clarity", "script", "wgs6567cte");
+    })();
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -718,5 +737,39 @@
   <script src="/scripts/pmg-launch-swap.js?v=launch-swap-1" defer></script>
   <script src="/scripts/pmg-mailto-fallback.js?v=mlf-1" defer></script>
 <script src="/scripts/pmg-contact-modal.js?v=cm-1" defer></script>
+  <!-- audit-3 §7: analytics wrapper + hero CTA tracker. -->
+  <script src="/scripts/pmg-analytics.js?v=task93-1" defer></script>
+  <script>
+    /* audit-3 §7 funnel event #1: cta_hero_click. Delegated listener on
+       document so it covers every a[href="/app"] / a[href="./app"] on the
+       page (hero, demo block, footer, ghost links) without per-element
+       wiring. Payload `location` carries the closest landmark id/class so
+       we can split conversion by entry point in Clarity. */
+    (function () {
+      function locationFor(el) {
+        try {
+          var section = el.closest && el.closest('section,header,footer,nav,[id]');
+          if (section && section.id) return section.id;
+          if (section && section.tagName) return section.tagName.toLowerCase();
+        } catch (_) {}
+        return 'unknown';
+      }
+      document.addEventListener('click', function (ev) {
+        var a = ev.target && ev.target.closest && ev.target.closest('a[href]');
+        if (!a) return;
+        /* Match by resolved pathname so future UTM params (?ref=hero) or
+           hash fragments (#section) don't break tracking. Covers /app,
+           /app/, /app.html, ./app and any query/hash variant. */
+        var path = '';
+        try { path = (new URL(a.href, window.location.href)).pathname; } catch (_) { return; }
+        if (path !== '/app' && path !== '/app/' && path !== '/app.html') return;
+        try {
+          if (typeof window.__pmgTrack === 'function') {
+            window.__pmgTrack('cta_hero_click', { location: locationFor(a) });
+          }
+        } catch (_) {}
+      }, true);
+    })();
+  </script>
 </body>
 </html>
