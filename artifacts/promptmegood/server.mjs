@@ -77,6 +77,20 @@ async function tryServe(req, res, fsPath, urlPath) {
     "X-Content-Type-Options": "nosniff",
   };
 
+  // audit-3 §15: clickjacking defense on the workstation. /app.html is the
+  // only page where a framed clone could trick a signed-in user into
+  // executing actions (Run With AI, Vault writes, settings). The marketing
+  // pages don't carry that risk so we keep this scoped — embedding them in
+  // legitimate previews (mockup-sandbox, partner widgets) stays possible.
+  //
+  // Check the resolved file path (not urlPath) so we catch every route that
+  // serves app.html — the /app and /app/index.html rewrites at L115, the
+  // extensionless .html fallback at L128, and any future alias. Bypass-proof.
+  if (fsPath.endsWith("/app.html") || fsPath.endsWith("\\app.html")) {
+    headers["X-Frame-Options"] = "DENY";
+    headers["Content-Security-Policy"] = "frame-ancestors 'none'";
+  }
+
   if (req.method === "HEAD") {
     res.writeHead(200, headers);
     res.end();

@@ -397,6 +397,10 @@ async function denyExpertIfPaywalled(
   return false;
 }
 
+// TODO(audit-3 §15 medium): replace ad-hoc req.body destructuring +
+// clampString with a Zod schema. Custom validation has gaps that a schema
+// won't. Tracked as a follow-up task; not blocking launch because the route
+// is rate-limited (20/hr/IP), AI-spend-capped per user, and prompt-sanitized.
 router.post("/generate", generateLimiter, generateCostCheck, async (req, res) => {
   if (await denyExpertIfPaywalled(req, res)) return;
   const sanitized = sanitizeGoal(getUserTextForSanitize(req.body));
@@ -462,6 +466,7 @@ router.post("/generate", generateLimiter, generateCostCheck, async (req, res) =>
   }
 });
 
+// TODO(audit-3 §15 medium): Zod schema — see /generate TODO above.
 router.post("/generate-stream", generateLimiter, generateCostCheck, async (req, res) => {
   if (await denyExpertIfPaywalled(req, res)) return;
   const sanitized = sanitizeGoal(getUserTextForSanitize(req.body));
@@ -761,6 +766,7 @@ async function runCapWithTeaser(
   });
 }
 
+// TODO(audit-3 §15 medium): Zod schema — see /generate TODO above.
 router.post("/run", runLimiter, runCostCheck, runCapWithTeaser, async (req, res) => {
   const promptRaw = req.body?.prompt;
   if (typeof promptRaw !== "string") {
@@ -914,6 +920,7 @@ const imageCostExtractor = (req: Request): number => {
   return 1;
 };
 
+// TODO(audit-3 §15 medium): Zod schema — see /generate TODO above.
 router.post("/image", imageLimiter, userCapEnforce("img", imageCostExtractor), async (req: Request, res: Response) => {
   const descRaw = req.body?.prompt ?? req.body?.description ?? req.body?.goal;
   if (typeof descRaw !== "string" || !descRaw.trim()) {
@@ -1028,6 +1035,7 @@ router.post("/image", imageLimiter, userCapEnforce("img", imageCostExtractor), a
 // /api/video — generates a short video using OpenAI's Sora model.
 // Founding/Pro only — free and trial users get 402 with an upgrade CTA.
 // Rate-limited per IP and capped per-user-per-day via userCapEnforce.
+// TODO(audit-3 §15 medium): Zod schema — see /generate TODO above.
 router.post("/video", videoLimiter, userCapEnforce("vid", 1), async (req, res) => {
   const ctx = (req as Request & { pmgUser?: { plan: PmgPlan } }).pmgUser;
   if (!ctx) {

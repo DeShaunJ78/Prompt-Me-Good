@@ -28,33 +28,11 @@ import { db, foundingPurchasesTable } from "@workspace/db";
 import { stripe } from "../lib/stripe-client";
 import { PMG_PRICING } from "../lib/pricing-config";
 import { makeRateLimiter } from "../middlewares/rateLimit";
+// audit-3 §15: hoisted to a shared module so CORS uses the same allowlist
+// as the return-URL picker. See ../lib/allowed-origins.ts.
+import { pickOrigin } from "../lib/allowed-origins";
 
 const router: IRouter = Router();
-
-/* ----------------------------------------------------------------- */
-/* Return-URL allowlist (mirrors billing.ts pickOrigin)              */
-/* ----------------------------------------------------------------- */
-function buildAllowedOrigins(): string[] {
-  const list: string[] = [];
-  const domains = (process.env["REPLIT_DOMAINS"] || "")
-    .split(",")
-    .map((d) => d.trim())
-    .filter(Boolean);
-  for (const d of domains) list.push(`https://${d}`);
-  list.push("https://www.promptmegood.com");
-  list.push("https://promptmegood.com");
-  if ((process.env["NODE_ENV"] || "development") !== "production") {
-    list.push("http://localhost:80");
-    list.push("http://localhost");
-  }
-  return Array.from(new Set(list));
-}
-
-function pickOrigin(requestOrigin: string | undefined): string {
-  const allowed = buildAllowedOrigins();
-  if (requestOrigin && allowed.includes(requestOrigin)) return requestOrigin;
-  return allowed[0] || "https://www.promptmegood.com";
-}
 
 /* ----------------------------------------------------------------- */
 /* Seat counter                                                       */

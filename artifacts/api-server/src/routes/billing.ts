@@ -106,6 +106,9 @@ async function getOrCreateProfile(
   return inserted as ProfileRow;
 }
 
+// TODO(audit-3 §15 medium): Zod schema for { tier } body. Currently
+// manually normalized; lower risk than the /generate family because the
+// blast radius is "wrong price ID" not "unbounded AI spend".
 router.post(
   "/create-checkout-session",
   requireSupabaseUser,

@@ -34,7 +34,7 @@ export default defineConfig({
     {
       name: "pmg-app-route-rewrite",
       configureServer(server) {
-        server.middlewares.use((req, _res, next) => {
+        server.middlewares.use((req, res, next) => {
           const u = req.url;
           if (!u) return next();
           if (u === "/app" || u === "/app/" || u === "/app/index.html") {
@@ -44,6 +44,12 @@ export default defineConfig({
           } else if (u.startsWith("/app/?") || u.startsWith("/app/index.html?")) {
             const qIdx = u.indexOf("?");
             req.url = "/app.html" + u.slice(qIdx);
+          }
+          // audit-3 §15: mirror server.mjs clickjacking defense in dev so
+          // headers can be verified against the same URL in both modes.
+          if (req.url === "/app.html" || req.url.startsWith("/app.html?")) {
+            res.setHeader("X-Frame-Options", "DENY");
+            res.setHeader("Content-Security-Policy", "frame-ancestors 'none'");
           }
           next();
         });
