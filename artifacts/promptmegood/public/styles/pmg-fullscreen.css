@@ -189,38 +189,11 @@ body.pmg-fs-open { overflow: hidden; }
   }
 }
 
-/* air-icon-1 (2026-05-17): The AI Response variant is icon-only so it
-   does not compete with the green diff bar at the top of the response
-   card. Square, compact, same teal-on-glass treatment. */
-.pmg-fs-inline-trigger.pmg-fs-air-trigger:not(.has-label) {
-  width: 28px;
-  height: 28px;
-  min-width: 28px;
-  padding: 0;
-  font-size: 15px;
-  line-height: 1;
-  justify-content: center;
-  top: 10px;
-  right: 10px;
-}
-@media (max-width: 480px) {
-  .pmg-fs-inline-trigger.pmg-fs-air-trigger:not(.has-label) {
-    width: 26px;
-    height: 26px;
-    min-width: 26px;
-    font-size: 14px;
-    top: 8px;
-    right: 8px;
-  }
-}
-
-/* in-box-toggle-1 (2026-05-18): the injected .pmg-fs-air-trigger is no
-   longer used for #resultBox / #aiResponseOutput — the native
-   #resultBoxToggle and #aiResponseToggle now serve as the in-box icon
-   overlays (styled in app.html). The .has-label / in-box-overlay-1 CSS
-   blocks from the previous iteration were removed because the injection
-   helpers (injectInlineTrigger / injectAiResponseTrigger) are now no-ops
-   in pmg-fullscreen.js. */
+/* in-box-toggle-final (2026-05-18): native #resultBoxToggle and
+   #aiResponseToggle are the sole fullscreen affordance for the prompt
+   and AI response boxes — styled in app.html. The .pmg-fs-air-trigger
+   injected pill is retired; its CSS was removed alongside the JS
+   helpers in pmg-fullscreen.js. */
 
 @media (max-width: 520px) {
   .pmg-fs-header { padding: 12px 14px; }

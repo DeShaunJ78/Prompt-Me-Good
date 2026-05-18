@@ -3493,11 +3493,6 @@
        looks tacky and out of place — needs to blend in". Replaced the
        default button chrome with a transparent teal text-link so it
        reads as a quiet affordance inside the response card. */
-    /* in-box-toggle-1 (2026-05-18): the previous text-link styling
-       ("Show Full Response ▾") for #aiResponseToggle is retired. The
-       toggle is now an icon overlay inside #aiResponseOutput — styled
-       jointly with .result-box-toggle in the shared block above
-       (L3433+). No standalone .ai-response-toggle rules needed. */
     
     /* History controls: compact row instead of full-width pills */
     .history-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
@@ -4356,7 +4351,7 @@
   <link rel="stylesheet" href="/styles/pmg-visual-studio.css?v=re-3" />
   <link rel="stylesheet" href="/styles/pmg-storyboard.css?v=sb-9" />
   <link rel="stylesheet" href="/styles/pmg-cap-comparison.css?v=cap-compare-1" />
-  <link rel="stylesheet" href="/styles/pmg-fullscreen.css?v=fs-12-air-wrap" />
+  <link rel="stylesheet" href="/styles/pmg-fullscreen.css?v=fs-13-cleanup" />
   <link rel="stylesheet" href="/styles/pmg-auto-boost.css?v=ab-8-under-strength" />
   <link rel="stylesheet" href="/styles/pmg-spark-panel.css?v=sp-5-visible" />
   <link rel="stylesheet" href="/styles/pmg-business-mode.css?v=bm-3" />
@@ -4394,7 +4389,7 @@
   <script src="/scripts/pmg-visual-studio.js?v=img-timeout-1" defer></script>
   <script src="/scripts/pmg-storyboard.js?v=sb-11" defer></script>
   <script src="/scripts/pmg-cap-comparison.js?v=cap-compare-1" defer></script>
-  <script src="/scripts/pmg-fullscreen.js?v=fs-12-air-wrap" defer></script>
+  <script src="/scripts/pmg-fullscreen.js?v=fs-13-cleanup" defer></script>
   <script src="/scripts/pmg-spark-panel.js?v=sp-6-mobile-questions" defer></script>
   <script src="/scripts/pmg-business-mode.js?v=growth-mode-2-prompts" defer></script>
   <script src="/scripts/pmg-growth-actions.js?v=ga-1" defer></script>
@@ -8921,7 +8916,6 @@ Context:
           if (window.pmgFullscreen) {
             if (hasContent) {
               resultBoxToggle.classList.add('is-visible');
-              // in-box-toggle-1: icon-only button, no textContent override
               resultBoxToggle.setAttribute('aria-expanded', 'false');
             } else {
               resultBoxToggle.classList.remove('is-visible');
@@ -8935,7 +8929,6 @@ Context:
             resultBoxEl.classList.add('is-clamped');
             resultBoxToggle.classList.add('is-visible');
             resultBoxToggle.setAttribute('aria-expanded', 'false');
-            // in-box-toggle-1: icon-only button, no textContent override
           } else {
             resultBoxEl.classList.remove('is-clamped');
             resultBoxToggle.classList.remove('is-visible');
@@ -8952,11 +8945,9 @@ Context:
           var expanded = resultBoxEl.classList.contains('is-clamped');
           if (expanded) {
             resultBoxEl.classList.remove('is-clamped');
-            // in-box-toggle-1: icon-only button, no textContent override
             resultBoxToggle.setAttribute('aria-expanded', 'true');
           } else {
             resultBoxEl.classList.add('is-clamped');
-            // in-box-toggle-1: icon-only button, no textContent override
             resultBoxToggle.setAttribute('aria-expanded', 'false');
           }
         });
@@ -8973,7 +8964,6 @@ Context:
           var hasContent = (output.textContent || '').trim().length > 0;
           if (hasContent) {
             aiResponseToggle.classList.add('is-visible');
-            // in-box-toggle-1: icon-only button, no textContent override
             aiResponseToggle.setAttribute('aria-expanded', 'false');
             if (aiResponseBottom) aiResponseBottom.classList.add('is-visible');
           } else {
@@ -8987,7 +8977,6 @@ Context:
           output.classList.add('is-clamped');
           aiResponseToggle.classList.add('is-visible');
           aiResponseToggle.setAttribute('aria-expanded', 'false');
-          // in-box-toggle-1: icon-only button, no textContent override
           if (aiResponseBottom) aiResponseBottom.classList.add('is-visible');
         } else {
           output.classList.remove('is-clamped');
@@ -9007,11 +8996,9 @@ Context:
           var expanded = output.classList.contains('is-clamped');
           if (expanded) {
             output.classList.remove('is-clamped');
-            // in-box-toggle-1: icon-only button, no textContent override
             aiResponseToggle.setAttribute('aria-expanded', 'true');
           } else {
             output.classList.add('is-clamped');
-            // in-box-toggle-1: icon-only button, no textContent override
             aiResponseToggle.setAttribute('aria-expanded', 'false');
           }
         });
