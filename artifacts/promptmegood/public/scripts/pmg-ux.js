@@ -1836,7 +1836,16 @@
     var parent = improve.parentNode;
     try {
       var toggle = document.getElementById('resultBoxToggle');
-      if (toggle) parent.insertBefore(toggle, resultBox);
+      // toggle-anchor-fix-2 (2026-05-18): #resultBoxToggle is now an
+      // absolute icon overlay anchored INSIDE .result-box-wrap (the
+      // new positioning context wrapping #resultBox). Legacy reorder
+      // here would yank it out of the wrap and drop it as a sibling
+      // of #improve-block in the Prompt Coach area. Only reorder when
+      // the toggle is NOT already inside the wrap (back-compat path
+      // for the old flex-order layout via .result-wrap > #resultBoxToggle).
+      if (toggle && !toggle.closest('.result-box-wrap')) {
+        parent.insertBefore(toggle, resultBox);
+      }
       if (whatNext && resultBox.nextSibling !== whatNext) parent.insertBefore(whatNext, resultBox.nextSibling);
       if (runSection && whatNext) parent.insertBefore(runSection, whatNext.nextSibling);
       if (improve && runSection) parent.insertBefore(improve, runSection.nextSibling);
@@ -15607,7 +15616,10 @@
       '.result-wrap { display: flex; flex-direction: column; }',
       '.result-wrap > .pill-row { order: 1; }',
       '.result-wrap > #pinned-note { order: 2; }',
-      '.result-wrap > #resultBoxToggle { order: 3; }',
+      /* toggle-anchor-fix-2 (2026-05-18): #resultBoxToggle no longer lives
+         as a direct child of .result-wrap — it sits absolutely inside
+         .result-box-wrap as an icon overlay. Flex-order rule retired. */
+      /* '.result-wrap > #resultBoxToggle { order: 3; }', */
       '.result-wrap > .pmg-result-overlay { order: 4; }',
       '.result-wrap > #resultBox { order: 4; }',
       '.result-wrap > .result-edit-row { order: 5; }',
