@@ -195,10 +195,20 @@
     view.hidden = true;
     view.setAttribute('aria-live', 'polite');
 
-    var parent = el.parentNode;
+    // toggle-anchor-fix-3 (2026-05-18): for #resultBox and
+    // #aiResponseOutput the target now lives inside a wrap div
+    // (.result-box-wrap / .ai-response-output-wrap) that hosts the
+    // absolute in-box fullscreen toggle. Inserting the diff bar as a
+    // sibling of `el` would put the bar INSIDE the wrap, making the
+    // wrap taller than the box and pushing the absolute toggle up
+    // into the diff bar row (next to "Show changes ▾"). Anchor the
+    // diff bar OUTSIDE the wrap in that case so the wrap continues
+    // to bound only the box itself.
+    var anchor = el.closest('.result-box-wrap') || el.closest('.ai-response-output-wrap') || el;
+    var parent = anchor.parentNode;
     if (!parent) return null;
-    parent.insertBefore(bar, el);
-    if (el.nextSibling) parent.insertBefore(view, el.nextSibling);
+    parent.insertBefore(bar, anchor);
+    if (anchor.nextSibling) parent.insertBefore(view, anchor.nextSibling);
     else parent.appendChild(view);
 
     var toggle = bar.querySelector('.pmg-diff__toggle');
