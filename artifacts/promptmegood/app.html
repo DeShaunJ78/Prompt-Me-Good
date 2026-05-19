@@ -775,6 +775,35 @@
       background: var(--color-primary); color: var(--color-text-inverse); box-shadow: var(--shadow-sm);
     }
     .btn-primary:hover { background: var(--color-primary-hover); }
+    /* entry-row-demote-1 (Phase 6, 2026-05-19): Growth Mode + Expert
+       Center are secondary access points, not primary actions. Keep
+       them visually subordinate to #generateBtn / Build My Prompt at
+       all times. Targets the actual class used by pmg-entry-row.js
+       (.pmg-entry-row__btn), not the spec's renamed class. */
+    .pmg-entry-row__btn {
+      min-height: 36px !important;
+      padding: 0 14px !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      border-radius: 8px !important;
+      background: transparent !important;
+      border: 1px solid color-mix(in srgb, var(--color-text, #e6f5f2) 18%, transparent) !important;
+      color: color-mix(in srgb, var(--color-text, #e6f5f2) 65%, transparent) !important;
+      box-shadow: none !important;
+      letter-spacing: 0;
+      text-transform: none !important;
+    }
+    .pmg-entry-row__btn:hover {
+      background: color-mix(in srgb, var(--color-primary, #4adfb1) 8%, transparent) !important;
+      border-color: color-mix(in srgb, var(--color-primary, #4adfb1) 42%, transparent) !important;
+      color: var(--color-text, #e6f5f2) !important;
+      transform: none !important;
+    }
+    @media (max-width: 640px) {
+      .pmg-entry-row { display: flex !important; gap: 8px !important; flex-wrap: nowrap !important; }
+      .pmg-entry-row__btn { flex: 1 1 0 !important; min-width: 0 !important; justify-content: center !important; }
+    }
+
     .btn-secondary {
       background: var(--color-surface); border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
     }
@@ -4427,6 +4456,7 @@
        Both load defer; safe to fail open if anything errors. -->
   <script src="/scripts/pmg-entry-row.js?v=er-1" defer></script>
   <script src="/scripts/pmg-interview-mode.js?v=im-1" defer></script>
+  <script src="/scripts/pmg-framework-note.js?v=fwnote-1" defer></script>
   <script src="/scripts/pmg-prompt-coach.js?v=coach-4-mini-picker" defer></script>
   <script src="/scripts/pmg-diff.js?v=diff-1b-trusted" defer></script>
   <script src="/scripts/pmg-stepper.js?v=stepper-2" defer></script>
@@ -5082,16 +5112,26 @@
                 <p class="helper">Which AI are you sending this prompt to? We'll format it the way that AI works best — Claude gets structured tags, Gemini gets examples up front, ChatGPT gets numbered steps.</p>
               </div>
 
-              <!-- v4 §2.5 Framework selector. Same relocation pattern. -->
+              <!-- v4 §2.5 Framework selector. Same relocation pattern.
+                   Phase 6 (fwsci-1, 2026-05-19): option titles carry the
+                   framework "science" tooltip; <p class="helper"> below
+                   surfaces the per-framework benefit lines verbatim from
+                   the Phase 6 copy spec. -->
               <div class="field" data-pmg-v4="framework-field">
                 <label for="framework">Prompt Framework</label>
                 <select id="framework" name="framework" class="pmg-tune-native" data-pmg-tune="framework">
-                  <option value="auto">Auto (PMG picks the best fit)</option>
-                  <option value="rise">RISE — Role, Input, Steps, Execution</option>
-                  <option value="care">CARE — Context, Action, Result, Example</option>
-                  <option value="stepbystep">Step-by-Step</option>
+                  <option value="auto" title="Auto: PMG picks the best structure for your goal.">Auto (PMG picks the best fit)</option>
+                  <option value="rise" title="RISE: Borrowed from systems thinking — gives the AI a role, your raw material, a sequence of steps, and a defined deliverable. Reduces vague answers on complex tasks.">RISE — Role, Input, Steps, Execution</option>
+                  <option value="care" title="CARE: From instructional design — grounds the AI in your situation, gives it a clear action, defines what success looks like, and anchors it with an example. One concrete example reduces AI hallucination more than any other single addition.">CARE — Context, Action, Result, Example</option>
+                  <option value="stepbystep" title="Step-by-Step: Chain-of-thought prompting. Forces the AI to surface its reasoning before landing on an answer. Measurably improves accuracy on anything involving logic or decisions.">Step-by-Step</option>
                 </select>
-                <p class="helper">Choose how your prompt is organized. RISE builds prompts around a Role, Input, Steps, and Execution. CARE focuses on Context, Action, Result, and Example. Step-by-Step walks the AI through your problem step by step. Auto lets PMG pick the best fit for your goal.</p>
+                <ul class="helper pmg-framework-benefits" style="list-style:none;padding:0;margin:6px 0 0;font-size:0.85rem;line-height:1.45;">
+                  <li><strong>Auto:</strong> PMG picks the best structure for your goal.</li>
+                  <li><strong>RISE:</strong> Role + Input + Steps + Execution. Built for tasks that need a process.</li>
+                  <li><strong>CARE:</strong> Context + Action + Result + Example. Built for writing that needs to land.</li>
+                  <li><strong>Step-by-Step:</strong> Forces the AI to show its work. Best for logic, math, and decisions.</li>
+                </ul>
+                <p class="autotune-note" id="pmg-framework-autotune-note" hidden style="margin:8px 0 0;padding:8px 10px;border-radius:6px;background:color-mix(in srgb,var(--color-primary,#4adfb1) 12%,transparent);border-left:3px solid var(--color-primary,#4adfb1);font-size:0.85rem;color:var(--color-text,inherit);"></p>
               </div>
 
               <details class="advanced-options" id="advanced-options">

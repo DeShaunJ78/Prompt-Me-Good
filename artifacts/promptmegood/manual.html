@@ -155,7 +155,14 @@
         <p>Auto-Tune runs automatically the moment you tap <strong>✨ Build My Prompt</strong>. PromptMeGood reads your sentence and pre-fills the tuning panel — category, skill level, tone, output format, max length, output language, and personality — before building the prompt. Picks are clamped to a safe enum on the server. You can change anything and re-generate.</p>
 
         <h3>3.3 Tune Your Prompt</h3>
-        <p>Below the idea field, the <strong>🎛️ Tune Your Prompt</strong> section holds the dropdowns. On phones it is a tap-to-expand accordion (the badge shows how many picks are active). On desktop it is always open.</p>
+        <p>Below the idea field, the <strong>🎛️ Tune Your Prompt</strong> section holds the dropdowns and toggles. On phones it is a tap-to-expand accordion (the badge shows how many picks are active). On desktop it is always open.</p>
+        <ul>
+          <li><strong>Target Model:</strong> Select Universal, Claude, ChatGPT, Gemini, or Perplexity. PMG will format your prompt the way each AI works best — Claude gets XML-structured context, Gemini gets examples up front, ChatGPT gets numbered steps, Perplexity gets a research-style framing.</li>
+          <li><strong>Framework:</strong> Choose Auto, RISE (Role, Input, Steps, Execution), CARE (Context, Action, Result, Example), or Step-by-Step. Pick a specific framework when you know the structure that works for your task, or leave it on Auto and let PMG choose.</li>
+          <li><strong>Quick Modes:</strong> Three chips (Growth Mode, Human Voice, Clarity Boost) toggle per-prompt tuning directives. Combine freely. These are different from the full Growth Mode drawer — these are per-build directives, not a separate workspace.</li>
+          <li><strong>Interview Mode:</strong> A toggle that prompts the AI to ask you clarifying questions instead of producing a finished prompt. Use it when you're not sure what you want yet; answer in the idea box, toggle it off, and build.</li>
+        </ul>
+        <p><em>All tuning features in this panel are free forever on all tiers.</em></p>
 
         <h3>3.4 Build My Prompt</h3>
         <p>Tap <strong>✨ Build My Prompt</strong>. The right side reveals your structured prompt with explicit Role / Context / Constraints / Tone / Format / Next Steps, plus a <strong>strength score</strong> showing how complete it is.</p>
