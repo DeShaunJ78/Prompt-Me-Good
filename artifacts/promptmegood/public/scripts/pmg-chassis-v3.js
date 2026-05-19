@@ -1902,6 +1902,22 @@
        underlying button so all existing wiring (vault drawer, settings
        overlay, growth panel, guide tab) is reused — no duplicated
        handlers. Click-outside + Escape close. */
+    /* UI Copy v4 §1.2: small muted description line under Growth /
+       Expert entries in the mobile ⋮ menu. Injected once, idempotent. */
+    function ensureMoreMenuStyles() {
+      if (document.getElementById('pmgv3-more-menu-styles')) return;
+      var s = document.createElement('style');
+      s.id = 'pmgv3-more-menu-styles';
+      s.textContent =
+        '#pmgv3-more-menu .pmgv3-more-desc{' +
+          'display:block;margin-top:2px;font-size:11px;line-height:1.35;' +
+          'color:color-mix(in srgb, var(--color-text) 60%, transparent);' +
+          'white-space:normal;max-width:240px;font-weight:400;' +
+        '}' +
+        '#pmgv3-more-menu [role="menuitem"]{align-items:flex-start;line-height:1.3;}';
+      document.head.appendChild(s);
+    }
+
     bindIfPresent('pmgv3-more', function () {
       var moreBtn = document.getElementById('pmgv3-more');
       if (!moreBtn) return;
@@ -1917,11 +1933,16 @@
       var menu = document.createElement('div');
       menu.id = 'pmgv3-more-menu';
       menu.setAttribute('role', 'menu');
+      /* UI Copy v4 §1.2: Growth + Expert entries now carry a small
+         muted one-liner under the label so users know what they get
+         before they tap. CSS for `.pmgv3-more-desc` is injected once
+         below via ensureMoreMenuStyles(). */
       menu.innerHTML =
         '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-help"><span aria-hidden="true">❓</span> Guide</button>' +
-        '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-business"><span aria-hidden="true">💼</span> Growth</button>' +
+        '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-business"><span aria-hidden="true">💼</span> Growth<span class="pmgv3-more-desc">Full marketing suite: Brand Voice, Social Packs, Platform Builder. (Paid feature)</span></button>' +
         '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-vault"><span aria-hidden="true">🗄️</span> Vault</button>' +
-        '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-expert"><span aria-hidden="true">✦</span> Expert</button>';
+        '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-expert"><span aria-hidden="true">✦</span> Expert<span class="pmgv3-more-desc">Diagnose, Architect, Tune, Variations, and Save. (Paid feature)</span></button>';
+      ensureMoreMenuStyles();
       moreBtn.parentNode.appendChild(menu);
       moreBtn.setAttribute('aria-expanded', 'true');
 

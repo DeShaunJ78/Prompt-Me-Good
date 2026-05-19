@@ -44,6 +44,35 @@
     if ((qs.get('launchSwap') || '').toLowerCase() === 'off') return;
   } catch (_) { /* localStorage may be unavailable in private browsing */ }
 
+  /* tour-tier-1 (2026-05-19): read the user's plan from the DOM hints
+     written by pmg-ux.js / chassis-v3 / api response. Default to 'free'
+     if unknown — that's the safer post-launch state (show the Free
+     onboarding copy rather than the "Welcome Back" Paid copy). */
+  function readPlan() {
+    try {
+      var attr = (document.documentElement && document.documentElement.getAttribute('data-plan')) ||
+                 (document.body && document.body.getAttribute('data-plan')) || '';
+      if (attr) return String(attr).toLowerCase();
+      if (window.PMG_USER && window.PMG_USER.plan) return String(window.PMG_USER.plan).toLowerCase();
+    } catch (_) {}
+    return 'free';
+  }
+
+  function applyTourTierSwap(paywallActive) {
+    /* During beta: leave default DOM (everyone sees Paid "Welcome Back").
+       Post-launch + free plan: swap to the Free "Welcome To" copy.
+       Post-launch + paid plan: leave default DOM (Paid copy). */
+    if (!paywallActive) return;
+    var plan = readPlan();
+    if (plan !== 'free') return;
+    try {
+      var def = document.querySelector('[data-pmg-tour-default]');
+      var freeEl = document.querySelector('[data-pmg-tour-free-post-launch]');
+      if (def) def.setAttribute('hidden', '');
+      if (freeEl) freeEl.removeAttribute('hidden');
+    } catch (_) {}
+  }
+
   function applySwap(paywallActive) {
     if (!paywallActive) return; /* default DOM state is correct */
     try {
@@ -55,6 +84,7 @@
       for (var j = 0; j < postEls.length; j++) {
         postEls[j].removeAttribute('hidden');
       }
+      applyTourTierSwap(true);
       try { console.log('[pmg-launch-swap] active — swapped ' + betaEls.length + ' beta / ' + postEls.length + ' post-launch elements'); } catch (_) {}
     } catch (err) {
       try { console.warn('[pmg-launch-swap] swap failed', err); } catch (_) {}

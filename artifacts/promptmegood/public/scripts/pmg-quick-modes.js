@@ -36,12 +36,13 @@
     if (window.localStorage && localStorage.getItem('pmg_quick_modes_disable') === '1') return;
   } catch (_) {}
 
-  // Chips = STYLE only (Growth / Human / Clear). Fact-check absorbed
-  // by the labeled Strict Fact-Checking toggle in #pmgv3-epic-tuning.
+  // v4 §2.2 + §2.3: 4 chip toggles. Descriptions are verbatim from the
+  // v4 Master Spec and used as the chip `title` (hover tooltip).
   var MODES = [
-    { id: 'moneyMode',    label: 'Growth', hint: 'Biases output toward sales, marketing, and conversion-focused phrasing.' },
-    { id: 'humanTone',    label: 'Human',  hint: 'Adds natural phrasing and reduces obvious robotic patterns.' },
-    { id: 'clarityBoost', label: 'Clear',  hint: 'Improves structure and makes the response easier to scan and act on.' }
+    { id: 'moneyMode',     label: 'Growth',    hint: 'Adds a sales and marketing lens to your prompt — practical, results-driven, conversion-focused. Turns on automatically when your goal sounds business-related.' },
+    { id: 'humanTone',     label: 'Human',     hint: 'Softens the robotic edge. Your prompt will ask the AI to write like a person, not a machine.' },
+    { id: 'clarityBoost',  label: 'Clear',     hint: 'Structures the output so it is easier to read and act on. Good for anything where you need a clear, organized response.' },
+    { id: 'interviewMode', label: 'Interview', hint: 'Before the AI starts working, it asks you a few questions to make sure it understands what you really need. Fewer surprises, better results.' }
   ];
 
   function $(id) { return document.getElementById(id); }
@@ -238,7 +239,10 @@
     // ----- Section 2: Style (epic-tuning + Voice + Tone) -----
     var epic = panel.querySelector('#pmgv3-epic-tuning');
     if (epic) cards.style.appendChild(epic);
-    ['personality', 'tone'].forEach(function (id) {
+    // v4 §2.4 + §2.5: Target Model and Framework live in the Style card
+    // alongside Personality and Tone. fieldWrapper() resolves the
+    // `<div class="field">` wrapper around each select id.
+    ['personality', 'tone', 'targetModel', 'framework'].forEach(function (id) {
       var w = fieldWrapper(grid, id);
       if (w) cards.style.appendChild(w);
     });

@@ -196,6 +196,20 @@ type StructuredPayload = {
   humanTone?: unknown;
   clarityBoost?: unknown;
   expertMode?: unknown;
+  // v4 §2.3 Interview Mode — when true, /generate switches the system
+  // prompt to the clarifying-questions branch. Free-tier never sends
+  // this to the API (client-side interceptor in pmg-interview-mode.js
+  // handles it locally); paid tiers send true and the backend returns
+  // 3 clarifying questions instead of a finished prompt.
+  interviewMode?: unknown;
+  // v4 §2.4 Target Model — "universal" | "claude" | "chatgpt" | "gemini"
+  // | "perplexity". Drives a single appended formatting rule: when
+  // value is "claude", wrap context in XML tags.
+  targetModel?: unknown;
+  // v4 §2.5 Prompt Framework — "auto" | "rise" | "care" | "stepbystep".
+  // When not "auto", the system prompt is told to use that structure
+  // instead of its built-in auto-selection logic.
+  framework?: unknown;
 };
 
 function titleCase(s: string): string {
@@ -283,7 +297,76 @@ function buildUserMessageFromPayload(p: StructuredPayload): string {
   if (p.expertMode === true || p.expertMode === "true") modes.push("Expert Mode");
   if (modes.length) lines.push(`Active modes: ${modes.join(", ")}`);
 
+  // v4 §2.4 Target Model — pass through as a single hint line. Gated on
+  // a closed allowlist so a malicious value can never reach either the
+  // user message or the system-prompt addendum (architect P1, 2026-05-19).
+  const targetModel = clampString(p.targetModel, 32).toLowerCase();
+  if (TARGET_MODEL_ALLOWED.has(targetModel) && targetModel !== "universal") {
+    lines.push(`Target model: ${targetModel}`);
+  }
+
+  // v4 §2.5 Framework — same closed-allowlist gate.
+  const framework = clampString(p.framework, 32).toLowerCase();
+  if (FRAMEWORK_ALLOWED.has(framework) && framework !== "auto") {
+    lines.push(`Framework: ${framework}`);
+  }
+
   return lines.join("\n");
+}
+
+// Closed allowlists shared by buildUserMessageFromPayload and
+// buildSystemPromptAddenda. Any value not in these sets is silently
+// dropped — never echoed into the user message, never used to switch
+// system-prompt branches. This is the primary defense against injection
+// via the new v4 selector fields.
+const TARGET_MODEL_ALLOWED = new Set(["universal", "claude", "chatgpt", "gemini", "perplexity"]);
+const FRAMEWORK_ALLOWED = new Set(["auto", "rise", "care", "stepbystep"]);
+
+// v4 §2.3 Interview Mode — completely replaces SYSTEM_PROMPT when the
+// user toggles Interview Mode on. The model returns ONLY clarifying
+// questions, never a finished prompt. Output discipline mirrors the
+// main SYSTEM_PROMPT so injection guards still apply.
+const INTERVIEW_SYSTEM_PROMPT =
+  "You are PromptMeGood's Interview Mode. The user has asked for clarifying questions BEFORE you build their final prompt. Your job is to surface the smallest set of questions that would unlock a meaningfully better prompt.\n\n" +
+  "OUTPUT — STRICT:\n" +
+  "1. Output ONLY 3 numbered questions (1., 2., 3.). No preamble, no sign-off, no \"Here are some questions\".\n" +
+  "2. Each question must be a single sentence the user can answer in 1-2 lines.\n" +
+  "3. Cover three different axes: (a) the desired outcome, (b) the audience or context, (c) tone / format / examples.\n" +
+  "4. Do NOT ask about things the user already specified in their goal, category, tone, format, language, or extra details. Reading those carefully is required.\n" +
+  "5. Do NOT mention PromptMeGood, settings, or how the final prompt will be built.\n" +
+  "6. Match the user's language (the language they wrote their goal in).";
+
+// v4 §2.4 + §2.5: small addenda appended to SYSTEM_PROMPT for targetModel
+// and framework. Kept as separate fragments so the base prompt stays
+// readable.
+function buildSystemPromptAddenda(p: StructuredPayload): string {
+  const parts: string[] = [];
+
+  const targetModel = clampString(p.targetModel, 32).toLowerCase();
+  if (TARGET_MODEL_ALLOWED.has(targetModel) && targetModel === "claude") {
+    parts.push(
+      "\n\nTARGET MODEL RULE (v4 §2.4): The user has selected Claude as the target. Wrap distinct context blocks of the produced prompt in lowercase XML tags (e.g. <context>…</context>, <task>…</task>, <constraints>…</constraints>, <output_format>…</output_format>) when doing so improves Claude's parsing. Do NOT wrap the whole prompt in a single outer tag, and do NOT add XML for other target models."
+    );
+  }
+
+  const framework = clampString(p.framework, 32).toLowerCase();
+  if (FRAMEWORK_ALLOWED.has(framework) && framework !== "auto") {
+    if (framework === "rise") {
+      parts.push(
+        "\n\nFRAMEWORK OVERRIDE (v4 §2.5): The user selected the RISE framework. Structure the produced prompt around the four labeled sections — Role, Input, Steps, Execution — instead of the auto-selection rules. Keep the \"Top 3 next actions\" closer."
+      );
+    } else if (framework === "care") {
+      parts.push(
+        "\n\nFRAMEWORK OVERRIDE (v4 §2.5): The user selected the CARE framework. Structure the produced prompt around the four labeled sections — Context, Action, Result, Example — instead of the auto-selection rules. Keep the \"Top 3 next actions\" closer."
+      );
+    } else if (framework === "stepbystep") {
+      parts.push(
+        "\n\nFRAMEWORK OVERRIDE (v4 §2.5): The user selected Step-by-Step. Walk the downstream AI through the goal as an explicit numbered plan (Step 1, Step 2, …) instead of the auto-selection rules. Keep the \"Top 3 next actions\" closer."
+      );
+    }
+  }
+
+  return parts.join("");
 }
 
 function isStructuredPayload(body: unknown): body is StructuredPayload {
@@ -311,11 +394,17 @@ function buildMessages(
         error: `Your goal is too long. Please keep it under ${GENERATE_GOAL_MAX} characters.`,
       };
     }
-    const userMsg = buildUserMessageFromPayload(body as StructuredPayload);
+    const payload = body as StructuredPayload;
+    const userMsg = buildUserMessageFromPayload(payload);
+    // v4 §2.3: Interview Mode completely swaps the system prompt.
+    const interview = payload.interviewMode === true || payload.interviewMode === "true";
+    const systemContent = interview
+      ? INTERVIEW_SYSTEM_PROMPT
+      : SYSTEM_PROMPT + buildSystemPromptAddenda(payload);
     return {
       ok: true,
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: systemContent },
         { role: "user", content: userMsg },
       ],
     };
