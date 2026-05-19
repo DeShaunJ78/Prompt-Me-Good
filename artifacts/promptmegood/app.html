@@ -5324,6 +5324,10 @@
             </div>
             <div class="actions-row pmg-result-actions-row" data-pmg-empty="1">
               <button class="btn btn-primary" type="button" id="copy-btn" disabled aria-disabled="true" title="Generate a prompt first to enable Copy.">Copy Prompt</button>
+              <!-- Hardcoded Save Prompt button (Phase 6 deferred §1, 2026-05-19).
+                   pmg-save-result.js attaches the click handler + disabled-state
+                   sync to this hardcoded element instead of creating one. -->
+              <button class="btn btn-secondary" type="button" id="pmg-save-prompt-btn" disabled aria-disabled="true" title="Save this prompt to your local Vault.">💾 Save Prompt</button>
               <button class="btn btn-secondary" type="button" id="download-prompt-btn" disabled aria-disabled="true" title="Generate a prompt first to download it as .txt.">⬇ Download .txt</button>
               <button class="btn btn-secondary" type="button" id="share-btn" hidden>Copy Shareable Link</button>
               <button class="btn btn-secondary" type="button" id="print-btn" disabled aria-disabled="true" title="Generate a prompt first to print or save as PDF.">Print / Save PDF</button>
@@ -5688,7 +5692,7 @@
         <div class="site-footer-brand">&copy; 2026 PromptMeGood</div>
         <p class="site-footer-tagline">Built for people who want real results from AI &mdash; not fluff.</p>
         <p class="site-footer-early-access">Free Tier With Daily Limits, No Signup Required. <a class="site-footer-link" href="./pricing.html">Founding Member ($79 One-Time, First 500, Price Locked)</a> Unlocks Lifetime Access To Core Features. Fair Use Limits Apply.</p>
-        <p class="site-footer-contact"><a class="site-footer-link" href="/contact.html">support@promptmegood.com</a></p>
+        <p class="site-footer-contact"><a class="site-footer-link" href="mailto:support@promptmegood.com">support@promptmegood.com</a></p>
         <div class="site-footer-social" aria-label="Follow PromptMeGood on social media">
           <span class="site-footer-tagline site-footer-social-label" style="margin:0;">Follow PromptMeGood</span>
           <span class="site-footer-social-links">
@@ -5764,9 +5768,9 @@
           <p><strong>Accounts &amp; Payments.</strong> Authentication is handled by Supabase. Payments are processed by Stripe under their own privacy policy. We store only what we need to attach your plan to your account: email, plan status, Supabase user ID, and (if you've paid) a Stripe customer ID.</p>
           <p><strong>What We Never Do.</strong> We do not sell your data. We do not share your prompts, files, photo briefs, vault contents, or images with advertisers. We do not run third-party advertising. We do not train AI models on your data.</p>
           <p><strong>Pseudonymous Analytics.</strong> We use Microsoft Clarity to understand de-identified usage patterns (clicks, scroll, frustration signals). Clarity masks form fields, so the contents of your prompts are not captured. Opt out at <a class="site-footer-link" href="https://privacy.microsoft.com/" target="_blank" rel="noopener noreferrer">privacy.microsoft.com</a>.</p>
-          <p><strong>Your Rights (GDPR / UK GDPR / CCPA).</strong> You have rights of access, correction, deletion, portability, objection, and the right to lodge a complaint with your local data-protection authority. We do not sell or share personal information. Email <a class="site-footer-link" href="/contact.html">support@promptmegood.com</a> to exercise any right or to request account deletion.</p>
+          <p><strong>Your Rights (GDPR / UK GDPR / CCPA).</strong> You have rights of access, correction, deletion, portability, objection, and the right to lodge a complaint with your local data-protection authority. We do not sell or share personal information. Email <a class="site-footer-link" href="mailto:support@promptmegood.com">support@promptmegood.com</a> to exercise any right or to request account deletion.</p>
           <p><strong>You're In Control.</strong> Export, import, or clear your saved data any time from the Prompt Vault section. Clearing your browser storage removes everything PromptMeGood has saved on your device.</p>
-          <p>Questions? Email <a class="site-footer-link" href="/contact.html">support@promptmegood.com</a>. Full policy: <a class="site-footer-link" href="/privacy.html" target="_blank" rel="noopener">Open Full Privacy Policy</a>.</p>
+          <p>Questions? Email <a class="site-footer-link" href="mailto:support@promptmegood.com">support@promptmegood.com</a>. Full policy: <a class="site-footer-link" href="/privacy.html" target="_blank" rel="noopener">Open Full Privacy Policy</a>.</p>
         </div>
       </div>
     </dialog>
@@ -5790,7 +5794,7 @@
           <p><strong>Limitation Of Liability.</strong> To the maximum extent permitted by law, PromptMeGood is not liable for indirect, incidental, consequential, or punitive damages. Our total aggregate liability is limited to the greater of the amount you have paid in the prior 12 months or USD $50.</p>
           <p><strong>Changes.</strong> We may update or change features at any time. Continued use after changes means you accept the updated terms.</p>
           <p>Full terms (governing law, indemnification, IP complaints, termination, severability) are in the <a class="site-footer-link" href="/terms.html" target="_blank" rel="noopener">complete Terms of Service</a>.</p>
-          <p>Questions? Email <a class="site-footer-link" href="/contact.html">support@promptmegood.com</a>.</p>
+          <p>Questions? Email <a class="site-footer-link" href="mailto:support@promptmegood.com">support@promptmegood.com</a>.</p>
         </div>
       </div>
     </dialog>

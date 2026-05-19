@@ -283,9 +283,9 @@
     if (anchorBtn.id) pop.setAttribute('data-anchor', anchorBtn.id);
     var msg = document.createElement('div');
     msg.className = 'pmg-save-confirm__msg';
-    msg.textContent = 'You already have ' + existingCount + ' saved AI result' +
-      (existingCount === 1 ? '' : 's') + ' for this prompt. ' +
-      'Replace the most recent one, or save this run as a new entry?';
+    // Phase 6 deferred §2 (2026-05-19): explicit "Replace previous AI result?" wording.
+    msg.textContent = 'This prompt already has ' + existingCount + ' saved AI result' +
+      (existingCount === 1 ? '' : 's') + '. Replace previous AI result, or save this run as a new entry?';
     pop.appendChild(msg);
 
     var row = document.createElement('div');
@@ -294,12 +294,12 @@
     function makeBtn(label, kind) {
       var b = document.createElement('button');
       b.type = 'button';
-      b.className = 'btn ' + (kind === 'replace' ? 'btn-secondary' : (kind === 'new' ? 'btn-primary' : 'btn-secondary'));
+      b.className = 'btn ' + (kind === 'replace' ? 'btn-primary' : (kind === 'new' ? 'btn-secondary' : 'btn-secondary'));
       b.textContent = label;
       return b;
     }
 
-    var bReplace = makeBtn('Replace Latest', 'replace');
+    var bReplace = makeBtn('Replace Previous', 'replace');
     var bNew = makeBtn('Save as New', 'new');
     var bCancel = makeBtn('Cancel', 'cancel');
 
@@ -340,23 +340,16 @@
   }
 
   // -------- Inject buttons --------
+  // Phase 6 deferred §1 (2026-05-19): the Save Prompt button is now hardcoded
+  // in app.html alongside Copy Prompt. This function attaches the click
+  // handler + disabled-state sync to the existing element instead of
+  // creating one. Idempotent — safe to call multiple times.
   function injectSavePromptButton() {
-    var row = document.querySelector('.pmg-result-actions-row');
-    if (!row) return false;
-    if (document.getElementById('pmg-save-prompt-btn')) return true;
-    var copyBtn = document.getElementById('copy-btn');
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.id = 'pmg-save-prompt-btn';
-    btn.className = 'btn btn-secondary';
-    btn.title = 'Save this prompt to your local Vault.';
-    btn.textContent = '💾 Save Prompt';
+    var btn = document.getElementById('pmg-save-prompt-btn');
+    if (!btn) return false;
+    if (btn.dataset.listenerAttached === '1') return true;
     btn.addEventListener('click', function () { handleSavePromptClick(btn); });
-    if (copyBtn && copyBtn.nextSibling) {
-      row.insertBefore(btn, copyBtn.nextSibling);
-    } else {
-      row.appendChild(btn);
-    }
+    btn.dataset.listenerAttached = '1';
     // Mirror the disabled-until-result behavior of #copy-btn.
     function syncDisabled() {
       var hasPrompt = !!getCurrentPrompt();

@@ -318,7 +318,12 @@
     var s = href.trim();
     if (!s || s.charAt(0) === '#') return false;
     // Match: /contact.html, ./contact.html, contact.html, https://.../contact.html(?...|#...)
-    return /(^|\/)contact\.html(?:[?#].*)?$/i.test(s);
+    var isContactPage = /(^|\/)contact\.html(?:[?#].*)?$/i.test(s);
+    // Phase 6 deferred §3 (2026-05-19): also intercept mailto: + any link
+    // containing the support address, so footer mailto links open the modal
+    // instead of the user's mail client.
+    var isSupportEmail = s.toLowerCase().indexOf('support@promptmegood.com') !== -1;
+    return isContactPage || isSupportEmail;
   }
 
   function open() {
