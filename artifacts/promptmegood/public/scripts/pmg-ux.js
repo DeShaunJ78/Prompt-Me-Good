@@ -16541,7 +16541,7 @@
     if (goalEl) {
       // Branded placeholder — keep voice consistent with first-impression
       // copy on /index.html and on fresh-load app sessions.
-      goalEl.placeholder = 'Describe What You Want — We\u2019ll Build The Perfect Prompt.';
+      goalEl.placeholder = 'Tell Us What You Want — Be As Messy As You Like. We\u2019ll Clean It Up.';
     }
 
     var helperP = goalEl ? goalEl.parentNode.querySelector('.helper') : null;
