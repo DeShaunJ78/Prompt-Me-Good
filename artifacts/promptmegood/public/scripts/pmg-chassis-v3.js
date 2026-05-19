@@ -304,7 +304,7 @@
           '</div>',
           '<section class="idea-section">',
             '<label class="pmgv3-section-label" for="goal">Your Idea</label>',
-            '<p class="pmgv3-section-hint">Describe what you want to create. Be as brief or detailed as you like.</p>',
+            '<p class="pmgv3-section-hint">Tell us what you want — be as messy as you like. We\'ll clean it up.</p>',
             '<div class="pmgv3-idea-host">',
               /* cv3-48 fix: clear ✕ MUST live inside .pmgv3-idea-host (the
                  positioned ancestor) so its absolute placement anchors to
