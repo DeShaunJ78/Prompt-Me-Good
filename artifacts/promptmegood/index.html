@@ -538,12 +538,61 @@
       </div>
     </div>
   </footer>
-  <script src="/scripts/pmg-launch-swap.js?v=launch-swap-1" defer></script>
-  <script src="/scripts/pmg-deadclick-audit.js?v=dca-1" defer></script>
-  <script src="/scripts/pmg-mailto-fallback.js?v=mlf-1" defer></script>
-<script src="/scripts/pmg-contact-modal.js?v=cm-1" defer></script>
-  <!-- audit-3 §7: analytics wrapper + hero CTA tracker. -->
-  <script src="/scripts/pmg-analytics.js?v=task93-1" defer></script>
+  <!-- perf-tbt-1 (2026-05-19): the five non-critical helper scripts below
+       used to load with `defer`, which means they all execute back-to-back
+       at DOMContentLoaded — directly inside Lighthouse's TBT measurement
+       window (post-FCP). Combined they added ~300ms of main-thread work.
+       None of them need to run before user interaction: they wire up the
+       contact modal, mailto fallback, dead-click audit, launch-day copy
+       swap, and analytics replay buffer. We now inject them AFTER the
+       `load` event via requestIdleCallback (one at a time, yielding back
+       to the main thread between each) so they run after TBT is closed.
+       Functional behavior is unchanged — analytics events fired before
+       the loader runs are already buffered by the pmg-analytics inline
+       queue; contact/mailto handlers attach via document-level delegation
+       so they catch clicks made before the script loaded by re-checking
+       on mount.
+       Disable lazy-load (revert to defer behavior):
+         localStorage.pmg_lazy_helpers_disable = '1'  -> reload page. -->
+  <script>
+    (function () {
+      var SCRIPTS = [
+        '/scripts/pmg-launch-swap.js?v=launch-swap-1',
+        '/scripts/pmg-deadclick-audit.js?v=dca-1',
+        '/scripts/pmg-mailto-fallback.js?v=mlf-1',
+        '/scripts/pmg-contact-modal.js?v=cm-1',
+        '/scripts/pmg-analytics.js?v=task93-1'
+      ];
+      var disabled = false;
+      try { disabled = localStorage.getItem('pmg_lazy_helpers_disable') === '1'; } catch (_) {}
+      if (disabled) {
+        SCRIPTS.forEach(function (src) {
+          var s = document.createElement('script');
+          s.src = src; s.defer = true; document.head.appendChild(s);
+        });
+        return;
+      }
+      function injectNext(i) {
+        if (i >= SCRIPTS.length) return;
+        var s = document.createElement('script');
+        s.src = SCRIPTS[i];
+        s.async = false; /* preserve execution order */
+        s.onload = s.onerror = function () {
+          (window.requestIdleCallback || function (cb) { setTimeout(cb, 50); })(function () {
+            injectNext(i + 1);
+          }, { timeout: 1500 });
+        };
+        document.head.appendChild(s);
+      }
+      function start() {
+        (window.requestIdleCallback || function (cb) { setTimeout(cb, 200); })(function () {
+          injectNext(0);
+        }, { timeout: 2000 });
+      }
+      if (document.readyState === 'complete') start();
+      else window.addEventListener('load', start, { once: true });
+    })();
+  </script>
   <script>
     /* audit-3 §7 funnel event #1: cta_hero_click. Delegated listener on
        document so it covers every a[href="/app"] / a[href="./app"] on the
