@@ -517,7 +517,13 @@
     /* audit-3 §7: cookieless privacy gate around Microsoft Clarity. Skips
        SDK load entirely when the user has set Do Not Track / Global Privacy
        Control. Matches app.html's gate so opt-out is consistent across the
-       marketing site and the workstation. */
+       marketing site and the workstation.
+       perf-lcp-1 (2026-05-19): inject Clarity AFTER `load` (or 4s
+       fallback). Previously fired in <head> which contended with the
+       critical render path on slow 4G + threw LCP from ~1.0s → 3.3s.
+       Clarity is async analytics — it doesn't need to win the race to
+       first paint. Buffered events still queue via window.clarity()
+       and replay once the tag arrives. */
     (function () {
       try {
         var nav = window.navigator || {};
@@ -525,11 +531,26 @@
         var gpc = nav.globalPrivacyControl === true;
         if (dnt || gpc) { window.__pmgClarityOptedOut = true; return; }
       } catch (_) {}
-      (function(c,l,a,r,i,t,y){
-          c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-      })(window, document, "clarity", "script", "wgs6567cte");
+      // Pre-create the queue so __pmgTrack calls before load buffer cleanly.
+      window.clarity = window.clarity || function () {
+        (window.clarity.q = window.clarity.q || []).push(arguments);
+      };
+      var injected = false;
+      function inject() {
+        if (injected) return; injected = true;
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "wgs6567cte");
+      }
+      if (document.readyState === 'complete') {
+        setTimeout(inject, 0);
+      } else {
+        window.addEventListener('load', function () { setTimeout(inject, 0); }, { once: true });
+        // Safety net in case `load` is delayed by long-running resources.
+        setTimeout(inject, 4000);
+      }
     })();
   </script>
 </head>
