@@ -2,7 +2,7 @@
   "name": "PromptMeGood",
   "short_name": "PMG",
   "description": "AI prompt builder with smart suggestions, auto-optimization, and quality checks.",
-  "start_url": "/app",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
