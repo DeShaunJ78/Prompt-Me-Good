@@ -49,6 +49,14 @@ function cacheHeaderFor(pathname, ext) {
     // the HTML shell (small), assets stay long-cached and unaffected.
     return "no-store, no-cache, must-revalidate, max-age=0";
   }
+  // manifest-ns-1 (2026-05-19): the PWA manifest controls start_url for
+  // home-screen icons. If iOS Safari serves a stale manifest from disk
+  // cache when the user re-adds the icon, the old start_url gets baked
+  // into the new shortcut. Force no-store so re-installs always read
+  // the live manifest. Tiny payload — caching it offers no real benefit.
+  if (pathname === "/site.webmanifest" || pathname.endsWith(".webmanifest")) {
+    return "no-store, no-cache, must-revalidate, max-age=0";
+  }
   if (pathname.startsWith("/assets/")) {
     return "public, max-age=31536000, immutable";
   }
