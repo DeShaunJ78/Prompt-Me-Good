@@ -13964,42 +13964,12 @@ document.addEventListener("DOMContentLoaded", function () {
     if (lsGet('pmg_traffic_onboarding_disable') === '1') return;
     if (/[?&]tr-off=1\b/.test(location.search)) return;
 
-    /* ---------- tr-3: First-visit goal pre-fill ---------- */
-    var PREFILL_KEY = 'pmg_prefill_seen';
-    var EXAMPLE = "Help me launch a profitable AI side hustle in 30 days — give me 3 ideas under $500 to start, the first week's plan, and exactly which tools to use.";
-
-    function tryPrefill() {
-      if (lsGet(PREFILL_KEY) === '1') return true;
-      // Don't fight session restore (sessionStorage['pmgv3:session']).
-      try {
-        var sess = sessionStorage.getItem('pmgv3:session');
-        if (sess && /"goal"\s*:\s*"[^"]/.test(sess)) {
-          lsSet(PREFILL_KEY, '1');
-          return true;
-        }
-      } catch(_) {}
-      // Don't pre-fill returning users (they hit the workstation before).
-      if (lsGet('pmg_visited') || lsGet('pmg_hasGeneratedPrompt') === 'true' ||
-          (Number(lsGet('pmg_prompt_count')) > 0)) {
-        lsSet(PREFILL_KEY, '1');
-        return true;
-      }
-      var goal = document.getElementById('goal');
-      if (!goal) return false;
-      if (goal.value && goal.value.trim()) { lsSet(PREFILL_KEY, '1'); return true; }
-      goal.value = EXAMPLE;
-      try {
-        goal.dispatchEvent(new Event('input', { bubbles: true }));
-        goal.dispatchEvent(new Event('change', { bubbles: true }));
-      } catch(_) {}
-      lsSet(PREFILL_KEY, '1');
-      return true;
-    }
-    var prefillTicks = 0;
-    var prefillIv = setInterval(function(){
-      prefillTicks++;
-      if (tryPrefill() || prefillTicks > 30) clearInterval(prefillIv);
-    }, 200);
+    /* ---------- tr-3: First-visit goal pre-fill — REMOVED 2026-05-19 ----------
+       Previously stuffed a hardcoded "AI side hustle" example into #goal on
+       first visit. Users (rightly) read this as a baked-in/sponsored prompt
+       and were confused that opening the app showed someone else's idea.
+       The textarea now stays empty on first visit and shows the placeholder
+       ("Tell Us What You Want — Be As Messy As You Like…") instead. */
 
     /* ---------- tr-5: Post-first-copy Vault toast ---------- */
     var TOAST_KEY = 'pmg_vault_toast_shown';
