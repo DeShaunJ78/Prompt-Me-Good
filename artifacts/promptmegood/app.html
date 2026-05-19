@@ -4893,7 +4893,7 @@
                   <label for="goal">Your Goal</label>
                   <button type="button" class="btn-clear" id="clear-goal-btn" aria-label="Clear goal" data-clear-target="goal">Clear</button>
                 </div>
-                <textarea id="goal" name="goal" rows="3" placeholder="Describe what you want — e.g. &lsquo;Write a LinkedIn post announcing my SaaS launch.&rsquo;" aria-required="true"></textarea>
+                <textarea id="goal" name="goal" rows="3" placeholder="Tell us what you want — be as messy as you like. We&rsquo;ll clean it up." aria-required="true"></textarea>
                 <p class="helper">
                   The more specific you are, the better your result.
                   <span class="helper-example"><em>Try: &ldquo;Write a 3-day onboarding email sequence for a new SaaS user who just signed up for a free trial.&rdquo;</em></span>
@@ -13848,7 +13848,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (gen) gen.textContent = "Fix My Prompt";
 
   const goal = document.getElementById("goal");
-  if (goal) goal.placeholder = "Describe What You Want — We'll Build The Perfect Prompt.";
+  if (goal) goal.placeholder = "Tell Us What You Want — Be As Messy As You Like. We'll Clean It Up.";
 
   const uploadLabel = document.querySelector('label[for="analyze-file"].upload-label');
   if (uploadLabel) uploadLabel.textContent = "Add A File Or Image (Optional)";
