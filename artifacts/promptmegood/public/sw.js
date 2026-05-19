@@ -16,7 +16,7 @@
  * Versioning: bump CACHE_VERSION to invalidate every cached asset and
  * force fresh downloads on next visit. Old caches are deleted on activate.
  */
-const CACHE_VERSION = 'pmg-v1-2026-05-18';
+const CACHE_VERSION = 'pmg-v2-2026-05-19-landing-fix';
 const HTML_CACHE = `${CACHE_VERSION}-html`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 
@@ -39,6 +39,16 @@ self.addEventListener('activate', (event) => {
         .filter((k) => !k.startsWith(CACHE_VERSION))
         .map((k) => caches.delete(k))
     );
+    // landing-fix-1 (2026-05-19): explicitly evict any stale HTML cache
+    // for "/" or "/app" so a redeployed manifest + index.html land on the
+    // very next navigation, even before the network-first fetch races.
+    try {
+      const htmlCache = await caches.open(`${CACHE_VERSION}-html`);
+      await htmlCache.delete('/');
+      await htmlCache.delete('/app');
+      await htmlCache.delete('/app/');
+      await htmlCache.delete('/site.webmanifest');
+    } catch (_e) {}
     await self.clients.claim();
   })());
 });
