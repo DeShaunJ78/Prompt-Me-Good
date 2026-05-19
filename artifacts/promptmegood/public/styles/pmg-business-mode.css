@@ -90,6 +90,69 @@
   line-height: 1.5;
 }
 
+/* Two-lane tab switcher (growth-mode-tabs-1).
+   Sits between the head and the body. Visually similar to the chassis-v3
+   panel tabs — pill row with a single active state. */
+.pmg-bm-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 10px 18px 0;
+  flex: 0 0 auto;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.pmg-bm-tab {
+  flex: 1 1 0;
+  background: transparent;
+  color: rgba(230, 247, 238, 0.62);
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.pmg-bm-tab:hover {
+  color: #e6f7ee;
+  background: rgba(0, 200, 150, 0.06);
+}
+.pmg-bm-tab.is-active {
+  color: #00c896;
+  background: rgba(0, 200, 150, 0.10);
+  border-color: rgba(0, 200, 150, 0.35);
+  border-bottom-color: transparent;
+}
+.pmg-bm-tab:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 200, 150, 0.28);
+}
+
+/* Per-tool description line (growth-mode-tabs-1).
+   Shown above the inputs inside every accordion body. Required by spec
+   §2.2 — every tool MUST display this. */
+.pmg-bm-desc {
+  font-size: 13px;
+  color: rgba(230, 247, 238, 0.70);
+  margin: 0 0 4px;
+  line-height: 1.5;
+}
+
+/* Saved-suffix on persisted-tool summaries. */
+.pmg-bm-summary-suffix {
+  font-weight: 400;
+  color: rgba(230, 247, 238, 0.55);
+  font-size: 12px;
+  margin-left: 6px;
+}
+
+/* Shared-tool footer (Pillar Content Builder) separator. */
+.pmg-bm-shared {
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.10);
+}
+
 /* Accordion sections (using <details>/<summary>) */
 .pmg-bm-section {
   border: 1px solid rgba(255, 255, 255, 0.1);
