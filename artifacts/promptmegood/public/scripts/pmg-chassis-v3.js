@@ -73,6 +73,7 @@
     deleteTargets();
     setupInspirationFeed();
     wireWhispererToggle();
+    wireQParamPrefill();
     wireFirstPaintFocus();
     // Re-apply the hide on a short tick in case any late legacy script flips display
     var hideTicks = 0;
@@ -92,6 +93,39 @@
       var tp = document.getElementById('tuning-panel');
       if (tp) tp.style.setProperty('display', 'none', 'important');
     }, 200);
+  }
+
+  /* prefill-q-1 (2026-05-20): homepage hero "Use this prompt →" deep-links
+     into /app?q=<encoded>. Read once, populate #goal, fire input event so
+     listeners (Surprise Me, tuning auto-pick, draft saver) see the value,
+     then strip ?q= from the URL so a refresh doesn't re-overwrite local
+     edits. No-op if ?q= missing, #goal absent/non-empty, or value too long. */
+  function wireQParamPrefill() {
+    if (window.__pmgv3QPrefillDone) return;
+    var q = '';
+    try {
+      var sp = new URLSearchParams(window.location.search || '');
+      q = (sp.get('q') || '').trim();
+    } catch (_) { return; }
+    if (!q || q.length > 2000) { window.__pmgv3QPrefillDone = true; return; }
+    var tries = 0;
+    var iv = setInterval(function () {
+      tries++;
+      if (tries > 30 || window.__pmgv3QPrefillDone) { clearInterval(iv); return; }
+      var goal = document.getElementById('goal');
+      if (!goal) return;
+      window.__pmgv3QPrefillDone = true;
+      clearInterval(iv);
+      if (goal.value && goal.value.length > 0) return;
+      goal.value = q;
+      try { goal.dispatchEvent(new Event('input', { bubbles: true })); } catch (_) {}
+      try { goal.dispatchEvent(new Event('change', { bubbles: true })); } catch (_) {}
+      try {
+        var u = new URL(window.location.href);
+        u.searchParams.delete('q');
+        window.history.replaceState(null, '', u.pathname + (u.search ? u.search : '') + (u.hash || ''));
+      } catch (_) {}
+    }, 100);
   }
 
   /* audit-3 §9: first-paint autofocus on #goal so a brand-new user can
