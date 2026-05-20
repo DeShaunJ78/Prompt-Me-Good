@@ -282,15 +282,83 @@
       } catch (_) {}
       return 'chatgpt';
     }
+    /* Smart Send-To Router (Spec 7). Reads the current finalized prompt
+       from #resultBox and asks the classifier which destination fits best.
+       Weak signal / tie / disabled → falls through to ChatGPT default. */
+    var lastRecommendation = null;
+    var currentKey = 'chatgpt';
+    var currentRec = null;
+    function getCurrentPrompt() {
+      var rb = document.getElementById('resultBox');
+      var t = (rb && rb.textContent || '').trim();
+      if (!t || t === 'Your fixed prompt will appear here.') return '';
+      return t;
+    }
+    function getRecommendation() {
+      try {
+        if (!window.__pmgRouter) return null;
+        var prompt = getCurrentPrompt();
+        if (!prompt) return null;
+        return window.__pmgRouter.recommend(prompt, 'text', null);
+      } catch (_) { return null; }
+    }
+    function track(name, props) {
+      try {
+        if (typeof window.__pmgTrack === 'function') window.__pmgTrack(name, props || {});
+      } catch (_) {}
+    }
     function refreshLabel() {
-      var key = getLast();
+      var rec = getRecommendation();
+      /* Router wins when confidence is strong; otherwise ChatGPT default
+         (we deliberately do NOT fall back to last-used here — the spec
+         locks weak signal → ChatGPT to keep the morph trustworthy). */
+      var key = (rec && rec.confidence === 'strong') ? rec.destination : 'chatgpt';
+      currentKey = key;
+      currentRec = rec;
       sendLabel.textContent = DEST_LABELS[key] || 'ChatGPT';
+
+      /* Tooltip: explains WHY this destination is recommended. */
+      var reason = (rec && rec.reason) || 'Default destination — works in any AI.';
+      sendMain.setAttribute('title', reason);
+      sendMain.setAttribute('aria-label', 'Send to ' + (DEST_LABELS[key] || 'ChatGPT') + '. ' + reason);
+
+      /* Telemetry: fire once per recommendation change. */
+      var sig = key + '|' + (rec ? rec.intent : 'default') + '|' + (rec ? rec.confidence : 'weak');
+      if (sig !== lastRecommendation) {
+        lastRecommendation = sig;
+        track('router_recommend', {
+          destination: key,
+          intent: rec ? rec.intent : 'default',
+          confidence: rec ? rec.confidence : 'weak'
+        });
+      }
+
       Array.prototype.forEach.call(sendMenu.querySelectorAll('.pmg-send-menu-item'), function (item) {
         var isCurrent = item.getAttribute('data-dest') === key;
         item.classList.toggle('is-current', isCurrent);
         var check = item.querySelector('.pmg-send-menu-check');
         if (check) check.textContent = isCurrent ? '✓' : '';
       });
+    }
+    /* Observe #resultBox so the morph updates whenever a new prompt is
+       finalized or refined. Debounced 150ms — incremental render can fire
+       many mutations in quick succession; we only want the settled value. */
+    var refreshTimer = null;
+    function refreshLabelDebounced() {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(function () {
+        refreshTimer = null;
+        refreshLabel();
+      }, 150);
+    }
+    function watchResultBox() {
+      var rb = document.getElementById('resultBox');
+      if (!rb || rb.__pmgRouterWatched) return;
+      rb.__pmgRouterWatched = true;
+      try {
+        var mo = new MutationObserver(refreshLabelDebounced);
+        mo.observe(rb, { childList: true, characterData: true, subtree: true });
+      } catch (_) {}
     }
     function buildMenu() {
       sendMenu.innerHTML = '';
@@ -343,17 +411,49 @@
       if (card) card.click();
     }
 
-    sendMain.addEventListener('click', function () { doSend(getLast(), false); });
+    /* Main click accepts the (router-driven) recommendation. */
+    sendMain.addEventListener('click', function () {
+      track('router_accept', {
+        recommended: currentKey,
+        intent: currentRec ? currentRec.intent : 'default',
+        confidence: currentRec ? currentRec.confidence : 'weak'
+      });
+      doSend(currentKey, false);
+    });
     sendCaret.addEventListener('click', function (e) {
       e.stopPropagation();
       if (sendMenu.classList.contains('is-open')) closeMenu(); else openMenu();
     });
 
+    /* Delegated listener on sendMenu — survives buildMenu() rebuilding the
+       items. (Capture phase so it fires before the per-item doSend handler.) */
+    sendMenu.addEventListener('click', function (e) {
+      var item = e.target && e.target.closest && e.target.closest('.pmg-send-menu-item');
+      if (!item || !sendMenu.contains(item)) return;
+      var picked = item.getAttribute('data-dest');
+      if (!picked) return;
+      if (picked === currentKey) {
+        track('router_accept', {
+          recommended: currentKey,
+          intent: currentRec ? currentRec.intent : 'default',
+          confidence: currentRec ? currentRec.confidence : 'weak',
+          via: 'menu'
+        });
+      } else {
+        track('router_override', {
+          recommended: currentKey,
+          picked: picked,
+          intent: currentRec ? currentRec.intent : 'default'
+        });
+      }
+    }, true);
+
     buildMenu();
     refreshLabel();
-    /* If pmg-send-to.js boots after us, refresh once it's ready. */
-    setTimeout(refreshLabel, 250);
-    setTimeout(refreshLabel, 1000);
+    watchResultBox();
+    /* If pmg-send-to.js or the result box boots after us, refresh + rewatch. */
+    setTimeout(function () { refreshLabel(); watchResultBox(); }, 250);
+    setTimeout(function () { refreshLabel(); watchResultBox(); }, 1000);
   }
 
   /* -------------------------------------------------------------------

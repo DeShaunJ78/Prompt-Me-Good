@@ -5421,26 +5421,9 @@
               <span class="save-tip-text">Tip: Export your prompts to keep them safe.</span>
               <button class="save-tip-close" type="button" id="save-tip-close" aria-label="Dismiss tip">&times;</button>
             </div>
-            <div class="open-in-block" aria-label="Use your prompt in an AI tool">
-              <p class="open-in-label">Use Your Prompt In</p>
-              <div class="open-in-row">
-                <div class="open-in-card">
-                  <span class="recommended-badge" id="rec-badge-chatgpt" hidden>Recommended</span>
-                  <a class="btn open-in-btn" data-tool="chatgpt" aria-describedby="open-in-desc-chatgpt" href="https://chat.openai.com/" target="_blank" rel="noopener noreferrer">ChatGPT</a>
-                  <p class="open-in-desc" id="open-in-desc-chatgpt">Best for structured answers, step-by-step guidance, and strategy.</p>
-                </div>
-                <div class="open-in-card">
-                  <span class="recommended-badge" id="rec-badge-claude" hidden>Recommended</span>
-                  <a class="btn open-in-btn" data-tool="claude" aria-describedby="open-in-desc-claude" href="https://claude.ai/" target="_blank" rel="noopener noreferrer">Claude</a>
-                  <p class="open-in-desc" id="open-in-desc-claude">Best for writing, long-form content, and natural tone.</p>
-                </div>
-                <div class="open-in-card">
-                  <span class="recommended-badge" id="rec-badge-perplexity" hidden>Recommended</span>
-                  <a class="btn open-in-btn" data-tool="perplexity" aria-describedby="open-in-desc-perplexity" href="https://www.perplexity.ai/" target="_blank" rel="noopener noreferrer">Perplexity</a>
-                  <p class="open-in-desc" id="open-in-desc-perplexity">Best for research, real-time info, and fact-based answers.</p>
-                </div>
-              </div>
-            </div>
+            <!-- Spec 7: open-in-block removed. Smart Send-To Router in the
+                 #pmg-run-panel (built by pmg-postgen-actions.js) replaces it. -->
+
             </div>
             <div class="post-prompt-footer" role="contentinfo">
               <p class="post-prompt-footer-shortcuts">
@@ -13627,12 +13610,13 @@ Context:
   <script src="/scripts/pmg-share.js?v=t140-image-mode-removed" defer></script>
   <script src="/scripts/pmg-handoff.js?v=t140-image-mode-removed" defer></script>
   <script src="/scripts/pmg-suggestions.js?v=t140-image-mode-removed" defer></script>
+  <script src="/scripts/pmg-router.js?v=router-3" defer></script>
   <script src="/scripts/pmg-send-to.js?v=sendto-4-silent" defer></script>
   <script src="/scripts/pmg-templates.js?v=tpl-1" defer></script>
   <script src="/scripts/pmg-auto-boost-takeover.js?v=abt-1" defer></script>
   <script src="/scripts/pmg-auto-boost.js?v=ab-8-under-strength-abt-1" defer></script>
   <script src="/scripts/pmg-image-actions-gate.js?v=task135-1" defer></script>
-  <script src="/scripts/pmg-postgen-actions.js?v=task61-2" defer></script>
+  <script src="/scripts/pmg-postgen-actions.js?v=router-2" defer></script>
   <script src="/scripts/pmg-analytics.js?v=task93-1" defer></script>
   <script>
     /* audit-3 §7 funnel events #2 + #3: app_opened (page-view parity with
