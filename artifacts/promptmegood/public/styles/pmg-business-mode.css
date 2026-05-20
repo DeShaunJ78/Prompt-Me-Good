@@ -126,6 +126,50 @@
   gap: 10px;
 }
 
+/* growth-mode-wave3-1: brand header split into Brand voice / Creator profile
+   subsections, each with a small label so the user can tell them apart. */
+.pmg-bm-brand-header-group {
+  margin-top: 10px;
+}
+.pmg-bm-brand-header-group:first-of-type {
+  margin-top: 4px;
+}
+.pmg-bm-brand-header-group-label {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(0, 200, 150, 0.85);
+}
+
+/* growth-mode-wave3-1: per-tool "Build just this" button inside each
+   accordion's body. Subdued vs the sticky Build All so visual hierarchy
+   stays clear — Build All is the primary action, this is the shortcut. */
+.pmg-bm-tool-build {
+  display: inline-block;
+  margin-top: 10px;
+  background: transparent;
+  color: #00c896;
+  border: 1px solid rgba(0, 200, 150, 0.5);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.pmg-bm-tool-build:hover {
+  background: rgba(0, 200, 150, 0.1);
+  border-color: #00c896;
+  color: #00d9a3;
+}
+.pmg-bm-tool-build:active { transform: translateY(1px); }
+.pmg-bm-tool-build:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 200, 150, 0.32);
+}
+
 .pmg-bm-goal-group {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;

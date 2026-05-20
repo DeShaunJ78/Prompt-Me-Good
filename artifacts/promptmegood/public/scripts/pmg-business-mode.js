@@ -869,19 +869,27 @@
   }
 
   function renderTool(tool) {
-    /* growth-mode-goal-groups-1: per-tool Build buttons are gone. The
-       single sticky "Build My Prompt" button at the bottom of the drawer
-       now scans every tool's fields across every group and assembles a
-       unified prompt. Each tool's own build() is still called by the
-       collector — see onBuildAll(). */
+    /* growth-mode-wave3-1: per-tool Build button restored alongside the
+       sticky "Build My Prompt". Rationale: the unified collector is great
+       when the user has filled multiple sections, but the common case is
+       "I just want this one tool's prompt." A small "Build just this"
+       button per accordion saves the user from typing in unrelated tools
+       to avoid them, AND avoids the 2-click confirm cap onBuildAll fires
+       when many sections would otherwise concatenate. Wired via delegated
+       click on the drawer body — see buildDrawer(). Tools without a
+       build() (e.g. brand-voice, creator-profile) are skipped. */
     var openAttr = tool.open ? ' open' : '';
     var fieldsHtml = tool.fields.map(renderField).join('');
+    var buildBtn = (typeof tool.build === 'function')
+      ? '<button type="button" class="pmg-bm-tool-build" data-pmg-tool-build="' + esc(tool.id) + '">Build just this</button>'
+      : '';
     return [
       '<details class="pmg-bm-section" data-pmg-tool="' + esc(tool.id) + '"' + openAttr + '>',
         '<summary>' + esc(tool.title) + '</summary>',
         '<div class="pmg-bm-sec-body">',
           '<p class="pmg-bm-desc">' + esc(tool.desc) + '</p>',
           fieldsHtml,
+          buildBtn,
         '</div>',
       '</details>',
     ].join('');
@@ -930,22 +938,33 @@
   }
 
   function buildBrandHeader() {
-    /* Compact card at the top of the drawer holding the 2 Brand Voice
-       fields + 3 Creator Profile fields. Same IDs the existing
-       wireBrandVoice() and wireCreatorProfile() functions query for. */
+    /* growth-mode-wave3-1: split into two labeled subsections — Brand
+       Voice (audience + tone) and Creator Profile (niche + platform +
+       vibe) — so the user can tell them apart at a glance. Previously
+       they were one undifferentiated stack. Same field IDs as before
+       so wireBrandVoice() and wireCreatorProfile() still query them
+       successfully; only the wrapping markup changed. */
     var brand = TOOLS.find(function (t) { return t.id === 'brand-voice'; });
     var creator = TOOLS.find(function (t) { return t.id === 'creator-profile'; });
-    var fieldsHtml = '';
-    if (brand)   fieldsHtml += brand.fields.map(renderField).join('');
-    if (creator) fieldsHtml += creator.fields.map(renderField).join('');
+    var brandFieldsHtml   = brand   ? brand.fields.map(renderField).join('')   : '';
+    var creatorFieldsHtml = creator ? creator.fields.map(renderField).join('') : '';
     return [
       '<section class="pmg-bm-brand-header" aria-labelledby="pmg-bm-brand-header-title">',
         '<h3 id="pmg-bm-brand-header-title">About Your Brand</h3>',
         '<p class="pmg-bm-brand-header-sub">Fill in once. Applied to every prompt you build.</p>',
-        '<div class="pmg-bm-brand-header-fields">',
-          fieldsHtml,
-          '<p class="pmg-bm-saved" id="pmg-bm-saved-brand-voice">✓ Saved to this device</p>',
-          '<p class="pmg-bm-saved" id="pmg-bm-saved-creator-profile">✓ Saved to this device</p>',
+        '<div class="pmg-bm-brand-header-group">',
+          '<p class="pmg-bm-brand-header-group-label">Brand voice</p>',
+          '<div class="pmg-bm-brand-header-fields">',
+            brandFieldsHtml,
+            '<p class="pmg-bm-saved" id="pmg-bm-saved-brand-voice">✓ Saved to this device</p>',
+          '</div>',
+        '</div>',
+        '<div class="pmg-bm-brand-header-group">',
+          '<p class="pmg-bm-brand-header-group-label">Creator profile</p>',
+          '<div class="pmg-bm-brand-header-fields">',
+            creatorFieldsHtml,
+            '<p class="pmg-bm-saved" id="pmg-bm-saved-creator-profile">✓ Saved to this device</p>',
+          '</div>',
         '</div>',
       '</section>'
     ].join('');
@@ -1002,6 +1021,18 @@
        prompt. See onBuildAll(). */
     var buildAllBtn = drawer.querySelector('.pmg-bm-build-all');
     if (buildAllBtn) buildAllBtn.addEventListener('click', onBuildAll);
+
+    /* growth-mode-wave3-1: delegated per-tool Build button handler. One
+       listener on the drawer covers every accordion's button — including
+       any added later if the TOOLS array grows. */
+    drawer.addEventListener('click', function (e) {
+      var t = e.target;
+      if (!t || !t.classList) return;
+      if (t.classList.contains('pmg-bm-tool-build')) {
+        var id = t.getAttribute('data-pmg-tool-build');
+        if (id) onBuild(id);
+      }
+    });
 
     /* Esc closes */
     document.addEventListener('keydown', function (e) {
@@ -1151,7 +1182,7 @@
     var prompt = tool.build(values);
     if (!prompt) return;
     prompt = appendPersona(prompt, tool.lane);
-    dispatchToText(prompt);
+    dispatchToText(prompt, toolId);
   }
 
   /* Multi-tool collector — the single "Build My Prompt" sticky button.
@@ -1191,18 +1222,38 @@
       return;
     }
 
+    /* growth-mode-wave3-1: 2-click confirm cap. When the user is about to
+       concatenate 4+ tools into one prompt the output gets long and
+       expensive. First click sets __pmgBmConfirmCap + shows an explainer;
+       second click within 4s proceeds. Avoids accidental mega-prompts
+       when someone forgot which sections they filled. */
+    if (sections.length >= 4 && !window.__pmgBmConfirmCap) {
+      window.__pmgBmConfirmCap = true;
+      setTimeout(function () { window.__pmgBmConfirmCap = false; }, 4000);
+      if (errEl) errEl.textContent = 'About to build ' + sections.length + ' sections into one long prompt. Click again to confirm — or use “Build just this” on the section you actually want.';
+      return;
+    }
+    window.__pmgBmConfirmCap = false;
+
     var prompt = sections.join('\n\n');
     prompt = appendPersona(prompt, null);
-    dispatchToText(prompt);
+    dispatchToText(prompt, '__all__');
   }
 
-  function dispatchToText(goalText) {
+  function dispatchToText(goalText, toolId) {
     /* gm-source-flag-1: Mark this generation as Growth-Mode-sourced so
        pmg-growth-actions.js mounts the Copy All / Export PDF row above
-       the eventual #resultBox content. */
+       the eventual #resultBox content.
+       growth-mode-wave3-1: also stash the originating tool id so the
+       Brand Audience snippet observer (wireBrandAudienceObserver) only
+       fires for persona / voc-miner outputs and not for, say, an offer
+       or calendar build. '__all__' means Build All concatenated multiple
+       tools — observer treats that as "any of the brand tools could be
+       present" and still scans for the snippet. */
     try {
       window.__pmgLastSource = 'growth';
       window.__pmgLastSourceAt = Date.now();
+      window.__pmgLastTool = (typeof toolId === 'string' && toolId) ? toolId : null;
     } catch (_) {}
 
     closeDrawer();
