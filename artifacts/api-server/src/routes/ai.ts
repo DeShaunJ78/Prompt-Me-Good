@@ -446,6 +446,34 @@ function getUserTextForSanitize(body: unknown): string {
   return "";
 }
 
+/* interview-gate-1 (v4 audit follow-up): Interview Mode tier-split was
+   client-only — a free user could POST `interviewMode:true` and get the
+   paid system-prompt swap. Silent-coerce (not 403) so:
+   (a) attackers don't learn where the gate is, and
+   (b) a paid user with a stale JWT post-upgrade still gets a working
+       prompt (just without the interview wrapper) instead of an error.
+   Pre-paywall: everyone gets interview (parity with rest of beta).
+   Post-paywall: only paid/owner keep `interviewMode:true`. Mutates
+   req.body in place so the downstream buildMessages() branch falls
+   through to the normal SYSTEM_PROMPT. */
+async function coerceInterviewIfNotPaid(req: Request): Promise<void> {
+  const body = req.body as { interviewMode?: unknown } | null | undefined;
+  if (!body || (body.interviewMode !== true && body.interviewMode !== "true")) return;
+  if (!isPaywallActive()) return;
+
+  const header = req.headers.authorization || "";
+  const m = /^Bearer\s+(.+)$/i.exec(header);
+  if (m) {
+    const ctx = await resolveUserFromJwt(m[1]!.trim());
+    if (ctx) {
+      if (isOwnerUserId(ctx.userId)) return;
+      if (ctx.plan === "founding" || ctx.plan === "pro" || ctx.plan === "pro_studio") return;
+    }
+  }
+  /* Anon, free, or unresolvable token → strip the flag. */
+  body.interviewMode = false;
+}
+
 /* caps-enforcement-1 (2026-05-13): Expert Command Center paywall gate.
    /api/generate is too generic to gate wholesale (it serves Auto-Boost,
    Tuning, ad-hoc helpers, and the Expert drawer). The Expert frontend
@@ -492,6 +520,7 @@ async function denyExpertIfPaywalled(
 // is rate-limited (20/hr/IP), AI-spend-capped per user, and prompt-sanitized.
 router.post("/generate", generateLimiter, generateCostCheck, async (req, res) => {
   if (await denyExpertIfPaywalled(req, res)) return;
+  await coerceInterviewIfNotPaid(req);
   const sanitized = sanitizeGoal(getUserTextForSanitize(req.body));
   if (!sanitized.ok) {
     res.status(sanitized.status).json({ success: false, ok: false, error: sanitized.error });
@@ -558,6 +587,7 @@ router.post("/generate", generateLimiter, generateCostCheck, async (req, res) =>
 // TODO(audit-3 §15 medium): Zod schema — see /generate TODO above.
 router.post("/generate-stream", generateLimiter, generateCostCheck, async (req, res) => {
   if (await denyExpertIfPaywalled(req, res)) return;
+  await coerceInterviewIfNotPaid(req);
   const sanitized = sanitizeGoal(getUserTextForSanitize(req.body));
   if (!sanitized.ok) {
     res.status(sanitized.status).json({ success: false, ok: false, error: sanitized.error });
