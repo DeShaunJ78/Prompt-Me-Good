@@ -116,7 +116,10 @@
       if (!goal) return;
       window.__pmgv3QPrefillDone = true;
       clearInterval(iv);
-      if (goal.value && goal.value.length > 0) return;
+      /* Explicit ?q= deep-link OVERWRITES any session-restored content.
+         If a user just clicked "Use this prompt →" from the homepage hero
+         we honor that intent — silently dropping it because last session's
+         draft happened to be in the box would feel broken. */
       goal.value = q;
       try { goal.dispatchEvent(new Event('input', { bubbles: true })); } catch (_) {}
       try { goal.dispatchEvent(new Event('change', { bubbles: true })); } catch (_) {}

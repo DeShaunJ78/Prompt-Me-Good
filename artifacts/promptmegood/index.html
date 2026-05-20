@@ -771,58 +771,89 @@
 
         var DEFAULT_LABEL = buildBtn.textContent;
 
-        var demos = [
+        /* hero-mini-gen-2 (2026-05-20): Goal line is now ALWAYS the user's
+           verbatim input — that's the whole point of the demo (show their
+           sentence sitting inside a real structured prompt). Role/Audience/
+           Tone/Constraints/Format adapt by category, but the user's words
+           never get replaced by a canned string. */
+        function escapeHtml(s) {
+          return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+        }
+        var categories = [
           {
-            kw: ['email', 'sales', 'pitch', 'outreach', 'cold'],
-            text:
-              '<b>Role:</b> Senior B2B sales copywriter\n' +
-              '<b>Audience:</b> Operations leads at 50–200 person SaaS companies\n' +
-              '<b>Goal:</b> Book a 15-minute discovery call\n' +
-              '<b>Tone:</b> Direct, friendly, zero fluff\n' +
-              '<b>Constraints:</b> 90–120 words, plain text, one CTA\n' +
-              '<b>Format:</b> Subject line + 3 short paragraphs + CTA\n' +
-              '<b>CTA:</b> "Grab a 15-min slot →" — link to a Calendly URL'
+            kw: ['code', 'script', 'function', 'bug', 'fix', 'debug', 'refactor', 'api', 'typescript', 'javascript', 'python', 'react', 'sql'],
+            role: 'Senior Staff Software Engineer',
+            audience: 'Mid-level developer needing a robust, production-ready solution',
+            tone: 'Technical, precise, helpful',
+            constraints: 'Include error handling, edge cases, and inline comments',
+            format: 'Brief explanation + code block + usage example'
           },
           {
-            kw: ['blog', 'post', 'article', 'seo', 'newsletter'],
-            text:
-              '<b>Role:</b> Expert content marketer and SEO specialist\n' +
-              '<b>Audience:</b> Marketing managers looking for actionable growth tactics\n' +
-              '<b>Goal:</b> Drive newsletter signups through high-value educational content\n' +
-              '<b>Tone:</b> Authoritative, tactical, engaging\n' +
-              '<b>Constraints:</b> ~1200 words, short paragraphs, highly skimmable\n' +
-              '<b>Format:</b> Hook intro + 3 actionable steps with examples + conclusion\n' +
-              '<b>CTA:</b> "Subscribe for weekly tactics"'
+            kw: ['email', 'sales', 'pitch', 'outreach', 'cold', 'reply', 'follow up', 'follow-up'],
+            role: 'Senior B2B sales copywriter',
+            audience: 'Operations leads at 50–200 person SaaS companies',
+            tone: 'Direct, friendly, zero fluff',
+            constraints: '90–120 words, plain text, one clear CTA',
+            format: 'Subject line + 3 short paragraphs + CTA'
           },
           {
-            kw: ['code', 'script', 'function', 'bug', 'fix', 'debug', 'refactor'],
-            text:
-              '<b>Role:</b> Senior Staff Software Engineer\n' +
-              '<b>Audience:</b> Mid-level developer needing a robust, production-ready solution\n' +
-              '<b>Goal:</b> Provide a clean, optimized, and well-documented code solution\n' +
-              '<b>Tone:</b> Technical, precise, helpful\n' +
-              '<b>Constraints:</b> Include error handling, edge cases, and inline comments\n' +
-              '<b>Format:</b> Brief explanation + code block + usage example\n' +
-              '<b>Context:</b> Prioritize readability and performance'
+            kw: ['tweet', 'twitter', 'x post', 'linkedin', 'instagram', 'tiktok', 'social', 'caption', 'thread'],
+            role: 'Social media strategist who writes scroll-stopping posts',
+            audience: 'Followers in your niche scrolling on mobile in 2 seconds or less',
+            tone: 'Conversational, confident, native to the platform',
+            constraints: 'Lead with a hook in the first line; no hashtag spam; keep it skimmable',
+            format: 'Hook + body (1–3 short lines) + CTA or question'
+          },
+          {
+            kw: ['video', 'youtube', 'script', 'sora', 'reel', 'short', 'shorts', 'voiceover', 'storyboard'],
+            role: 'Short-form video scriptwriter and director',
+            audience: 'Viewers deciding in 3 seconds whether to keep watching',
+            tone: 'Punchy, visual, momentum-driven',
+            constraints: 'Hook in the first 3 seconds; one idea per shot; under 60 seconds total',
+            format: 'Hook → 3–5 beats with on-screen text + visual notes → CTA'
+          },
+          {
+            kw: ['blog', 'post', 'article', 'seo', 'newsletter', 'guide', 'how-to', 'tutorial', 'long-form'],
+            role: 'Expert content marketer and SEO specialist',
+            audience: 'Marketing managers looking for actionable growth tactics',
+            tone: 'Authoritative, tactical, engaging',
+            constraints: '~1200 words, short paragraphs, highly skimmable',
+            format: 'Hook intro + 3 actionable steps with examples + conclusion'
           }
         ];
-        var fallback =
-          '<b>Role:</b> Expert consultant in the relevant field\n' +
-          '<b>Audience:</b> Professionals seeking clear, actionable advice\n' +
-          '<b>Goal:</b> Provide a comprehensive and structured response\n' +
-          '<b>Tone:</b> Professional, clear, concise\n' +
-          '<b>Constraints:</b> No fluff, highly structured, easy to read\n' +
-          '<b>Format:</b> Executive summary + bulleted key points + next steps';
-
-        function pickDemo(text) {
+        var fallbackCategory = {
+          role: 'Expert consultant in the relevant field',
+          audience: 'Professionals seeking clear, actionable advice',
+          tone: 'Professional, clear, concise',
+          constraints: 'No fluff, highly structured, easy to act on',
+          format: 'Executive summary + bulleted key points + next steps'
+        };
+        function pickCategory(text) {
           var lower = (text || '').toLowerCase();
-          for (var i = 0; i < demos.length; i++) {
-            var d = demos[i];
-            for (var j = 0; j < d.kw.length; j++) {
-              if (lower.indexOf(d.kw[j]) !== -1) return d.text;
+          for (var i = 0; i < categories.length; i++) {
+            var c = categories[i];
+            for (var j = 0; j < c.kw.length; j++) {
+              if (lower.indexOf(c.kw[j]) !== -1) return c;
             }
           }
-          return fallback;
+          return fallbackCategory;
+        }
+        function pickDemo(text) {
+          var c = pickCategory(text);
+          var goal = escapeHtml((text || '').trim());
+          return (
+            '<b>Role:</b> ' + c.role + '\n' +
+            '<b>Audience:</b> ' + c.audience + '\n' +
+            '<b>Goal:</b> ' + goal + '\n' +
+            '<b>Tone:</b> ' + c.tone + '\n' +
+            '<b>Constraints:</b> ' + c.constraints + '\n' +
+            '<b>Format:</b> ' + c.format
+          );
         }
 
         var typingTimer = null;
