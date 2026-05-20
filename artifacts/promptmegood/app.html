@@ -5215,8 +5215,14 @@
               </details>
                 </div>
               </details>
-              <div class="expert-mode-link-row">
-                <button id="expert-mode-link" type="button" class="expert-mode-link" aria-pressed="false">Open Expert Command Center &rarr;</button>
+              <!-- v4 §T003.6: Expert Command Center entry moves to the
+                   Feature Entry Row above the generate action (T003.1).
+                   Row + button hidden+inert so the legacy reveal logic in
+                   the inline footer-link visibility pass (L9398) is a
+                   no-op until the spec for the Feature Entry Row lands
+                   and the row can be removed entirely. -->
+              <div class="expert-mode-link-row" hidden inert>
+                <button id="expert-mode-link" type="button" class="expert-mode-link" aria-pressed="false" hidden>Open Expert Command Center &rarr;</button>
               </div>
 
               <div class="keyboard-hints" id="keyboard-hints" hidden inert aria-label="Keyboard shortcuts">
