@@ -215,22 +215,23 @@
    * 2) Run This Prompt panel
    * ----------------------------------------------------------------- */
   function buildRunPanel() {
-    var improveBlock = document.getElementById('improve-block');
-    if (!improveBlock) return;
+    /* Mount target: AFTER the chassis-v3 #run-with-ai-btn (which lives inside
+       #prompt-output-box). The legacy #improve-block is hidden by chassis CSS
+       so mounting there left the panel invisible. */
+    var runAiBtn = document.getElementById('run-with-ai-btn');
+    var anchor = runAiBtn || document.getElementById('improve-block');
+    if (!anchor) return;
     if (document.getElementById('pmg-run-panel')) return;
 
     var panel = document.createElement('section');
     panel.className = 'pmg-run-panel pmg-post-gen';
     panel.id = 'pmg-run-panel';
-    panel.setAttribute('aria-label', 'Run this prompt');
+    panel.setAttribute('aria-label', 'Send this prompt to another AI tool');
+    /* Chassis already provides "Run With AI Here" — we only add the
+       Send-To split button so the order is: [Run With AI Here] [Send To X ▾]. */
     panel.innerHTML =
-      '<h3 class="pmg-run-panel-title">Run This Prompt</h3>' +
-      '<p class="pmg-run-panel-helper">See the response right here, or open it in your favorite AI tool with the prompt pre-filled.</p>' +
+      '<p class="pmg-run-panel-helper">Or open it in your favorite AI tool with the prompt pre-filled.</p>' +
       '<div class="pmg-run-panel-row">' +
-        '<button type="button" class="btn btn-primary pmg-run-here-btn" id="pmg-run-here">' +
-          '<span aria-hidden="true">▶</span> Run With AI Here' +
-        '</button>' +
-        '<span class="pmg-run-panel-or">or</span>' +
         '<span class="pmg-send-split">' +
           '<button type="button" class="btn btn-secondary pmg-send-main" id="pmg-send-main">' +
             '<span aria-hidden="true">↗</span> Send To <span id="pmg-send-main-label">ChatGPT</span>' +
@@ -241,33 +242,9 @@
         '</span>' +
       '</div>';
 
-    /* Insert immediately after the Refine block so it's the first thing
-       users see after refining (or skipping refine). */
-    if (improveBlock.parentNode) {
-      improveBlock.parentNode.insertBefore(panel, improveBlock.nextSibling);
+    if (anchor.parentNode) {
+      anchor.parentNode.insertBefore(panel, anchor.nextSibling);
     }
-
-    /* In-house run button — defer to existing handler. */
-    var runHere = panel.querySelector('#pmg-run-here');
-    runHere.addEventListener('click', function () {
-      var realBtn = document.getElementById('runBtn');
-      if (realBtn && typeof realBtn.click === 'function') {
-        realBtn.click();
-        var scrollAttempts = 0;
-        var scrollInterval = setInterval(function () {
-          scrollAttempts++;
-          var resp = document.getElementById('aiResponseSection');
-          if (resp && resp.offsetHeight > 0) {
-            clearInterval(scrollInterval);
-            try { resp.scrollIntoView({ behavior: window.PMG_A11Y ? window.PMG_A11Y.scrollBehavior() : 'smooth', block: 'start' }); } catch (_) {}
-          }
-          if (scrollAttempts > 30) clearInterval(scrollInterval);
-        }, 200);
-        return;
-      }
-      /* Fallback: try the global runWithAI() if exposed. */
-      if (typeof window.runWithAI === 'function') window.runWithAI();
-    });
 
     /* Send-To split button + menu. */
     var sendMain = panel.querySelector('#pmg-send-main');
