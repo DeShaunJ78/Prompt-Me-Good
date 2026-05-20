@@ -59,15 +59,21 @@
       '.pmg-tellai-actions .pmg-tellai-hint { font-size:12px; color:var(--color-text-muted, #6b6b6b); margin:0; }',
 
       /* Run-With-AI + Send-To row: side-by-side, never stacked. */
-      '.pmg-run-row { display:flex; flex-wrap:nowrap; gap:8px; align-items:stretch; margin-top: 14px; width: 100%; }',
-      '.pmg-run-row > #run-with-ai-btn { flex: 2 1 0; min-width: 0; margin-top: 0 !important; }',
+      '.pmg-run-row { display:flex; flex-wrap:nowrap; gap:10px; align-items:stretch; margin-top: 14px; width: 100%; }',
+      '.pmg-run-row > #run-with-ai-btn { flex: 1 1 0; min-width: 0; margin-top: 0 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 12px; padding-right: 12px; }',
       '.pmg-run-row > .pmg-run-panel { flex: 1 1 0; min-width: 0; display:flex; }',
       /* Run This Prompt panel (now just the Send-To split). */
       '.pmg-run-panel { margin: 0; }',
       '.pmg-send-split { position: relative; flex: 1 1 auto; display:flex; min-width: 0; width: 100%; }',
-      '.pmg-send-main { flex:1; min-height:44px; border-top-right-radius:0 !important; border-bottom-right-radius:0 !important; }',
-      '.pmg-send-caret { min-width:36px; padding:0 10px; border-left: 1px solid rgba(0,0,0,0.12) !important;',
-      '  border-top-left-radius:0 !important; border-bottom-left-radius:0 !important; min-height:44px; }',
+      '.pmg-send-main { flex:1 1 auto; min-width: 0; min-height:44px;',
+      '  border-top-right-radius:0 !important; border-bottom-right-radius:0 !important;',
+      '  padding: 0 12px; display:inline-flex; align-items:center; justify-content:center; gap:6px;',
+      '  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }',
+      '.pmg-send-main .pmg-send-arrow { font-size: 14px; opacity: 0.85; }',
+      '.pmg-send-main .pmg-send-prefix { opacity: 0.75; font-weight: 500; }',
+      '.pmg-send-caret { flex: 0 0 auto; min-width:40px; padding:0 10px; border-left: 1px solid rgba(0,0,0,0.12) !important;',
+      '  border-top-left-radius:0 !important; border-bottom-left-radius:0 !important; min-height:44px;',
+      '  display:inline-flex; align-items:center; justify-content:center; font-size: 14px; }',
       '[data-theme="dark"] .pmg-send-caret { border-left-color: rgba(255,255,255,0.15) !important; }',
       '.pmg-send-menu { position:absolute; top: calc(100% + 4px); right:0; min-width: 200px;',
       '  background:var(--color-surface, #fff); border:1px solid var(--color-border, #d4cfc4); border-radius:10px;',
@@ -80,9 +86,11 @@
       '.pmg-send-menu-item .pmg-send-menu-check { display:inline-block; width:16px; color: var(--color-accent, #1f7a6c); }',
 
       '@media (max-width: 540px) {',
-      '  .pmg-run-row { gap: 6px; margin-top: 10px; }',
-      '  .pmg-send-main { min-height: 40px; font-size: 13px; padding: 0 8px; }',
-      '  .pmg-send-caret { min-height: 40px; }',
+      '  .pmg-run-row { gap: 8px; margin-top: 12px; }',
+      '  .pmg-run-row > #run-with-ai-btn { font-size: 14px; padding: 0 10px; }',
+      '  .pmg-send-main { min-height: 44px; font-size: 14px; padding: 0 10px; gap: 4px; }',
+      '  .pmg-send-main .pmg-send-prefix { display: none; }', /* tighten: just "↗ Claude" */
+      '  .pmg-send-caret { min-height: 44px; min-width: 36px; padding: 0 8px; }',
       '}'
     ].join('\n');
     document.head.appendChild(s);
@@ -220,7 +228,9 @@
     panel.innerHTML =
       '<span class="pmg-send-split">' +
         '<button type="button" class="btn btn-secondary pmg-send-main" id="pmg-send-main">' +
-          '<span aria-hidden="true">↗</span> Send To <span id="pmg-send-main-label">ChatGPT</span>' +
+          '<span class="pmg-send-arrow" aria-hidden="true">↗</span>' +
+          '<span class="pmg-send-prefix">Send to</span>' +
+          '<span id="pmg-send-main-label">ChatGPT</span>' +
         '</button>' +
         '<button type="button" class="btn btn-secondary pmg-send-caret" id="pmg-send-caret"' +
           ' aria-haspopup="menu" aria-expanded="false" aria-label="Choose AI tool">▾</button>' +
