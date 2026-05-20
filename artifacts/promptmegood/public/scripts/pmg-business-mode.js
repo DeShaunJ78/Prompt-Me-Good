@@ -176,15 +176,27 @@
     return lines.length ? 'Creator Profile:\n' + lines.join('\n') : '';
   }
   function appendPersona(prompt, lane) {
-    /* Shared tools (Pillar Content Builder) live at the bottom of both
-       lanes. Attach the persona for whichever tab is currently active so
-       Creator users actually get their Creator Profile applied. */
-    var block = '';
-    var effective = lane;
-    if (lane === 'shared') effective = (activeTab === 'creator') ? 'creator' : 'business';
-    if (effective === 'business')      block = brandBlock(loadBrand());
-    else if (effective === 'creator')  block = creatorBlock(loadCreator());
-    return block ? prompt + '\n\n' + block : prompt;
+    /* growth-mode-goal-groups-1: the two-lane switcher is gone. The
+       shared "About Your Brand" header at the top of the drawer holds
+       BOTH Brand Voice (audience/tone) and Creator Profile
+       (niche/platform/vibe). For any tool's build output (lane === null,
+       'business', 'creator', or the legacy 'shared'), we now append
+       whichever blocks have content — both, one, or neither. */
+    var blocks = [];
+    if (lane === 'business') {
+      var b = brandBlock(loadBrand());
+      if (b) blocks.push(b);
+    } else if (lane === 'creator') {
+      var c = creatorBlock(loadCreator());
+      if (c) blocks.push(c);
+    } else {
+      /* null / 'shared' / anything else → append every non-empty block. */
+      var b2 = brandBlock(loadBrand());
+      var c2 = creatorBlock(loadCreator());
+      if (b2) blocks.push(b2);
+      if (c2) blocks.push(c2);
+    }
+    return blocks.length ? prompt + '\n\n' + blocks.join('\n\n') : prompt;
   }
 
   /* ---------------------------------------------------------------- *
@@ -524,24 +536,78 @@
   }
 
   function renderTool(tool) {
+    /* growth-mode-goal-groups-1: per-tool Build buttons are gone. The
+       single sticky "Build My Prompt" button at the bottom of the drawer
+       now scans every tool's fields across every group and assembles a
+       unified prompt. Each tool's own build() is still called by the
+       collector — see onBuildAll(). */
     var openAttr = tool.open ? ' open' : '';
-    var suffix = tool.titleSuffix
-      ? ' <span class="pmg-bm-summary-suffix">' + esc(tool.titleSuffix) + '</span>'
-      : '';
     var fieldsHtml = tool.fields.map(renderField).join('');
-    var actionsHtml = tool.persisted
-      ? '<p class="pmg-bm-saved" id="pmg-bm-saved-' + esc(tool.id) + '">✓ Saved to this device</p>'
-      : '<button type="button" class="pmg-bm-build" data-pmg-build="' + esc(tool.id) + '">Build Prompt →</button>' +
-        '<p class="pmg-bm-error" id="pmg-bm-err-' + esc(tool.id) + '"></p>';
     return [
-      '<details class="pmg-bm-section" data-pmg-tool="' + esc(tool.id) + '" data-pmg-lane="' + esc(tool.lane) + '"' + openAttr + '>',
-        '<summary>' + esc(tool.title) + suffix + '</summary>',
+      '<details class="pmg-bm-section" data-pmg-tool="' + esc(tool.id) + '"' + openAttr + '>',
+        '<summary>' + esc(tool.title) + '</summary>',
         '<div class="pmg-bm-sec-body">',
           '<p class="pmg-bm-desc">' + esc(tool.desc) + '</p>',
           fieldsHtml,
-          actionsHtml,
         '</div>',
       '</details>',
+    ].join('');
+  }
+
+  /* ---------------------------------------------------------------- *
+   * Goal Groups — the 5 collapsible sections that replace the old
+   * Business/Creator lanes. Tool ID order within each group is the
+   * order assembled into the unified prompt by Build My Prompt.
+   *
+   * NOTE: brand-voice and creator-profile are intentionally absent
+   * here. Their fields now live exclusively in the shared "About
+   * Your Brand" header at the top of the drawer (see buildBrandHeader),
+   * which auto-saves to localStorage via wireBrandVoice() and
+   * wireCreatorProfile(). Keeping their IDs in two places would
+   * create duplicate DOM IDs and break sync.
+   * ---------------------------------------------------------------- */
+  var GOAL_GROUPS = [
+    { title: 'Build an Audience',  tools: ['hooks', 'bio'] },
+    { title: 'Sell Something',     tools: ['funnel', 'objection', 'offer', 'pricing'] },
+    { title: 'Create Content',     tools: ['calendar', 'series', 'repurpose', 'titles', 'cr-multidrop', 'biz-multidrop', 'pillar'] },
+    { title: 'Launch Something',   tools: ['email-seq', 'collab'] },
+    { title: 'Know Your Audience', tools: ['persona'] }
+  ];
+
+  function renderGoalGroup(group) {
+    var bodies = group.tools.map(function (id) {
+      var tool = TOOLS.find(function (t) { return t.id === id; });
+      return tool ? renderTool(tool) : '';
+    }).join('');
+    return [
+      '<details class="pmg-bm-goal-group">',
+        '<summary>' + esc(group.title) + '</summary>',
+        '<div class="pmg-bm-group-body">',
+          bodies,
+        '</div>',
+      '</details>'
+    ].join('');
+  }
+
+  function buildBrandHeader() {
+    /* Compact card at the top of the drawer holding the 2 Brand Voice
+       fields + 3 Creator Profile fields. Same IDs the existing
+       wireBrandVoice() and wireCreatorProfile() functions query for. */
+    var brand = TOOLS.find(function (t) { return t.id === 'brand-voice'; });
+    var creator = TOOLS.find(function (t) { return t.id === 'creator-profile'; });
+    var fieldsHtml = '';
+    if (brand)   fieldsHtml += brand.fields.map(renderField).join('');
+    if (creator) fieldsHtml += creator.fields.map(renderField).join('');
+    return [
+      '<section class="pmg-bm-brand-header" aria-labelledby="pmg-bm-brand-header-title">',
+        '<h3 id="pmg-bm-brand-header-title">About Your Brand</h3>',
+        '<p class="pmg-bm-brand-header-sub">Fill in once. Applied to every prompt you build.</p>',
+        '<div class="pmg-bm-brand-header-fields">',
+          fieldsHtml,
+          '<p class="pmg-bm-saved" id="pmg-bm-saved-brand-voice">✓ Saved to this device</p>',
+          '<p class="pmg-bm-saved" id="pmg-bm-saved-creator-profile">✓ Saved to this device</p>',
+        '</div>',
+      '</section>'
     ].join('');
   }
 
@@ -568,30 +634,16 @@
       'aria-labelledby': 'pmg-bm-title',
     });
 
-    var businessTools = TOOLS.filter(function (t) { return t.lane === 'business'; });
-    var creatorTools  = TOOLS.filter(function (t) { return t.lane === 'creator'; });
-    var sharedTools   = TOOLS.filter(function (t) { return t.lane === 'shared'; });
-
     drawer.innerHTML = [
       '<div class="pmg-bm-head">',
         '<h2 id="pmg-bm-title"><span aria-hidden="true">💼</span> Growth Mode</h2>',
         '<button type="button" class="pmg-bm-close" aria-label="Close Growth Mode">✕</button>',
       '</div>',
-      '<div class="pmg-bm-tabs" role="tablist" aria-label="Growth Mode lane">',
-        '<button type="button" class="pmg-bm-tab" role="tab" data-pmg-bm-tab="business" aria-selected="false" aria-controls="pmg-bm-lane-business">Business</button>',
-        '<button type="button" class="pmg-bm-tab" role="tab" data-pmg-bm-tab="creator" aria-selected="false" aria-controls="pmg-bm-lane-creator">Creator</button>',
-      '</div>',
       '<div class="pmg-bm-body">',
-        '<p class="pmg-bm-intro">Pick a lane, set your profile once, then build prompts for any tool. Each prompt drops into the Text Prompts tab and generates automatically.</p>',
-        '<div class="pmg-bm-lane" id="pmg-bm-lane-business" role="tabpanel" aria-labelledby="pmg-bm-tab-business">',
-          businessTools.map(renderTool).join(''),
-        '</div>',
-        '<div class="pmg-bm-lane" id="pmg-bm-lane-creator" role="tabpanel" aria-labelledby="pmg-bm-tab-creator">',
-          creatorTools.map(renderTool).join(''),
-        '</div>',
-        '<div class="pmg-bm-shared">',
-          sharedTools.map(renderTool).join(''),
-        '</div>',
+        buildBrandHeader(),
+        GOAL_GROUPS.map(renderGoalGroup).join(''),
+        '<p class="pmg-bm-error" id="pmg-bm-build-all-err"></p>',
+        '<button type="button" class="pmg-bm-build-all">Build My Prompt</button>',
       '</div>',
     ].join('');
 
@@ -600,24 +652,16 @@
 
     drawer.querySelector('.pmg-bm-close').addEventListener('click', closeDrawer);
 
-    /* Tab switcher */
-    Array.prototype.forEach.call(drawer.querySelectorAll('[data-pmg-bm-tab]'), function (btn) {
-      btn.addEventListener('click', function () { setActiveTab(btn.getAttribute('data-pmg-bm-tab')); });
-    });
-    setActiveTab(activeTab, /* skipSave */ true);
-
-    /* Wire persisted profiles (Brand Voice + Creator Profile) */
+    /* Wire persisted profiles (Brand Voice + Creator Profile) — fields
+       now live in the shared "About Your Brand" header at the top. */
     wireBrandVoice(drawer);
     wireCreatorProfile(drawer);
 
-    /* Wire all Build Prompt buttons via delegation */
-    drawer.addEventListener('click', function (e) {
-      var target = e.target;
-      if (!target || !target.getAttribute) return;
-      var toolId = target.getAttribute('data-pmg-build');
-      if (!toolId) return;
-      onBuild(toolId);
-    });
+    /* Single sticky Build My Prompt button — scans every tool in every
+       goal group, collects non-empty fields, and assembles a unified
+       prompt. See onBuildAll(). */
+    var buildAllBtn = drawer.querySelector('.pmg-bm-build-all');
+    if (buildAllBtn) buildAllBtn.addEventListener('click', onBuildAll);
 
     /* Esc closes */
     document.addEventListener('keydown', function (e) {
@@ -629,19 +673,11 @@
   }
 
   function setActiveTab(name, skipSave) {
+    /* growth-mode-goal-groups-1: the two-lane switcher has been removed.
+       This function is preserved as a no-op for back-compat with any
+       external caller that may still reference window.pmgBusinessMode.setTab. */
     activeTab = (name === 'creator') ? 'creator' : 'business';
     if (!skipSave) saveActiveTab(activeTab);
-    var dr = $('pmg-bm-drawer');
-    if (!dr) return;
-    Array.prototype.forEach.call(dr.querySelectorAll('[data-pmg-bm-tab]'), function (btn) {
-      var on = btn.getAttribute('data-pmg-bm-tab') === activeTab;
-      btn.classList.toggle('is-active', on);
-      btn.setAttribute('aria-selected', on ? 'true' : 'false');
-    });
-    var bLane = $('pmg-bm-lane-business');
-    var cLane = $('pmg-bm-lane-creator');
-    if (bLane) bLane.style.display = activeTab === 'business' ? '' : 'none';
-    if (cLane) cLane.style.display = activeTab === 'creator'  ? '' : 'none';
   }
 
   /* ---------------------------------------------------------------- *
@@ -738,33 +774,64 @@
    * Build handler — validates required fields, assembles prompt,
    * appends the right persona block, dispatches to text panel.
    * ---------------------------------------------------------------- */
+  /* Legacy single-tool builder, kept for back-compat. Not wired to any
+     UI surface after growth-mode-goal-groups-1 (per-tool Build buttons
+     were removed). External callers can still invoke via the public API
+     if they pass a valid tool id. */
   function onBuild(toolId) {
     var tool = TOOLS.find(function (t) { return t.id === toolId; });
     if (!tool || !tool.build) return;
-    var errEl = $('pmg-bm-err-' + tool.id);
-    if (errEl) errEl.textContent = '';
-
     var values = {};
-    var missing = null;
     for (var i = 0; i < tool.fields.length; i++) {
       var f = tool.fields[i];
       var node = $(f.id);
-      var v = node ? (node.value || '').trim() : '';
-      if (!v) { missing = f.label; break; }
-      values[f.id] = v;
+      values[f.id] = node ? (node.value || '').trim() : '';
     }
-    if (missing) {
-      if (errEl) errEl.textContent = 'Fill in: ' + missing + '.';
-      return;
-    }
-
     var prompt = tool.build(values);
-    if (!prompt) {
-      if (errEl) errEl.textContent = 'Something went wrong building this prompt.';
+    if (!prompt) return;
+    prompt = appendPersona(prompt, tool.lane);
+    dispatchToText(prompt);
+  }
+
+  /* Multi-tool collector — the single "Build My Prompt" sticky button.
+     Iterates GOAL_GROUPS in spec order → tools in spec order → fields
+     in tool order. Any tool with at least one non-empty field is
+     included; its build() is called with the full values map (empty
+     strings for unfilled fields, per design). Per-tool outputs are
+     concatenated under `## Tool Title` headers. The shared brand /
+     creator persona blocks are appended once at the end via
+     appendPersona(prompt, null). */
+  function onBuildAll() {
+    var errEl = $('pmg-bm-build-all-err');
+    if (errEl) errEl.textContent = '';
+
+    var sections = [];
+    GOAL_GROUPS.forEach(function (group) {
+      group.tools.forEach(function (toolId) {
+        var tool = TOOLS.find(function (t) { return t.id === toolId; });
+        if (!tool || !tool.build) return;
+        var values = {};
+        var anyFilled = false;
+        tool.fields.forEach(function (f) {
+          var node = $(f.id);
+          var v = node ? (node.value || '').trim() : '';
+          values[f.id] = v;
+          if (v) anyFilled = true;
+        });
+        if (!anyFilled) return;
+        var out = tool.build(values);
+        if (!out) return;
+        sections.push('## ' + tool.title + '\n' + out);
+      });
+    });
+
+    if (!sections.length) {
+      if (errEl) errEl.textContent = 'Fill in at least one field above to build your prompt.';
       return;
     }
 
-    prompt = appendPersona(prompt, tool.lane);
+    var prompt = sections.join('\n\n');
+    prompt = appendPersona(prompt, null);
     dispatchToText(prompt);
   }
 

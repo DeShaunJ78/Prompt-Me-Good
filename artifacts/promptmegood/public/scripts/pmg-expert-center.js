@@ -402,6 +402,7 @@
   var _state = readState();
   if (!_state.engineer) _state.engineer = {};
   if (!_state.tune) _state.tune = { toggles: {}, sliders: {} };
+  if (!_state.insider) _state.insider = {};
 
   function injectStyles() {
     if (document.getElementById('pmg-expert-center-css')) return;
@@ -466,8 +467,14 @@
       '.pmg-ec-tune-toggle .lbl{font-weight:600;}' +
       '.pmg-ec-tune-toggle .desc{display:block;font-size:.82rem;color:var(--color-text-muted,#475569);margin-top:2px;}' +
       '.pmg-ec-slider{margin:14px 0;}' +
+      '.pmg-ec-slider .pmg-ec-slider-name{display:block;font-size:.88rem;font-weight:700;color:var(--color-text,#0f172a);margin-bottom:6px;}' +
       '.pmg-ec-slider header{display:flex;justify-content:space-between;font-size:.82rem;color:var(--color-text-muted,#475569);margin-bottom:4px;}' +
       '.pmg-ec-slider input[type=range]{width:100%;}' +
+      '.pmg-ec-slider .pmg-ec-slider-readout{display:block;margin-top:6px;font-size:.82rem;font-style:italic;color:var(--color-text-muted,#475569);min-height:1.1em;}' +
+      '.pmg-ec-insider-field{margin-bottom:14px;}' +
+      '.pmg-ec-insider-field label{display:block;font-size:.88rem;font-weight:700;margin-bottom:4px;color:var(--color-text,#0f172a);}' +
+      '.pmg-ec-insider-field textarea{width:100%;min-height:72px;padding:8px 10px;border:1px solid var(--color-border,#cbd5e1);border-radius:8px;font-family:inherit;font-size:.92rem;line-height:1.4;resize:vertical;box-sizing:border-box;background:var(--color-surface,#fff);color:var(--color-text,#0f172a);}' +
+      '.pmg-ec-insider-field textarea:focus{outline:none;border-color:var(--color-primary,#0f766e);box-shadow:0 0 0 3px rgba(15,118,110,.18);}' +
       '.pmg-ec-variation{padding:12px;border:1px solid var(--color-border,#e2e8f0);border-radius:12px;margin-bottom:10px;}' +
       '.pmg-ec-variation header{display:flex;align-items:center;gap:10px;margin-bottom:6px;}' +
       '.pmg-ec-variation header h3{margin:0;font-size:.95rem;}' +
@@ -509,11 +516,12 @@
       el('button', { class: 'pmg-ec-close', type: 'button', 'aria-label': 'Close Expert Command Center', onclick: function () { closeDrawer(); } }, '×')
     ]);
     var TABS = [
-      { id: 'diagnose',   label: 'Diagnose',   help: 'Find what is weak, missing, or unclear before you run your prompt.' },
-      { id: 'engineer',   label: 'Architect',  help: 'Control how your prompt is structured before AI answers.' },
-      { id: 'tune',       label: 'Tune',       help: 'Dial in voice and depth with toggles and sliders.' },
-      { id: 'variations', label: 'Variations', help: 'Create different versions of your prompt for different styles or goals.' },
-      { id: 'save',       label: 'Save',       help: 'Save prompt setups you may want to reuse later.' }
+      { id: 'diagnose',   label: 'Find Weak Spots',   help: 'Find what is weak, missing, or unclear before you run your prompt.' },
+      { id: 'insider',    label: 'Make It Yours',     help: "Give the AI the context it couldn't possibly know about your business, voice, and rules." },
+      { id: 'engineer',   label: 'Correct the AI',    help: 'Control how your prompt is structured before AI answers.' },
+      { id: 'tune',       label: 'Set the Guardrails', help: 'Dial in voice and depth with toggles and sliders.' },
+      { id: 'variations', label: 'Variations',        help: 'Create different versions of your prompt for different styles or goals.' },
+      { id: 'save',       label: 'Vault',             help: 'Save prompt setups you may want to reuse later.' }
     ];
     _tabs = el('div', { class: 'pmg-ec-tabs', role: 'tablist' });
     var body = el('div', { class: 'pmg-ec-body' });
@@ -602,6 +610,7 @@
     if (!pane) return;
     pane.innerHTML = '';
     if (_activeTab === 'diagnose')   renderDiagnose(pane);
+    else if (_activeTab === 'insider')    renderInsider(pane);
     else if (_activeTab === 'engineer')   renderEngineer(pane);
     else if (_activeTab === 'tune')       renderTune(pane);
     else if (_activeTab === 'variations') renderVariations(pane);
@@ -879,6 +888,99 @@
   }
 
   /* =====================================================================
+   * INSIDER pane — "Make It Yours"
+   * Six textareas the user fills with context the AI can't possibly know
+   * (insider language, hard rules, anti-patterns, calibration sample,
+   * never-say, always-include). Apply appends a ## Your Rules block to
+   * #goal. Re-apply is idempotent — any existing ## Your Rules block is
+   * stripped before the new one is appended.
+   * ===================================================================== */
+  var INSIDER_FIELDS = [
+    { key: 'insiderContext',     label: 'Insider Context',     placeholder: "Things only you know \u2014 internal names, proprietary process names, jargon your audience uses that no one outside would recognize." },
+    { key: 'hardRules',          label: 'Hard Rules',          placeholder: "Absolute constraints the AI must never violate. E.g. \"Never mention competitors by name.\" \"Always end with a question.\"" },
+    { key: 'antiPatterns',       label: 'Anti-Patterns',       placeholder: "Specific phrases or structures the AI defaults to that you hate. E.g. \"Never start a sentence with 'Certainly'.\" \"No bullet lists.\"" },
+    { key: 'calibrationExample', label: 'Calibration Example', placeholder: "Paste a sample of your best previous output. The AI will match this standard." },
+    { key: 'neverSay',           label: 'Never Say',           placeholder: "Words, phrases, or topics that must never appear in the output." },
+    { key: 'alwaysInclude',      label: 'Always Include',      placeholder: "Elements, phrases, or references that must always appear in the output." }
+  ];
+  var INSIDER_RULES_HEADER = '## Your Rules';
+
+  function stripExistingRulesBlock(goal) {
+    if (!goal) return '';
+    /* Match `## Your Rules` (optional preceding blank line) through end of
+       string or next `## ` heading, then trim trailing whitespace. */
+    var rx = /\n*##\s*Your Rules[\s\S]*?(?=\n##\s|$)/;
+    return goal.replace(rx, '').replace(/\s+$/, '');
+  }
+
+  function buildRulesBlock(state) {
+    var lines = [INSIDER_RULES_HEADER];
+    var any = false;
+    INSIDER_FIELDS.forEach(function (f) {
+      var v = (state[f.key] || '').trim();
+      if (!v) return;
+      lines.push('[' + f.label + ': ' + v + ']');
+      any = true;
+    });
+    return any ? lines.join('\n') : '';
+  }
+
+  function renderInsider(pane) {
+    pane.appendChild(el('p', { class: 'pmg-ec-intro' },
+      "The AI doesn't know your business, your rules, or your voice. This is where you teach it. Fill in whatever applies \u2014 skip what doesn't."));
+
+    var formWrap = el('div', { class: 'pmg-ec-section' });
+    INSIDER_FIELDS.forEach(function (f) {
+      var ta = el('textarea', {
+        id: 'pmg-ec-insider-' + f.key,
+        placeholder: f.placeholder,
+        rows: '3'
+      });
+      ta.value = _state.insider[f.key] || '';
+      ta.addEventListener('input', function () {
+        _state.insider[f.key] = ta.value;
+        writeState(_state);
+      });
+      formWrap.appendChild(el('div', { class: 'pmg-ec-insider-field' }, [
+        el('label', { for: 'pmg-ec-insider-' + f.key }, f.label),
+        ta
+      ]));
+    });
+    pane.appendChild(formWrap);
+
+    pane.appendChild(buildCtaRow([
+      { label: 'Reset', primary: false, onclick: function () {
+          _state.insider = {};
+          writeState(_state);
+          renderActivePane();
+        } },
+      { label: 'Apply These Rules', primary: true, onclick: function () {
+          var block = buildRulesBlock(_state.insider);
+          if (!block) { window.alert('Fill in at least one field to apply your rules.'); return; }
+          var current = getGoalText();
+          var __prevGoal = current;
+          var stripped = stripExistingRulesBlock(current);
+          var next = (stripped ? stripped + '\n\n' : '') + block;
+          setGoalText(next);
+          showStatusPill('Your Rules Applied');
+          track('expert_center_apply', { source: 'insider' });
+          applyAndClose();
+          setTimeout(function () {
+            try {
+              if (window.pmgEccChanges && window.pmgEccChanges.showSettings) {
+                window.pmgEccChanges.showSettings({
+                  source: 'insider',
+                  previousGoal: __prevGoal,
+                  insider: _state.insider
+                });
+              }
+            } catch (_) {}
+          }, 220);
+        } }
+    ]));
+  }
+
+  /* =====================================================================
    * TUNE pane
    * ===================================================================== */
   function renderTune(pane) {
@@ -912,9 +1014,17 @@
         _state.tune.sliders[s.key] = parseInt(inp.value, 10);
         writeState(_state);
       });
+      var nameLabel = s.key.charAt(0).toUpperCase() + s.key.slice(1);
+      var readout = el('span', { class: 'pmg-ec-slider-readout' }, s.text(v) || 'Neutral');
+      inp.addEventListener('input', function () {
+        var cur = parseInt(inp.value, 10);
+        readout.textContent = s.text(cur) || 'Neutral';
+      });
       slidersWrap.appendChild(el('div', { class: 'pmg-ec-slider' }, [
+        el('span', { class: 'pmg-ec-slider-name' }, nameLabel),
         el('header', null, [el('span', null, s.left), el('span', null, s.right)]),
-        inp
+        inp,
+        readout
       ]));
     });
     pane.appendChild(el('div', { class: 'pmg-ec-section' }, [el('h3', null, 'Style Sliders'), slidersWrap]));
