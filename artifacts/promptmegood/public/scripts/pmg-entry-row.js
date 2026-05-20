@@ -70,11 +70,40 @@
     try { el.click(); return true; } catch (_) { return false; }
   }
 
+  function wireExistingRow(row) {
+    var growth = row.querySelector('[data-pmg-entry="growth"]');
+    var expert = row.querySelector('[data-pmg-entry="expert"]');
+    if (growth && !growth.__pmgEntryWired) {
+      growth.__pmgEntryWired = true;
+      growth.addEventListener('click', function (e) {
+        e.preventDefault();
+        clickHidden('pmgv3-business');
+      });
+    }
+    if (expert && !expert.__pmgEntryWired) {
+      expert.__pmgEntryWired = true;
+      expert.addEventListener('click', function (e) {
+        e.preventDefault();
+        clickHidden('pmgv3-expert');
+      });
+    }
+  }
+
   function build() {
     if (MOUNTED) return true;
+    /* entry-row-inline-1 (2026-05-20): chassis-v3 now hard-codes
+       #pmg-entry-row into its initial template (CLS fix). If the row
+       is already in the DOM, just wire up the click handlers and
+       skip the construction path entirely. */
+    var existing = document.getElementById('pmg-entry-row');
+    if (existing) {
+      ensureStyles();
+      wireExistingRow(existing);
+      MOUNTED = true;
+      return true;
+    }
     var anchor = document.querySelector('#analyze-btn, .btn-analyze');
     if (!anchor || !anchor.parentNode) return false;
-    if (document.getElementById('pmg-entry-row')) { MOUNTED = true; return true; }
 
     ensureStyles();
 

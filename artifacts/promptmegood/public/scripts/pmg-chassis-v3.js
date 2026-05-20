@@ -311,6 +311,18 @@
                  the goal field, not to the chassis root. */
               '<button type="button" id="pmgv3-goal-clear" class="pmgv3-goal-clear" title="Clear" aria-label="Clear what you typed" hidden>✕</button>',
             '</div>',
+          /* v4 §2.1 entry-row-inline-1: Feature Entry Row (Growth Mode +
+             Expert Center) is now rendered as part of the chassis-v3
+             initial DOM so it paints in the same frame as the Build
+             button. Previously injected at runtime by pmg-entry-row.js,
+             which caused a visible layout shift. The pmg-entry-row.js
+             script remains loaded and is idempotent — if #pmg-entry-row
+             already exists (this static row) it returns early. Click
+             handlers are attached by pmg-entry-row.js on mount. */
+          '<div id="pmg-entry-row" class="pmg-entry-row" role="group" aria-label="Open Growth Mode or Expert Center">',
+            '<button type="button" class="pmg-entry-row__btn" data-pmg-entry="growth" aria-label="Open Growth Mode — full marketing suite"><span class="pmg-entry-row__glyph" aria-hidden="true">💼</span><span>Growth Mode</span></button>',
+            '<button type="button" class="pmg-entry-row__btn" data-pmg-entry="expert" aria-label="Open Expert Command Center"><span class="pmg-entry-row__glyph" aria-hidden="true">✦</span><span>Expert Center</span></button>',
+          '</div>',
           '<button id="analyze-btn" class="btn-analyze" type="button">✨ Build My Prompt</button>',
           '</section>',
           '<section class="tuning-section is-collapsed" id="tuning-panel" style="display:none !important">',
@@ -1933,9 +1945,9 @@
          before they tap. CSS for `.pmgv3-more-desc` is injected once
          below via ensureMoreMenuStyles(). */
       menu.innerHTML =
-        '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-help"><span aria-hidden="true">❓</span> Guide</button>' +
+        '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-help"><span aria-hidden="true">❓</span> Guide<span class="pmgv3-more-desc">Read the user guide</span></button>' +
         '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-business"><span aria-hidden="true">💼</span> Growth<span class="pmgv3-more-desc">Full marketing suite: Brand Voice, Social Packs, Platform Builder. (Paid feature)</span></button>' +
-        '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-vault"><span aria-hidden="true">🗄️</span> Vault</button>' +
+        '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-vault"><span aria-hidden="true">🗄️</span> Vault<span class="pmgv3-more-desc">Saved prompts library</span></button>' +
         '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-expert"><span aria-hidden="true">✦</span> Expert<span class="pmgv3-more-desc">Diagnose, Architect, Tune, Variations, and Save. (Paid feature)</span></button>';
       ensureMoreMenuStyles();
       moreBtn.parentNode.appendChild(menu);

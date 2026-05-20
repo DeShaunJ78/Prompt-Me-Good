@@ -493,32 +493,15 @@ function getUserTextForSanitize(body: unknown): string {
   return "";
 }
 
-/* interview-gate-1 (v4 audit follow-up): Interview Mode tier-split was
-   client-only — a free user could POST `interviewMode:true` and get the
-   paid system-prompt swap. Silent-coerce (not 403) so:
-   (a) attackers don't learn where the gate is, and
-   (b) a paid user with a stale JWT post-upgrade still gets a working
-       prompt (just without the interview wrapper) instead of an error.
-   Pre-paywall: everyone gets interview (parity with rest of beta).
-   Post-paywall: only paid/owner keep `interviewMode:true`. Mutates
-   req.body in place so the downstream buildMessages() branch falls
-   through to the normal SYSTEM_PROMPT. */
-async function coerceInterviewIfNotPaid(req: Request): Promise<void> {
-  const body = req.body as { interviewMode?: unknown } | null | undefined;
-  if (!body || (body.interviewMode !== true && body.interviewMode !== "true")) return;
-  if (!isPaywallActive()) return;
-
-  const header = req.headers.authorization || "";
-  const m = /^Bearer\s+(.+)$/i.exec(header);
-  if (m) {
-    const ctx = await resolveUserFromJwt(m[1]!.trim());
-    if (ctx) {
-      if (isOwnerUserId(ctx.userId)) return;
-      if (ctx.plan === "founding" || ctx.plan === "pro" || ctx.plan === "pro_studio") return;
-    }
-  }
-  /* Anon, free, or unresolvable token → strip the flag. */
-  body.interviewMode = false;
+/* interview-gate-removed-1 (2026-05-20, v4 sign-off): The previous
+   tier-split that stripped `interviewMode` from free/anon users post-
+   paywall has been REMOVED. Product intent (confirmed): Interview Mode
+   is available to everyone — free users included. Free users hit their
+   normal daily /generate cap on Run With AI calls; paid users (founding/
+   pro/pro_studio) and owner remain uncapped via the existing
+   isOwnerUserId / cap-exempt branches. No feature-level block here. */
+async function coerceInterviewIfNotPaid(_req: Request): Promise<void> {
+  return;
 }
 
 /* caps-enforcement-1 (2026-05-13): Expert Command Center paywall gate.
