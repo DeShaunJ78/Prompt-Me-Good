@@ -72,31 +72,100 @@
     'Minimalist':      'Calm and spare. Few words. White space in the prose itself. One idea per paragraph. Trust the reader — under-explain rather than over-explain.',
   };
 
-  /* Per-platform conventions used by the Multi-Platform tools. */
+  /* Per-platform conventions used by the Multi-Platform tools.
+     growth-mode-fixes-1: extended from the original 5 socials to cover
+     every platform any SOCIAL_PACK references, plus all the new
+     CREATOR_PLATFORMS entries. If a pack's `includes` lists a platform
+     that has no PLATFORM_RULES entry, its conventions block silently
+     disappears — a real defect we've seen for Pinterest/Facebook/etc. */
   var PLATFORM_RULES = {
-    'TikTok':    { length: 'Under 90 words. 3-second visual hook in the first line.',           hashtags: '3 niche hashtags max.', notes: 'Spoken-word rhythm — read it out loud and cut what trips you up.' },
-    'Instagram': { length: 'Caption under 220 characters for Reels, under 600 for feed posts.', hashtags: '5 mid-tail hashtags.',  notes: 'First line is the scroll-stopper; everything after it earns the read.' },
-    'YouTube':   { length: 'Title under 60 characters. Description: hook in first 2 lines, then structured body.', hashtags: '3 hashtags at the end.', notes: 'Hook must work without thumbnail context.' },
-    'LinkedIn':  { length: 'Hook line + 4-6 short paragraphs. Under 1,300 characters.',          hashtags: '3 specific hashtags. No emojis unless tone is Casual or Funny.', notes: 'No "Excited to share…" openers. Lead with insight, story, or contrarian take.' },
-    'X':         { length: 'Single post under 280 characters, or numbered thread (1/, 2/, …) of 5-9 posts.', hashtags: '0-2 hashtags max.', notes: 'Every post must stand on its own. No "and finally…" wind-down.' },
+    'TikTok':          { length: 'Under 90 words. 3-second visual hook in the first line.',                                                           hashtags: '3 niche hashtags max.',                                          notes: 'Spoken-word rhythm — read it out loud and cut what trips you up.' },
+    'Instagram':       { length: 'Caption under 220 characters for Reels, under 600 for feed posts.',                                                 hashtags: '5 mid-tail hashtags.',                                           notes: 'First line is the scroll-stopper; everything after it earns the read.' },
+    'YouTube':         { length: 'Title under 60 characters. Description: hook in first 2 lines, then structured body.',                              hashtags: '3 hashtags at the end.',                                         notes: 'Hook must work without thumbnail context.' },
+    'YouTube Shorts':  { length: 'Title under 40 characters. Script under 60 seconds spoken (~150 words). Hook in the first 1.5 seconds.',            hashtags: '3 hashtags, #shorts last.',                                      notes: 'No long setup — pay off the hook by second 5 or viewers swipe.' },
+    'LinkedIn':        { length: 'Hook line + 4-6 short paragraphs. Under 1,300 characters.',                                                         hashtags: '3 specific hashtags. No emojis unless tone is Casual or Funny.', notes: 'No "Excited to share…" openers. Lead with insight, story, or contrarian take.' },
+    'X':               { length: 'Single post under 280 characters, or numbered thread (1/, 2/, …) of 5-9 posts.',                                     hashtags: '0-2 hashtags max.',                                              notes: 'Every post must stand on its own. No "and finally…" wind-down.' },
+    'Pinterest':       { length: 'Pin title under 100 characters. Pin description 100-500 characters, keyword-loaded.',                              hashtags: 'No hashtags — Pinterest is search, not social.',                  notes: 'Treat every pin as SEO. Lead with the keyword phrase, not the brand.' },
+    'Facebook':        { length: 'Under 80 words for organic reach. Longer (200-400) for storytelling posts in groups.',                              hashtags: 'No hashtags in body. 1-2 at end max.',                            notes: 'Conversational, ask a question, invite comments. Avoid links in post body — drop the link in the first comment.' },
+    'Threads':         { length: 'Single post under 500 characters, or short thread (3-6 posts).',                                                    hashtags: '0-1 hashtag max.',                                                notes: 'Casual, reactive, conversational — closer to group-chat energy than X.' },
+    'Podcast':         { length: 'Episode title under 70 characters. Show-notes 150-400 words with timestamps. Cold-open script 30-60 seconds spoken.', hashtags: 'N/A.',                                                            notes: 'Spoken-word cadence with pause cues. Lead with the most-quotable sentence.' },
+    'Newsletter':      { length: 'Subject line 30-50 characters. Pre-header 40-90 characters. Body 200-800 words.',                                    hashtags: 'N/A.',                                                            notes: 'Subject line earns the open; first line earns the read. One CTA per email.' },
+    'Blog':            { length: 'Title 50-65 characters (SEO sweet spot). Body 800-1500 words minimum.',                                              hashtags: 'N/A.',                                                            notes: 'Keyword in title + first 100 words. H2 every 200-300 words. One clear CTA.' },
+    'Twitch':          { length: 'Stream title under 65 characters. "Going live" post under 200 characters.',                                          hashtags: 'N/A on Twitch. 1-2 on cross-posts.',                              notes: 'Lead with what is happening RIGHT NOW. Urgency over polish.' },
+    'Google Business': { length: 'Post under 1,500 characters. Lead with the offer or update in the first 100.',                                       hashtags: 'N/A.',                                                            notes: 'Local-keyword friendly. Always include a CTA button (Call / Book / Visit).' },
+    'Email':           { length: 'Subject 30-50 characters. Pre-header 40-90 characters. Body 80-300 words for an announcement.',                      hashtags: 'N/A.',                                                            notes: 'One job per email. One CTA. Plain-text feel beats fancy templates.' },
   };
 
+  /* growth-mode-fixes-1: rewrote so each pack's `label` matches its
+     `includes` exactly. The old labels promised platforms (Pinterest,
+     Facebook, Google Business, Email, YouTube Shorts) that were never
+     in `includes`, so the AI was told to write for 4 platforms but
+     received per-platform rules for only 2 — silent under-delivery. */
   var SOCIAL_PACKS = {
-    launch:    { label: 'Launch Pack',            platforms: 'TikTok, Instagram, LinkedIn, X, and an email announcement',                            includes: ['TikTok', 'Instagram', 'LinkedIn', 'X'] },
-    ecommerce: { label: 'Ecommerce Product Pack', platforms: 'a TikTok product demo, an Instagram Reel, a Pinterest pin, and a Facebook post',       includes: ['TikTok', 'Instagram'] },
-    founder:   { label: 'Founder Content Pack',   platforms: 'a LinkedIn post, an X thread, and a YouTube Short script',                              includes: ['LinkedIn', 'X', 'YouTube'] },
-    local:     { label: 'Local Business Pack',    platforms: 'a Facebook post, an Instagram caption, and a Google Business update',                   includes: ['Instagram'] },
-    viral:     { label: 'Viral Short-Form Pack',  platforms: 'TikTok, Instagram Reels, and YouTube Shorts',                                           includes: ['TikTok', 'Instagram', 'YouTube'] },
+    launch:     { label: 'Launch Pack (TikTok + Instagram + LinkedIn + X + Email)',          platforms: 'a TikTok video script, an Instagram Reel caption, a LinkedIn post, an X thread, and an email announcement', includes: ['TikTok', 'Instagram', 'LinkedIn', 'X', 'Email'] },
+    ecommerce:  { label: 'Ecommerce Product Pack (TikTok + Instagram + Pinterest + Facebook)', platforms: 'a TikTok product demo script, an Instagram Reel caption, a Pinterest pin, and a Facebook post',          includes: ['TikTok', 'Instagram', 'Pinterest', 'Facebook'] },
+    founder:    { label: 'Founder Content Pack (LinkedIn + X + YouTube Shorts)',              platforms: 'a LinkedIn post, an X thread, and a YouTube Shorts script',                                                  includes: ['LinkedIn', 'X', 'YouTube Shorts'] },
+    local:      { label: 'Local Business Pack (Facebook + Instagram + Google Business)',      platforms: 'a Facebook post, an Instagram caption, and a Google Business update',                                        includes: ['Facebook', 'Instagram', 'Google Business'] },
+    viral:      { label: 'Viral Short-Form Pack (TikTok + Reels + YouTube Shorts)',           platforms: 'a TikTok script, an Instagram Reels caption, and a YouTube Shorts script',                                    includes: ['TikTok', 'Instagram', 'YouTube Shorts'] },
+    podcast:    { label: 'Podcast Promo Pack (Podcast + Newsletter + LinkedIn + X)',          platforms: 'a podcast episode promo, a newsletter teaser, a LinkedIn post, and an X thread',                              includes: ['Podcast', 'Newsletter', 'LinkedIn', 'X'] },
+    newsletter: { label: 'Newsletter Drop Pack (Newsletter + X + LinkedIn + Threads)',        platforms: 'a newsletter, an X teaser thread, a LinkedIn post, and a Threads post',                                       includes: ['Newsletter', 'X', 'LinkedIn', 'Threads'] },
   };
 
-  var SEQUENCE_TYPES   = ['Welcome', 'Launch', 'Abandoned Cart', 'Re-engagement'];
+  var SEQUENCE_TYPES = [
+    'Welcome', 'Onboarding', 'Nurture', 'Launch',
+    'Post-purchase', 'Abandoned Cart', 'Upsell',
+    'Win-back', 'Re-engagement', 'Referral Request',
+  ];
+  var SEQUENCE_LENGTHS = ['3 emails', '5 emails', '7 emails', '10 emails'];
   var POSTING_FREQUENCIES = ['Daily', '3x/week', 'Weekly'];
+  var CALENDAR_RANGES = ['1 week', '2 weeks', '4 weeks'];
   var CREATOR_PLATFORMS = [
     'TikTok', 'Instagram', 'YouTube', 'LinkedIn', 'X',
     'Podcast', 'Newsletter', 'Blog', 'Pinterest', 'Twitch', 'Threads', 'Facebook',
     'Other'
   ];
-  var PILLAR_FORMATS   = ['Blog Post', 'YouTube Video', 'Podcast Episode'];
+  var PILLAR_FORMATS = [
+    'Blog Post', 'YouTube Long-form Video', 'Podcast Episode',
+    'Webinar', 'Email Course (5 lessons)', 'LinkedIn Essay',
+    'Twitter Mega-Thread (15+ posts)', 'Long Instagram Carousel',
+  ];
+  var HOOK_FORMATS = [
+    'Best fit (AI picks)', 'Short video (TikTok / Reels / Shorts)',
+    'Long video (YouTube)', 'Newsletter subject line',
+    'Cold DM / outreach', 'LinkedIn opener', 'Podcast cold open',
+    'Blog post intro',
+  ];
+  var SERIES_COUNTS = ['3-part', '5-part', '7-part', '10-part'];
+  var FUNNEL_TYPES = [
+    'Direct-response (ad → page → buy)', 'Webinar funnel',
+    'Sales call funnel (B2B)', 'Free trial funnel (SaaS)',
+    'Lead magnet → email nurture → offer',
+  ];
+  var OBJECTION_FRAMEWORKS = [
+    'Best fit (AI picks)', 'Feel-Felt-Found',
+    'AIKIDO (Acknowledge + side-with)',
+    'Acknowledge-Pivot-Prove',
+  ];
+  var PRICING_STRATEGIES = [
+    'Validate my current price',
+    'Find a raise opportunity',
+    'Build a good/better/best tier ladder',
+    'Counter an undercutting competitor',
+    'Stress-test "what if I doubled it?"',
+  ];
+  var TITLE_FORMATS = [
+    'YouTube long-form (title + thumbnail)',
+    'YouTube Shorts cover',
+    'TikTok title cover',
+    'Podcast episode title + cover art',
+    'Blog post hero (SEO title)',
+    'Newsletter subject line',
+  ];
+  var COLLAB_ASKS = [
+    'Paid sponsorship', 'Product trade / gifted',
+    'Content swap / cross-promo', 'Podcast guest spot',
+    'Affiliate partnership', 'Co-launch / co-creation',
+  ];
 
   /* ---------------------------------------------------------------- *
    * Helpers
