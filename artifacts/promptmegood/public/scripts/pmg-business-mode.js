@@ -210,16 +210,33 @@
     } catch (_) {}
   }
   function loadCreator() {
+    /* vibe-tone-consolidation-1: Creator Vibe was always the same field
+       as Brand Tone — same options array, same downstream prompt slot,
+       same toneRole() helper. The split only made sense when Business
+       and Creator were separate lanes (that switcher was removed in
+       growth-mode-goal-groups-1). We now backfill `vibe` from
+       brand.tone whenever the creator record is missing one so any
+       remaining `creator.vibe` reads keep working without a saved
+       value, and so the UI can drop the duplicate field. */
     var empty = { niche: '', platform: '', platformOther: '', vibe: '' };
     try {
       var raw = localStorage.getItem(LS_KEY_CREATOR);
-      if (!raw) return empty;
+      var brandTone = '';
+      try {
+        var b = JSON.parse(localStorage.getItem(LS_KEY_BRAND) || '{}');
+        if (typeof b.tone === 'string' && BRAND_TONES.indexOf(b.tone) >= 0) brandTone = b.tone;
+      } catch (_) {}
+      if (!raw) {
+        empty.vibe = brandTone;
+        return empty;
+      }
       var v = JSON.parse(raw);
+      var savedVibe = typeof v.vibe === 'string' && BRAND_TONES.indexOf(v.vibe) >= 0 ? v.vibe : '';
       return {
         niche:         typeof v.niche === 'string' ? v.niche : '',
         platform:      typeof v.platform === 'string' && CREATOR_PLATFORMS.indexOf(v.platform) >= 0 ? v.platform : '',
         platformOther: typeof v.platformOther === 'string' ? v.platformOther : '',
-        vibe:          typeof v.vibe === 'string' && BRAND_TONES.indexOf(v.vibe) >= 0 ? v.vibe : '',
+        vibe:          savedVibe || brandTone,
       };
     } catch (_) { return empty; }
   }
@@ -266,10 +283,10 @@
       if (platName === 'Other' && creator.platformOther) platName = creator.platformOther;
       lines.push('Primary platform: ' + platName + '.');
     }
-    if (creator.vibe) {
-      var play = TONE_PLAYBOOK[creator.vibe] || '';
-      lines.push('Creator vibe: ' + creator.vibe + (play ? ' — ' + play : '.'));
-    }
+    /* vibe-tone-consolidation-1: Creator Vibe field removed from the
+       UI; voice is now sourced from Brand Tone only (see loadCreator).
+       brandBlock already emits the Tone line for any tool whose lane
+       is 'creator' or 'shared', so we don't repeat it here. */
     return lines.length ? 'Creator Profile:\n' + lines.join('\n') : '';
   }
   function appendPersona(prompt, lane) {
@@ -316,7 +333,7 @@
       open: true,
       fields: [
         { id: 'pmg-bm-audience', label: 'Target Audience', type: 'text', placeholder: 'e.g. busy moms, B2B SaaS founders', maxlength: 200 },
-        { id: 'pmg-bm-tone',     label: 'Brand Tone',      type: 'select', options: BRAND_TONES, placeholder: 'Select a tone…' },
+        { id: 'pmg-bm-tone',     label: 'Voice',           type: 'select', options: BRAND_TONES, placeholder: 'Select your voice…' },
       ],
     },
     {
@@ -433,13 +450,16 @@
       persisted: true,
       title: '1. Creator Profile',
       titleSuffix: '(saved automatically)',
-      desc: 'Set your niche, platform, and vibe once. Every prompt you build will be tuned to your content style automatically.',
+      desc: 'Set your niche and primary platform once. Every prompt you build will be tuned to your content style automatically. (Voice is set in the Brand Voice card above.)',
       open: true,
       fields: [
         { id: 'pmg-bm-cr-niche',          label: 'Niche',                  type: 'text',   placeholder: 'e.g. home espresso, indie game dev' },
         { id: 'pmg-bm-cr-platform',       label: 'Platform Focus',         type: 'select', options: CREATOR_PLATFORMS, placeholder: 'Select a platform…' },
         { id: 'pmg-bm-cr-platform-other', label: 'Which platform?',        type: 'text',   placeholder: 'e.g. Telegram, Geneva, Lemon8' },
-        { id: 'pmg-bm-cr-vibe',           label: 'Creator Vibe',           type: 'select', options: BRAND_TONES,       placeholder: 'Select a vibe…' },
+        /* vibe-tone-consolidation-1: Creator Vibe field removed. It
+           was a duplicate of Brand Tone — same options, same downstream
+           prompt slot. Voice is now set once in the Brand Voice card
+           above and applied to every tool. */
       ],
     },
     {
@@ -814,17 +834,20 @@
   }
 
   function wireCreatorProfile(drawer) {
+    /* vibe-tone-consolidation-1: vibeIn was removed from the Creator
+       Profile card. We keep the variable as null so persistAll can
+       pass an empty string into saveCreator without crashing; vibe is
+       now read from Brand Tone via the loadCreator() backfill. */
     var nicheIn      = $('pmg-bm-cr-niche');
     var platIn       = $('pmg-bm-cr-platform');
     var platOtherIn  = $('pmg-bm-cr-platform-other');
-    var vibeIn       = $('pmg-bm-cr-vibe');
+    var vibeIn       = null;
     var savedEl      = $('pmg-bm-saved-creator-profile');
-    if (!nicheIn || !platIn || !vibeIn) return;
+    if (!nicheIn || !platIn) return;
 
     var creator = loadCreator();
     nicheIn.value = creator.niche;
     platIn.value  = creator.platform;
-    vibeIn.value  = creator.vibe;
     if (platOtherIn) platOtherIn.value = creator.platformOther;
 
     /* Show/hide the "Which platform?" free-text input — only relevant
@@ -844,10 +867,14 @@
       savedTimer = setTimeout(function () { savedEl.classList.remove('is-shown'); }, 1400);
     }
     function persistAll() {
+      /* vibe-tone-consolidation-1: vibe arg is always '' from this
+         card now. loadCreator() backfills it from Brand Tone on read,
+         so passing empty here is harmless and preserves the storage
+         shape for any older clients reading the same key. */
       saveCreator(
         nicheIn.value.trim(),
         platIn.value,
-        vibeIn.value,
+        '',
         platOtherIn ? platOtherIn.value.trim() : ''
       );
       flash();
@@ -863,7 +890,6 @@
       persistAll();
     });
     if (platOtherIn) platOtherIn.addEventListener('input', persistDebounced);
-    vibeIn.addEventListener('change', persistAll);
   }
 
   /* ---------------------------------------------------------------- *
