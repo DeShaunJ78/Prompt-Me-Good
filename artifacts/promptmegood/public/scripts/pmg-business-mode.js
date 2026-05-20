@@ -91,7 +91,11 @@
 
   var SEQUENCE_TYPES   = ['Welcome', 'Launch', 'Abandoned Cart', 'Re-engagement'];
   var POSTING_FREQUENCIES = ['Daily', '3x/week', 'Weekly'];
-  var CREATOR_PLATFORMS = ['TikTok', 'Instagram', 'YouTube', 'LinkedIn', 'X'];
+  var CREATOR_PLATFORMS = [
+    'TikTok', 'Instagram', 'YouTube', 'LinkedIn', 'X',
+    'Podcast', 'Newsletter', 'Blog', 'Pinterest', 'Twitch', 'Threads', 'Facebook',
+    'Other'
+  ];
   var PILLAR_FORMATS   = ['Blog Post', 'YouTube Video', 'Podcast Episode'];
 
   /* ---------------------------------------------------------------- *
@@ -137,21 +141,26 @@
     } catch (_) {}
   }
   function loadCreator() {
+    var empty = { niche: '', platform: '', platformOther: '', vibe: '' };
     try {
       var raw = localStorage.getItem(LS_KEY_CREATOR);
-      if (!raw) return { niche: '', platform: '', vibe: '' };
+      if (!raw) return empty;
       var v = JSON.parse(raw);
       return {
-        niche:    typeof v.niche === 'string' ? v.niche : '',
-        platform: typeof v.platform === 'string' && CREATOR_PLATFORMS.indexOf(v.platform) >= 0 ? v.platform : '',
-        vibe:     typeof v.vibe === 'string' && BRAND_TONES.indexOf(v.vibe) >= 0 ? v.vibe : '',
+        niche:         typeof v.niche === 'string' ? v.niche : '',
+        platform:      typeof v.platform === 'string' && CREATOR_PLATFORMS.indexOf(v.platform) >= 0 ? v.platform : '',
+        platformOther: typeof v.platformOther === 'string' ? v.platformOther : '',
+        vibe:          typeof v.vibe === 'string' && BRAND_TONES.indexOf(v.vibe) >= 0 ? v.vibe : '',
       };
-    } catch (_) { return { niche: '', platform: '', vibe: '' }; }
+    } catch (_) { return empty; }
   }
-  function saveCreator(niche, platform, vibe) {
+  function saveCreator(niche, platform, vibe, platformOther) {
     try {
       localStorage.setItem(LS_KEY_CREATOR, JSON.stringify({
-        niche: niche || '', platform: platform || '', vibe: vibe || '',
+        niche: niche || '',
+        platform: platform || '',
+        platformOther: platformOther || '',
+        vibe: vibe || '',
       }));
     } catch (_) {}
   }
@@ -180,7 +189,14 @@
   function creatorBlock(creator) {
     var lines = [];
     if (creator.niche)    lines.push('Niche: ' + creator.niche + '.');
-    if (creator.platform) lines.push('Primary platform: ' + creator.platform + '.');
+    if (creator.platform) {
+      /* When the user picked "Other" and filled in the free-text input,
+         use that custom name so the AI sees the actual platform (e.g.
+         "Telegram", "Geneva") rather than the literal word "Other". */
+      var platName = creator.platform;
+      if (platName === 'Other' && creator.platformOther) platName = creator.platformOther;
+      lines.push('Primary platform: ' + platName + '.');
+    }
     if (creator.vibe) {
       var play = TONE_PLAYBOOK[creator.vibe] || '';
       lines.push('Creator vibe: ' + creator.vibe + (play ? ' — ' + play : '.'));
@@ -351,9 +367,10 @@
       desc: 'Set your niche, platform, and vibe once. Every prompt you build will be tuned to your content style automatically.',
       open: true,
       fields: [
-        { id: 'pmg-bm-cr-niche',    label: 'Niche',          type: 'text',   placeholder: 'e.g. home espresso, indie game dev' },
-        { id: 'pmg-bm-cr-platform', label: 'Platform Focus', type: 'select', options: CREATOR_PLATFORMS, placeholder: 'Select a platform…' },
-        { id: 'pmg-bm-cr-vibe',     label: 'Creator Vibe',   type: 'select', options: BRAND_TONES,       placeholder: 'Select a vibe…' },
+        { id: 'pmg-bm-cr-niche',          label: 'Niche',                  type: 'text',   placeholder: 'e.g. home espresso, indie game dev' },
+        { id: 'pmg-bm-cr-platform',       label: 'Platform Focus',         type: 'select', options: CREATOR_PLATFORMS, placeholder: 'Select a platform…' },
+        { id: 'pmg-bm-cr-platform-other', label: 'Which platform?',        type: 'text',   placeholder: 'e.g. Telegram, Geneva, Lemon8' },
+        { id: 'pmg-bm-cr-vibe',           label: 'Creator Vibe',           type: 'select', options: BRAND_TONES,       placeholder: 'Select a vibe…' },
       ],
     },
     {
@@ -728,16 +745,27 @@
   }
 
   function wireCreatorProfile(drawer) {
-    var nicheIn = $('pmg-bm-cr-niche');
-    var platIn  = $('pmg-bm-cr-platform');
-    var vibeIn  = $('pmg-bm-cr-vibe');
-    var savedEl = $('pmg-bm-saved-creator-profile');
+    var nicheIn      = $('pmg-bm-cr-niche');
+    var platIn       = $('pmg-bm-cr-platform');
+    var platOtherIn  = $('pmg-bm-cr-platform-other');
+    var vibeIn       = $('pmg-bm-cr-vibe');
+    var savedEl      = $('pmg-bm-saved-creator-profile');
     if (!nicheIn || !platIn || !vibeIn) return;
 
     var creator = loadCreator();
     nicheIn.value = creator.niche;
     platIn.value  = creator.platform;
     vibeIn.value  = creator.vibe;
+    if (platOtherIn) platOtherIn.value = creator.platformOther;
+
+    /* Show/hide the "Which platform?" free-text input — only relevant
+       when the user picked "Other" from the platform dropdown. */
+    var platOtherWrap = platOtherIn ? platOtherIn.closest('.pmg-bm-field') : null;
+    function syncOtherVisibility() {
+      if (!platOtherWrap) return;
+      platOtherWrap.style.display = (platIn.value === 'Other') ? '' : 'none';
+    }
+    syncOtherVisibility();
 
     var savedTimer = null;
     function flash() {
@@ -746,23 +774,27 @@
       if (savedTimer) clearTimeout(savedTimer);
       savedTimer = setTimeout(function () { savedEl.classList.remove('is-shown'); }, 1400);
     }
+    function persistAll() {
+      saveCreator(
+        nicheIn.value.trim(),
+        platIn.value,
+        vibeIn.value,
+        platOtherIn ? platOtherIn.value.trim() : ''
+      );
+      flash();
+    }
     var saveDebounce = null;
     function persistDebounced() {
       if (saveDebounce) clearTimeout(saveDebounce);
-      saveDebounce = setTimeout(function () {
-        saveCreator(nicheIn.value.trim(), platIn.value, vibeIn.value);
-        flash();
-      }, 250);
+      saveDebounce = setTimeout(persistAll, 250);
     }
     nicheIn.addEventListener('input', persistDebounced);
     platIn.addEventListener('change', function () {
-      saveCreator(nicheIn.value.trim(), platIn.value, vibeIn.value);
-      flash();
+      syncOtherVisibility();
+      persistAll();
     });
-    vibeIn.addEventListener('change', function () {
-      saveCreator(nicheIn.value.trim(), platIn.value, vibeIn.value);
-      flash();
-    });
+    if (platOtherIn) platOtherIn.addEventListener('input', persistDebounced);
+    vibeIn.addEventListener('change', persistAll);
   }
 
   /* ---------------------------------------------------------------- *
