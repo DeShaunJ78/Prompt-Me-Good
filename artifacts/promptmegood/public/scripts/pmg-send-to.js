@@ -135,7 +135,7 @@
       prefill: function (text) {
         return 'https://grok.com/?q=' + encodeURIComponent(text);
       },
-      tip: 'Grok pulls live X/Twitter context — great for news takes, weaker for citations.'
+      tip: 'Grok pulls live X/Twitter context — great for news takes, weaker for citations. Your prompt is on the clipboard too — paste it (Ctrl/Cmd+V) if it does not auto-fill.'
     },
     copilot: {
       label: 'Copilot',
@@ -143,7 +143,7 @@
       prefill: function (text) {
         return 'https://copilot.microsoft.com/?q=' + encodeURIComponent(text);
       },
-      tip: 'Microsoft Copilot is tuned for Office workflows and web-grounded answers with citations.'
+      tip: 'Microsoft Copilot is tuned for Office workflows and web-grounded answers with citations. Your prompt is on the clipboard too — paste it (Ctrl/Cmd+V) if it does not auto-fill.'
     },
     meta: {
       label: 'Meta AI',
@@ -151,7 +151,7 @@
       prefill: function (text) {
         return 'https://www.meta.ai/?prompt=' + encodeURIComponent(text);
       },
-      tip: 'Meta AI (Llama) is fast and free — best for casual chat and image generation.'
+      tip: 'Meta AI (Llama) is fast and free — best for casual chat and image generation. Your prompt is on the clipboard too — paste it (Ctrl/Cmd+V) if it does not auto-fill.'
     }
   };
   var DEST_ORDER = ['chatgpt', 'claude', 'gemini', 'perplexity', 'grok', 'copilot', 'meta'];
