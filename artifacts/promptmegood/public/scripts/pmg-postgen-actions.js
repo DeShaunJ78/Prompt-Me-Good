@@ -223,32 +223,27 @@
     if (!runAiBtn) return false;
     if (document.getElementById('pmg-run-panel')) return true;
 
-    /* Wrap the existing Run-With-AI button + our Send-To split into a single
-       flex row so they sit side-by-side instead of stacking. */
-    var panel = document.createElement('span');
+    /* Send-To split button: full-width row, mounted as a SIBLING immediately
+       AFTER #run-with-ai-btn so the visual order is
+       [▶ Run With AI Here] (row 1) → [↗ Send to X | ▾] (row 2). */
+    var panel = document.createElement('div');
     panel.className = 'pmg-run-panel pmg-post-gen';
     panel.id = 'pmg-run-panel';
     panel.setAttribute('aria-label', 'Send this prompt to another AI tool');
     panel.innerHTML =
-      '<span class="pmg-send-split">' +
-        '<button type="button" class="btn btn-secondary pmg-send-main" id="pmg-send-main">' +
+      '<div class="pmg-send-split">' +
+        '<button type="button" class="pmg-send-main" id="pmg-send-main">' +
           '<span class="pmg-send-arrow" aria-hidden="true">↗</span>' +
           '<span class="pmg-send-prefix">Send to</span>' +
           '<span id="pmg-send-main-label">ChatGPT</span>' +
         '</button>' +
-        '<button type="button" class="btn btn-secondary pmg-send-caret" id="pmg-send-caret"' +
+        '<button type="button" class="pmg-send-caret" id="pmg-send-caret"' +
           ' aria-haspopup="menu" aria-expanded="false" aria-label="Choose AI tool">▾</button>' +
         '<div class="pmg-send-menu" id="pmg-send-menu" role="menu"></div>' +
-      '</span>';
+      '</div>';
 
-    /* Wrap [Run-With-AI] + [Send-To] in a flex row so they're side-by-side. */
-    var row = document.createElement('div');
-    row.className = 'pmg-run-row';
-    row.id = 'pmg-run-row';
     if (runAiBtn.parentNode) {
-      runAiBtn.parentNode.insertBefore(row, runAiBtn);
-      row.appendChild(runAiBtn);
-      row.appendChild(panel);
+      runAiBtn.parentNode.insertBefore(panel, runAiBtn.nextSibling);
     }
 
     /* Send-To split button + menu. */
