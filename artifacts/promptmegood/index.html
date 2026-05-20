@@ -5,7 +5,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script>
-    /* Apex -> www redirect (keeps the canonical host stable). */
+    /* Apex -> www redirect is now a true server-side 301 in server.mjs
+       (lcp-apex-301). This JS block kept as a defensive fallback ONLY
+       for the unlikely case the static server is bypassed — the 301
+       fires before HTML downloads in normal traffic. */
     (function () {
       try {
         if (location.hostname === 'promptmegood.com') {
@@ -254,14 +257,14 @@
       word-break: break-word;
     }
     .hero-output-caption {
-      margin: 10px 0 0;
+      margin: 16px 0 0;
       font-size: 12.5px;
       color: var(--muted);
       font-style: italic;
     }
     .hero-post-cta {
       display: inline-flex;
-      margin-top: 14px;
+      margin-top: 12px;
       width: 100%;
       justify-content: center;
     }

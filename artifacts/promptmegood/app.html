@@ -1521,7 +1521,7 @@
     @media (max-width: 920px) { .use-case-grid { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 640px) { .use-case-grid { grid-template-columns: 1fr; } }
 
-    .first-time-helper { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-2) var(--space-4); max-width: 720px; margin: 0 auto var(--space-4); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: color-mix(in srgb, var(--color-primary) 6%, transparent); border: 1px dashed color-mix(in srgb, var(--color-primary) 30%, transparent); text-align: center; }
+    .first-time-helper { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-2) var(--space-4); max-width: 720px; margin: 0 auto var(--space-4); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); background: color-mix(in srgb, var(--color-primary) 6%, transparent); border: 1px solid color-mix(in srgb, var(--color-primary) 15%, transparent); border-left: 3px solid var(--color-primary); text-align: center; }
     .first-time-helper-text { display: flex; flex-direction: column; gap: 2px; }
     .first-time-helper-title { font-weight: 700; color: var(--color-text); font-size: var(--text-sm); }
     .first-time-helper-sub { color: var(--color-text-muted); font-size: var(--text-xs); }
@@ -3873,6 +3873,21 @@
     body:not(.pmg-has-result) #what-next { display: none !important; }
     body.pmg-has-result #runSection { display: block !important; }
 
+    /* runbtn-pulse-1 (2026-05-20): first-reveal attention cue on #runBtn
+       when #runSection appears for the first time after a prompt is
+       built. One-shot via .pmg-runbtn-pulse-once added by JS when
+       body.pmg-has-result is observed, removed on animationend so it
+       never repeats. No permanent visual change. */
+    @keyframes pmgRunBtnPulse {
+      0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 55%, transparent); }
+      60%  { box-shadow: 0 0 0 12px color-mix(in srgb, var(--color-primary) 0%, transparent); }
+      100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 0%, transparent); }
+    }
+    #runBtn.pmg-runbtn-pulse-once { animation: pmgRunBtnPulse 1200ms ease-out 1; }
+    @media (prefers-reduced-motion: reduce) {
+      #runBtn.pmg-runbtn-pulse-once { animation: none; }
+    }
+
     /* ===== T05 hide the outer auto-optimize-row (moved inside More Control) ===== */
     #auto-optimize-row { display: none !important; }
 
@@ -4591,7 +4606,7 @@
       </div>
 
       <div class="pmg-qw-error" id="pmg-qw-error" hidden role="alert">
-        <p class="pmg-qw-error-text" id="pmg-qw-error-text">Something went wrong drafting your blueprint.</p>
+        <p class="pmg-qw-error-text" id="pmg-qw-error-text">We hit a snag drafting your blueprint. Give it another shot or skip straight to the workstation.</p>
         <div class="pmg-qw-error-actions">
           <button type="button" id="pmg-qw-retry">Try Again</button>
           <button type="button" id="pmg-qw-skip" class="pmg-qw-link">Skip to Workstation</button>
@@ -6964,7 +6979,7 @@ Context:
           if (states && typeof states.renderEmpty === 'function') {
             states.renderEmpty(historyListEl, { variant: 'no-items' });
           } else {
-            historyListEl.innerHTML = '<div class="history-empty">No Saved Prompts Yet. Generate One To Start Your History.</div>';
+            historyListEl.innerHTML = '<div class="history-empty"><div class="history-empty-icon" aria-hidden="true">🗄️</div><div class="history-empty-text">Your saved prompts will appear here.</div><button type="button" class="history-empty-link" data-pmg-history-build>Build one now &rarr;</button></div>';
           }
           clearHistoryBtn.style.display = 'none';
           historySearchEl.parentElement.style.display = 'none';
@@ -11767,7 +11782,7 @@ Context:
                 text: noMatchText,
                 extraClass: 'is-compact'
               })
-            : '<div class="global-empty">No matches found — try different keywords.</div>';
+            : '<div class="global-empty"><div class="global-empty-icon" aria-hidden="true">🔍</div><div class="global-empty-text">No matches found.</div><div class="global-empty-sub">Try a different keyword.</div></div>';
           globalSearchResults.innerHTML = globalEmptyMarkup;
           globalSearchResults.classList.add('is-open');
           return;
@@ -14027,5 +14042,61 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <script src="/scripts/pmg-mailto-fallback.js?v=mlf-1" defer></script>
 <script src="/scripts/pmg-contact-modal.js?v=cm-1" defer></script>
+<script>
+  /* punchlist-1+2 (2026-05-20):
+     (1) #runBtn first-reveal pulse — fires exactly once the first time
+         body.pmg-has-result is set (i.e. immediately after the user's
+         first build). MutationObserver on body[class] keeps it
+         decoupled from the many existing places that toggle the flag.
+     (2) "Build one now →" link in the empty Vault state focuses #goal
+         and closes the vault drawer so the user lands on the textarea. */
+  (function () {
+    var pulseFired = false;
+    function firePulse() {
+      if (pulseFired) return;
+      var btn = document.getElementById('runBtn');
+      if (!btn) return;
+      pulseFired = true;
+      btn.classList.add('pmg-runbtn-pulse-once');
+      btn.addEventListener('animationend', function () {
+        btn.classList.remove('pmg-runbtn-pulse-once');
+      }, { once: true });
+    }
+    function checkAndFire() {
+      if (document.body.classList.contains('pmg-has-result')) firePulse();
+    }
+    checkAndFire();
+    try {
+      var mo = new MutationObserver(checkAndFire);
+      mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    } catch (_) {}
+
+    document.addEventListener('click', function (e) {
+      var t = e.target;
+      if (!t || !t.closest) return;
+      if (!t.closest('[data-pmg-history-build]')) return;
+      e.preventDefault();
+      /* Close the Vault drawer if it's open so #goal is actually
+         visible. The vault uses several historical close patterns —
+         try the documented ones in order. */
+      try {
+        var drawer = document.getElementById('vault-drawer') || document.querySelector('.pmg-vault-drawer.is-open');
+        if (drawer) {
+          var closer = drawer.querySelector('[data-pmg-vault-close], .pmg-vault-close, [aria-label="Close vault"]');
+          if (closer) closer.click();
+          else drawer.classList.remove('is-open');
+        }
+      } catch (_) {}
+      setTimeout(function () {
+        var g = document.getElementById('goal');
+        if (!g) return;
+        try {
+          g.focus();
+          g.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } catch (_) {}
+      }, 120);
+    });
+  })();
+</script>
 </body>
 </html>

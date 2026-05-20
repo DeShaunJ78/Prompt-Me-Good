@@ -190,6 +190,23 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  /* lcp-apex-301 (2026-05-20): true server-side 301 from apex to www.
+     Previously this was a JS `location.replace` in index.html which fired
+     AFTER the HTML loaded — PageSpeed measured the resulting second
+     navigation as a redirect tax, contributing to the 3.5s LCP. A 301
+     here lets the browser (and CDN/PageSpeed) follow the redirect
+     before downloading any HTML. Idempotent: only redirects the apex
+     host, leaves www and dev preview hosts alone. */
+  const hostHeader = (req.headers.host || "").toLowerCase();
+  if (hostHeader === "promptmegood.com") {
+    res.writeHead(301, {
+      Location: "https://www.promptmegood.com" + req.url,
+      "Cache-Control": "public, max-age=31536000",
+    });
+    res.end();
+    return;
+  }
+
   let urlPath;
   try {
     urlPath = decodeURIComponent(new URL(req.url, "http://x").pathname);
