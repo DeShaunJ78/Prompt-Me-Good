@@ -223,6 +223,27 @@
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(95, 230, 176, 0.18);
     }
+    /* hero-mini-gen links row (post-typeOut reveal). Small ghost-style
+       text links, not buttons — keeps the hero clean and lets the real
+       Build CTA stay primary. */
+    .hero-output-links {
+      display: flex; flex-wrap: wrap; gap: 18px;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+    .hero-output-link {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      padding: 2px 0;
+      transition: color 120ms ease, border-color 120ms ease;
+    }
+    .hero-output-link:hover, .hero-output-link:focus-visible {
+      color: var(--accent-strong);
+      border-bottom-color: var(--accent-strong);
+      text-decoration: none;
+      outline: none;
+    }
     .hero-output-container {
       margin-top: 24px;
       animation: pmgHeroFadeIn 0.3s ease;
@@ -477,6 +498,10 @@
         <div id="hero-output-container" class="hero-output-container" hidden>
           <pre id="hero-output" class="demo-prompt"></pre>
           <p class="hero-output-caption">Sample output &mdash; open the app for a real one tailored to your input.</p>
+          <div id="hero-output-links" class="hero-output-links" hidden>
+            <a id="hero-link-try" class="hero-output-link" href="/app">&#9654; Try it on your own &rarr;</a>
+            <a id="hero-link-use" class="hero-output-link" href="/app">Use this prompt &rarr;</a>
+          </div>
           <a class="btn btn-ghost hero-post-cta" href="/app">Open the full app for unlimited real prompts &rarr;</a>
         </div>
       </div>
@@ -740,6 +765,8 @@
         var buildBtn     = document.getElementById('hero-build-btn');
         var container    = document.getElementById('hero-output-container');
         var output       = document.getElementById('hero-output');
+        var linksRow     = document.getElementById('hero-output-links');
+        var linkUse      = document.getElementById('hero-link-use');
         if (!input || !buildBtn || !container || !output) return;
 
         var DEFAULT_LABEL = buildBtn.textContent;
@@ -820,6 +847,16 @@
               output.setAttribute('aria-live', 'polite');
               buildBtn.disabled = false;
               buildBtn.textContent = 'Try another →';
+              /* hero-links-1: reveal two ghost links once typing finishes.
+                 "Use this prompt" deep-links into /app with the user's
+                 raw input as ?q= so the real workstation pre-fills it. */
+              if (linksRow && linkUse) {
+                try {
+                  var q = (input.value || '').trim();
+                  linkUse.setAttribute('href', q ? '/app?q=' + encodeURIComponent(q) : '/app');
+                } catch (_) { linkUse.setAttribute('href', '/app'); }
+                linksRow.hidden = false;
+              }
               /* Match the file's 540px mobile breakpoint, not 767. */
               if (window.innerWidth <= 540) {
                 try { container.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
@@ -867,6 +904,7 @@
             cancelTyping();
             container.hidden = true;
             output.innerHTML = '';
+            if (linksRow) linksRow.hidden = true;
           }
         });
       }
