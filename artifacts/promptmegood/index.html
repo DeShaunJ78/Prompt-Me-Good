@@ -177,6 +177,71 @@
     }
     .meta strong { color: var(--text); font-weight: 600; }
 
+    /* spec-6 hero mini-generator (homepage-hero-mini-gen-1).
+       Interactive pre-baked demo lives in the hero so visitors see
+       structured-prompt output without leaving above-the-fold. CSS vars
+       reuse the existing hero tokens (--border, --text, --accent) so
+       there's no second source of truth for color. */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+    .hero-generator { max-width: 720px; margin-top: 8px; }
+    .hero-textarea {
+      width: 100%;
+      box-sizing: border-box;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 16px;
+      line-height: 1.45;
+      resize: vertical;
+      margin-bottom: 16px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .hero-textarea::placeholder { color: var(--muted); opacity: 0.85; }
+    .hero-textarea:focus-visible {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(95, 230, 176, 0.18);
+    }
+    .hero-output-container {
+      margin-top: 24px;
+      animation: pmgHeroFadeIn 0.3s ease;
+    }
+    .hero-output-container .demo-prompt {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .hero-output-caption {
+      margin: 10px 0 0;
+      font-size: 12.5px;
+      color: var(--muted);
+      font-style: italic;
+    }
+    .hero-post-cta {
+      display: inline-flex;
+      margin-top: 14px;
+      width: 100%;
+      justify-content: center;
+    }
+    @keyframes pmgHeroFadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    /* Mobile: textarea taller, buttons stack — aligns to file's 540px
+       breakpoint (judgment call 5). `rows` is an HTML attr not a CSS
+       property, so we control mobile size via min-height instead. */
+    @media (max-width: 540px) {
+      .hero-textarea { min-height: 80px; font-size: 16px; }
+      .hero-generator .cta-row { flex-direction: column; align-items: stretch; }
+      .hero-generator .btn { width: 100%; justify-content: center; }
+    }
+
     /* css-split-1 (2026-05-19): below-the-fold styles moved to
        /styles/index-deferred.css and async-loaded via <link media="print"
        onload="this.media='all'"> just below this <style> block. This
@@ -373,17 +438,32 @@
           } catch (_) {}
         })();
       </script>
-      <h1 class="headline"><em>Finally,</em> AI That Understands You</h1>
-      <p class="lede">If your results feel off, it&rsquo;s not you &mdash; it&rsquo;s the prompt. <strong>Fix it instantly</strong> and get the answer you were actually looking for.</p>
-      <div class="cta-row">
-        <a class="btn btn-primary" href="/app">Open the App →</a>
-        <a class="btn btn-ghost" href="#how-it-works" data-testid="cta-see-how-it-works">See How It Works</a>
-        <a class="btn btn-ghost" href="/guide.html">Read The Guide</a>
-      </div>
-      <div class="meta">
+      <h1 class="headline"><em>Finally,</em> AI That Does What You Actually Asked</h1>
+      <p class="lede">PromptMeGood turns what you type into a structured prompt that tells AI exactly what you need &mdash; role, audience, tone, format, and goal &mdash; so it stops guessing and <strong>starts delivering</strong>.</p>
+
+      <div class="meta" style="margin-bottom: 24px; margin-top: 0;">
         <span><strong>Free</strong> tier with daily limits</span>
         <span><strong>No signup</strong> required</span>
-        <span><strong>Local-first</strong> — your vault never leaves the browser</span>
+        <span><strong>Local-first</strong> &mdash; your vault never leaves the browser</span>
+      </div>
+
+      <div class="hero-generator">
+        <textarea id="hero-input"
+                  class="hero-textarea"
+                  rows="2"
+                  aria-label="Type what you want AI to do for you"
+                  placeholder="Type what you want AI to do for you..."></textarea>
+
+        <div class="cta-row">
+          <button type="button" id="hero-build-btn" class="btn btn-primary">Build My Prompt &rarr;</button>
+          <a class="btn btn-ghost" href="/app">Open the App</a>
+        </div>
+
+        <div id="hero-output-container" class="hero-output-container" hidden>
+          <pre id="hero-output" class="demo-prompt"></pre>
+          <p class="hero-output-caption">Sample output &mdash; open the app for a real one tailored to your input.</p>
+          <a class="btn btn-ghost hero-post-cta" href="/app">Open the full app for unlimited real prompts &rarr;</a>
+        </div>
       </div>
     </div>
   </main>
@@ -398,7 +478,7 @@
             <span class="demo-tag">Before</span>
             <span class="demo-meta">What you typed</span>
           </div>
-          <p class="demo-text">Write me a sales email.</p>
+          <p class="demo-text">Help me fix the bug in my function.</p>
         </article>
         <div class="demo-arrow" aria-hidden="true">→</div>
         <article class="demo-card demo-after">
@@ -406,13 +486,13 @@
             <span class="demo-tag demo-tag-after">After</span>
             <span class="demo-meta">What PromptMeGood builds</span>
           </div>
-<pre class="demo-prompt"><b>Role:</b> Senior B2B sales copywriter
-<b>Audience:</b> Operations leads at 50–200 person SaaS companies
-<b>Goal:</b> Book a 15-minute discovery call
-<b>Tone:</b> Direct, friendly, zero fluff
-<b>Constraints:</b> 90–120 words, plain text, one CTA
-<b>Format:</b> Subject line + 3 short paragraphs + CTA
-<b>CTA:</b> "Grab a 15-min slot →" — link to a Calendly URL</pre>
+<pre class="demo-prompt"><b>Role:</b> Senior Staff Software Engineer
+<b>Audience:</b> Mid-level developer needing a robust, production-ready solution
+<b>Goal:</b> Diagnose the bug, explain the root cause, and ship a clean fix
+<b>Tone:</b> Technical, precise, helpful — no hand-waving
+<b>Constraints:</b> Include error handling, edge cases, and inline comments
+<b>Format:</b> Brief explanation + corrected code block + usage example
+<b>Context:</b> Prioritize readability and performance over cleverness</pre>
         </article>
       </div>
       <p class="demo-foot">Then run it in-app with GPT-4.1, copy it to ChatGPT or Claude, or save it to your local Vault. <a href="/app">Try it on your own sentence →</a></p>
@@ -623,6 +703,164 @@
           }
         } catch (_) {}
       }, true);
+    })();
+  </script>
+  <script>
+    /* spec-6 hero mini-generator (homepage-hero-mini-gen-1).
+       Pre-baked keyword-matched demos. Pattern-matches user input to one
+       of four canned structured prompts and types it out for visual
+       punch. Zero network cost, zero OpenAI abuse vector. The full
+       /app does the real work — this is a marketing surface only.
+
+       Bug-2 fix: don't rely on DOMContentLoaded firing AFTER this
+       script registers; this block lives at end-of-body so the DOM is
+       already parsed. Guard with readyState anyway to match the
+       file's existing pattern (see L281 Clarity injector).
+       Bug-3 fix: re-enable the Build button + reset its label on any
+       textarea `input` so visitors can explore multiple demos without
+       refreshing. */
+    (function () {
+      function init() {
+        var input        = document.getElementById('hero-input');
+        var buildBtn     = document.getElementById('hero-build-btn');
+        var container    = document.getElementById('hero-output-container');
+        var output       = document.getElementById('hero-output');
+        if (!input || !buildBtn || !container || !output) return;
+
+        var DEFAULT_LABEL = buildBtn.textContent;
+
+        var demos = [
+          {
+            kw: ['email', 'sales', 'pitch', 'outreach', 'cold'],
+            text:
+              '<b>Role:</b> Senior B2B sales copywriter\n' +
+              '<b>Audience:</b> Operations leads at 50–200 person SaaS companies\n' +
+              '<b>Goal:</b> Book a 15-minute discovery call\n' +
+              '<b>Tone:</b> Direct, friendly, zero fluff\n' +
+              '<b>Constraints:</b> 90–120 words, plain text, one CTA\n' +
+              '<b>Format:</b> Subject line + 3 short paragraphs + CTA\n' +
+              '<b>CTA:</b> "Grab a 15-min slot →" — link to a Calendly URL'
+          },
+          {
+            kw: ['blog', 'post', 'article', 'seo', 'newsletter'],
+            text:
+              '<b>Role:</b> Expert content marketer and SEO specialist\n' +
+              '<b>Audience:</b> Marketing managers looking for actionable growth tactics\n' +
+              '<b>Goal:</b> Drive newsletter signups through high-value educational content\n' +
+              '<b>Tone:</b> Authoritative, tactical, engaging\n' +
+              '<b>Constraints:</b> ~1200 words, short paragraphs, highly skimmable\n' +
+              '<b>Format:</b> Hook intro + 3 actionable steps with examples + conclusion\n' +
+              '<b>CTA:</b> "Subscribe for weekly tactics"'
+          },
+          {
+            kw: ['code', 'script', 'function', 'bug', 'fix', 'debug', 'refactor'],
+            text:
+              '<b>Role:</b> Senior Staff Software Engineer\n' +
+              '<b>Audience:</b> Mid-level developer needing a robust, production-ready solution\n' +
+              '<b>Goal:</b> Provide a clean, optimized, and well-documented code solution\n' +
+              '<b>Tone:</b> Technical, precise, helpful\n' +
+              '<b>Constraints:</b> Include error handling, edge cases, and inline comments\n' +
+              '<b>Format:</b> Brief explanation + code block + usage example\n' +
+              '<b>Context:</b> Prioritize readability and performance'
+          }
+        ];
+        var fallback =
+          '<b>Role:</b> Expert consultant in the relevant field\n' +
+          '<b>Audience:</b> Professionals seeking clear, actionable advice\n' +
+          '<b>Goal:</b> Provide a comprehensive and structured response\n' +
+          '<b>Tone:</b> Professional, clear, concise\n' +
+          '<b>Constraints:</b> No fluff, highly structured, easy to read\n' +
+          '<b>Format:</b> Executive summary + bulleted key points + next steps';
+
+        function pickDemo(text) {
+          var lower = (text || '').toLowerCase();
+          for (var i = 0; i < demos.length; i++) {
+            var d = demos[i];
+            for (var j = 0; j < d.kw.length; j++) {
+              if (lower.indexOf(d.kw[j]) !== -1) return d.text;
+            }
+          }
+          return fallback;
+        }
+
+        var typingTimer = null;
+        var startTimer  = null;
+        function cancelTyping() {
+          if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
+          if (startTimer)  { clearTimeout(startTimer);  startTimer  = null; }
+        }
+        function typeOut(html, speed) {
+          cancelTyping();
+          speed = speed || 14;
+          output.innerHTML = '';
+          /* a11y: announce only the finished output once, not every char
+             — avoids a screen-reader "announcement storm" during typing. */
+          output.removeAttribute('aria-live');
+          var i = 0;
+          var buf = '';
+          var inTag = false;
+          (function step() {
+            if (i >= html.length) {
+              typingTimer = null;
+              output.setAttribute('aria-live', 'polite');
+              buildBtn.disabled = false;
+              buildBtn.textContent = 'Try another →';
+              /* Match the file's 540px mobile breakpoint, not 767. */
+              if (window.innerWidth <= 540) {
+                try { container.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
+              }
+              return;
+            }
+            var ch = html.charAt(i);
+            buf += ch;
+            if (ch === '<') inTag = true;
+            if (ch === '>') inTag = false;
+            output.innerHTML = buf;
+            i++;
+            typingTimer = setTimeout(step, inTag ? 0 : speed);
+          })();
+        }
+
+        buildBtn.addEventListener('click', function () {
+          var val = (input.value || '').trim();
+          if (!val) { input.focus(); return; }
+          /* Cancel any in-flight build before starting a new one — avoids
+             concurrent typeOut loops racing against the same element. */
+          cancelTyping();
+          container.hidden = false;
+          buildBtn.disabled = true;
+          buildBtn.textContent = 'Building…';
+          startTimer = setTimeout(function () { typeOut(pickDemo(val)); }, 380);
+          /* Reuse the existing cta_hero_click funnel slot so we can see
+             how many visitors actually engage with the mini-gen. */
+          try {
+            if (typeof window.__pmgTrack === 'function') {
+              window.__pmgTrack('hero_minigen_build', { length: val.length });
+            }
+          } catch (_) {}
+        });
+
+        /* Bug-3 fix: any keystroke after a finished build re-enables the
+           button, resets its label, and clears the stale sample output —
+           keeps the hero honest while the user is composing a new ask. */
+        input.addEventListener('input', function () {
+          if (buildBtn.disabled) buildBtn.disabled = false;
+          if (buildBtn.textContent !== DEFAULT_LABEL && buildBtn.textContent !== 'Building…') {
+            buildBtn.textContent = DEFAULT_LABEL;
+          }
+          if (!container.hidden) {
+            cancelTyping();
+            container.hidden = true;
+            output.innerHTML = '';
+          }
+        });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init, { once: true });
+      } else {
+        init();
+      }
     })();
   </script>
 </body>
