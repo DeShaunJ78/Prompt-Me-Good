@@ -21,12 +21,15 @@
   if (window.__pmgPostgenActionsLoaded) return;
   window.__pmgPostgenActionsLoaded = true;
 
-  var DESTS = ['chatgpt', 'claude', 'gemini', 'perplexity'];
+  var DESTS = ['chatgpt', 'claude', 'gemini', 'perplexity', 'grok', 'copilot', 'meta'];
   var DEST_LABELS = {
     chatgpt: 'ChatGPT',
     claude: 'Claude',
     gemini: 'Gemini',
-    perplexity: 'Perplexity'
+    perplexity: 'Perplexity',
+    grok: 'Grok',
+    copilot: 'Copilot',
+    meta: 'Meta AI'
   };
 
   /* -------------------------------------------------------------------

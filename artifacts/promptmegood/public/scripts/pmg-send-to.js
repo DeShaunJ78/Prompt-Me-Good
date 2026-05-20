@@ -128,9 +128,33 @@
         return 'https://www.perplexity.ai/search?q=' + encodeURIComponent(text);
       },
       tip: 'Perplexity searches the live web and cites sources — review the citations before trusting answers.'
+    },
+    grok: {
+      label: 'Grok',
+      url: 'https://grok.com/',
+      prefill: function (text) {
+        return 'https://grok.com/?q=' + encodeURIComponent(text);
+      },
+      tip: 'Grok pulls live X/Twitter context — great for news takes, weaker for citations.'
+    },
+    copilot: {
+      label: 'Copilot',
+      url: 'https://copilot.microsoft.com/',
+      prefill: function (text) {
+        return 'https://copilot.microsoft.com/?q=' + encodeURIComponent(text);
+      },
+      tip: 'Microsoft Copilot is tuned for Office workflows and web-grounded answers with citations.'
+    },
+    meta: {
+      label: 'Meta AI',
+      url: 'https://www.meta.ai/',
+      prefill: function (text) {
+        return 'https://www.meta.ai/?prompt=' + encodeURIComponent(text);
+      },
+      tip: 'Meta AI (Llama) is fast and free — best for casual chat and image generation.'
     }
   };
-  var DEST_ORDER = ['chatgpt', 'claude', 'gemini', 'perplexity'];
+  var DEST_ORDER = ['chatgpt', 'claude', 'gemini', 'perplexity', 'grok', 'copilot', 'meta'];
 
   /* Image destination catalog. Most image hosts don't accept a
      URL-prefilled prompt (Midjourney's web alpha, Leonardo.ai,
