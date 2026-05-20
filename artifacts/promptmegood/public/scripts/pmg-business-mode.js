@@ -45,6 +45,12 @@
     'Educational',
     'Founder-Led',
     'Funny',
+    'Street-wise',
+    'Bold',
+    'Warm',
+    'Authoritative',
+    'Inspirational',
+    'Minimalist',
   ];
 
   /* Tone playbook: each tone gets a one-line behavior definition the AI
@@ -58,6 +64,12 @@
     'Educational':     'Clear, structured, beginner-friendly. Define jargon. One idea per sentence. Examples beat abstractions.',
     'Founder-Led':     'First person ("I", "we"). Specific moments and numbers. Skip the brand voice — sound like a real human typing fast.',
     'Funny':           'Punchlines over polish. Concrete absurdity, not vague jokes. One real insight underneath the humor or it falls flat.',
+    'Street-wise':     'Culture-forward and slang-aware. Drop-style cadence. Reference sneaker / streetwear / hip-hop culture only when it fits. Never try too hard — corny kills it.',
+    'Bold':            'Swagger with no apologies. Strong opinions, short lines. Take a stance the reader either agrees with or argues with — never shrug-worthy.',
+    'Warm':            'Empathy first. Acknowledge how the reader feels before you tell them anything. Soft language, no jargon, no pressure. Sound like the friend who actually listens.',
+    'Authoritative':   'Lead with credibility. Cite specifics, numbers, mechanisms. No hedging ("maybe", "kind of"). The reader should feel they are hearing from the expert in the room.',
+    'Inspirational':   'Aspirational and forward-looking. Paint the future the reader could have, then point at the next step. Earned uplift only — no hollow motivation-poster lines.',
+    'Minimalist':      'Calm and spare. Few words. White space in the prose itself. One idea per paragraph. Trust the reader — under-explain rather than over-explain.',
   };
 
   /* Per-platform conventions used by the Multi-Platform tools. */
