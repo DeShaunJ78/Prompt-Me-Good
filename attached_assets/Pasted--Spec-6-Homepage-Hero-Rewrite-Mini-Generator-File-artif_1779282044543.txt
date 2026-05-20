@@ -1,0 +1,215 @@
+# Spec 6 — Homepage Hero Rewrite & Mini-Generator
+
+**File:** `artifacts/promptmegood/index.html`  
+**Status:** Ready for implementation  
+
+## Pre-Execution Critical Review
+
+Before writing a single line of code, Replit MUST read this entire spec and ask itself the following questions. For every concern found, **stop and present it to the user before proceeding.**
+
+1. **Does any spec instruction contradict the core user promise?**
+2. **Does any instruction create a conflict between two parts of the same spec?**
+3. **Does any instruction depend on a behavior that is ambiguous or undefined?**
+4. **Does any instruction touch a file or function that is marked as "do not touch"?**
+5. **Is there any instruction that would be invisible to the user but wrong?**
+
+**Present all concerns as a numbered list before writing any code. Do not self-resolve. The user decides.**
+
+---
+
+## What Changes
+
+The hero section of `index.html` is being rewritten to clarify the product's function and add an interactive mini-generator.
+
+1. **Headline & Lede Copy:** Updated to focus on function rather than feeling.
+2. **Meta Row Repositioning:** The trust signals ("Free tier", "No signup", "Local-first") move *above* the CTA buttons.
+3. **Mini-Generator:** A textarea and a "Build My Prompt →" button are added to the hero.
+4. **Pre-Baked Demo:** When the user clicks "Build My Prompt →", a pre-baked structured prompt types out below the buttons.
+5. **Post-Output CTA:** A new CTA appears below the typed output, driving users to the full app.
+
+---
+
+## 1. HTML Structure Updates
+
+Replace the current `<main id="main" class="hero">` content with the following structure:
+
+```html
+<main id="main" class="hero">
+  <div class="wrap">
+    <!-- Post-checkout banner stays unchanged here -->
+    
+    <h1 class="headline"><em>Finally,</em> AI That Does What You Actually Asked</h1>
+    <p class="lede">PromptMeGood turns what you type into a structured prompt that tells AI exactly what you need &mdash; role, audience, tone, format, and goal &mdash; so it stops guessing and starts delivering.</p>
+    
+    <div class="meta" style="margin-bottom: 24px; margin-top: 0;">
+      <span><strong>Free</strong> tier with daily limits</span>
+      <span><strong>No signup</strong> required</span>
+      <span><strong>Local-first</strong> &mdash; your vault never leaves the browser</span>
+    </div>
+
+    <div class="hero-generator">
+      <textarea id="hero-input" class="hero-textarea" placeholder="Type what you want AI to do for you..." rows="2"></textarea>
+      
+      <div class="cta-row">
+        <button id="hero-build-btn" class="btn btn-primary">Build My Prompt &rarr;</button>
+        <a class="btn btn-ghost" href="/app">Open the App</a>
+      </div>
+      
+      <div id="hero-output-container" class="hero-output-container" hidden>
+        <pre id="hero-output" class="demo-prompt"></pre>
+        <a class="btn btn-ghost hero-post-cta" href="/app">Open the full app for unlimited real prompts &rarr;</a>
+      </div>
+    </div>
+  </div>
+</main>
+```
+
+*Note: The "See How It Works" and "Read The Guide" buttons are removed from the hero CTA row. The meta row is moved up.*
+
+---
+
+## 2. CSS Additions
+
+Add the following CSS to the `<style>` block in `index.html` (around line 220, after the existing `.meta` styles):
+
+```css
+.hero-generator {
+  max-width: 720px;
+  margin-top: 8px;
+}
+.hero-textarea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 16px;
+  resize: vertical;
+  margin-bottom: 16px;
+  transition: border-color 0.2s ease;
+}
+.hero-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.hero-output-container {
+  margin-top: 24px;
+  animation: fadeIn 0.3s ease;
+}
+.hero-post-cta {
+  margin-top: 16px;
+  width: 100%;
+  justify-content: center;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 767px) {
+  .hero-textarea { rows: 3; }
+  .hero-generator .cta-row { flex-direction: column; align-items: stretch; }
+  .hero-generator .btn { width: 100%; justify-content: center; }
+}
+```
+
+---
+
+## 3. JavaScript Implementation (Pre-Baked Demo)
+
+Add the following script block at the end of `index.html`, just before `</body>`:
+
+```html
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const input = document.getElementById('hero-input');
+  const buildBtn = document.getElementById('hero-build-btn');
+  const outputContainer = document.getElementById('hero-output-container');
+  const output = document.getElementById('hero-output');
+  
+  // Pre-baked demo responses
+  const demos = [
+    {
+      keywords: ['email', 'sales', 'pitch', 'outreach'],
+      text: '<b>Role:</b> Senior B2B sales copywriter\n<b>Audience:</b> Operations leads at 50–200 person SaaS companies\n<b>Goal:</b> Book a 15-minute discovery call\n<b>Tone:</b> Direct, friendly, zero fluff\n<b>Constraints:</b> 90–120 words, plain text, one CTA\n<b>Format:</b> Subject line + 3 short paragraphs + CTA\n<b>CTA:</b> "Grab a 15-min slot →" — link to a Calendly URL'
+    },
+    {
+      keywords: ['blog', 'post', 'article', 'seo'],
+      text: '<b>Role:</b> Expert content marketer and SEO specialist\n<b>Audience:</b> Marketing managers looking for actionable growth tactics\n<b>Goal:</b> Drive newsletter signups through high-value educational content\n<b>Tone:</b> Authoritative, tactical, engaging\n<b>Constraints:</b> ~1200 words, short paragraphs, highly skimmable\n<b>Format:</b> Hook intro + 3 actionable steps with examples + conclusion\n<b>CTA:</b> "Subscribe for weekly tactics"'
+    },
+    {
+      keywords: ['code', 'script', 'function', 'bug', 'fix'],
+      text: '<b>Role:</b> Senior Staff Software Engineer\n<b>Audience:</b> Mid-level developer needing a robust, production-ready solution\n<b>Goal:</b> Provide a clean, optimized, and well-documented code solution\n<b>Tone:</b> Technical, precise, helpful\n<b>Constraints:</b> Include error handling, edge cases, and inline comments\n<b>Format:</b> Brief explanation + code block + usage example\n<b>Context:</b> Prioritize readability and performance'
+    },
+    {
+      keywords: ['default'], // Fallback
+      text: '<b>Role:</b> Expert consultant in the relevant field\n<b>Audience:</b> Professionals seeking clear, actionable advice\n<b>Goal:</b> Provide a comprehensive and structured response\n<b>Tone:</b> Professional, clear, concise\n<b>Constraints:</b> No fluff, highly structured, easy to read\n<b>Format:</b> Executive summary + bulleted key points + next steps'
+    }
+  ];
+
+  function getDemoResponse(text) {
+    const lowerText = text.toLowerCase();
+    for (const demo of demos) {
+      if (demo.keywords.includes('default')) return demo.text;
+      if (demo.keywords.some(kw => lowerText.includes(kw))) return demo.text;
+    }
+    return demos[demos.length - 1].text;
+  }
+
+  function typeOut(element, html, speed = 15) {
+    element.innerHTML = '';
+    let i = 0;
+    let isTag = false;
+    let currentHTML = '';
+    
+    function type() {
+      if (i < html.length) {
+        currentHTML += html.charAt(i);
+        element.innerHTML = currentHTML;
+        
+        if (html.charAt(i) === '<') isTag = true;
+        if (html.charAt(i) === '>') isTag = false;
+        
+        i++;
+        setTimeout(type, isTag ? 0 : speed);
+      } else {
+        // Ensure mobile scroll into view once typing finishes
+        if (window.innerWidth <= 767) {
+           outputContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+    }
+    type();
+  }
+
+  buildBtn.addEventListener('click', function() {
+    const val = input.value.trim();
+    if (!val) {
+      input.focus();
+      return;
+    }
+    
+    const responseHTML = getDemoResponse(val);
+    outputContainer.hidden = false;
+    buildBtn.disabled = true;
+    buildBtn.textContent = 'Building...';
+    
+    // Simulate slight network delay for realism
+    setTimeout(() => {
+      buildBtn.textContent = 'Prompt Built ✓';
+      typeOut(output, responseHTML);
+    }, 400);
+  });
+});
+</script>
+```
+
+---
+
+## Global Rules
+
+1. **Nothing else is removed.** The rest of `index.html` (demo section, features, footer) stays exactly as is.
+2. **Do not touch** any other files.
+3. **Run a double pass:** After implementing, verify the layout on both desktop and mobile widths.
+4. **Report back** when complete.
