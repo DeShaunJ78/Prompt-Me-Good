@@ -1,5 +1,5 @@
 /* =============================================================
- * pmg-quick-chips.js  (chips-1)
+ * pmg-quick-chips.js  (chips-2)
  *
  * Photo + Video Quick Enhancement chips. Mounts a single muted
  * row of small additive chips below the goal textarea on each
@@ -8,7 +8,10 @@
  *
  * Scope intentionally narrow — only chips that don't duplicate
  * existing pill / preset / select surfaces:
- *   Photo: Leica Look
+ *   Photo: Smart camera-look chip (Leica default, swaps to
+ *          Hasselblad / Fujifilm / Contax T2 based on keywords
+ *          detected in the goal textarea — one chip slot, label
+ *          + phrase swap in place, never re-rendered).
  *   Video: Viral · Luxury
  *
  * The Live Preview observers in pmg-visual-studio.js will pick
@@ -35,19 +38,69 @@
 
   var STYLE_ID = 'pmg-quick-chips-styles';
 
+  /* ------------------------------------------------------------- *
+   * CHIP_CONFIGS — the 4 camera-look definitions for the photo
+   * smart chip. detectChip(text) returns one of these based on
+   * keyword matches in the goal textarea. Priority order if
+   * multiple groups match: hasselblad > fujifilm > contax-t2 >
+   * leica-look (default). One DOM slot, label + phrase swap in
+   * place — never re-rendered.
+   * ------------------------------------------------------------- */
+  var CHIP_CONFIGS = {
+    'leica-look': {
+      id: 'leica-look',
+      label: 'Leica Look',
+      phrase: 'shot on a Leica with its rich color signature, gentle film highlights, and distinctive Leica color rendition',
+      keywords: ['portrait', 'face', 'person', 'people', 'headshot', 'model']
+    },
+    'hasselblad': {
+      id: 'hasselblad',
+      label: 'Hasselblad',
+      phrase: 'shot on a Hasselblad with clinical medium-format sharpness, neutral color science, and maximum tonal detail',
+      keywords: ['product', 'architecture', 'building', 'interior', 'car', 'vehicle', 'commercial', 'studio']
+    },
+    'fujifilm': {
+      id: 'fujifilm',
+      label: 'Fujifilm Film Simulation',
+      phrase: 'shot on a Fujifilm with warm film simulation tones, Classic Chrome color rendering, and organic grain',
+      keywords: ['travel', 'food', 'lifestyle', 'street', 'nature', 'landscape', 'cafe', 'market']
+    },
+    'contax-t2': {
+      id: 'contax-t2',
+      label: 'Contax T2',
+      phrase: 'shot on a Contax T2 with its intimate candid warmth, slight softness, and celebrity-editorial grain',
+      keywords: ['candid', 'editorial', 'flash', 'party', 'night', 'documentary', 'snapshot']
+    }
+  };
+
+  /* Priority: first match wins. hasselblad > fujifilm > contax-t2.
+     leica-look is the fallback when nothing else matches (its
+     keywords are still recognized but only short-circuit when no
+     higher-priority group hit first). */
+  var DETECT_ORDER = ['hasselblad', 'fujifilm', 'contax-t2', 'leica-look'];
+
+  function detectChip(text) {
+    var t = String(text == null ? '' : text).toLowerCase();
+    if (!t) return CHIP_CONFIGS['leica-look'];
+    for (var i = 0; i < DETECT_ORDER.length; i++) {
+      var key = DETECT_ORDER[i];
+      var cfg = CHIP_CONFIGS[key];
+      var kws = cfg.keywords || [];
+      for (var j = 0; j < kws.length; j++) {
+        if (t.indexOf(kws[j]) !== -1) return cfg;
+      }
+    }
+    return CHIP_CONFIGS['leica-look'];
+  }
+
   var PANELS = {
     image: {
       goalId: 'pmg-vs-image-goal',
       anchorId: 'pmg-coach-image',
       rootId: 'pmg-quick-chips-image',
       title: 'Quick add',
-      chips: [
-        {
-          id: 'leica-look',
-          label: 'Leica Look',
-          phrase: 'shot on a Leica with its rich color signature, gentle film highlights, and distinctive Leica color rendition'
-        }
-      ]
+      smart: true,
+      chips: [ CHIP_CONFIGS['leica-look'] ]
     },
     video: {
       goalId: 'pmg-vs-video-goal',
@@ -131,7 +184,12 @@
       var btn = ev.target && ev.target.closest && ev.target.closest('.pmg-quick-chip');
       if (!btn) return;
       var id = btn.getAttribute('data-chip-id');
-      var chip = cfg.chips.find(function (c) { return c.id === id; });
+      /* Smart panels look up the live phrase from CHIP_CONFIGS so
+         the chip works even after detectChip() has swapped it in
+         place. Static panels keep the original cfg.chips lookup. */
+      var chip = (cfg.smart && CHIP_CONFIGS[id])
+        ? CHIP_CONFIGS[id]
+        : cfg.chips.find(function (c) { return c.id === id; });
       if (!chip) return;
       var ta = document.getElementById(cfg.goalId);
       appendPhrase(ta, chip.phrase);
@@ -141,9 +199,39 @@
     return el;
   }
 
+  /* For smart panels, attach a single input listener to the goal
+     textarea that swaps the visible chip's id / label / title in
+     place on every keystroke. No re-render. Idempotent — the
+     listener is attached only once per textarea via a sentinel. */
+  function wireSmartDetection(cfg, rowEl) {
+    if (!cfg.smart) return;
+    var ta = document.getElementById(cfg.goalId);
+    if (!ta) return;
+    var btn = rowEl.querySelector('.pmg-quick-chip');
+    if (!btn) return;
+    function applyDetection() {
+      var chip = detectChip(ta.value);
+      if (btn.getAttribute('data-chip-id') === chip.id) return;
+      btn.setAttribute('data-chip-id', chip.id);
+      btn.setAttribute('title', 'Append: ' + chip.phrase);
+      btn.textContent = chip.label;
+    }
+    if (!ta.__pmgSmartChipWired) {
+      ta.addEventListener('input', applyDetection);
+      ta.__pmgSmartChipWired = true;
+    }
+    /* Run once on mount so an existing pre-filled value is reflected. */
+    applyDetection();
+  }
+
   function ensureMounted(panel) {
     var cfg = PANELS[panel];
-    if (document.getElementById(cfg.rootId)) return;
+    if (document.getElementById(cfg.rootId)) {
+      /* Already mounted — but still make sure smart detection is
+         wired (textarea may have been re-created by chassis). */
+      wireSmartDetection(cfg, document.getElementById(cfg.rootId));
+      return;
+    }
     /* Mount AFTER the coach card if present, otherwise after the live
        preview, otherwise after the goal textarea. */
     var anchor = document.getElementById(cfg.anchorId)
@@ -152,6 +240,7 @@
     if (!anchor || !anchor.parentNode) return;
     var row = buildRow(panel, cfg);
     anchor.parentNode.insertBefore(row, anchor.nextSibling);
+    wireSmartDetection(cfg, row);
   }
 
   function observeReady() {

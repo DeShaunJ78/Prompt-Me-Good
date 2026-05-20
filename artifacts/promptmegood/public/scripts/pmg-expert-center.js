@@ -517,8 +517,8 @@
     ]);
     var TABS = [
       { id: 'diagnose',   label: 'Find Weak Spots',   help: 'Find what is weak, missing, or unclear before you run your prompt.' },
-      { id: 'insider',    label: 'Make It Yours',     help: "Give the AI the context it couldn't possibly know about your business, voice, and rules." },
       { id: 'engineer',   label: 'Correct the AI',    help: 'Control how your prompt is structured before AI answers.' },
+      { id: 'insider',    label: 'Make It Yours',     help: "Give the AI the context it couldn't possibly know about your business, voice, and rules." },
       { id: 'tune',       label: 'Set the Guardrails', help: 'Dial in voice and depth with toggles and sliders.' },
       { id: 'variations', label: 'Variations',        help: 'Create different versions of your prompt for different styles or goals.' },
       { id: 'save',       label: 'Vault',             help: 'Save prompt setups you may want to reuse later.' }
