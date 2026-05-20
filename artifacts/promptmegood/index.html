@@ -784,9 +784,32 @@
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
         }
+        /* Architect-flagged: category match was substring-based, so "video
+           script" was classified as code (since "script" is in both lists
+           and code was checked first). Switched to word-boundary regex
+           match AND ordered video/social ahead of code so explicit
+           platform keywords win over generic ones. Ambiguous terms like
+           "script" (which can mean code OR video) only appear in the
+           video list — code keeps the truly code-specific terms. */
         var categories = [
           {
-            kw: ['code', 'script', 'function', 'bug', 'fix', 'debug', 'refactor', 'api', 'typescript', 'javascript', 'python', 'react', 'sql'],
+            kw: ['video', 'youtube', 'sora', 'reel', 'reels', 'short', 'shorts', 'voiceover', 'storyboard', 'tiktok', 'script'],
+            role: 'Short-form video scriptwriter and director',
+            audience: 'Viewers deciding in 3 seconds whether to keep watching',
+            tone: 'Punchy, visual, momentum-driven',
+            constraints: 'Hook in the first 3 seconds; one idea per shot; under 60 seconds total',
+            format: 'Hook → 3–5 beats with on-screen text + visual notes → CTA'
+          },
+          {
+            kw: ['tweet', 'twitter', 'linkedin', 'instagram', 'social', 'caption', 'thread', 'post'],
+            role: 'Social media strategist who writes scroll-stopping posts',
+            audience: 'Followers in your niche scrolling on mobile in 2 seconds or less',
+            tone: 'Conversational, confident, native to the platform',
+            constraints: 'Lead with a hook in the first line; no hashtag spam; keep it skimmable',
+            format: 'Hook + body (1–3 short lines) + CTA or question'
+          },
+          {
+            kw: ['code', 'function', 'bug', 'debug', 'refactor', 'api', 'typescript', 'javascript', 'python', 'react', 'sql', 'regex', 'algorithm'],
             role: 'Senior Staff Software Engineer',
             audience: 'Mid-level developer needing a robust, production-ready solution',
             tone: 'Technical, precise, helpful',
@@ -802,23 +825,7 @@
             format: 'Subject line + 3 short paragraphs + CTA'
           },
           {
-            kw: ['tweet', 'twitter', 'x post', 'linkedin', 'instagram', 'tiktok', 'social', 'caption', 'thread'],
-            role: 'Social media strategist who writes scroll-stopping posts',
-            audience: 'Followers in your niche scrolling on mobile in 2 seconds or less',
-            tone: 'Conversational, confident, native to the platform',
-            constraints: 'Lead with a hook in the first line; no hashtag spam; keep it skimmable',
-            format: 'Hook + body (1–3 short lines) + CTA or question'
-          },
-          {
-            kw: ['video', 'youtube', 'script', 'sora', 'reel', 'short', 'shorts', 'voiceover', 'storyboard'],
-            role: 'Short-form video scriptwriter and director',
-            audience: 'Viewers deciding in 3 seconds whether to keep watching',
-            tone: 'Punchy, visual, momentum-driven',
-            constraints: 'Hook in the first 3 seconds; one idea per shot; under 60 seconds total',
-            format: 'Hook → 3–5 beats with on-screen text + visual notes → CTA'
-          },
-          {
-            kw: ['blog', 'post', 'article', 'seo', 'newsletter', 'guide', 'how-to', 'tutorial', 'long-form'],
+            kw: ['blog', 'article', 'seo', 'newsletter', 'guide', 'how-to', 'tutorial', 'long-form'],
             role: 'Expert content marketer and SEO specialist',
             audience: 'Marketing managers looking for actionable growth tactics',
             tone: 'Authoritative, tactical, engaging',
@@ -826,6 +833,7 @@
             format: 'Hook intro + 3 actionable steps with examples + conclusion'
           }
         ];
+        function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
         var fallbackCategory = {
           role: 'Expert consultant in the relevant field',
           audience: 'Professionals seeking clear, actionable advice',
@@ -838,7 +846,12 @@
           for (var i = 0; i < categories.length; i++) {
             var c = categories[i];
             for (var j = 0; j < c.kw.length; j++) {
-              if (lower.indexOf(c.kw[j]) !== -1) return c;
+              /* Word-boundary match so "api" doesn't fire on "rapid",
+                 "post" doesn't fire on "compost", etc. Multi-word keys
+                 like "follow up" still match because \b works at the
+                 outside edges and the inner space is literal. */
+              var re = new RegExp('\\b' + escapeRe(c.kw[j]) + '\\b', 'i');
+              if (re.test(lower)) return c;
             }
           }
           return fallbackCategory;

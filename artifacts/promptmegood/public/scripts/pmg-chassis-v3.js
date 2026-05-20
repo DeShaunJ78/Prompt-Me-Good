@@ -119,8 +119,20 @@
       /* Explicit ?q= deep-link OVERWRITES any session-restored content.
          If a user just clicked "Use this prompt →" from the homepage hero
          we honor that intent — silently dropping it because last session's
-         draft happened to be in the box would feel broken. */
+         draft happened to be in the box would feel broken.
+         Architect-flagged: ALSO clear any restored prior output, otherwise
+         the new goal sits next to stale generated text + has-result CSS
+         state, which looks broken. We only nuke the result surface, not
+         tuning — tuning carries over intentionally. */
       goal.value = q;
+      try {
+        var rb = document.getElementById('resultBox');
+        if (rb) {
+          if ('value' in rb) rb.value = '';
+          else rb.textContent = '';
+        }
+        document.body.classList.remove('pmg-has-result');
+      } catch (_) {}
       try { goal.dispatchEvent(new Event('input', { bubbles: true })); } catch (_) {}
       try { goal.dispatchEvent(new Event('change', { bubbles: true })); } catch (_) {}
       try {
