@@ -436,14 +436,9 @@
             '<div class="output-box ai-response-box is-collapsed" id="ai-response-box" style="display:none !important">',
               '<div class="pmgv3-air-host"></div>',
             '</div>',
-            '<p class="pmgv3-send-nudge">Not sure which to pick? ChatGPT for general tasks, Claude for writing, Perplexity for research.</p>',
-            '<div class="pmgv3-send-label">Send your prompt to:</div>',
-            '<div class="pmgv3-send-grid send-to-row">',
-              '<button class="btn-send-to" data-platform="chatgpt"    data-pmg-dest="chatgpt"    type="button"><span class="pmgv3-send-name">ChatGPT</span><span class="pmgv3-send-desc">General purpose · most popular</span></button>',
-              '<button class="btn-send-to" data-platform="claude"     data-pmg-dest="claude"     type="button"><span class="pmgv3-send-name">Claude</span><span class="pmgv3-send-desc">Long writing · analysis</span></button>',
-              '<button class="btn-send-to" data-platform="perplexity" data-pmg-dest="perplexity" type="button"><span class="pmgv3-send-name">Perplexity</span><span class="pmgv3-send-desc">Research · cited answers</span></button>',
-              '<button class="btn-send-to" data-platform="gemini"     data-pmg-dest="gemini"     type="button"><span class="pmgv3-send-name">Gemini</span><span class="pmgv3-send-desc">Google data · multimodal</span></button>',
-            '</div>',
+            /* Spec 7: 4-card send-to grid removed. The Smart Send-To Router
+               (#pmg-run-panel built by pmg-postgen-actions.js) replaces it
+               and mounts immediately after #run-with-ai-btn above. */
           '</div>',
         '</div>',
         '</div>', // /#pmgv3-panel-text
