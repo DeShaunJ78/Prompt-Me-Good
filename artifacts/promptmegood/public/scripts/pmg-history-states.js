@@ -43,6 +43,12 @@
     '.pmg-history-empty-icon{width:clamp(56px,12vw,84px);aspect-ratio:1;border-radius:var(--radius-lg);background:color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));display:flex;align-items:center;justify-content:center;font-size:clamp(26px,5vw,36px);color:var(--color-primary)}',
     '.pmg-history-empty-title{margin:0;font-size:var(--text-base);font-weight:700;color:var(--color-text)}',
     '.pmg-history-empty-text{margin:0;font-size:var(--text-sm);color:var(--color-text-muted);max-width:46ch;line-height:1.5}',
+    /* punchlist-2 (2026-05-20): "Build one now" CTA on the no-items
+       empty state. Closes vault drawer and focuses #goal — handler in
+       app.html inline script. */
+    '.pmg-history-empty-cta{margin-top:6px;padding:8px 16px;background:var(--color-primary);color:#0a2420;border:0;border-radius:var(--radius-md);font-size:var(--text-sm);font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background 0.15s ease}',
+    '.pmg-history-empty-cta:hover{background:color-mix(in srgb, var(--color-primary) 88%, white)}',
+    '.pmg-history-empty-cta:focus-visible{outline:2px solid var(--color-primary);outline-offset:2px}',
 
     /* "No matches" variant — softer, search-flavored. */
     '.pmg-history-empty-card.is-no-matches{background:var(--color-surface-2);border-style:dashed;border-color:var(--color-border)}',
@@ -118,11 +124,20 @@
     }
     if (opts.icon) icon = opts.icon;
     if (opts.extraClass) extra += ' ' + opts.extraClass;
+    /* punchlist-2 (2026-05-20): no-items variant gets a "Build one now"
+       CTA that closes the Vault drawer and focuses #goal. Handler lives
+       in the inline script at the bottom of app.html and keys off
+       [data-pmg-history-build]. Other variants (no-matches / errors)
+       intentionally omit it. */
+    var ctaHtml = (variant === 'no-items')
+      ? '<button type="button" class="pmg-history-empty-cta" data-pmg-history-build>Build one now &rarr;</button>'
+      : '';
     return (
       '<div class="pmg-history-empty-card' + extra + '" role="note">' +
         '<div class="pmg-history-empty-icon" aria-hidden="true">' + icon + '</div>' +
         '<p class="pmg-history-empty-title">' + escapeHtml(title) + '</p>' +
         '<p class="pmg-history-empty-text">' + escapeHtml(text) + '</p>' +
+        ctaHtml +
       '</div>'
     );
   }

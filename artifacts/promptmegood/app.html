@@ -14076,15 +14076,20 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!t || !t.closest) return;
       if (!t.closest('[data-pmg-history-build]')) return;
       e.preventDefault();
-      /* Close the Vault drawer if it's open so #goal is actually
-         visible. The vault uses several historical close patterns —
-         try the documented ones in order. */
+      /* Close the chassis-v3 Vault drawer if it's open so #goal is
+         actually visible. The drawer's own close button already wires
+         the real closeVaultDrawer() routine (overlay + body class +
+         ESC listener), so clicking it is the safe path. */
       try {
-        var drawer = document.getElementById('vault-drawer') || document.querySelector('.pmg-vault-drawer.is-open');
-        if (drawer) {
-          var closer = drawer.querySelector('[data-pmg-vault-close], .pmg-vault-close, [aria-label="Close vault"]');
+        var drawer = document.getElementById('pmgv3-vault-drawer');
+        if (drawer && drawer.classList.contains('is-open')) {
+          var closer = drawer.querySelector('.pmgv3-vault-drawer-close');
           if (closer) closer.click();
-          else drawer.classList.remove('is-open');
+          else {
+            drawer.classList.remove('is-open');
+            var ov = document.getElementById('pmgv3-vault-overlay');
+            if (ov) ov.classList.remove('is-open');
+          }
         }
       } catch (_) {}
       setTimeout(function () {
