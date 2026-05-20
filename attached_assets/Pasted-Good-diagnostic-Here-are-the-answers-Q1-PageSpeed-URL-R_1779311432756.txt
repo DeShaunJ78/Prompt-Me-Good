@@ -1,0 +1,36 @@
+Good diagnostic. Here are the answers:
+
+Q1 — PageSpeed URL: Run it against `https://www.promptmegood.com` (the www version, no redirect tax). If the LCP is still 3.5s on www, then the real culprit is likely the apex→www redirect chain on the first visit. The server-side 301 fix is already in the stack docs — confirm it is a true 301 (not a JS redirect or meta refresh) and that the redirect target is cached by the CDN. If PageSpeed on www comes back under 2.5s, the redirect is the only issue and no HTML changes are needed.
+
+Q2 — The 8-item UX punchlist: Here it is in one file for you to paste directly to Replit.
+
+
+PMG UX Polish Punchlist — Execute after LCP investigation
+
+Item 3 (High — Conversion) — Pricing: Standardize “Everything in Free” bullets
+Pro Monthly card says only “Everything in Free”. Pro Yearly and Founding Member say “Everything in Free — including Interview Mode, Target Model selector, and Prompt Framework picker”. Update Pro Monthly to match the expanded version so the value proposition is identical across all paid tiers.
+
+Item 1 (High — UX) — App: Run With AI button first-reveal emphasis
+When `#runSection` becomes visible for the first time after a prompt is built, add a one-shot CSS animation (e.g., a subtle 400ms pulse or glow on `#runBtn`) so the user’s eye is drawn to it immediately. The animation fires once via a class added on reveal and never repeats. No permanent visual change — just a first-paint attention cue.
+
+Item 2 (High — UX) — App: Empty states for Vault and Global Search
+`.history-empty` currently shows plain muted text. Replace with: icon (🗄️) + “Your saved prompts will appear here.” + a small “Build one now →” link that focuses `#goal`. `.global-empty` currently shows plain muted text. Replace with: icon (🔍) + “No matches found.” + “Try a different keyword.”
+
+Item 4 (Medium — Polish) — Index: Hero output container spacing
+After `typeOut()` completes and `#hero-output-container` is revealed, the `.hero-output-caption` paragraph and the `.hero-post-cta` ghost button feel cramped against the `<pre>` block. Add `margin-top: 16px` to `.hero-output-caption` and `margin-top: 12px` to `.hero-post-cta`.
+
+Item 5 (Medium — Polish) — App: First-time helper callout styling
+The `.first-time-helper` box uses a dashed border and 6% primary color background — it reads as disabled/inactive. Change the border to `1px solid color-mix(in srgb, var(--color-primary) 15%, transparent)` (solid, not dashed) and add `border-left: 3px solid var(--color-primary)` to make it read as an active callout.
+
+Item 6 (Medium — Polish) — Guide: Back to top links
+After each major `<h2>` section in `guide.html`, add `<a href="#main-content" style="font-size:0.8rem; color:var(--primary); text-decoration:none;">↑ Back to top</a>`. Sections: #three-panels, #coach, #text, #tuning, #photo, #video, #growth, #expert, #topbar, #vault, #shortcuts, #privacy.
+
+Item 7 (Low — Microcopy) — App: Quick Win Mode error text
+Current: “Something went wrong drafting your blueprint.”
+Replace with: “We hit a snag drafting your blueprint. Give it another shot or skip straight to the workstation.”
+
+Item 8 (Low — Polish) — Pricing: Badge vertical alignment
+`.pricing-badge` on the “Coming Soon” Pro cards sits slightly higher than the “First 500 Members” badge on the Founding card due to text length differences. Add `min-height: 24px; display: inline-flex; align-items: center;` to `.pricing-badge` to normalize vertical alignment across all cards.
+
+
+Execution order: LCP investigation first → then 3, 1, 2, 4, 5, 6, 7, 8. Do not ship any of the punchlist items until the LCP root cause is confirmed.
