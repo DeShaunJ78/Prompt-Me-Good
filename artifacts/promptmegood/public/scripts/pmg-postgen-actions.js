@@ -61,13 +61,22 @@
       /* Send-To split button: full-width row BELOW Run-With-AI Here.
          Internal layout is one button at ~80% + a ▾ caret at ~20%,
          seamless single pill with a thin divider between. */
+      /* overflow:visible so the absolutely-positioned dropdown menu is not
+         clipped by the rounded pill. Inner buttons get matching corner radii
+         so hover background still respects the pill shape. */
       '.pmg-send-split { display:flex; width:100%; margin-top: 10px;',
       '  background: #134e48; color: #e9f4f1;',
-      '  border: 1px solid rgba(255,255,255,0.10); border-radius: 10px; overflow: hidden;',
+      '  border: 1px solid rgba(255,255,255,0.10); border-radius: 10px; overflow: visible;',
       '  position: relative; box-sizing: border-box; }',
       '.pmg-send-split > button { background: transparent !important; color: inherit !important;',
-      '  border: 0 !important; margin: 0 !important; border-radius: 0 !important;',
+      '  border: 0 !important; margin: 0 !important;',
       '  min-height: 48px; font: inherit; cursor: pointer; box-sizing: border-box; }',
+      '.pmg-send-split > button.pmg-send-main { border-top-left-radius: 9px !important;',
+      '  border-bottom-left-radius: 9px !important; border-top-right-radius: 0 !important;',
+      '  border-bottom-right-radius: 0 !important; }',
+      '.pmg-send-split > button.pmg-send-caret { border-top-right-radius: 9px !important;',
+      '  border-bottom-right-radius: 9px !important; border-top-left-radius: 0 !important;',
+      '  border-bottom-left-radius: 0 !important; }',
       '.pmg-send-split > button:hover { background: rgba(255,255,255,0.06) !important; }',
       '.pmg-send-split > button:focus-visible { outline: 2px solid #4ec6b4; outline-offset: -2px; }',
       '.pmg-send-main { flex: 1 1 80%; min-width: 0;',
@@ -89,8 +98,10 @@
       '.pmg-send-menu-item:hover, .pmg-send-menu-item:focus-visible { background: rgba(255,255,255,0.08); outline: none; }',
       '.pmg-send-menu-item.is-current { font-weight: 700; }',
       '.pmg-send-menu-item .pmg-send-menu-check { display:inline-block; width:16px; color: #4ec6b4; }',
-      /* Container has no padding/border of its own — purely a positioning wrapper. */
-      '.pmg-run-panel { display:block; margin: 0; padding: 0; border: 0; background: transparent; position: relative; }',
+      /* Container has no padding/border of its own — purely a positioning wrapper.
+         overflow:visible so the dropdown menu can escape this box. */
+      '.pmg-run-panel { display:block; margin: 0; padding: 0; border: 0; background: transparent;',
+      '  position: relative; overflow: visible; }',
 
       '@media (max-width: 420px) {',
       '  .pmg-send-main { font-size: 14px; padding: 0 10px; gap: 6px; }',
