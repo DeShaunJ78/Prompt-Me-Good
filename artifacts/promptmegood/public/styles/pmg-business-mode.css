@@ -86,13 +86,6 @@
   position: relative;
 }
 
-.pmg-bm-intro {
-  font-size: 13px;
-  color: rgba(230, 247, 238, 0.72);
-  margin: 0 0 14px;
-  line-height: 1.5;
-}
-
 /* Per-tool description line. Shown above the inputs inside every
    accordion body. */
 .pmg-bm-desc {
@@ -281,27 +274,6 @@
   outline: none;
   border-color: #00c896;
   box-shadow: 0 0 0 3px rgba(0, 200, 150, 0.18);
-}
-
-.pmg-bm-build {
-  margin-top: 4px;
-  background: #00c896;
-  color: #0d2b1e;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 16px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.15s ease, transform 0.05s ease;
-}
-.pmg-bm-build:hover {
-  background: #00d9a3;
-}
-.pmg-bm-build:active { transform: translateY(1px); }
-.pmg-bm-build:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
 }
 
 .pmg-bm-saved {
