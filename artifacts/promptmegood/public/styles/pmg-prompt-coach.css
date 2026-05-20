@@ -108,6 +108,11 @@ html.pmg-chassis-v3 body.pmg-coach-on #pmg-coach-root {
   background: color-mix(in srgb, var(--color-primary, #3ee0a0) 14%, transparent);
   outline: none;
 }
+/* a11y-focus-1: paired keyboard-visible focus ring (chip outline:none
+   above strips the browser default; this restores it for keyboard nav). */
+.pmg-coach__chip:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #3ee0a0) 30%, transparent);
+}
 .pmg-coach__chip:active { transform: scale(0.97); }
 
 /* ----- mini-picker (coach-4) ----- */
@@ -175,6 +180,11 @@ html.pmg-chassis-v3 body.pmg-coach-on #pmg-coach-root {
 }
 .pmg-coach__input:focus {
   border-color: color-mix(in srgb, var(--color-primary, #3ee0a0) 70%, transparent);
+}
+/* a11y-focus-1: paired keyboard-visible focus ring (input outline:none
+   above strips the browser default; this restores it for keyboard nav). */
+.pmg-coach__input:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #3ee0a0) 25%, transparent);
 }
 .pmg-coach__input-go {
   font: inherit;

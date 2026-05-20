@@ -91,6 +91,13 @@ input[type="text"].whisperer-input {
 input[type="text"].whisperer-input:focus {
   border-bottom-color: #00c896 !important;
 }
+/* a11y-focus-1: paired focus-visible ring for keyboard users.
+   The bare `outline:none` above strips the browser default; this
+   restores a visible focus indicator for keyboard nav while leaving
+   mouse focus alone (matches the pmg-g-theme.css:128 main-input pattern). */
+input[type="text"].whisperer-input:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, #00c896 30%, transparent) !important;
+}
 
 /* The animated typewriter text (sits behind the input). Clicks pass
    through so the user can click "into" the question to start typing. */

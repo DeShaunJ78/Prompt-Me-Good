@@ -1,4 +1,5 @@
 import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
+import { z } from "zod";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import multer from "multer";
@@ -176,6 +177,52 @@ const LANGUAGE_LABELS: Record<string, string> = {
   french: "French",
   german: "German",
 };
+
+/* generate-zod-1 (v4 architect MEDIUM follow-up, closes ai.ts L521 TODO):
+   runtime schema for the /generate + /generate-stream body. Replaces the
+   ad-hoc `as StructuredPayload` cast that lived between `isStructuredPayload`
+   and `clampString`. Design:
+   - `.passthrough()` so non-validated fields (e.g. `feature: "expert"` used
+     by denyExpertIfPaywalled, legacy aliases) survive intact.
+   - All known fields use safe coercion (`unknown` → string/boolean) so a
+     malformed value becomes `undefined` rather than throwing a 400.
+   - Length clamps still happen downstream in buildUserMessageFromPayload
+     via clampString — this schema is about TYPE hygiene, not length.
+   - Boolean fields accept true | "true" (the historical contract that
+     buildMessages and buildUserMessageFromPayload already honored). */
+const SafeStr = z.preprocess(
+  (v) => (typeof v === "string" ? v : undefined),
+  z.string().optional(),
+);
+const SafeBool = z.preprocess(
+  (v) => (v === true || v === "true" ? true : v === false || v === "false" ? false : undefined),
+  z.boolean().optional(),
+);
+const StructuredPayloadSchema = z
+  .object({
+    goal: SafeStr,
+    category: SafeStr,
+    experience: SafeStr,
+    skillLevel: SafeStr,
+    tone: SafeStr,
+    format: SafeStr,
+    outputFormat: SafeStr,
+    language: SafeStr,
+    outputLanguage: SafeStr,
+    personality: SafeStr,
+    extraDetails: SafeStr,
+    avoid: SafeStr,
+    guardrails: SafeStr,
+    moneyMode: SafeBool,
+    humanVoice: SafeBool,
+    humanTone: SafeBool,
+    clarityBoost: SafeBool,
+    expertMode: SafeBool,
+    interviewMode: SafeBool,
+    targetModel: SafeStr,
+    framework: SafeStr,
+  })
+  .passthrough();
 
 type StructuredPayload = {
   goal?: unknown;
@@ -514,11 +561,19 @@ async function denyExpertIfPaywalled(
   return false;
 }
 
-// TODO(audit-3 §15 medium): replace ad-hoc req.body destructuring +
-// clampString with a Zod schema. Custom validation has gaps that a schema
-// won't. Tracked as a follow-up task; not blocking launch because the route
-// is rate-limited (20/hr/IP), AI-spend-capped per user, and prompt-sanitized.
+// audit-3 §15 medium: Zod schema for /generate body — addressed by
+// generate-zod-1 (StructuredPayloadSchema). Both /generate and
+// /generate-stream now parse + sanitize req.body before any handler logic.
 router.post("/generate", generateLimiter, generateCostCheck, async (req, res) => {
+  /* generate-zod-1: parse body with the Zod schema BEFORE the entitlement
+     and interview gates run. Schema strips unknown-typed values to undefined
+     (e.g. interviewMode:"<script>"), passthrough keeps `feature: "expert"`
+     for denyExpertIfPaywalled. Reassign req.body so downstream helpers see
+     the sanitized shape. Parse never throws — schema is fully optional. */
+  if (req.body && typeof req.body === "object") {
+    const parsed = StructuredPayloadSchema.safeParse(req.body);
+    if (parsed.success) req.body = parsed.data;
+  }
   if (await denyExpertIfPaywalled(req, res)) return;
   await coerceInterviewIfNotPaid(req);
   const sanitized = sanitizeGoal(getUserTextForSanitize(req.body));
@@ -584,8 +639,13 @@ router.post("/generate", generateLimiter, generateCostCheck, async (req, res) =>
   }
 });
 
-// TODO(audit-3 §15 medium): Zod schema — see /generate TODO above.
+// audit-3 §15 medium: Zod schema covered by generate-zod-1 (see /generate).
 router.post("/generate-stream", generateLimiter, generateCostCheck, async (req, res) => {
+  /* generate-zod-1: see /generate above. */
+  if (req.body && typeof req.body === "object") {
+    const parsed = StructuredPayloadSchema.safeParse(req.body);
+    if (parsed.success) req.body = parsed.data;
+  }
   if (await denyExpertIfPaywalled(req, res)) return;
   await coerceInterviewIfNotPaid(req);
   const sanitized = sanitizeGoal(getUserTextForSanitize(req.body));
