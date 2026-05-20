@@ -58,17 +58,13 @@
       '.pmg-tellai-actions { display:flex; gap:8px; margin-top:10px; align-items:center; }',
       '.pmg-tellai-actions .pmg-tellai-hint { font-size:12px; color:var(--color-text-muted, #6b6b6b); margin:0; }',
 
-      /* Run This Prompt panel. */
-      '.pmg-run-panel { margin-top: 14px; padding: 12px 14px; border: 1px solid var(--color-divider, #e5e0d8);',
-      '  border-radius: 12px; background: var(--color-surface, #fbf9f5); }',
-      '.pmg-run-panel-title { margin:0 0 2px; font-size:14px; font-weight:700;',
-      '  color: var(--color-text, #1f1f1f); }',
-      '.pmg-run-panel-helper { margin:0 0 8px; font-size:12px; color: var(--color-text-muted, #6b6b6b); }',
-      '.pmg-run-panel-row { display:flex; flex-wrap:wrap; gap:8px; align-items:stretch; }',
-      '.pmg-run-panel-or { align-self:center; font-size:11px; font-weight:600; letter-spacing:0.06em;',
-      '  color: var(--color-text-muted, #6b6b6b); text-transform:uppercase; padding: 0 2px; }',
-      '.pmg-run-here-btn { flex: 1 1 220px; min-height: 44px; }',
-      '.pmg-send-split { position: relative; flex: 1 1 220px; display:flex; }',
+      /* Run-With-AI + Send-To row: side-by-side, never stacked. */
+      '.pmg-run-row { display:flex; flex-wrap:nowrap; gap:8px; align-items:stretch; margin-top: 14px; width: 100%; }',
+      '.pmg-run-row > #run-with-ai-btn { flex: 2 1 0; min-width: 0; margin-top: 0 !important; }',
+      '.pmg-run-row > .pmg-run-panel { flex: 1 1 0; min-width: 0; display:flex; }',
+      /* Run This Prompt panel (now just the Send-To split). */
+      '.pmg-run-panel { margin: 0; }',
+      '.pmg-send-split { position: relative; flex: 1 1 auto; display:flex; min-width: 0; width: 100%; }',
       '.pmg-send-main { flex:1; min-height:44px; border-top-right-radius:0 !important; border-bottom-right-radius:0 !important; }',
       '.pmg-send-caret { min-width:36px; padding:0 10px; border-left: 1px solid rgba(0,0,0,0.12) !important;',
       '  border-top-left-radius:0 !important; border-bottom-left-radius:0 !important; min-height:44px; }',
@@ -84,14 +80,8 @@
       '.pmg-send-menu-item .pmg-send-menu-check { display:inline-block; width:16px; color: var(--color-accent, #1f7a6c); }',
 
       '@media (max-width: 540px) {',
-      '  .pmg-run-panel { margin-top: 10px; padding: 10px 12px; }',
-      '  .pmg-run-panel-title { font-size: 13px; }',
-      '  .pmg-run-panel-helper { font-size: 11px; margin-bottom: 6px; }',
-      '  .pmg-run-panel-row { flex-direction: row; flex-wrap: wrap; gap: 6px; }',
-      '  .pmg-run-here-btn { flex: 1 1 auto; min-height: 44px; font-size: 14px; }',
-      '  .pmg-run-panel-or { display: none; }',
-      '  .pmg-send-split { flex: 0 1 auto; }',
-      '  .pmg-send-main { min-height: 40px; font-size: 13px; }',
+      '  .pmg-run-row { gap: 6px; margin-top: 10px; }',
+      '  .pmg-send-main { min-height: 40px; font-size: 13px; padding: 0 8px; }',
       '  .pmg-send-caret { min-height: 40px; }',
       '}'
     ].join('\n');
@@ -215,35 +205,36 @@
    * 2) Run This Prompt panel
    * ----------------------------------------------------------------- */
   function buildRunPanel() {
-    /* Mount target: AFTER the chassis-v3 #run-with-ai-btn (which lives inside
-       #prompt-output-box). The legacy #improve-block is hidden by chassis CSS
-       so mounting there left the panel invisible. */
+    /* Mount target: the chassis-v3 #run-with-ai-btn (inside #prompt-output-box).
+       Chassis builds this on DOMContentLoaded — we may run before it. Retry. */
     var runAiBtn = document.getElementById('run-with-ai-btn');
-    var anchor = runAiBtn || document.getElementById('improve-block');
-    if (!anchor) return;
-    if (document.getElementById('pmg-run-panel')) return;
+    if (!runAiBtn) return false;
+    if (document.getElementById('pmg-run-panel')) return true;
 
-    var panel = document.createElement('section');
+    /* Wrap the existing Run-With-AI button + our Send-To split into a single
+       flex row so they sit side-by-side instead of stacking. */
+    var panel = document.createElement('span');
     panel.className = 'pmg-run-panel pmg-post-gen';
     panel.id = 'pmg-run-panel';
     panel.setAttribute('aria-label', 'Send this prompt to another AI tool');
-    /* Chassis already provides "Run With AI Here" — we only add the
-       Send-To split button so the order is: [Run With AI Here] [Send To X ▾]. */
     panel.innerHTML =
-      '<p class="pmg-run-panel-helper">Or open it in your favorite AI tool with the prompt pre-filled.</p>' +
-      '<div class="pmg-run-panel-row">' +
-        '<span class="pmg-send-split">' +
-          '<button type="button" class="btn btn-secondary pmg-send-main" id="pmg-send-main">' +
-            '<span aria-hidden="true">↗</span> Send To <span id="pmg-send-main-label">ChatGPT</span>' +
-          '</button>' +
-          '<button type="button" class="btn btn-secondary pmg-send-caret" id="pmg-send-caret"' +
-            ' aria-haspopup="menu" aria-expanded="false" aria-label="Choose AI tool">▾</button>' +
-          '<div class="pmg-send-menu" id="pmg-send-menu" role="menu"></div>' +
-        '</span>' +
-      '</div>';
+      '<span class="pmg-send-split">' +
+        '<button type="button" class="btn btn-secondary pmg-send-main" id="pmg-send-main">' +
+          '<span aria-hidden="true">↗</span> Send To <span id="pmg-send-main-label">ChatGPT</span>' +
+        '</button>' +
+        '<button type="button" class="btn btn-secondary pmg-send-caret" id="pmg-send-caret"' +
+          ' aria-haspopup="menu" aria-expanded="false" aria-label="Choose AI tool">▾</button>' +
+        '<div class="pmg-send-menu" id="pmg-send-menu" role="menu"></div>' +
+      '</span>';
 
-    if (anchor.parentNode) {
-      anchor.parentNode.insertBefore(panel, anchor.nextSibling);
+    /* Wrap [Run-With-AI] + [Send-To] in a flex row so they're side-by-side. */
+    var row = document.createElement('div');
+    row.className = 'pmg-run-row';
+    row.id = 'pmg-run-row';
+    if (runAiBtn.parentNode) {
+      runAiBtn.parentNode.insertBefore(row, runAiBtn);
+      row.appendChild(runAiBtn);
+      row.appendChild(panel);
     }
 
     /* Send-To split button + menu. */
@@ -439,7 +430,16 @@
   function boot() {
     injectStyles();
     buildTellAiBlock();
-    buildRunPanel();
+    /* Retry mounting the run panel until chassis-v3 has built #run-with-ai-btn.
+       Chassis builds its DOM on DOMContentLoaded; we run as a defer script
+       which may execute slightly before that. Poll every 100ms up to 6s. */
+    if (!buildRunPanel()) {
+      var attempts = 0;
+      var iv = setInterval(function () {
+        attempts++;
+        if (buildRunPanel() || attempts > 60) clearInterval(iv);
+      }, 100);
+    }
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
