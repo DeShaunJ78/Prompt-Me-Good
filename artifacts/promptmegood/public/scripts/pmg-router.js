@@ -108,11 +108,20 @@
     var mmHits = countMatches(text, MULTIMODAL_KW);
     if (mmHits >= 2) scores.multimodal = mmHits;
 
+    /* Constructive intent beats informational intent. The optimized prompt
+       in #resultBox often contains research-flavored words ("latest",
+       "sources", "compare") as sub-instructions even when the user's true
+       intent is to WRITE/CODE/ANALYZE-IMAGES. If any constructive category
+       fires, treat research as a sub-step and drop it from contention. */
+    if ((scores.longform || scores.code || scores.multimodal) && scores.research) {
+      delete scores.research;
+    }
+
     /* ----- Pick a winner ----- */
     var keys = Object.keys(scores);
     if (keys.length === 0) return DEFAULT;
 
-    /* Sort by score desc. Tie = no morph. */
+    /* Sort by score desc. Tie among remaining constructive categories = no morph. */
     keys.sort(function (a, b) { return scores[b] - scores[a]; });
     if (keys.length > 1 && scores[keys[0]] === scores[keys[1]]) {
       return DEFAULT;
