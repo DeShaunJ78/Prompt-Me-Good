@@ -1,55 +1,65 @@
-# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
-# compiled output
-dist
-tmp
-out-tsc
+# ── Dependencies ────────────────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ── Build artifacts ─────────────────────────────────────────────────────────
+dist/
+tmp/
+out-tsc/
+build/
+.expo/
+.expo-shared/
 *.tsbuildinfo
-.expo
-.expo-shared
 
-# dependencies
-node_modules
+# ── Environment & secrets ───────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
 
-# IDEs and editors
-/.idea
+# ── IDEs & editors ──────────────────────────────────────────────────────────
+.idea/
 .project
 .classpath
 .c9/
 *.launch
 .settings/
 *.sublime-workspace
-
-# IDE - VSCode
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# misc
-/.sass-cache
-/connect.lock
-/coverage
-/libpeerconnection.log
-npm-debug.log
-yarn-error.log
-testem.log
-/typings
+# ── Replit-specific ─────────────────────────────────────────────────────────
+.cache/
+.local/
+.replit
+replit.nix
+.upm/
 
-# System Files
+# ── Logs ────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── OS & system ─────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 
-.cursor/rules/nx-rules.mdc
-.github/instructions/nx.instructions.md
+# ── Test coverage ────────────────────────────────────────────────────────────
+/coverage
 
-# Replit
-.cache/
-.local/
-
-# Playwright / E2E test artifacts
-test-results/
-playwright-report/
-artifacts/api-server/data/pmg_cost.json
-artifacts/api-server/data/pmg_stats.json
+# ── Misc ────────────────────────────────────────────────────────────────────
+/.sass-cache
+/connect.lock
+/libpeerconnection.log
+/typings
+testem.log
+attached_assets/

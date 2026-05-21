@@ -1,32 +1,36 @@
 import { Router, type IRouter } from "express";
 import healthRouter from "./health";
-import aiRouter from "./ai";
-import reviewRouter from "./review";
-import publicConfigRouter from "./public-config";
-import pricingConfigRouter from "./pricing-config";
-import billingRouter from "./billing";
+import analyzeRouter from "./analyze";
+import generateRouter from "./generate";
+import companionRouter from "./companion";
+import featureRouter from "./feature";
+import launchRouter from "./launch";
+import projectsRouter from "./projects";
+import tierRouter from "./tier";
+import renderRouter from "./render";
+import scoreRouter from "./score";
+import debugRouter from "./debug";
+import stripeRouter from "./stripe";
 import usageRouter from "./usage";
-import waitlistRouter from "./waitlist";
-import contactRouter from "./contact";
-import foundingCheckoutRouter from "./founding-checkout";
+import onboardingRouter from "./onboarding";
+import adminBootstrapRouter from "./adminBootstrap";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
-router.use(aiRouter);
-router.use(publicConfigRouter);
-router.use(pricingConfigRouter);
-router.use(billingRouter);
+router.use(analyzeRouter);
+router.use(generateRouter);
+router.use(companionRouter);
+router.use(featureRouter);
+router.use(launchRouter);
+router.use(projectsRouter);
+router.use(tierRouter);
+router.use(renderRouter);
+router.use(scoreRouter);
+router.use(debugRouter);
+router.use(stripeRouter);
 router.use(usageRouter);
-router.use(waitlistRouter);
-router.use(contactRouter);
-router.use(foundingCheckoutRouter);
-
-// Dev-only Claude code-review endpoint. Mounted only when NODE_ENV !==
-// "production" so it never ships to live traffic. The handler also self-checks
-// the env as defense-in-depth.
-if (process.env.NODE_ENV !== "production") {
-  router.use(reviewRouter);
-}
+router.use(onboardingRouter);
+router.use(adminBootstrapRouter);
 
 export default router;

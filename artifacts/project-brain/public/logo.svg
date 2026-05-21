@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" fill="none">
+  <rect width="120" height="40" rx="8" fill="#0D0D0F"/>
+  <circle cx="20" cy="20" r="12" fill="#6C8EF5" opacity="0.15"/>
+  <path d="M14 20 C14 16.5 16.5 14 20 14 C23.5 14 26 16.5 26 20 C26 23.5 23.5 26 20 26" stroke="#6C8EF5" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="20" cy="20" r="3" fill="#6C8EF5"/>
+  <path d="M17 17 L23 23 M23 17 L17 23" stroke="#0D0D0F" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="20" cy="20" r="2" fill="#6C8EF5"/>
+  <text x="36" y="25" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700" fill="#F0F0F0">CodeMeGood</text>
+</svg>

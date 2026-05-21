@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Project Brain"
+version = "1.0.0"
+id = "artifacts/project-brain"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25359
+
+[services.development]
+run = "pnpm --filter @workspace/project-brain run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/project-brain", "run", "build" ]
+publicDir = "artifacts/project-brain/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25359"
+BASE_PATH = "/"
