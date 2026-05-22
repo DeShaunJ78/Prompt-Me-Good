@@ -92,6 +92,7 @@ export default defineConfig({
         guide: path.resolve(import.meta.dirname, "guide.html"),
         manual: path.resolve(import.meta.dirname, "manual.html"),
         pricing: path.resolve(import.meta.dirname, "pricing.html"),
+        promptperfect: path.resolve(import.meta.dirname, "promptperfect.html"),
         // review.html is a dev-only Code Review page that triggers the
         // /api/review backend endpoint. Removed from the public build
         // (audit brief 12) so curious users / bots cannot trigger it.
