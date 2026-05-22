@@ -1,0 +1,161 @@
+You are adding a small, self-contained script and style file to 
+an existing production workstation. You will NOT modify any 
+existing scripts. You will inject new behavior by mounting 
+alongside the existing DOM.
+
+─── READ FIRST (do not modify) ───────────────────────────────────
+artifacts/promptmegood/public/styles/pmg-g-theme.css
+  → Study all --pmg-* CSS custom properties. Use only these.
+artifacts/promptmegood/app.html
+  → Find the <script> tags at the bottom of the file. Note the 
+    exact order. You will add your two new tags at the END of 
+    that list, after all existing scripts.
+  → Find the element with id="goal". Note its parent container.
+  → Find the element with id="generateBtn". Note its structure.
+  → Find the element with id="resultBox".
+  → Do not modify any existing markup or attributes in this file 
+    beyond adding the two new script/link tags described below.
+artifacts/promptmegood/public/scripts/pmg-chassis-v3.js
+  → Read to understand how panels work and what pmgChassisV3 
+    exposes. Do not modify this file.
+──────────────────────────────────────────────────────────────────
+
+─── CREATE (two new files only) ─────────────────────────────────
+artifacts/promptmegood/public/scripts/pmg-optimize-toggle.js
+artifacts/promptmegood/public/styles/pmg-optimize-toggle.css
+──────────────────────────────────────────────────────────────────
+
+─── MODIFY (one file, two lines only) ───────────────────────────
+artifacts/promptmegood/app.html
+  → At the END of the existing <link> block: add one new <link> 
+    tag for pmg-optimize-toggle.css.
+  → At the END of the existing <script> block: add one new 
+    <script> tag for pmg-optimize-toggle.js.
+  → Touch nothing else in this file.
+──────────────────────────────────────────────────────────────────
+
+─── DO NOT TOUCH ────────────────────────────────────────────────
+pmg-ux.js, pmg-chassis-v3.js, pmg-chassis-v3.css, 
+pmg-visual-studio.js, pmg-g-theme.css, pmg-adv-mirror.js,
+pmg-tune-chips.js, pmg-auto-boost.js, pmg-storyboard.js,
+pmg-expert-center.js, pmg-business-mode.js.
+Any file in artifacts/api-server/.
+Any file other than the two you are creating and app.html.
+──────────────────────────────────────────────────────────────────
+
+─── pmg-optimize-toggle.js REQUIREMENTS ─────────────────────────
+
+This script runs after all existing scripts. It is an IIFE. It 
+uses a localStorage key "pmg_optimize_toggle_disable" as a 
+kill-switch — if that key is set to "1", the script exits 
+immediately and does nothing.
+
+BEHAVIOR:
+
+1. Wait for DOMContentLoaded (or if already fired, run 
+   immediately).
+
+2. Find the container that wraps #goal. Insert a segmented toggle 
+   control as the FIRST child of that container, above #goal.
+   The toggle has two options: "Build" (default) and "Optimize".
+   Store the current mode in a module-level variable: 
+   let mode = "build".
+
+3. When mode === "build" (default):
+   - #goal placeholder: leave it as-is (do not change it).
+   - #generateBtn: leave its click behavior completely alone. 
+     The existing generate flow runs normally. Your script does 
+     nothing on button click.
+
+4. When mode === "optimize":
+   - #goal placeholder becomes: 
+     "Paste your existing prompt here — we'll improve it."
+   - Add a label above #goal: "Your existing prompt" 
+     (small, muted, using --pmg-* token for muted text color).
+   - Listen for clicks on #generateBtn. On click:
+       a. Call e.stopImmediatePropagation() to prevent the 
+          default generate flow from firing.
+       b. Read the value of #goal. If empty, show a brief inline 
+          warning below #goal: "Paste a prompt to optimize." 
+          Auto-clear after 3 seconds. Do nothing else.
+       c. If not empty: show a loading state on #generateBtn 
+          (add class "pmg-opt-loading", disable the button).
+       d. Read the user's Supabase session token from 
+          supabase.auth.getSession() if supabase is available on 
+          window, otherwise send without auth header.
+       e. POST to /api/boost with body:
+          { prompt: <value of #goal>, source: "optimize-toggle" }
+          Include Authorization: Bearer <token> header if token 
+          is available.
+       f. On success: write the response's output field into 
+          #resultBox using the same method existing code uses to 
+          populate it (inspect how the existing generate flow 
+          populates #resultBox and mirror that exactly — do not 
+          invent a new insertion method).
+       g. On error: show an inline error below #resultBox: 
+          "Couldn't optimize. Try again." Auto-clear after 5s.
+       h. In all cases (success or error): remove 
+          "pmg-opt-loading" class, re-enable #generateBtn.
+
+5. When the user switches back to "build" mode:
+   - Remove the "Your existing prompt" label if present.
+   - Restore #goal placeholder to its original value 
+     (cache it on script init).
+   - Remove any inline warnings or errors injected by this script.
+   - The next click on #generateBtn will be handled by the 
+     existing flow as normal.
+
+6. The toggle only appears when the text panel is active 
+   (body[data-active-panel="text"] or equivalent — check 
+   chassis-v3 to find the exact attribute/class). If the user 
+   switches to Photography or Video panel, the toggle has no 
+   effect and is visually hidden via CSS.
+
+WHAT THIS SCRIPT MUST NEVER DO:
+  - Never call any existing pmg* function directly.
+  - Never modify window globals set by other scripts.
+  - Never touch pmgChassisV3 internals.
+  - Never redefine or reassign #generateBtn's existing 
+    event listeners (only intercept in optimize mode via 
+    stopImmediatePropagation).
+──────────────────────────────────────────────────────────────────
+
+─── pmg-optimize-toggle.css REQUIREMENTS ────────────────────────
+
+All values use --pmg-* CSS custom properties from pmg-g-theme.css.
+No hardcoded hex colors. No new font imports.
+
+.pmg-opt-toggle-wrap
+  Small flex row. Gap between items. Margin-bottom to create 
+  breathing room above #goal. Only visible when 
+  body[data-active-panel="text"] (or the correct panel attribute).
+
+.pmg-opt-btn
+  Pill-shaped segmented control buttons. Use theme border and 
+  background tokens. Subtle. Does not visually compete with 
+  #generateBtn.
+
+.pmg-opt-btn[aria-selected="true"]
+  Active state using theme accent token. Clean, no heavy shadow.
+
+.pmg-opt-label
+  Small uppercase muted label above #goal in optimize mode.
+  Font size: 0.7rem or theme's smallest label size.
+
+.pmg-opt-loading
+  Opacity 0.6. Cursor not-allowed. No spinner needed.
+
+.pmg-opt-warning, .pmg-opt-error
+  Small inline text below their respective elements.
+  Warning: theme warning or muted token.
+  Error: theme error token if one exists, else muted.
+  Font size: 0.75rem.
+
+Hide everything when not in text panel:
+  body:not([data-active-panel="text"]) .pmg-opt-toggle-wrap,
+  body:not([data-active-panel="text"]) .pmg-opt-label,
+  body:not([data-active-panel="text"]) .pmg-opt-warning,
+  body:not([data-active-panel="text"]) .pmg-opt-error {
+    display: none;
+  }
+──────────────────────────────────────────────────────────────────
