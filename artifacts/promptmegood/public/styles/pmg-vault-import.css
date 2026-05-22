@@ -1,0 +1,81 @@
+/* pmg-vault-import.css (vi-1, 2026-05-22)
+ *
+ * Styles the "Import from PromptPerfect" button in the Vault header and
+ * the inline progress/result/error UI injected between the Vault header
+ * row and the Vault list. All values use --pmg-* / --color-* tokens
+ * from pmg-g-theme.css — no hardcoded hex.
+ *
+ * The trigger button reuses the existing .btn .btn-secondary visual
+ * weight via class composition in markup; the rules below add only the
+ * import-specific affordances (muted-until-hover + disabled state).
+ */
+
+.pmg-vault-import-trigger {
+  opacity: 0.85;
+}
+.pmg-vault-import-trigger:hover,
+.pmg-vault-import-trigger:focus-visible {
+  opacity: 1;
+}
+.pmg-vault-import-trigger:disabled,
+.pmg-vault-import-trigger[aria-busy="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Inline UI injected by the script between .panel-head and the Vault list.
+   Container is hidden by default; script toggles a state class to reveal
+   the appropriate child surface (progress / result / error). */
+.pmg-vault-import-ui {
+  display: none;
+  margin: var(--space-2, 8px) 0 var(--space-3, 12px);
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  border-radius: var(--radius-md, 10px);
+  background: color-mix(in srgb, var(--color-primary, #4adfb1) 8%, transparent);
+  border-left: 3px solid color-mix(in srgb, var(--color-primary, #4adfb1) 60%, transparent);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--color-text, inherit);
+}
+.pmg-vault-import-ui[data-state="progress"],
+.pmg-vault-import-ui[data-state="result"],
+.pmg-vault-import-ui[data-state="error"] {
+  display: block;
+}
+
+.pmg-vault-import-progress {
+  color: var(--color-text-muted, color-mix(in srgb, var(--color-text) 65%, transparent));
+}
+
+.pmg-vault-import-result {
+  color: var(--color-text, inherit);
+}
+.pmg-vault-import-ui[data-state="result"][data-tone="partial"] {
+  background: color-mix(in srgb, var(--color-warning, #ffb84a) 10%, transparent);
+  border-left-color: color-mix(in srgb, var(--color-warning, #ffb84a) 60%, transparent);
+}
+
+.pmg-vault-import-error {
+  color: var(--color-danger, var(--color-text, inherit));
+}
+.pmg-vault-import-ui[data-state="error"] {
+  background: color-mix(in srgb, var(--color-danger, #ff6b6b) 8%, transparent);
+  border-left-color: color-mix(in srgb, var(--color-danger, #ff6b6b) 60%, transparent);
+}
+
+.pmg-vault-import-dismiss {
+  margin-left: var(--space-2, 8px);
+  padding: 2px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--color-primary, inherit);
+  font: inherit;
+  font-size: 0.75rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.pmg-vault-import-dismiss:hover,
+.pmg-vault-import-dismiss:focus-visible {
+  color: var(--color-text, inherit);
+  outline: none;
+}
