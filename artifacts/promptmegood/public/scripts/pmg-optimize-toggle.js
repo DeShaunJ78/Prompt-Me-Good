@@ -229,6 +229,25 @@
     buildToggle(goalEl.parentNode);
     generateBtn.addEventListener('click', onGenerateClickCapture, true);
     try { console.log('[pmg-optimize-toggle] mounted', { parent: goalEl.parentNode && goalEl.parentNode.className }); } catch (_) {}
+    setTimeout(function () {
+      try {
+        var w = document.querySelector('.pmg-opt-toggle-wrap');
+        if (!w) { console.log('[pmg-optimize-toggle] DIAG: wrap REMOVED from DOM'); return; }
+        var cs = getComputedStyle(w);
+        console.log('[pmg-optimize-toggle] DIAG', {
+          inDOM: !!w.isConnected,
+          offsetH: w.offsetHeight,
+          offsetW: w.offsetWidth,
+          display: cs.display,
+          visibility: cs.visibility,
+          opacity: cs.opacity,
+          parentTag: w.parentNode && w.parentNode.tagName,
+          parentClass: w.parentNode && w.parentNode.className,
+          grandparentClass: w.parentNode && w.parentNode.parentNode && w.parentNode.parentNode.className,
+          ggparentClass: w.parentNode && w.parentNode.parentNode && w.parentNode.parentNode.parentNode && w.parentNode.parentNode.parentNode.className,
+        });
+      } catch (e) { console.log('[pmg-optimize-toggle] DIAG err', e.message); }
+    }, 2500);
     return true;
   }
 
