@@ -210,44 +210,27 @@
 
     toggleWrap.appendChild(btnBuild);
     toggleWrap.appendChild(btnOptimize);
-    /* Insert directly above #goal as the spec intends. Chassis-v3 reparents
-       the legacy DOM, so anchoring to goalEl (not parent.firstChild) keeps
-       the toggle visually positioned right above the textarea regardless of
-       siblings (labels, helper text, etc.) that may be reordered. */
-    parent.insertBefore(toggleWrap, goalEl);
+    /* Anchor strategy: prefer the chassis-v3 idea-host (.pmgv3-idea-host)
+       so the toggle sits ABOVE the entire .field.field-primary block
+       (and thus above any chassis-generated eyebrow/helper). Falling back
+       to goalEl.parentNode keeps the legacy non-v3 layout working too. */
+    var ideaHost = document.querySelector('.pmgv3-idea-host');
+    if (ideaHost) {
+      var fieldPrimary = goalEl.closest('.field') || goalEl;
+      ideaHost.insertBefore(toggleWrap, fieldPrimary);
+    } else {
+      parent.insertBefore(toggleWrap, goalEl);
+    }
   }
 
   function mount() {
     goalEl = document.getElementById('goal');
     generateBtn = document.getElementById('generateBtn');
-    if (!goalEl || !generateBtn || !goalEl.parentNode) {
-      try { console.log('[pmg-optimize-toggle] mount waiting', { goal: !!goalEl, btn: !!generateBtn }); } catch (_) {}
-      return false;
-    }
+    if (!goalEl || !generateBtn || !goalEl.parentNode) return false;
     if (document.querySelector('.pmg-opt-toggle-wrap')) return true; /* already mounted */
     originalPlaceholder = goalEl.getAttribute('placeholder') || '';
     buildToggle(goalEl.parentNode);
     generateBtn.addEventListener('click', onGenerateClickCapture, true);
-    try { console.log('[pmg-optimize-toggle] mounted', { parent: goalEl.parentNode && goalEl.parentNode.className }); } catch (_) {}
-    setTimeout(function () {
-      try {
-        var w = document.querySelector('.pmg-opt-toggle-wrap');
-        if (!w) { console.log('[pmg-optimize-toggle] DIAG: wrap REMOVED from DOM'); return; }
-        var cs = getComputedStyle(w);
-        console.log('[pmg-optimize-toggle] DIAG', {
-          inDOM: !!w.isConnected,
-          offsetH: w.offsetHeight,
-          offsetW: w.offsetWidth,
-          display: cs.display,
-          visibility: cs.visibility,
-          opacity: cs.opacity,
-          parentTag: w.parentNode && w.parentNode.tagName,
-          parentClass: w.parentNode && w.parentNode.className,
-          grandparentClass: w.parentNode && w.parentNode.parentNode && w.parentNode.parentNode.className,
-          ggparentClass: w.parentNode && w.parentNode.parentNode && w.parentNode.parentNode.parentNode && w.parentNode.parentNode.parentNode.className,
-        });
-      } catch (e) { console.log('[pmg-optimize-toggle] DIAG err', e.message); }
-    }, 2500);
     return true;
   }
 

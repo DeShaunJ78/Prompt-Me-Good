@@ -4495,7 +4495,7 @@
   <script src="/scripts/pmg-stepper.js?v=stepper-2" defer></script>
   <link rel="stylesheet" href="/styles/pmg-adv-mirror.css?v=adv-mirror-9-touch-action" />
   <link rel="stylesheet" href="/styles/pmg-save-result.css?v=saveresult-1" />
-  <link rel="stylesheet" href="/styles/pmg-optimize-toggle.css?v=opt-3" />
+  <link rel="stylesheet" href="/styles/pmg-optimize-toggle.css?v=opt-4" />
   <script src="/scripts/pmg-adv-mirror.js?v=adv-mirror-11b-smart-exit-restore" defer></script>
   <script src="/scripts/pmg-save-result.js?v=saveresult-1" defer></script>
   <script src="/scripts/pmg-deadclick-audit.js?v=dca-1" defer></script>
@@ -5619,7 +5619,7 @@
                 <button class="btn btn-secondary" type="button" id="open-backup">🔑 Backup / Restore</button>
                 <button class="btn btn-secondary" type="button" id="collapse-all-history">Collapse All</button>
                 <button class="btn btn-secondary btn-destructive" type="button" id="clear-history">Clear All History</button>
-                <input type="file" id="import-history-file" accept="application/json,.json" style="display:none" />
+                <input type="file" id="import-history-file" accept="application/json,.json,.csv,text/csv" style="display:none" />
               </div>
             </div>
           </div>
@@ -7552,50 +7552,199 @@ Context:
         if (!file) return;
         const reader = new FileReader();
         reader.onload = function () {
+          const raw = String(reader.result || '');
+          /* Three accepted shapes:
+             A) Native pmg export: { items: [...] } OR an array of items with
+                {prompt, data} — the original handler's shape.
+             B) PromptPerfect-style JSON array: [{optimizedPrompt|prompt|text|
+                content, name|title|label}, ...] — needs normalization.
+             C) CSV: header row + rows where one column is the prompt and
+                an optional column is name/title/label. */
+          const id = function () { return 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8); };
+          const pickField = function (obj, names) {
+            for (var i = 0; i < names.length; i++) {
+              var v = obj[names[i]];
+              if (typeof v === 'string' && v.trim()) return v;
+            }
+            return '';
+          };
+          const PROMPT_FIELDS = ['optimizedPrompt', 'prompt', 'text', 'content'];
+          const NAME_FIELDS = ['name', 'title', 'label'];
+          const firstStringField = function (obj) {
+            for (var k in obj) {
+              if (Object.prototype.hasOwnProperty.call(obj, k) && typeof obj[k] === 'string' && obj[k].trim()) return obj[k];
+            }
+            return '';
+          };
+          const normalizeFromPlain = function (text, name) {
+            return {
+              id: id(),
+              savedAt: Date.now(),
+              data: { goal: name || '', imported: true },
+              prompt: String(text),
+              favorite: false,
+              nickname: name ? String(name).slice(0, 80) : undefined,
+              useCount: 0,
+              tags: ['imported']
+            };
+          };
+          const parseCSV = function (txt) {
+            /* Minimal RFC4180-ish parser: handles quoted fields with embedded
+               commas, escaped quotes (""), CRLF / LF line endings. */
+            var rows = [], cur = [], field = '', inQ = false;
+            for (var i = 0; i < txt.length; i++) {
+              var c = txt[i];
+              if (inQ) {
+                if (c === '"') {
+                  if (txt[i + 1] === '"') { field += '"'; i++; } else { inQ = false; }
+                } else { field += c; }
+              } else {
+                if (c === '"') { inQ = true; }
+                else if (c === ',') { cur.push(field); field = ''; }
+                else if (c === '\n') { cur.push(field); rows.push(cur); cur = []; field = ''; }
+                else if (c === '\r') { /* skip — handled by \n */ }
+                else { field += c; }
+              }
+            }
+            if (field.length || cur.length) { cur.push(field); rows.push(cur); }
+            return rows.filter(function (r) { return r.length > 0 && !(r.length === 1 && r[0] === ''); });
+          };
+
+          var normalized = null;
+          var nativeShape = false;
           try {
-            const parsed = JSON.parse(String(reader.result));
-            const incoming = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.items) ? parsed.items : null);
-            if (!incoming) throw new Error('Invalid file');
-            const valid = incoming.filter(function (i) {
-              return i && typeof i === 'object' && typeof i.prompt === 'string' && i.data && typeof i.data === 'object';
-            }).map(function (i) {
-              return {
-                id: i.id || ('p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8)),
-                savedAt: typeof i.savedAt === 'number' ? i.savedAt : Date.now(),
-                data: i.data,
-                prompt: i.prompt,
-                favorite: !!i.favorite,
-                nickname: typeof i.nickname === 'string' ? i.nickname.slice(0, 80) : undefined,
-                useCount: typeof i.useCount === 'number' ? i.useCount : 0,
-                lastUsedAt: typeof i.lastUsedAt === 'number' ? i.lastUsedAt : undefined,
-                tags: Array.isArray(i.tags) ? i.tags.filter(function (t) { return typeof t === 'string'; }) : []
-              };
-            });
-            if (valid.length === 0) { showToast('No valid prompts in that file.'); return; }
-            const replace = window.confirm('Import ' + valid.length + ' prompt' + (valid.length === 1 ? '' : 's') + '?\n\nOK = replace your current history.\nCancel = merge with what you have.');
-            let next;
+            var parsed = JSON.parse(raw);
+            /* Shape A: native pmg export. */
+            var nativeIncoming = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.items) ? parsed.items : null);
+            if (nativeIncoming && nativeIncoming.some(function (i) { return i && typeof i.prompt === 'string' && i.data && typeof i.data === 'object'; })) {
+              nativeShape = true;
+              normalized = nativeIncoming.filter(function (i) {
+                return i && typeof i === 'object' && typeof i.prompt === 'string' && i.data && typeof i.data === 'object';
+              }).map(function (i) {
+                return {
+                  id: i.id || id(),
+                  savedAt: typeof i.savedAt === 'number' ? i.savedAt : Date.now(),
+                  data: i.data,
+                  prompt: i.prompt,
+                  favorite: !!i.favorite,
+                  nickname: typeof i.nickname === 'string' ? i.nickname.slice(0, 80) : undefined,
+                  useCount: typeof i.useCount === 'number' ? i.useCount : 0,
+                  lastUsedAt: typeof i.lastUsedAt === 'number' ? i.lastUsedAt : undefined,
+                  tags: Array.isArray(i.tags) ? i.tags.filter(function (t) { return typeof t === 'string'; }) : []
+                };
+              });
+            } else if (Array.isArray(parsed)) {
+              /* Shape B: PromptPerfect-style array. */
+              normalized = parsed.map(function (obj) {
+                if (!obj || typeof obj !== 'object') return null;
+                var text = pickField(obj, PROMPT_FIELDS) || firstStringField(obj);
+                if (!text) return null;
+                var name = pickField(obj, NAME_FIELDS);
+                return normalizeFromPlain(text, name);
+              }).filter(Boolean);
+            }
+          } catch (_) {
+            /* Not JSON — fall through to CSV. */
+          }
+          if (!normalized) {
+            /* Shape C: CSV. */
+            try {
+              var rows = parseCSV(raw);
+              if (rows.length >= 2) {
+                var headers = rows[0].map(function (h) { return String(h || '').trim().toLowerCase(); });
+                var promptIdx = -1, nameIdx = -1;
+                for (var hi = 0; hi < headers.length; hi++) {
+                  var h = headers[hi];
+                  if (promptIdx === -1 && (h === 'prompt' || h === 'text' || h === 'content' || h === 'optimizedprompt')) promptIdx = hi;
+                  if (nameIdx === -1 && (h === 'name' || h === 'title' || h === 'label')) nameIdx = hi;
+                }
+                if (promptIdx !== -1) {
+                  normalized = rows.slice(1).map(function (r) {
+                    var t = String(r[promptIdx] || '').trim();
+                    if (!t) return null;
+                    var n = nameIdx !== -1 ? String(r[nameIdx] || '').trim() : '';
+                    return normalizeFromPlain(t, n);
+                  }).filter(Boolean);
+                }
+              }
+            } catch (_) { /* fall through to error toast below */ }
+          }
+
+          if (!normalized) {
+            showToast('File format not recognized. Export a JSON or CSV from PromptPerfect and try again.');
+            importFileEl.value = '';
+            return;
+          }
+
+          /* Dedup by prompt text (trim + lowercase). Native-shape items keep
+             their own IDs; for normalized PP/CSV items each carries a fresh
+             id() already, so collisions there are vanishingly unlikely. */
+          var seenText = Object.create(null);
+          var beforeDedup = normalized.length;
+          var valid = normalized.filter(function (i) {
+            var key = String(i.prompt || '').trim().toLowerCase();
+            if (!key || seenText[key]) return false;
+            seenText[key] = true;
+            return true;
+          });
+          var dupCount = beforeDedup - valid.length;
+          if (dupCount > 0) {
+            try { console.log('[pmg-vault-import] removed ' + dupCount + ' duplicate prompt' + (dupCount === 1 ? '' : 's')); } catch (_) {}
+          }
+
+          if (valid.length === 0) {
+            showToast('No prompts found in this file.');
+            importFileEl.value = '';
+            return;
+          }
+
+          /* Native-shape imports keep the original replace/merge dialog
+             (back-compat). Normalized PP/CSV imports always merge — they're
+             additive and there's no expectation of overwriting native data. */
+          var next;
+          if (nativeShape) {
+            var replace = window.confirm('Import ' + valid.length + ' prompt' + (valid.length === 1 ? '' : 's') + '?\n\nOK = replace your current history.\nCancel = merge with what you have.');
             if (replace) {
               next = valid;
             } else {
-              const existing = loadHistory();
-              const seen = new Set(existing.map(function (i) { return i.id; }));
-              const merged = existing.slice();
+              var existing = loadHistory();
+              var seenId = new Set(existing.map(function (i) { return i.id; }));
+              var merged = existing.slice();
               valid.forEach(function (i) {
-                if (seen.has(i.id)) i.id = 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-                seen.add(i.id);
+                if (seenId.has(i.id)) i.id = id();
+                seenId.add(i.id);
                 merged.push(i);
               });
-              const favs = merged.filter(function (i) { return i.favorite; });
-              const nonFavs = merged.filter(function (i) { return !i.favorite; })
+              var favs = merged.filter(function (i) { return i.favorite; });
+              var nonFavs = merged.filter(function (i) { return !i.favorite; })
                 .sort(function (a, b) { return b.savedAt - a.savedAt; }).slice(0, HISTORY_LIMIT);
               next = favs.concat(nonFavs);
             }
-            saveHistory(next);
-            renderHistory();
-            showToast('Imported ' + valid.length + ' prompt' + (valid.length === 1 ? '' : 's') + '.');
-          } catch (e) {
-            showToast('Could not read that file.');
+          } else {
+            var existing2 = loadHistory();
+            /* Cross-source dedup: drop incoming whose text matches any
+               existing prompt (also trim+lowercase). */
+            var existingText = Object.create(null);
+            existing2.forEach(function (i) {
+              var k = String(i.prompt || '').trim().toLowerCase();
+              if (k) existingText[k] = true;
+            });
+            var freshOnly = valid.filter(function (i) {
+              return !existingText[String(i.prompt || '').trim().toLowerCase()];
+            });
+            var merged2 = existing2.concat(freshOnly);
+            var favs2 = merged2.filter(function (i) { return i.favorite; });
+            var nonFavs2 = merged2.filter(function (i) { return !i.favorite; })
+              .sort(function (a, b) { return b.savedAt - a.savedAt; }).slice(0, HISTORY_LIMIT);
+            next = favs2.concat(nonFavs2);
+            valid = freshOnly; /* report only the actually-added count */
           }
+          saveHistory(next);
+          renderHistory();
+          showToast('Imported ' + valid.length + ' prompt' + (valid.length === 1 ? '' : 's') + (dupCount > 0 ? ' (' + dupCount + ' duplicate' + (dupCount === 1 ? '' : 's') + ' skipped)' : '') + '.');
+          /* Fire event so any future Vault refresh listeners can react
+             without coupling to this handler's internals. */
+          try { document.dispatchEvent(new CustomEvent('pmg:vault:imported', { detail: { count: valid.length, duplicates: dupCount } })); } catch (_) {}
           importFileEl.value = '';
         };
         reader.onerror = function () { showToast('Could not read that file.'); importFileEl.value = ''; };
@@ -14043,7 +14192,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <script src="/scripts/pmg-mailto-fallback.js?v=mlf-1" defer></script>
 <script src="/scripts/pmg-contact-modal.js?v=cm-1" defer></script>
-<script src="/scripts/pmg-optimize-toggle.js?v=opt-3" defer></script>
+<script src="/scripts/pmg-optimize-toggle.js?v=opt-4" defer></script>
 <script>
   /* punchlist-1+2 (2026-05-20):
      (1) #runBtn first-reveal pulse — fires exactly once the first time
