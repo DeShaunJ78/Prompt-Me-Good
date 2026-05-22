@@ -1,0 +1,53 @@
+commit 1dcffc238219fe4271556698b2188e7ef155eb58 (origin/main, origin/HEAD)
+Author: DeShaunJ78 <deshaun.jonesd@gmail.com>
+Date:   Thu May 21 15:08:18 2026 -0500
+
+    Phase 1-5 complete — full CodeMeGood build
+
+ .gitignore                                                                         |   78 +-
+ .replit                                                                            |   35 +-
+ README.md                                                                          |   99 ++
+ artifacts/api-server/build.mjs                                                     |    2 -
+ artifacts/api-server/package.json                                                  |   28 +-
+ artifacts/api-server/src/app.ts                                                    |   88 +-
+ artifacts/api-server/src/index.ts                                                  |   38 -
+ artifacts/api-server/src/lib/usage.ts                                              |  189 ++++
+ artifacts/api-server/src/middlewares/clerkProxyMiddleware.ts                       |   91 ++
+ artifacts/api-server/src/middlewares/requireAuth.ts                                |   19 +
+ artifacts/api-server/src/routes/adminBootstrap.ts                                  |  186 ++++
+ artifacts/api-server/src/routes/analyze.ts                                         |  143 +++
+ artifacts/api-server/src/routes/companion.ts                                       |  351 +++++++
+ artifacts/api-server/src/routes/debug.ts                                           |  100 ++
+ artifacts/api-server/src/routes/feature.ts                                         |  198 ++++
+ artifacts/api-server/src/routes/generate.ts                                        |  251 +++++
+ artifacts/api-server/src/routes/index.ts                                           |   48 +-
+ artifacts/api-server/src/routes/launch.ts                                          |  256 +++++
+ artifacts/api-server/src/routes/onboarding.ts                                      |   89 ++
+ artifacts/api-server/src/routes/projects.ts                                        |  157 +++
+ artifacts/api-server/src/routes/render.ts                                          |   80 ++
+ artifacts/api-server/src/routes/score.ts                                           |   95 ++
+ artifacts/api-server/src/routes/stripe.ts                                          |  165 +++
+ artifacts/api-server/src/routes/tier.ts                                            |  186 ++++
+ artifacts/api-server/src/routes/usage.ts                                           |  179 ++--
+ artifacts/api-server/tsconfig.json                                                 |    9 +-
+ artifacts/mockup-sandbox/package.json                                              |    6 +-
+ artifacts/mockup-sandbox/src/.generated/mockup-components.ts                       |   29 +-
+ artifacts/mockup-sandbox/vite.config.ts                                            |    1 -
+ artifacts/project-brain/.replit-artifact/artifact.toml                             |   31 +
+ artifacts/project-brain/components.json                                            |   20 +
+ artifacts/project-brain/index.html                                                 |   24 +
+ artifacts/project-brain/package.json                                               |   83 ++
+ artifacts/project-brain/public/favicon.svg                                         |    3 +
+ artifacts/project-brain/public/logo.svg                                            |    9 +
+ artifacts/project-brain/public/opengraph.jpg                                       |  Bin 0 -> 36231 bytes
+ artifacts/project-brain/public/robots.txt                                          |    2 +
+ artifacts/project-brain/src/App.tsx                                                |  259 +++++
+ artifacts/project-brain/src/api/admin.js                                           |   51 +
+ artifacts/project-brain/src/api/analyze.js                                         |   68 ++
+ artifacts/project-brain/src/api/companion.js                                       |  128 +++
+ artifacts/project-brain/src/api/debug.js                                           |   19 +
+ artifacts/project-brain/src/api/feature.js                                         |  323 ++++++
+ artifacts/project-brain/src/api/generate.js                                        |  143 +++
+ artifacts/project-brain/src/api/launch.js                                          |  316 ++++++
+ artifacts/project-brain/src/api/onboarding.js                                      |   20 +
+:
