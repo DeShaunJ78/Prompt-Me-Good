@@ -1,0 +1,243 @@
+─── V4 MASTER SPEC — COPY, MODELS, FAQ, JSON-LD ─────────────────
+
+PAGE META
+  Title:       PromptPerfect Alternative 2026 — PromptMeGood
+  Description: PromptPerfect is shutting down September 1, 2026. 
+               PromptMeGood is the most complete replacement — 
+               prompt optimizer, builder, image prompts, voice 
+               system, and Vault. Free to start.
+  Canonical:   https://www.promptmegood.com/promptperfect.html
+  OG Title:    PromptPerfect Is Shutting Down. Here's Where to Go.
+  OG Desc:     Everything PromptPerfect did, and the features it 
+               never had. Import your prompts. Free to start.
+
+─── SECTION 1 — HERO ────────────────────────────────────────────
+H1:   PromptPerfect Is Shutting Down.
+      Here's Where to Go.
+Sub:  Everything PromptPerfect did — and the features it 
+      never had. Import your existing prompts on day one.
+      Free to start, no card required.
+CTA1: Start Free          → /app
+CTA2: See Plans           → /pricing.html
+
+─── SECTION 2 — TIMELINE CALLOUT CARD ──────────────────────────
+Heading (small caps or eyebrow style): SHUTDOWN TIMELINE
+Line 1: New signups closed — June 2026
+Line 2: All features go offline — September 1, 2026
+Line 3: User data permanently deleted — October 1, 2026
+Footer note: Export your prompts from PromptPerfect now 
+             (Settings → Export Data) before access is cut off.
+
+─── SECTION 3 — COMPARISON TABLE ───────────────────────────────
+Table caption (visually hidden for a11y): 
+  "Feature comparison: PromptPerfect vs PromptMeGood"
+
+Headers: Feature | PromptPerfect | PromptMeGood
+
+Rows (exact strings):
+  Optimize an existing prompt       | ✓ | ✓
+  Build a prompt from a goal        | ✗ | ✓
+  Personality & voice system        | ✗ | ✓
+  Image prompt generation           | ✗ | ✓
+  Reverse-engineer an image         | ✗ | ✓
+  Run your prompt in-app            | ✗ | ✓
+  Prompt Vault — save & organize    | ✓ | ✓
+  Import your existing prompts      | ✗ | ✓
+  Works with ChatGPT, Claude,       |   |
+    Gemini & Perplexity             | ✓ | ✓
+  Free plan                         | ✓ | ✓
+  Status                            | Shutting down Sep 2026 
+                                    | Active & improving
+
+─── SECTION 4 — MIGRATION STEPS ────────────────────────────────
+H2: Switch in 3 steps.
+Sub: Takes less than 5 minutes. Your prompts come with you.
+
+Step 1 — Export
+  Heading: Export from PromptPerfect
+  Body:    Open PromptPerfect, go to Settings → Export Data, 
+           and download your prompt library as a JSON file. 
+           Do this before September — access closes 
+           October 1, 2026.
+
+Step 2 — Sign up
+  Heading: Create your free account
+  Body:    Sign up at PromptMeGood — no credit card required. 
+           Your first 7 days include full trial access to 
+           every feature.
+
+Step 3 — Import
+  Heading: Bring your prompts with you
+  Body:    Open the Vault, click Import, and select the file 
+           you exported from PromptPerfect. Your entire prompt 
+           library lands in your Vault in seconds.
+
+─── SECTION 5 — MODELS SUPPORTED ───────────────────────────────
+H2: Works with the AI tools you already use.
+Sub: Build or optimize prompts for any major model — 
+     then run them wherever you work.
+
+Models (display as a clean inline list or pill row):
+  ChatGPT · Claude · Gemini · Perplexity
+
+Note below list (small, muted):
+  Prompts are plain text — paste them into any AI, 
+  any platform, any workflow.
+
+─── SECTION 6 — FINAL CTA ───────────────────────────────────────
+H2:   Your prompts deserve a permanent home.
+Sub:  PromptMeGood is actively developed, independently run, 
+      and not going anywhere.
+CTA:  Create Free Account    → /app
+Link: Questions? See pricing → /pricing.html
+
+─── FAQ SECTION ─────────────────────────────────────────────────
+H2: Frequently asked questions
+
+Q1: When is PromptPerfect shutting down?
+A1: PromptPerfect stops accepting new signups in June 2026 
+    and goes fully offline on September 1, 2026. User data 
+    is permanently deleted on October 1, 2026. Export your 
+    prompts from Settings → Export Data before that date.
+
+Q2: Can I import my PromptPerfect prompts into PromptMeGood?
+A2: Yes. Export your prompt library from PromptPerfect as a 
+    JSON file, then use the Import button in your PromptMeGood 
+    Vault to bring everything across. Your prompts land 
+    immediately — no manual copy-pasting required.
+
+Q3: Is PromptMeGood free?
+A3: Yes. PromptMeGood has a free plan with no credit card 
+    required. New accounts also include a 7-day trial with 
+    access to every feature so you can evaluate it fully 
+    before deciding on a paid plan.
+
+Q4: Does PromptMeGood work with ChatGPT, Claude, and Gemini?
+A4: Yes. PromptMeGood builds and optimizes prompts for 
+    ChatGPT, Claude, Gemini, and Perplexity. Prompts are 
+    plain text — you paste them wherever you work.
+
+Q5: What does PromptMeGood do that PromptPerfect didn't?
+A5: PromptMeGood adds prompt building from scratch, a 
+    personality and voice system, image prompt generation, 
+    image reverse-engineering, in-app prompt execution, 
+    and a full Vault for organizing your library — while 
+    keeping the core prompt optimization that PromptPerfect 
+    was known for.
+
+Q6: Is PromptMeGood going to shut down too?
+A6: PromptMeGood is independently built and operated — 
+    it is not part of a larger acquisition or corporate 
+    product suite. There are no plans to shut it down.
+
+─── JSON-LD STRUCTURED DATA ────────────────────────────────────
+Embed two JSON-LD blocks in <head>:
+
+BLOCK 1 — WebPage
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "PromptPerfect Alternative 2026 — PromptMeGood",
+  "description": "PromptPerfect is shutting down September 1, 
+    2026. PromptMeGood is the most complete replacement — 
+    prompt optimizer, builder, image prompts, voice system, 
+    and Vault. Free to start.",
+  "url": "https://www.promptmegood.com/promptperfect.html",
+  "breadcrumb": {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.promptmegood.com"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "PromptPerfect Alternative",
+        "item": "https://www.promptmegood.com/promptperfect.html"
+      }
+    ]
+  }
+}
+
+BLOCK 2 — FAQPage
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "When is PromptPerfect shutting down?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "PromptPerfect stops accepting new signups in 
+          June 2026 and goes fully offline on September 1, 2026. 
+          User data is permanently deleted on October 1, 2026. 
+          Export your prompts from Settings → Export Data 
+          before that date."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I import my PromptPerfect prompts into 
+        PromptMeGood?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Export your prompt library from 
+          PromptPerfect as a JSON file, then use the Import 
+          button in your PromptMeGood Vault to bring everything 
+          across. Your prompts land immediately — no manual 
+          copy-pasting required."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is PromptMeGood free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. PromptMeGood has a free plan with no 
+          credit card required. New accounts also include a 
+          7-day trial with access to every feature."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does PromptMeGood work with ChatGPT, Claude, 
+        and Gemini?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. PromptMeGood builds and optimizes prompts 
+          for ChatGPT, Claude, Gemini, and Perplexity. Prompts 
+          are plain text — paste them wherever you work."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What does PromptMeGood do that PromptPerfect 
+        didn't?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "PromptMeGood adds prompt building from scratch, 
+          a personality and voice system, image prompt 
+          generation, image reverse-engineering, in-app prompt 
+          execution, and a full Vault for organizing your 
+          library — while keeping the core prompt optimization 
+          that PromptPerfect was known for."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is PromptMeGood going to shut down too?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "PromptMeGood is independently built and 
+          operated — it is not part of a larger acquisition 
+          or corporate product suite. There are no plans 
+          to shut it down."
+      }
+    }
+  ]
+}
+─────────────────────────────────────────────────────────────────
