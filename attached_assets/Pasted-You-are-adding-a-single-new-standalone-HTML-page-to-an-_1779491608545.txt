@@ -1,0 +1,96 @@
+You are adding a single new standalone HTML page to an existing 
+production codebase. Do not modify any existing files except the 
+two listed under "Safe to modify" below.
+
+─── READ FIRST (do not modify) ───────────────────────────────────
+artifacts/promptmegood/public/styles/pmg-g-theme.css
+  → Study the CSS custom properties (--pmg-* tokens). Use only 
+    these for all colors, spacing, and typography. Do not invent 
+    new values.
+artifacts/promptmegood/index.html
+  → Study the nav and footer structure only. Mirror them exactly 
+    on the new page. Do not modify this file.
+──────────────────────────────────────────────────────────────────
+
+─── CREATE (one new file) ────────────────────────────────────────
+artifacts/promptmegood/promptperfect.html
+──────────────────────────────────────────────────────────────────
+
+─── SAFE TO MODIFY ──────────────────────────────────────────────
+artifacts/promptmegood/public/sitemap.xml
+  → Add the new page as an entry.
+vite.config.ts (only if promptmegood pages are listed under 
+rollupOptions.input)
+  → Add promptperfect.html to the input list alongside the others.
+  → If you are not sure, leave vite.config.ts alone.
+──────────────────────────────────────────────────────────────────
+
+─── DO NOT TOUCH ────────────────────────────────────────────────
+app.html, pricing.html, guide.html, or any other existing page.
+Any file in public/scripts/.
+Any file in artifacts/api-server/.
+──────────────────────────────────────────────────────────────────
+
+─── PAGE REQUIREMENTS ───────────────────────────────────────────
+Purpose: capture PromptPerfect users searching for an alternative 
+before their September 1 2026 shutdown.
+
+SEO: 
+  <title>PromptPerfect Alternative 2026 — PromptMeGood</title>
+  Meta description targeting "PromptPerfect alternative", 
+  "PromptPerfect shutting down", "PromptPerfect replacement 2026".
+  One H1: "PromptPerfect Is Shutting Down. Here's Where to Go."
+
+Layout (top to bottom, clean and minimal — no more than 5 
+sections, no cluttered grids):
+
+  1. HERO
+     H1 above. One sentence subheading: "Everything PromptPerfect 
+     did, and the features it never had. Free to start."
+     Two buttons: "Start Free" → /app and "See Plans" → /pricing.html
+     No background image. Dark teal gradient using --pmg-* tokens.
+
+  2. TIMELINE CALLOUT
+     A single clean card: "PromptPerfect stops accepting signups: 
+     June 2026. Goes offline: September 1 2026. Your data deleted: 
+     October 1 2026. Don't wait."
+     Subtle warning tone using existing theme tokens. No red unless 
+     the theme has a warning token.
+
+  3. COMPARISON TABLE
+     Three columns: Feature | PromptPerfect | PromptMeGood
+     Rows:
+       Prompt optimizer          | ✓ | ✓
+       Build prompt from scratch | ✗ | ✓
+       Image prompt generation   | ✗ | ✓
+       Personality voice system  | ✗ | ✓
+       Run prompt in-app         | ✗ | ✓
+       Prompt Vault (save & org) | ✓ | ✓
+       Import your existing data | ✗ | ✓
+       Free plan                 | ✓ | ✓
+       Status                    | Shutting down Sep 2026 | Active
+     Clean table. No heavy borders. Use theme tokens for alternating 
+     row tint.
+
+  4. MIGRATION STEPS
+     H2: "Switch in 3 steps."
+     Three numbered steps in a horizontal row (stack vertically on 
+     mobile):
+       1. Export your prompts from PromptPerfect 
+          (Settings → Export Data) before September.
+       2. Create a free PromptMeGood account.
+       3. Import your prompts into your Vault on day one.
+     No icons needed. Clean numbered typography.
+
+  5. FINAL CTA
+     "Your prompts deserve a permanent home."
+     Single button: "Create Free Account" → /app
+     No footer duplication — use the shared footer from index.html.
+
+Design rules:
+  - Dark background matching the rest of the site.
+  - No custom fonts. Use whatever the theme already loads.
+  - Mobile responsive. Stack everything single column below 640px.
+  - No animations, no parallax, no JavaScript on this page.
+  - Page must be fully functional with zero JS.
+──────────────────────────────────────────────────────────────────
