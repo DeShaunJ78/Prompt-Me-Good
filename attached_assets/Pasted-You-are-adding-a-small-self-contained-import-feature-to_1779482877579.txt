@@ -1,0 +1,185 @@
+You are adding a small, self-contained import feature to the 
+existing Prompt Vault UI. You will not modify any existing scripts 
+or change how the Vault works. You are adding one button and one 
+script that sits alongside the Vault.
+
+─── READ FIRST (do not modify) ───────────────────────────────────
+artifacts/promptmegood/public/styles/pmg-g-theme.css
+  → Study all --pmg-* CSS custom properties. Use only these.
+artifacts/promptmegood/app.html
+  → Find the Vault UI section. Note the exact element that 
+    contains the Vault header row (where the Vault title and any 
+    existing action buttons live). You will insert one new button 
+    into that header row.
+  → Find how the existing "Save to Vault" flow posts a prompt. 
+    Note the endpoint URL and request shape. You will reuse this 
+    exact endpoint in your script.
+  → Find the <script> tags at the bottom. You will add your two 
+    new tags at the END, after all existing scripts.
+  → Do not modify any existing markup except inserting one button 
+    element into the Vault header row and adding two tags at the 
+    bottom.
+artifacts/promptmegood/public/scripts/pmg-ux.js
+  → Search for the vault save function or the endpoint used to 
+    save a prompt to the vault. Read only — do not modify.
+    Note the endpoint path and the exact request body shape.
+──────────────────────────────────────────────────────────────────
+
+─── CREATE (two new files only) ─────────────────────────────────
+artifacts/promptmegood/public/scripts/pmg-vault-import.js
+artifacts/promptmegood/public/styles/pmg-vault-import.css
+──────────────────────────────────────────────────────────────────
+
+─── MODIFY (one file, minimal) ──────────────────────────────────
+artifacts/promptmegood/app.html
+  → In the Vault header row: add one button element:
+      <button 
+        id="pmg-vault-import-btn" 
+        class="pmg-vault-import-trigger" 
+        aria-label="Import prompts from PromptPerfect">
+        Import
+      </button>
+    Place it to the right of any existing Vault action buttons. 
+    Do not rearrange existing buttons.
+  → At the END of the <link> block: add one tag for 
+    pmg-vault-import.css.
+  → At the END of the <script> block: add one tag for 
+    pmg-vault-import.js.
+  → Touch nothing else.
+──────────────────────────────────────────────────────────────────
+
+─── DO NOT TOUCH ────────────────────────────────────────────────
+pmg-ux.js, pmg-chassis-v3.js, pmg-visual-studio.js, 
+pmg-g-theme.css, pmg-auto-boost.js, pmg-expert-center.js,
+pmg-storyboard.js, pmg-business-mode.js, pmg-optimize-toggle.js.
+Any file in artifacts/api-server/.
+Any file other than the two you are creating and app.html.
+──────────────────────────────────────────────────────────────────
+
+─── pmg-vault-import.js REQUIREMENTS ────────────────────────────
+
+IIFE. Kill-switch: if localStorage key "pmg_vault_import_disable" 
+=== "1", exit immediately.
+
+State: 
+  let importing = false;
+
+On DOMContentLoaded:
+
+1. Find #pmg-vault-import-btn. If not found, exit silently.
+
+2. On button click: if importing === true, do nothing. Otherwise:
+   a. Create and click a hidden <input type="file"> element 
+      (accept=".json,.csv"). Do not append it to the DOM 
+      permanently — create, click, discard.
+   b. On file selection: call handleImport(file).
+
+HANDLEIMPORT(file):
+
+1. Set importing = true. Update button label to "Importing…". 
+   Disable the button.
+
+2. Read the file as text using FileReader.
+
+3. Parse the file. Support two formats:
+
+   FORMAT A — JSON array:
+   The file is an array of objects. For each object, look for 
+   these fields in order of priority:
+     prompt text: "optimizedPrompt" || "prompt" || "text" || 
+                  "content" || first string field found
+     name/title:  "name" || "title" || "label" || null
+   Skip any object where no prompt text can be found.
+
+   FORMAT B — CSV:
+   Parse CSV manually (handle quoted fields). 
+   First row is headers. 
+   Find columns matching: "prompt", "text", "content", 
+   "optimizedPrompt" (case-insensitive) for the prompt text.
+   Find columns matching: "name", "title", "label" 
+   for an optional title.
+   Skip rows where the prompt column is empty.
+
+   If the file cannot be parsed as either format: show the error 
+   UI (see below) with message "File format not recognized. 
+   Export a JSON or CSV from PromptPerfect and try again."
+   Reset state and return.
+
+4. After parsing: deduplicate by prompt text (trim + lowercase 
+   comparison). Log to console how many duplicates were removed.
+
+5. If 0 valid prompts found after deduplication: show error UI 
+   "No prompts found in this file." Reset state and return.
+
+6. Show the progress UI: 
+   "Importing X prompts…" with a simple counter that updates.
+
+7. Get the Supabase auth token from supabase.auth.getSession() 
+   if supabase is on window. 
+
+8. Import prompts one at a time with a 150ms delay between each 
+   (to avoid hammering the API). For each prompt:
+   a. POST to the exact vault save endpoint you found in 
+      pmg-ux.js, with the exact same request body shape, 
+      substituting in the imported prompt text and name.
+   b. If the request fails with 429 (rate limit): pause 2 
+      seconds and retry once. If it fails again, skip that 
+      prompt and continue.
+   c. If the request fails with any other error: skip that 
+      prompt, increment a "failed" counter, continue.
+   d. Increment the success counter. Update the progress UI.
+
+9. On completion: show the result UI:
+   "Imported N of M prompts successfully."
+   If failed > 0: append " (F failed — you can retry.)"
+   Show a "Done" button that dismisses the result UI and resets 
+   the button to its original label.
+
+10. If importing was fully successful (failed === 0): fire a 
+    custom DOM event "pmg:vault:imported" on document so any 
+    existing Vault refresh listeners can pick it up without 
+    needing direct coupling to pmg-ux.js internals.
+
+WHAT THIS SCRIPT MUST NEVER DO:
+  - Never call pmg-ux.js functions directly by name.
+  - Never manipulate the Vault list DOM directly. 
+    Let the existing Vault refresh handle display updates.
+  - Never store imported prompt text in localStorage.
+  - Never send more than one request at a time to the vault 
+    save endpoint.
+──────────────────────────────────────────────────────────────────
+
+─── pmg-vault-import.css REQUIREMENTS ───────────────────────────
+
+All values use --pmg-* CSS custom properties only.
+
+.pmg-vault-import-trigger
+  Small secondary button. Matches the visual weight of other 
+  Vault header action buttons. Does not compete visually with 
+  any primary CTA in the Vault. Slightly muted until hover.
+
+.pmg-vault-import-trigger:disabled
+  Opacity 0.5. Cursor not-allowed.
+
+.pmg-vault-import-progress
+  Small inline text below the Vault header. Muted color.
+  Font size: 0.8rem. Appears only during import.
+
+.pmg-vault-import-result
+  Small inline callout below the Vault header. 
+  Success tone if fully successful (use theme success token 
+  if available, else accent).
+  Neutral/warning tone if partial failures.
+  Includes the "Done" dismiss button — minimal, text-only.
+
+.pmg-vault-import-error
+  Small inline error text. Uses theme error or muted token.
+  Font size: 0.8rem.
+
+All injected UI elements:
+  - Never overlap or obscure Vault list items.
+  - Insert between the Vault header row and the Vault list, 
+    not inside either.
+  - Fully hidden when not active (display:none default, 
+    toggled by the script via class or inline style).
+──────────────────────────────────────────────────────────────────
