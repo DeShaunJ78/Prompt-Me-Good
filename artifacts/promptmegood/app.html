@@ -8329,14 +8329,6 @@ Context:
           }).join('');
           wrap.classList.add('is-on');
           wrap.style.display = 'block';
-          // strength-slot-show-1 (2026-05-23): chassis-v3 performTotalReset()
-          // forces #pmgv3-strength-slot to display:none !important and never
-          // un-hides it. Since #strength-score is nested inside that slot,
-          // showing the inner wrap alone leaves the bar invisible. Clear the
-          // parent slot's inline hide here so the bar appears whenever the
-          // score renders (input, generate, boost, etc.).
-          const slot = document.getElementById('pmgv3-strength-slot');
-          if (slot) slot.style.removeProperty('display');
         }
 
         function hide() {
