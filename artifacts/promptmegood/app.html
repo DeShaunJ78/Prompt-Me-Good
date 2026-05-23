@@ -8804,7 +8804,22 @@ Context:
         try { localStorage.setItem(TEMPLATES_KEY, JSON.stringify(list)); } catch (e) {}
       }
 
-      const templatesGrid = document.getElementById('templates-grid');
+      /* templates-grid-stub-1 (2026-05-23): the legacy templates UI elements
+         (#templates-grid, #export-templates, #import-templates,
+         #import-templates-file) were removed from app.html during the v3
+         chassis migration but the JS block from here through L~9035 still
+         binds .innerHTML and .addEventListener to them. The first null-deref
+         (at `templatesGrid.innerHTML = ...` inside renderTemplates) aborts
+         the entire <script> block, which means EVERY subsequent definition
+         in this same block — including the #prompt-form submit handler at
+         L~9778 — never runs. That's why ocb-1..ocb-4 fired form.requestSubmit()
+         but no /api/generate-stream call ever reached the api-server: there
+         was no submit listener bound to receive the dispatch. Falling back
+         to detached <div>/<button>/<input> elements keeps every read/write
+         in this dead branch safe so the rest of the script block executes.
+         Remove this stub once the templates UI is either restored or its
+         entire JS block is deleted. */
+      const templatesGrid = document.getElementById('templates-grid') || document.createElement('div');
 
       function ensureTemplateIds() {
         const list = loadUserTemplates();
@@ -8884,9 +8899,11 @@ Context:
         showToast('Loaded template: ' + t.title);
       }
 
-      const exportTplBtn = document.getElementById('export-templates');
-      const importTplBtn = document.getElementById('import-templates');
-      const importTplFile = document.getElementById('import-templates-file');
+      /* templates-grid-stub-1 cont'd: same null-deref protection for the
+         export/import controls — see comment above L~8825. */
+      const exportTplBtn = document.getElementById('export-templates') || document.createElement('button');
+      const importTplBtn = document.getElementById('import-templates') || document.createElement('button');
+      const importTplFile = document.getElementById('import-templates-file') || document.createElement('input');
 
       exportTplBtn.addEventListener('click', function () {
         const list = loadUserTemplates();
