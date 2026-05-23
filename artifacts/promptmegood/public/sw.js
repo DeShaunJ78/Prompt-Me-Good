@@ -16,7 +16,7 @@
  * Versioning: bump CACHE_VERSION to invalidate every cached asset and
  * force fresh downloads on next visit. Old caches are deleted on activate.
  */
-const CACHE_VERSION = 'pmg-v3-2026-05-19-bk-download-fix';
+const CACHE_VERSION = 'pmg-v4-2026-05-23-seo-refresh';
 const HTML_CACHE = `${CACHE_VERSION}-html`;
 const ASSET_CACHE = `${CACHE_VERSION}-assets`;
 
