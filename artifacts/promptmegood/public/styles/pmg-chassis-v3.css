@@ -1325,10 +1325,15 @@ html.pmg-chassis-v3 #resultBox.is-streaming {
   min-height: 360px !important;
   max-height: none !important;
   position: relative;
-  color: transparent;
-  caret-color: transparent;
-  user-select: none;
   overflow: hidden;
+  /* stream-visible-1 (2026-05-23): removed color:transparent and
+     caret-color:transparent. The class is supposed to be torn down
+     by __pmgClearStreamStatus() on the first chunk, but on mobile
+     and when the chassis reparents #resultBox the class sometimes
+     lingers — which made streamed tokens render invisibly. Letting
+     text be visible the whole time is the honest behavior: the
+     spinner status block fades the moment a chunk lands, the text
+     just appears. */
 }
 /* Subtle moving sheen across the box so it reads as "alive" */
 html.pmg-chassis-v3 #resultBox.is-streaming::before {

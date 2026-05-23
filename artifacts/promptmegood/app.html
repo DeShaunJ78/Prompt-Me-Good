@@ -4473,7 +4473,7 @@
     }
   </style>
   <link rel="stylesheet" href="/styles/pmg-g-theme.css?v=g2-teal-2" />
-  <link rel="stylesheet" href="/styles/pmg-chassis-v3.css?v=cta-color-token-2-sendto-2line-mhdr2-stream2-clamp1-runstatus1-cv3-62-desktop-cap-scrollcompose3" />
+  <link rel="stylesheet" href="/styles/pmg-chassis-v3.css?v=cta-color-token-2-sendto-2line-mhdr2-stream2-clamp1-runstatus1-cv3-62-desktop-cap-scrollcompose3-streamvisible1" />
   <link rel="stylesheet" href="/styles/pmg-visual-studio.css?v=re-3" />
   <link rel="stylesheet" href="/styles/pmg-storyboard.css?v=sb-9" />
   <link rel="stylesheet" href="/styles/pmg-cap-comparison.css?v=cap-compare-1" />
@@ -10013,6 +10013,28 @@ Context:
           pendingFull = null;
           // First real chunk arrived — tear down the animated status block.
           __pmgClearStreamStatus();
+          // stream-overlay-hide-1 (2026-05-23): pmg-result-states overlays
+          // #resultBox with display:none during 'loading'. Its MutationObserver
+          // SHOULD react to setPromptText below and flip to 'hidden', but on
+          // mobile + after chassis-v3 reparents #resultBox the observer is
+          // sometimes attached to a stale node — leaving the skeleton on top
+          // of an invisible streaming box. Belt-and-suspenders: explicitly
+          // tell the overlay to hide and strip pmg-overlay-active from every
+          // current ancestor of #resultBox so the CSS rule cannot keep it
+          // hidden.
+          try {
+            if (window.__pmgResultStates && typeof window.__pmgResultStates.hide === 'function') {
+              window.__pmgResultStates.hide();
+            }
+            var __rb = document.getElementById('resultBox');
+            var __p = __rb && __rb.parentElement;
+            while (__p) {
+              if (__p.classList && __p.classList.contains('pmg-overlay-active')) {
+                __p.classList.remove('pmg-overlay-active');
+              }
+              __p = __p.parentElement;
+            }
+          } catch (_) {}
           setPromptText(next);
         }
         function onChunk(_chunk, full) {
