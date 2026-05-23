@@ -45,11 +45,14 @@ export default defineConfig({
             const qIdx = u.indexOf("?");
             req.url = "/app.html" + u.slice(qIdx);
           }
-          // audit-3 §15: mirror server.mjs clickjacking defense in dev so
-          // headers can be verified against the same URL in both modes.
+          // audit-3 §15: mirror server.mjs clickjacking defense in dev, but
+          // allow the Replit workspace canvas iframe to embed /app for preview.
+          // Production (server.mjs L138-141) stays locked at 'none' — dev only.
           if (req.url === "/app.html" || req.url.startsWith("/app.html?")) {
-            res.setHeader("X-Frame-Options", "DENY");
-            res.setHeader("Content-Security-Policy", "frame-ancestors 'none'");
+            res.setHeader(
+              "Content-Security-Policy",
+              "frame-ancestors 'self' https://*.replit.dev https://*.replit.com https://replit.com",
+            );
           }
           next();
         });
