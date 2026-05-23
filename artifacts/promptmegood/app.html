@@ -8329,6 +8329,11 @@ Context:
           }).join('');
           wrap.classList.add('is-on');
           wrap.style.display = 'block';
+          // strength-slot-show-1 (2026-05-23): chassis-v3 performTotalReset()
+          // forces #pmgv3-strength-slot to display:none !important and never
+          // un-hides it. Clear the parent slot's inline hide so the bar appears.
+          const slot = document.getElementById('pmgv3-strength-slot');
+          if (slot) slot.style.removeProperty('display');
         }
 
         function hide() {
@@ -9195,11 +9200,28 @@ Context:
              + Run-With-AI all stacked from the top) has been achieved by
              scroll-compose-3. Bail out — do NOT re-scroll to #resultBox,
              which would push the strength bar back off the top of the
-             viewport. */
+             viewport.
+             scroll-compose-7 (2026-05-23): also require #resultBox to be
+             on-screen before bailing. After strength-slot-show-1 un-hid
+             the strength slot, this bail started firing on every generate
+             even when the prompt result was still below the fold, so the
+             user never saw the new prompt. Now we only skip the resultBox
+             re-scroll when BOTH the slot AND a meaningful chunk of the
+             resultBox are visible. */
           var strengthSlot = document.getElementById('pmgv3-strength-slot');
           if (strengthSlot) {
             var ss = strengthSlot.getBoundingClientRect();
-            if (ss.width > 0 && ss.height > 0 && ss.top >= 0 && ss.top < vh - 40) {
+            var resultBoxEl = document.getElementById('resultBox');
+            var rbVisible = false;
+            if (resultBoxEl) {
+              var rb = resultBoxEl.getBoundingClientRect();
+              // "meaningfully visible" = at least 80px of the box is
+              // within the viewport (covers first line or two of prompt).
+              var visTop = Math.max(0, rb.top);
+              var visBottom = Math.min(vh, rb.bottom);
+              rbVisible = rb.width > 0 && (visBottom - visTop) >= 80;
+            }
+            if (ss.width > 0 && ss.height > 0 && ss.top >= 0 && ss.top < vh - 40 && rbVisible) {
               return;
             }
           }
