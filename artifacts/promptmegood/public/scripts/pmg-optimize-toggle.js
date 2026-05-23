@@ -230,7 +230,12 @@
 
   function mount() {
     goalEl = document.getElementById('goal');
-    generateBtn = document.getElementById('generateBtn');
+    /* The visible CTA is #analyze-btn (rendered by pmg-chassis-v3.js L375
+       — "✨ Build My Prompt"). #generateBtn is the hidden legacy form
+       button ("Fix My Prompt", app.html L4971) — never the user-clicked
+       target in v3. Prefer analyze-btn; fall back for legacy/non-v3. */
+    generateBtn = document.getElementById('analyze-btn')
+               || document.getElementById('generateBtn');
     if (!goalEl || !generateBtn || !goalEl.parentNode) return false;
     if (document.querySelector('.pmg-opt-toggle-wrap')) return true; /* already mounted */
     originalPlaceholder = goalEl.getAttribute('placeholder') || '';
