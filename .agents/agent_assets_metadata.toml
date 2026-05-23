@@ -257,3 +257,9 @@ id = "hsUIv9Xk_s7haeLiAeHX7"
 uri = "file://screenshots/feature-entry-row-mobile.jpg"
 type = "image"
 title = "Feature Entry Row on mobile (/app, 402×874) — Item B proof"
+
+[[outputs]]
+id = "jMBHsplf5oCUknVLGHpK6"
+uri = "file://.local/handoff-build-button-bug.md"
+type = "text"
+title = "Build button bug — handoff for Claude"
