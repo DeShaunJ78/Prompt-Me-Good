@@ -2316,6 +2316,12 @@
     .history-item.is-favorite.is-dragging .drag-handle { cursor: grabbing; }
     .history-item-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
     .history-item-actions .btn { min-height: 36px; padding: 0 var(--space-4); font-size: var(--text-xs); }
+    /* Vault toolbar: shrink .btn from the global 48px (app.html L789)
+       down to 36px so #filter-notes ("📝 Notes Only") matches the height
+       of the sibling #history-sort <select> (L5634) instead of towering
+       over it. Collapse All / Clear All History are already 36px via
+       the .panel-head-row .btn rule below. */
+    .history-search .btn { min-height: 36px; padding: 0 var(--space-4); font-size: var(--text-xs); }
     .history-item-remix { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
     .history-item-remix-label { font-size: var(--text-xs); color: var(--color-text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
     .history-item-remix .btn { min-height: 32px; padding: 0 var(--space-3); font-size: var(--text-xs); }
