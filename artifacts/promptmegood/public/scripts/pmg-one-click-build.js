@@ -1,24 +1,17 @@
-/* pmg-one-click-build.js (ocb-1, 2026-05-23)
+/* pmg-one-click-build.js (ocb-2, 2026-05-23)
  *
  * Makes "✨ Build My Prompt" a real one-click flow.
  *
- * The chassis-v3 analyze-btn handler (pmg-chassis-v3.js wireActions) only
- * reveals the tuning panel + fires /api/auto-tune. The actual /api/
- * generate-stream call requires a second click on the (now-revealed)
- * #generateBtn. Users read the prominent "✨ Build My Prompt" CTA as a
- * single-action button. This script bridges the gap: after analyze fires,
- * it waits briefly for auto-tune to settle, then programmatically clicks
- * #generateBtn — which triggers the existing form-submit path so the
- * prompt is generated as expected.
+ * Chassis-v3 wires #analyze-btn to: open tuning panel + fire /api/auto-tune.
+ * The actual /api/generate-stream call lives behind #generateBtn → form.requestSubmit().
+ * This script bridges the two: after analyze fires, wait briefly for auto-tune to
+ * settle, then directly invoke form.requestSubmit() — bypassing #generateBtn
+ * entirely so we are immune to chassis-v3 re-parenting / handler-rebinding races.
  *
- * Constraints:
- *   - Only fires in Build mode. Optimize mode is intercepted at capture
- *     phase by pmg-optimize-toggle.js (stopImmediatePropagation), so this
- *     bubble-phase listener never sees Optimize clicks.
- *   - Only fires when #goal has non-empty text — empty-goal clicks should
- *     fall through to the chassis-v3 "Add a clear goal first" message.
- *   - Idempotent per click via a 2.5s cooldown (handles the
- *     "← Re-analyze" link which also synthesizes analyzeBtn.click()).
+ * Build-mode only. Optimize mode is intercepted in capture phase by
+ * pmg-optimize-toggle.js (stopImmediatePropagation) so this bubble listener never
+ * sees those clicks. Empty-goal clicks also fall through to chassis-v3's "Add a
+ * clear goal first" path.
  *
  * Kill switches:
  *   ?nooneclick   |   localStorage.pmg_one_click_build_disable = '1'
@@ -32,12 +25,13 @@
     if (window.localStorage && localStorage.getItem('pmg_one_click_build_disable') === '1') return;
   } catch (_) {}
 
-  /* Auto-tune in production typically completes in 500-1500ms (see
-     api-server logs). 1600ms gives it room to apply without making the
-     user wait noticeably longer than the perceived "thinking" gap. */
-  var GENERATE_DELAY_MS = 1600;
+  /* Auto-tune in production typically completes in ~1s (see api-server logs).
+     1700ms gives it room to apply tuning before we submit. */
+  var GENERATE_DELAY_MS = 1700;
 
   var lastTriggerAt = 0;
+
+  try { console.info('[pmg-one-click-build] ocb-2 loaded'); } catch (_) {}
 
   function isOptimizeMode() {
     try {
@@ -50,12 +44,42 @@
     return !!(goal && goal.value && goal.value.trim());
   }
 
-  function clickGenerate() {
-    var gen = document.getElementById('generateBtn');
-    if (!gen) return false;
-    var cs = window.getComputedStyle ? window.getComputedStyle(gen) : null;
-    if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return false;
-    try { gen.click(); return true; } catch (_) { return false; }
+  /* Mirrors what chassis-v3's #generateBtn click handler does (pmg-chassis-v3.js
+     L1087-L1126): reveal #prompt-output-box, unhide #run-with-ai-btn, then call
+     form.requestSubmit(). We do this directly because some environments have
+     left #generateBtn in a state where .click() doesn't reach the chassis
+     handler (re-parented, cloned, or intercepted). */
+  function triggerGenerate() {
+    var form = document.getElementById('prompt-form');
+    if (!form) {
+      try { console.warn('[pmg-one-click-build] no #prompt-form found'); } catch (_) {}
+      return false;
+    }
+    try {
+      var box = document.getElementById('prompt-output-box');
+      if (box) {
+        box.classList.remove('is-collapsed');
+        box.removeAttribute('hidden');
+        box.style.setProperty('display', 'block', 'important');
+      }
+      var rwa = document.getElementById('run-with-ai-btn');
+      if (rwa) {
+        rwa.style.setProperty('display', 'block', 'important');
+        rwa.removeAttribute('hidden');
+      }
+    } catch (_) {}
+    try {
+      if (typeof form.requestSubmit === 'function') {
+        form.requestSubmit();
+      } else {
+        form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      }
+      try { console.info('[pmg-one-click-build] form.requestSubmit() fired'); } catch (_) {}
+      return true;
+    } catch (err) {
+      try { console.warn('[pmg-one-click-build] submit failed', err); } catch (_) {}
+      return false;
+    }
   }
 
   document.addEventListener('click', function (e) {
@@ -68,6 +92,7 @@
     var now = Date.now();
     if (now - lastTriggerAt < 2500) return;
     lastTriggerAt = now;
-    setTimeout(clickGenerate, GENERATE_DELAY_MS);
+    try { console.info('[pmg-one-click-build] analyze click detected, generate in ' + GENERATE_DELAY_MS + 'ms'); } catch (_) {}
+    setTimeout(triggerGenerate, GENERATE_DELAY_MS);
   }, false);
 })();
