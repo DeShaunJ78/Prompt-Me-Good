@@ -1,29 +1,22 @@
-/* pmg-optimize-toggle.js
+/* pmg-optimize-toggle.js (opt-8, 2026-05-23)
  *
- * Adds a Build / Optimize segmented toggle above #goal, plus a DEDICATED
- * "Optimize My Prompt" submit button (#pmg-optimize-submit) that sits
- * adjacent to the toggle pills. The button is only visible when Optimize
- * mode is active. Build mode is fully passive — the toggle has zero
- * coupling to the Build CTA: no event listeners, no label rewrites, no
- * DOM mutations against it. This is a hard architectural invariant —
- * this script must never reference, lookup, or listen to the Build CTA
- * element in any way. Prior versions intercepted the Build CTA via a
- * capture-phase listener with stopImmediatePropagation, which broke the
- * Build button when this script regressed; that pattern was deleted
- * 2026-05-23 and must not return.
+ * Adds a Build / Optimize segmented toggle above #goal. The toggle hijacks
+ * the existing primary CTA (#analyze-btn — "✨ Build My Prompt") rather
+ * than adding a second submit button:
  *
- * Optimize flow:
- *   - User selects Optimize → #pmg-optimize-submit becomes visible.
- *   - Click → POST textarea value to /api/boost → write data.result into
- *     #resultBox via textContent (the canonical write pattern shared with
- *     the generate flow so pmg-result-states.js + downstream observers
- *     react identically).
- *   - User selects Build → #pmg-optimize-submit is hidden again,
- *     placeholder/title restored, Build CTA completely untouched.
+ *   - Build mode (default): #analyze-btn keeps its original label and the
+ *     existing chassis-v3 analyze flow runs untouched.
+ *   - Optimize mode: #analyze-btn label becomes "✨ Optimize My Prompt".
+ *     Clicks are intercepted in the capture phase and routed to /api/boost
+ *     instead of the analyze flow. data.result is written into #resultBox
+ *     via textContent (the canonical write pattern, mirrors
+ *     pmg-result-states.js:283 so MutationObservers in pmg-ux.js etc. fire).
  *
  * Kill-switch: localStorage.pmg_optimize_toggle_disable = '1'
- * Self-contained IIFE. Touches no other pmg* internals. Only mounts in
- * the text panel; CSS hides controls when body[data-active-panel] !== "text".
+ * Self-contained IIFE. Touches no other pmg* internals except the
+ * #analyze-btn label + a capture-phase click intercept that ONLY fires
+ * when Optimize mode is active. Only mounts in the text panel; CSS hides
+ * the toggle when body[data-active-panel] !== "text".
  */
 (function () {
   'use strict';
@@ -37,6 +30,7 @@
   var mode = MODE_BUILD;
 
   var originalPlaceholder = null;
+  var originalAnalyzeLabel = null;
   var labelEl = null;
   var warningEl = null;
   var errorEl = null;
@@ -45,17 +39,17 @@
   var toggleWrap = null;
   var btnBuild = null;
   var btnOptimize = null;
-  var submitBtn = null;
   var goalEl = null;
 
   var OPTIMIZE_PLACEHOLDER = "Paste your existing prompt here — we'll improve it.";
+  var OPTIMIZE_BTN_LABEL = '✨ Optimize My Prompt';
   var LABEL_TEXT = 'Your existing prompt';
   var BUILD_RESULT_TITLE = 'Your Built Prompt Will Appear Here';
   var OPTIMIZE_RESULT_TITLE = 'Your Optimized Prompt Will Appear Here';
 
   function setResultTitle(text) {
     /* Two render paths exist: chassis-v3's .pmgv3-rp-title (visible in v3)
-       and the legacy #result-title h2 (app.html L5264). Update both so
+       and the legacy #result-title h2 (app.html L5308). Update both so
        whichever is visible reflects the active mode. */
     var v3 = document.querySelector('.pmgv3-rp-title');
     if (v3) v3.textContent = text;
@@ -76,6 +70,37 @@
   function removeNode(n) {
     if (n && n.parentNode) {
       try { n.parentNode.removeChild(n); } catch (_) {}
+    }
+  }
+
+  function getAnalyzeBtn() {
+    return document.getElementById('analyze-btn') || document.querySelector('.btn-analyze');
+  }
+
+  function captureOriginalAnalyzeLabel() {
+    if (originalAnalyzeLabel !== null) return;
+    var btn = getAnalyzeBtn();
+    if (btn) originalAnalyzeLabel = btn.textContent || '';
+  }
+
+  function setAnalyzeLabel(text) {
+    var btn = getAnalyzeBtn();
+    if (btn && text != null) btn.textContent = text;
+  }
+
+  function setAnalyzeBusy(on) {
+    var btn = getAnalyzeBtn();
+    if (!btn) return;
+    if (on) {
+      btn.classList.add('pmg-opt-loading');
+      btn.setAttribute('aria-busy', 'true');
+      btn.disabled = true;
+      btn.textContent = 'Optimizing…';
+    } else {
+      btn.classList.remove('pmg-opt-loading');
+      btn.removeAttribute('aria-busy');
+      btn.disabled = false;
+      btn.textContent = mode === MODE_OPTIMIZE ? OPTIMIZE_BTN_LABEL : (originalAnalyzeLabel || '✨ Build My Prompt');
     }
   }
 
@@ -130,17 +155,22 @@
     if (btnBuild) btnBuild.setAttribute('aria-selected', mode === MODE_BUILD ? 'true' : 'false');
     if (btnOptimize) btnOptimize.setAttribute('aria-selected', mode === MODE_OPTIMIZE ? 'true' : 'false');
     if (toggleWrap) toggleWrap.setAttribute('data-mode', mode);
+    /* Also stamp body so other styles / scripts can react if needed. */
+    try { document.body.setAttribute('data-pmg-opt-mode', mode); } catch (_) {}
     if (!goalEl) return;
+    captureOriginalAnalyzeLabel();
     if (mode === MODE_OPTIMIZE) {
       goalEl.setAttribute('placeholder', OPTIMIZE_PLACEHOLDER);
       ensureLabel();
       setResultTitle(OPTIMIZE_RESULT_TITLE);
+      setAnalyzeLabel(OPTIMIZE_BTN_LABEL);
     } else {
       if (originalPlaceholder !== null) goalEl.setAttribute('placeholder', originalPlaceholder);
       removeLabel();
       removeNode(warningEl); warningEl = null;
       removeNode(errorEl); errorEl = null;
       setResultTitle(BUILD_RESULT_TITLE);
+      if (originalAnalyzeLabel !== null) setAnalyzeLabel(originalAnalyzeLabel);
     }
   }
 
@@ -155,19 +185,6 @@
     return {};
   }
 
-  function setLoading(on) {
-    if (!submitBtn) return;
-    if (on) {
-      submitBtn.classList.add('pmg-opt-loading');
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Optimizing…';
-    } else {
-      submitBtn.classList.remove('pmg-opt-loading');
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Optimize My Prompt';
-    }
-  }
-
   async function runOptimize() {
     if (mode !== MODE_OPTIMIZE) return;
     var prompt = (goalEl && goalEl.value || '').trim();
@@ -175,7 +192,7 @@
       showWarning('Paste a prompt to optimize.');
       return;
     }
-    setLoading(true);
+    setAnalyzeBusy(true);
     try {
       var headers = Object.assign(
         { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -203,8 +220,27 @@
     } catch (_) {
       showError("Couldn't optimize. Try again.");
     } finally {
-      setLoading(false);
+      setAnalyzeBusy(false);
     }
+  }
+
+  /* Capture-phase intercept on #analyze-btn. ONLY hijacks the click when
+     Optimize mode is active — in Build mode the listener is a pure no-op
+     so the chassis-v3 analyze flow runs untouched. Document-level so we
+     survive chassis-v3 reparenting / re-creating the button. */
+  function installAnalyzeIntercept() {
+    if (document.__pmgOptInterceptBound) return;
+    document.__pmgOptInterceptBound = true;
+    document.addEventListener('click', function (e) {
+      if (mode !== MODE_OPTIMIZE) return;
+      var t = e.target;
+      if (!t || typeof t.closest !== 'function') return;
+      var hit = t.closest('#analyze-btn, .btn-analyze');
+      if (!hit) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      runOptimize();
+    }, true);
   }
 
   function buildToggle(parent) {
@@ -235,22 +271,7 @@
 
     pills.appendChild(btnBuild);
     pills.appendChild(btnOptimize);
-
-    /* Dedicated submit button. Only rendered/visible in Optimize mode
-       (controlled by toggleWrap[data-mode="optimize"] + CSS). Has its
-       own id so other scripts can locate it without touching the Build CTA. */
-    submitBtn = document.createElement('button');
-    submitBtn.type = 'button';
-    submitBtn.id = 'pmg-optimize-submit';
-    submitBtn.className = 'pmg-opt-submit';
-    submitBtn.textContent = 'Optimize My Prompt';
-    submitBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      runOptimize();
-    });
-
     toggleWrap.appendChild(pills);
-    toggleWrap.appendChild(submitBtn);
 
     /* Anchor strategy: prefer the chassis-v3 idea-host (.pmgv3-idea-host)
        so the toggle sits ABOVE the entire .field.field-primary block
@@ -267,12 +288,12 @@
 
   function mount() {
     goalEl = document.getElementById('goal');
-    /* Mount only requires #goal — zero coupling to the Build CTA is
-       an invariant; this script must not reference its id. */
     if (!goalEl || !goalEl.parentNode) return false;
     if (document.querySelector('.pmg-opt-toggle-wrap')) return true; /* already mounted */
     originalPlaceholder = goalEl.getAttribute('placeholder') || '';
     buildToggle(goalEl.parentNode);
+    captureOriginalAnalyzeLabel();
+    installAnalyzeIntercept();
     /* Default mode is Build — sync the result-panel heading from the
        hardcoded "Optimized" copy to the Build copy on first paint. */
     setResultTitle(BUILD_RESULT_TITLE);

@@ -25,49 +25,9 @@
   width: fit-content;
 }
 
-/* Dedicated Optimize submit button. Visible ONLY when Optimize mode is
-   active — Build mode hides it entirely so it never competes with the
-   #analyze-btn primary CTA. Zero coupling to #analyze-btn by design. */
-.pmg-opt-submit {
-  appearance: none;
-  -webkit-appearance: none;
-  display: none;
-  background: var(--color-primary, #3ee0a0);
-  color: var(--color-bg, #07241f);
-  border: 0;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  padding: 8px 18px;
-  border-radius: 999px;
-  cursor: pointer;
-  min-height: 38px;
-  transition: filter 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-primary, #3ee0a0) 25%, transparent);
-}
-
-.pmg-opt-toggle-wrap[data-mode="optimize"] .pmg-opt-submit {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.pmg-opt-submit:hover {
-  filter: brightness(1.06);
-  box-shadow: 0 6px 18px color-mix(in srgb, var(--color-primary, #3ee0a0) 32%, transparent);
-}
-
-.pmg-opt-submit:active { transform: translateY(1px); }
-
-.pmg-opt-submit:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #3ee0a0) 55%, transparent);
-}
-
-.pmg-opt-submit:disabled {
-  cursor: not-allowed;
-}
+/* opt-8: dedicated submit pill removed. The toggle now hijacks the
+   existing #analyze-btn label + click in Optimize mode (see
+   pmg-optimize-toggle.js installAnalyzeIntercept). No second CTA. */
 
 .pmg-opt-btn {
   appearance: none;
