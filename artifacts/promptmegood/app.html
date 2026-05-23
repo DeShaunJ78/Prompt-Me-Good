@@ -4535,18 +4535,19 @@
   <script src="/scripts/pmg-adv-mirror.js?v=adv-mirror-11b-smart-exit-restore" defer></script>
   <script src="/scripts/pmg-save-result.js?v=saveresult-1" defer></script>
   <script src="/scripts/pmg-deadclick-audit.js?v=dca-1" defer></script>
-  <!-- DISABLED 2026-05-23: regression-suspect (build-prompt not displaying) — re-enable after fix
+  <!-- ISOLATION TEST 2026-05-23 #1: disabling pmg-optimize-toggle.js only.
+       Capture-phase listener on #analyze-btn + textContent mutations are
+       the highest-risk surface re: "Build My Prompt result not appearing". -->
+  <!--
   <link rel="stylesheet" href="/styles/pmg-optimize-toggle.css?v=opt-6" />
   <script src="/scripts/pmg-optimize-toggle.js?v=opt-6" defer></script>
   -->
   <link rel="stylesheet" href="/styles/pmg-vault-import.css?v=vi-3" />
   <script src="/scripts/pmg-vault-import.js?v=vi-1" defer></script>
-  <!-- DISABLED 2026-05-23: regression-suspect (build-prompt not displaying) — re-enable after fix
   <link rel="stylesheet" href="/styles/pmg-template-browser.css?v=tb-1" />
   <script src="/scripts/pmg-template-browser.js?v=tb-1" defer></script>
   <link rel="stylesheet" href="/styles/pmg-compare.css?v=cmp-1" />
   <script src="/scripts/pmg-compare.js?v=cmp-1" defer></script>
-  -->
   <!-- DISABLED 2026-05-23: regression-suspect — re-enable after fix
   <link rel="stylesheet" href="/styles/pmg-vault-versions.css?v=vv-1" />
   <script src="/scripts/pmg-vault-versions.js?v=vv-1" defer></script>
