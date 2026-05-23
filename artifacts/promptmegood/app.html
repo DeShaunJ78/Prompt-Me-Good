@@ -12493,7 +12493,19 @@ Context:
     /* ===== AI Client (window.__pmgAI) + "Improve With AI" button ===== */
     (function () {
       const API_BASE = '/api';
-      const LIMITS = { generate: 100, refine: 50, image: 10 };
+      /* ocb-3 / cap-bump-1 (2026-05-23): client-side LIMITS were a legacy
+         defensive cap to prevent runaway free-tier cost before the server
+         enforced its own per-user caps. The api-server now plan-gates all
+         AI routes (usage-store.ts) and beta mode (paywall off until 2026-07-01)
+         intentionally unlocks every feature. The old 100/mo client cap was
+         silently blocking the form-submit AI path (app.html ~L9866 bail:
+         `remaining <= 0 → finalize(localPrompt); return`) for any user who
+         had stacked 100+ generations into localStorage — symptom: Build
+         My Prompt fires /api/auto-tune but never /api/generate-stream,
+         and the result panel shows nothing actionable. Raising the cap
+         well above any realistic monthly use lets the AI stream path run.
+         Server-side is the real enforcement boundary. */
+      const LIMITS = { generate: 10000, refine: 5000, image: 1000 };
 
       function monthKey() {
         const d = new Date();
