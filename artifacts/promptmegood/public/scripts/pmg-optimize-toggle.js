@@ -23,6 +23,7 @@
   var mode = MODE_BUILD;
 
   var originalPlaceholder = null;
+  var originalBtnLabel = null;
   var labelEl = null;
   var warningEl = null;
   var errorEl = null;
@@ -107,11 +108,13 @@
     if (mode === MODE_OPTIMIZE) {
       goalEl.setAttribute('placeholder', OPTIMIZE_PLACEHOLDER);
       ensureLabel();
+      if (generateBtn) generateBtn.textContent = 'Optimize My Prompt';
     } else {
       if (originalPlaceholder !== null) goalEl.setAttribute('placeholder', originalPlaceholder);
       removeLabel();
       removeNode(warningEl); warningEl = null;
       removeNode(errorEl); errorEl = null;
+      if (generateBtn && originalBtnLabel !== null) generateBtn.textContent = originalBtnLabel;
     }
   }
 
@@ -131,9 +134,11 @@
     if (on) {
       generateBtn.classList.add('pmg-opt-loading');
       generateBtn.disabled = true;
+      generateBtn.textContent = 'Optimizing…';
     } else {
       generateBtn.classList.remove('pmg-opt-loading');
       generateBtn.disabled = false;
+      generateBtn.textContent = 'Optimize My Prompt';
     }
   }
 
@@ -229,6 +234,7 @@
     if (!goalEl || !generateBtn || !goalEl.parentNode) return false;
     if (document.querySelector('.pmg-opt-toggle-wrap')) return true; /* already mounted */
     originalPlaceholder = goalEl.getAttribute('placeholder') || '';
+    originalBtnLabel = generateBtn.textContent;
     buildToggle(goalEl.parentNode);
     generateBtn.addEventListener('click', onGenerateClickCapture, true);
     return true;
