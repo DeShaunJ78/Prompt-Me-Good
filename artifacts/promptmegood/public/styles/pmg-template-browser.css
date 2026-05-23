@@ -1,0 +1,248 @@
+/* pmg-template-browser.css (tb-1, 2026-05-23)
+ *
+ * Styles the Template Browser modal launched from the chassis-v3 nav
+ * (#pmg-template-browser-btn between Vault and Expert). All values use
+ * --color-* / --radius-* tokens from pmg-g-theme.css. No hardcoded hex.
+ *
+ * z-index 100050 sits above the chassis-v3 topbar (10010), the splash
+ * (99999), and below the live upgrade modal (100001). Backdrop is full
+ * viewport, dark, with a subtle blur.
+ */
+
+.pmg-tb-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100050;
+  background: rgba(6, 18, 14, 0.78);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.pmg-tb-backdrop[data-open="true"] {
+  display: flex;
+}
+
+.pmg-tb-modal {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg, 14px);
+  width: 100%;
+  max-width: 760px;
+  max-height: 82vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+}
+
+.pmg-tb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.pmg-tb-title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--color-text);
+}
+
+.pmg-tb-close {
+  background: transparent;
+  border: 0;
+  color: var(--color-text-muted);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-md, 8px);
+}
+.pmg-tb-close:hover,
+.pmg-tb-close:focus-visible {
+  color: var(--color-text);
+  background: var(--color-surface-2);
+  outline: none;
+}
+
+.pmg-tb-body {
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
+.pmg-tb-categories {
+  width: 200px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--color-border);
+  overflow-y: auto;
+  max-height: 100%;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pmg-tb-group-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  padding: 14px 12px 4px;
+  font-weight: 700;
+  pointer-events: none;
+  user-select: none;
+}
+.pmg-tb-group-label:first-child {
+  padding-top: 6px;
+}
+
+.pmg-tb-cat-btn {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-md, 8px);
+  padding: 8px 12px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s, color 0.12s;
+}
+.pmg-tb-cat-btn:hover,
+.pmg-tb-cat-btn:focus-visible {
+  background: var(--color-surface-2);
+  color: var(--color-primary);
+  outline: none;
+}
+.pmg-tb-cat-btn[aria-selected="true"] {
+  background: var(--color-surface-2);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.pmg-tb-results {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.pmg-tb-empty,
+.pmg-tb-loading,
+.pmg-tb-error {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 12px 4px;
+}
+.pmg-tb-error {
+  color: var(--color-text);
+}
+.pmg-tb-retry {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 14px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 8px);
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.pmg-tb-retry:hover,
+.pmg-tb-retry:focus-visible {
+  background: var(--color-primary-highlight, rgba(62, 224, 160, 0.14));
+  outline: none;
+}
+
+.pmg-tb-card {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 10px);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.pmg-tb-card-title {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 6px;
+  color: var(--color-text);
+}
+
+.pmg-tb-card-goal {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 1.55;
+  margin-bottom: 10px;
+}
+
+.pmg-tb-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.pmg-tb-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: var(--color-surface);
+  border-radius: 999px;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+.pmg-tb-use {
+  width: 100%;
+  font-size: 14px;
+}
+
+/* Mobile: stack categories on top, modal flush to viewport bottom. */
+@media (max-width: 640px) {
+  .pmg-tb-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .pmg-tb-modal {
+    max-width: 100vw;
+    max-height: 96vh;
+    border-radius: var(--radius-lg, 14px) var(--radius-lg, 14px) 0 0;
+  }
+  .pmg-tb-body {
+    flex-direction: column;
+  }
+  .pmg-tb-categories {
+    width: 100%;
+    max-height: 38vh;
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-border);
+    gap: 4px;
+  }
+  .pmg-tb-cat-btn {
+    width: auto;
+    flex: 0 0 auto;
+  }
+  .pmg-tb-group-label {
+    width: 100%;
+    padding: 8px 8px 2px;
+  }
+}

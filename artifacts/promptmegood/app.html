@@ -4539,6 +4539,8 @@
   <script src="/scripts/pmg-optimize-toggle.js?v=opt-6" defer></script>
   <link rel="stylesheet" href="/styles/pmg-vault-import.css?v=vi-3" />
   <script src="/scripts/pmg-vault-import.js?v=vi-1" defer></script>
+  <link rel="stylesheet" href="/styles/pmg-template-browser.css?v=tb-1" />
+  <script src="/scripts/pmg-template-browser.js?v=tb-1" defer></script>
   <style id="pmg-splash-css">
     /* Instant splash loader — Phase 1 of the master roadmap. Painted before
        the chassis JS executes so users never see a flash of blank workstation.
@@ -5621,26 +5623,14 @@
       </div>
     </section>
 
-    <section class="app-section" id="templates">
-      <div class="container">
-        <div class="panel">
-          <div class="panel-head">
-            <div class="panel-head-row">
-              <div>
-                <h2>Best Prompts</h2>
-                <p>One-click starting points. Loads the form and generates a prompt instantly.</p>
-              </div>
-              <div class="panel-head-actions">
-                <button class="btn btn-secondary" type="button" id="export-templates">Export Yours</button>
-                <button class="btn btn-secondary" type="button" id="import-templates">Import</button>
-                <input type="file" id="import-templates-file" accept="application/json,.json" style="display:none" />
-              </div>
-            </div>
-          </div>
-          <div class="templates-grid" id="templates-grid"></div>
-        </div>
-      </div>
-    </section>
+    <!-- Spec 1 Template Browser (tb-1, 2026-05-23): the legacy
+         <section id="templates"> + Best Prompts panel was removed.
+         Replaced by the AI-generated Template Browser modal launched
+         from the chassis-v3 topbar button #pmg-template-browser-btn
+         (injected by pmg-template-browser.js between Vault and Expert).
+         The dead TEMPLATES[] const + renderTemplates() in pmg-ux.js
+         no longer have a #templates-grid to render into and fail
+         silently — accepted per conflict-resolution Q-A. -->
 
     <section class="app-section history-section" id="history">
       <div class="container">
@@ -13818,7 +13808,6 @@ Context:
   <script src="/scripts/pmg-suggestions.js?v=t140-image-mode-removed" defer></script>
   <script src="/scripts/pmg-router.js?v=router-4" defer></script>
   <script src="/scripts/pmg-send-to.js?v=sendto-7-honest-tips" defer></script>
-  <script src="/scripts/pmg-templates.js?v=tpl-1" defer></script>
   <script src="/scripts/pmg-auto-boost-takeover.js?v=abt-1" defer></script>
   <script src="/scripts/pmg-auto-boost.js?v=ab-8-under-strength-abt-1" defer></script>
   <script src="/scripts/pmg-image-actions-gate.js?v=task135-1" defer></script>

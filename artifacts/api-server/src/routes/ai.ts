@@ -2158,5 +2158,97 @@ router.post(
   },
 );
 
+/* ============================================================================
+ * /api/templates/generate — Spec 1 Template Browser (tb-1, 2026-05-23)
+ * Generates N category-specific starter prompts the user can drop straight
+ * into #goal. Uses gpt-4.1-mini (cost control: this is a browse-time call,
+ * fired multiple times per session, no per-token-rich output needed).
+ * Anonymous-friendly: rateLimit + generateCostCheck handle abuse.
+ * ============================================================================ */
+const TEMPLATES_MODEL = "gpt-4.1-mini";
+const templatesGenerateSchema = z.object({
+  category: z.string().min(1).max(64),
+  count: z.number().int().min(1).max(12).optional().default(6),
+});
+
+router.post("/templates/generate", rateLimit, generateCostCheck, async (req, res) => {
+  const parsed = templatesGenerateSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid input" });
+    return;
+  }
+  const { category, count } = parsed.data;
+  chargeCost("generate");
+
+  const system =
+    `You are a prompt template generator for PromptMeGood, an AI prompt builder. ` +
+    `Generate ${count} distinct, ready-to-use prompt templates for the category: ${category}.\n\n` +
+    `Each template is a goal a user would type into a prompt builder. Write them in plain English, ` +
+    `first-person, as if the user is typing their goal. They should be specific enough to produce a ` +
+    `useful prompt but short enough to fit in one line.\n\n` +
+    `Respond ONLY with a JSON array. No markdown, no explanation, no backticks. Each object has ` +
+    `exactly these fields:\n` +
+    `  title: string (3-6 words, the template name)\n` +
+    `  goal:  string (the full goal text the user would type, 20-80 words)\n` +
+    `  tags:  string[] (2-4 relevant tags, lowercase)`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: TEMPLATES_MODEL,
+      max_completion_tokens: 1800,
+      temperature: 0.8,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: system },
+        {
+          role: "user",
+          content:
+            `Category: ${category}. Return ${count} templates as a JSON object with a single ` +
+            `"templates" array. Each item: {title, goal, tags}.`,
+        },
+      ],
+    });
+    const raw = completion.choices[0]?.message?.content?.trim() ?? "";
+    if (!raw) {
+      res.status(502).json({ error: "Generation failed" });
+      return;
+    }
+    let templates: Array<{ title: string; goal: string; tags: string[] }> = [];
+    try {
+      const parsedJson = JSON.parse(raw);
+      const arr = Array.isArray(parsedJson)
+        ? parsedJson
+        : Array.isArray(parsedJson?.templates)
+          ? parsedJson.templates
+          : null;
+      if (!arr) {
+        res.status(502).json({ error: "Generation failed" });
+        return;
+      }
+      templates = arr
+        .filter((t: unknown): t is Record<string, unknown> => !!t && typeof t === "object")
+        .slice(0, count)
+        .map((t: Record<string, unknown>) => ({
+          title: typeof t.title === "string" ? t.title.slice(0, 120) : "",
+          goal: typeof t.goal === "string" ? t.goal.slice(0, 800) : "",
+          tags: Array.isArray(t.tags)
+            ? (t.tags as unknown[])
+                .filter((x): x is string => typeof x === "string")
+                .slice(0, 6)
+                .map((s) => s.toLowerCase().slice(0, 40))
+            : [],
+        }))
+        .filter((t: { title: string; goal: string; tags: string[] }) => t.title && t.goal);
+    } catch {
+      res.status(502).json({ error: "Generation failed" });
+      return;
+    }
+    res.json({ templates });
+  } catch (err) {
+    logger.error({ err: err instanceof Error ? err.message : "unknown" }, "templates/generate failed");
+    res.status(502).json({ error: "Generation failed" });
+  }
+});
+
 export { IMAGE_MODEL };
 export default router;
