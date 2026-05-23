@@ -124,6 +124,13 @@ async function staleWhileRevalidate(req, cacheName) {
       return res;
     })
     .catch(() => null);
-  // Serve cache instantly if we have it; otherwise wait for network.
-  return cached || network || new Response('', { status: 504 });
+  /* sw-respond-fix-1 (2026-05-23): the old `return cached || network || stub`
+     returned the Promise `network` when cached was undefined. That Promise
+     could resolve to null (via .catch), and respondWith(null) throws
+     "Failed to convert value to 'Response'". Await network and fall back
+     to the stub Response only after we know the resolved value. */
+  if (cached) return cached;
+  const fresh = await network;
+  if (fresh) return fresh;
+  return new Response('', { status: 504 });
 }
