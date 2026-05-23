@@ -9765,6 +9765,13 @@ Context:
 
       form.addEventListener('submit', function (event) {
         event.preventDefault();
+        console.log('[pmg-ocb-debug] submit handler fired');
+        console.log('[pmg-ocb-debug] __pmgAI:', !!window.__pmgAI,
+          window.__pmgAI && {
+            hasStream: typeof window.__pmgAI.generateStream,
+            remaining: window.__pmgAI.remaining?.('generate'),
+          }
+        );
         // NOTE: getFormData() must stay called SYNCHRONOUSLY here, before any
         // await. pmg-pro.js attaches a capture-phase submit listener that
         // temporarily injects the saved Brand Voice Profile into #details and
@@ -9869,6 +9876,11 @@ Context:
         const hasStructured = ai && typeof ai.generateStructured === 'function';
         const hasRaw = ai && typeof ai.generateRaw === 'function';
         if (!ai || (!hasStream && !hasStructured && !hasRaw) || remaining <= 0) {
+          console.warn('[pmg-ocb-debug] BAILING', {
+            ai: !!window.__pmgAI,
+            hasStream: typeof window.__pmgAI?.generateStream,
+            remaining: window.__pmgAI?.remaining?.('generate'),
+          });
           if (ai && remaining <= 0 && typeof window.showToast === 'function') {
             window.showToast("You've reached the free monthly AI limit. PRO will unlock more soon.");
           }
