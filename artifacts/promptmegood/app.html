@@ -826,6 +826,33 @@
     .btn-secondary {
       background: var(--color-surface); border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
     }
+    /* PromptPerfect import CTA: brand-violet to separate the
+       import-from-competitor action from the neutral teal Export /
+       Show Archived / Compare / Import (backup) buttons. Inlined here
+       (rather than pmg-vault-import.css) so the rule ships with the
+       HTML cache-bust and isn't subject to a stale external CSS file
+       in iframes with broken HMR. ID selector + !important guarantees
+       it wins over .btn-secondary (app.html L826) and pmg-chassis-v3
+       .btn-secondary (L1508). */
+    button#pmg-vault-import-btn.pmg-vault-import-trigger,
+    button#pmg-vault-import-btn {
+      background: #7c3aed !important;
+      border: 1px solid #7c3aed !important;
+      color: #ffffff !important;
+      opacity: 1 !important;
+    }
+    button#pmg-vault-import-btn:hover,
+    button#pmg-vault-import-btn:focus-visible {
+      background: #6d28d9 !important;
+      border-color: #6d28d9 !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 0 2px color-mix(in srgb, #7c3aed 35%, transparent) !important;
+    }
+    button#pmg-vault-import-btn:disabled,
+    button#pmg-vault-import-btn[aria-busy="true"] {
+      opacity: 0.5 !important;
+      cursor: not-allowed;
+    }
     .btn-stacked {
       display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
       gap: 2px; line-height: 1.2; text-align: center;
@@ -4510,7 +4537,7 @@
   <script src="/scripts/pmg-deadclick-audit.js?v=dca-1" defer></script>
   <link rel="stylesheet" href="/styles/pmg-optimize-toggle.css?v=opt-6" />
   <script src="/scripts/pmg-optimize-toggle.js?v=opt-6" defer></script>
-  <link rel="stylesheet" href="/styles/pmg-vault-import.css?v=vi-2" />
+  <link rel="stylesheet" href="/styles/pmg-vault-import.css?v=vi-3" />
   <script src="/scripts/pmg-vault-import.js?v=vi-1" defer></script>
   <style id="pmg-splash-css">
     /* Instant splash loader — Phase 1 of the master roadmap. Painted before
