@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    /* Apex -> www redirect is now a true server-side 301 in server.mjs
+       (lcp-apex-301). This JS block kept as a defensive fallback ONLY
+       for the unlikely case the static server is bypassed — the 301
+       fires before HTML downloads in normal traffic. */
+    (function () {
+      try {
+        if (location.hostname === 'promptmegood.com') {
+          location.replace('https://www.promptmegood.com' + location.pathname + location.search + location.hash);
+        }
+      } catch (e) { /* no-op */ }
+    })();
+    /* tr-1: Returning-user fast-lane to /app REMOVED.
+       Cold traffic from sharing/SEO needs the landing page context before
+       the workstation. Users now reach /app only by clicking the primary
+       CTA. Power-users can still bookmark /app directly. */
+  </script>
+  <title>Free AI Prompt Builder & Optimizer for ChatGPT, Claude & Gemini | PromptMeGood</title>
+  <meta name="description" content="Free AI prompt builder for ChatGPT, Claude, Gemini, and DALL-E. Build, optimize, and reverse-engineer better prompts in seconds. Includes custom frameworks and target model formatting. No signup." />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "PromptMeGood",
+    "alternateName": "Prompt Me Good",
+    "url": "https://www.promptmegood.com",
+    "applicationCategory": "BusinessApplication",
+    "applicationSubCategory": "AIApplication",
+    "operatingSystem": "Web",
+    "inLanguage": "en",
+    "isAccessibleForFree": true,
+    "description": "Free ChatGPT prompt builder, AI prompt optimizer, and DALL-E image prompt generator. Turns plain English into perfect prompts for ChatGPT, Claude, and DALL-E. No signup required.",
+    "featureList": [
+      "Guided 4-question prompt builder (Help Me Start)",
+      "One-click prompt fix for ChatGPT, Claude, Perplexity, and Gemini",
+      "Target Model selector — format your prompt for Claude (XML), ChatGPT (numbered steps), Gemini (examples first), or Perplexity (research-style)",
+      "Prompt Framework picker — RISE (Role, Input, Steps, Execution), CARE (Context, Action, Result, Example), Step-by-Step, or Auto",
+      "Interview Mode — get 3 clarifying questions before you generate so the AI knows what you really want",
+      "AI-powered prompt refinement (More Detailed, More Bold & Direct, Beginner Friendly, Undo)",
+      "Photography Suite with Style, Camera & Lens, Lighting & Mood, Composition, and Color Palette pickers (unlimited free); Image Workshop and Reverse Engine power tools free for everyone through July 1, 2026",
+      "gpt-image-1 image generator with Download, Regenerate, and Use As Reference actions",
+      "Local-first prompt vault — no account needed for the free tier, your data stays on your device"
+    ],
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+  <meta name="keywords" content="AI prompt generator, free AI prompt builder, ChatGPT prompt generator, Claude prompt builder, DALL-E 3 prompt generator, Midjourney prompt builder, AI image prompt generator, AI video prompt generator, image to prompt generator, AI photo enhancer, AI storyboard generator, prompt DNA card, AI prompt workstation" />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
+  <meta name="theme-color" content="#0a2420" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="canonical" href="https://www.promptmegood.com/" />
+  <meta property="og:site_name" content="PromptMeGood" />
+  <meta property="og:title" content="PromptMeGood — Free AI Prompt Workstation & Optimizer" />
+  <meta property="og:description" content="Finally, AI that understands you. Fix bad prompts instantly and get the answer you were actually looking for. Free core tier. No signup. Local-first. Includes custom frameworks, target model formatting, and Interview Mode." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.promptmegood.com/" />
+  <meta property="og:image" content="https://www.promptmegood.com/opengraph.jpg?v=6" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="PromptMeGood — Free AI Prompt Workstation & Optimizer" />
+  <meta name="twitter:description" content="Finally, AI that understands you. Fix bad prompts instantly and get the answer you were actually looking for. Free core tier. No signup. Local-first. Includes custom frameworks, target model formatting, and Interview Mode." />
+  <meta name="twitter:image" content="https://www.promptmegood.com/opengraph.jpg?v=6" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=6" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48.png?v=6" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" href="/assets/pmg-logo.png?v=7" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <script type="text/javascript">
+    /* pwa-sw-1 (2026-05-18): register SW on marketing page too so users
+       who land here first get the cache warmed before they install the
+       PWA. Disable: localStorage.pmg_sw_disable='1'. */
+    (function () {
+      try {
+        if (localStorage.getItem('pmg_sw_disable') === '1') return;
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+          });
+        }
+      } catch (_e) {}
+    })();
+  </script>
+  <style>
+    :root {
+      --bg: #0a2420;
+      --surface: #0e3a36;
+      --surface-2: #103f3a;
+      --text: #f5fff8;
+      --muted: #a9d3c4;
+      --accent: #5fe6b0;
+      --accent-strong: #3ee0a0;
+      --border: rgba(95, 230, 176, 0.18);
+      --max: 1080px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.55;
+      /* min-height removed: was forcing body to fill viewport which left
+         empty band below the feature cards on tall screens. Content now
+         sizes naturally. */
+      display: flex; flex-direction: column;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover, a:focus { color: var(--accent-strong); text-decoration: underline; }
+    .wrap { width: 100%; max-width: var(--max); margin: 0 auto; padding: 0 24px; }
+    header.site {
+      padding: 22px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    header.site .row {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; letter-spacing: -0.01em; color: var(--text);
+    }
+    .brand img { width: 28px; height: 28px; border-radius: 6px; }
+    .brand-name span { color: var(--accent); }
+    .top-nav { display: flex; gap: 18px; align-items: center; font-size: 14px; flex-wrap: wrap; justify-content: flex-end; }
+    .top-nav a { color: var(--muted); white-space: nowrap; }
+    .top-nav a:hover, .top-nav a:focus { color: var(--accent); }
+    /* Narrow phones (≤480px): tighten gaps + allow the brand row to wrap so
+       the "Open the App →" link can never push the nav past the viewport edge.
+       Bumped from 420 → 480 to cover iPhone Plus/Pro Max-class widths
+       (414–430px) where the nav had only ~200px and was wrapping internally,
+       stacking "Open the App →" under "Pricing  Guide". */
+    /* mhdr-2: keep the landing-page header as a SINGLE row on phones —
+       logo on the left, nav (Pricing + Guide only) on the right. The
+       previous rule wrapped the nav onto its own row, which was tall and
+       redundant once the hero already shows a full-width "Open the App →"
+       button. We hide the third nav link (Open the App) on mobile only;
+       desktop nav is untouched. */
+    @media (max-width: 480px) {
+      header.site .row { flex-wrap: nowrap; gap: 8px; align-items: center; }
+      .top-nav { gap: 12px; font-size: 13px; width: auto; justify-content: flex-end; flex-wrap: nowrap; }
+      .top-nav a[href="/app"] { display: none; }
+    }
+
+    main.hero { flex: 0 0 auto; padding: 56px 0 28px; }
+    h1.headline {
+      font-size: clamp(34px, 5vw, 56px);
+      line-height: 1.05; letter-spacing: -0.02em;
+      margin: 0 0 18px; font-weight: 800;
+    }
+    h1.headline em {
+      font-style: normal; color: var(--accent);
+    }
+    p.lede {
+      font-size: clamp(16px, 1.6vw, 19px);
+      color: var(--muted); max-width: 64ch; margin: 0 0 28px;
+    }
+    p.lede strong { color: var(--accent); font-weight: 700; }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 0 0 16px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 22px; border-radius: 12px;
+      font-weight: 700; font-size: 16px; line-height: 1;
+      border: 1px solid transparent; cursor: pointer;
+      transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+    }
+    .btn-primary {
+      background: var(--accent); color: #062018;
+      box-shadow: 0 6px 18px rgba(95, 230, 176, 0.18);
+    }
+    .btn-primary:hover, .btn-primary:focus {
+      background: var(--accent-strong); text-decoration: none;
+      transform: translateY(-1px);
+    }
+    .btn-ghost {
+      background: transparent; color: var(--text);
+      border-color: var(--border);
+    }
+    .btn-ghost:hover, .btn-ghost:focus {
+      background: rgba(95, 230, 176, 0.08); color: var(--text); text-decoration: none;
+    }
+    .meta {
+      display: flex; gap: 18px; flex-wrap: wrap;
+      color: var(--muted); font-size: 13px; margin-top: 8px;
+    }
+    .meta strong { color: var(--text); font-weight: 600; }
+
+    /* spec-6 hero mini-generator (homepage-hero-mini-gen-1).
+       Interactive pre-baked demo lives in the hero so visitors see
+       structured-prompt output without leaving above-the-fold. CSS vars
+       reuse the existing hero tokens (--border, --text, --accent) so
+       there's no second source of truth for color. */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+    .hero-generator { max-width: 720px; margin-top: 8px; }
+    .hero-textarea {
+      width: 100%;
+      box-sizing: border-box;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 16px;
+      line-height: 1.45;
+      resize: vertical;
+      margin-bottom: 16px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .hero-textarea::placeholder { color: var(--muted); opacity: 0.85; }
+    .hero-textarea:focus-visible {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(95, 230, 176, 0.18);
+    }
+    /* hero-mini-gen links row (post-typeOut reveal). Small ghost-style
+       text links, not buttons — keeps the hero clean and lets the real
+       Build CTA stay primary. */
+    .hero-output-links {
+      display: flex; flex-wrap: wrap; gap: 18px;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+    .hero-output-link {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      padding: 2px 0;
+      transition: color 120ms ease, border-color 120ms ease;
+    }
+    .hero-output-link:hover, .hero-output-link:focus-visible {
+      color: var(--accent-strong);
+      border-bottom-color: var(--accent-strong);
+      text-decoration: none;
+      outline: none;
+    }
+    .hero-output-container {
+      margin-top: 24px;
+      animation: pmgHeroFadeIn 0.3s ease;
+    }
+    .hero-output-container .demo-prompt {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .hero-output-caption {
+      margin: 16px 0 0;
+      font-size: 12.5px;
+      color: var(--muted);
+      font-style: italic;
+    }
+    .hero-post-cta {
+      display: inline-flex;
+      margin-top: 12px;
+      width: 100%;
+      justify-content: center;
+    }
+    @keyframes pmgHeroFadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    /* Mobile: textarea taller, buttons stack — aligns to file's 540px
+       breakpoint (judgment call 5). `rows` is an HTML attr not a CSS
+       property, so we control mobile size via min-height instead. */
+    @media (max-width: 540px) {
+      .hero-textarea { min-height: 80px; font-size: 16px; }
+      .hero-generator .cta-row { flex-direction: column; align-items: stretch; }
+      .hero-generator .btn { width: 100%; justify-content: center; }
+    }
+
+    /* css-split-1 (2026-05-19): below-the-fold styles moved to
+       /styles/index-deferred.css and async-loaded via <link media="print"
+       onload="this.media='all'"> just below this <style> block. This
+       block keeps ONLY critical above-the-fold rules (tokens, base,
+       header, hero, .btn, .meta, skip-link, focus-visible,
+       prefers-reduced-motion, mobile touch targets). */
+
+    /* hp-a11y-1: skip-link, focus-visible, reduced-motion (P0/P1) */
+    .skip-link {
+      position: absolute;
+      left: 16px;
+      top: -48px;
+      background: var(--accent);
+      color: #04140d;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      text-decoration: none;
+      z-index: 200;
+      transition: top 0.18s ease;
+    }
+    .skip-link:focus, .skip-link:focus-visible { top: 16px; outline: 2px solid var(--text); outline-offset: 2px; }
+
+    .btn:focus-visible,
+    .feature-card:focus-visible,
+    .trust-card a:focus-visible,
+    .demo-cta:focus-visible,
+    a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+      }
+      .btn-primary:hover, .feature-card:hover, .trust-card:hover, .how-step:hover {
+        transform: none !important;
+      }
+    }
+
+    @media (max-width: 540px) {
+      main.hero { padding: 36px 0 24px; }
+      .btn { width: 100%; justify-content: center; }
+    }
+
+    /* mtt-1 (mobile-touch-targets): a11y minimum 44×44 hit area for the
+       text-only nav and footer links and the brand/home link on phones.
+       Implemented with inline-flex + min-height so the visible glyphs/
+       wordmark are unchanged — only the tap zone grows. */
+    @media (max-width: 540px) {
+      .top-nav a,
+      footer.site .links a,
+      .brand {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+      }
+    }
+  </style>
+  <!-- css-split-1 (2026-05-19): async-load below-the-fold styles. Uses
+       media="print" then swaps to "all" onload so it never blocks first
+       paint (Lighthouse-recommended pattern). <noscript> fallback for
+       NoScript users. -->
+  <link rel="stylesheet" href="/styles/index-deferred.css?v=1" media="print" onload="this.media='all';this.onload=null">
+  <noscript><link rel="stylesheet" href="/styles/index-deferred.css?v=1"></noscript>
+  <script type="text/javascript">
+    /* audit-3 §7: cookieless privacy gate around Microsoft Clarity. Skips
+       SDK load entirely when the user has set Do Not Track / Global Privacy
+       Control. Matches app.html's gate so opt-out is consistent across the
+       marketing site and the workstation.
+       perf-lcp-1 (2026-05-19): inject Clarity AFTER `load` (or 4s
+       fallback). Previously fired in <head> which contended with the
+       critical render path on slow 4G + threw LCP from ~1.0s → 3.3s.
+       Clarity is async analytics — it doesn't need to win the race to
+       first paint. Buffered events still queue via window.clarity()
+       and replay once the tag arrives. */
+    (function () {
+      try {
+        var nav = window.navigator || {};
+        var dnt = nav.doNotTrack === '1' || window.doNotTrack === '1' || nav.msDoNotTrack === '1';
+        var gpc = nav.globalPrivacyControl === true;
+        if (dnt || gpc) { window.__pmgClarityOptedOut = true; return; }
+      } catch (_) {}
+      // Pre-create the queue so __pmgTrack calls before load buffer cleanly.
+      window.clarity = window.clarity || function () {
+        (window.clarity.q = window.clarity.q || []).push(arguments);
+      };
+      var injected = false;
+      function inject() {
+        if (injected) return; injected = true;
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "wgs6567cte");
+      }
+      if (document.readyState === 'complete') {
+        setTimeout(inject, 0);
+      } else {
+        window.addEventListener('load', function () { setTimeout(inject, 0); }, { once: true });
+        // Safety net in case `load` is delayed by long-running resources.
+        setTimeout(inject, 4000);
+      }
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="site">
+    <div class="wrap row">
+      <a class="brand brand-name" href="/" aria-label="PromptMeGood home">
+        <img src="/assets/pmg-logo.png?v=7" alt="PromptMeGood — free AI prompt builder for ChatGPT, Claude, and DALL-E" />
+        <span>PromptMe<span>Good</span></span>
+      </a>
+      <nav class="top-nav" aria-label="Site">
+        <a href="/pricing.html">Pricing</a>
+        <a href="/guide.html">Guide</a>
+        <a href="/app" aria-label="Open the workstation">Open the App →</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="hero">
+    <div class="wrap">
+      <!-- post-checkout-banner-1 (audit-2 H1): when Stripe redirects back
+           to / with ?upgrade=success&tier=…, acknowledge the purchase by
+           tier name. Hidden by default; the inline script below shows it
+           only when the query param is present, then strips it from the
+           URL so a refresh doesn't re-trigger. Founding has its own
+           dedicated /founding-success.html, so this primarily covers Pro
+           Monthly / Pro Yearly / Pro Studio Monthly / Pro Studio Yearly
+           after the paywall flips on. Hard-coded styles + script keep it
+           dependency-free with the rest of index.html. -->
+      <div id="post-checkout-banner" role="status" aria-live="polite" hidden
+           style="display:none;margin:0 0 24px;padding:14px 18px;border-radius:14px;
+                  background:color-mix(in srgb, var(--brand, #0c8a92) 12%, transparent);
+                  border:1px solid color-mix(in srgb, var(--brand, #0c8a92) 38%, transparent);
+                  color:var(--ink, #ece9e2);align-items:center;gap:12px;
+                  flex-wrap:wrap;font-size:0.95rem;line-height:1.45;">
+        <span aria-hidden="true" style="font-size:1.25rem;flex-shrink:0;">✓</span>
+        <span id="post-checkout-banner-text" style="flex:1;min-width:200px;">
+          Thanks for your purchase!
+        </span>
+        <a class="btn btn-primary" href="/app" style="margin:0;flex-shrink:0;">Open the App →</a>
+        <button type="button" id="post-checkout-banner-close" aria-label="Dismiss"
+                style="appearance:none;background:transparent;border:0;color:inherit;
+                       font-size:1.25rem;line-height:1;cursor:pointer;padding:4px 8px;
+                       opacity:0.7;flex-shrink:0;">×</button>
+      </div>
+      <script>
+        (function () {
+          try {
+            var params = new URLSearchParams(window.location.search);
+            if (params.get('upgrade') !== 'success') return;
+            var rawTier = (params.get('tier') || '').toLowerCase().replace(/-/g, '_');
+            var TIER_LABELS = {
+              'founding':            'Founding Member',
+              'pro':                 'Pro Monthly',
+              'pro_monthly':         'Pro Monthly',
+              'pro_yearly':          'Pro Yearly',
+              'pro_studio':          'Pro Studio Monthly', /* legacy alias — kept so older webhook redirects still resolve to a friendly name */
+              'pro_studio_monthly':  'Pro Studio Monthly',
+              'pro_studio_yearly':   'Pro Studio Yearly'
+            };
+            var label = TIER_LABELS[rawTier] || '';
+            var banner = document.getElementById('post-checkout-banner');
+            var textEl = document.getElementById('post-checkout-banner-text');
+            var closeBtn = document.getElementById('post-checkout-banner-close');
+            if (!banner || !textEl) return;
+            textEl.textContent = label
+              ? 'Welcome to ' + label + '! Your purchase is confirmed — head into the app to start using your new plan.'
+              : 'Your purchase is confirmed — welcome aboard! Open the app to get started.';
+            banner.hidden = false;
+            banner.style.display = 'flex';
+            if (closeBtn) {
+              closeBtn.addEventListener('click', function () {
+                banner.hidden = true;
+                banner.style.display = 'none';
+              });
+            }
+            /* Strip the query so a refresh doesn't re-fire the banner. Keeps
+               session_id (if present) out of the address bar too. */
+            try {
+              if (window.history && window.history.replaceState) {
+                var clean = window.location.pathname + window.location.hash;
+                window.history.replaceState({}, '', clean);
+              }
+            } catch (_) {}
+          } catch (_) {}
+        })();
+      </script>
+      <h1 class="headline"><em>Finally,</em> AI That Does What You Actually Asked</h1>
+      <p class="lede">PromptMeGood turns what you type into a structured prompt that tells AI exactly what you need &mdash; role, audience, tone, format, and goal &mdash; so it stops guessing and <strong>starts delivering</strong>.</p>
+
+      <div class="meta" style="margin-bottom: 24px; margin-top: 0;">
+        <span><strong>Free</strong> tier with daily limits</span>
+        <span><strong>No signup</strong> required</span>
+        <span><strong>Local-first</strong> &mdash; your vault never leaves the browser</span>
+      </div>
+
+      <div class="hero-generator">
+        <textarea id="hero-input"
+                  class="hero-textarea"
+                  rows="2"
+                  aria-label="Type what you want AI to do for you"
+                  placeholder="Type what you want AI to do for you..."></textarea>
+
+        <div class="cta-row">
+          <button type="button" id="hero-build-btn" class="btn btn-primary">Build My Prompt &rarr;</button>
+          <a class="btn btn-ghost" href="/app">Open the App</a>
+        </div>
+
+        <div id="hero-output-container" class="hero-output-container" hidden>
+          <pre id="hero-output" class="demo-prompt"></pre>
+          <p class="hero-output-caption">Sample output &mdash; open the app for a real one tailored to your input.</p>
+          <div id="hero-output-links" class="hero-output-links" hidden>
+            <a id="hero-link-try" class="hero-output-link" href="/app">&#9654; Try it on your own &rarr;</a>
+            <a id="hero-link-use" class="hero-output-link" href="/app">Use this prompt &rarr;</a>
+          </div>
+          <a class="btn btn-ghost hero-post-cta" href="/app">Open the full app for unlimited real prompts &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <section class="demo" aria-labelledby="demo-title">
+    <div class="wrap">
+      <h2 id="demo-title">One Sentence In, A Real Prompt Out</h2>
+      <p class="section-sub">Type the way you actually think. PromptMeGood adds the role, audience, constraints, tone, format, and CTA that AI needs to give you the answer you were looking for.</p>
+      <div class="demo-grid">
+        <article class="demo-card demo-before">
+          <div class="demo-card-head">
+            <span class="demo-tag">Before</span>
+            <span class="demo-meta">What you typed</span>
+          </div>
+          <p class="demo-text">Help me fix the bug in my function.</p>
+        </article>
+        <div class="demo-arrow" aria-hidden="true">→</div>
+        <article class="demo-card demo-after">
+          <div class="demo-card-head">
+            <span class="demo-tag demo-tag-after">After</span>
+            <span class="demo-meta">What PromptMeGood builds</span>
+          </div>
+<pre class="demo-prompt"><b>Role:</b> Senior Staff Software Engineer
+<b>Audience:</b> Mid-level developer needing a robust, production-ready solution
+<b>Goal:</b> Diagnose the bug, explain the root cause, and ship a clean fix
+<b>Tone:</b> Technical, precise, helpful — no hand-waving
+<b>Constraints:</b> Include error handling, edge cases, and inline comments
+<b>Format:</b> Brief explanation + corrected code block + usage example
+<b>Context:</b> Prioritize readability and performance over cleverness</pre>
+        </article>
+      </div>
+      <p class="demo-foot">Then run it in-app with GPT-4.1, copy it to ChatGPT or Claude, or save it to your local Vault. <a href="/app">Try it on your own sentence →</a></p>
+    </div>
+  </section>
+
+  <section class="how" id="how-it-works" aria-labelledby="how-title">
+    <div class="wrap">
+      <h2 id="how-title">How It Works</h2>
+      <p class="section-sub">No accounts. No waiting. Three honest steps from a single sentence to a prompt that actually works.</p>
+      <ol class="how-grid">
+        <li class="how-step">
+          <span class="how-num" aria-hidden="true">1</span>
+          <h3>Type One Honest Sentence</h3>
+          <p>"Write me a sales email." "Photo of a corgi at sunset." Whatever's actually in your head — no prompt jargon required.</p>
+        </li>
+        <li class="how-step">
+          <span class="how-num" aria-hidden="true">2</span>
+          <h3>PromptMeGood Structures It</h3>
+          <p>Role, audience, format, constraints, tone, and CTA are added automatically. Tweak any pill before you send.</p>
+        </li>
+        <li class="how-step">
+          <span class="how-num" aria-hidden="true">3</span>
+          <h3>Run It, Copy It, Or Save It</h3>
+          <p>One-click Run With AI in the app, copy to ChatGPT / Claude / Gemini / Perplexity, or save to your local Vault.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- audit-3 §10: factual differentiation block. Placed AFTER How It Works
+       per architect note — handle the "why not just ChatGPT?" objection
+       only after the visitor understands the 3-step flow. Every claim is
+       verifiable in the shipped product (templates, Vault, image/video
+       panels, local-first). Canonical CSS vars from pmg-g-theme.css. -->
+  <section class="why-not" aria-labelledby="why-not-title" style="padding:48px 16px;">
+    <div class="wrap" style="max-width:880px; margin:0 auto;">
+      <h2 id="why-not-title" style="text-align:center; margin:0 0 6px;">Why not just use ChatGPT directly?</h2>
+      <p class="section-sub" style="text-align:center; margin:0 0 28px; color:var(--color-muted);">You can. But you'll be reinventing the same prompt structure every single time. Here's what PromptMeGood adds.</p>
+      <div class="why-not-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:18px;">
+        <div class="why-not-card" style="padding:18px; border:1px solid var(--color-border); border-radius:10px; background:var(--color-surface);">
+          <h3 style="margin:0 0 6px; font-size:1rem; color:var(--color-text);">Structured every time</h3>
+          <p style="margin:0; font-size:0.9rem; color:var(--color-muted);">Role, audience, constraints, tone, format, and CTA — added automatically. No more "write me a sales email" returning generic mush.</p>
+        </div>
+        <div class="why-not-card" style="padding:18px; border:1px solid var(--color-border); border-radius:10px; background:var(--color-surface);">
+          <h3 style="margin:0 0 6px; font-size:1rem; color:var(--color-text);">Save &amp; recall</h3>
+          <p style="margin:0; font-size:0.9rem; color:var(--color-muted);">Local Prompt Vault stores your best prompts on your device. Reopen, tweak, and re-run anytime — no chat history to scroll through.</p>
+        </div>
+        <div class="why-not-card" style="padding:18px; border:1px solid var(--color-border); border-radius:10px; background:var(--color-surface);">
+          <h3 style="margin:0 0 6px; font-size:1rem; color:var(--color-text);">Image &amp; video panels</h3>
+          <p style="margin:0; font-size:0.9rem; color:var(--color-muted);">Dedicated Photography and Video panels with guided fields, presets, and 15+ enhancement chips for DALL-E, Midjourney, and Sora-style prompts.</p>
+        </div>
+        <div class="why-not-card" style="padding:18px; border:1px solid var(--color-border); border-radius:10px; background:var(--color-surface);">
+          <h3 style="margin:0 0 6px; font-size:1rem; color:var(--color-text);">Local-first by default</h3>
+          <p style="margin:0; font-size:0.9rem; color:var(--color-muted);">Your vault, picks, and theme stay in your browser. Only the text you choose to generate ever leaves your device.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="wrap">
+      <div class="feature-grid">
+        <article class="feature-card">
+          <h3><span class="ic" aria-hidden="true">✎</span> Prompt Builder</h3>
+          <p>Plain English in, polished prompt out. Smart suggestions, auto-optimization, and a one-click "Run with AI" using GPT-4.1.</p>
+        </article>
+        <article class="feature-card">
+          <h3><span class="ic" aria-hidden="true">📷</span> Photography Suite</h3>
+          <p>Tap pills across Style, Camera & Lens, Lighting, Composition and Color — including Pro knobs (aperture, shutter, ISO, film stock) — then send straight to gpt-image-1.<span data-pmg-beta-only> Image Workshop and Reverse Engine power tools free for everyone through July 1, 2026.</span><span data-pmg-post-launch hidden> Image Workshop and Reverse Engine power tools available on paid plans.</span></p>
+        </article>
+        <article class="feature-card">
+          <h3><span class="ic" aria-hidden="true">🗂</span> Vault & Templates</h3>
+          <p>Save, tag, compare, and replay every prompt. 28+ starter templates. Everything stays in your browser, exportable any time.</p>
+        </article>
+        <article class="feature-card">
+          <h3><span class="ic" aria-hidden="true">🧱</span> Prompt Frameworks</h3>
+          <p>RISE, CARE, and Step-by-Step — three proven structures used by professional prompt engineers. Pick one, or let Auto choose the best fit for your goal. Free on every tier.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="trust" id="trust" aria-labelledby="trust-title">
+    <div class="wrap">
+      <h2 id="trust-title">Built By Someone Who Got Tired Of Bad Prompts</h2>
+      <p class="section-sub">No VC pitch, no growth hacks, no dark patterns. Just a tool I needed and figured other people might too.</p>
+      <blockquote class="founder-note">
+        <p>I kept getting AI answers that almost worked — close enough to feel the potential, wrong enough to waste an hour. The fix was never &ldquo;use a smarter model.&rdquo; It was always &ldquo;write a better prompt.&rdquo; So I built the tool I wished existed: type what's actually in your head, get a real prompt out the other side, run it however you want.</p>
+        <p>The Free tier is the real product, not a teaser. The paid plans exist so I can keep paying the AI bills without selling your data or stuffing the app full of ads. That's the whole pitch.</p>
+        <span class="founder-sig"><span aria-hidden="true">— </span>D.D Jones, The PromptMeGood maker</span>
+      </blockquote>
+      <ul class="trust-grid">
+        <li class="trust-card">
+          <span class="ic" aria-hidden="true">🔒</span>
+          <h3>Local-First By Default</h3>
+          <p>Your Vault, picks, settings, and history live in your browser's local storage. Only the text you choose to send to AI ever leaves your device — and even then, no account is attached.</p>
+        </li>
+        <li class="trust-card">
+          <span class="ic" aria-hidden="true">✉️</span>
+          <h3>A Real Person Replies</h3>
+          <p>Email <a href="/contact.html">support@promptmegood.com</a> with bugs, feature requests, or sharp feedback. Most replies land within 1&ndash;2 business days, from the person who built the thing.</p>
+        </li>
+        <li class="trust-card">
+          <span class="ic" aria-hidden="true">⚖️</span>
+          <h3>No Tracking, No Upsells</h3>
+          <p>No signup wall, no &ldquo;upgrade to continue&rdquo; popups, no analytics that follow you around the web. The core Free tier stays free forever;<span data-pmg-beta-only> power features (Expert Command Center, Growth Mode, Image Workshop, Reverse Engine, DNA Card, Storyboard) are free for everyone through July 1, 2026, then become paid &mdash; see the <a href="/pricing.html">pricing page</a> for the honest version.</span><span data-pmg-post-launch hidden> power features (Expert Command Center, Growth Mode, Image Workshop, Reverse Engine, DNA Card, Storyboard) are available on paid plans &mdash; see the <a href="/pricing.html">pricing page</a> for the honest version.</span></p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="site">
+    <div class="wrap row">
+      <div>&copy; 2026 PromptMeGood</div>
+      <div class="links">
+        <a href="/app">Open the App</a>
+        <a href="/pricing.html">Pricing</a>
+        <a href="/guide.html">Guide</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/contact.html">Contact</a>
+      </div>
+    </div>
+  </footer>
+  <!-- perf-tbt-1 (2026-05-19): the five non-critical helper scripts below
+       used to load with `defer`, which means they all execute back-to-back
+       at DOMContentLoaded — directly inside Lighthouse's TBT measurement
+       window (post-FCP). Combined they added ~300ms of main-thread work.
+       None of them need to run before user interaction: they wire up the
+       contact modal, mailto fallback, dead-click audit, launch-day copy
+       swap, and analytics replay buffer. We now inject them AFTER the
+       `load` event via requestIdleCallback (one at a time, yielding back
+       to the main thread between each) so they run after TBT is closed.
+       Functional behavior is unchanged — analytics events fired before
+       the loader runs are already buffered by the pmg-analytics inline
+       queue; contact/mailto handlers attach via document-level delegation
+       so they catch clicks made before the script loaded by re-checking
+       on mount.
+       Disable lazy-load (revert to defer behavior):
+         localStorage.pmg_lazy_helpers_disable = '1'  -> reload page. -->
+  <script>
+    (function () {
+      var SCRIPTS = [
+        '/scripts/pmg-launch-swap.js?v=launch-swap-1',
+        '/scripts/pmg-deadclick-audit.js?v=dca-1',
+        '/scripts/pmg-mailto-fallback.js?v=mlf-1',
+        '/scripts/pmg-contact-modal.js?v=cm-1',
+        '/scripts/pmg-analytics.js?v=task93-1'
+      ];
+      var disabled = false;
+      try { disabled = localStorage.getItem('pmg_lazy_helpers_disable') === '1'; } catch (_) {}
+      if (disabled) {
+        SCRIPTS.forEach(function (src) {
+          var s = document.createElement('script');
+          s.src = src; s.defer = true; document.head.appendChild(s);
+        });
+        return;
+      }
+      function injectNext(i) {
+        if (i >= SCRIPTS.length) return;
+        var s = document.createElement('script');
+        s.src = SCRIPTS[i];
+        s.async = false; /* preserve execution order */
+        s.onload = s.onerror = function () {
+          (window.requestIdleCallback || function (cb) { setTimeout(cb, 50); })(function () {
+            injectNext(i + 1);
+          }, { timeout: 1500 });
+        };
+        document.head.appendChild(s);
+      }
+      function start() {
+        (window.requestIdleCallback || function (cb) { setTimeout(cb, 200); })(function () {
+          injectNext(0);
+        }, { timeout: 2000 });
+      }
+      if (document.readyState === 'complete') start();
+      else window.addEventListener('load', start, { once: true });
+    })();
+  </script>
+  <script>
+    /* audit-3 §7 funnel event #1: cta_hero_click. Delegated listener on
+       document so it covers every a[href="/app"] / a[href="./app"] on the
+       page (hero, demo block, footer, ghost links) without per-element
+       wiring. Payload `location` carries the closest landmark id/class so
+       we can split conversion by entry point in Clarity. */
+    (function () {
+      function locationFor(el) {
+        try {
+          var section = el.closest && el.closest('section,header,footer,nav,[id]');
+          if (section && section.id) return section.id;
+          if (section && section.tagName) return section.tagName.toLowerCase();
+        } catch (_) {}
+        return 'unknown';
+      }
+      document.addEventListener('click', function (ev) {
+        var a = ev.target && ev.target.closest && ev.target.closest('a[href]');
+        if (!a) return;
+        /* Match by resolved pathname so future UTM params (?ref=hero) or
+           hash fragments (#section) don't break tracking. Covers /app,
+           /app/, /app.html, ./app and any query/hash variant. */
+        var path = '';
+        try { path = (new URL(a.href, window.location.href)).pathname; } catch (_) { return; }
+        if (path !== '/app' && path !== '/app/' && path !== '/app.html') return;
+        try {
+          if (typeof window.__pmgTrack === 'function') {
+            window.__pmgTrack('cta_hero_click', { location: locationFor(a) });
+          }
+        } catch (_) {}
+      }, true);
+    })();
+  </script>
+  <script>
+    /* spec-6 hero mini-generator (homepage-hero-mini-gen-1).
+       Pre-baked keyword-matched demos. Pattern-matches user input to one
+       of four canned structured prompts and types it out for visual
+       punch. Zero network cost, zero OpenAI abuse vector. The full
+       /app does the real work — this is a marketing surface only.
+
+       Bug-2 fix: don't rely on DOMContentLoaded firing AFTER this
+       script registers; this block lives at end-of-body so the DOM is
+       already parsed. Guard with readyState anyway to match the
+       file's existing pattern (see L281 Clarity injector).
+       Bug-3 fix: re-enable the Build button + reset its label on any
+       textarea `input` so visitors can explore multiple demos without
+       refreshing. */
+    (function () {
+      function init() {
+        var input        = document.getElementById('hero-input');
+        var buildBtn     = document.getElementById('hero-build-btn');
+        var container    = document.getElementById('hero-output-container');
+        var output       = document.getElementById('hero-output');
+        var linksRow     = document.getElementById('hero-output-links');
+        var linkUse      = document.getElementById('hero-link-use');
+        if (!input || !buildBtn || !container || !output) return;
+
+        var DEFAULT_LABEL = buildBtn.textContent;
+
+        /* hero-mini-gen-2 (2026-05-20): Goal line is now ALWAYS the user's
+           verbatim input — that's the whole point of the demo (show their
+           sentence sitting inside a real structured prompt). Role/Audience/
+           Tone/Constraints/Format adapt by category, but the user's words
+           never get replaced by a canned string. */
+        function escapeHtml(s) {
+          return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+        }
+        /* Architect-flagged: category match was substring-based, so "video
+           script" was classified as code (since "script" is in both lists
+           and code was checked first). Switched to word-boundary regex
+           match AND ordered video/social ahead of code so explicit
+           platform keywords win over generic ones. Ambiguous terms like
+           "script" (which can mean code OR video) only appear in the
+           video list — code keeps the truly code-specific terms. */
+        var categories = [
+          {
+            kw: ['video', 'youtube', 'sora', 'reel', 'reels', 'short', 'shorts', 'voiceover', 'storyboard', 'tiktok', 'script'],
+            role: 'Short-form video scriptwriter and director',
+            audience: 'Viewers deciding in 3 seconds whether to keep watching',
+            tone: 'Punchy, visual, momentum-driven',
+            constraints: 'Hook in the first 3 seconds; one idea per shot; under 60 seconds total',
+            format: 'Hook → 3–5 beats with on-screen text + visual notes → CTA'
+          },
+          {
+            kw: ['tweet', 'twitter', 'linkedin', 'instagram', 'social', 'caption', 'thread', 'post'],
+            role: 'Social media strategist who writes scroll-stopping posts',
+            audience: 'Followers in your niche scrolling on mobile in 2 seconds or less',
+            tone: 'Conversational, confident, native to the platform',
+            constraints: 'Lead with a hook in the first line; no hashtag spam; keep it skimmable',
+            format: 'Hook + body (1–3 short lines) + CTA or question'
+          },
+          {
+            kw: ['code', 'function', 'bug', 'debug', 'refactor', 'api', 'typescript', 'javascript', 'python', 'react', 'sql', 'regex', 'algorithm'],
+            role: 'Senior Staff Software Engineer',
+            audience: 'Mid-level developer needing a robust, production-ready solution',
+            tone: 'Technical, precise, helpful',
+            constraints: 'Include error handling, edge cases, and inline comments',
+            format: 'Brief explanation + code block + usage example'
+          },
+          {
+            kw: ['email', 'sales', 'pitch', 'outreach', 'cold', 'reply', 'follow up', 'follow-up'],
+            role: 'Senior B2B sales copywriter',
+            audience: 'Operations leads at 50–200 person SaaS companies',
+            tone: 'Direct, friendly, zero fluff',
+            constraints: '90–120 words, plain text, one clear CTA',
+            format: 'Subject line + 3 short paragraphs + CTA'
+          },
+          {
+            kw: ['blog', 'article', 'seo', 'newsletter', 'guide', 'how-to', 'tutorial', 'long-form'],
+            role: 'Expert content marketer and SEO specialist',
+            audience: 'Marketing managers looking for actionable growth tactics',
+            tone: 'Authoritative, tactical, engaging',
+            constraints: '~1200 words, short paragraphs, highly skimmable',
+            format: 'Hook intro + 3 actionable steps with examples + conclusion'
+          }
+        ];
+        function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+        var fallbackCategory = {
+          role: 'Expert consultant in the relevant field',
+          audience: 'Professionals seeking clear, actionable advice',
+          tone: 'Professional, clear, concise',
+          constraints: 'No fluff, highly structured, easy to act on',
+          format: 'Executive summary + bulleted key points + next steps'
+        };
+        function pickCategory(text) {
+          var lower = (text || '').toLowerCase();
+          for (var i = 0; i < categories.length; i++) {
+            var c = categories[i];
+            for (var j = 0; j < c.kw.length; j++) {
+              /* Word-boundary match so "api" doesn't fire on "rapid",
+                 "post" doesn't fire on "compost", etc. Multi-word keys
+                 like "follow up" still match because \b works at the
+                 outside edges and the inner space is literal. */
+              var re = new RegExp('\\b' + escapeRe(c.kw[j]) + '\\b', 'i');
+              if (re.test(lower)) return c;
+            }
+          }
+          return fallbackCategory;
+        }
+        function pickDemo(text) {
+          var c = pickCategory(text);
+          var goal = escapeHtml((text || '').trim());
+          return (
+            '<b>Role:</b> ' + c.role + '\n' +
+            '<b>Audience:</b> ' + c.audience + '\n' +
+            '<b>Goal:</b> ' + goal + '\n' +
+            '<b>Tone:</b> ' + c.tone + '\n' +
+            '<b>Constraints:</b> ' + c.constraints + '\n' +
+            '<b>Format:</b> ' + c.format
+          );
+        }
+
+        var typingTimer = null;
+        var startTimer  = null;
+        function cancelTyping() {
+          if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
+          if (startTimer)  { clearTimeout(startTimer);  startTimer  = null; }
+        }
+        function typeOut(html, speed) {
+          cancelTyping();
+          speed = speed || 14;
+          output.innerHTML = '';
+          /* a11y: announce only the finished output once, not every char
+             — avoids a screen-reader "announcement storm" during typing. */
+          output.removeAttribute('aria-live');
+          var i = 0;
+          var buf = '';
+          var inTag = false;
+          (function step() {
+            if (i >= html.length) {
+              typingTimer = null;
+              output.setAttribute('aria-live', 'polite');
+              buildBtn.disabled = false;
+              buildBtn.textContent = 'Try another →';
+              /* hero-links-1: reveal two ghost links once typing finishes.
+                 "Use this prompt" deep-links into /app with the user's
+                 raw input as ?q= so the real workstation pre-fills it. */
+              if (linksRow && linkUse) {
+                try {
+                  var q = (input.value || '').trim();
+                  linkUse.setAttribute('href', q ? '/app?q=' + encodeURIComponent(q) : '/app');
+                } catch (_) { linkUse.setAttribute('href', '/app'); }
+                linksRow.hidden = false;
+              }
+              /* Match the file's 540px mobile breakpoint, not 767. */
+              if (window.innerWidth <= 540) {
+                try { container.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
+              }
+              return;
+            }
+            var ch = html.charAt(i);
+            buf += ch;
+            if (ch === '<') inTag = true;
+            if (ch === '>') inTag = false;
+            output.innerHTML = buf;
+            i++;
+            typingTimer = setTimeout(step, inTag ? 0 : speed);
+          })();
+        }
+
+        buildBtn.addEventListener('click', function () {
+          var val = (input.value || '').trim();
+          if (!val) { input.focus(); return; }
+          /* Cancel any in-flight build before starting a new one — avoids
+             concurrent typeOut loops racing against the same element. */
+          cancelTyping();
+          container.hidden = false;
+          buildBtn.disabled = true;
+          buildBtn.textContent = 'Building…';
+          startTimer = setTimeout(function () { typeOut(pickDemo(val)); }, 380);
+          /* Reuse the existing cta_hero_click funnel slot so we can see
+             how many visitors actually engage with the mini-gen. */
+          try {
+            if (typeof window.__pmgTrack === 'function') {
+              window.__pmgTrack('hero_minigen_build', { length: val.length });
+            }
+          } catch (_) {}
+        });
+
+        /* Bug-3 fix: any keystroke after a finished build re-enables the
+           button, resets its label, and clears the stale sample output —
+           keeps the hero honest while the user is composing a new ask. */
+        input.addEventListener('input', function () {
+          if (buildBtn.disabled) buildBtn.disabled = false;
+          if (buildBtn.textContent !== DEFAULT_LABEL && buildBtn.textContent !== 'Building…') {
+            buildBtn.textContent = DEFAULT_LABEL;
+          }
+          if (!container.hidden) {
+            cancelTyping();
+            container.hidden = true;
+            output.innerHTML = '';
+            if (linksRow) linksRow.hidden = true;
+          }
+        });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init, { once: true });
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>
