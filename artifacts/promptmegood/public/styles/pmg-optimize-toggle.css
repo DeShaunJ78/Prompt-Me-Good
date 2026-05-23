@@ -83,10 +83,12 @@
 }
 
 /* Hide all toggle UI when not in text panel. Photography/Video panels
-   should not show Build/Optimize at all — they have their own flows. */
-body:not([data-active-panel="text"]) .pmg-opt-toggle-wrap,
-body:not([data-active-panel="text"]) .pmg-opt-label,
-body:not([data-active-panel="text"]) .pmg-opt-warning,
-body:not([data-active-panel="text"]) .pmg-opt-error {
+   should not show Build/Optimize at all — they have their own flows.
+   Chassis-v3 stamps data-active-panel on .pmgv3-body (the inner v3 root),
+   NOT on document.body — see pmg-chassis-v3.js setActivePanel L2287-2292. */
+.pmgv3-body:not([data-active-panel="text"]) .pmg-opt-toggle-wrap,
+.pmgv3-body:not([data-active-panel="text"]) .pmg-opt-label,
+.pmgv3-body:not([data-active-panel="text"]) .pmg-opt-warning,
+.pmgv3-body:not([data-active-panel="text"]) .pmg-opt-error {
   display: none !important;
 }
