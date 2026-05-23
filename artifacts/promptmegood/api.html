@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Developer API — PromptMeGood</title>
+  <meta name="description" content="Use the PromptMeGood API to build, optimize, and enhance prompts programmatically. API key management and full endpoint documentation." />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="https://www.promptmegood.com/api.html" />
+  <link rel="icon" href="/assets/favicon.ico" />
+  <link rel="stylesheet" href="/public/styles/pmg-g-theme.css" />
+  <link rel="stylesheet" href="/styles/pmg-api-keys.css?v=ak-1" />
+  <style>
+    body { background: var(--color-bg, #0c1416); color: var(--color-text, #e6f0ee); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; line-height: 1.55; }
+    a { color: var(--color-primary, #43c4a5); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header.site, footer.site { background: var(--color-surface, #11191c); border-bottom: 1px solid var(--color-border, #1d2a2d); }
+    footer.site { border-bottom: 0; border-top: 1px solid var(--color-border, #1d2a2d); }
+    header.site .wrap, footer.site .wrap { max-width: 1080px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+    .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; color: var(--color-text); }
+    .brand img { height: 28px; width: auto; }
+    .top-nav { display: flex; gap: 20px; flex-wrap: wrap; }
+    .top-nav a { font-size: 14px; }
+    main { max-width: 880px; margin: 0 auto; padding: 56px 24px 80px; }
+    h1 { font-size: clamp(34px, 5vw, 48px); margin: 0 0 12px; letter-spacing: -0.02em; }
+    h2 { font-size: clamp(22px, 3vw, 28px); margin: 48px 0 16px; letter-spacing: -0.01em; }
+    h3 { font-size: 18px; margin: 24px 0 8px; }
+    p { margin: 0 0 12px; color: var(--color-text-muted, #a9bdb9); }
+    p.lede { font-size: 18px; color: var(--color-text); margin-bottom: 24px; }
+    .pills { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0 0; }
+    .pill { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 6px 12px; border-radius: 999px; background: var(--color-surface-2, #17262a); color: var(--color-primary, #43c4a5); border: 1px solid var(--color-border, #1d2a2d); }
+    section.block { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--color-border, #1d2a2d); }
+    section.block:first-of-type { border-top: 0; padding-top: 0; }
+    pre, code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    pre { background: var(--color-surface-2, #17262a); border: 1px solid var(--color-border, #1d2a2d); border-radius: var(--radius-md, 10px); padding: 16px; overflow-x: auto; font-size: 13px; line-height: 1.5; color: var(--color-text); }
+    code.inline { background: var(--color-surface-2, #17262a); border: 1px solid var(--color-border, #1d2a2d); border-radius: 4px; padding: 1px 6px; font-size: 13px; color: var(--color-primary, #43c4a5); }
+    details.endpoint { background: var(--color-surface, #11191c); border: 1px solid var(--color-border, #1d2a2d); border-radius: var(--radius-md, 10px); padding: 0; margin-bottom: 12px; }
+    details.endpoint summary { padding: 14px 18px; cursor: pointer; font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 12px; list-style: none; user-select: none; }
+    details.endpoint summary::-webkit-details-marker { display: none; }
+    details.endpoint summary::before { content: "▸"; color: var(--color-text-muted, #a9bdb9); font-size: 12px; transition: transform 0.15s; }
+    details.endpoint[open] summary::before { transform: rotate(90deg); }
+    details.endpoint .method { display: inline-block; font-family: ui-monospace, monospace; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: var(--color-primary, #43c4a5); color: #000; }
+    details.endpoint .path { font-family: ui-monospace, monospace; font-size: 14px; color: var(--color-text); }
+    details.endpoint .body { padding: 0 18px 18px; }
+    details.endpoint .body p:first-child { margin-top: 0; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 18px; border-radius: var(--radius-md, 10px); font-weight: 600; font-size: 14px; cursor: pointer; border: 1px solid transparent; transition: opacity 0.12s, background 0.12s; font-family: inherit; }
+    .btn-primary { background: var(--color-primary, #43c4a5); color: #000; }
+    .btn-primary:hover { opacity: 0.9; text-decoration: none; }
+    .btn-secondary { background: transparent; color: var(--color-text); border-color: var(--color-border, #1d2a2d); }
+    .btn-secondary:hover { background: var(--color-surface-2, #17262a); text-decoration: none; }
+    .note { font-size: 13px; color: var(--color-text-muted, #a9bdb9); margin-top: 12px; padding: 10px 14px; background: var(--color-surface, #11191c); border-left: 3px solid var(--color-primary, #43c4a5); border-radius: 0 var(--radius-md, 10px) var(--radius-md, 10px) 0; }
+    footer.site .links { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <header class="site">
+    <div class="wrap">
+      <a class="brand" href="/" aria-label="PromptMeGood home">
+        <img src="/assets/pmg-logo.png?v=7" alt="PromptMeGood" />
+        <span>PromptMe<span style="color:var(--color-primary)">Good</span></span>
+      </a>
+      <nav class="top-nav" aria-label="Site">
+        <a href="/pricing.html">Pricing</a>
+        <a href="/guide.html">Guide</a>
+        <a href="/api.html" aria-current="page">API</a>
+        <a href="/app" aria-label="Open the workstation">Open the App →</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="block">
+      <h1>PromptMeGood API</h1>
+      <p class="lede">Automate prompt generation, optimization, and enhancement in your own apps.</p>
+      <div class="pills">
+        <span class="pill">REST API</span>
+        <span class="pill">API Key Auth</span>
+        <span class="pill">JSON responses</span>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Your API Keys</h2>
+      <p>Generate a key, copy it once, and use it in your app's <code class="inline">Authorization</code> header. Revoke any time.</p>
+      <div id="pmg-ak-container">
+        <p class="pmg-ak-empty">Loading…</p>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Endpoints</h2>
+      <p>All endpoints accept JSON and return JSON. Include your API key as: <code class="inline">Authorization: Bearer pmg_live_...</code></p>
+
+      <details class="endpoint" open>
+        <summary><span class="method">POST</span><span class="path">/api/generate</span></summary>
+        <div class="body">
+          <p>Build a structured prompt from a plain-English goal.</p>
+          <h3>Request body</h3>
+<pre><code>{
+  "goal": "string — what you want the prompt to do",
+  "category": "string — optional: General | Business | Money | Content | Career | Personal | Productivity | Learning | Faith",
+  "tone": "string — optional: Professional | Bold &amp; Direct | Casual | Expert",
+  "format": "string — optional: Step-By-Step | List | Detailed Breakdown",
+  "personality": "string — optional: see app for full list",
+  "targetModel": "string — optional: Universal | Claude | ChatGPT | Gemini | Perplexity",
+  "framework": "string — optional: Auto | RISE | CARE | Step-by-Step"
+}</code></pre>
+          <h3>Response</h3>
+<pre><code>{ "result": "string — the generated prompt" }</code></pre>
+        </div>
+      </details>
+
+      <details class="endpoint">
+        <summary><span class="method">POST</span><span class="path">/api/boost</span></summary>
+        <div class="body">
+          <p>Automatically improve an existing prompt.</p>
+          <h3>Request body</h3>
+<pre><code>{ "prompt": "string — your existing prompt text" }</code></pre>
+          <h3>Response</h3>
+<pre><code>{ "result": "string — the improved prompt" }</code></pre>
+        </div>
+      </details>
+
+      <details class="endpoint">
+        <summary><span class="method">POST</span><span class="path">/api/auto-tune</span></summary>
+        <div class="body">
+          <p>Fine-tune a prompt's tone, clarity, and structure.</p>
+          <h3>Request body</h3>
+<pre><code>{ "prompt": "string — your existing prompt text" }</code></pre>
+          <h3>Response</h3>
+<pre><code>{ "result": "string — the tuned prompt" }</code></pre>
+        </div>
+      </details>
+
+      <p class="note">API key requests share your plan's daily limits. Free: 10 requests/day. Pro: 100/day. Pro Studio: unlimited.</p>
+    </section>
+
+    <section class="block">
+      <h2>Quick Start</h2>
+      <p>One curl command — drop in your key and run it.</p>
+<pre><code>curl -X POST https://www.promptmegood.com/api/boost \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer pmg_live_your_key_here" \
+  -d '{"prompt": "Write me a sales email"}'</code></pre>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <div>&copy; 2026 PromptMeGood</div>
+      <div class="links">
+        <a href="/app">Open the App</a>
+        <a href="/pricing.html">Pricing</a>
+        <a href="/guide.html">Guide</a>
+        <a href="/api.html">API</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/contact.html">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Supabase client for JWT-backed key management. -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    (function () {
+      try {
+        fetch('/api/public-config').then(function (r) { return r.json(); }).then(function (cfg) {
+          if (!cfg || !cfg.supabaseUrl || !cfg.supabaseAnonKey) return;
+          if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+            window.supabaseClient = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+          }
+        }).catch(function () {});
+      } catch (_) {}
+    })();
+  </script>
+  <script src="/scripts/pmg-api-keys.js?v=ak-1" defer></script>
+</body>
+</html>

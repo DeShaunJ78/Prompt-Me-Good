@@ -9,6 +9,7 @@ import usageRouter from "./usage";
 import waitlistRouter from "./waitlist";
 import contactRouter from "./contact";
 import foundingCheckoutRouter from "./founding-checkout";
+import developerRouter from "./developer";
 
 const router: IRouter = Router();
 
@@ -21,6 +22,7 @@ router.use(usageRouter);
 router.use(waitlistRouter);
 router.use(contactRouter);
 router.use(foundingCheckoutRouter);
+router.use(developerRouter);
 
 // Dev-only Claude code-review endpoint. Mounted only when NODE_ENV !==
 // "production" so it never ships to live traffic. The handler also self-checks

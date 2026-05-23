@@ -111,6 +111,7 @@ export default defineConfig({
           "founding-success.html",
         ),
         notfound: path.resolve(import.meta.dirname, "404.html"),
+        apiDocs: path.resolve(import.meta.dirname, "api.html"),
       },
     },
   },

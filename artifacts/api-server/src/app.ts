@@ -4,6 +4,7 @@ import helmet from "helmet";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import stripeWebhookRouter from "./routes/stripe-webhook";
+import { apiKeyAuth } from "./middlewares/apiKeyAuth";
 import { logger } from "./lib/logger";
 import { buildAllowedOrigins } from "./lib/allowed-origins";
 
@@ -90,6 +91,11 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
+// apiKeyAuth runs BEFORE the route handlers so any `Authorization: Bearer
+// pmg_live_*` request resolves to req.pmgApiKeyUser before per-handler JWT
+// logic runs. Non-pmg_live_* requests fall through untouched, so existing
+// JWT auth in userCapEnforce and elsewhere is unchanged.
+app.use("/api", apiKeyAuth);
 app.use("/api", router);
 
 export default app;

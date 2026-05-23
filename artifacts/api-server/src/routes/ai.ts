@@ -521,15 +521,27 @@ async function denyExpertIfPaywalled(
   if (feature !== "expert") return false;
   if (!isPaywallActive()) return false;
 
-  const header = req.headers.authorization || "";
-  const m = /^Bearer\s+(.+)$/i.exec(header);
+  /* spec4-ak-2: API-key requests resolve via apiKeyAuth middleware, not
+     a Supabase JWT, so we must consult req.pmgApiKeyUser FIRST. Without
+     this, a Pro / Pro Studio user calling Expert features via their API
+     key would be falsely 403'd because the JWT re-resolution below would
+     return null for a `pmg_live_*` bearer token. */
+  const apiKeyUser = (req as { pmgApiKeyUser?: { userId: string; plan: PmgPlan } })
+    .pmgApiKeyUser;
   let plan: PmgPlan | null = null;
-  if (m) {
-    const ctx = await resolveUserFromJwt(m[1]!.trim());
-    if (ctx) {
-      /* owner-bypass-1: owner is always allowed past the Expert gate. */
-      if (isOwnerUserId(ctx.userId)) return false;
-      plan = ctx.plan;
+  if (apiKeyUser) {
+    if (isOwnerUserId(apiKeyUser.userId)) return false;
+    plan = apiKeyUser.plan;
+  } else {
+    const header = req.headers.authorization || "";
+    const m = /^Bearer\s+(.+)$/i.exec(header);
+    if (m) {
+      const ctx = await resolveUserFromJwt(m[1]!.trim());
+      if (ctx) {
+        /* owner-bypass-1: owner is always allowed past the Expert gate. */
+        if (isOwnerUserId(ctx.userId)) return false;
+        plan = ctx.plan;
+      }
     }
   }
   if (plan === null || plan === "free") {
@@ -548,6 +560,9 @@ async function denyExpertIfPaywalled(
 // generate-zod-1 (StructuredPayloadSchema). Both /generate and
 // /generate-stream now parse + sanitize req.body before any handler logic.
 router.post("/generate", generateLimiter, generateCostCheck, async (req, res) => {
+  /* spec4-ak-1: API key requests bypass JWT-based user resolution. */
+  const apiKeyUser = (req as { pmgApiKeyUser?: { userId: string } }).pmgApiKeyUser;
+  if (apiKeyUser) (req as { pmgUser?: unknown }).pmgUser = apiKeyUser;
   /* generate-zod-1: parse body with the Zod schema BEFORE the entitlement
      and interview gates run. Schema strips unknown-typed values to undefined
      (e.g. interviewMode:"<script>"), passthrough keeps `feature: "expert"`
@@ -1767,6 +1782,9 @@ router.post("/clarify", rateLimit, generateCostCheck, async (req, res) => {
  * preserve the user's core intent — only add the missing structural elements.
  * ============================================================================ */
 router.post("/boost", rateLimit, generateCostCheck, async (req, res) => {
+  /* spec4-ak-1: API key requests bypass JWT-based user resolution. */
+  const apiKeyUser = (req as { pmgApiKeyUser?: { userId: string } }).pmgApiKeyUser;
+  if (apiKeyUser) (req as { pmgUser?: unknown }).pmgUser = apiKeyUser;
   const prompt = clampString(req.body?.prompt, 4000);
   const scopeRaw = typeof req.body?.scope === "string" ? req.body.scope.toLowerCase() : "text";
   const scope: "text" | "photo" | "video" =
@@ -1856,6 +1874,9 @@ const TUNE_ENUMS = {
 type TuneKey = keyof typeof TUNE_ENUMS;
 
 router.post("/auto-tune", rateLimit, generateCostCheck, async (req, res) => {
+  /* spec4-ak-1: API key requests bypass JWT-based user resolution. */
+  const apiKeyUser = (req as { pmgApiKeyUser?: { userId: string } }).pmgApiKeyUser;
+  if (apiKeyUser) (req as { pmgUser?: unknown }).pmgUser = apiKeyUser;
   const idea = clampString(req.body?.idea, 2000);
   if (!idea || idea.length < 4) {
     res.status(400).json({ ok: false, error: "Provide an idea of at least 4 characters." });

@@ -1,0 +1,96 @@
+/* pmg-api-keys.css (ak-1, 2026-05-23)
+ * Spec 4 — Developer API key management UI styles. All colors via tokens.
+ */
+
+.pmg-ak-empty {
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.pmg-ak-empty-sign-in {
+  text-align: center;
+  padding: 32px 0;
+  color: var(--color-text-muted);
+}
+
+.pmg-ak-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.pmg-ak-row-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pmg-ak-label {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--color-text);
+}
+
+.pmg-ak-prefix {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  color: var(--color-primary);
+}
+
+.pmg-ak-meta {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.pmg-ak-revoke {
+  font-size: 13px;
+  padding: 6px 14px;
+}
+
+.pmg-ak-generate {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.pmg-ak-generate input {
+  flex: 1;
+  min-width: 200px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  color: var(--color-text);
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.pmg-ak-new-key {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.pmg-ak-new-key-warning {
+  color: var(--color-warning, #f4d574);
+  font-weight: 600;
+  font-size: 14px;
+  margin: 0 0 10px;
+}
+
+#pmg-ak-key-display {
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  word-break: break-all;
+  margin-bottom: 12px;
+  color: var(--color-primary);
+}
