@@ -233,9 +233,12 @@
     /* The visible CTA is #analyze-btn (rendered by pmg-chassis-v3.js L375
        — "✨ Build My Prompt"). #generateBtn is the hidden legacy form
        button ("Fix My Prompt", app.html L4971) — never the user-clicked
-       target in v3. Prefer analyze-btn; fall back for legacy/non-v3. */
-    generateBtn = document.getElementById('analyze-btn')
-               || document.getElementById('generateBtn');
+       target in v3. Per replit.md "Chassis v3 is the only chassis loaded",
+       so we REQUIRE #analyze-btn — letting tryMount's 200ms × 30-tick
+       poll wait for chassis-v3 to render it. Falling back to #generateBtn
+       on early polls caused the label updates to stomp the wrong (hidden)
+       button and never reach the visible CTA. */
+    generateBtn = document.getElementById('analyze-btn');
     if (!goalEl || !generateBtn || !goalEl.parentNode) return false;
     if (document.querySelector('.pmg-opt-toggle-wrap')) return true; /* already mounted */
     originalPlaceholder = goalEl.getAttribute('placeholder') || '';
