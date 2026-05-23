@@ -10,12 +10,25 @@
  * import-specific affordances (muted-until-hover + disabled state).
  */
 
+/* PromptPerfect brand-violet styling so the import-from-competitor CTA
+   visually separates from the neutral teal .btn-secondary siblings
+   (Export / Show Archived / Compare). PromptPerfect (Jina AI) uses a
+   purple/violet palette — anchoring on #7c3aed (violet-600) with a
+   subtle gradient hint on hover. Overrides .btn-secondary's neutral
+   background; keeps the .btn min-height / padding / radius from the
+   global rule. */
 .pmg-vault-import-trigger {
-  opacity: 0.85;
+  background: #7c3aed !important;
+  border: 1px solid #7c3aed !important;
+  color: #ffffff !important;
+  opacity: 1;
 }
 .pmg-vault-import-trigger:hover,
 .pmg-vault-import-trigger:focus-visible {
-  opacity: 1;
+  background: #6d28d9 !important;
+  border-color: #6d28d9 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #7c3aed 35%, transparent);
 }
 .pmg-vault-import-trigger:disabled,
 .pmg-vault-import-trigger[aria-busy="true"] {
