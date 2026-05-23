@@ -37,6 +37,18 @@
 
   var OPTIMIZE_PLACEHOLDER = "Paste your existing prompt here — we'll improve it.";
   var LABEL_TEXT = 'Your existing prompt';
+  var BUILD_RESULT_TITLE = 'Your Built Prompt Will Appear Here';
+  var OPTIMIZE_RESULT_TITLE = 'Your Optimized Prompt Will Appear Here';
+
+  function setResultTitle(text) {
+    /* Two render paths exist: chassis-v3's .pmgv3-rp-title (visible in v3)
+       and the legacy #result-title h2 (app.html L5264). Update both so
+       whichever is visible reflects the active mode. */
+    var v3 = document.querySelector('.pmgv3-rp-title');
+    if (v3) v3.textContent = text;
+    var legacy = document.getElementById('result-title');
+    if (legacy) legacy.textContent = text;
+  }
 
   function ready(fn) {
     if (document.readyState === 'loading') {
@@ -109,12 +121,14 @@
       goalEl.setAttribute('placeholder', OPTIMIZE_PLACEHOLDER);
       ensureLabel();
       if (generateBtn) generateBtn.textContent = 'Optimize My Prompt';
+      setResultTitle(OPTIMIZE_RESULT_TITLE);
     } else {
       if (originalPlaceholder !== null) goalEl.setAttribute('placeholder', originalPlaceholder);
       removeLabel();
       removeNode(warningEl); warningEl = null;
       removeNode(errorEl); errorEl = null;
       if (generateBtn && originalBtnLabel !== null) generateBtn.textContent = originalBtnLabel;
+      setResultTitle(BUILD_RESULT_TITLE);
     }
   }
 
@@ -245,6 +259,9 @@
     originalBtnLabel = generateBtn.textContent;
     buildToggle(goalEl.parentNode);
     generateBtn.addEventListener('click', onGenerateClickCapture, true);
+    /* Default mode is Build — sync the result-panel heading from the
+       hardcoded "Optimized" copy to the Build copy on first paint. */
+    setResultTitle(BUILD_RESULT_TITLE);
     return true;
   }
 
