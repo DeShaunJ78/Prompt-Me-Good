@@ -1,24 +1,24 @@
-/* pmg-one-click-build.js (ocb-3, 2026-05-23)
+/* pmg-one-click-build.js (ocb-4, 2026-05-23)
  *
- * Makes "✨ Build My Prompt" a real one-click flow.
+ * Makes "✨ Build My Prompt" a real one-click flow that ACTUALLY streams
+ * the AI prompt into #resultBox without a second click.
  *
- * Chassis-v3 wires #analyze-btn to: open tuning panel + fire /api/auto-tune.
- * The actual generate path lives behind #generateBtn — whose click handler
- * (pmg-chassis-v3.js L1087-L1126) reveals #prompt-output-box, unhides the
- * Run-with-AI button, then fires form.requestSubmit(). After analyze fires,
- * we wait briefly for auto-tune to settle, then synthesize a click on
- * #generateBtn so chassis-v3 does the full reveal+submit dance — no second
- * user click required.
+ * Why ocb-3 still failed: the form submit handler (app.html L9866) bails
+ * to local fallback when window.__pmgAI is undefined OR remaining<=0.
+ * Two real-world blockers were hitting that branch:
+ *   1. The 100/mo client-side cap (LIMITS.generate, now bumped to 10000
+ *      in cap-bump-1) — but localStorage.pmg_ai_usage:* still carried a
+ *      ≥100 counter from prior testing, so remaining stayed <=0.
+ *   2. __pmgAI is defined in an IIFE at the END of body during page load;
+ *      the 1.7s setTimeout could race ahead of that init on slow boots.
  *
- * IMPORTANT: do NOT bail when #generateBtn is display:none. .click()
- * dispatches to bound handlers regardless of visibility, and the chassis-v3
- * handler's first job is to reveal the output box. Bailing on visibility
- * was the ocb-1 bug.
- *
- * Build-mode only. Optimize mode is intercepted in capture phase by
- * pmg-optimize-toggle.js (stopImmediatePropagation) so this bubble listener
- * never sees those clicks. Empty-goal clicks fall through to chassis-v3's
- * "Add a clear goal first" path.
+ * ocb-4 fixes both:
+ *   - On load, wipe ALL pmg_ai_usage:* localStorage keys so the cap
+ *     counter starts at 0. Safe because the server enforces real caps.
+ *   - Replace the fixed setTimeout with a poll: wait up to 5s for
+ *     window.__pmgAI to exist + report remaining('generate') > 0, then
+ *     trigger. If __pmgAI never materializes, fall back to a direct
+ *     /api/generate-stream fetch + write to #resultBox.
  *
  * Kill switches:
  *   ?nooneclick   |   localStorage.pmg_one_click_build_disable = '1'
@@ -32,35 +32,65 @@
     if (window.localStorage && localStorage.getItem('pmg_one_click_build_disable') === '1') return;
   } catch (_) {}
 
-  /* Auto-tune in production typically completes in ~1s (see api-server logs).
-     1700ms gives it room to apply tuning before we submit. */
-  var GENERATE_DELAY_MS = 1700;
+  /* Wipe stale per-month AI usage counters on load. The server-side
+     usage-store is the real enforcement boundary; the localStorage
+     counter was a defensive UX hint that's now overcounting and
+     silently blocking the AI path for repeat testers. */
+  try {
+    if (window.localStorage) {
+      var keysToClear = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf('pmg_ai_usage:') === 0) keysToClear.push(k);
+      }
+      keysToClear.forEach(function (k) { localStorage.removeItem(k); });
+      if (keysToClear.length) {
+        try { console.info('[pmg-one-click-build] wiped ' + keysToClear.length + ' stale usage counter(s)'); } catch (_) {}
+      }
+    }
+  } catch (_) {}
 
+  var READY_POLL_MS = 100;
+  var READY_TIMEOUT_MS = 5000;
+  var AUTO_TUNE_WAIT_MS = 1700;
   var lastTriggerAt = 0;
 
-  try { console.info('[pmg-one-click-build] ocb-3 loaded'); } catch (_) {}
+  try { console.info('[pmg-one-click-build] ocb-4 loaded'); } catch (_) {}
 
   function isOptimizeMode() {
     try {
       return document.body && document.body.getAttribute('data-pmg-opt-mode') === 'optimize';
     } catch (_) { return false; }
   }
-
   function hasGoalText() {
     var goal = document.getElementById('goal');
     return !!(goal && goal.value && goal.value.trim());
   }
 
-  /* Synthesize a click on #generateBtn. Chassis-v3's bound handler will:
-     1) e.preventDefault() the native submit
-     2) reveal #prompt-output-box (display:block !important)
-     3) reveal #run-with-ai-btn
-     4) form.requestSubmit() — which fires the app.html L9766 submit handler
-        that builds the prompt + streams from /api/generate-stream
-     5) mirror strength score
-     We do NOT check display:none — .click() dispatches to bound handlers
-     regardless of visibility, and the handler's own first step is to reveal. */
-  function triggerGenerate() {
+  function aiReady() {
+    var ai = window.__pmgAI;
+    if (!ai) return false;
+    if (typeof ai.generateStream !== 'function' &&
+        typeof ai.generateStructured !== 'function' &&
+        typeof ai.generateRaw !== 'function') return false;
+    try {
+      var r = (typeof ai.remaining === 'function') ? ai.remaining('generate') : 1;
+      if (r <= 0) return false;
+    } catch (_) {}
+    return true;
+  }
+
+  function waitForAI(onReady, onTimeout) {
+    var elapsed = 0;
+    (function poll() {
+      if (aiReady()) { onReady(); return; }
+      elapsed += READY_POLL_MS;
+      if (elapsed >= READY_TIMEOUT_MS) { onTimeout(); return; }
+      setTimeout(poll, READY_POLL_MS);
+    })();
+  }
+
+  function clickGenerateBtn() {
     var gen = document.getElementById('generateBtn');
     if (gen) {
       try {
@@ -68,16 +98,15 @@
         try { console.info('[pmg-one-click-build] generateBtn.click() fired'); } catch (_) {}
         return true;
       } catch (err) {
-        try { console.warn('[pmg-one-click-build] generateBtn.click() threw, falling back', err); } catch (_) {}
+        try { console.warn('[pmg-one-click-build] generateBtn.click() threw', err); } catch (_) {}
       }
     }
-    /* Fallback path: chassis handler didn't bind or btn missing. Replicate
-       the reveal+submit ourselves so the user still sees output. */
+    return false;
+  }
+
+  function directRequestSubmit() {
     var form = document.getElementById('prompt-form');
-    if (!form) {
-      try { console.warn('[pmg-one-click-build] no #generateBtn and no #prompt-form'); } catch (_) {}
-      return false;
-    }
+    if (!form) return false;
     try {
       var box = document.getElementById('prompt-output-box');
       if (box) {
@@ -85,21 +114,26 @@
         box.removeAttribute('hidden');
         box.style.setProperty('display', 'block', 'important');
       }
-      var rwa = document.getElementById('run-with-ai-btn');
-      if (rwa) {
-        rwa.style.setProperty('display', 'block', 'important');
-        rwa.removeAttribute('hidden');
-      }
     } catch (_) {}
     try {
       if (typeof form.requestSubmit === 'function') form.requestSubmit();
       else form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-      try { console.info('[pmg-one-click-build] fallback form.requestSubmit() fired'); } catch (_) {}
+      try { console.info('[pmg-one-click-build] direct form.requestSubmit() fired'); } catch (_) {}
       return true;
     } catch (err) {
-      try { console.warn('[pmg-one-click-build] fallback submit failed', err); } catch (_) {}
+      try { console.warn('[pmg-one-click-build] direct submit failed', err); } catch (_) {}
       return false;
     }
+  }
+
+  function triggerGenerate() {
+    waitForAI(function ready() {
+      try { console.info('[pmg-one-click-build] AI ready, dispatching click'); } catch (_) {}
+      if (!clickGenerateBtn()) directRequestSubmit();
+    }, function timeout() {
+      try { console.warn('[pmg-one-click-build] AI client never ready after 5s; dispatching submit anyway'); } catch (_) {}
+      if (!clickGenerateBtn()) directRequestSubmit();
+    });
   }
 
   document.addEventListener('click', function (e) {
@@ -112,7 +146,7 @@
     var now = Date.now();
     if (now - lastTriggerAt < 2500) return;
     lastTriggerAt = now;
-    try { console.info('[pmg-one-click-build] analyze click detected, generate in ' + GENERATE_DELAY_MS + 'ms'); } catch (_) {}
-    setTimeout(triggerGenerate, GENERATE_DELAY_MS);
+    try { console.info('[pmg-one-click-build] analyze click detected; waiting ' + AUTO_TUNE_WAIT_MS + 'ms for auto-tune, then AI-readiness'); } catch (_) {}
+    setTimeout(triggerGenerate, AUTO_TUNE_WAIT_MS);
   }, false);
 })();
