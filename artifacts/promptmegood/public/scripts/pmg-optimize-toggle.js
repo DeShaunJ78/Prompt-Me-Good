@@ -1,15 +1,29 @@
 /* pmg-optimize-toggle.js
  *
- * Adds a Build / Optimize segmented toggle above #goal. Build mode is the
- * default and is fully passive — the existing generate flow runs untouched.
- * Optimize mode intercepts #generateBtn clicks (via stopImmediatePropagation),
- * POSTs the textarea value to /api/boost, and writes data.result into
- * #resultBox using textContent (the canonical write pattern used by
- * pmg-result-states.js so other MutationObserver-driven scripts react).
+ * Adds a Build / Optimize segmented toggle above #goal, plus a DEDICATED
+ * "Optimize My Prompt" submit button (#pmg-optimize-submit) that sits
+ * adjacent to the toggle pills. The button is only visible when Optimize
+ * mode is active. Build mode is fully passive — the toggle has zero
+ * coupling to the Build CTA: no event listeners, no label rewrites, no
+ * DOM mutations against it. This is a hard architectural invariant —
+ * this script must never reference, lookup, or listen to the Build CTA
+ * element in any way. Prior versions intercepted the Build CTA via a
+ * capture-phase listener with stopImmediatePropagation, which broke the
+ * Build button when this script regressed; that pattern was deleted
+ * 2026-05-23 and must not return.
+ *
+ * Optimize flow:
+ *   - User selects Optimize → #pmg-optimize-submit becomes visible.
+ *   - Click → POST textarea value to /api/boost → write data.result into
+ *     #resultBox via textContent (the canonical write pattern shared with
+ *     the generate flow so pmg-result-states.js + downstream observers
+ *     react identically).
+ *   - User selects Build → #pmg-optimize-submit is hidden again,
+ *     placeholder/title restored, Build CTA completely untouched.
  *
  * Kill-switch: localStorage.pmg_optimize_toggle_disable = '1'
- * Self-contained IIFE. Touches no other pmg* internals. Only mounts in the
- * text panel; CSS hides controls when body[data-active-panel] !== "text".
+ * Self-contained IIFE. Touches no other pmg* internals. Only mounts in
+ * the text panel; CSS hides controls when body[data-active-panel] !== "text".
  */
 (function () {
   'use strict';
@@ -23,7 +37,6 @@
   var mode = MODE_BUILD;
 
   var originalPlaceholder = null;
-  var originalBtnLabel = null;
   var labelEl = null;
   var warningEl = null;
   var errorEl = null;
@@ -32,8 +45,8 @@
   var toggleWrap = null;
   var btnBuild = null;
   var btnOptimize = null;
+  var submitBtn = null;
   var goalEl = null;
-  var generateBtn = null;
 
   var OPTIMIZE_PLACEHOLDER = "Paste your existing prompt here — we'll improve it.";
   var LABEL_TEXT = 'Your existing prompt';
@@ -116,18 +129,17 @@
     mode = next;
     if (btnBuild) btnBuild.setAttribute('aria-selected', mode === MODE_BUILD ? 'true' : 'false');
     if (btnOptimize) btnOptimize.setAttribute('aria-selected', mode === MODE_OPTIMIZE ? 'true' : 'false');
+    if (toggleWrap) toggleWrap.setAttribute('data-mode', mode);
     if (!goalEl) return;
     if (mode === MODE_OPTIMIZE) {
       goalEl.setAttribute('placeholder', OPTIMIZE_PLACEHOLDER);
       ensureLabel();
-      if (generateBtn) generateBtn.textContent = 'Optimize My Prompt';
       setResultTitle(OPTIMIZE_RESULT_TITLE);
     } else {
       if (originalPlaceholder !== null) goalEl.setAttribute('placeholder', originalPlaceholder);
       removeLabel();
       removeNode(warningEl); warningEl = null;
       removeNode(errorEl); errorEl = null;
-      if (generateBtn && originalBtnLabel !== null) generateBtn.textContent = originalBtnLabel;
       setResultTitle(BUILD_RESULT_TITLE);
     }
   }
@@ -144,19 +156,20 @@
   }
 
   function setLoading(on) {
-    if (!generateBtn) return;
+    if (!submitBtn) return;
     if (on) {
-      generateBtn.classList.add('pmg-opt-loading');
-      generateBtn.disabled = true;
-      generateBtn.textContent = 'Optimizing…';
+      submitBtn.classList.add('pmg-opt-loading');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Optimizing…';
     } else {
-      generateBtn.classList.remove('pmg-opt-loading');
-      generateBtn.disabled = false;
-      generateBtn.textContent = 'Optimize My Prompt';
+      submitBtn.classList.remove('pmg-opt-loading');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Optimize My Prompt';
     }
   }
 
   async function runOptimize() {
+    if (mode !== MODE_OPTIMIZE) return;
     var prompt = (goalEl && goalEl.value || '').trim();
     if (!prompt) {
       showWarning('Paste a prompt to optimize.');
@@ -194,22 +207,15 @@
     }
   }
 
-  /* Capture-phase listener with stopImmediatePropagation. Runs only when
-     mode === optimize, so the existing generate flow is fully untouched
-     in build mode. Must be in capture phase to fire before any bubbling
-     bubble-phase listeners attached by earlier scripts. */
-  function onGenerateClickCapture(e) {
-    if (mode !== MODE_OPTIMIZE) return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    runOptimize();
-  }
-
   function buildToggle(parent) {
     toggleWrap = document.createElement('div');
     toggleWrap.className = 'pmg-opt-toggle-wrap';
-    toggleWrap.setAttribute('role', 'tablist');
-    toggleWrap.setAttribute('aria-label', 'Prompt mode');
+    toggleWrap.setAttribute('data-mode', MODE_BUILD);
+
+    var pills = document.createElement('div');
+    pills.className = 'pmg-opt-pills';
+    pills.setAttribute('role', 'tablist');
+    pills.setAttribute('aria-label', 'Prompt mode');
 
     btnBuild = document.createElement('button');
     btnBuild.type = 'button';
@@ -227,8 +233,25 @@
     btnOptimize.setAttribute('aria-selected', 'false');
     btnOptimize.addEventListener('click', function () { applyMode(MODE_OPTIMIZE); });
 
-    toggleWrap.appendChild(btnBuild);
-    toggleWrap.appendChild(btnOptimize);
+    pills.appendChild(btnBuild);
+    pills.appendChild(btnOptimize);
+
+    /* Dedicated submit button. Only rendered/visible in Optimize mode
+       (controlled by toggleWrap[data-mode="optimize"] + CSS). Has its
+       own id so other scripts can locate it without touching the Build CTA. */
+    submitBtn = document.createElement('button');
+    submitBtn.type = 'button';
+    submitBtn.id = 'pmg-optimize-submit';
+    submitBtn.className = 'pmg-opt-submit';
+    submitBtn.textContent = 'Optimize My Prompt';
+    submitBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      runOptimize();
+    });
+
+    toggleWrap.appendChild(pills);
+    toggleWrap.appendChild(submitBtn);
+
     /* Anchor strategy: prefer the chassis-v3 idea-host (.pmgv3-idea-host)
        so the toggle sits ABOVE the entire .field.field-primary block
        (and thus above any chassis-generated eyebrow/helper). Falling back
@@ -244,21 +267,12 @@
 
   function mount() {
     goalEl = document.getElementById('goal');
-    /* The visible CTA is #analyze-btn (rendered by pmg-chassis-v3.js L375
-       — "✨ Build My Prompt"). #generateBtn is the hidden legacy form
-       button ("Fix My Prompt", app.html L4971) — never the user-clicked
-       target in v3. Per replit.md "Chassis v3 is the only chassis loaded",
-       so we REQUIRE #analyze-btn — letting tryMount's 200ms × 30-tick
-       poll wait for chassis-v3 to render it. Falling back to #generateBtn
-       on early polls caused the label updates to stomp the wrong (hidden)
-       button and never reach the visible CTA. */
-    generateBtn = document.getElementById('analyze-btn');
-    if (!goalEl || !generateBtn || !goalEl.parentNode) return false;
+    /* Mount only requires #goal — zero coupling to the Build CTA is
+       an invariant; this script must not reference its id. */
+    if (!goalEl || !goalEl.parentNode) return false;
     if (document.querySelector('.pmg-opt-toggle-wrap')) return true; /* already mounted */
     originalPlaceholder = goalEl.getAttribute('placeholder') || '';
-    originalBtnLabel = generateBtn.textContent;
     buildToggle(goalEl.parentNode);
-    generateBtn.addEventListener('click', onGenerateClickCapture, true);
     /* Default mode is Build — sync the result-panel heading from the
        hardcoded "Optimized" copy to the Build copy on first paint. */
     setResultTitle(BUILD_RESULT_TITLE);
@@ -267,10 +281,10 @@
 
   function tryMount() {
     if (mount()) return;
-    /* Chassis-v3 reparents legacy DOM (#goal/#generateBtn/#resultBox) into
-       v3 slots. The legacy nodes already exist in the document on load, so
-       mount usually succeeds first try; poll briefly as a safety net for
-       any future deferred-render scenarios. */
+    /* Chassis-v3 reparents legacy DOM (#goal/#resultBox) into v3 slots.
+       The legacy nodes already exist in the document on load, so mount
+       usually succeeds first try; poll briefly as a safety net for any
+       future deferred-render scenarios. */
     var tries = 0;
     var iv = setInterval(function () {
       tries++;
