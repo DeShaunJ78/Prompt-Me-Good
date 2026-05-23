@@ -1,0 +1,73 @@
+/* pmg-vault-versions.css (vv-1, 2026-05-23)
+ *
+ * Spec 3 — Prompt Versioning. Adds a version badge + collapsible history
+ * panel to vault cards (.history-item) when an entry has 2+ saved
+ * versions. All values use --color-* tokens.
+ */
+
+.pmg-ver-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--color-surface-2);
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  margin-left: 8px;
+  vertical-align: middle;
+  font-family: inherit;
+  line-height: 1.2;
+  transition: background 0.12s, color 0.12s;
+}
+.pmg-ver-badge:hover,
+.pmg-ver-badge:focus-visible {
+  background: var(--color-primary);
+  color: var(--color-text-inverse, #fff);
+  outline: none;
+}
+
+.pmg-ver-history {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+.pmg-ver-history[hidden] { display: none; }
+
+.pmg-ver-history-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: 8px;
+}
+
+.pmg-ver-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13px;
+}
+.pmg-ver-row:last-child { border-bottom: none; }
+
+.pmg-ver-label {
+  font-weight: 700;
+  color: var(--color-primary);
+  min-width: 28px;
+}
+
+.pmg-ver-date {
+  color: var(--color-text-muted);
+  flex: 1;
+}
+
+.pmg-ver-restore {
+  font-size: 12px;
+  padding: 4px 10px;
+}

@@ -1,0 +1,159 @@
+/* pmg-compare.css (cmp-1, 2026-05-23)
+ *
+ * Spec 2 — Multi-Model Compare. Modal launched from #result-top-compare
+ * showing the same prompt as ChatGPT/Claude/Gemini-style responses side
+ * by side. z-index matches pmg-template-browser (100050) so only one of
+ * the two top-level modals can be visible at a time.
+ *
+ * All colors via --color-* tokens.
+ */
+
+.pmg-cmp-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100050;
+  background: rgba(6, 18, 14, 0.78);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.pmg-cmp-backdrop[data-open="true"] {
+  display: flex;
+}
+
+.pmg-cmp-modal {
+  max-width: 1000px;
+  width: 96vw;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg, 14px);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+}
+
+.pmg-cmp-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--color-border);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.pmg-cmp-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 4px;
+  color: var(--color-text);
+}
+
+.pmg-cmp-sub {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  margin: 0;
+}
+
+.pmg-cmp-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: 0;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-md, 8px);
+  font-family: inherit;
+}
+.pmg-cmp-close:hover,
+.pmg-cmp-close:focus-visible {
+  color: var(--color-text);
+  background: var(--color-surface-2);
+  outline: none;
+}
+
+.pmg-cmp-cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--color-border);
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.pmg-cmp-col {
+  background: var(--color-surface);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pmg-cmp-col-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  background: var(--color-surface);
+  z-index: 1;
+}
+
+.pmg-cmp-col-body {
+  padding: 16px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--color-text);
+  white-space: pre-wrap;
+  flex: 1;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+.pmg-cmp-col-body[data-state="error"] {
+  color: var(--color-text-faint);
+  font-style: italic;
+}
+
+.pmg-cmp-footer {
+  padding: 12px 24px;
+  border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pmg-cmp-note {
+  color: var(--color-text-faint);
+  font-size: 12px;
+  font-style: italic;
+  margin: 0;
+}
+
+.pmg-cmp-footer .pmg-cmp-close-btn {
+  flex-shrink: 0;
+}
+
+@media (max-width: 720px) {
+  .pmg-cmp-cols {
+    grid-template-columns: 1fr;
+    grid-auto-rows: minmax(160px, 1fr);
+  }
+  .pmg-cmp-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

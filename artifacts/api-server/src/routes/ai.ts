@@ -2250,5 +2250,79 @@ router.post("/templates/generate", rateLimit, generateCostCheck, async (req, res
   }
 });
 
+/* ============================================================================
+ * /api/compare — Spec 2 Multi-Model Compare (cmp-1, 2026-05-23)
+ * Fires three parallel gpt-4.1 calls with distinct system prompts that
+ * simulate ChatGPT / Claude / Gemini output styles. Returns each result
+ * (or null on failure) so the frontend can render side-by-side columns.
+ * If all three fail, returns 502.
+ * ============================================================================ */
+const compareSchema = z.object({
+  prompt: z.string().min(1).max(4000),
+});
+
+const COMPARE_SYSTEMS = {
+  chatgpt:
+    "You are ChatGPT. Respond to the following prompt in your natural style: " +
+    "conversational, numbered steps where appropriate, clear and direct. Aim for " +
+    "practical, actionable output. 300 words max.",
+  claude:
+    "You are Claude by Anthropic. Respond to the following prompt in your natural " +
+    "style: thoughtful, thorough, using structured headers and bullet points where " +
+    "they aid clarity. Nuanced where appropriate. 300 words max.",
+  gemini:
+    "You are Gemini by Google. Respond to the following prompt in your natural " +
+    "style: lead with a concrete example or analogy, use visual structure, present " +
+    "multiple perspectives briefly. 300 words max.",
+} as const;
+
+async function runCompareCall(systemPrompt: string, userPrompt: string): Promise<string> {
+  const completion = await openai.chat.completions.create({
+    model: TEXT_MODEL,
+    max_completion_tokens: 500,
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ],
+  });
+  const text = completion.choices[0]?.message?.content?.trim() ?? "";
+  if (!text) throw new Error("empty response");
+  return text;
+}
+
+router.post("/compare", rateLimit, generateCostCheck, async (req, res) => {
+  const parsed = compareSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Invalid input" });
+    return;
+  }
+  const { prompt } = parsed.data;
+  chargeCost("generate");
+
+  const results = await Promise.allSettled([
+    runCompareCall(COMPARE_SYSTEMS.chatgpt, prompt),
+    runCompareCall(COMPARE_SYSTEMS.claude, prompt),
+    runCompareCall(COMPARE_SYSTEMS.gemini, prompt),
+  ]);
+
+  const pick = (r: PromiseSettledResult<string>): string | null =>
+    r.status === "fulfilled" ? r.value : null;
+
+  const chatgpt = pick(results[0]);
+  const claude = pick(results[1]);
+  const gemini = pick(results[2]);
+
+  if (chatgpt == null && claude == null && gemini == null) {
+    logger.error(
+      { err: results.map((r) => (r.status === "rejected" ? String(r.reason) : "ok")) },
+      "compare: all three models failed",
+    );
+    res.status(502).json({ error: "All models failed" });
+    return;
+  }
+
+  res.json({ chatgpt, claude, gemini });
+});
+
 export { IMAGE_MODEL };
 export default router;
