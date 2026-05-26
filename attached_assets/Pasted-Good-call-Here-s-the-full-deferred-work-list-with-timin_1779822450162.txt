@@ -1,0 +1,26 @@
+Good call. Here's the full deferred work list with timing. Add this to the end of your message to Replit:
+"Also, here is the complete list of deferred items and when to tackle them. Work through these in order after the current batch is done:
+This week (before June 1st):
+M2 — Add video caps to pmg-pricing-config.js mirror and the sync-check comparator so vid cap drift gets caught at boot time
+Pre-existing overflow-360 test failures — triage and fix the Money→Growth rename failures and photo-suite mount timing failures so the test suite is clean before July 1st
+Parts 4–8 of the feature backlog (in order):
+Part 4: Prompt DNA Card redesign — branded shareable artifact with quality score badge, key techniques detected, and 'Built with PromptMeGood' watermark
+Part 5: Photography Suite power tool outcome tooltips — one-line plain-English outcome description on every chip
+Part 6: Storyboard Generator upgrades — Export as PDF (formatted storyboard document) and single-frame regeneration button
+Part 7: Reverse Engine upgrades — outcome-focused copy rewrite and 'Use this prompt' one-click injection into the goal field
+Part 8: Run With AI cap comparison panel — side-by-side mini vs full GPT-4.1 teaser when free user hits daily cap, with Founding Member CTA
+Before July 1st (final pre-launch pass):
+In-app urgency badges — subtle 'Free during beta · Locks July 1' indicator near Expert Command Center, Growth Mode, and other paywalled features for free users
+Backend caps restructure — enforce the new paywall feature gates server-side (Expert Command Center, Growth Mode drawer, Image Workshop, Reverse Engine, DNA Card, Storyboard) with the paywall card UI for free users post-July 1st
+Topbar icon text labels — add 'Growth' and 'Vault' text labels next to the 💼 and 🗄️ icons on desktop so users know what they are without hovering
+Make 'See What's Possible' example cards clickable to preload the goal field
+Post-generation success copy — add 'Your prompt is ready — here's what to do next' copy after a prompt generates
+Post-launch (after July 1st):
+M1 + L3 follow-up — verify Pro Monthly/Yearly attribution data-pmg-upgrade attributes are firing correctly in analytics after real purchases come in
+M3 cancel banner — personalize the cancel banner copy per tier
+Bundle size optimization (M1 from earlier audit) — trim the 4.2MB API bundle
+setInterval poll cleanup (M2 from earlier audit) — consolidate the 28+ concurrent polls to reduce mobile battery drain
+Cloud Vault sync for Pro tier
+Brand Voice Profiles (cloud) for Pro tier
+Vibe Coder tab — new fourth panel in the workstation for AI coding tool users (full spec already drafted)
+Keep this list. Work through it in the order shown. Flag me when each item is done."
