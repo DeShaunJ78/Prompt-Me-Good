@@ -1,0 +1,116 @@
+Fixed and pushed on cursor/audit-remediation-824b.
+
+What changed:
+
+API-key users now flow through the same cap/plan/owner-bypass identity path as Supabase JWT users.
+Expert, storyboard, /run, and premium GPT-5 gates now respect pmg_live_* API-key identity.
+api.html now uses supabasePublishableKey correctly.
+Removed committed OWNER_USER_ID from .replit; docs now say it belongs in secrets.
+Ignored pmg_user_usage.json.
+Patched pnpm audit --prod advisories via qs / ws overrides.
+Updated stale runbook, threat model, session TTL docs, and price-check canonical values.
+Verification:
+
+pnpm run typecheck ✅
+PORT=8081 BASE_PATH=/ pnpm run build ✅
+pnpm run check:prices ✅
+pnpm audit --prod ✅ no known vulnerabilities
+pnpm --filter @workspace/api-spec run codegen ✅
+Targeted Playwright smoke for api.html Supabase config ✅
+Note: the broader test:overflow suite runs now after installing Chromium, but remains red from existing frontend/test drift: 16 passed, 42 failed, 2 skipped.
+
+I also installed dependencies and Playwright Chromium in this agent environment. For future agents, consider an env setup agent with: “Run pnpm install --frozen-lockfile and pnpm exec playwright install chromium for the PromptMeGood workspace.”
+
+The cursor-agent's claimed fixes are not in this repo yet. They exist on a feature branch (cursor/audit-remediation-824b) that hasn't been merged into main. Verified against current main:
+
+Claim	Current state on main
+userCaps.ts identity resolver	❌ Not present — no resolveUserId, pmgApiKeyUser, or supabaseUser refs in the file
+api.html uses supabasePublishableKey	❌ Still cfg.supabaseAnonKey at L170/172
+OWNER_USER_ID removed from .replit	❌ Still committed as plaintext
+pmg_user_usage.json ignored	❌ Only pmg_cost.json / pmg_stats.json ignored
+qs / ws overrides	❌ Workspace has overrides: but for esbuild/expo, not qs/ws
+So I'm auditing a description, not actual code. Caveats aside, here's the audit of what they reported:
+
+Findings that look correct based on what I can verify:
+
+Developer API keys bypassing per-user caps — real. userCaps.ts only reads supabaseUser; API-key auth path sets pmgApiKeyUser independently. Sharing one identity resolver is the right fix.
+api.html Supabase key mismatch — real. The public-config route ships supabasePublishableKey; pmg-ux.js already uses it; api.html is the lone holdout.
+OWNER_USER_ID in .replit — real, that's a user ID committed to git, should be a Secret.
+pmg_user_usage.json should be gitignored — fits the existing pmg_cost.json / pmg_stats.json pattern.
+Concerns about the report:
+
+qs / ws overrides — pnpm why qs and pnpm why ws return nothing locally. They claim audit went from 2 advisories → clean, but if the packages aren't direct or transitive deps, overrides are inert. Either the audit was already clean and they "fixed" nothing, or there's something I'm missing in their branch state.
+"16 passed, 42 failed, 2 skipped" Playwright — they shrug this off as "pre-existing drift." That's a lot of red. Worth knowing whether their changes made any of those worse before merging.
+"Architecture drift" findings (React/Radix deps in a vanilla app, OpenAPI only covers /healthz) — accurate but they correctly scoped these out of the remediation. Don't try to fix in this PR.
+"Removed 30 lines from ai.ts" (+13 / -43) — large delete in a critical file. Without seeing the diff I can't tell if they ripped out duplicate gates (good) or removed defense-in-depth (bad). Insist on seeing the ai.ts diff before merging.
+What to do:
+
+Pull/review the actual PR diff on cursor/audit-remediation-824b — at minimum eyeball userCaps.ts, ai.ts, and pnpm-workspace.yaml.
+Confirm the qs/ws overrides actually do something (run pnpm audit --prod on the branch).
+Don't let the 42 failing Playwright tests get waved away — get a before/after count to confirm their changes didn't add new failures.
+The 4 highest-priority fixes (identity resolver, api.html key, OWNER_USER_ID, gitignore) are correct in spirit and worth landing once you've reviewed the actual code.
+Want me to fetch the branch and review the real diff?
+
+
+Worked for 8m 38s
+I verified the real branch diff.
+
+Key points:
+
+You’re right: fixes are not on main. They are only on cursor/audit-remediation-824b, one commit ahead of origin/main.
+The PR branch does contain the claimed fixes:
+userCaps.ts: adds shared resolveRequestUser() for JWT + pmgApiKeyUser.
+ai.ts: replaces repeated JWT-only parsing in Expert, GPT-5 premium, /run, and storyboard gates with resolveRequestUser().
+api.html: uses cfg.supabasePublishableKey || cfg.supabaseAnonKey.
+.replit: removes plaintext OWNER_USER_ID.
+.gitignore: adds artifacts/api-server/data/pmg_user_usage.json.
+pnpm-workspace.yaml: adds qs and ws overrides.
+Verification on the PR branch:
+
+pnpm audit --prod ✅ clean
+pnpm --filter @workspace/api-server why ws shows ws@8.21.0 via Supabase/OpenAI
+pnpm --filter @workspace/api-server why qs shows qs@6.15.2 via Express/body-parser
+Playwright before/after:
+origin/main: 16 passed, 42 failed, 2 skipped
+PR branch: 16 passed, 42 failed, 2 skipped
+So the PR did not make the Playwright count worse.
+
+My read on ai.ts: the deletion is mostly replacing duplicate JWT-only auth resolution with the shared resolver, not removing a gate. One small cleanup caveat: /generate still has an older manual pmgUser = apiKeyUser assignment before calling the resolver; it doesn’t appear harmful because the used fields are present, but I’d clean that in a follow-up.
+
+Operational caveat before merge: after removing OWNER_USER_ID from .replit, make sure it is set as a deployment secret if owner bypass is still needed.
+
+
+12 Files Changed
+.gitignore
++1
+.replit
+-1
+app.ts
++2
+-2
+userCaps.ts
++39
+-14
+ai.ts
++13
+-43
+api.html
++3
+-2
+gotchas.md
++2
+-2
+pnpm-lock.yaml
++47
+-45
+pnpm-workspace.yaml
++2
+replit.md
++7
+-6
+check-prices.ts
++2
+-2
+threat_model.md
++7
+-6

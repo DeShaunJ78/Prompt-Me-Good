@@ -1,0 +1,29 @@
+The cursor-agent's claimed fixes are not in this repo yet. They exist on a feature branch (cursor/audit-remediation-824b) that hasn't been merged into main. Verified against current main:
+
+Claim	Current state on main
+userCaps.ts identity resolver	❌ Not present — no resolveUserId, pmgApiKeyUser, or supabaseUser refs in the file
+api.html uses supabasePublishableKey	❌ Still cfg.supabaseAnonKey at L170/172
+OWNER_USER_ID removed from .replit	❌ Still committed as plaintext
+pmg_user_usage.json ignored	❌ Only pmg_cost.json / pmg_stats.json ignored
+qs / ws overrides	❌ Workspace has overrides: but for esbuild/expo, not qs/ws
+So I'm auditing a description, not actual code. Caveats aside, here's the audit of what they reported:
+
+Findings that look correct based on what I can verify:
+
+Developer API keys bypassing per-user caps — real. userCaps.ts only reads supabaseUser; API-key auth path sets pmgApiKeyUser independently. Sharing one identity resolver is the right fix.
+api.html Supabase key mismatch — real. The public-config route ships supabasePublishableKey; pmg-ux.js already uses it; api.html is the lone holdout.
+OWNER_USER_ID in .replit — real, that's a user ID committed to git, should be a Secret.
+pmg_user_usage.json should be gitignored — fits the existing pmg_cost.json / pmg_stats.json pattern.
+Concerns about the report:
+
+qs / ws overrides — pnpm why qs and pnpm why ws return nothing locally. They claim audit went from 2 advisories → clean, but if the packages aren't direct or transitive deps, overrides are inert. Either the audit was already clean and they "fixed" nothing, or there's something I'm missing in their branch state.
+"16 passed, 42 failed, 2 skipped" Playwright — they shrug this off as "pre-existing drift." That's a lot of red. Worth knowing whether their changes made any of those worse before merging.
+"Architecture drift" findings (React/Radix deps in a vanilla app, OpenAPI only covers /healthz) — accurate but they correctly scoped these out of the remediation. Don't try to fix in this PR.
+"Removed 30 lines from ai.ts" (+13 / -43) — large delete in a critical file. Without seeing the diff I can't tell if they ripped out duplicate gates (good) or removed defense-in-depth (bad). Insist on seeing the ai.ts diff before merging.
+What to do:
+
+Pull/review the actual PR diff on cursor/audit-remediation-824b — at minimum eyeball userCaps.ts, ai.ts, and pnpm-workspace.yaml.
+Confirm the qs/ws overrides actually do something (run pnpm audit --prod on the branch).
+Don't let the 42 failing Playwright tests get waved away — get a before/after count to confirm their changes didn't add new failures.
+The 4 highest-priority fixes (identity resolver, api.html key, OWNER_USER_ID, gitignore) are correct in spirit and worth landing once you've reviewed the actual code.
+Want me to fetch the branch and review the real diff?
