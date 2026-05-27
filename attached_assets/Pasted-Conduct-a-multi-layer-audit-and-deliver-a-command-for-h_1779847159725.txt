@@ -1,0 +1,106 @@
+Conduct a multi-layer audit and deliver a command for handoff to my agent.  any design issues you feel need improvements feel free to highlight them.
+
+
+Environment ready
+
+Worked for 4m 6s
+Completed a read-only multi-layer audit. No tracked files changed; git status is clean.
+
+Confirmed health checks
+pnpm run typecheck ✅ passes
+PORT=8081 BASE_PATH=/ pnpm run build ✅ passes
+Warning: /api/pricing-config.js script tags in app.html / pricing.html are not bundled without type="module".
+pnpm run check:prices ✅ passes
+pnpm --filter @workspace/api-spec run codegen ✅ passes, no source diffs
+pnpm audit --prod ❌ reports 2 moderate transitive advisories:
+ws@8.20.0 via Supabase realtime / OpenAI, patched >=8.20.1
+qs@6.15.0 via Express, patched >=6.15.2
+Highest-priority findings
+Developer API keys bypass per-user caps
+
+artifacts/api-server/src/middlewares/userCaps.ts
+artifacts/api-server/src/routes/ai.ts
+API-key auth sets req.pmgApiKeyUser, but cap middleware only resolves Supabase JWTs.
+Economic-abuse controls are mostly process-local
+
+Rate/cost/usage guards use memory or local JSON files.
+Risk increases on autoscale/multi-instance deployments.
+api.html uses the wrong Supabase config field
+
+Reads cfg.supabaseAnonKey, but public config returns supabasePublishableKey.
+Architecture drift
+
+artifacts/promptmegood declares React/Radix/shadcn-style deps but the production app is vanilla HTML/JS.
+OpenAPI/codegen only documents /healthz, while real API routes are mostly ad hoc.
+app.html and pmg-ux.js remain large, tightly coupled frontend surfaces.
+Testing/CI gaps
+
+No GitHub Actions/workflow found.
+7 Playwright specs are explicitly ignored in playwright.config.ts.
+No root test, lint, format, start, codegen, or db:push despite docs referencing some of them.
+Handoff command / prompt for your agent
+cursor-agent --prompt "In /workspace, create branch cursor/audit-remediation-824b from main. Implement the highest-priority audit fixes only: (1) add a shared request identity resolver that supports both Supabase JWT users and req.pmgApiKeyUser, then use it in userCapEnforce, runCapWithTeaser, premium model gates, storyboard gates, and any plan/cap checks; (2) fix artifacts/promptmegood/api.html to initialize Supabase with cfg.supabasePublishableKey, optionally preserving cfg.supabaseAnonKey as a fallback; (3) add artifacts/api-server/data/pmg_user_usage.json or the whole artifacts/api-server/data/*.json usage/cost state to .gitignore; (4) patch moderate pnpm audit findings using workspace overrides or dependency updates without broad version churn; (5) update threat_model.md and replit.md only where they are stale for Developer API keys, cap enforcement, real paths, and real commands. Keep scope tight. Run pnpm run typecheck, PORT=8081 BASE_PATH=/ pnpm run build, pnpm run check:prices, pnpm audit --prod, and relevant targeted tests. Commit, push with git push -u origin cursor/audit-remediation-824b, and create a draft PR against main."
+Note: I installed dependencies with pnpm install --frozen-lockfile in this agent. For future Cloud Agents, consider an environment setup agent at https://cursor.com/onboard with prompt: “Preinstall pnpm workspace dependencies for /workspace using pnpm install --frozen-lockfile so TypeScript/build/test audits can run immediately.”
+
+can you fix it?
+
+
+Worked for 13m 4s
+Fixed and pushed on cursor/audit-remediation-824b.
+
+What changed:
+
+API-key users now flow through the same cap/plan/owner-bypass identity path as Supabase JWT users.
+Expert, storyboard, /run, and premium GPT-5 gates now respect pmg_live_* API-key identity.
+api.html now uses supabasePublishableKey correctly.
+Removed committed OWNER_USER_ID from .replit; docs now say it belongs in secrets.
+Ignored pmg_user_usage.json.
+Patched pnpm audit --prod advisories via qs / ws overrides.
+Updated stale runbook, threat model, session TTL docs, and price-check canonical values.
+Verification:
+
+pnpm run typecheck ✅
+PORT=8081 BASE_PATH=/ pnpm run build ✅
+pnpm run check:prices ✅
+pnpm audit --prod ✅ no known vulnerabilities
+pnpm --filter @workspace/api-spec run codegen ✅
+Targeted Playwright smoke for api.html Supabase config ✅
+Note: the broader test:overflow suite runs now after installing Chromium, but remains red from existing frontend/test drift: 16 passed, 42 failed, 2 skipped.
+
+I also installed dependencies and Playwright Chromium in this agent environment. For future agents, consider an env setup agent with: “Run pnpm install --frozen-lockfile and pnpm exec playwright install chromium for the PromptMeGood workspace.”
+
+
+12 Files Changed
+.gitignore
++1
+.replit
+-1
+app.ts
++2
+-2
+userCaps.ts
++39
+-14
+ai.ts
++13
+-43
+api.html
++3
+-2
+gotchas.md
++2
+-2
+pnpm-lock.yaml
++47
+-45
+pnpm-workspace.yaml
++2
+replit.md
++7
+-6
+check-prices.ts
++2
+-2
+threat_model.md
++7
+-6
