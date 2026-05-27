@@ -167,9 +167,10 @@
     (function () {
       try {
         fetch('/api/public-config').then(function (r) { return r.json(); }).then(function (cfg) {
-          if (!cfg || !cfg.supabaseUrl || !cfg.supabaseAnonKey) return;
+          var supabaseKey = cfg && (cfg.supabasePublishableKey || cfg.supabaseAnonKey);
+          if (!cfg || !cfg.supabaseUrl || !supabaseKey) return;
           if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
-            window.supabaseClient = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+            window.supabaseClient = window.supabase.createClient(cfg.supabaseUrl, supabaseKey);
           }
         }).catch(function () {});
       } catch (_) {}

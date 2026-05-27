@@ -8,7 +8,7 @@
  *   - artifacts/api-server/dist/**\/*.mjs
  *
  * Fails on any banned legacy price tokens ($59, $19, $49).
- * Also fails if no canonical tokens ($79, $9) are found across the
+ * Also fails if no canonical tokens ($79, $14, $129, $290) are found across the
  * scanned surface — this catches accidental wholesale removal or a
  * missing build output that would otherwise produce a false-green CI run.
  * Required scan targets that are missing or contain zero matching files
@@ -20,7 +20,7 @@ import { join, relative, resolve } from "node:path";
 const REPO_ROOT = resolve(new URL("../..", import.meta.url).pathname);
 
 const BANNED_PRICES = ["$59", "$19", "$49"] as const;
-const CANONICAL_PRICES = ["$79", "$9"] as const;
+const CANONICAL_PRICES = ["$79", "$14", "$129", "$290"] as const;
 
 interface ScanTarget {
   root: string;

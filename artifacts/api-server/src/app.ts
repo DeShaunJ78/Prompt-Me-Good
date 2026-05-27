@@ -93,8 +93,8 @@ app.get("/health", (_req, res) => {
 
 // apiKeyAuth runs BEFORE the route handlers so any `Authorization: Bearer
 // pmg_live_*` request resolves to req.pmgApiKeyUser before per-handler JWT
-// logic runs. Non-pmg_live_* requests fall through untouched, so existing
-// JWT auth in userCapEnforce and elsewhere is unchanged.
+// logic runs. Non-pmg_live_* requests fall through untouched; cap and plan
+// gates resolve either auth shape through resolveRequestUser().
 app.use("/api", apiKeyAuth);
 app.use("/api", router);
 

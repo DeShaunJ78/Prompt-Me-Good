@@ -4,8 +4,8 @@ PromptMeGood is an AI prompt builder designed to enhance AI interactions and use
 
 ## Run & Operate
 
-*   **Run:** `pnpm start` · **Build:** `pnpm build` · **Typecheck:** `pnpm typecheck` · **Codegen:** `pnpm codegen` · **DB Push:** `pnpm db:push`
-*   **Required Env Vars:** `DATABASE_URL`, `OPENAI_API_KEY`, `STRIPE_SECRET_KEY`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `BETA_END`
+*   **Run:** `pnpm --filter @workspace/promptmegood run start` (frontend) + `pnpm --filter @workspace/api-server run start` (API after build) · **Build:** `PORT=8081 BASE_PATH=/ pnpm build` · **Typecheck:** `pnpm typecheck` · **Codegen:** `pnpm --filter @workspace/api-spec run codegen` · **DB Push:** `pnpm --filter @workspace/db run push`
+*   **Required Env Vars:** `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_PUBLISHABLE_KEY`, OpenAI credentials (`AI_INTEGRATIONS_OPENAI_API_KEY` or `OPENAI_API_KEY` depending on route), `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`; optional secret `OWNER_USER_ID` enables owner bypass and should not be committed.
 
 ## Stack
 
@@ -13,9 +13,10 @@ pnpm workspaces · Node v24 · TS 5.9 · Express 5 · Drizzle ORM · Zod · Orva
 
 ## Where things live
 
-*   `artifacts/promptmegood/` — Frontend. Pages: `index.html` (marketing), `app.html` (workstation), `guide.html`, `manual.html`, `help.html`, `contact.html`, `pricing.html`, `privacy.html`, `terms.html`, `review.html`, `404.html`. Chassis v3 is the only chassis loaded.
-*   `packages/api/`, `packages/db/`, `packages/shared/` — Backend services, schema, shared types.
-*   `openapi.yaml` — API contracts.
+*   `artifacts/promptmegood/` — Frontend. Pages: `index.html` (marketing), `app.html` (workstation), `guide.html`, `manual.html`, `help.html`, `contact.html`, `pricing.html`, `privacy.html`, `terms.html`, `404.html`. Chassis v3 is the only chassis loaded; `/review.html` is dev-only and intentionally excluded from production builds.
+*   `artifacts/api-server/` — Express API and backend integrations.
+*   `lib/db/`, `lib/api-spec/`, `lib/api-zod/`, `lib/api-client-react/` — Drizzle schema, OpenAPI source, generated Zod schemas, and generated React client.
+*   `lib/api-spec/openapi.yaml` — API contract source for Orval codegen.
 *   `artifacts/promptmegood/public/styles/` + `public/scripts/` — Workstation runtime:
     *   `pmg-g-theme.css` — Dark teal theme tokens.
     *   `pmg-chassis-v3.{css,js}` — Workstation shell + segmented panels (Text/Photography/Video).
@@ -41,7 +42,7 @@ pnpm workspaces · Node v24 · TS 5.9 · Express 5 · Drizzle ORM · Zod · Orva
 *   **Session TTL = 30 minutes (stale-session-1):** `SESSION_TTL_MS` in `pmg-chassis-v3.js` was cut from 7 days to 30 minutes. Visiting `/app` after a longer gap renders blank instead of silently re-hydrating stale goal/tuning/prompt. Longer-term recovery is delegated to the Draft Recovery banner (dr-1, also 30-min freshness window via the same constant).
 *   **Local-first state:** Vault, picks, theme in `localStorage`; only AI-feature inputs leave the device.
 *   **Light/dark locked to dark:** `pmg-g-theme.css` L11–22 forces dark teal for both `[data-theme]` values.
-*   **Expert Command Center is paywalled** after `BETA_END`.
+*   **Expert Command Center is paywalled** after `PAYWALL_ACTIVATES_AT`.
 
 ## Product
 
