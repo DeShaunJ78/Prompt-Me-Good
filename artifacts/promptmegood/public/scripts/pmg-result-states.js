@@ -286,6 +286,16 @@
       }
     });
 
+    /* populate-bug-1 (2026-05-27): 1.5s safety re-check. The
+     * MutationObserver above is the primary teardown signal, but
+     * after chassis-v3 reparents #resultBox the observer can end up
+     * bound to a stale node — leaving the skeleton on top of an
+     * already-populated box. This periodic refresh guarantees the
+     * overlay will be dismissed within 1.5s of real content
+     * landing, regardless of MO state. Cheap (one textContent read +
+     * one classList compare per tick). */
+    setInterval(refreshFromBox, 1500);
+
     /* Public API for index.html and tests. */
     window.__pmgResultStates = {
       showEmpty: function () { showState('empty'); },

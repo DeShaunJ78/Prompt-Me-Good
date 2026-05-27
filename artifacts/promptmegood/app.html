@@ -9841,6 +9841,29 @@ Context:
             }
           } catch (_) {}
           setPromptText(promptText);
+          /* populate-bug-1 (2026-05-27): mirror flushPending's overlay
+             teardown here so the empty-skeleton can never out-live real
+             content. flushPending only fires on the FIRST stream chunk —
+             if the stream resolves without ever firing onChunk (single-
+             frame response, structured/raw/local-fallback paths, or rAF
+             racing the .then), the overlay's MutationObserver may sit on
+             a stale node after chassis-v3 reparents, leaving the
+             skeleton on top of a populated #resultBox. Belt-and-
+             suspenders: explicitly hide the overlay and strip
+             pmg-overlay-active from every current ancestor. */
+          try {
+            if (window.__pmgResultStates && typeof window.__pmgResultStates.hide === 'function') {
+              window.__pmgResultStates.hide();
+            }
+            var __rb2 = document.getElementById('resultBox');
+            var __p2 = __rb2 && __rb2.parentElement;
+            while (__p2) {
+              if (__p2.classList && __p2.classList.contains('pmg-overlay-active')) {
+                __p2.classList.remove('pmg-overlay-active');
+              }
+              __p2 = __p2.parentElement;
+            }
+          } catch (_) {}
           addToHistory(data, promptText);
           // T49 Fix My Prompt diff: announce a successful local-builder run so
           // pmg-fix-diff.js can render the side-by-side diff. Wrapped in
