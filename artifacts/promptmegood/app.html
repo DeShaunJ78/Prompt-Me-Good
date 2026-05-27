@@ -9885,25 +9885,39 @@ Context:
           if (window.__pmgStrengthScore && typeof window.__pmgStrengthScore.render === 'function') {
             window.__pmgStrengthScore.render(data, promptText);
           }
-          scrollToResult();
-          // scroll-firstgen-1: scrollToResult's internal ensurePromptVisible
-          // retry loop early-exits when the result-panel TOP is in viewport,
-          // even if the prompt content extends below the fold. On the first
-          // generation the panel grows from an empty 80px placeholder into a
-          // full prompt as content streams in, so the loop exits while only
-          // the placeholder was visible — leaving the actual prompt below
-          // the fold. Force one more scroll to #resultBox once content is
-          // final so users see the start of their prompt. Idempotent on
-          // subsequent generations (already at top → no visual jump).
+          /* jump-1 (2026-05-27): defer scrollToResult so the magic-flow
+             takeover finishes tearing down BEFORE we scroll. endFlow
+             fires ~250ms after pmg-has-result lands; if we scroll
+             during teardown, removing the fixed overlay + restoring
+             body scroll mid-animation produces the "clunky, jumps a
+             lot" experience the user reported. 350ms gives the
+             takeover its full teardown + a frame to settle, then one
+             smooth scroll runs against a stable layout. */
+          window.setTimeout(scrollToResult, 350);
+          /* jump-1 / scroll-firstgen-1: ensurePromptVisible (the
+             retry loop inside scrollToResult) was disabled by
+             scroll-compose-5, so this corrective is the only thing
+             landing #resultBox on the first generation when the panel
+             grew from empty placeholder to full prompt mid-scroll.
+             Run AFTER scrollToResult (700ms = 350 defer + 350 settle)
+             and SKIP if resultBox is already visible — that eliminates
+             the mid-flight target swap from strength-slot → resultBox
+             that produced the second jump. */
           window.setTimeout(function () {
             var rb = document.getElementById('resultBox');
             if (!rb) return;
             try {
+              var rect = rb.getBoundingClientRect();
+              var vh = window.innerHeight || document.documentElement.clientHeight;
+              // Already on screen with at least 80px showing → leave alone.
+              var visTop = Math.max(0, rect.top);
+              var visBottom = Math.min(vh, rect.bottom);
+              if (rect.width > 0 && (visBottom - visTop) >= 80 && rect.top >= 0) return;
               var beh = (window.PMG_A11Y && window.PMG_A11Y.scrollBehavior)
                 ? window.PMG_A11Y.scrollBehavior() : 'smooth';
               rb.scrollIntoView({ behavior: beh, block: 'start' });
             } catch (e) { try { rb.scrollIntoView(); } catch (__) {} }
-          }, 350);
+          }, 700);
           clampResultBox();
           const generateBtnEl = document.getElementById('generateBtn');
           if (generateBtnEl) {
