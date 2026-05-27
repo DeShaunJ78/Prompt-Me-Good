@@ -1,0 +1,116 @@
+set -e
+
+# ── 0. Branch ──────────────────────────────────────────────────────────────
+git checkout main && git pull origin main
+git checkout -b cursor/audit-remediation-824b 2>/dev/null || git checkout cursor/audit-remediation-824b
+
+# ── 1. Shared identity resolver (userCaps.ts patch) ────────────────────────
+node - <<'EOF'
+const fs = require("fs");
+const path = "artifacts/api-server/src/middlewares/userCaps.ts";
+let src = fs.readFileSync(path, "utf8");
+
+const resolver = `
+// ── Shared identity resolver ──────────────────────────────────────────────
+export function resolveUserId(req: any): string | null {
+  if (req.pmgApiKeyUser?.userId) return req.pmgApiKeyUser.userId;
+  if (req.supabaseUser?.id)      return req.supabaseUser.id;
+  return null;
+}
+export function resolveUserPlan(req: any): string {
+  if (req.pmgApiKeyUser?.plan) return req.pmgApiKeyUser.plan;
+  if (req.supabaseUser?.plan)   return req.supabaseUser.plan;
+  return "free";
+}
+// ─────────────────────────────────────────────────────────────────────────
+`;
+
+if (!src.includes("resolveUserId")) {
+  // inject after first import block
+  src = src.replace(/(^import [^\n]+\n)+/m, (m) => m + resolver);
+  // patch all bare supabaseUser.id references
+  src = src
+    .replace(/req\.supabaseUser\?\.id/g, "resolveUserId(req)")
+    .replace(/req\.supabaseUser\?\.plan/g, "resolveUserPlan(req)");
+  fs.writeFileSync(path, src);
+  console.log("✅ userCaps.ts patched");
+} else {
+  console.log("⏭  userCaps.ts already patched");
+}
+EOF
+
+# ── 2. api.html Supabase key fix ───────────────────────────────────────────
+node - <<'EOF'
+const fs = require("fs");
+const path = "artifacts/promptmegood/api.html";
+let src = fs.readFileSync(path, "utf8");
+src = src.replace(
+  /cfg\.supabaseAnonKey(?!\s*\|\|)/g,
+  "cfg.supabasePublishableKey || cfg.supabaseAnonKey"
+);
+fs.writeFileSync(path, src);
+console.log("✅ api.html Supabase key fixed");
+EOF
+
+# ── 3. .gitignore: ignore usage/cost JSON state ────────────────────────────
+grep -qxF 'artifacts/api-server/data/*.json' .gitignore || \
+  printf '\n# Runtime usage/cost state — never commit\nartifacts/api-server/data/*.json\n' >> .gitignore
+echo "✅ .gitignore updated"
+
+# ── 4. pnpm audit patches (workspace overrides) ────────────────────────────
+node - <<'EOF'
+const fs = require("fs");
+const path = "pnpm-workspace.yaml";
+let src = fs.readFileSync(path, "utf8");
+const overrides = `
+overrides:
+  qs: ">=6.15.2"
+  ws: ">=8.20.1"
+`;
+if (!src.includes("overrides:")) {
+  fs.appendFileSync(path, overrides);
+  console.log("✅ pnpm-workspace.yaml overrides added");
+} else {
+  console.log("⏭  overrides already present");
+}
+EOF
+
+# ── 5. Stale doc updates ───────────────────────────────────────────────────
+node - <<'EOF'
+const fs = require("fs");
+["threat_model.md", "replit.md"].forEach(f => {
+  if (!fs.existsSync(f)) return;
+  let src = fs.readFileSync(f, "utf8");
+  if (!src.includes("Developer API keys bypass per-user caps")) {
+    src += `\n\n> **Audit note (824b):** Developer API-key users now flow through the shared \`resolveUserId\`/\`resolveUserPlan\` identity resolver and are subject to the same cap enforcement as Supabase JWT users. OWNER_USER_ID moved to Replit Secrets.\n`;
+    fs.writeFileSync(f, src);
+    console.log(`✅ ${f} updated`);
+  }
+});
+EOF
+
+# ── Verification ───────────────────────────────────────────────────────────
+echo ""
+echo "▶ Running typecheck..."
+pnpm run typecheck
+
+echo ""
+echo "▶ Running build..."
+PORT=8081 BASE_PATH=/ pnpm run build
+
+echo ""
+echo "▶ Checking prices..."
+pnpm run check:prices
+
+echo ""
+echo "▶ Running audit..."
+pnpm audit --prod
+
+# ── Commit & push ──────────────────────────────────────────────────────────
+git add -A
+git commit -m "fix(audit-824b): shared identity resolver, api.html key, gitignore, dep patches, docs"
+git push -u origin cursor/audit-remediation-824b
+
+echo ""
+echo "✅ All done. Open a draft PR at:"
+echo "   https://github.com/YOUR_ORG/YOUR_REPO/compare/cursor/audit-remediation-824b?expand=1"
