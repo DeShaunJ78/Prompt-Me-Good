@@ -1001,6 +1001,12 @@
       '<div class="pmg-bm-body">',
         buildBrandHeader(),
         GOAL_GROUPS.map(renderGoalGroup).join(''),
+      '</div>',
+      /* anchor-not-float-1: footer lives OUTSIDE the scrollable body so it
+         never overlaps accordion sections mid-list. The drawer is already
+         display:flex / flex-direction:column so this div pins naturally to
+         the drawer bottom regardless of how long the body content is. */
+      '<div class="pmg-bm-footer">',
         '<p class="pmg-bm-error" id="pmg-bm-build-all-err"></p>',
         '<button type="button" class="pmg-bm-build-all">Build My Prompt</button>',
       '</div>',

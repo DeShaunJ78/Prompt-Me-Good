@@ -80,10 +80,18 @@
 .pmg-bm-body {
   flex: 1 1 auto;
   overflow-y: auto;
-  /* Bottom padding clears the sticky Build My Prompt button so the last
-     tool's fields aren't hidden behind it when scrolled to the end. */
-  padding: 16px 18px 88px;
+  padding: 16px 18px;
   position: relative;
+}
+
+/* anchor-not-float-1: drawer footer holds the Build My Prompt button.
+   Sits outside the scrollable body so the button is always visible at
+   the drawer bottom — never floating mid-list over accordion sections. */
+.pmg-bm-footer {
+  flex: 0 0 auto;
+  padding: 12px 18px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0d2b1e;
 }
 
 /* Per-tool description line. Shown above the inputs inside every
@@ -209,33 +217,21 @@
   gap: 8px;
 }
 
-/* anchor-not-float-1 (2026-05-27): user feedback — the sticky Build My
-   Prompt button looked like it was "floating" mid-air over the drawer
-   content because of the upward box-shadow (0 -8px 16px) which created
-   a soft glow detaching it visually from the drawer bottom.
-   Fix: keep position:sticky so the button stays anchored in view as
-   the drawer body scrolls; remove the floating shadow; ground the
-   button visually with a 1px top separator line and a small padding-top
-   that gives the separator breathing room. The drawer body's own
-   background (#0d2b1e) shows in that gap, making it read as a footer
-   tray rather than a levitating chip. */
+/* anchor-not-float-1: button is now in normal flow inside .pmg-bm-footer
+   (a flex child of the drawer outside the scrollable body). No sticky,
+   no z-index — it just sits at the drawer bottom like a proper footer. */
 .pmg-bm-build-all {
-  position: sticky;
-  bottom: 0;
   display: block;
   width: 100%;
   background: #00c896;
   color: #0d2b1e;
   border: none;
-  border-top: 1px solid rgba(0, 200, 150, 0.28);
   border-radius: 10px;
   padding: 14px 16px;
-  margin-top: 16px;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   transition: background 0.15s ease, transform 0.05s ease;
-  z-index: 2;
 }
 .pmg-bm-build-all:hover { background: #00d9a3; }
 .pmg-bm-build-all:active { transform: translateY(1px); }
