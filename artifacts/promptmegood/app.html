@@ -3980,7 +3980,7 @@
 <style id="pmg-premium-polish-css">
   :root { --content-default: 1100px; }
   html { scroll-padding-top: 24px; }
-  #builder, #result-panel, #image-result, #ai-response, #optimized-prompt, #generated-image, .result-card, .panel, section { scroll-margin-top: 24px; }
+  #builder, #result-panel, #image-result, #ai-response, #aiResponseSection, #aiResponseOutput, #optimized-prompt, #generated-image, .result-card, .panel, section { scroll-margin-top: 24px; }
   .container { width: min(calc(100% - 2rem), 1100px) !important; }
   .builder-grid, .builder-layout, .builder-shell { max-width: 1100px; margin-inline: auto; }
   @media (min-width: 900px) {
@@ -13231,11 +13231,20 @@ Context:
             try {
               var behavior = (window.PMG_A11Y && typeof window.PMG_A11Y.scrollBehavior === 'function')
                 ? window.PMG_A11Y.scrollBehavior() : 'smooth';
-              /* viewport-ios-1 (2026-05-17): was block:'center' which on
-                 iOS could yank the page far enough to slide the topbar
-                 under the status bar. 'nearest' brings the AI response
-                 into view without recentering the whole document. */
-              __scrollTarget.scrollIntoView({ behavior: behavior, block: 'nearest' });
+              /* run-scroll-1 (2026-05-27): viewport-ios-1 changed 'center'
+                 → 'nearest', which fixed the iOS topbar overlap but made
+                 the scroll a no-op whenever ANY slice of the response
+                 section was already in view (common — the section sits
+                 directly below the result box, so a long page often has
+                 the top 30-80px peeking up). Users then watched the
+                 spinner stream "off-screen" below the fold. 'start' aligns
+                 the output element to the top of the viewport, which is
+                 what the user expects after clicking Run With AI. The
+                 scroll-margin-top: 24px rule (CSS L3983, now extended
+                 to #aiResponseSection + #aiResponseOutput) keeps the
+                 sticky topbar clear, preserving the iOS safety the
+                 original fix was protecting. */
+              __scrollTarget.scrollIntoView({ behavior: behavior, block: 'start' });
             } catch (_) {
               try { __scrollTarget.scrollIntoView(); } catch (__) {}
             }
