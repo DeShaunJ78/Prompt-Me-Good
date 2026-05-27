@@ -209,6 +209,14 @@
   gap: 8px;
 }
 
+/* anchor-not-float-1 (2026-05-27): user feedback — the sticky Build My
+   Prompt button looked like it was "floating" mid-air over the drawer
+   content because of the upward box-shadow (0 -8px 16px) which created
+   a soft glow detaching it visually from the drawer bottom. Fix: keep
+   position:sticky so the button stays anchored in view as the drawer
+   scrolls, but replace the floating shadow with a solid 1px top border
+   + opaque drawer-color background bleed so it visually attaches to
+   the drawer's bottom edge like a footer. */
 .pmg-bm-build-all {
   position: sticky;
   bottom: 0;
@@ -223,15 +231,28 @@
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 -8px 16px rgba(13, 43, 30, 0.55);
   transition: background 0.15s ease, transform 0.05s ease;
   z-index: 2;
+}
+/* Solid backing strip behind the sticky button so it reads as the
+   drawer's footer instead of a floating chip. Color matches the
+   drawer background (#0d2b1e); border-top is a subtle 1px separator. */
+.pmg-bm-build-all::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  right: -12px;
+  top: -8px;
+  bottom: -8px;
+  background: #0d2b1e;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: -1;
 }
 .pmg-bm-build-all:hover { background: #00d9a3; }
 .pmg-bm-build-all:active { transform: translateY(1px); }
 .pmg-bm-build-all:focus-visible {
   outline: none;
-  box-shadow: 0 -8px 16px rgba(13, 43, 30, 0.55), 0 0 0 3px rgba(0, 200, 150, 0.32);
+  box-shadow: 0 0 0 3px rgba(0, 200, 150, 0.32);
 }
 
 /* Accordion sections (using <details>/<summary>) */
