@@ -16,6 +16,7 @@ import {
   text,
   timestamp,
   boolean,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 export const apiKeysTable = pgTable(
@@ -34,7 +35,12 @@ export const apiKeysTable = pgTable(
   },
   (table) => ({
     userIdx: index("api_keys_user_idx").on(table.userId),
-    hashUnique: index("api_keys_hash_idx").on(table.keyHash),
+    // key_hash must be globally unique: it is the SHA-256 of a generated
+    // key and is the sole lookup key during auth (see apiKeyAuth.ts). A
+    // unique index both enforces that invariant at the DB level and serves
+    // the equality lookup. Verified 0 duplicate hashes in dev + prod before
+    // promoting from a plain index. (anchor: api-key-hash-unique)
+    hashUnique: uniqueIndex("api_keys_hash_idx").on(table.keyHash),
   }),
 );
 
