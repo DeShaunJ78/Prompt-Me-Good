@@ -10,7 +10,7 @@ import { logger } from "../lib/logger";
 import { clampString, sanitizeGoal } from "../middlewares/sanitize";
 import { generateLimiter, runLimiter, rateLimit, imageLimiter, videoLimiter } from "../middlewares/rateLimit";
 import { chargeCost, generateCostCheck, runCostCheck, imageCheck, imageCheckMulti, chargeImage } from "../middlewares/costGuard";
-import { userCapEnforce, resolveUserFromJwt } from "../middlewares/userCaps";
+import { userCapEnforce, resolveRequestUser, type ResolvedRequestUser } from "../middlewares/userCaps";
 import type { PmgPlan } from "../lib/pricing-config";
 import { effectiveCaps, TEASER_DAILY_CAP, PRO_STUDIO_GPT5_DAILY_CAP } from "../lib/pricing-config";
 import { reserveUserDay, refundUserDay } from "../lib/usage-store";
@@ -521,29 +521,10 @@ async function denyExpertIfPaywalled(
   if (feature !== "expert") return false;
   if (!isPaywallActive()) return false;
 
-  /* spec4-ak-2: API-key requests resolve via apiKeyAuth middleware, not
-     a Supabase JWT, so we must consult req.pmgApiKeyUser FIRST. Without
-     this, a Pro / Pro Studio user calling Expert features via their API
-     key would be falsely 403'd because the JWT re-resolution below would
-     return null for a `pmg_live_*` bearer token. */
-  const apiKeyUser = (req as { pmgApiKeyUser?: { userId: string; plan: PmgPlan } })
-    .pmgApiKeyUser;
-  let plan: PmgPlan | null = null;
-  if (apiKeyUser) {
-    if (isOwnerUserId(apiKeyUser.userId)) return false;
-    plan = apiKeyUser.plan;
-  } else {
-    const header = req.headers.authorization || "";
-    const m = /^Bearer\s+(.+)$/i.exec(header);
-    if (m) {
-      const ctx = await resolveUserFromJwt(m[1]!.trim());
-      if (ctx) {
-        /* owner-bypass-1: owner is always allowed past the Expert gate. */
-        if (isOwnerUserId(ctx.userId)) return false;
-        plan = ctx.plan;
-      }
-    }
-  }
+  const ctx = await resolveRequestUser(req);
+  /* owner-bypass-1: owner is always allowed past the Expert gate. */
+  if (isOwnerUserId(ctx?.userId)) return false;
+  const plan = ctx?.plan ?? null;
   if (plan === null || plan === "free") {
     res.status(403).json({
       success: false,
@@ -807,10 +788,7 @@ async function resolvePremiumGenerateModel(req: Request): Promise<PremiumGenerat
   try {
     const feature = (req.body as { feature?: unknown } | undefined)?.feature;
     if (feature !== "expert") return { model: GENERATE_MODEL, premiumUserId: undefined };
-    const header = req.headers.authorization || "";
-    const m = /^Bearer\s+(.+)$/i.exec(header);
-    if (!m) return { model: GENERATE_MODEL, premiumUserId: undefined };
-    const ctx = await resolveUserFromJwt(m[1]!.trim());
+    const ctx = await resolveRequestUser(req);
     if (!ctx) return { model: GENERATE_MODEL, premiumUserId: undefined };
     // owner-bypass-1: owner always gets GPT-5 on Expert and never
     // consumes the PRO_STUDIO_GPT5_DAILY_CAP counter (premiumUserId
@@ -855,16 +833,12 @@ const TEASER_MAX_TOKENS = 80;
 const TEASER_SYSTEM_PROMPT = RUN_SYSTEM_PROMPT;
 
 async function runCapWithTeaser(
-  req: Request & { pmgUser?: { userId: string; plan: PmgPlan; createdAtMs: number; email: string } },
+  req: Request & { pmgUser?: ResolvedRequestUser },
   res: Response,
   next: NextFunction,
 ): Promise<void> {
-  const header = req.headers.authorization || "";
-  const m = /^Bearer\s+(.+)$/i.exec(header);
-  if (!m) { next(); return; }
-  const ctx = await resolveUserFromJwt(m[1]!.trim());
+  const ctx = await resolveRequestUser(req);
   if (!ctx) { next(); return; }
-  req.pmgUser = ctx;
 
   // Owner bypass: skip cap reservation entirely so the owner UUID never
   // increments per-user day counters and never trips the teaser branch.
@@ -1583,17 +1557,13 @@ router.post("/storyboard", generateLimiter, generateCostCheck, async (req, res) 
      by the Expert gate. The /image calls each panel triggers
      downstream are still capped per the existing `img` cap. */
   if (isPaywallActive()) {
-    const header = req.headers.authorization || "";
-    const m = /^Bearer\s+(.+)$/i.exec(header);
     let plan: PmgPlan | null = null;
     let ownerBypass = false;
-    if (m) {
-      const ctx = await resolveUserFromJwt(m[1]!.trim());
-      if (ctx) {
-        /* owner-bypass-1: owner always passes the storyboard gate. */
-        if (isOwnerUserId(ctx.userId)) ownerBypass = true;
-        else plan = ctx.plan;
-      }
+    const ctx = await resolveRequestUser(req);
+    if (ctx) {
+      /* owner-bypass-1: owner always passes the storyboard gate. */
+      if (isOwnerUserId(ctx.userId)) ownerBypass = true;
+      else plan = ctx.plan;
     }
     if (!ownerBypass && (plan === null || plan === "free")) {
       res.status(403).json({

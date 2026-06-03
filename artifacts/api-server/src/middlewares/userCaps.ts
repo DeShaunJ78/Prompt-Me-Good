@@ -10,9 +10,11 @@
  * Behavior:
  *   - Anonymous request (no `Authorization` header): pass through. Existing
  *     IP rate limit + global cost guard handle anonymous abuse.
- *   - Signed-in Founding / Pro: enforced against fair-use caps.
- *   - Signed-in Free user, in 7-day trial: enforce trial caps (10/5/3).
- *   - Signed-in Free user, after trial: enforce standard caps (3/1/1).
+ *   - Supabase JWT or developer API key: resolve to the same user context
+ *     and enforce against the account's plan caps.
+ *   - Founding / Pro: enforced against fair-use caps.
+ *   - Free user, in 7-day trial: enforce trial caps.
+ *   - Free user, after trial: enforce standard caps.
  *   - Counter increments only on a successful (status < 400) response.
  *
  * Storage: counters live in Supabase `public.user_usage_daily` keyed by
@@ -20,6 +22,7 @@
  * is used as a graceful fallback if the table doesn't exist yet.
  * ============================================================================ */
 import type { Request, Response, NextFunction } from "express";
+import type { ApiKeyUser } from "./apiKeyAuth";
 import { supabaseAdmin } from "../lib/supabase-admin";
 import { logger } from "../lib/logger";
 import { isOwnerUserId } from "../lib/paywall";
@@ -32,12 +35,15 @@ import { refundUserDay, reserveUserDay } from "../lib/usage-store";
 
 const JWT_CACHE_TTL_MS = 60_000;
 
-interface CachedUser {
-  expires: number;
+export interface ResolvedRequestUser {
   userId: string;
   email: string;
   plan: PmgPlan;
   createdAtMs: number;
+}
+
+interface CachedUser extends ResolvedRequestUser {
+  expires: number;
 }
 
 const jwtCache = new Map<string, CachedUser>();
@@ -84,7 +90,33 @@ export async function resolveUserFromJwt(jwt: string): Promise<CachedUser | null
 }
 
 export interface UserCapsRequest extends Request {
-  pmgUser?: CachedUser;
+  pmgUser?: ResolvedRequestUser;
+  pmgApiKeyUser?: ApiKeyUser;
+}
+
+export async function resolveRequestUser(req: UserCapsRequest): Promise<ResolvedRequestUser | null> {
+  if (req.pmgUser) return req.pmgUser;
+
+  const apiKeyUser = req.pmgApiKeyUser;
+  if (apiKeyUser) {
+    const ctx: ResolvedRequestUser = {
+      userId: apiKeyUser.userId,
+      email: "",
+      plan: apiKeyUser.plan,
+      createdAtMs: apiKeyUser.createdAtMs,
+    };
+    req.pmgUser = ctx;
+    return ctx;
+  }
+
+  const header = req.headers.authorization || "";
+  const m = /^Bearer\s+(.+)$/i.exec(header);
+  if (!m) return null;
+
+  const ctx = await resolveUserFromJwt(m[1]!.trim());
+  if (!ctx) return null;
+  req.pmgUser = ctx;
+  return ctx;
 }
 
 /** Express middleware factory: enforces per-user, per-plan daily caps for
@@ -101,18 +133,11 @@ export function userCapEnforce(
     res: Response,
     next: NextFunction,
   ): Promise<void> {
-    const header = req.headers.authorization || "";
-    const m = /^Bearer\s+(.+)$/i.exec(header);
-    if (!m) {
-      next();
-      return;
-    }
-    const ctx = await resolveUserFromJwt(m[1]!.trim());
+    const ctx = await resolveRequestUser(req);
     if (!ctx) {
       next();
       return;
     }
-    req.pmgUser = ctx;
 
     /* owner-bypass-1: the configured OWNER_USER_ID always passes through
        every per-user daily cap. No reservation, no refund, no counter

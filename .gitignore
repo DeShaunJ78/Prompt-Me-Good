@@ -53,3 +53,4 @@ test-results/
 playwright-report/
 artifacts/api-server/data/pmg_cost.json
 artifacts/api-server/data/pmg_stats.json
+artifacts/api-server/data/pmg_user_usage.json

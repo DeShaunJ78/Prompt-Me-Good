@@ -104,6 +104,7 @@ overrides:
   minimatch>brace-expansion: ^2.0.3
   path-to-regexp: ^8.4.0
   postcss: ^8.5.10
+  qs: ^6.15.2
   rollup>@rollup/rollup-android-arm-eabi: '-'
   rollup>@rollup/rollup-android-arm64: '-'
   rollup>@rollup/rollup-darwin-arm64: '-'
@@ -129,4 +130,5 @@ overrides:
   rollup>@rollup/rollup-win32-x64-gnu: '-'
   rollup>@rollup/rollup-win32-x64-msvc: '-'
   vite>picomatch: ^4.0.4
+  ws: ^8.20.1
   yaml: ^2.8.3

@@ -26,9 +26,9 @@ Hard-won invariants for the workstation. Read the relevant section before editin
 
 ## State persistence
 
-*   **Session:** Idea + tuning + generated prompt → `sessionStorage['pmgv3:session']` (7-day TTL) via `wirePersistence()` in `pmg-chassis-v3.js`. `sessionStorage` not `localStorage` — survives backgrounding, clears on full tab close. `writeSession()` skips when goal AND prompt are both empty. Disable: `?fresh=1`, `localStorage.pmgv3_persist_disable='1'`.
+*   **Session:** Idea + tuning + generated prompt → `sessionStorage['pmgv3:session']` (30-minute TTL) via `wirePersistence()` in `pmg-chassis-v3.js`. `sessionStorage` not `localStorage` — survives backgrounding, clears on full tab close. `writeSession()` skips when goal AND prompt are both empty. Disable: `?fresh=1`, `localStorage.pmgv3_persist_disable='1'`.
 *   **Tuning mirror (mux-1):** Inline IIFE at end of `app.html` mirrors `personality`, `tone`, `outputFormat`, `maxLength` to `localStorage` under `pmg-{field}` keys. Server enum `TUNE_ENUMS.personality` in `routes/ai.ts` MUST match the `<select id="personality">` options or auto-tune silently clamps to "none".
-*   **Draft Recovery (dr-1):** `writeSession()` also mirrors to `localStorage['pmgv3:draft']`. On boot, if sessionStorage empty AND fresh (<7d) draft exists, `wireDraftRecovery()` shows a floating Restore/Dismiss banner (id `pmg-draft-recovery`, `data-pmg-overlay-root`). Auto-clears on `pmg:vault-saved`.
+*   **Draft Recovery (dr-1):** `writeSession()` also mirrors to `localStorage['pmgv3:draft']`. On boot, if sessionStorage empty AND fresh (<30 minutes) draft exists, `wireDraftRecovery()` shows a floating Restore/Dismiss banner (id `pmg-draft-recovery`, `data-pmg-overlay-root`). Auto-clears on `pmg:vault-saved`.
 
 ## Send-To / handoff
 
