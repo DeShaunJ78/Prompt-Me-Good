@@ -323,6 +323,11 @@ a.pmgv3-ico:hover { color: #00c896; }
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
+  /* upgrade-clip-1 (Task #156): the CTA must never shrink or wrap — if the
+     row runs short, the brand wordmark (min-width:0) absorbs the squeeze
+     instead, keeping "Lock In $79" fully visible and tappable. */
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .pmgv3-upgrade:hover { background: #00b186; border-color: #00b186; }
 
@@ -1854,8 +1859,10 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
     overflow-y: visible;
     padding-right: 0;
   }
-  /* Topbar + tabs: more breathing room */
-  .pmgv3-topbar { padding: 0 16px; }
+  /* Topbar + tabs: more breathing room. Right padding honors the device
+     safe-area inset so the CTA is never tucked under a rounded corner /
+     Dynamic Island region (upgrade-clip-1, Task #156). */
+  .pmgv3-topbar { padding: 0 16px; padding-right: max(16px, env(safe-area-inset-right, 0px)); }
   .pmgv3-tabs {
     overflow-x: auto;
     padding: 0 16px;
@@ -2082,7 +2089,18 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
      Pricing also stay visible per user direction (highest-value nav
      for new users); they shrink in font-size at ≤400px below. */
   .pmgv3-brand { min-width: 0; max-width: 100%; }
-  #pmgv3-help, #pmgv3-business, #pmgv3-vault, #pmgv3-settings { display: none; }
+  /* upgrade-clip-1 (Task #156): collapse EVERY topbar icon on phones, not a
+     hand-maintained ID list. The original rule named help/business/vault/
+     settings only, so the later-added ✦ Expert (#pmgv3-expert) and the
+     injected 📋 Templates (#pmg-template-browser-btn) + 🔑 API Keys
+     (#pmg-ak-entry-link) kept showing — the right cluster overflowed and
+     shoved the "Lock In $79" CTA off the right edge on large phones (iPhone
+     Pro Max ~430-440px). Hiding by class future-proofs against any new
+     injected .pmgv3-ico. All of these are reachable from the ⋮ More menu.
+     #pmg-ak-entry-link carries an inline display:inline-flex (set in
+     pmg-api-keys.js), so it needs !important to be overridden. */
+  .pmgv3-tb-r .pmgv3-ico { display: none; }
+  #pmg-ak-entry-link { display: none !important; }
   .pmgv3-more { display: inline-flex; }
   /* mhdr-2: distribute the 3 panel tabs evenly so "Video" never
      clips on iPhone 16 (393px), Pixel (393px), Galaxy S24 (360-412px),
@@ -2133,8 +2151,12 @@ html.pmg-chassis-v3 .strength-bar-container #strength-score .strength-score-fill
   }
   #pmg-photo-suite .pmg-photo-pill:hover { transform: none; }
 }
-@media (max-width: 400px) {
-  .pmgv3-topbar { padding: 0 10px; }
+/* upgrade-clip-1 (Task #156): compaction was previously gated at ≤400px,
+   leaving a gap where Pro Max-class phones (430-440px) got no tightening
+   but the content still overflowed. Raised to ≤480px so the same
+   font/padding/gap compaction applies across all phone widths. */
+@media (max-width: 480px) {
+  .pmgv3-topbar { padding: 0 10px; padding-right: max(10px, env(safe-area-inset-right, 0px)); }
   .pmgv3-tb-r { gap: 4px; }
   /* .pmgv3-ico stays at the 44x44 tap-target size set on the base
      rule (with !important). Only shrink the visual glyph (font-size)

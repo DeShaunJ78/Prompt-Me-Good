@@ -1997,7 +1997,17 @@
         '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-help"><span aria-hidden="true">❓</span> Guide<span class="pmgv3-more-desc">Read the user guide</span></button>' +
         '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-business"><span aria-hidden="true">💼</span> Growth<span class="pmgv3-more-desc">Full marketing suite: Brand Voice, Social Packs, Platform Builder. (Paid feature)</span></button>' +
         '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-vault"><span aria-hidden="true">🗄️</span> Vault<span class="pmgv3-more-desc">Saved prompts library</span></button>' +
-        '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-expert"><span aria-hidden="true">✦</span> Expert<span class="pmgv3-more-desc">Diagnose, Architect, Tune, Variations, and Save. (Paid feature)</span></button>';
+        /* upgrade-clip-1 (Task #156): 📋 Templates (#pmg-template-browser-btn,
+           injected by pmg-template-browser.js) is hidden on phones too, so
+           surface it here to keep it reachable. */
+        '<button type="button" role="menuitem" data-pmg-more-target="pmg-template-browser-btn"><span aria-hidden="true">📋</span> Templates<span class="pmgv3-more-desc">Browse AI-generated starter prompts</span></button>' +
+        '<button type="button" role="menuitem" data-pmg-more-target="pmgv3-expert"><span aria-hidden="true">✦</span> Expert<span class="pmgv3-more-desc">Diagnose, Architect, Tune, Variations, and Save. (Paid feature)</span></button>' +
+        /* upgrade-clip-1 (Task #156): the 🔑 API Keys pill (#pmg-ak-entry-link,
+           injected by pmg-api-keys.js) is now hidden on phones to stop the
+           topbar overflowing the Upgrade CTA — surface it here so it stays
+           reachable. If the pill hasn't mounted (or is disabled via kill
+           switch) the proxied click is a no-op, same as the other items. */
+        '<button type="button" role="menuitem" data-pmg-more-target="pmg-ak-entry-link"><span aria-hidden="true">🔑</span> API Keys<span class="pmgv3-more-desc">Manage Developer API keys</span></button>';
       ensureMoreMenuStyles();
       moreBtn.parentNode.appendChild(menu);
       moreBtn.setAttribute('aria-expanded', 'true');
