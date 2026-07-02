@@ -1,0 +1,1 @@
+- [Launch-swap & rhetoric sweeps](launch-swap-and-rhetoric.md) — data-pmg-beta-only/post-launch swap via /api/public-config; untagged launch/beta copy hides in JSON-LD, JS toasts, and legal/manual/changelog pages (sweep all vite rollupOptions.input).

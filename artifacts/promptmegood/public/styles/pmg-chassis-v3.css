@@ -200,6 +200,7 @@ html.pmg-chassis-v3 body {
 .pmgv3-brand:focus-visible { outline: 2px solid rgba(0, 200, 150, 0.55); outline-offset: 2px; }
 .pmgv3-brand img { width: 28px; height: 28px; border-radius: 6px; }
 .pmgv3-brand-beta {
+  display: none; /* launch-1: BETA badge retired post-launch */
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.08em;
