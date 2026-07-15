@@ -99,6 +99,10 @@
     .pmg-cf-status { padding: 12px 14px; border-radius: 10px; font-size: 0.95rem; display: none; }
     .pmg-cf-status[data-state="ok"] { display: block; background: color-mix(in srgb, var(--primary) 15%, transparent); border: 1px solid var(--primary); color: var(--text); }
     .pmg-cf-status[data-state="err"] { display: block; background: #5a1f1f; border: 1px solid #9b3030; color: #ffe9e9; }
+    .pmg-cf-ts-notice { padding: 10px 12px; border-radius: 9px; font-size: 0.88rem; background: rgba(212,167,73,.14); border: 1px solid #a8823a; color: var(--text); margin: 2px 0 0; }
+    .pmg-cf-ts-notice a { color: var(--primary); text-decoration: underline; }
+    .pmg-cf-ts-retry { margin-top: 8px; display: inline-block; padding: 6px 12px; background: transparent; color: var(--text); border: 1px solid #a8823a; border-radius: 7px; font: inherit; font-size: 0.85rem; cursor: pointer; }
+    .pmg-cf-ts-retry:hover { background: rgba(212,167,73,.2); }
     .pmg-cf-fineprint { color: var(--muted); font-size: 0.88rem; margin: 0.25rem 0 0.5rem; }
     .pmg-cf-fineprint code { background: color-mix(in srgb, var(--primary) 8%, transparent); padding: 2px 6px; border-radius: 4px; font-size: 0.95em; }
     .site-footer { padding: 1.5rem 0; border-top: 1px solid var(--border); background: var(--surface); margin-top: auto; text-align: center; }
@@ -158,6 +162,7 @@
             <input id="pmg-cf-website" name="website" type="text" tabindex="-1" autocomplete="off" />
           </div>
           <div id="pmg-cf-ts-mount" hidden style="margin:4px 0;"></div>
+          <div id="pmg-cf-ts-notice" class="pmg-cf-ts-notice" hidden></div>
           <div id="pmg-cf-status" class="pmg-cf-status" role="status" aria-live="polite"></div>
           <button type="submit" class="pmg-cf-submit" id="pmg-cf-submit-btn">Send message</button>
         </form>
@@ -229,6 +234,12 @@
     var turnstileToken = '';
     var turnstileWidgetId = null;
     var turnstileEnabled = false;
+    /* cf-2: track widget health so failures are visible instead of a dead
+       end. '' = not attempted / no site key, 'ok' = rendered without error,
+       'failed' = load/render/challenge error. */
+    var turnstileState = '';
+    var turnstileErrCode = '';
+    var tsNotice = document.getElementById('pmg-cf-ts-notice');
 
     function setStatus(state, msg) {
       statusEl.setAttribute('data-state', state);
@@ -258,29 +269,65 @@
         })();
       });
     }
+    function showTsFallback(code) {
+      turnstileState = 'failed';
+      turnstileErrCode = code ? String(code) : '';
+      turnstileToken = '';
+      if (!tsNotice) return;
+      tsNotice.hidden = false;
+      tsNotice.innerHTML =
+        '<span>The human-verification check could not load' +
+        (turnstileErrCode ? ' (code ' + turnstileErrCode.replace(/[^\w.,-]/g, '') + ')' : '') +
+        '. You can retry it, or email us directly at ' +
+        '<a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.</span> ' +
+        '<button type="button" id="pmg-cf-ts-retry" class="pmg-cf-ts-retry">Retry verification</button>';
+      var retryBtn = tsNotice.querySelector('#pmg-cf-ts-retry');
+      if (retryBtn) retryBtn.addEventListener('click', function () {
+        tsNotice.hidden = true;
+        tsNotice.innerHTML = '';
+        initTurnstile();
+      });
+    }
+
     function renderTurnstile(siteKey) {
-      if (!siteKey || !tsMount || turnstileWidgetId !== null) return;
+      if (!siteKey || !tsMount) return;
+      if (turnstileWidgetId !== null) {
+        // Retry path: reset the existing widget instead of re-rendering.
+        turnstileState = 'ok';
+        try { window.turnstile.reset(turnstileWidgetId); } catch (e) { showTsFallback('reset_failed'); }
+        return;
+      }
       try {
         turnstileWidgetId = window.turnstile.render(tsMount, {
           sitekey: siteKey,
           theme: 'auto',
-          callback: function (token) { turnstileToken = token || ''; },
+          callback: function (token) {
+            turnstileToken = token || '';
+            turnstileState = 'ok';
+            if (tsNotice) { tsNotice.hidden = true; tsNotice.innerHTML = ''; }
+          },
           'expired-callback': function () { turnstileToken = ''; },
-          'error-callback': function () { turnstileToken = ''; },
+          'error-callback': function (code) { showTsFallback(code); },
         });
         tsMount.hidden = false;
         turnstileEnabled = true;
-      } catch (e) { /* widget render failed — fall through */ }
+        turnstileState = 'ok';
+      } catch (e) { showTsFallback('render_failed'); }
     }
 
-    fetch('/api/public-config', { headers: { 'Accept': 'application/json' } })
-      .then(function (r) { return r.ok ? r.json() : {}; })
-      .then(function (cfg) {
-        var siteKey = (cfg && cfg.turnstileSiteKey) || '';
-        if (!siteKey) return;
-        return loadScript(TURNSTILE_JS).then(whenTurnstileReady).then(function () { renderTurnstile(siteKey); });
-      })
-      .catch(function () { /* silent — degrade gracefully */ });
+    function initTurnstile() {
+      fetch('/api/public-config', { headers: { 'Accept': 'application/json' } })
+        .then(function (r) { return r.ok ? r.json() : {}; })
+        .then(function (cfg) {
+          var siteKey = (cfg && cfg.turnstileSiteKey) || '';
+          if (!siteKey) return;
+          return loadScript(TURNSTILE_JS).then(whenTurnstileReady).then(function () { renderTurnstile(siteKey); });
+        })
+        .catch(function (e) {
+          showTsFallback(e && e.message === 'turnstile_timeout' ? 'timeout' : 'load_failed');
+        });
+    }
+    initTurnstile();
 
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
@@ -324,7 +371,14 @@
           } else if (res.status === 429) {
             setStatus('err', 'You have sent a few messages already. Please wait a few minutes and try again.');
           } else if (res.status === 403) {
-            setStatus('err', 'Bot check failed — please complete the verification above and try again. You can also write directly to support@promptmegood.com.');
+            if (turnstileState !== 'ok') {
+              setStatus('err', 'We could not verify you are human because the bot check did not load' +
+                (turnstileErrCode ? ' (code ' + turnstileErrCode.replace(/[^\w.,-]/g, '') + ')' : '') +
+                '. Please use "Retry verification" above, or email us directly at support@promptmegood.com — we answer those too.');
+              showTsFallback(turnstileErrCode);
+            } else {
+              setStatus('err', 'Bot check failed — please complete the verification above and try again. You can also write directly to support@promptmegood.com.');
+            }
             turnstileToken = '';
             if (turnstileWidgetId !== null && window.turnstile) {
               try { window.turnstile.reset(turnstileWidgetId); } catch (e) {}
@@ -347,6 +401,6 @@
   })();
 </script>
 <script src="/scripts/pmg-mailto-fallback.js?v=mlf-1" defer></script>
-<script src="/scripts/pmg-contact-modal.js?v=cm-1" defer></script>
+<script src="/scripts/pmg-contact-modal.js?v=cm-2" defer></script>
 </body>
 </html>

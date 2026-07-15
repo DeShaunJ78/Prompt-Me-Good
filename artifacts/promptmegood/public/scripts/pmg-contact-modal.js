@@ -98,6 +98,10 @@
     '#' + ROOT_ID + ' .pmg-cm-help-body a { color:#5ba8b0; text-decoration:none; }',
     '#' + ROOT_ID + ' .pmg-cm-help-body a:hover { text-decoration:underline; color:#73b8bf; }',
     '#' + ROOT_ID + ' .pmg-cm-help-body code { background:rgba(91,168,176,.12); padding:1px 5px; border-radius:4px; font-size:0.92em; color:#ece9e2; }',
+    '#' + ROOT_ID + ' .pmg-cm-ts-notice { padding:10px 12px; border-radius:9px; font-size:0.88rem; background:rgba(212,167,73,.12); border:1px solid #a8823a; color:#f0e6cf; margin:2px 0 0; }',
+    '#' + ROOT_ID + ' .pmg-cm-ts-notice a { color:#e8c877; text-decoration:underline; }',
+    '#' + ROOT_ID + ' .pmg-cm-ts-retry { margin-top:8px; display:inline-block; padding:6px 12px; background:transparent; color:#e8c877; border:1px solid #a8823a; border-radius:7px; font:inherit; font-size:0.85rem; cursor:pointer; }',
+    '#' + ROOT_ID + ' .pmg-cm-ts-retry:hover { background:rgba(212,167,73,.15); }',
     '@media (max-width:480px) {',
     '  #' + ROOT_ID + ' .pmg-cm-dialog { padding:20px 16px 18px; width:94vw; }',
     '}',
@@ -140,6 +144,7 @@
           '<input id="pmg-cm-website" name="website" type="text" tabindex="-1" autocomplete="off" />' +
         '</div>' +
         '<div id="pmg-cm-ts-mount" hidden style="margin:4px 0;"></div>' +
+        '<div id="pmg-cm-ts-notice" class="pmg-cm-ts-notice" hidden></div>' +
         '<div id="pmg-cm-status" class="pmg-cm-status" role="status" aria-live="polite"></div>' +
         '<button type="submit" class="pmg-cm-submit" id="pmg-cm-submit-btn">Send message</button>' +
       '</form>' +
@@ -173,6 +178,11 @@
   var TURNSTILE_JS = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
   var cmTurnstileToken = '';
   var cmTurnstileWidgetId = null;
+  /* cm-2: track widget health so failures are visible instead of a dead end.
+   * '' = not attempted / no site key (server may still allow), 'ok' = widget
+   * rendered without error, 'failed' = load/render/challenge error. */
+  var cmTurnstileState = '';
+  var cmTurnstileErrCode = '';
 
   function loadScript(src) {
     return new Promise(function (resolve, reject) {
@@ -217,27 +227,67 @@
       }
     });
 
-    // Turnstile: render widget inside the modal after injection
+    // Turnstile: render widget inside the modal after injection (cm-2:
+    // failures are surfaced with a visible retry + mailto fallback instead
+    // of silently dead-ending at the server's 403).
     var tsMount = root.querySelector('#pmg-cm-ts-mount');
-    fetch('/api/public-config', { headers: { 'Accept': 'application/json' } })
-      .then(function (r) { return r.ok ? r.json() : {}; })
-      .then(function (cfg) {
-        var siteKey = (cfg && cfg.turnstileSiteKey) || '';
-        if (!siteKey || !tsMount || cmTurnstileWidgetId !== null) return;
-        return loadScript(TURNSTILE_JS).then(whenTurnstileReady).then(function () {
-          try {
-            cmTurnstileWidgetId = window.turnstile.render(tsMount, {
-              sitekey: siteKey,
-              theme: 'auto',
-              callback: function (token) { cmTurnstileToken = token || ''; },
-              'expired-callback': function () { cmTurnstileToken = ''; },
-              'error-callback': function () { cmTurnstileToken = ''; },
-            });
-            tsMount.hidden = false;
-          } catch (e) { /* widget render failed — fall through */ }
+    var tsNotice = root.querySelector('#pmg-cm-ts-notice');
+
+    function showTsFallback(code) {
+      cmTurnstileState = 'failed';
+      cmTurnstileErrCode = code ? String(code) : '';
+      cmTurnstileToken = '';
+      if (!tsNotice) return;
+      tsNotice.hidden = false;
+      tsNotice.innerHTML =
+        '<span>The human-verification check could not load' +
+        (cmTurnstileErrCode ? ' (code ' + cmTurnstileErrCode.replace(/[^\w.,-]/g, '') + ')' : '') +
+        '. You can retry it, or email us directly at ' +
+        '<a href="mailto:support@promptmegood.com">support@promptmegood.com</a>.</span> ' +
+        '<button type="button" id="pmg-cm-ts-retry" class="pmg-cm-ts-retry">Retry verification</button>';
+      var retryBtn = tsNotice.querySelector('#pmg-cm-ts-retry');
+      if (retryBtn) retryBtn.addEventListener('click', function () {
+        tsNotice.hidden = true;
+        tsNotice.innerHTML = '';
+        initTurnstile();
+      });
+    }
+
+    function initTurnstile() {
+      fetch('/api/public-config', { headers: { 'Accept': 'application/json' } })
+        .then(function (r) { return r.ok ? r.json() : {}; })
+        .then(function (cfg) {
+          var siteKey = (cfg && cfg.turnstileSiteKey) || '';
+          if (!siteKey || !tsMount) return;
+          if (cmTurnstileWidgetId !== null) {
+            // Retry path: reset the existing widget instead of re-rendering.
+            cmTurnstileState = 'ok';
+            try { window.turnstile.reset(cmTurnstileWidgetId); } catch (e) { showTsFallback('reset_failed'); }
+            return;
+          }
+          return loadScript(TURNSTILE_JS).then(whenTurnstileReady).then(function () {
+            try {
+              cmTurnstileWidgetId = window.turnstile.render(tsMount, {
+                sitekey: siteKey,
+                theme: 'auto',
+                callback: function (token) {
+                  cmTurnstileToken = token || '';
+                  cmTurnstileState = 'ok';
+                  if (tsNotice) { tsNotice.hidden = true; tsNotice.innerHTML = ''; }
+                },
+                'expired-callback': function () { cmTurnstileToken = ''; },
+                'error-callback': function (code) { showTsFallback(code); },
+              });
+              tsMount.hidden = false;
+              cmTurnstileState = 'ok';
+            } catch (e) { showTsFallback('render_failed'); }
+          });
+        })
+        .catch(function (e) {
+          showTsFallback(e && e.message === 'turnstile_timeout' ? 'timeout' : 'load_failed');
         });
-      })
-      .catch(function () { /* silent — degrade gracefully */ });
+    }
+    initTurnstile();
 
     // Submit handler
     var form = root.querySelector('#pmg-cm-form');
@@ -291,7 +341,16 @@
           } else if (res.status === 429) {
             setStatus('err', 'You have sent a few messages already. Please wait a few minutes and try again.');
           } else if (res.status === 403) {
-            setStatus('err', 'Bot check failed \u2014 please complete the verification above and try again. You can also write directly to support@promptmegood.com.');
+            if (cmTurnstileState !== 'ok') {
+              // Widget never rendered or errored — "verification above" would
+              // point at nothing. Be honest and give a working way out.
+              setStatus('err', 'We could not verify you are human because the bot check did not load' +
+                (cmTurnstileErrCode ? ' (code ' + cmTurnstileErrCode.replace(/[^\w.,-]/g, '') + ')' : '') +
+                '. Please tap "Retry verification" above, or email us directly at support@promptmegood.com \u2014 we answer those too.');
+              showTsFallback(cmTurnstileErrCode);
+            } else {
+              setStatus('err', 'Bot check failed \u2014 please complete the verification above and try again. You can also write directly to support@promptmegood.com.');
+            }
             cmTurnstileToken = '';
             if (cmTurnstileWidgetId !== null && window.turnstile) {
               try { window.turnstile.reset(cmTurnstileWidgetId); } catch (e) {}

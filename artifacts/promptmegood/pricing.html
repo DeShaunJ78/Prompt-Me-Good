@@ -867,6 +867,11 @@
       var turnstileSiteKey = '';
       var turnstileWidgetId = null;
       var turnstileToken = '';
+      /* wl-2: track widget health so failures are visible instead of a dead
+         end. '' = not attempted / no site key, 'ok' = rendered without error,
+         'failed' = load/render/challenge error. */
+      var turnstileState = '';
+      var turnstileErrCode = '';
       if (!form) return;
       var btn = form.querySelector('button[type="submit"], button:not([type])');
 
@@ -913,18 +918,25 @@
         });
       }
 
+      function markTsFailed(code) {
+        turnstileState = 'failed';
+        turnstileErrCode = code ? String(code).replace(/[^\w.,-]/g, '') : '';
+        turnstileToken = '';
+      }
+
       function renderTurnstile() {
         if (!turnstileSiteKey || !tsMount || turnstileWidgetId !== null) return;
         try {
           turnstileWidgetId = window.turnstile.render(tsMount, {
             sitekey: turnstileSiteKey,
             theme: 'auto',
-            callback: function (token) { turnstileToken = token || ''; },
+            callback: function (token) { turnstileToken = token || ''; turnstileState = 'ok'; },
             'expired-callback': function () { turnstileToken = ''; },
-            'error-callback': function () { turnstileToken = ''; },
+            'error-callback': function (code) { markTsFailed(code); },
           });
           tsMount.hidden = false;
-        } catch (e) { /* widget render failed — fall through, server still rate-limits */ }
+          turnstileState = 'ok';
+        } catch (e) { markTsFailed('render_failed'); }
       }
 
       function resetTurnstile() {
@@ -944,7 +956,9 @@
           if (!turnstileSiteKey) return;
           return loadScript(TURNSTILE_JS).then(whenTurnstileReady).then(renderTurnstile);
         })
-        .catch(function () { /* silent — degrade gracefully */ });
+        .catch(function (e) {
+          markTsFailed(e && e.message === 'turnstile_timeout' ? 'timeout' : 'load_failed');
+        });
       function setStatus(msg, kind) {
         if (!status) return;
         status.textContent = msg || '';
@@ -1006,6 +1020,11 @@
             if (!out.res.ok || data.ok !== true) {
               if (data.error === 'bot_check_failed') {
                 resetTurnstile();
+                if (turnstileState !== 'ok') {
+                  throw new Error('Verification could not load' +
+                    (turnstileErrCode ? ' (code ' + turnstileErrCode + ')' : '') +
+                    '. Please email support@promptmegood.com and we will add you to the list.');
+                }
                 throw new Error('Verification failed. Please complete the bot check and try again.');
               }
               throw new Error('Submission rejected');
@@ -1038,7 +1057,7 @@
   <script src="/scripts/pmg-deadclick-audit.js?v=dca-1" defer></script>
   <script src="/scripts/pmg-launch-swap.js?v=launch-swap-1" defer></script>
   <script src="/scripts/pmg-mailto-fallback.js?v=mlf-1" defer></script>
-<script src="/scripts/pmg-contact-modal.js?v=cm-1" defer></script>
+<script src="/scripts/pmg-contact-modal.js?v=cm-2" defer></script>
   <!-- audit-3 §7: analytics wrapper + upgrade-CTA tracker. -->
   <script src="/scripts/pmg-analytics.js?v=task93-1" defer></script>
   <script>
