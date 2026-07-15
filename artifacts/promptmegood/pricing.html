@@ -204,6 +204,10 @@
     }
     .early-access-turnstile { margin: var(--space-3) auto 0; display: flex; justify-content: center; min-height: 0; }
     .early-access-turnstile[hidden] { display: none; }
+    .early-access-ts-notice { margin: var(--space-3) auto 0; max-width: 460px; padding: 10px 12px; border-radius: 9px; font-size: 0.88rem; background: rgba(212,167,73,.14); border: 1px solid #a8823a; color: var(--text); text-align: left; }
+    .early-access-ts-notice a { color: var(--primary); text-decoration: underline; }
+    .early-access-ts-retry { margin-top: 8px; display: inline-block; padding: 6px 12px; background: transparent; color: var(--text); border: 1px solid #a8823a; border-radius: 7px; font: inherit; font-size: 0.85rem; cursor: pointer; }
+    .early-access-ts-retry:hover { background: rgba(212,167,73,.2); }
     .early-access-status { margin: var(--space-3) 0 0; font-size: 0.9rem; min-height: 1.4em; }
     .early-access-status.is-success { color: var(--primary); }
     .early-access-status.is-error { color: #B91C1C; }
@@ -638,6 +642,7 @@
                types an email directly without clicking a tier card. -->
           <input id="early-access-tier" name="tier" type="hidden" value="" />
           <div id="early-access-turnstile" class="early-access-turnstile"></div>
+          <div id="early-access-ts-notice" class="early-access-ts-notice" hidden></div>
           <button type="submit" class="btn btn-primary">Notify Me</button>
         </form>
         <p class="early-access-status" id="early-access-status" role="status" aria-live="polite"></p>
@@ -918,19 +923,45 @@
         });
       }
 
+      var tsNotice = document.getElementById('early-access-ts-notice');
+
       function markTsFailed(code) {
         turnstileState = 'failed';
         turnstileErrCode = code ? String(code).replace(/[^\w.,-]/g, '') : '';
         turnstileToken = '';
+        if (!tsNotice) return;
+        tsNotice.hidden = false;
+        tsNotice.innerHTML =
+          '<span>The human-verification check could not load' +
+          (turnstileErrCode ? ' (code ' + turnstileErrCode + ')' : '') +
+          '. You can retry it, or email us at ' +
+          '<a href="mailto:support@promptmegood.com">support@promptmegood.com</a> and we will add you to the list.</span> ' +
+          '<button type="button" id="early-access-ts-retry" class="early-access-ts-retry">Retry verification</button>';
+        var retryBtn = tsNotice.querySelector('#early-access-ts-retry');
+        if (retryBtn) retryBtn.addEventListener('click', function () {
+          tsNotice.hidden = true;
+          tsNotice.innerHTML = '';
+          initTurnstile();
+        });
       }
 
       function renderTurnstile() {
-        if (!turnstileSiteKey || !tsMount || turnstileWidgetId !== null) return;
+        if (!turnstileSiteKey || !tsMount) return;
+        if (turnstileWidgetId !== null) {
+          // Retry path: reset the existing widget instead of re-rendering.
+          turnstileState = 'ok';
+          try { window.turnstile.reset(turnstileWidgetId); } catch (e) { markTsFailed('reset_failed'); }
+          return;
+        }
         try {
           turnstileWidgetId = window.turnstile.render(tsMount, {
             sitekey: turnstileSiteKey,
             theme: 'auto',
-            callback: function (token) { turnstileToken = token || ''; turnstileState = 'ok'; },
+            callback: function (token) {
+              turnstileToken = token || '';
+              turnstileState = 'ok';
+              if (tsNotice) { tsNotice.hidden = true; tsNotice.innerHTML = ''; }
+            },
             'expired-callback': function () { turnstileToken = ''; },
             'error-callback': function (code) { markTsFailed(code); },
           });
@@ -949,16 +980,19 @@
       // Fetch the site key once on page load. If the endpoint or key is
       // unavailable, the form still submits — the server treats Turnstile
       // as "off" when its secret isn't configured either.
-      fetch('/api/public-config', { headers: { 'Accept': 'application/json' } })
-        .then(function (r) { return r.ok ? r.json() : {}; })
-        .then(function (cfg) {
-          turnstileSiteKey = (cfg && cfg.turnstileSiteKey) || '';
-          if (!turnstileSiteKey) return;
-          return loadScript(TURNSTILE_JS).then(whenTurnstileReady).then(renderTurnstile);
-        })
-        .catch(function (e) {
-          markTsFailed(e && e.message === 'turnstile_timeout' ? 'timeout' : 'load_failed');
-        });
+      function initTurnstile() {
+        fetch('/api/public-config', { headers: { 'Accept': 'application/json' } })
+          .then(function (r) { return r.ok ? r.json() : {}; })
+          .then(function (cfg) {
+            turnstileSiteKey = (cfg && cfg.turnstileSiteKey) || '';
+            if (!turnstileSiteKey) return;
+            return loadScript(TURNSTILE_JS).then(whenTurnstileReady).then(renderTurnstile);
+          })
+          .catch(function (e) {
+            markTsFailed(e && e.message === 'turnstile_timeout' ? 'timeout' : 'load_failed');
+          });
+      }
+      initTurnstile();
       function setStatus(msg, kind) {
         if (!status) return;
         status.textContent = msg || '';
