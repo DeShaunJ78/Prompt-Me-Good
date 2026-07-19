@@ -210,6 +210,24 @@
       .hero-cta .cta-row { flex-direction: column; align-items: stretch; }
       .hero-cta .btn { width: 100%; justify-content: center; text-align: center; }
     }
+    .hero-demo-clip {
+      margin: 36px 0 0;
+      max-width: 860px;
+    }
+    .hero-demo-clip video {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 14px;
+      border: 1px solid var(--line, rgba(255,255,255,0.12));
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+      background: #0b1512;
+    }
+    .hero-demo-caption {
+      margin: 10px 2px 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
 
     /* css-split-1 (2026-05-19): below-the-fold styles moved to
        /styles/index-deferred.css and async-loaded via <link media="print"
@@ -422,6 +440,21 @@
         </div>
         <p class="hero-cta-note">No signup. No credit card. Your first structured prompt in under a minute.</p>
       </div>
+
+      <!-- Task #164: real-app preview clip. Actual screen recording of /app
+           (typing a sentence -> Build My Prompt -> engineered prompt).
+           Lazy: preload="none", playback starts only when scrolled into view
+           and prefers-reduced-motion is not set. Poster shows otherwise. -->
+      <figure class="hero-demo-clip">
+        <video id="hero-demo-video"
+               muted loop playsinline preload="none"
+               poster="/media/hero-demo-poster.jpg"
+               width="1280" height="800"
+               aria-label="Screen recording of PromptMeGood turning one typed sentence into a full structured prompt">
+          <source src="/media/hero-demo.mp4" type="video/mp4">
+        </video>
+        <figcaption class="hero-demo-caption">The real app, unedited: one sentence in, a full engineered prompt out.</figcaption>
+      </figure>
     </div>
   </main>
 
@@ -660,6 +693,34 @@
           }
         } catch (_) {}
       }, true);
+    })();
+
+    /* Task #164: lazy hero demo clip. Starts playback only when the video
+       scrolls into view; pauses when out of view. Respects
+       prefers-reduced-motion (poster stays, no autoplay). preload="none"
+       keeps the mp4 off the critical path entirely. */
+    (function () {
+      var v = document.getElementById('hero-demo-video');
+      if (!v) return;
+      var reduced = false;
+      try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) {}
+      if (reduced) {
+        try { v.setAttribute('controls', ''); } catch (_) {}
+        return;
+      }
+      if (!('IntersectionObserver' in window)) {
+        try { v.play().catch(function () {}); } catch (_) {}
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          try {
+            if (entry.isIntersecting) { v.play().catch(function () {}); }
+            else { v.pause(); }
+          } catch (_) {}
+        });
+      }, { threshold: 0.25 });
+      io.observe(v);
     })();
   </script>
 </body>
