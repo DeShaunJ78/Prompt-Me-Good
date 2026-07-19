@@ -289,6 +289,52 @@ test.describe("hero demo clip lazy-loading (index.html)", () => {
     ).toBeGreaterThan(0);
   });
 
+  // Task #174: the specs above verify the lazy-load contract and that a
+  // request for /assets/hero-demo.* is MADE — but never that it SUCCEEDS.
+  // If hero-demo.mp4/webm or the poster were deleted, renamed, or
+  // corrupted (e.g. a failed refresh-hero-demo run), the landing page
+  // would show a dark empty frame with no test failure. Assert each
+  // asset serves 200 with a sane Content-Type and non-trivial size.
+  for (const asset of [
+    {
+      path: "/assets/hero-demo.mp4",
+      contentTypeRe: /^video\/mp4/i,
+      minBytes: 50_000,
+    },
+    {
+      path: "/assets/hero-demo.webm",
+      contentTypeRe: /^video\/webm/i,
+      minBytes: 50_000,
+    },
+    {
+      path: "/assets/hero-demo-poster.jpg",
+      contentTypeRe: /^image\/jpe?g/i,
+      minBytes: 5_000,
+    },
+  ]) {
+    test(`asset ${asset.path} is served intact (200, correct type, non-trivial size)`, async ({
+      request,
+    }) => {
+      const res = await request.get(asset.path);
+      expect(
+        res.status(),
+        `${asset.path} must return 200 — a missing/renamed file leaves visitors a blank player`,
+      ).toBe(200);
+
+      const contentType = res.headers()["content-type"] ?? "";
+      expect(
+        contentType,
+        `${asset.path} must serve a sane Content-Type (got "${contentType}") — an HTML fallback/404 page here would silently break the player`,
+      ).toMatch(asset.contentTypeRe);
+
+      const body = await res.body();
+      expect(
+        body.byteLength,
+        `${asset.path} must be non-trivial in size (got ${body.byteLength} bytes) — a truncated/corrupted file plays as a blank frame`,
+      ).toBeGreaterThan(asset.minBytes);
+    });
+  }
+
   test("prefers-reduced-motion: no autoplay, controls exposed for opt-in playback", async ({
     page,
   }) => {
