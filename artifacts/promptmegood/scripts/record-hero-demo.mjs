@@ -1,141 +1,89 @@
-/* Records a short screen capture of the real /app workstation for the
- * landing-page hero preview (Task #164). Uses the same API-mock approach as
- * the Playwright suite (tests/_mock-api.ts) so no OpenAI credits are spent —
- * the UI, typing, and generate flow are the real app.
- *
- * Run:  node scripts/record-hero-demo.mjs
- * Output: /tmp/hero-demo/  (webm video; convert with ffmpeg afterwards)
- */
-import { chromium } from "@playwright/test";
+/* Records a real /app flow (type sentence → Generate → structured prompt)
+   as a webm via Playwright, for the landing-page hero preview clip.
+   Usage: node scripts/record-hero-demo.mjs
+   Output: /tmp/pmg-hero-demo/<video>.webm
+   Hits the REAL /api/generate endpoint (one cheap gpt-4.1 call). */
+import { chromium } from "playwright";
 
-const APP_URL = process.env.APP_URL || "http://localhost:80/app";
-const OUT_DIR = "/tmp/hero-demo";
-
-const GOAL = "Write a warm launch email for my candle shop's new fall collection";
-
-const DEMO_PROMPT = [
-  "You are an experienced e-commerce copywriter who specializes in small artisan brands.",
-  "",
-  "Write a warm, inviting launch email announcing my handmade candle shop's new fall collection.",
-  "",
-  "Context: The shop is small-batch and family-run. The fall line features scents like spiced pear, cedar + amber, and pumpkin chai. The audience is past customers who love cozy, seasonal products.",
-  "",
-  "Requirements:",
-  "- Subject line + preview text (give 3 options)",
-  "- Friendly, personal tone - like a note from the maker, not a corporation",
-  "- Highlight 2-3 scents with sensory descriptions",
-  "- One clear call to action to shop the collection",
-  "- Keep it under 200 words",
-].join("\n");
-
-function sseBody(text) {
-  // Same data: {text}\n\n + data: [DONE] format as /api/generate-stream.
-  const words = text.split(/(?<=\s)/);
-  const chunks = [];
-  for (let i = 0; i < words.length; i += 4) {
-    chunks.push(`data: ${JSON.stringify({ text: words.slice(i, i + 4).join("") })}\n\n`);
-  }
-  chunks.push("data: [DONE]\n\n");
-  return chunks.join("");
-}
-
-async function installMocks(page) {
-  await page.route("**/api/**", async (route, request) => {
-    const path = new URL(request.url()).pathname;
-    const json = (body, status = 200) =>
-      route.fulfill({ status, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-
-    if (path.endsWith("/api/public-config")) {
-      return json({
-        supabaseUrl: "https://stub.supabase.co",
-        supabasePublishableKey: "sb_publishable_stub_key",
-        stripePublishableKey: "pk_test_stub",
-        paywallActive: false,
-        openBetaMode: true,
-        paywallActivatesAt: new Date(Date.now() + 30 * 24 * 3600_000).toISOString(),
-      });
-    }
-    if (path.endsWith("/api/me") || path.endsWith("/api/me/profile")) {
-      return json({ authenticated: false, user: null, plan: "free", entitlements: { pro: false, beta: true } });
-    }
-    if (path.endsWith("/api/generate-stream")) {
-      await new Promise((r) => setTimeout(r, 1400)); // visible "Generating…" beat
-      return route.fulfill({
-        status: 200,
-        headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache" },
-        body: sseBody(DEMO_PROMPT),
-      });
-    }
-    if (path.endsWith("/api/generate") || path.endsWith("/api/generate-prompt")) {
-      return json({ success: true, output: DEMO_PROMPT, prompt: DEMO_PROMPT, result: DEMO_PROMPT });
-    }
-    if (path.endsWith("/api/auto-tune")) {
-      return json({
-        ok: true,
-        picks: {
-          category: "business",
-          skillLevel: "intermediate",
-          tone: "friendly",
-          outputFormat: "paragraphs",
-          maxLength: "medium",
-          outputLanguage: "english",
-          personality: "balanced",
-        },
-      });
-    }
-    if (path.endsWith("/api/clarify")) return json({ questions: [] });
-    if (path.endsWith("/api/usage/check")) return json({ ok: true, allowed: true, remaining: 99 });
-    if (request.method() === "GET") return route.continue();
-    return json({ ok: true, success: true });
-  });
-}
+const BASE_URL = process.env.PMG_BASE_URL ?? "http://localhost:80";
+const OUT_DIR = "/tmp/pmg-hero-demo";
+const SENTENCE =
+  "Write a friendly welcome email for new customers of my coffee shop";
 
 const browser = await chromium.launch();
-const context = await browser.newContext({
-  viewport: { width: 1280, height: 800 },
-  deviceScaleFactor: 2,
-  recordVideo: { dir: OUT_DIR, size: { width: 1280, height: 800 } },
+const ctx = await browser.newContext({
+  viewport: { width: 1280, height: 720 },
+  recordVideo: { dir: OUT_DIR, size: { width: 1280, height: 720 } },
+  deviceScaleFactor: 1,
 });
-const page = await context.newPage();
-
+const page = await ctx.newPage();
 await page.addInitScript(() => {
   try {
     localStorage.setItem("promptmegood:tour:v1:done", "1");
-  } catch (_) {}
+    sessionStorage.setItem("promptmegood:t42-banner-dismissed", "1");
+  } catch {}
 });
-await installMocks(page);
 
-await page.goto(APP_URL, { waitUntil: "domcontentloaded" });
-await page.waitForSelector("#goal", { state: "visible", timeout: 20000 });
-await page.waitForTimeout(1500); // let the workstation settle on screen
+await page.goto(BASE_URL + "/app", { waitUntil: "domcontentloaded" });
+await page.waitForSelector("#goal", { timeout: 20_000 });
+await page.waitForTimeout(2500); // let mounters settle, hide any toasts
+
+// hide cookie/consent style banners or sticky CTAs if present
+await page.evaluate(() => {
+  const s = document.createElement("style");
+  s.textContent =
+    "#pmg-photo-suite-sticky-cta{display:none!important}" +
+    ".pmg-toast,[class*='toast']{display:none!important}";
+  document.head.appendChild(s);
+});
 
 const goal = page.locator("#goal");
 await goal.click();
-await page.waitForTimeout(400);
-await goal.pressSequentially(GOAL, { delay: 45 });
+await page.waitForTimeout(600);
+// human-ish typing (~35ms/char → ~2.3s for the sentence)
+await goal.pressSequentially(SENTENCE, { delay: 35 });
 await page.waitForTimeout(700);
 
-// The visible primary control in chassis v3 is #analyze-btn ("Build My Prompt").
-const buildBtn = page.locator("#analyze-btn");
-if (await buildBtn.isVisible().catch(() => false)) {
-  await buildBtn.click();
-} else {
-  await page.locator("#generateBtn").click();
+// real flow: Analyze first, which reveals the Generate button
+const analyzeBtn = page.locator("#analyze-btn");
+if (await analyzeBtn.isVisible().catch(() => false)) {
+  await analyzeBtn.hover();
+  await page.waitForTimeout(400);
+  await analyzeBtn.click();
 }
 
-// Wait for the demo prompt to land in the result box, then hold on it.
+/* Magic Flow takeover auto-fires Generate ~3.5s after Analyze. If the
+   takeover is present, just wait; otherwise click Generate manually. */
+const takeover = page.locator("#pmg-magic-takeover.is-visible");
+const takeoverShown = await takeover
+  .waitFor({ state: "visible", timeout: 4000 })
+  .then(() => true)
+  .catch(() => false);
+if (!takeoverShown) {
+  const genBtn = page.locator("#generateBtn");
+  await genBtn.waitFor({ state: "visible", timeout: 30_000 });
+  await page.waitForTimeout(800);
+  await genBtn.hover();
+  await page.waitForTimeout(400);
+  await genBtn.click();
+}
+
+// wait for real structured output to appear in the result box
 await page.waitForFunction(
   () => {
-    const el = document.getElementById("resultBox");
-    return !!el && (el.textContent || "").includes("e-commerce copywriter");
+    const el = document.querySelector("#resultBox");
+    return !!el && (el.textContent || "").trim().length > 80;
   },
-  { timeout: 20000 }
+  undefined,
+  { timeout: 45_000 },
 );
-await page.waitForTimeout(600);
-const result = page.locator("#resultBox");
-await result.scrollIntoViewIfNeeded();
-await page.waitForTimeout(3500);
+// scroll result into view and hold so viewers can read it
+await page
+  .locator("#resultBox")
+  .scrollIntoViewIfNeeded()
+  .catch(() => {});
+await page.waitForTimeout(4000);
 
-await context.close();
+await ctx.close();
 await browser.close();
-console.log("Recorded to", OUT_DIR);
+console.log("done → " + OUT_DIR);

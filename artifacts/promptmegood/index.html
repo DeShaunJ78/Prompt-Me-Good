@@ -458,6 +458,89 @@
     </div>
   </main>
 
+  <!-- hero-demo-clip (task: real-app looping preview). A ~13s screen
+       recording of the REAL /app flow (type sentence → Analyze →
+       auto-Generate → structured prompt appears). Recorded with
+       scripts/record-hero-demo.mjs against the live app + real
+       /api/generate output. Lazy-loaded: <source> tags carry data-src
+       only; an IntersectionObserver below swaps them in when the
+       section nears the viewport, so the clip costs 0 bytes on initial
+       page load. prefers-reduced-motion: no autoplay — poster stays,
+       native controls let the user opt in. -->
+  <section class="hero-demo" aria-labelledby="hero-demo-title">
+    <div class="wrap">
+      <h2 id="hero-demo-title" class="sr-only">Watch PromptMeGood turn one sentence into a structured prompt</h2>
+      <figure class="hero-demo-frame">
+        <video id="hero-demo-video"
+               muted loop playsinline preload="none"
+               width="1280" height="720"
+               poster="/assets/hero-demo-poster.jpg"
+               aria-label="Screen recording of PromptMeGood turning the sentence 'Write a friendly welcome email for new customers of my coffee shop' into a full structured prompt">
+          <source data-src="/assets/hero-demo.webm" type="video/webm">
+          <source data-src="/assets/hero-demo.mp4" type="video/mp4">
+        </video>
+        <figcaption class="hero-demo-caption">The real app, in real time &mdash; one sentence in, a structured prompt out. <a href="/app">Try it yourself &rarr;</a></figcaption>
+      </figure>
+    </div>
+  </section>
+  <style>
+    .hero-demo { padding: 8px 0 40px; }
+    .hero-demo-frame { margin: 0; }
+    .hero-demo-frame video {
+      display: block; width: 100%; height: auto;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+      background: #04140d;
+    }
+    .hero-demo-caption {
+      margin: 12px 0 0; text-align: center;
+      font-size: 13.5px; color: var(--muted);
+    }
+  </style>
+  <script>
+    (function () {
+      try {
+        var vid = document.getElementById('hero-demo-video');
+        if (!vid || !('IntersectionObserver' in window)) return;
+        var reduced = false;
+        try {
+          reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        } catch (_) {}
+        var loaded = false;
+        function loadSources() {
+          if (loaded) return;
+          loaded = true;
+          var sources = vid.querySelectorAll('source[data-src]');
+          for (var i = 0; i < sources.length; i++) {
+            sources[i].src = sources[i].getAttribute('data-src');
+          }
+          vid.load();
+          if (reduced) {
+            /* Respect reduced motion: never autoplay/loop. Poster stays
+               visible; expose native controls so playback is opt-in. */
+            vid.removeAttribute('loop');
+            vid.setAttribute('controls', '');
+          } else {
+            vid.setAttribute('autoplay', '');
+            var p = vid.play();
+            if (p && p.catch) p.catch(function () { vid.setAttribute('controls', ''); });
+          }
+        }
+        var io = new IntersectionObserver(function (entries) {
+          for (var i = 0; i < entries.length; i++) {
+            if (entries[i].isIntersecting) {
+              loadSources();
+              io.disconnect();
+              return;
+            }
+          }
+        }, { rootMargin: '400px 0px' });
+        io.observe(vid);
+      } catch (_) {}
+    })();
+  </script>
+
   <section class="demo" aria-labelledby="demo-title">
     <div class="wrap">
       <h2 id="demo-title">One Sentence In, A Real Prompt Out</h2>
