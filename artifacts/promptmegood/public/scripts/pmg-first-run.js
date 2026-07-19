@@ -28,6 +28,15 @@
  *
  * Self-contained inline styles (no .css file). Theme tokens only — no
  * hardcoded teal. Does NOT touch pmg-chassis-v3.js or pmg-ux.js.
+ *
+ * Funnel analytics (fr-2): fires __pmgTrack events so first-visit →
+ * first-generation conversion is measurable in Clarity:
+ *   - first_run_nudge_shown   (once, when the CTA glow is applied;
+ *                              payload { prefilled: '1' | '0' })
+ *   - first_run_cta_clicked   (once, when the highlighted CTA is clicked)
+ * No-ops silently when pmg-analytics.js is absent or opted-out (DNT/GPC
+ * and the ?noanalytics / localStorage hatches live in pmg-analytics.js).
+ * Kill-switched builds never reach this code, so no events fire then.
  */
 (function () {
   'use strict';
@@ -70,6 +79,51 @@
 
   function markDone() {
     try { localStorage.setItem(DONE_KEY, '1'); } catch (_) {}
+  }
+
+  /* ---------- Funnel analytics (fr-2) ---------- */
+  /* pmg-analytics.js loads AFTER this script in app.html's defer order, and
+     boot() can run at eval time (defer ⇒ readyState 'interactive'), so
+     __pmgTrack may not exist yet when the nudge shows. Buffer and retry
+     briefly; pmg-analytics.js itself owns the DNT/GPC opt-out (its track()
+     no-ops when disabled), so buffering never bypasses the opt-out. */
+  var _fireBuf = [];
+  var _fireIv = null;
+  function drainFireBuf() {
+    if (typeof window.__pmgTrack !== 'function') return false;
+    while (_fireBuf.length) {
+      var e = _fireBuf.shift();
+      try { window.__pmgTrack(e.name, e.payload); } catch (_) {}
+    }
+    return true;
+  }
+  function fire(name, payload) {
+    _fireBuf.push({ name: name, payload: payload || null });
+    if (drainFireBuf()) return;
+    if (_fireIv) return;
+    var tries = 0;
+    _fireIv = setInterval(function () {
+      tries++;
+      if (drainFireBuf() || tries > 50) { /* 50 × 200ms = 10s cap */
+        clearInterval(_fireIv);
+        _fireIv = null;
+        _fireBuf.length = 0;
+      }
+    }, 200);
+  }
+
+  var _shownFired = false;
+  function fireShownOnce() {
+    if (_shownFired) return;
+    _shownFired = true;
+    fire('first_run_nudge_shown', { prefilled: hasQ ? '0' : '1' });
+  }
+
+  var _clickFired = false;
+  function fireCtaClickOnce() {
+    if (_clickFired) return;
+    _clickFired = true;
+    fire('first_run_cta_clicked');
   }
 
   /* ---------- Styles ---------- */
@@ -123,8 +177,12 @@
       /* Capture phase so we end the nudge even if another handler
          stops propagation (magic-flow uses capture too — order-safe,
          both run). */
-      btn.addEventListener('click', endFirstRun, true);
+      btn.addEventListener('click', function () {
+        fireCtaClickOnce();
+        endFirstRun();
+      }, true);
     }
+    if (found) fireShownOnce();
     return found;
   }
 

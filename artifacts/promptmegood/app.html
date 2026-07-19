@@ -13928,8 +13928,12 @@ Context:
   <script src="/scripts/pmg-std-examples.js?v=stde-1" defer></script>
   <!-- pmg-first-run (fr-1): first-visit nudge — example prefill in #goal
        (skipped when ?q= present) + pulsing highlight on the Build CTA until
-       first use. Kill switches: ?nofirstrun, localStorage.pmg_first_run_disable. -->
-  <script src="/scripts/pmg-first-run.js?v=fr-1" defer></script>
+       first use. Kill switches: ?nofirstrun, localStorage.pmg_first_run_disable.
+       fr-2 funnel events (via __pmgTrack, so DNT/GPC opt-out applies):
+       first_run_nudge_shown { prefilled } + first_run_cta_clicked — pair with
+       app_opened / build_clicked (below) to measure first-visit → first
+       generation conversion. -->
+  <script src="/scripts/pmg-first-run.js?v=fr-2" defer></script>
   <script src="/scripts/pmg-fix-diff.js?v=task49-2" defer></script>
   <script src="/scripts/pmg-suite-mobile-polish.js?v=task110-1" defer></script>
   <script src="/scripts/pmg-suite-handoff.js?v=task111-1" defer></script>
@@ -13949,7 +13953,12 @@ Context:
        the dataLayer mirror) + build_clicked (#generateBtn). Delegated
        capture-phase listener fires BEFORE the existing inline handlers so
        the event lands even if the button's own handler later preventDefaults.
-       No-ops silently if __pmgTrack is missing (DNT/GPC opted-out). */
+       No-ops silently if __pmgTrack is missing (DNT/GPC opted-out).
+       Related funnel events fired elsewhere:
+         - first_run_nudge_shown / first_run_cta_clicked — pmg-first-run.js
+           (fr-2), first-time visitors only; kill-switched visits fire nothing.
+         - prompt_generated { mode } — inline stream/oneshot handlers above.
+         - cta_hero_click — index.html; upgrade_clicked — pricing.html. */
     (function () {
       function fire(name, payload) {
         try {
