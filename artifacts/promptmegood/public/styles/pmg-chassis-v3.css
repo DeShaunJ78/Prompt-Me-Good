@@ -112,9 +112,17 @@ html.pmg-chassis-v3 body {
   overflow: clip !important;
 }
 
+/* vault-compare-z-1: the Compare modal (#compare-overlay, legacy
+   z-index 40) is launched from INSIDE the Vault drawer (z-index 99991).
+   Without a boost the drawer visually covers the modal and intercepts
+   its pointer events. Lift the compare overlay above the drawer. */
+html.pmg-chassis-v3 #compare-overlay.is-open {
+  z-index: 99995 !important;
+}
+
 /* Honor [hidden] attribute even on flex/grid sections */
 html.pmg-chassis-v3 [hidden],
-html.pmg-chassis-v3 .is-collapsed,
+html.pmg-chassis-v3 .is-collapsed:not(.history-item),
 html.pmg-chassis-v3 .tuning-section.is-collapsed,
 html.pmg-chassis-v3 .generate-section.is-collapsed,
 html.pmg-chassis-v3 .output-box.is-collapsed,

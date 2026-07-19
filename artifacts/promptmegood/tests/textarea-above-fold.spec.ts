@@ -39,6 +39,22 @@ type GoalGeometry = {
   pageScrollY: number;
 };
 
+/* Guided intake (pmg-guided-intake.js) replaces the freeform
+   #pmg-vs-image-goal textarea with a 4-field guided form by default,
+   hiding the textarea (display:none). These geometry tests assert the
+   freeform surface, so pin the persisted intake-mode preference to
+   'freeform' before the app boots. */
+async function pinFreeformIntake(page: Page) {
+  await page.addInitScript(() => {
+    try {
+      localStorage.setItem("pmgv3:vs:intake-mode:image", "freeform");
+      localStorage.setItem("pmgv3:vs:intake-mode:video", "freeform");
+    } catch {
+      /* ignore */
+    }
+  });
+}
+
 async function switchToImageMode(page: Page): Promise<boolean> {
   // The canonical "create an image" entry point is the Photography tab in
   // chassis-v3 (the legacy #imageModeBtn / .mode-switch / setMode flow was
@@ -178,21 +194,17 @@ for (const vp of VIEWPORTS) {
       await dismissOnboarding(page);
       await page.waitForTimeout(300);
 
-      // Fix My Prompt button (#generateBtn) must be present, visible, and enabled
-      // on first load — no scroll, no extra clicks needed.
+      // cv3-47 analyze-first flow: #generateBtn is intentionally collapsed
+      // (data-pmgv3-collapsed) on first load; the primary CTA is the
+      // "Analyze My Idea" button (#analyze-btn). The Generate button is
+      // revealed only after analysis. Verify the CURRENT wiring: the
+      // analyze CTA is usable on first load, and clicking it reveals an
+      // enabled Generate button without any scrolling.
       const generateBtn = page.locator("#generateBtn");
       await expect(
         generateBtn,
         "#generateBtn (Fix My Prompt) must be present on first load",
       ).toHaveCount(1);
-      await expect(
-        generateBtn,
-        "#generateBtn (Fix My Prompt) must be visible on first load",
-      ).toBeVisible();
-      await expect(
-        generateBtn,
-        "#generateBtn (Fix My Prompt) must be enabled on first load",
-      ).toBeEnabled();
 
       // The textarea must be reachable on first load — i.e., we can type into
       // it without any extra scroll/clicks.
@@ -205,6 +217,25 @@ for (const vp of VIEWPORTS) {
         goal,
         "#goal must accept typed input on first load",
       ).toHaveValue(/engineering team/i);
+
+      const analyzeBtn = page.locator("#analyze-btn");
+      await expect(
+        analyzeBtn,
+        "#analyze-btn (Analyze My Idea) must be visible on first load",
+      ).toBeVisible();
+      await expect(
+        analyzeBtn,
+        "#analyze-btn must be enabled on first load",
+      ).toBeEnabled();
+      await analyzeBtn.click();
+      await expect(
+        generateBtn,
+        "#generateBtn must be revealed after Analyze",
+      ).toBeVisible({ timeout: 10_000 });
+      await expect(
+        generateBtn,
+        "#generateBtn must be enabled after Analyze",
+      ).toBeEnabled();
 
       // The Run With AI button is intentionally gated — it lives in the
       // post-generation #runSection (display:none until body.pmg-has-result).
@@ -282,6 +313,7 @@ for (const vp of VIEWPORTS) {
     }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await installApiMocks(page);
+      await pinFreeformIntake(page);
       await page.goto("/app");
       await settle(page);
       await dismissOnboarding(page);
@@ -360,6 +392,7 @@ for (const vp of VIEWPORTS) {
     }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await installApiMocks(page);
+      await pinFreeformIntake(page);
       await page.goto("/app");
       await settle(page);
       await dismissOnboarding(page);
@@ -442,6 +475,7 @@ for (const vp of VIEWPORTS) {
     }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await installApiMocks(page);
+      await pinFreeformIntake(page);
       await page.goto("/app");
       await settle(page);
       await dismissOnboarding(page);

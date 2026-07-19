@@ -739,12 +739,25 @@
      on tone + category + personality, scroll to the suite. */
   var TEXT_HANDOFF_BTN_ID = 'pmg-handoff-text-to-image-btn';
   function mountTextToImageBtn() {
-    if ($id(TEXT_HANDOFF_BTN_ID)) return;
+    var existing = $id(TEXT_HANDOFF_BTN_ID);
+    if (existing) {
+      /* handoff-rescue-1: the button may have mounted into the legacy
+         (hidden) host before chassis-v3 booted — relocate it once the
+         v3 output host exists. */
+      var lateHost = document.querySelector('#pmg-chassis-v3-root .pmgv3-output-host');
+      if (lateHost && !lateHost.contains(existing)) lateHost.appendChild(existing);
+      return;
+    }
+    /* handoff-rescue-1 (2026-07-19): under chassis-v3 the legacy
+       #result-panel stays inside the hidden #main, so a button
+       mounted there is never visible. Prefer the chassis output
+       host (where #resultBox is reparented) when it exists. */
+    var v3Host = document.querySelector('#pmg-chassis-v3-root .pmgv3-output-host');
     /* Insert into the result panel's actions-row beside Copy /
        Print / Clear. Falls back to result-wrap if actions-row
        isn't found. */
     var actions = document.querySelector('#result-panel .actions-row');
-    var host = actions || document.querySelector('#result-panel .result-wrap');
+    var host = v3Host || actions || document.querySelector('#result-panel .result-wrap');
     if (!host) return;
     var btn = document.createElement('button');
     btn.type = 'button';
@@ -762,6 +775,11 @@
   function refreshTextToImageBtn() {
     var btn = $id(TEXT_HANDOFF_BTN_ID);
     if (!btn) return;
+    /* handoff-rescue-1: ensure the button lives in the chassis-v3
+       output host (it may have mounted into the hidden legacy host
+       before chassis-v3 booted). */
+    var v3out = document.querySelector('#pmg-chassis-v3-root .pmgv3-output-host');
+    if (v3out && !v3out.contains(btn)) v3out.appendChild(btn);
     /* Reveal once the result panel has visible content. Either
        body class signals "a text prompt was generated". We accept
        both since different code paths set different markers. */

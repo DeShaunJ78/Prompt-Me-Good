@@ -623,6 +623,14 @@
       if (outHost && moveTarget.parentNode !== outHost) {
         outHost.appendChild(moveTarget);
       }
+      // improve-rescue-1 (2026-07-19): #improve-block (remix buttons +
+      // #improve-status) lived in the hidden legacy #main, so the
+      // post-generate refine controls were unreachable under chassis-v3.
+      // Reparent it right after the result box in the output host.
+      var improveBlock = document.getElementById("improve-block");
+      if (outHost && improveBlock && improveBlock.parentNode !== outHost) {
+        outHost.appendChild(improveBlock);
+      }
       // Spec uses #output as the textarea ID; provide an alias getter on the global so
       // any spec-conformant code that tries document.getElementById('output') succeeds.
       if (!document.getElementById('output')) {

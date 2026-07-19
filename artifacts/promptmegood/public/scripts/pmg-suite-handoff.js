@@ -194,8 +194,20 @@
   }
 
   /* -------- Card mount + state -------- */
-  function imageIsReady() {
+  /* suite-rescue-1 (2026-07-19): under chassis-v3 generated images
+     render into #pmg-vs-generated-image (Visual Studio panel), not
+     the legacy #imageResultWrap (which stays inside the hidden
+     legacy #main). Check both, legacy first so existing flows and
+     tests that populate #imageResultWrap keep working. */
+  function findResultImg() {
     var img = document.querySelector('#imageResultWrap img');
+    if (img && img.getAttribute('src')) return img;
+    var vs = document.getElementById('pmg-vs-generated-image');
+    if (vs && !vs.hidden && vs.getAttribute('src')) return vs;
+    return img || vs;
+  }
+  function imageIsReady() {
+    var img = findResultImg();
     if (!img) return false;
     /* Some flows insert the <img> empty-src first; treat that as
        not-yet-ready so the disabled state stays accurate. */
@@ -203,7 +215,7 @@
     return !!(src && src.length > 0);
   }
   function currentImageUrl() {
-    var img = document.querySelector('#imageResultWrap img');
+    var img = findResultImg();
     if (!img) return '';
     return img.getAttribute('src') || '';
   }
@@ -240,8 +252,24 @@
   }
 
   function ensureCard() {
-    if ($id(CARD_ID)) return $id(CARD_ID);
-    var actions = document.querySelector('#imageResultSection .image-result-actions');
+    var existing = $id(CARD_ID);
+    /* suite-rescue-1: prefer the chassis-v3 image actions row —
+       the legacy #imageResultSection lives inside the hidden
+       legacy #main so a card mounted there is never visible.
+       Relocate an already-mounted card if the v3 row appears
+       after the first mount. */
+    var v3Actions = document.getElementById('pmg-vs-image-actions');
+    if (existing) {
+      if (v3Actions && v3Actions.parentNode && !v3Actions.parentNode.contains(existing)) {
+        if (v3Actions.nextSibling) {
+          v3Actions.parentNode.insertBefore(existing, v3Actions.nextSibling);
+        } else {
+          v3Actions.parentNode.appendChild(existing);
+        }
+      }
+      return existing;
+    }
+    var actions = v3Actions || document.querySelector('#imageResultSection .image-result-actions');
     if (!actions || !actions.parentNode) return null;
     var card = buildCard();
     /* Insert directly after the actions row. */
@@ -420,6 +448,13 @@
   }
 
   function scrollToSuite() {
+    /* suite-rescue-1: under chassis-v3 the suite lives inside the
+       collapsed "Advanced tuning" accordion — expand it first so
+       the suite (and the hydration chip) is actually visible. */
+    var advHdr = document.querySelector(
+      '#pmg-vs-image-adv-tuning .pmg-vs-adv-tuning-header[aria-expanded="false"]'
+    );
+    if (advHdr) { try { advHdr.click(); } catch (_) {} }
     var sec = $id(SECTION_ID) || $id(SUITE_ID);
     if (!sec) return;
     var behavior = (window.PMG_A11Y && typeof window.PMG_A11Y.scrollBehavior === 'function')

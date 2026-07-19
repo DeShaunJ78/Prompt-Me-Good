@@ -257,6 +257,9 @@ test.describe("Workstation tour compact overlay @ mobile-400x720", () => {
       el.id = "pmg-ws-tour-invite";
       el.setAttribute("role", "dialog");
       el.setAttribute("aria-label", "Workstation tour invite");
+      // Matches production buildInvite(): opts out of the chassis-v3
+      // universal hide rule for body-appended elements.
+      el.setAttribute("data-pmg-overlay-root", "1");
       el.innerHTML =
         '<p class="ws-tour-title">Want To See The Full Workstation?</p>' +
         '<p class="ws-tour-sub">You just ran your first prompt.</p>' +

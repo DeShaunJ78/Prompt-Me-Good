@@ -414,6 +414,10 @@
     var bd = document.createElement('div');
     bd.id = SHEET_ID + '-backdrop';
     bd.setAttribute('role', 'presentation');
+    /* share-rescue-1: without this attribute the chassis-v3 universal
+       hide rule (pmg-chassis-v3.css L51) suppresses the whole sheet —
+       it is appended to <body> outside #pmg-chassis-v3-root. */
+    bd.setAttribute('data-pmg-overlay-root', '1');
 
     var wrap = document.createElement('div');
     wrap.id = SHEET_ID + '-wrap';

@@ -74,6 +74,10 @@
     ctaEl.id = CTA_ID;
     ctaEl.textContent = 'Build Image Prompt';
     ctaEl.setAttribute('aria-label', 'Build image prompt from current selections');
+    /* suite-rescue-1 (2026-07-19): the CTA is appended to <body>, so
+       the chassis-v3 universal hide rule suppresses it unless it
+       opts out with data-pmg-overlay-root. */
+    ctaEl.setAttribute('data-pmg-overlay-root', '1');
     ctaEl.addEventListener('click', function () {
       if (ctaEl.disabled || ctaEl.getAttribute('aria-disabled') === 'true') return;
       var send = document.querySelector('#' + SUITE_ID + ' .pmg-photo-send');

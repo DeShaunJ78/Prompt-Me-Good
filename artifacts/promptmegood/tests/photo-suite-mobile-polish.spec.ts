@@ -32,15 +32,22 @@ test.describe("Photography Suite mobile polish @ mobile-360", () => {
       undefined,
       { timeout: 10_000 },
     );
-    /* Enter image mode so the Photography Suite mounts. */
-    await page.evaluate(() => {
-      const w = window as unknown as { setMode?: (m: string) => void };
-      if (typeof w.setMode === "function") {
-        w.setMode("image");
-      } else {
-        document.body.classList.add("image-mode");
-      }
-    });
+    /* Enter image mode by clicking the chassis-v3 Photography tab
+       (Task #140 removed window.setMode), then expand the
+       "Advanced tuning" accordion the suite now lives inside. */
+    const photoTab = page.locator('.pmgv3-tab[data-module="photography"]');
+    await photoTab.waitFor({ state: "visible", timeout: 10_000 });
+    await photoTab.click();
+    await expect(page.locator(".pmgv3-body")).toHaveAttribute(
+      "data-active-panel",
+      "photography",
+      { timeout: 5_000 },
+    );
+    const advHeader = page.locator(
+      "#pmg-vs-image-adv-tuning .pmg-vs-adv-tuning-header",
+    );
+    await advHeader.waitFor({ state: "visible", timeout: 10_000 });
+    await advHeader.click();
     await page.waitForSelector("#pmg-photo-suite .pmg-photo-pill", {
       state: "attached",
       timeout: 10_000,

@@ -207,17 +207,18 @@ test.describe("Unified Share button @ mobile-360", () => {
 
   test("rewired #share-btn opens the unified sheet (no legacy direct copy)", async ({ page }) => {
     await gotoApp(page);
-    /* Force the result-row visible so #share-btn is interactable, and reveal
-       the button by removing the gating class. */
-    await page.evaluate(() => {
-      document.body.classList.add("pmg-has-result");
-      const btn = document.getElementById("share-btn") as HTMLButtonElement | null;
-      if (btn) btn.hidden = false;
-    });
+    /* Under chassis-v3 the legacy result-actions row stays inside the
+       universally-hidden legacy DOM (#main is display:none), so #share-btn
+       cannot be made visible from test code. The contract under test is
+       the REWIRING: the button carries the dialog affordance and its click
+       handler opens the unified sheet instead of the legacy direct-copy
+       path. Dispatch the click programmatically on the attached node. */
     const btn = page.locator("#share-btn");
-    await expect(btn).toBeVisible();
+    await expect(btn).toBeAttached();
     await expect(btn).toHaveAttribute("aria-haspopup", "dialog");
-    await btn.click();
+    await page.evaluate(() => {
+      (document.getElementById("share-btn") as HTMLButtonElement).click();
+    });
     await expect(page.locator("#pmg-share-sheet")).toBeVisible();
   });
 

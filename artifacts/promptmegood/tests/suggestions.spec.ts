@@ -52,19 +52,27 @@ async function gotoApp(page: Page): Promise<void> {
       pmgChassisV3: { setActivePanel: (n: string) => void };
     }).pmgChassisV3.setActivePanel("photography");
   });
-  /* On mobile-360 the photo-suite lives inside #pmg-vs-photo-accordion
-     which is collapsed by default (no `.is-mobile-open` class). Expand
-     it so #pmg-photo-suite becomes visible. The toggle button is
-     created by pmg-visual-studio.js after the panel mounts; poll for
-     it before clicking. */
-  await page.waitForSelector("#pmg-vs-photo-acc-toggle", { timeout: 10_000 });
+  /* The photo suite now lives inside the collapsed outer "Advanced
+     Tuning" accordion (#pmg-vs-image-adv-tuning). Its inner
+     #pmg-vs-photo-acc-toggle header is intentionally hidden
+     (display:none !important) when nested there — the outer accordion
+     is the single collapse point. Wait for the inner accordion to be
+     attached (proves the panel mounted), then open the OUTER section. */
+  await page.waitForSelector("#pmg-vs-photo-acc-toggle", {
+    state: "attached",
+    timeout: 10_000,
+  });
   await page.evaluate(() => {
+    const outer = document.getElementById("pmg-vs-image-adv-tuning");
+    if (outer && !outer.classList.contains("is-open")) {
+      outer.classList.add("is-open");
+      const hdr = outer.querySelector(".pmg-vs-adv-tuning-header");
+      if (hdr) hdr.setAttribute("aria-expanded", "true");
+    }
     const acc = document.getElementById("pmg-vs-photo-accordion");
-    const btn = document.getElementById("pmg-vs-photo-acc-toggle");
     if (acc && !acc.classList.contains("is-mobile-open")) {
       acc.classList.add("is-mobile-open");
     }
-    if (btn) btn.setAttribute("aria-expanded", "true");
   });
   await page.waitForSelector("#pmg-photo-suite", { timeout: 10_000 });
   await page.waitForSelector("#pmg-photo-suggest-row", {

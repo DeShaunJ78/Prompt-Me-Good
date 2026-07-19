@@ -268,10 +268,17 @@
     if (!api || typeof api.setActivePanel !== 'function') return false;
     if (api.setActivePanel.__pmgUndoWrapped) return true;
     var orig = api.setActivePanel;
+    /* The chassis carries data-active-panel on its .pmgv3-body element
+       (not document.body) — read it there, with a body fallback for
+       older chassis builds. */
+    function readActivePanel() {
+      var host = document.querySelector('.pmgv3-body') || document.body;
+      return (host && host.getAttribute('data-active-panel')) || 'text';
+    }
     var wrapped = function (name) {
-      var prev = (document.body && document.body.getAttribute('data-active-panel')) || 'text';
+      var prev = readActivePanel();
       var ret = orig.apply(this, arguments);
-      var next = (document.body && document.body.getAttribute('data-active-panel')) || 'text';
+      var next = readActivePanel();
       if (suppressDepth === 0 && prev !== next) {
         push({
           label: 'panel switch',

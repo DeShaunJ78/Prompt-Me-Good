@@ -14,15 +14,7 @@ import { defineConfig, devices } from "@playwright/test";
  * any one of them, remove its entry, run it locally, and update the
  * assertions to match current DOM. Tracked as a follow-up audit.
  */
-const STALE_OVERFLOW_360_SPECS = [
-  "**/handoff.spec.ts",
-  "**/photo-suite-handoff.spec.ts",
-  "**/photo-suite-mobile-polish.spec.ts",
-  "**/power-moves.spec.ts",
-  "**/replay-tour-dropdown.spec.ts",
-  "**/workstation-tour-mobile.spec.ts",
-  "**/share.spec.ts",
-];
+const STALE_OVERFLOW_360_SPECS: string[] = [];
 
 export default defineConfig({
   testDir: "./tests",

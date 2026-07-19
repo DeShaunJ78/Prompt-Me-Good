@@ -41,6 +41,16 @@ async function handle(route: Route, request: Request): Promise<void> {
   const path = url.pathname;
 
   /* --- Config + identity --- */
+  if (path.endsWith("/api/pricing-config.js")) {
+    // Served as a <script src> — must be valid JS, NOT JSON, or the
+    // browser throws SyntaxError and Vite's runtime-error overlay
+    // blankets the page, intercepting all pointer events.
+    return route.fulfill({
+      status: 200,
+      contentType: "application/javascript",
+      body: "window.PMG_PRICING = window.PMG_PRICING || { founding: { price: 39, cap: 100, remaining: 100 } };",
+    });
+  }
   if (path.endsWith("/api/public-config")) {
     return json(route, {
       supabaseUrl: "https://stub.supabase.co",

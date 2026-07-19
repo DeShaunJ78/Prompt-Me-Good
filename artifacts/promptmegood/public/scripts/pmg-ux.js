@@ -15660,6 +15660,11 @@
 
   /* ---------- Result hierarchy: move runSection + actions row ---------- */
   function reorderResultCluster() {
+    /* improve-rescue-1 (2026-07-19): under chassis-v3 the legacy
+       #result-panel .result-wrap lives inside the hidden legacy #main.
+       Re-parenting #improve-block/#runSection back into it undoes the
+       chassis reparent that keeps the refine controls visible. */
+    if (document.getElementById('pmg-chassis-v3-root')) return;
     var resultWrap = document.querySelector('#result-panel .result-wrap');
     if (!resultWrap) return;
     var runSection = document.getElementById('runSection');
@@ -16357,6 +16362,13 @@
         break;
       }
       case 'vault': {
+        /* pm-rescue-1: under chassis-v3 #history lives in the hidden
+           legacy #main — open the v3 Vault drawer instead. */
+        var v3VaultBtn = document.getElementById('pmgv3-vault');
+        if (v3VaultBtn && document.getElementById('pmg-chassis-v3-root')) {
+          v3VaultBtn.click();
+          break;
+        }
         var hist = document.getElementById('history');
         if (hist) {
           hist.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
@@ -16381,8 +16393,15 @@
     }
   }
 
+  function relocateToV3(section) {
+    var v3Out = document.querySelector('#pmg-chassis-v3-root .pmgv3-output-host');
+    if (v3Out && section.parentNode !== v3Out) v3Out.appendChild(section);
+    return !!v3Out;
+  }
+
   function buildSection() {
-    if (document.getElementById(SECTION_ID)) return true;
+    var existing = document.getElementById(SECTION_ID);
+    if (existing) { relocateToV3(existing); return true; }
 
     var improveBlock = document.getElementById('improve-block');
     if (!improveBlock || !improveBlock.parentNode) return false;
@@ -16426,7 +16445,13 @@
     section.appendChild(subtitle);
     section.appendChild(grid);
 
-    improveBlock.parentNode.insertBefore(section, improveBlock.nextSibling);
+    /* pm-rescue-1 (2026-07-19): under chassis-v3 the legacy
+       #improve-block lives inside the hidden legacy #main, so a
+       section inserted there is never visible. Prefer the chassis
+       output host (where #resultBox is reparented). */
+    if (!relocateToV3(section)) {
+      improveBlock.parentNode.insertBefore(section, improveBlock.nextSibling);
+    }
     return true;
   }
 
@@ -17308,10 +17333,28 @@
     },
     {
       selector: '#result-title',
-      fallback: '[data-tour-target="fixed-prompt-output"]',
+      fallback: '[data-tour-target="fixed-prompt-output"], #prompt-output-box',
       title: 'Your Better Prompt',
       text: 'PromptMeGood rewrites your idea into a clear, structured prompt that AI actually understands.',
-      prepare: null
+      /* ws-tour-rescue-1: under chassis-v3 the output box carries
+         display:none!important until the first generate — reveal it
+         for the tour stop, then restore. */
+      prepare: function () {
+        var box = document.getElementById('prompt-output-box');
+        if (box && getComputedStyle(box).display === 'none') {
+          box.style.setProperty('display', 'block', 'important');
+          box.classList.remove('is-collapsed');
+          box.dataset.wsTourRev = '1';
+        }
+      },
+      cleanup: function () {
+        var box = document.getElementById('prompt-output-box');
+        if (box && box.dataset.wsTourRev === '1') {
+          box.style.removeProperty('display');
+          box.classList.add('is-collapsed');
+          delete box.dataset.wsTourRev;
+        }
+      }
     },
     {
       selector: '#runBtn',
@@ -17337,7 +17380,9 @@
     },
     {
       selector: '#vault-title',
-      fallback: '[data-tour-target="vault-title"]',
+      /* ws-tour-rescue-1: legacy #history is hidden under chassis-v3 —
+         point at the always-visible Vault header icon instead. */
+      fallback: '[data-tour-target="vault-title"], #pmgv3-vault',
       title: 'Prompt Vault',
       text: 'Every prompt you generate is saved here on your device. Search, compare, export, or restore any time.',
       prepare: function () {
@@ -17352,7 +17397,9 @@
     },
     {
       selector: '#pmg-photo-suite-title',
-      fallback: '[data-tour-target="photo-suite-title"]',
+      /* ws-tour-rescue-1: under chassis-v3 the Photo Suite lives inside a
+         collapsed accordion — point at the Photography tab instead. */
+      fallback: '[data-tour-target="photo-suite-title"], .pmgv3-tab[data-module="photography"]',
       title: 'Photography Suite',
       text: 'Switch to image mode and build DALL\u00B7E 3 prompts with style, lighting, and composition controls.',
       prepare: function () {
@@ -17365,7 +17412,10 @@
     },
     {
       selector: '#replay-tour-btn',
-      fallback: '#guided-mode-btn',
+      /* ws-tour-rescue-1: legacy footer buttons are hidden under
+         chassis-v3 — fall back to the visible Guide header icon so the
+         final "Done" stop always renders. */
+      fallback: '#guided-mode-btn, #pmgv3-help, #pmgv3-more',
       title: 'Need Help? Replay Any Time',
       text: 'Tap Replay Tour at the bottom of the page to revisit this walkthrough. Or use Help Me Start for a guided setup.',
       prepare: function () {
@@ -17485,6 +17535,9 @@
     el.id = INVITE_ID;
     el.setAttribute('role', 'dialog');
     el.setAttribute('aria-label', 'Workstation tour invite');
+    /* ws-tour-rescue-1 (2026-07-19): body-appended — must opt out of the
+       chassis-v3 universal hide rule or the invite is invisible. */
+    el.setAttribute('data-pmg-overlay-root', '1');
     el.innerHTML =
       '<p class="ws-tour-title">Want To See The Full Workstation?</p>' +
       '<p class="ws-tour-sub">You just ran your first prompt. There\u2019s a lot more you can do here.</p>' +
@@ -17509,6 +17562,9 @@
     el.setAttribute('aria-modal', 'false');
     el.setAttribute('aria-label', 'Workstation tour');
     el.setAttribute('aria-hidden', 'true');
+    /* ws-tour-rescue-1 (2026-07-19): body-appended — must opt out of the
+       chassis-v3 universal hide rule or the overlay is invisible. */
+    el.setAttribute('data-pmg-overlay-root', '1');
     el.innerHTML =
       '<div class="ws-backdrop" id="pmg-ws-backdrop"></div>' +
       '<div class="ws-highlight" id="pmg-ws-highlight"></div>' +
@@ -17533,12 +17589,24 @@
     return ov && ov.classList.contains('is-open');
   }
 
+  /* ws-tour-rescue-1: selectors/fallbacks may be comma lists mixing
+     legacy + chassis-v3 targets — pick the first VISIBLE match rather
+     than the first DOM match (which may be a zero-rect legacy node). */
+  function firstVisibleMatch(selList) {
+    if (!selList) return null;
+    var parts = selList.split(',');
+    for (var i = 0; i < parts.length; i++) {
+      var el = null;
+      try { el = document.querySelector(parts[i].trim()); } catch (e) {}
+      if (!el) continue;
+      var r = el.getBoundingClientRect();
+      if (r.width > 0 || r.height > 0) return el;
+    }
+    return null;
+  }
+
   function resolveTarget(step) {
-    var target = document.querySelector(step.selector);
-    if (target) { var _r = target.getBoundingClientRect(); if (_r.width === 0 && _r.height === 0) target = null; }
-    if (!target && step.fallback) target = document.querySelector(step.fallback);
-    if (target) { var _r2 = target.getBoundingClientRect(); if (_r2.width === 0 && _r2.height === 0) target = null; }
-    return target;
+    return firstVisibleMatch(step.selector) || firstVisibleMatch(step.fallback);
   }
 
   // Pick a tighter, meaningful rect when the resolved target is a large

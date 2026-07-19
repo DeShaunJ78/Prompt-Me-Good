@@ -53,6 +53,21 @@ async function gotoApp(page: Page): Promise<void> {
     undefined,
     { timeout: 10_000 },
   );
+  /* Under chassis-v3 the Photography Suite only mounts once the
+     Photography panel is activated (setActivePanel('photography')
+     toggles body.image-mode which triggers relocatePhotoSuite).
+     Drive the real tab click like a user would. */
+  const photoTab = page.locator('.pmgv3-tab[data-module="photography"]');
+  await photoTab.waitFor({ state: "visible", timeout: 10_000 });
+  await photoTab.click();
+  /* The suite now lives inside the collapsed "Advanced tuning"
+     accordion (#pmg-vs-image-adv-tuning). Expand it so the suite
+     is visible and interactive (T27 keeps it inert while hidden). */
+  const advHeader = page.locator(
+    '#pmg-vs-image-adv-tuning .pmg-vs-adv-tuning-header',
+  );
+  await advHeader.waitFor({ state: "visible", timeout: 10_000 });
+  await advHeader.click();
   /* Wait for the suite & dial to mount (T34 inserts the suite
      after first paint). */
   await page.waitForSelector("#pmg-photo-suite", { timeout: 10_000 });
@@ -301,6 +316,21 @@ test.describe("Surprise Me dial + handoff @ mobile-360", () => {
     page,
   }) => {
     await gotoApp(page);
+    /* The text->image CTA only reveals in TEXT mode (refreshTextToImageBtn
+       requires !isImageMode()). gotoApp left us on the Photography panel,
+       so switch back to the Text panel first — the suite stays mounted. */
+    await page.locator('.pmgv3-tab[data-module="text"]').click();
+    await page
+      .locator(".pmgv3-body")
+      .evaluate((el) =>
+        new Promise<void>((res) => {
+          const tick = () => {
+            if (el.getAttribute("data-active-panel") === "text") res();
+            else setTimeout(tick, 50);
+          };
+          tick();
+        }),
+      );
     /* Set tone + category, then mark body as having generated
        prompt so the CTA reveals. */
     await page.evaluate(() => {
@@ -320,6 +350,16 @@ test.describe("Surprise Me dial + handoff @ mobile-360", () => {
       document.body.classList.remove("pmg-pre-gen");
       document.body.classList.add("pmg-has-generated");
       document.body.classList.add("pmg-has-result");
+      /* Real generation expands the chassis output box; mirror the
+         chassis reveal (inline display:none !important needs a
+         setProperty override) so the relocated CTA (handoff-rescue-1)
+         can be visible. */
+      const box = document.getElementById("prompt-output-box");
+      if (box) {
+        box.classList.remove("is-collapsed");
+        box.removeAttribute("hidden");
+        box.style.setProperty("display", "block", "important");
+      }
       (window as unknown as Win).__pmgHandoff!.refresh();
     });
     const cta = page.locator("#pmg-handoff-text-to-image-btn");

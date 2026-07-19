@@ -94,8 +94,17 @@ async function openVaultDrawer(page: Page) {
   /* Chassis-v3 hides legacy DOM (including #history-list) via the
      universal-hide rule. The Vault drawer is what surfaces history;
      opening it makes #history-list visible to interaction. */
-  await page.waitForSelector("#pmgv3-vault", { timeout: 10_000 });
-  await page.locator("#pmgv3-vault").click();
+  /* On narrow (360px) viewports the header vault icon collapses behind
+     the "More" menu and is CSS-hidden — a locator click would time out
+     waiting for visibility. The button stays wired, so click at the DOM
+     level instead. */
+  await page.waitForSelector("#pmgv3-vault", {
+    state: "attached",
+    timeout: 10_000,
+  });
+  await page.evaluate(() =>
+    (document.getElementById("pmgv3-vault") as HTMLButtonElement).click(),
+  );
   await page.waitForSelector("#pmgv3-vault-drawer.is-open", { timeout: 5_000 });
 }
 

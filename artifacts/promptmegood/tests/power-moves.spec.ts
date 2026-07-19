@@ -39,19 +39,27 @@ async function mockApiAndGenerate(page: import("@playwright/test").Page, goalTex
   await installApiMocks(page);
   await mockGenerateStream(page);
 
-  await page.goto("/app");
+  await gotoAppAndGenerate(page, goalText);
+  await expect(page.locator("#pmg-power-moves")).toBeVisible({ timeout: 5000 });
+}
+
+/* Chassis-v3 flow: fill #goal, click #analyze-btn ("Build My Prompt"),
+   which reveals #generateBtn, then click it. ?nofirstrun skips the
+   first-run overlay and ?nomagic disables the Magic Flow takeover
+   that would otherwise intercept generation. */
+async function gotoAppAndGenerate(page: import("@playwright/test").Page, goalText: string) {
+  await page.goto("/app?nofirstrun&nomagic");
   await page.waitForLoadState("networkidle");
 
   const goal = page.locator("#goal");
   await goal.fill(goalText);
 
-  const topBtn = page.locator("#generateBtnTop");
-  const origBtn = page.locator("#generateBtn");
-  const clickTarget = (await topBtn.isVisible()) ? topBtn : origBtn;
-  await clickTarget.click();
+  await page.locator("#analyze-btn").click();
+  const genBtn = page.locator("#generateBtn");
+  await expect(genBtn).toBeVisible({ timeout: 10000 });
+  await genBtn.click();
 
   await expect(page.locator("body")).toHaveClass(/pmg-has-result/, { timeout: 30000 });
-  await expect(page.locator("#pmg-power-moves")).toBeVisible({ timeout: 5000 });
 }
 
 test.describe("Power Moves MVP", () => {
@@ -118,27 +126,18 @@ test.describe("Power Moves MVP", () => {
     await expect(page.locator("body")).toHaveClass(/image-mode/, { timeout: 5000 });
   });
 
-  test("Save To Vault chip → page scrolls toward #history section", async ({ page }) => {
+  test("Save To Vault chip → opens the chassis-v3 Vault drawer", async ({ page }) => {
     await mockApiAndGenerate(page, "Write a cover letter for a software engineer position");
 
-    const historySection = page.locator("#history");
-    await expect(historySection).toBeAttached({ timeout: 5000 });
-
     await page.locator("#pmg-power-moves").scrollIntoViewIfNeeded();
-    await page.waitForLoadState("domcontentloaded");
-
-    const scrollBefore = await page.evaluate(() => window.scrollY);
 
     await page.locator("#pm-vault").click();
 
-    await page.waitForFunction(
-      (prev) => window.scrollY !== prev,
-      scrollBefore,
-      { timeout: 5000 }
-    );
-
-    const scrollAfter = await page.evaluate(() => window.scrollY);
-    expect(scrollAfter).toBeGreaterThan(scrollBefore);
+    // Under chassis-v3 the legacy #history section lives in the hidden
+    // legacy #main, so the chip opens the Vault drawer overlay instead
+    // of scrolling (pm-rescue-1).
+    await expect(page.locator("#pmgv3-vault-drawer")).toBeVisible({ timeout: 5000 });
+    await expect(page.locator("#pmgv3-vault-drawer")).toHaveClass(/is-open/, { timeout: 5000 });
   });
 
   test("More Detailed → prompt contains detailed remix instruction", async ({ page }) => {
@@ -174,18 +173,7 @@ test.describe("Power Moves MVP", () => {
     await mockGenerateStream(page);
     await mockGenerateJson(page);
 
-    await page.goto("/app");
-    await page.waitForLoadState("networkidle");
-
-    const goal = page.locator("#goal");
-    await goal.fill("Help me write a compelling product description for an online store");
-
-    const topBtn = page.locator("#generateBtnTop");
-    const origBtn = page.locator("#generateBtn");
-    const clickTarget = (await topBtn.isVisible()) ? topBtn : origBtn;
-    await clickTarget.click();
-
-    await expect(page.locator("body")).toHaveClass(/pmg-has-result/, { timeout: 30000 });
+    await gotoAppAndGenerate(page, "Help me write a compelling product description for an online store");
 
     const resultBox = page.locator("#resultBox");
     const originalText = await resultBox.textContent();

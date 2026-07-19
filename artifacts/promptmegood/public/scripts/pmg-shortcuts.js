@@ -289,7 +289,15 @@
   }
 
   function ensurePanel() {
-    if (document.getElementById(BACKDROP_ID)) return;
+    /* Chassis-v3's deleteTargets() hard-removes #pmg-shortcuts-panel by
+       id at boot but leaves the backdrop behind. A stale panel-less
+       backdrop would make this guard early-return forever — detect and
+       rebuild instead. */
+    var existingBackdrop = document.getElementById(BACKDROP_ID);
+    if (existingBackdrop) {
+      if (document.getElementById(PANEL_ID)) return;
+      if (existingBackdrop.parentNode) existingBackdrop.parentNode.removeChild(existingBackdrop);
+    }
 
     var backdrop = document.createElement('div');
     backdrop.id = BACKDROP_ID;

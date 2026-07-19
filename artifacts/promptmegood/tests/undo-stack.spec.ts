@@ -338,28 +338,21 @@ test.describe("Global undo stack @ mobile-360", () => {
 
   test("cheatsheet documents the undo / redo shortcuts", async ({ page }) => {
     await gotoApp(page);
-    /* Cheatsheet is gated behind first generation. Open the panel
-       directly via the public API to read the rendered key labels. */
+    /* The legacy #pmg-shortcuts-panel is intentionally suppressed under
+       chassis v3 (hidden by pmg-chassis-v3.css). The current cheatsheet
+       surface is pmg-cheatsheet.js (#pmg-cheatsheet), opened via its
+       public API. */
+    await page.waitForFunction(
+      () =>
+        !!(window as unknown as { pmgCheatsheet?: { open: () => void } })
+          .pmgCheatsheet,
+    );
     await page.evaluate(() => {
-      try {
-        localStorage.setItem("pmg_has_generated", "1");
-        document.body.classList.add("pmg-has-generated");
-      } catch {
-        /* ignore */
-      }
-      const api = (window as unknown as { __pmgShortcuts?: { open: () => void } })
-        .__pmgShortcuts;
-      if (api && typeof api.open === "function") api.open();
+      (
+        window as unknown as { pmgCheatsheet: { open: () => void } }
+      ).pmgCheatsheet.open();
     });
-    /* The panel may be opened by any path. If the test surface isn't
-       exposed, click the trigger button as a fallback. */
-    const panel = page.locator("#pmg-shortcuts-panel");
-    if (!(await panel.isVisible().catch(() => false))) {
-      const trigger = page.locator("#pmg-shortcuts-trigger");
-      if (await trigger.isVisible().catch(() => false)) {
-        await trigger.click();
-      }
-    }
+    const panel = page.locator("#pmg-cheatsheet");
     await expect(panel).toBeVisible();
     /* Both rows are rendered with their human label. */
     await expect(panel).toContainText("Undo Last Change");

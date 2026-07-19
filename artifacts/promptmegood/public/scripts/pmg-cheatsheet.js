@@ -37,7 +37,9 @@
     ]},
     { name: 'Builder', items: [
       { keys: [MOD + ' Enter'], desc: 'Generate / Build Prompt' },
-      { keys: [MOD + ' C'],     desc: 'Copy Last Result (When Focused)' }
+      { keys: [MOD + ' C'],     desc: 'Copy Last Result (When Focused)' },
+      { keys: [MOD + ' Z'],     desc: 'Undo Last Change' },
+      { keys: isMac() ? ['⇧ ' + MOD + ' Z'] : ['Ctrl Y'], desc: 'Redo' }
     ]},
     { name: 'Voice', items: [
       { keys: ['Click 🎙️'], desc: 'Start Or Stop Voice Input' },
