@@ -118,6 +118,18 @@ test.describe("hero demo clip lazy-loading (index.html)", () => {
     expect(res.ok(), "GET / must succeed").toBe(true);
     const html = await res.text();
 
+    // Guard against the stale-duplicate regression: an old copy of the
+    // hero figure with the same id once shipped alongside the new one and
+    // silently hijacked the lazy-load script (getElementById returns the
+    // first match), so visitors saw an outdated recording. Exactly ONE
+    // #hero-demo-video may ever exist in the shipped HTML.
+    const idOccurrences =
+      html.match(/id="hero-demo-video"/gi) ?? [];
+    expect(
+      idOccurrences.length,
+      'exactly one id="hero-demo-video" must exist — a duplicate silently serves a stale clip',
+    ).toBe(1);
+
     const videoBlock = html.match(
       /<video[^>]*id="hero-demo-video"[\s\S]*?<\/video>/i,
     )?.[0];

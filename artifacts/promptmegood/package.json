@@ -9,6 +9,7 @@
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "start": "node server.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "refresh-hero-demo": "node scripts/refresh-hero-demo.mjs",
     "test:overflow": "playwright test --config playwright.config.ts"
   },
   "devDependencies": {

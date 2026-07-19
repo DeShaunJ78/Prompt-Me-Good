@@ -427,9 +427,14 @@
 
   <!-- hero-demo-clip (task: real-app looping preview). A ~13s screen
        recording of the REAL /app flow (type sentence → Analyze →
-       auto-Generate → structured prompt appears). Recorded with
-       scripts/record-hero-demo.mjs against the live app + real
-       /api/generate output. Lazy-loaded: <source> tags carry data-src
+       auto-Generate → structured prompt appears). To refresh ALL three
+       assets (mp4 + webm + poster) run:
+         pnpm --filter @workspace/promptmegood run refresh-hero-demo
+       (scripts/refresh-hero-demo.mjs — records via Playwright against
+       the live app + real /api/generate, then encodes with ffmpeg).
+       Never add a second element with id="hero-demo-video" — a
+       duplicate silently hijacks the loader (guarded by
+       tests/hero-demo-lazy.spec.ts). Lazy-loaded: <source> tags carry data-src
        only; an IntersectionObserver below swaps them in when the
        section nears the viewport, so the clip costs 0 bytes on initial
        page load. prefers-reduced-motion: no autoplay — poster stays,
