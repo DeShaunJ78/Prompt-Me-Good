@@ -19,12 +19,18 @@ const ctx = await browser.newContext({
 const page = await ctx.newPage();
 await page.addInitScript(() => {
   try {
+    // clean slate: kill any hydrated draft/session so no stale text or
+    // "First version" chips appear at the start of the recording
+    localStorage.removeItem("pmgv3:draft");
+    sessionStorage.removeItem("pmgv3:session");
     localStorage.setItem("promptmegood:tour:v1:done", "1");
     sessionStorage.setItem("promptmegood:t42-banner-dismissed", "1");
   } catch {}
 });
 
-await page.goto(BASE_URL + "/app", { waitUntil: "domcontentloaded" });
+// ?nofirstrun: disable the first-visit example prefill (pmg-first-run.js)
+// so the textarea starts empty and typing isn't appended to stale text
+await page.goto(BASE_URL + "/app?nofirstrun", { waitUntil: "domcontentloaded" });
 await page.waitForSelector("#goal", { timeout: 20_000 });
 await page.waitForTimeout(2500); // let mounters settle, hide any toasts
 

@@ -1,1 +1,2 @@
 - [Launch-swap & rhetoric sweeps](launch-swap-and-rhetoric.md) — data-pmg-beta-only/post-launch swap via /api/public-config; untagged launch/beta copy hides in JSON-LD, JS toasts, and legal/manual/changelog pages (sweep all vite rollupOptions.input).
+- [Hero demo recording pitfalls](hero-demo-recording.md) — record /app with ?nofirstrun (prefill leaks into clip), trim 3s, and verify only one #hero-demo-video id exists or the stale clip plays.
