@@ -436,8 +436,12 @@
        duplicate silently hijacks the loader (guarded by
        tests/hero-demo-lazy.spec.ts). Lazy-loaded: <source> tags carry data-src
        only; an IntersectionObserver below swaps them in when the
-       section nears the viewport, so the clip costs 0 bytes on initial
-       page load. prefers-reduced-motion: no autoplay — poster stays,
+       section nears the viewport, but the observer is only armed on the
+       FIRST user interaction (scroll/wheel/touch/pointer/key) — the
+       section sits within the 400px rootMargin at real viewports, so
+       without the gate the clip would download on every page open.
+       Visitors who never interact pay 0 bytes for the clip.
+       prefers-reduced-motion: no autoplay — poster stays,
        native controls let the user opt in. -->
   <section class="hero-demo" aria-labelledby="hero-demo-title">
     <div class="wrap">
@@ -508,7 +512,28 @@
             }
           }
         }, { rootMargin: '400px 0px' });
-        io.observe(vid);
+        /* Interaction gate (task: real lazy load). At real viewports the
+           hero-demo section sits ~550-720px from the top — already inside
+           the 400px rootMargin — so observing immediately made the clip
+           download on every page open, saving nothing. Instead we arm the
+           observer only after the FIRST user interaction (scroll / wheel /
+           touch / pointer / key). Visitors who bounce from the hero never
+           pay the ~330KB. Once armed, the generous 400px margin still
+           starts the fetch well before the section is reached, so there is
+           no visible pop-in while scrolling toward it. */
+        var armed = false;
+        var armEvents = ['scroll', 'wheel', 'touchstart', 'pointerdown', 'keydown'];
+        function arm() {
+          if (armed) return;
+          armed = true;
+          for (var i = 0; i < armEvents.length; i++) {
+            window.removeEventListener(armEvents[i], arm, { passive: true });
+          }
+          io.observe(vid);
+        }
+        for (var i = 0; i < armEvents.length; i++) {
+          window.addEventListener(armEvents[i], arm, { passive: true });
+        }
       } catch (_) {}
     })();
   </script>

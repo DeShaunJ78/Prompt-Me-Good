@@ -10,23 +10,23 @@ import { test, expect, Page } from "@playwright/test";
  *     regression (someone adds src= directly, or the inline IIFE breaks)
  *     silently adds ~330KB to first paint.
  *  2. The swap-in is driven by an IntersectionObserver with a 400px
- *     rootMargin: nothing is fetched while the section is far from the
- *     viewport; once it nears, the sources are swapped in and the clip
- *     autoplays muted + looping.
+ *     rootMargin, but the observer is only ARMED on the first user
+ *     interaction (scroll/wheel/touch/pointer/key). Nothing is fetched
+ *     at page open — even though the section sits ~550-720px from the
+ *     top at real viewports, i.e. inside the 400px margin — so visitors
+ *     who bounce from the hero never pay the ~330KB. Once the user
+ *     interacts, the 400px margin starts the fetch ahead of arrival and
+ *     the clip autoplays muted + looping.
  *  3. Under prefers-reduced-motion: reduce, the clip must NOT autoplay;
  *     loop is removed and native controls are exposed so playback is
  *     strictly opt-in.
  *
- * NOTE on viewports: at real phone/desktop sizes the hero-demo section
- * sits ~550-720px from the top of the page, i.e. already inside the
- * 400px rootMargin on load — so the clip (correctly) starts loading
- * immediately there. To observe the "no request until near viewport"
- * half of the contract we use a deliberately short viewport
- * (360x200) that keeps the section out of observer range on load.
- * If the page layout ever shrinks so much that the section lands
- * within 600px of the top, the before-scroll assertion will start
- * failing — that would itself be a signal the lazy load has become
- * moot and the test needs revisiting.
+ * NOTE on viewports (updated for the interaction gate): the short
+ * 360x200 viewport keeps the section outside the 400px rootMargin so
+ * the after-scroll tests exercise the observer half of the contract
+ * (armed by the scroll, fires when near). The real-viewport tests
+ * (360x800, 1280x800) exercise the interaction gate itself: no request
+ * at page open even though the section is within observer range.
  */
 
 const HERO_ASSET_RE = /\/assets\/hero-demo\.(webm|mp4)/i;
@@ -123,8 +123,12 @@ test.describe("hero demo clip lazy-loading (index.html)", () => {
     // silently hijacked the lazy-load script (getElementById returns the
     // first match), so visitors saw an outdated recording. Exactly ONE
     // #hero-demo-video may ever exist in the shipped HTML.
+    // Count actual <video> elements carrying the id — a plain string
+    // count would also match the explanatory HTML comment above the
+    // section ("Never add a second element with id=...") when the dev
+    // server ships the un-minified source.
     const idOccurrences =
-      html.match(/id="hero-demo-video"/gi) ?? [];
+      html.match(/<video[^>]*id="hero-demo-video"/gi) ?? [];
     expect(
       idOccurrences.length,
       'exactly one id="hero-demo-video" must exist — a duplicate silently serves a stale clip',
@@ -159,6 +163,58 @@ test.describe("hero demo clip lazy-loading (index.html)", () => {
       ).toMatch(/\sdata-src=/i);
     }
   });
+
+  for (const viewport of [
+    { width: 360, height: 800 },
+    { width: 1280, height: 800 },
+  ]) {
+    test(`no hero-demo request at page open on a real ${viewport.width}x${viewport.height} viewport (interaction gate)`, async ({
+      page,
+    }) => {
+      // The section sits ~550-720px from the top here — inside the 400px
+      // rootMargin — so without the interaction gate the clip would start
+      // downloading immediately on every page open.
+      await page.setViewportSize(viewport);
+      const heroRequests = trackHeroRequests(page);
+      await page.goto("/");
+      await settle(page);
+
+      const state = await readVideoState(page);
+      expect(state.found, "#hero-demo-video must exist on index.html").toBe(
+        true,
+      );
+      expect(
+        state.sourcesWithSrc,
+        "no <source> may carry src= before the user interacts",
+      ).toBe(0);
+      expect(
+        heroRequests,
+        `no network request for /assets/hero-demo.* at page open (saw: ${heroRequests.join(", ")})`,
+      ).toHaveLength(0);
+
+      // After the first scroll the observer arms and — since the section
+      // is already within the 400px margin at this viewport — the swap
+      // happens immediately and playback starts.
+      await page.mouse.wheel(0, 100);
+      await expect
+        .poll(
+          async () => {
+            const s = await readVideoState(page);
+            return s.currentSrc !== "" && !s.paused;
+          },
+          {
+            message:
+              "video must load and start playing after the first scroll interaction",
+            timeout: 15_000,
+          },
+        )
+        .toBe(true);
+      expect(
+        heroRequests.length,
+        "hero-demo asset must be requested after the first interaction",
+      ).toBeGreaterThan(0);
+    });
+  }
 
   test("no hero-demo request while the section is far from the viewport", async ({
     page,
