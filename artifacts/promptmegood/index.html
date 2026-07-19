@@ -195,90 +195,20 @@
     }
     .meta strong { color: var(--text); font-weight: 600; }
 
-    /* spec-6 hero mini-generator (homepage-hero-mini-gen-1).
-       Interactive pre-baked demo lives in the hero so visitors see
-       structured-prompt output without leaving above-the-fold. CSS vars
-       reuse the existing hero tokens (--border, --text, --accent) so
-       there's no second source of truth for color. */
     .sr-only {
       position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
       overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
     }
-    .hero-generator { max-width: 720px; margin-top: 8px; }
-    .hero-textarea {
-      width: 100%;
-      box-sizing: border-box;
-      background: rgba(0, 0, 0, 0.2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 16px;
-      color: var(--text);
-      font-family: inherit;
-      font-size: 16px;
-      line-height: 1.45;
-      resize: vertical;
-      margin-bottom: 16px;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-    .hero-textarea::placeholder { color: var(--muted); opacity: 0.85; }
-    .hero-textarea:focus-visible {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(95, 230, 176, 0.18);
-    }
-    /* hero-mini-gen links row (post-typeOut reveal). Small ghost-style
-       text links, not buttons — keeps the hero clean and lets the real
-       Build CTA stay primary. */
-    .hero-output-links {
-      display: flex; flex-wrap: wrap; gap: 18px;
-      margin-top: 10px;
-      font-size: 13px;
-    }
-    .hero-output-link {
-      color: var(--accent);
-      text-decoration: none;
-      border-bottom: 1px solid transparent;
-      padding: 2px 0;
-      transition: color 120ms ease, border-color 120ms ease;
-    }
-    .hero-output-link:hover, .hero-output-link:focus-visible {
-      color: var(--accent-strong);
-      border-bottom-color: var(--accent-strong);
-      text-decoration: none;
-      outline: none;
-    }
-    .hero-output-container {
-      margin-top: 24px;
-      animation: pmgHeroFadeIn 0.3s ease;
-    }
-    .hero-output-container .demo-prompt {
-      margin: 0;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-    .hero-output-caption {
-      margin: 16px 0 0;
-      font-size: 12.5px;
+    .hero-cta { max-width: 720px; margin-top: 8px; }
+    .hero-try-btn { font-size: 1.05rem; padding: 14px 28px; }
+    .hero-cta-note {
+      margin: 12px 0 0;
+      font-size: 13.5px;
       color: var(--muted);
-      font-style: italic;
     }
-    .hero-post-cta {
-      display: inline-flex;
-      margin-top: 12px;
-      width: 100%;
-      justify-content: center;
-    }
-    @keyframes pmgHeroFadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    /* Mobile: textarea taller, buttons stack — aligns to file's 540px
-       breakpoint (judgment call 5). `rows` is an HTML attr not a CSS
-       property, so we control mobile size via min-height instead. */
     @media (max-width: 540px) {
-      .hero-textarea { min-height: 80px; font-size: 16px; }
-      .hero-generator .cta-row { flex-direction: column; align-items: stretch; }
-      .hero-generator .btn { width: 100%; justify-content: center; }
+      .hero-cta .cta-row { flex-direction: column; align-items: stretch; }
+      .hero-cta .btn { width: 100%; justify-content: center; text-align: center; }
     }
 
     /* css-split-1 (2026-05-19): below-the-fold styles moved to
@@ -486,27 +416,11 @@
         <span><strong>Local-first</strong> &mdash; your vault never leaves the browser</span>
       </div>
 
-      <div class="hero-generator">
-        <textarea id="hero-input"
-                  class="hero-textarea"
-                  rows="2"
-                  aria-label="Type what you want AI to do for you"
-                  placeholder="Type what you want AI to do for you..."></textarea>
-
+      <div class="hero-cta">
         <div class="cta-row">
-          <button type="button" id="hero-build-btn" class="btn btn-primary">Build My Prompt &rarr;</button>
-          <a class="btn btn-ghost" href="/app">Open the App</a>
+          <a id="hero-try-free" class="btn btn-primary hero-try-btn" href="/app">Try It Free &mdash; Build Your First Prompt &rarr;</a>
         </div>
-
-        <div id="hero-output-container" class="hero-output-container" hidden>
-          <pre id="hero-output" class="demo-prompt"></pre>
-          <p class="hero-output-caption">Sample output &mdash; open the app for a real one tailored to your input.</p>
-          <div id="hero-output-links" class="hero-output-links" hidden>
-            <a id="hero-link-try" class="hero-output-link" href="/app">&#9654; Try it on your own &rarr;</a>
-            <a id="hero-link-use" class="hero-output-link" href="/app">Use this prompt &rarr;</a>
-          </div>
-          <a class="btn btn-ghost hero-post-cta" href="/app">Open the full app for unlimited real prompts &rarr;</a>
-        </div>
+        <p class="hero-cta-note">No signup. No credit card. Your first structured prompt in under a minute.</p>
       </div>
     </div>
   </main>
@@ -746,221 +660,6 @@
           }
         } catch (_) {}
       }, true);
-    })();
-  </script>
-  <script>
-    /* spec-6 hero mini-generator (homepage-hero-mini-gen-1).
-       Pre-baked keyword-matched demos. Pattern-matches user input to one
-       of four canned structured prompts and types it out for visual
-       punch. Zero network cost, zero OpenAI abuse vector. The full
-       /app does the real work — this is a marketing surface only.
-
-       Bug-2 fix: don't rely on DOMContentLoaded firing AFTER this
-       script registers; this block lives at end-of-body so the DOM is
-       already parsed. Guard with readyState anyway to match the
-       file's existing pattern (see L281 Clarity injector).
-       Bug-3 fix: re-enable the Build button + reset its label on any
-       textarea `input` so visitors can explore multiple demos without
-       refreshing. */
-    (function () {
-      function init() {
-        var input        = document.getElementById('hero-input');
-        var buildBtn     = document.getElementById('hero-build-btn');
-        var container    = document.getElementById('hero-output-container');
-        var output       = document.getElementById('hero-output');
-        var linksRow     = document.getElementById('hero-output-links');
-        var linkUse      = document.getElementById('hero-link-use');
-        if (!input || !buildBtn || !container || !output) return;
-
-        var DEFAULT_LABEL = buildBtn.textContent;
-
-        /* hero-mini-gen-2 (2026-05-20): Goal line is now ALWAYS the user's
-           verbatim input — that's the whole point of the demo (show their
-           sentence sitting inside a real structured prompt). Role/Audience/
-           Tone/Constraints/Format adapt by category, but the user's words
-           never get replaced by a canned string. */
-        function escapeHtml(s) {
-          return String(s == null ? '' : s)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
-        }
-        /* Architect-flagged: category match was substring-based, so "video
-           script" was classified as code (since "script" is in both lists
-           and code was checked first). Switched to word-boundary regex
-           match AND ordered video/social ahead of code so explicit
-           platform keywords win over generic ones. Ambiguous terms like
-           "script" (which can mean code OR video) only appear in the
-           video list — code keeps the truly code-specific terms. */
-        var categories = [
-          {
-            kw: ['video', 'youtube', 'sora', 'reel', 'reels', 'short', 'shorts', 'voiceover', 'storyboard', 'tiktok', 'script'],
-            role: 'Short-form video scriptwriter and director',
-            audience: 'Viewers deciding in 3 seconds whether to keep watching',
-            tone: 'Punchy, visual, momentum-driven',
-            constraints: 'Hook in the first 3 seconds; one idea per shot; under 60 seconds total',
-            format: 'Hook → 3–5 beats with on-screen text + visual notes → CTA'
-          },
-          {
-            kw: ['tweet', 'twitter', 'linkedin', 'instagram', 'social', 'caption', 'thread', 'post'],
-            role: 'Social media strategist who writes scroll-stopping posts',
-            audience: 'Followers in your niche scrolling on mobile in 2 seconds or less',
-            tone: 'Conversational, confident, native to the platform',
-            constraints: 'Lead with a hook in the first line; no hashtag spam; keep it skimmable',
-            format: 'Hook + body (1–3 short lines) + CTA or question'
-          },
-          {
-            kw: ['code', 'function', 'bug', 'debug', 'refactor', 'api', 'typescript', 'javascript', 'python', 'react', 'sql', 'regex', 'algorithm'],
-            role: 'Senior Staff Software Engineer',
-            audience: 'Mid-level developer needing a robust, production-ready solution',
-            tone: 'Technical, precise, helpful',
-            constraints: 'Include error handling, edge cases, and inline comments',
-            format: 'Brief explanation + code block + usage example'
-          },
-          {
-            kw: ['email', 'sales', 'pitch', 'outreach', 'cold', 'reply', 'follow up', 'follow-up'],
-            role: 'Senior B2B sales copywriter',
-            audience: 'Operations leads at 50–200 person SaaS companies',
-            tone: 'Direct, friendly, zero fluff',
-            constraints: '90–120 words, plain text, one clear CTA',
-            format: 'Subject line + 3 short paragraphs + CTA'
-          },
-          {
-            kw: ['blog', 'article', 'seo', 'newsletter', 'guide', 'how-to', 'tutorial', 'long-form'],
-            role: 'Expert content marketer and SEO specialist',
-            audience: 'Marketing managers looking for actionable growth tactics',
-            tone: 'Authoritative, tactical, engaging',
-            constraints: '~1200 words, short paragraphs, highly skimmable',
-            format: 'Hook intro + 3 actionable steps with examples + conclusion'
-          }
-        ];
-        function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-        var fallbackCategory = {
-          role: 'Expert consultant in the relevant field',
-          audience: 'Professionals seeking clear, actionable advice',
-          tone: 'Professional, clear, concise',
-          constraints: 'No fluff, highly structured, easy to act on',
-          format: 'Executive summary + bulleted key points + next steps'
-        };
-        function pickCategory(text) {
-          var lower = (text || '').toLowerCase();
-          for (var i = 0; i < categories.length; i++) {
-            var c = categories[i];
-            for (var j = 0; j < c.kw.length; j++) {
-              /* Word-boundary match so "api" doesn't fire on "rapid",
-                 "post" doesn't fire on "compost", etc. Multi-word keys
-                 like "follow up" still match because \b works at the
-                 outside edges and the inner space is literal. */
-              var re = new RegExp('\\b' + escapeRe(c.kw[j]) + '\\b', 'i');
-              if (re.test(lower)) return c;
-            }
-          }
-          return fallbackCategory;
-        }
-        function pickDemo(text) {
-          var c = pickCategory(text);
-          var goal = escapeHtml((text || '').trim());
-          return (
-            '<b>Role:</b> ' + c.role + '\n' +
-            '<b>Audience:</b> ' + c.audience + '\n' +
-            '<b>Goal:</b> ' + goal + '\n' +
-            '<b>Tone:</b> ' + c.tone + '\n' +
-            '<b>Constraints:</b> ' + c.constraints + '\n' +
-            '<b>Format:</b> ' + c.format
-          );
-        }
-
-        var typingTimer = null;
-        var startTimer  = null;
-        function cancelTyping() {
-          if (typingTimer) { clearTimeout(typingTimer); typingTimer = null; }
-          if (startTimer)  { clearTimeout(startTimer);  startTimer  = null; }
-        }
-        function typeOut(html, speed) {
-          cancelTyping();
-          speed = speed || 14;
-          output.innerHTML = '';
-          /* a11y: announce only the finished output once, not every char
-             — avoids a screen-reader "announcement storm" during typing. */
-          output.removeAttribute('aria-live');
-          var i = 0;
-          var buf = '';
-          var inTag = false;
-          (function step() {
-            if (i >= html.length) {
-              typingTimer = null;
-              output.setAttribute('aria-live', 'polite');
-              buildBtn.disabled = false;
-              buildBtn.textContent = 'Try another →';
-              /* hero-links-1: reveal two ghost links once typing finishes.
-                 "Use this prompt" deep-links into /app with the user's
-                 raw input as ?q= so the real workstation pre-fills it. */
-              if (linksRow && linkUse) {
-                try {
-                  var q = (input.value || '').trim();
-                  linkUse.setAttribute('href', q ? '/app?q=' + encodeURIComponent(q) : '/app');
-                } catch (_) { linkUse.setAttribute('href', '/app'); }
-                linksRow.hidden = false;
-              }
-              /* Match the file's 540px mobile breakpoint, not 767. */
-              if (window.innerWidth <= 540) {
-                try { container.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (_) {}
-              }
-              return;
-            }
-            var ch = html.charAt(i);
-            buf += ch;
-            if (ch === '<') inTag = true;
-            if (ch === '>') inTag = false;
-            output.innerHTML = buf;
-            i++;
-            typingTimer = setTimeout(step, inTag ? 0 : speed);
-          })();
-        }
-
-        buildBtn.addEventListener('click', function () {
-          var val = (input.value || '').trim();
-          if (!val) { input.focus(); return; }
-          /* Cancel any in-flight build before starting a new one — avoids
-             concurrent typeOut loops racing against the same element. */
-          cancelTyping();
-          container.hidden = false;
-          buildBtn.disabled = true;
-          buildBtn.textContent = 'Building…';
-          startTimer = setTimeout(function () { typeOut(pickDemo(val)); }, 380);
-          /* Reuse the existing cta_hero_click funnel slot so we can see
-             how many visitors actually engage with the mini-gen. */
-          try {
-            if (typeof window.__pmgTrack === 'function') {
-              window.__pmgTrack('hero_minigen_build', { length: val.length });
-            }
-          } catch (_) {}
-        });
-
-        /* Bug-3 fix: any keystroke after a finished build re-enables the
-           button, resets its label, and clears the stale sample output —
-           keeps the hero honest while the user is composing a new ask. */
-        input.addEventListener('input', function () {
-          if (buildBtn.disabled) buildBtn.disabled = false;
-          if (buildBtn.textContent !== DEFAULT_LABEL && buildBtn.textContent !== 'Building…') {
-            buildBtn.textContent = DEFAULT_LABEL;
-          }
-          if (!container.hidden) {
-            cancelTyping();
-            container.hidden = true;
-            output.innerHTML = '';
-            if (linksRow) linksRow.hidden = true;
-          }
-        });
-      }
-
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init, { once: true });
-      } else {
-        init();
-      }
     })();
   </script>
 </body>
