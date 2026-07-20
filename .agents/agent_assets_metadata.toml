@@ -263,3 +263,9 @@ id = "jMBHsplf5oCUknVLGHpK6"
 uri = "file://.local/handoff-build-button-bug.md"
 type = "text"
 title = "Build button bug — handoff for Claude"
+
+[[outputs]]
+id = "HAGLPnfpq2tsdQP8IZ3hc"
+uri = "file://marketing-playbook-promptperfect.pdf"
+type = "pdf"
+title = "PromptMeGood — PromptPerfect Migration Playbook"
