@@ -55,7 +55,7 @@
     "mainEntity": [
       { "@type": "Question", "name": "When is PromptPerfect shutting down?", "acceptedAnswer": { "@type": "Answer", "text": "PromptPerfect stops accepting new signups in June 2026 and goes fully offline on September 1, 2026. User data is permanently deleted on October 1, 2026. Export your prompts from Settings → Export Data before that date." } },
       { "@type": "Question", "name": "Can I import my PromptPerfect prompts into PromptMeGood?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Export your prompt library from PromptPerfect as a JSON file, then use the Import button in your PromptMeGood Vault to bring everything across. Your prompts land immediately — no manual copy-pasting required." } },
-      { "@type": "Question", "name": "Is PromptMeGood free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. PromptMeGood has a free plan with no credit card required. New accounts also include a 7-day trial with access to every feature so you can evaluate it fully before deciding on a paid plan." } },
+      { "@type": "Question", "name": "Is PromptMeGood free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. PromptMeGood has a free plan with no signup and no credit card required — unlimited prompt building with daily limits on AI-powered features. Creating a free account starts a 7-day trial with boosted daily limits. Paid plans unlock the power tools: Founding Member is a one-time $79 for lifetime access (first 500 buyers, price locked for life), and Pro plans start at $14/month." } },
       { "@type": "Question", "name": "Does PromptMeGood work with ChatGPT, Claude, and Gemini?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. PromptMeGood builds and optimizes prompts for ChatGPT, Claude, Gemini, and Perplexity. Prompts are plain text — you paste them wherever you work." } },
       { "@type": "Question", "name": "What does PromptMeGood do that PromptPerfect didn't?", "acceptedAnswer": { "@type": "Answer", "text": "PromptMeGood adds prompt building from scratch, a personality and voice system, image prompt generation, image reverse-engineering, in-app prompt execution, and a full Vault for organizing your library — while keeping the core prompt optimization that PromptPerfect was known for." } },
       { "@type": "Question", "name": "Is PromptMeGood going to shut down too?", "acceptedAnswer": { "@type": "Answer", "text": "PromptMeGood is independently built and operated — it is not part of a larger acquisition or corporate product suite. There are no plans to shut it down." } }
@@ -295,6 +295,19 @@
       max-width: 56ch; margin: 0 auto 24px;
     }
     section.final .btn { margin: 0 auto; }
+    section.final .founding-pitch {
+      max-width: 620px; margin: 0 auto 28px;
+      background: var(--surface);
+      border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+      border-radius: 14px; padding: 26px 28px; text-align: center;
+    }
+    section.final .founding-pitch h3 {
+      margin: 0 0 10px; font-size: 20px; letter-spacing: -0.01em; font-weight: 700;
+    }
+    section.final .founding-pitch p {
+      color: var(--muted); font-size: 15px; line-height: 1.6; margin: 0 0 18px;
+    }
+    section.final .founding-pitch p strong { color: var(--text); }
     section.final .secondary-link {
       display: block; margin-top: 16px; color: var(--muted); font-size: 14px;
     }
@@ -401,11 +414,11 @@
           <div>
             <h2>Shutdown Timeline</h2>
             <ul class="timeline-list">
-              <li><strong>New signups closed</strong> &mdash; June 2026</li>
+              <li><strong>New signups</strong> &mdash; already closed (June 2026)</li>
               <li><strong>All features go offline</strong> &mdash; September 1, 2026</li>
               <li><strong>User data permanently deleted</strong> &mdash; October 1, 2026</li>
             </ul>
-            <p class="timeline-note">Export your prompts from PromptPerfect now (Settings &rarr; Export Data) before access is cut off.</p>
+            <p class="timeline-note">Signups have already closed and the September 1 shutdown is weeks away. Export your prompts from PromptPerfect now (Settings &rarr; Export Data) before access is cut off.</p>
           </div>
         </div>
       </div>
@@ -455,7 +468,7 @@
           <li class="step">
             <div class="step-num">02</div>
             <h3>Create your free account</h3>
-            <p>Sign up at PromptMeGood &mdash; no credit card required. Your first 7 days include full trial access to every feature.</p>
+            <p>Start free at PromptMeGood &mdash; no credit card required, and the free plan doesn&rsquo;t even need an account. Creating a free account gives you a 7-day trial with boosted daily limits on the AI-powered tools.</p>
           </li>
           <li class="step">
             <div class="step-num">03</div>
@@ -494,7 +507,7 @@
           </details>
           <details class="faq-item">
             <summary>Is PromptMeGood free?</summary>
-            <p>Yes. PromptMeGood has a free plan with no credit card required. New accounts also include a 7-day trial with access to every feature so you can evaluate it fully before deciding on a paid plan.</p>
+            <p>Yes. PromptMeGood has a free plan with no signup and no credit card required &mdash; unlimited prompt building with daily limits on AI-powered features. Creating a free account starts a 7-day trial with boosted daily limits. Paid plans unlock the power tools: Founding Member is a one-time $79 for lifetime access (first 500 buyers, price locked for life), and Pro plans start at $14/month.</p>
           </details>
           <details class="faq-item">
             <summary>Does PromptMeGood work with ChatGPT, Claude, and Gemini?</summary>
@@ -516,7 +529,12 @@
       <div class="wrap">
         <h2>Your prompts deserve a permanent home.</h2>
         <p class="sub">PromptMeGood is actively developed, independently run, and not going anywhere.</p>
-        <a class="btn btn-primary" href="/app">Create Free Account</a>
+        <div class="founding-pitch" role="note" aria-label="Founding Member offer">
+          <h3>Never get burned by a shutdown again.</h3>
+          <p>PromptMeGood is independent &mdash; no corporate parent, no acquisition risk. Lock in lifetime access with the <strong>Founding Member</strong> plan: a one-time <strong>$79</strong>, price locked for life, limited to the first 500 buyers. No subscription, no renewal, no rug-pull.</p>
+          <a class="btn btn-primary" href="/pricing.html#founding-checkout-card">Become a Founding Member &mdash; $79 once</a>
+        </div>
+        <a class="btn btn-ghost" href="/app">Start Free &mdash; no account needed</a>
         <span class="secondary-link">Questions? <a href="/pricing.html">See pricing</a></span>
       </div>
     </section>

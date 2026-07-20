@@ -13933,7 +13933,13 @@ Context:
        first_run_nudge_shown { prefilled } + first_run_cta_clicked — pair with
        app_opened / build_clicked (below) to measure first-visit → first
        generation conversion. -->
-  <script src="/scripts/pmg-first-run.js?v=fr-2" defer></script>
+  <script src="/scripts/pmg-first-run.js?v=fr-3" defer></script>
+  <!-- rv-1 Return-visit purchase prompt: from the 2nd visit on (never the
+       first), shows a small dismissible banner linking to /pricing.html.
+       Suppressed for paid users (waits for /api/me/profile via
+       window.__pmgServerProfile). Dismissal is permanent. Kill switches:
+       ?noreturnvisit, localStorage.pmg_return_visit_disable='1'. -->
+  <script src="/scripts/pmg-return-visit.js?v=rv-1" defer></script>
   <script src="/scripts/pmg-fix-diff.js?v=task49-2" defer></script>
   <script src="/scripts/pmg-suite-mobile-polish.js?v=task110-1" defer></script>
   <script src="/scripts/pmg-suite-handoff.js?v=task111-1" defer></script>

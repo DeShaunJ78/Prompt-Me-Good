@@ -15,7 +15,8 @@
  *     draft, session) also counts as "returning".
  *
  * First-visit detection (ALL must be absent):
- *   - localStorage['pmg.first_run.done.v1']   (our own flag)
+ *   - localStorage['pmg.first_run.done.v2']   (our own flag; v1→v2 bumped
+ *     July 2026 so the fresh experience replays once for everyone)
  *   - localStorage['promptmegood:history:v1'] (vault use)
  *   - localStorage['pmgv3:draft']             (draft recovery mirror)
  *   - sessionStorage['pmgv3:session']         (live session)
@@ -50,8 +51,27 @@
     if (localStorage.getItem('pmg_first_run_disable') === '1') return;
   } catch (_) {}
 
-  var DONE_KEY = 'pmg.first_run.done.v1';
+  var DONE_KEY = 'pmg.first_run.done.v2';
   var STYLE_ID = 'pmg-first-run-style';
+
+  /* ---------- One-time visitor-marker reset (fr-3, Task marker bump) ----------
+     Replays the fresh first-visit experience exactly once for everyone after
+     the July 2026 relaunch push. Removes the OLD first-visit/tour/nudge
+     markers (the tour key is written by pmg-ux.js, which we never edit, so
+     the reset happens here instead). Guarded by its own done-flag so it only
+     ever runs once per device. Vault/history/draft keys are NOT touched —
+     returning users keep all their data and free-tier access. */
+  try {
+    var RESET_FLAG = 'pmg.marker_reset.2026-07.done';
+    if (localStorage.getItem(RESET_FLAG) !== '1') {
+      ['pmg.first_run.done.v1', 'pmg.workstationTourSeen', 'pmg.quickWinSeen']
+        .forEach(function (k) {
+          try { localStorage.removeItem(k); } catch (_) {}
+        });
+      localStorage.setItem(RESET_FLAG, '1');
+    }
+  } catch (_) {}
+
   var GLOW_CLASS = 'pmg-fr-glow';
   var EXAMPLE =
     'Write a friendly follow-up email to a client who went quiet after I sent my proposal last week';
