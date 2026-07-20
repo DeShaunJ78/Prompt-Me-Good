@@ -113,12 +113,14 @@
     if (isDismissed() || count < 2) return;
     if (isPaid()) return;
     show();
-    /* If the paid profile lands after we rendered, pull the banner. */
+    /* If the paid profile lands after we rendered, pull the banner. Keep
+       rechecking for as long as the banner is on screen (5-minute cap) so a
+       slow /api/me/profile can never leave the banner up for a paid user. */
     var checks = 0;
     var iv = setInterval(function () {
       checks += 1;
-      if (isPaid()) { remove(); clearInterval(iv); }
-      else if (checks >= 10) clearInterval(iv);
+      if (isPaid()) { remove(); clearInterval(iv); return; }
+      if (checks >= 150 || !document.getElementById(BANNER_ID)) clearInterval(iv);
     }, 2000);
   }
 

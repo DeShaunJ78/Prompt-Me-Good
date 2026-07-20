@@ -129,6 +129,17 @@ test.describe("pmg-return-visit (rv-1)", () => {
     await expect(page.locator(BANNER)).toHaveCount(0);
   });
 
+  test("banner self-removes when a paid profile lands after render", async ({ page }) => {
+    await gotoApp(page, { visitCount: 1, paidPlan: "free" });
+    await page.waitForSelector(BANNER, { timeout: SETTLE_MS + 4000 });
+    await page.evaluate(() => {
+      (window as unknown as { __pmgServerProfile?: { plan: string } }).__pmgServerProfile = {
+        plan: "founding",
+      };
+    });
+    await expect(page.locator(BANNER)).toHaveCount(0, { timeout: 6000 });
+  });
+
   test("marker reset migration runs once and bumps first-run key", async ({ page }) => {
     await installApiMocks(page);
     await page.addInitScript(() => {
