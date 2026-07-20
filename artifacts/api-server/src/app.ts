@@ -84,12 +84,10 @@ app.use("/api", stripeWebhookRouter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Health check (intentionally outside /api so the keep-alive ping from the web
-// client stays cheap and unauthenticated). Used by the frontend's 4-minute
-// keep-alive to prevent Replit cold starts.
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok" });
-});
+// NOTE: /health was previously registered here but never reached through the
+// proxy (artifact.toml only routes /api/* to this server). The working
+// health endpoints are /api/health (keep-alive) and /api/healthz (deployment
+// check), both registered in the routes/. See routes/ai.ts and routes/health.ts.
 
 // apiKeyAuth runs BEFORE the route handlers so any `Authorization: Bearer
 // pmg_live_*` request resolves to req.pmgApiKeyUser before per-handler JWT

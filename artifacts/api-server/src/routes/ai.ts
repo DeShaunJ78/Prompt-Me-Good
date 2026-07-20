@@ -15,6 +15,7 @@ import type { PmgPlan } from "../lib/pricing-config";
 import { effectiveCaps, TEASER_DAILY_CAP, PRO_STUDIO_GPT5_DAILY_CAP } from "../lib/pricing-config";
 import { reserveUserDay, refundUserDay } from "../lib/usage-store";
 import { isPaywallActive, isOwnerUserId } from "../lib/paywall";
+import { checkSupabaseHealth } from "../lib/supabase-health";
 
 const router: IRouter = Router();
 
@@ -1658,11 +1659,27 @@ router.get("/stats", (_req, res) => {
   res.json({ promptCount: stats.promptCount, runCount: stats.runCount });
 });
 
-// /api/health — duplicates the root /health endpoint at the /api/* path so the
-// frontend keep-alive ping can reach it through the artifact path-based router
-// (which only forwards /api/* to this api-server).
+// /api/health — keep-alive + Supabase reachability check.
+// Always returns HTTP 200 (so Replit's keep-alive never mis-fires), but the
+// `supabase` sub-object lets external monitors catch auth outages before users
+// notice sign-in is broken. Result is cached 30 s; the first call after cache
+// expiry triggers an upstream fetch — subsequent concurrent callers get the
+// same promise (no thundering herd). See lib/supabase-health.ts.
 router.get("/health", (_req, res) => {
-  res.json({ status: "ok" });
+  checkSupabaseHealth()
+    .then((h) => {
+      res.json({
+        status: "ok",
+        supabase: {
+          status: h.status,
+          latencyMs: h.latencyMs,
+          checkedAt: new Date(h.checkedAt).toISOString(),
+        },
+      });
+    })
+    .catch(() => {
+      res.json({ status: "ok", supabase: { status: "down", latencyMs: null } });
+    });
 });
 
 router.post("/generate-prompt", rateLimit, generateCostCheck, async (req, res) => {

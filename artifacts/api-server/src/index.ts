@@ -3,6 +3,7 @@ import { logger } from "./lib/logger";
 import { logPaywallStatusOnce } from "./lib/paywall";
 import { assertPricingConfigsInSync } from "./lib/pricing-config-sync-check";
 import { assertStripePriceIdsConfigured } from "./lib/stripe-env-check";
+import { startSupabaseKeepalive } from "./lib/supabase-keepalive";
 
 // audit-2 H-2: validate every Stripe Price ID env var BEFORE binding the port.
 // If any are missing or malformed (e.g. a `prod_*` Product ID pasted into a
@@ -49,6 +50,9 @@ app.listen(port, (err) => {
   // boot so the operator can tell from the workflow log which mode the
   // service is running in. Only logs in development.
   logPaywallStatusOnce();
+  // task-184: prevent Supabase free-tier auto-pause by pinging the auth health
+  // endpoint every 3 days. No-ops in dev (opt-in via PMG_SUPABASE_KEEPALIVE=1).
+  startSupabaseKeepalive();
   // audit-2 M1+M2: assert BETA_END (TS) === PAYWALL_ACTIVATES_AT (env) and
   // that pmg-pricing-config.js mirror matches pricing-config.ts. In dev this
   // throws; in prod it logs ERROR but does not crash.
