@@ -191,9 +191,8 @@ router.post("/founding-checkout", checkoutLimiter, async (req, res) => {
 
     res.json({ url: session.url });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
     req.log?.error({ err }, "founding-checkout failed");
-    res.status(500).json({ error: message });
+    res.status(500).json({ error: "Checkout could not be started. Please try again." });
   }
 });
 

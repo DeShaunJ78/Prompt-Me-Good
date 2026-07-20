@@ -337,9 +337,8 @@ router.post(
 
       res.json({ url: session.url });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
       req.log?.error({ err }, "create-checkout-session failed");
-      res.status(500).json({ error: message });
+      res.status(500).json({ error: "Checkout could not be started. Please try again." });
     }
   },
 );
@@ -386,9 +385,8 @@ router.get(
         },
       });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
       req.log?.error({ err }, "/me/profile failed");
-      res.status(500).json({ error: message });
+      res.status(500).json({ error: "Could not load your profile. Please try again." });
     }
   },
 );
