@@ -12887,19 +12887,24 @@
     pro_studio_yearly: 1
   };
 
-  /* Returns true when the user's current server-side plan already covers
-     the requested checkout tier — i.e. there is no upgrade to purchase
-     and checkout should be suppressed.
-     Server plan values: 'free' | 'pro' | 'founding'.
-     - Any paid plan ('pro' or 'founding') blocks checkout for every tier,
-       including 'founding'. This prevents a Pro member with a stale
-       bookmarked /app?checkout=founding link from accidentally entering a
-       second checkout flow. If a legitimate cross-plan upgrade path is ever
-       added, this function should be revisited to reflect the new hierarchy.
-     - 'free' covers nothing — free users always proceed to checkout. */
-  function planCoversCheckoutTier(plan) {
+  /* Returns true when the user's current plan already covers the specific
+     requested checkout tier — i.e. checkout should be suppressed.
+     requestedTier is the tier string from the button/URL (e.g. 'pro_monthly').
+     Rules:
+     - 'free' covers nothing — always proceed to checkout.
+     - 'founding' only blocks re-buying 'founding' (one-time purchase).
+       Founding members may still upgrade to Pro Studio or subscribe to
+       recurring Pro if they choose.
+     - 'pro' blocks pro_monthly / pro_yearly (same recurring tier).
+     - 'pro_studio' is the highest tier and covers everything. */
+  function planCoversCheckoutTier(plan, requestedTier) {
     var p = (plan || '').toLowerCase();
-    return p === 'founding' || p === 'pro';
+    var t = (requestedTier || '').toLowerCase();
+    if (!p || p === 'free') return false;
+    if (p === 'pro_studio') return true;
+    if (p === 'founding') return t === 'founding';
+    if (p === 'pro') return t === 'pro_monthly' || t === 'pro_yearly' || t === 'pro';
+    return false;
   }
 
   /* Read the last plan value written by applyProfileToCache() from
@@ -12952,7 +12957,7 @@
 
     /* Show the nudge banner only on the auth-change (guest) path.
        The already-signed-in path fires in < 100 ms so no nudge is needed. */
-    if (fromAuthChange) showCheckoutNudge(tier);
+    showCheckoutNudge(tier);
 
     /* Strip ?checkout= and ?ref= from the address bar now so a hard-refresh
        (or pressing Back after Stripe) doesn't re-trigger checkout. */
@@ -12978,7 +12983,9 @@
            magic-link redirect (which reloads /app without query params)
            can still pick it up on the next boot. */
         _autoCheckoutFired = false;
-        hideCheckoutNudge();
+        /* Keep the nudge visible so the user knows to sign in/up.
+           Update the message to be an explicit call-to-action. */
+        updateNudgeMessage('Sign in or create an account to continue \u2192');
         try { sessionStorage.setItem('pmg:pendingCheckout', tier); } catch (_) {}
         try { console.log('[pmg-t41] auto-checkout: no session yet, awaiting auth'); } catch (_) {}
         return;
@@ -12988,7 +12995,7 @@
          the network fetch entirely and resolve instantly. Background refresh
          keeps the cache accurate for next time. */
       var _acCachedPlan = getCachedPlan();
-      if (_acCachedPlan && planCoversCheckoutTier(_acCachedPlan)) {
+      if (_acCachedPlan && planCoversCheckoutTier(_acCachedPlan, tier)) {
         _autoCheckoutFired = false;
         hideCheckoutNudge();
         try { console.log('[pmg-t41] auto-checkout: cache hit plan=' + _acCachedPlan + ', skipping tier=' + tier); } catch (_) {}
@@ -13000,7 +13007,7 @@
       /* Guard: check whether the user's current plan already covers
          this tier before opening Stripe. */
       return fetchProfile().then(function (profile) {
-        if (profile && planCoversCheckoutTier(profile.plan)) {
+        if (profile && planCoversCheckoutTier(profile.plan, tier)) {
           _autoCheckoutFired = false;
           hideCheckoutNudge();
           try { console.log('[pmg-t41] auto-checkout: user already on plan=' + profile.plan + ', skipping tier=' + tier); } catch (_) {}
@@ -13157,7 +13164,7 @@
          Founding users on return visits. A background refresh keeps the
          cache accurate for next time. */
       var _cachedPlan = getCachedPlan();
-      if (_cachedPlan && planCoversCheckoutTier(_cachedPlan)) {
+      if (_cachedPlan && planCoversCheckoutTier(_cachedPlan, tier)) {
         btn.disabled = false;
         btn.textContent = origLabel || 'Subscribe';
         try { console.log('[pmg-t41] startCheckout: cache hit plan=' + _cachedPlan + ', skipping tier=' + tier); } catch (_) {}
@@ -13174,7 +13181,7 @@
          checkout for a plan they already hold (e.g. Founding Member tapping
          a forwarded /app?checkout=founding link). */
       return fetchProfile().then(function (profile) {
-        if (profile && planCoversCheckoutTier(profile.plan)) {
+        if (profile && planCoversCheckoutTier(profile.plan, tier)) {
           btn.disabled = false;
           btn.textContent = origLabel || 'Subscribe';
           try { console.log('[pmg-t41] startCheckout: already on plan=' + profile.plan + ', skipping tier=' + tier); } catch (_) {}
@@ -13217,15 +13224,19 @@
      without re-implementing session / profile fetching.
      Returns a Promise<boolean>: true = user already holds a paid plan. */
   window.pmgCheckAlreadyOnPlan = function () {
+    function isPaidPlan(p) {
+      var plan = (p || '').toLowerCase();
+      return plan === 'pro' || plan === 'founding' || plan === 'pro_studio';
+    }
     var cached = getCachedPlan();
-    if (cached && planCoversCheckoutTier(cached)) {
+    if (cached && isPaidPlan(cached)) {
       fetchProfile().then(applyProfileToCache).catch(function () {});
       return Promise.resolve(true);
     }
     return resolveSession().then(function (sess) {
       if (!sess) return false;
       return fetchProfile().then(function (profile) {
-        return !!(profile && planCoversCheckoutTier(profile.plan));
+        return !!(profile && isPaidPlan(profile.plan));
       });
     }).catch(function () { return false; });
   };
