@@ -12831,12 +12831,10 @@
   }
 
   function startCheckout(btn) {
-    /* Default to 'founding' since Pro Monthly is "Coming Soon"
-       and has no active Stripe price wired up yet. Anything other than
-       'founding' is normalised to 'founding' until Pro launches; this prevents
-       any stray 'Upgrade To Pro' button from kicking off a broken checkout. */
-    var tier = (btn.getAttribute('data-pmg-tier') || 'founding').toLowerCase();
-    if (tier !== 'founding') tier = 'founding';
+    /* Read the tier directly from the button — normalization to 'founding'
+       removed now that Pro prices are wired. Each button carries its own
+       data-pmg-tier or data-pmg-upgrade attribute with the correct value. */
+    var tier = (btn.getAttribute('data-pmg-tier') || btn.getAttribute('data-pmg-upgrade') || 'founding').toLowerCase();
     try { console.log('[pmg-t41] startCheckout click, tier=' + tier); } catch (_) {}
 
     var origLabel = btn.textContent;
@@ -12846,12 +12844,13 @@
     resolveSession().then(function (sess) {
       if (!sess) {
         btn.disabled = false;
-        btn.textContent = origLabel || 'Become A Founding Member';
-        var msg = 'Sign In To Upgrade.';
-        showToast(msg, 12000);
-        showInlineMessage(msg);
-        var t40 = getT40();
-        if (t40 && typeof t40.openPanel === 'function') t40.openPanel();
+        btn.textContent = origLabel || 'Subscribe';
+        /* No dead-end toast — send the guest to /app with the tier preserved
+           so they can sign up / sign in and return to complete checkout.
+           ?ref=pricing lets analytics track the source. */
+        try {
+          window.location.assign('/app?checkout=' + encodeURIComponent(tier) + '&ref=pricing');
+        } catch (_) {}
         return null;
       }
 
