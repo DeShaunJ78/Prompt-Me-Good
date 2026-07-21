@@ -12050,7 +12050,21 @@
     var btn = document.getElementById(SIGNIN_BTN_ID);
     if (btn) { btn.disabled = true; btn.setAttribute('aria-busy', 'true'); }
     setStatus('Sending Magic Link…');
-    var redirect = window.location.origin + window.location.pathname;
+    /* Include any pending checkout tier in the redirect URL so the tier
+       survives if the magic link opens in a new tab (new tabs get a fresh
+       sessionStorage and would lose the pending tier without this). The
+       ?checkout= param is picked up by T41's parse-time IIFE on /app and
+       sets _autoCheckoutTier before onAuthStateChange fires. */
+    var redirect = (function () {
+      try {
+        var u = new URL(window.location.origin + window.location.pathname);
+        var pending = sessionStorage.getItem('pmg:pendingCheckout') || '';
+        if (pending) u.searchParams.set('checkout', pending);
+        return u.toString();
+      } catch (_) {
+        return window.location.origin + window.location.pathname;
+      }
+    })();
     client.auth.signInWithOtp({ email: email, options: { emailRedirectTo: redirect } })
       .then(function (out) {
         if (btn) { btn.disabled = false; btn.removeAttribute('aria-busy'); }
@@ -12847,11 +12861,11 @@
        get cleared on them. We also persist the plan name separately so
        pmg-pro.js can render a "Founding" badge without re-fetching. */
     try {
-      if (profile.plan === 'founding' || profile.plan === 'pro' || profile.plan === 'free') {
+      if (profile.plan === 'founding' || profile.plan === 'pro' || profile.plan === 'pro_studio' || profile.plan === 'free') {
         localStorage.setItem('promptmegood:plan:v1', profile.plan);
       }
     } catch (_) {}
-    var isPro = profile.plan === 'pro' || profile.plan === 'founding';
+    var isPro = profile.plan === 'pro' || profile.plan === 'founding' || profile.plan === 'pro_studio';
     var cached = false;
     try { cached = localStorage.getItem('promptmegood:pro:v1') === 'true'; } catch (_) {}
     if (isPro && !cached && typeof window.pmgUnlockPro === 'function') {
@@ -13001,6 +13015,13 @@
         updateNudgeMessage('Sign in or create an account to continue \u2192');
         try { sessionStorage.setItem('pmg:pendingCheckout', tier); } catch (_) {}
         try { console.log('[pmg-t41] auto-checkout: no session yet, awaiting auth'); } catch (_) {}
+        /* Open the T40 sign-in panel so the user has a visible path to
+           authenticate without having to find the panel themselves. */
+        try {
+          if (window.__pmgT40 && typeof window.__pmgT40.openPanel === 'function') {
+            window.__pmgT40.openPanel();
+          }
+        } catch (_) {}
         return;
       }
 
