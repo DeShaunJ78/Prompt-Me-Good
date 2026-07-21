@@ -13024,7 +13024,13 @@
       _autoCheckoutFired = false; /* let the user retry via the visible buttons */
       hideCheckoutNudge();
       try { console.warn('[pmg-t41] auto-checkout failed:', err); } catch (_) {}
-      showToast('Could Not Open Checkout: ' + (err && err.message ? err.message : 'Unknown Error.'), 6000);
+      /* Show a focused, action-oriented message for the Supabase client
+         timeout case so the user knows exactly what to do next instead of
+         seeing a generic "Could Not Open Checkout" error. */
+      var msg = (err && err.pmgClientTimeout)
+        ? (err.message || 'Sign-in service unavailable. Please visit Pricing to subscribe.')
+        : ('Could Not Open Checkout: ' + (err && err.message ? err.message : 'Unknown Error.'));
+      showToast(msg, 8000);
     });
   }
 
@@ -13049,8 +13055,13 @@
   /* Wait up to ~5s for T40's Supabase client to finish bootstrapping
      (it's async — fetches /api/public-config and loads the SDK script). */
   function waitForSupabaseClient(timeoutMs) {
+    /* window.__pmgT41TestSupabaseTimeout lets test harnesses shorten the
+       5 s poll window to milliseconds so tests don't wait 5 s per scenario. */
+    var ms = (typeof window.__pmgT41TestSupabaseTimeout === 'number'
+      ? window.__pmgT41TestSupabaseTimeout
+      : null) || timeoutMs || 5000;
     return new Promise(function (resolve) {
-      var deadline = Date.now() + (timeoutMs || 5000);
+      var deadline = Date.now() + ms;
       function poll() {
         var t40 = getT40();
         var c = t40 ? t40.getClient() : null;
@@ -13066,7 +13077,11 @@
     return waitForSupabaseClient(5000).then(function (client) {
       if (!client) {
         try { console.log('[pmg-t41] resolveSession: supabase client not ready after wait'); } catch (_) {}
-        return null;
+        /* Throw a typed error so callers (runAutoCheckout, startCheckout) can
+           surface a user-visible message instead of failing silently. */
+        var e = new Error('Sign-in service is temporarily unavailable \u2014 please visit Pricing to subscribe.');
+        e.pmgClientTimeout = true;
+        throw e;
       }
       return client.auth.getSession()
         .then(function (res) {
