@@ -13002,6 +13002,9 @@
 
   /* Expose so T40's onAuthStateChange can call it immediately after sign-in. */
   window.__pmgT41.runAutoCheckout = runAutoCheckout;
+  /* Expose so test harnesses can invoke startCheckout() without a real
+     DOM button (same pattern as syncProfile / runAutoCheckout above). */
+  window.__pmgT41.startCheckout = startCheckout;
 
   /* ----------------------------------------------------------------- */
   /* Click handler for upgrade buttons                                 */
