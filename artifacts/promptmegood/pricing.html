@@ -767,66 +767,90 @@
 
       btn.addEventListener('click', function () {
         if (btn.disabled) return;
-        btn.disabled = true;
-        var originalText = btn.textContent;
-        btn.textContent = 'Opening checkout…';
-        setStatus('', null);
 
-        /* audit-2 M3: re-check seat count immediately before the POST. The
-           initial fetch above runs at page load; if a buyer sat on the page
-           for several minutes (or another buyer took the last seat in
-           between), we'd otherwise create a Stripe Checkout Session for a
-           sold-out tier. The POST handler also enforces this server-side
-           (returns 409), but skipping the Stripe round-trip is cleaner.
-           /api/founding-checkout/status is now no-store so this is fresh. */
-        fetch('/api/founding-checkout/status', { headers: { 'Accept': 'application/json' } })
-          .then(function (r) { return r.ok ? r.json() : null; })
-          .then(function (s) {
-            if (s && s.soldOut) {
-              renderCounter(s);
-              setStatus('Founding Member just sold out — choose a Pro plan above to subscribe.', 'error');
-              btn.textContent = 'Sold out';
-              return Promise.reject({ __soldOut: true });
-            }
-            return fetch('/api/founding-checkout', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-              body: JSON.stringify({})
-            });
-          })
-          .then(function (r) {
-            return r.json().then(function (j) { return { ok: r.ok, status: r.status, body: j }; });
-          })
-          .then(function (out) {
-            if (out.ok && out.body && out.body.url) {
-              window.location.assign(out.body.url);
-              return;
-            }
-            if (out.status === 409) {
-              setStatus(out.body && out.body.message
-                ? out.body.message
-                : 'Founding Member just sold out. Choose a Pro plan above to subscribe.', 'error');
-              btn.textContent = 'Sold out';
-              return;
-            }
-            if (out.status === 429) {
-              setStatus('Too many attempts — please wait a minute and try again.', 'error');
+        /* Guard: if pmg-ux.js has loaded its plan-check helper, verify the
+           signed-in user doesn't already hold a paid plan before opening
+           checkout. A Founding Member who lands on this page via a forwarded
+           link will see the same friendly toast as on /app. Non-blocking:
+           falls through to the normal anonymous checkout if the helper isn't
+           ready or if the user has no session / free plan. */
+        var checkPlan = typeof window.pmgCheckAlreadyOnPlan === 'function'
+          ? window.pmgCheckAlreadyOnPlan()
+          : Promise.resolve(false);
+
+        checkPlan.then(function (alreadyOn) {
+          if (alreadyOn) {
+            /* Reuse pmg-pro-toast CSS class (injected by pmg-pro.js). */
+            var t = document.createElement('div');
+            t.className = 'pmg-pro-toast';
+            t.textContent = 'You\u2019re already on this plan \u2014 nothing to upgrade!';
+            document.body.appendChild(t);
+            setTimeout(function () { try { t.remove(); } catch (_) {} }, 5000);
+            return;
+          }
+          proceed();
+        }).catch(function () { proceed(); });
+
+        function proceed() {
+          btn.disabled = true;
+          var originalText = btn.textContent;
+          btn.textContent = 'Opening checkout…';
+          setStatus('', null);
+
+          /* audit-2 M3: re-check seat count immediately before the POST. The
+             initial fetch above runs at page load; if a buyer sat on the page
+             for several minutes (or another buyer took the last seat in
+             between), we'd otherwise create a Stripe Checkout Session for a
+             sold-out tier. The POST handler also enforces this server-side
+             (returns 409), but skipping the Stripe round-trip is cleaner.
+             /api/founding-checkout/status is now no-store so this is fresh. */
+          fetch('/api/founding-checkout/status', { headers: { 'Accept': 'application/json' } })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (s) {
+              if (s && s.soldOut) {
+                renderCounter(s);
+                setStatus('Founding Member just sold out — choose a Pro plan above to subscribe.', 'error');
+                btn.textContent = 'Sold out';
+                return Promise.reject({ __soldOut: true });
+              }
+              return fetch('/api/founding-checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({})
+              });
+            })
+            .then(function (r) {
+              return r.json().then(function (j) { return { ok: r.ok, status: r.status, body: j }; });
+            })
+            .then(function (out) {
+              if (out.ok && out.body && out.body.url) {
+                window.location.assign(out.body.url);
+                return;
+              }
+              if (out.status === 409) {
+                setStatus(out.body && out.body.message
+                  ? out.body.message
+                  : 'Founding Member just sold out. Choose a Pro plan above to subscribe.', 'error');
+                btn.textContent = 'Sold out';
+                return;
+              }
+              if (out.status === 429) {
+                setStatus('Too many attempts — please wait a minute and try again.', 'error');
+                btn.disabled = false;
+                btn.textContent = originalText;
+                return;
+              }
+              setStatus((out.body && out.body.error) || 'Could not open checkout. Please try again.', 'error');
               btn.disabled = false;
               btn.textContent = originalText;
-              return;
-            }
-            setStatus((out.body && out.body.error) || 'Could not open checkout. Please try again.', 'error');
-            btn.disabled = false;
-            btn.textContent = originalText;
-          })
-          .catch(function (err) {
-            // Sold-out short-circuit from the pre-flight status re-check.
-            // UI state was already set there; nothing else to do.
-            if (err && err.__soldOut) return;
-            setStatus('Network error — please check your connection and try again.', 'error');
-            btn.disabled = false;
-            btn.textContent = originalText;
-          });
+            })
+            .catch(function (err) {
+              if (err && err.__soldOut) return;
+              setStatus('Network error — please check your connection and try again.', 'error');
+              btn.disabled = false;
+              btn.textContent = originalText;
+            });
+        }
       });
     })();
 

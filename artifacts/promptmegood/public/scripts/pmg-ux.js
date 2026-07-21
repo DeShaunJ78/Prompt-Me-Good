@@ -13180,6 +13180,24 @@
     });
   }
 
+  /* Global helper — callable from other pages (e.g. pricing.html's anonymous
+     founding checkout) so they can run the same "already on plan" guard
+     without re-implementing session / profile fetching.
+     Returns a Promise<boolean>: true = user already holds a paid plan. */
+  window.pmgCheckAlreadyOnPlan = function () {
+    var cached = getCachedPlan();
+    if (cached && planCoversCheckoutTier(cached)) {
+      fetchProfile().then(applyProfileToCache).catch(function () {});
+      return Promise.resolve(true);
+    }
+    return resolveSession().then(function (sess) {
+      if (!sess) return false;
+      return fetchProfile().then(function (profile) {
+        return !!(profile && planCoversCheckoutTier(profile.plan));
+      });
+    }).catch(function () { return false; });
+  };
+
   function wireButtons() {
     var btns = document.querySelectorAll('[data-pmg-upgrade]');
     btns.forEach(function (btn) {
