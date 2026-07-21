@@ -12787,6 +12787,32 @@
   window.__pmgT41.syncProfile = syncOnce;
 
   /* ----------------------------------------------------------------- */
+  /* Tier validation helpers (shared by auto-checkout + startCheckout) */
+  /* ----------------------------------------------------------------- */
+  var VALID_CHECKOUT_TIERS = {
+    founding: 1,
+    pro_monthly: 1,
+    pro_yearly: 1,
+    pro_studio_monthly: 1,
+    pro_studio_yearly: 1
+  };
+
+  /* Returns true when the user's current server-side plan already covers
+     the requested checkout tier — i.e. there is no upgrade to purchase
+     and checkout should be suppressed.
+     Server plan values: 'free' | 'pro' | 'founding'.
+     - Any paid plan ('pro' or 'founding') blocks checkout for every tier,
+       including 'founding'. This prevents a Pro member with a stale
+       bookmarked /app?checkout=founding link from accidentally entering a
+       second checkout flow. If a legitimate cross-plan upgrade path is ever
+       added, this function should be revisited to reflect the new hierarchy.
+     - 'free' covers nothing — free users always proceed to checkout. */
+  function planCoversCheckoutTier(plan) {
+    var p = (plan || '').toLowerCase();
+    return p === 'founding' || p === 'pro';
+  }
+
+  /* ----------------------------------------------------------------- */
   /* Auto-checkout — fires when /app boots with ?checkout=<tier>       */
   /* ----------------------------------------------------------------- */
   /* Read once at parse time so the closure captures the original URL
@@ -12806,6 +12832,14 @@
     _autoCheckoutFired = true;
     var tier = _autoCheckoutTier;
     try { console.log('[pmg-t41] auto-checkout tier=' + tier); } catch (_) {}
+
+    /* Guard: unknown tier — don't pass garbage to Stripe. */
+    if (!VALID_CHECKOUT_TIERS[tier]) {
+      _autoCheckoutFired = false;
+      try { console.warn('[pmg-t41] auto-checkout: unrecognized tier "' + tier + '", aborting'); } catch (_) {}
+      try { window.location.assign('/pricing.html'); } catch (_) {}
+      return;
+    }
 
     /* Strip ?checkout= and ?ref= from the address bar now so a hard-refresh
        (or pressing Back after Stripe) doesn't re-trigger checkout. */
@@ -12831,22 +12865,34 @@
         try { console.log('[pmg-t41] auto-checkout: no session yet, awaiting auth'); } catch (_) {}
         return;
       }
-      showToast('Opening Checkout…', 3000);
-      return fetch(apiBase + '/api/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + sess.accessToken
-        },
-        body: JSON.stringify({ tier: tier })
-      }).then(function (r) {
-        return r.json().then(function (j) { return { ok: r.ok, body: j }; });
-      }).then(function (res) {
-        if (!res.ok || !res.body || !res.body.url) {
-          throw new Error((res.body && res.body.error) || 'Checkout failed.');
+
+      /* Guard: check whether the user's current plan already covers
+         this tier before opening Stripe. */
+      return fetchProfile().then(function (profile) {
+        if (profile && planCoversCheckoutTier(profile.plan)) {
+          _autoCheckoutFired = false;
+          try { console.log('[pmg-t41] auto-checkout: user already on plan=' + profile.plan + ', skipping tier=' + tier); } catch (_) {}
+          showToast('You\u2019re already on this plan \u2014 nothing to upgrade!', 5000);
+          return;
         }
-        try { console.log('[pmg-t41] auto-checkout redirect → Stripe'); } catch (_) {}
-        window.location.assign(res.body.url);
+
+        showToast('Opening Checkout…', 3000);
+        return fetch(apiBase + '/api/create-checkout-session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + sess.accessToken
+          },
+          body: JSON.stringify({ tier: tier })
+        }).then(function (r) {
+          return r.json().then(function (j) { return { ok: r.ok, body: j }; });
+        }).then(function (res) {
+          if (!res.ok || !res.body || !res.body.url) {
+            throw new Error((res.body && res.body.error) || 'Checkout failed.');
+          }
+          try { console.log('[pmg-t41] auto-checkout redirect → Stripe'); } catch (_) {}
+          window.location.assign(res.body.url);
+        });
       });
     }).catch(function (err) {
       _autoCheckoutFired = false; /* let the user retry via the visible buttons */
@@ -12918,6 +12964,15 @@
     var tier = (btn.getAttribute('data-pmg-tier') || btn.getAttribute('data-pmg-upgrade') || 'founding').toLowerCase();
     try { console.log('[pmg-t41] startCheckout click, tier=' + tier); } catch (_) {}
 
+    /* Guard: unknown tier — redirect to pricing rather than passing garbage
+       to Stripe. This handles stale bookmarks, forwarded links, or URL edits
+       that reference a tier string we don't recognise. */
+    if (!VALID_CHECKOUT_TIERS[tier]) {
+      try { console.warn('[pmg-t41] startCheckout: unrecognized tier "' + tier + '", redirecting to pricing'); } catch (_) {}
+      try { window.location.assign('/pricing.html'); } catch (_) {}
+      return;
+    }
+
     var origLabel = btn.textContent;
     btn.disabled = true;
     btn.textContent = 'Checking Sign-In…';
@@ -12935,26 +12990,42 @@
         return null;
       }
 
-      btn.textContent = 'Opening Checkout…';
-      try {
-        console.log('[pmg-t41] POST /api/create-checkout-session tier=' + tier);
-      } catch (_) {}
+      btn.textContent = 'Checking Plan…';
 
-      return fetch(apiBase + '/api/create-checkout-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + sess.accessToken
-        },
-        body: JSON.stringify({ tier: tier })
-      }).then(function (r) {
-        return r.json().then(function (j) { return { ok: r.ok, body: j }; });
-      }).then(function (res) {
-        if (!res.ok || !res.body || !res.body.url) {
-          throw new Error((res.body && res.body.error) || 'Checkout failed.');
+      /* Guard: check whether the signed-in user's plan already covers this
+         tier before hitting Stripe — prevents paying twice or opening a
+         checkout for a plan they already hold (e.g. Founding Member tapping
+         a forwarded /app?checkout=founding link). */
+      return fetchProfile().then(function (profile) {
+        if (profile && planCoversCheckoutTier(profile.plan)) {
+          btn.disabled = false;
+          btn.textContent = origLabel || 'Subscribe';
+          try { console.log('[pmg-t41] startCheckout: already on plan=' + profile.plan + ', skipping tier=' + tier); } catch (_) {}
+          showToast('You\u2019re already on this plan \u2014 nothing to upgrade!', 5000);
+          return;
         }
-        try { console.log('[pmg-t41] redirect → Stripe Checkout'); } catch (_) {}
-        window.location.assign(res.body.url);
+
+        btn.textContent = 'Opening Checkout…';
+        try {
+          console.log('[pmg-t41] POST /api/create-checkout-session tier=' + tier);
+        } catch (_) {}
+
+        return fetch(apiBase + '/api/create-checkout-session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + sess.accessToken
+          },
+          body: JSON.stringify({ tier: tier })
+        }).then(function (r) {
+          return r.json().then(function (j) { return { ok: r.ok, body: j }; });
+        }).then(function (res) {
+          if (!res.ok || !res.body || !res.body.url) {
+            throw new Error((res.body && res.body.error) || 'Checkout failed.');
+          }
+          try { console.log('[pmg-t41] redirect → Stripe Checkout'); } catch (_) {}
+          window.location.assign(res.body.url);
+        });
       });
     }).catch(function (err) {
       btn.disabled = false;
