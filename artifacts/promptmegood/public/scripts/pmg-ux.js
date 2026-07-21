@@ -12410,6 +12410,9 @@
       t.textContent = text;
       t.setAttribute('role', 'status');
       t.setAttribute('aria-live', 'polite');
+      /* Exempt from the chassis-v3 universal-hide rule (pmg-chassis-v3.css
+         line 51). Same fix as the checkout-nudge banner. */
+      t.setAttribute('data-pmg-overlay-root', '1');
       var host = document.body || document.documentElement;
       host.appendChild(t);
       var ttl = typeof ms === 'number' ? ms : 4500;
@@ -12452,6 +12455,11 @@
       bar.id = NUDGE_ID;
       bar.setAttribute('role', 'status');
       bar.setAttribute('aria-live', 'polite');
+      /* Exempt from the chassis-v3 universal-hide rule (pmg-chassis-v3.css
+         line 51). Without this the banner is invisible on /app because the
+         chassis sets display:none !important on body > * that don't carry
+         this attribute. Same pattern used by the Draft Recovery banner. */
+      bar.setAttribute('data-pmg-overlay-root', '1');
       var spinner = document.createElement('span');
       spinner.className = 'pmg-t41-nudge-spinner';
       spinner.setAttribute('aria-hidden', 'true');
