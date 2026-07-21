@@ -12922,6 +12922,16 @@
     try {
       var p = new URLSearchParams(location.search);
       var t = (p.get('checkout') || '').toLowerCase().trim();
+      /* Also check sessionStorage for a checkout tier that survived a
+         magic-link sign-in redirect (Supabase reloads the page to /app
+         WITHOUT the original ?checkout= query param, so the intent
+         would otherwise be silently lost). */
+      if (!t) {
+        try {
+          var ss = sessionStorage.getItem('pmg:pendingCheckout') || '';
+          if (ss) { t = ss.toLowerCase().trim(); sessionStorage.removeItem('pmg:pendingCheckout'); }
+        } catch (_) {}
+      }
       if (t) _autoCheckoutTier = t;
     } catch (_) {}
   })();
@@ -12963,9 +12973,13 @@
     resolveSession().then(function (sess) {
       if (!sess) {
         /* Session not ready — reset flag so T40's onAuthStateChange can
-           retry once the user finishes signing in / signing up. */
+           retry once the user finishes signing in / signing up.
+           Also re-persist the tier in sessionStorage so a Supabase
+           magic-link redirect (which reloads /app without query params)
+           can still pick it up on the next boot. */
         _autoCheckoutFired = false;
         hideCheckoutNudge();
+        try { sessionStorage.setItem('pmg:pendingCheckout', tier); } catch (_) {}
         try { console.log('[pmg-t41] auto-checkout: no session yet, awaiting auth'); } catch (_) {}
         return;
       }
@@ -13128,8 +13142,11 @@
         btn.textContent = origLabel || 'Subscribe';
         /* No dead-end toast — send the guest to /app with the tier preserved
            so they can sign up / sign in and return to complete checkout.
-           ?ref=pricing lets analytics track the source. */
+           ?ref=pricing lets analytics track the source.
+           sessionStorage backup ensures the tier survives a Supabase
+           magic-link redirect (which reloads /app without query params). */
         try {
+          try { sessionStorage.setItem('pmg:pendingCheckout', tier); } catch (_) {}
           window.location.assign('/app?checkout=' + encodeURIComponent(tier) + '&ref=pricing');
         } catch (_) {}
         return null;
