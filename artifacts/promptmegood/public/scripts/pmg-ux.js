@@ -12012,6 +12012,11 @@
       } else {
         currentUser = null;
         setAuthState('out');
+        /* Clear plan cache on sign-out so a stale 'pro'/'founding' value
+           from a previous session cannot block checkout for a free user or
+           a different user on the same device. applyProfileToCache() will
+           repopulate it correctly after the next successful profile fetch. */
+        try { localStorage.removeItem('promptmegood:plan:v1'); } catch (_) {}
         try {
           if (window.__pmgT40 && typeof window.__pmgT40.setPlanBadge === 'function') {
             window.__pmgT40.setPlanBadge('free');
