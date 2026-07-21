@@ -12000,6 +12000,15 @@
             window.__pmgT41.syncProfile();
           }
         } catch (_) {}
+        /* Auto-checkout: if the user landed on /app?checkout=<tier> as a
+           guest and just finished signing in / signing up, fire checkout now.
+           runAutoCheckout() is a no-op if there is no pending tier or if it
+           already fired (the already-signed-in path runs it from boot()). */
+        try {
+          if (window.__pmgT41 && typeof window.__pmgT41.runAutoCheckout === 'function') {
+            window.__pmgT41.runAutoCheckout();
+          }
+        } catch (_) {}
       } else {
         currentUser = null;
         setAuthState('out');
@@ -12778,6 +12787,78 @@
   window.__pmgT41.syncProfile = syncOnce;
 
   /* ----------------------------------------------------------------- */
+  /* Auto-checkout — fires when /app boots with ?checkout=<tier>       */
+  /* ----------------------------------------------------------------- */
+  /* Read once at parse time so the closure captures the original URL
+     before anything else might mutate location.search. */
+  var _autoCheckoutTier  = null;
+  var _autoCheckoutFired = false;
+  (function () {
+    try {
+      var p = new URLSearchParams(location.search);
+      var t = (p.get('checkout') || '').toLowerCase().trim();
+      if (t) _autoCheckoutTier = t;
+    } catch (_) {}
+  })();
+
+  function runAutoCheckout() {
+    if (!_autoCheckoutTier || _autoCheckoutFired) return;
+    _autoCheckoutFired = true;
+    var tier = _autoCheckoutTier;
+    try { console.log('[pmg-t41] auto-checkout tier=' + tier); } catch (_) {}
+
+    /* Strip ?checkout= and ?ref= from the address bar now so a hard-refresh
+       (or pressing Back after Stripe) doesn't re-trigger checkout. */
+    try {
+      var url = new URL(location.href);
+      url.searchParams.delete('checkout');
+      url.searchParams.delete('ref');
+      history.replaceState(null, '', url.pathname + (url.search || '') + (url.hash || ''));
+    } catch (_) {}
+
+    /* Attribution ping — non-blocking, best-effort. */
+    try {
+      if (typeof window.__pmgTrack === 'function') {
+        window.__pmgTrack('auto_checkout_start', { tier: tier, ref: 'pricing' });
+      }
+    } catch (_) {}
+
+    resolveSession().then(function (sess) {
+      if (!sess) {
+        /* Session not ready — reset flag so T40's onAuthStateChange can
+           retry once the user finishes signing in / signing up. */
+        _autoCheckoutFired = false;
+        try { console.log('[pmg-t41] auto-checkout: no session yet, awaiting auth'); } catch (_) {}
+        return;
+      }
+      showToast('Opening Checkout…', 3000);
+      return fetch(apiBase + '/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + sess.accessToken
+        },
+        body: JSON.stringify({ tier: tier })
+      }).then(function (r) {
+        return r.json().then(function (j) { return { ok: r.ok, body: j }; });
+      }).then(function (res) {
+        if (!res.ok || !res.body || !res.body.url) {
+          throw new Error((res.body && res.body.error) || 'Checkout failed.');
+        }
+        try { console.log('[pmg-t41] auto-checkout redirect → Stripe'); } catch (_) {}
+        window.location.assign(res.body.url);
+      });
+    }).catch(function (err) {
+      _autoCheckoutFired = false; /* let the user retry via the visible buttons */
+      try { console.warn('[pmg-t41] auto-checkout failed:', err); } catch (_) {}
+      showToast('Could Not Open Checkout: ' + (err && err.message ? err.message : 'Unknown Error.'), 6000);
+    });
+  }
+
+  /* Expose so T40's onAuthStateChange can call it immediately after sign-in. */
+  window.__pmgT41.runAutoCheckout = runAutoCheckout;
+
+  /* ----------------------------------------------------------------- */
   /* Click handler for upgrade buttons                                 */
   /* ----------------------------------------------------------------- */
   /* Read the LIVE Supabase session, not the cached T40 user variable.
@@ -13083,6 +13164,10 @@
 
     /* Initial plan sync once T40 is alive enough to give us a token. */
     setTimeout(syncOnce, 2000);
+    /* Auto-checkout: if the URL carried ?checkout=<tier>, fire it once T40
+       has had time to resolve a pre-existing session (already-signed-in path).
+       The guest/sign-up path is handled in T40's onAuthStateChange below. */
+    setTimeout(runAutoCheckout, 2500);
     /* Re-sync periodically while the page is open (cheap; 401s short-circuit). */
     setInterval(syncOnce, 60000);
 
