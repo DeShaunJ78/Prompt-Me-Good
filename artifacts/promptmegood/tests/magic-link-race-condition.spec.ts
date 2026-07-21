@@ -200,6 +200,19 @@ test.describe("magic-link race condition guard (task-197)", () => {
     );
     await page.route("https://stub.stripe.test/**", (route) => route.abort());
 
+    /* Track all checkout requests across the full 4 s window so we can
+       assert exactly-once even in this slower timing path. */
+    let checkoutCallCountSlow = 0;
+    await page.route("**/api/create-checkout-session", (route) => {
+      checkoutCallCountSlow++;
+      route.fulfill({
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: "https://stub.stripe.test/checkout" }),
+      });
+    });
+    await page.route("https://stub.stripe.test/**", (route) => route.abort());
+
     const checkoutFired = page.waitForRequest(
       (req) =>
         req.url().includes("/api/create-checkout-session") &&
@@ -215,6 +228,10 @@ test.describe("magic-link race condition guard (task-197)", () => {
     const req = await checkoutFired;
     const body = req.postDataJSON() as Record<string, unknown>;
     expect(body.tier).toBe("pro_monthly");
+
+    /* Wait past any possible second fire and assert exactly once. */
+    await page.waitForTimeout(2_000);
+    expect(checkoutCallCountSlow).toBe(1);
   });
 
   test("?checkout= param is captured before Supabase strips #access_token hash (exact production URL)", async ({
