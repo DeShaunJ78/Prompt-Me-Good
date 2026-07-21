@@ -12487,6 +12487,19 @@
     } catch (_) {}
   }
 
+  /* Update the visible text inside an existing nudge without re-creating it.
+     Called when the checkout POST is about to fire — keeps the nudge visible
+     (so the user sees continuous progress) instead of hiding it at the
+     profile-resolved point. No-op if the user already dismissed the nudge. */
+  function updateNudgeMessage(text) {
+    try {
+      var el = document.getElementById(NUDGE_ID);
+      if (!el) return;
+      var msg = el.querySelector('.pmg-t41-nudge-msg');
+      if (msg) msg.textContent = text;
+    } catch (_) {}
+  }
+
   /* ----------------------------------------------------------------- */
   /* T40 bridge — read live Supabase client + signed-in user           */
   /* ----------------------------------------------------------------- */
@@ -12981,8 +12994,12 @@
           return;
         }
 
-        hideCheckoutNudge();
-        showToast('Opening Checkout…', 3000);
+        /* Keep the nudge visible with an updated message while the checkout
+           POST is in-flight — this bridges any slow-API gap so the user
+           always sees a progress indicator until Stripe's redirect fires.
+           updateNudgeMessage is a no-op if the user already dismissed the
+           nudge; in that case the checkout POST still fires silently. */
+        updateNudgeMessage('Opening checkout\u2026');
         return fetch(apiBase + '/api/create-checkout-session', {
           method: 'POST',
           headers: {
@@ -12997,6 +13014,9 @@
             throw new Error((res.body && res.body.error) || 'Checkout failed.');
           }
           try { console.log('[pmg-t41] auto-checkout redirect → Stripe'); } catch (_) {}
+          /* Remove the nudge now — just before the page navigates.
+             The user has had continuous progress feedback up to this point. */
+          hideCheckoutNudge();
           window.location.assign(res.body.url);
         });
       });
