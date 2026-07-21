@@ -12876,6 +12876,15 @@
     return p === 'founding' || p === 'pro';
   }
 
+  /* Read the last plan value written by applyProfileToCache() from
+     localStorage. Returns the plan string or null if absent / unreadable.
+     Used as an instant first-pass guard so Pro/Founding users never see a
+     "Checking Plan…" spinner on repeat visits — the cache is written every
+     time fetchProfile() resolves, so it stays in sync with the server. */
+  function getCachedPlan() {
+    try { return localStorage.getItem('promptmegood:plan:v1') || null; } catch (_) { return null; }
+  }
+
   /* ----------------------------------------------------------------- */
   /* Auto-checkout — fires when /app boots with ?checkout=<tier>       */
   /* ----------------------------------------------------------------- */
@@ -12932,6 +12941,19 @@
         _autoCheckoutFired = false;
         hideCheckoutNudge();
         try { console.log('[pmg-t41] auto-checkout: no session yet, awaiting auth'); } catch (_) {}
+        return;
+      }
+
+      /* Fast path: localStorage cache already records a paid plan — skip
+         the network fetch entirely and resolve instantly. Background refresh
+         keeps the cache accurate for next time. */
+      var _acCachedPlan = getCachedPlan();
+      if (_acCachedPlan && planCoversCheckoutTier(_acCachedPlan)) {
+        _autoCheckoutFired = false;
+        hideCheckoutNudge();
+        try { console.log('[pmg-t41] auto-checkout: cache hit plan=' + _acCachedPlan + ', skipping tier=' + tier); } catch (_) {}
+        showToast('You\u2019re already on this plan \u2014 nothing to upgrade!', 5000);
+        fetchProfile().then(applyProfileToCache).catch(function () {});
         return;
       }
 
@@ -13059,6 +13081,21 @@
         try {
           window.location.assign('/app?checkout=' + encodeURIComponent(tier) + '&ref=pricing');
         } catch (_) {}
+        return null;
+      }
+
+      /* Fast path: if localStorage already records a paid plan, skip the
+         network round-trip entirely — no "Checking Plan…" flash for Pro /
+         Founding users on return visits. A background refresh keeps the
+         cache accurate for next time. */
+      var _cachedPlan = getCachedPlan();
+      if (_cachedPlan && planCoversCheckoutTier(_cachedPlan)) {
+        btn.disabled = false;
+        btn.textContent = origLabel || 'Subscribe';
+        try { console.log('[pmg-t41] startCheckout: cache hit plan=' + _cachedPlan + ', skipping tier=' + tier); } catch (_) {}
+        showToast('You\u2019re already on this plan \u2014 nothing to upgrade!', 5000);
+        /* Background refresh so the cache stays fresh. */
+        fetchProfile().then(applyProfileToCache).catch(function () {});
         return null;
       }
 
