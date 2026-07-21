@@ -486,28 +486,51 @@
     }
     var __capStr2  = __fcaps2.run + ' Run With AI, ' + __fcaps2.img +
                      ' image generations, ' + __fcaps2.analyze + ' file analyses per day';
+    /* Detect whether the beta period is over so the modal shows live
+       checkout CTAs instead of waitlist copy. */
+    var __beCfg     = (__cfg2 && __cfg2.BETA_END) || '';
+    var __isPostBeta = __beCfg ? Date.now() >= Date.parse(__beCfg) : true;
+
     var __pCopy;
     if (__hasFull) {
+      var __proLine = __isPostBeta
+        ? ' Pro Monthly ($' + __cfg2.PRO_MONTHLY_USD + '/month) and Pro Yearly ($' +
+          __cfg2.PRO_YEARLY_USD + '/year) are available now.'
+        : ' Pro Monthly ($' + __cfg2.PRO_MONTHLY_USD + '/month) and Pro Yearly ($' +
+          __cfg2.PRO_YEARLY_USD + '/year) launch soon.';
       __pCopy =
         'Unlock higher daily caps on this feature (' + __capStr2 + '). Founding Member is a one-time $' +
         __cfg2.FOUNDING_PRICE_USD + ' payment for lifetime access to core features — limited to the first ' +
         __cfg2.FOUNDING_LIMIT + ' buyers, ' + __lock + '.' +
         (__deadline ? ' ' + __deadline : '') +
-        ' Pro Monthly ($' + __cfg2.PRO_MONTHLY_USD + '/month) and Pro Yearly ($' +
-        __cfg2.PRO_YEARLY_USD + '/year) launch July 1, 2026. Fair use limits apply.';
+        __proLine + ' Fair use limits apply.';
     } else {
       __pCopy =
         'Unlock higher daily caps on this feature. Founding Member is a one-time payment for lifetime access to core features — see pricing for current details. Fair use limits apply.';
     }
+
+    var __primaryHref  = __isPostBeta ? './pricing.html#founding-checkout-card' : './pricing.html#early-access';
+    var __primaryLabel = __isPostBeta
+      ? ('Buy Founding Member' + (__hasFull ? ' \u00b7 $' + __cfg2.FOUNDING_PRICE_USD : ''))
+      : 'Join Founding Member Waitlist';
+    var __primaryAttrs = __isPostBeta
+      ? 'data-pmg-upgrade="founding" data-pmg-tier="founding" '
+      : '';
+    var __helperText   = __isPostBeta
+      ? ('One-time payment' + (__hasFull ? ' \u00b7 First ' + __cfg2.FOUNDING_LIMIT + ' buyers \u00b7 ' + __lock : '') + '.')
+      : 'Checkout Opens Soon. Join The Waitlist To Be Notified.';
+    var __secondaryHref  = __isPostBeta ? './pricing.html#tier-pro-name' : './pricing.html#early-access';
+    var __secondaryLabel = __isPostBeta ? 'Subscribe to Pro' : 'Notify Me When Pro Launches';
+
     overlay.innerHTML =
       '<div class="pmg-upgrade-modal" role="dialog" aria-modal="true" aria-labelledby="pmg-upgrade-title">' +
         '<span class="pmg-upgrade-modal-icon" aria-hidden="true">🔒</span>' +
         '<h3 id="pmg-upgrade-title">' + safe + ' Is A Pro Feature</h3>' +
         '<p>' + __pCopy + '</p>' +
         '<div class="pmg-upgrade-modal-actions">' +
-          '<a class="pmg-upgrade-cta pmg-upgrade-btn" href="./pricing.html#early-access">Join Founding Member Waitlist</a>' +
-          '<span class="pmg-upgrade-cta-helper" style="display:block;margin-top:6px;font-size:0.875em;color:var(--color-text-muted);">Checkout Opens Soon. Join The Waitlist To Be Notified.</span>' +
-          '<a class="pmg-upgrade-cta-secondary" href="./pricing.html#early-access">Notify Me When Pro Launches</a>' +
+          '<a class="pmg-upgrade-cta pmg-upgrade-btn" ' + __primaryAttrs + 'href="' + __primaryHref + '">' + __primaryLabel + '</a>' +
+          '<span class="pmg-upgrade-cta-helper" style="display:block;margin-top:6px;font-size:0.875em;color:var(--color-text-muted);">' + __helperText + '</span>' +
+          '<a class="pmg-upgrade-cta-secondary" href="' + __secondaryHref + '">' + __secondaryLabel + '</a>' +
           '<button type="button" class="pmg-upgrade-dismiss" id="pmg-upgrade-dismiss-btn">Maybe Later</button>' +
         '</div>' +
       '</div>';
