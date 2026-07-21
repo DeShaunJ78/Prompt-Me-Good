@@ -12006,7 +12006,7 @@
            already fired (the already-signed-in path runs it from boot()). */
         try {
           if (window.__pmgT41 && typeof window.__pmgT41.runAutoCheckout === 'function') {
-            window.__pmgT41.runAutoCheckout();
+            window.__pmgT41.runAutoCheckout(true /* fromAuthChange */);
           }
         } catch (_) {}
       } else {
@@ -12303,6 +12303,7 @@
 
   var STYLE_ID  = 'pmg-t41-style';
   var TOAST_ID  = 'pmg-t41-toast';
+  var NUDGE_ID  = 'pmg-t41-checkout-nudge';
   var BUTTON_CLASS = 'pmg-upgrade-btn';
   var INJECTED_FLAG = 'data-pmg-t41-injected';
 
@@ -12347,6 +12348,30 @@
       '  color: var(--color-text, #111827); font-weight: 600; text-align: center;',
       '}',
       'body.pmg-is-pro .pmg-t41-inline-cta { display: none !important; }',
+      /* Checkout nudge banner */
+      '@keyframes pmgT41NudgeIn { from { opacity:0; transform:translateY(-100%); } to { opacity:1; transform:translateY(0); } }',
+      '@keyframes pmgT41Spin { to { transform:rotate(360deg); } }',
+      '#' + NUDGE_ID + ' {',
+      '  position: fixed; top: 0; left: 0; right: 0; z-index: 100000;',
+      '  display: flex; align-items: center; gap: 10px;',
+      '  padding: 10px 16px;',
+      '  background: linear-gradient(135deg, var(--color-primary,#6366F1) 0%, color-mix(in srgb,var(--color-primary,#6366F1) 75%,#0d9488) 100%);',
+      '  color: #fff; font-size: 13px; font-weight: 600;',
+      '  box-shadow: 0 2px 12px rgba(0,0,0,0.25);',
+      '  animation: pmgT41NudgeIn 0.25s ease;',
+      '}',
+      '#' + NUDGE_ID + ' .pmg-t41-nudge-spinner {',
+      '  width:14px; height:14px; flex-shrink:0;',
+      '  border:2px solid rgba(255,255,255,0.35); border-top-color:#fff;',
+      '  border-radius:50%; animation:pmgT41Spin 0.7s linear infinite;',
+      '}',
+      '#' + NUDGE_ID + ' .pmg-t41-nudge-msg { flex:1; }',
+      '#' + NUDGE_ID + ' .pmg-t41-nudge-dismiss {',
+      '  flex-shrink:0; padding:2px 8px;',
+      '  background:rgba(255,255,255,0.18); border:none; border-radius:4px;',
+      '  color:#fff; font-size:14px; line-height:1; cursor:pointer;',
+      '}',
+      '#' + NUDGE_ID + ' .pmg-t41-nudge-dismiss:hover { background:rgba(255,255,255,0.32); }',
       /* Toast */
       '#' + TOAST_ID + ' {',
       '  position: fixed; left: 50%; bottom: 24px;',
@@ -12407,6 +12432,45 @@
         card.appendChild(msg);
       }
       msg.textContent = text;
+    } catch (_) {}
+  }
+
+  /* ----------------------------------------------------------------- */
+  /* Checkout nudge banner — shown while checkout is about to fire     */
+  /* (guest path only: user just signed in, Stripe redirect imminent)  */
+  /* ----------------------------------------------------------------- */
+  function showCheckoutNudge(tier) {
+    try {
+      hideCheckoutNudge();
+      var label = tier ? (tier.charAt(0).toUpperCase() + tier.slice(1)) : tier;
+      var bar = document.createElement('div');
+      bar.id = NUDGE_ID;
+      bar.setAttribute('role', 'status');
+      bar.setAttribute('aria-live', 'polite');
+      var spinner = document.createElement('span');
+      spinner.className = 'pmg-t41-nudge-spinner';
+      spinner.setAttribute('aria-hidden', 'true');
+      var msg = document.createElement('span');
+      msg.className = 'pmg-t41-nudge-msg';
+      msg.textContent = 'Completing your sign\u2011up\u2026 Opening ' + label + ' checkout.';
+      var dismiss = document.createElement('button');
+      dismiss.className = 'pmg-t41-nudge-dismiss';
+      dismiss.setAttribute('aria-label', 'Dismiss');
+      dismiss.textContent = '\u00d7';
+      dismiss.addEventListener('click', hideCheckoutNudge);
+      bar.appendChild(spinner);
+      bar.appendChild(msg);
+      bar.appendChild(dismiss);
+      (document.body || document.documentElement).appendChild(bar);
+    } catch (err) {
+      try { console.warn('[pmg-t41] showCheckoutNudge failed:', err); } catch (_) {}
+    }
+  }
+
+  function hideCheckoutNudge() {
+    try {
+      var el = document.getElementById(NUDGE_ID);
+      if (el && el.parentNode) el.parentNode.removeChild(el);
     } catch (_) {}
   }
 
@@ -12827,11 +12891,11 @@
     } catch (_) {}
   })();
 
-  function runAutoCheckout() {
+  function runAutoCheckout(fromAuthChange) {
     if (!_autoCheckoutTier || _autoCheckoutFired) return;
     _autoCheckoutFired = true;
     var tier = _autoCheckoutTier;
-    try { console.log('[pmg-t41] auto-checkout tier=' + tier); } catch (_) {}
+    try { console.log('[pmg-t41] auto-checkout tier=' + tier + (fromAuthChange ? ' (auth-change path)' : ' (boot path)')); } catch (_) {}
 
     /* Guard: unknown tier — don't pass garbage to Stripe. */
     if (!VALID_CHECKOUT_TIERS[tier]) {
@@ -12840,6 +12904,10 @@
       try { window.location.assign('/pricing.html'); } catch (_) {}
       return;
     }
+
+    /* Show the nudge banner only on the auth-change (guest) path.
+       The already-signed-in path fires in < 100 ms so no nudge is needed. */
+    if (fromAuthChange) showCheckoutNudge(tier);
 
     /* Strip ?checkout= and ?ref= from the address bar now so a hard-refresh
        (or pressing Back after Stripe) doesn't re-trigger checkout. */
@@ -12862,6 +12930,7 @@
         /* Session not ready — reset flag so T40's onAuthStateChange can
            retry once the user finishes signing in / signing up. */
         _autoCheckoutFired = false;
+        hideCheckoutNudge();
         try { console.log('[pmg-t41] auto-checkout: no session yet, awaiting auth'); } catch (_) {}
         return;
       }
@@ -12871,11 +12940,13 @@
       return fetchProfile().then(function (profile) {
         if (profile && planCoversCheckoutTier(profile.plan)) {
           _autoCheckoutFired = false;
+          hideCheckoutNudge();
           try { console.log('[pmg-t41] auto-checkout: user already on plan=' + profile.plan + ', skipping tier=' + tier); } catch (_) {}
           showToast('You\u2019re already on this plan \u2014 nothing to upgrade!', 5000);
           return;
         }
 
+        hideCheckoutNudge();
         showToast('Opening Checkout…', 3000);
         return fetch(apiBase + '/api/create-checkout-session', {
           method: 'POST',
@@ -12896,6 +12967,7 @@
       });
     }).catch(function (err) {
       _autoCheckoutFired = false; /* let the user retry via the visible buttons */
+      hideCheckoutNudge();
       try { console.warn('[pmg-t41] auto-checkout failed:', err); } catch (_) {}
       showToast('Could Not Open Checkout: ' + (err && err.message ? err.message : 'Unknown Error.'), 6000);
     });
