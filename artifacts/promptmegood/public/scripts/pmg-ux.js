@@ -12798,11 +12798,15 @@
   function fetchProfile() {
     return getAccessTokenP().then(function (token) {
       if (!token) return null;
-      return fetch(apiBase + '/api/me/profile', {
+      var timeout = new Promise(function (_, rej) {
+        setTimeout(function () { rej(new Error('Profile fetch timed out')); }, 8000);
+      });
+      var req = fetch(apiBase + '/api/me/profile', {
         method: 'GET',
         headers: { 'Authorization': 'Bearer ' + token }
       }).then(function (r) { return r.ok ? r.json() : null; })
         .catch(function () { return null; });
+      return Promise.race([req, timeout]).catch(function () { return null; });
     });
   }
 
@@ -12925,13 +12929,17 @@
   var _autoCheckoutFired = false;
   (function () {
     try {
+      /* Auto-checkout only applies on /app. On pricing.html or any other page
+         we must not consume or act on the sessionStorage checkout intent —
+         that would steal it before /app gets a chance to read it, and would
+         show the checkout nudge on the wrong page. */
+      var _isAppPage = /^\/app(\.html)?(\/|$)/.test(location.pathname);
       var p = new URLSearchParams(location.search);
       var t = (p.get('checkout') || '').toLowerCase().trim();
       /* Also check sessionStorage for a checkout tier that survived a
-         magic-link sign-in redirect (Supabase reloads the page to /app
-         WITHOUT the original ?checkout= query param, so the intent
-         would otherwise be silently lost). */
-      if (!t) {
+         magic-link sign-in redirect (Supabase reloads /app WITHOUT the
+         original ?checkout= query param). Only read on /app. */
+      if (!t && _isAppPage) {
         try {
           var ss = sessionStorage.getItem('pmg:pendingCheckout') || '';
           if (ss) { t = ss.toLowerCase().trim(); sessionStorage.removeItem('pmg:pendingCheckout'); }
@@ -12943,6 +12951,11 @@
 
   function runAutoCheckout(fromAuthChange) {
     if (!_autoCheckoutTier || _autoCheckoutFired) return;
+    /* Safety guard: never run auto-checkout on pages other than /app.
+       pmg-ux.js is loaded on pricing.html too — without this check,
+       any leftover sessionStorage value would trigger the checkout nudge
+       on the pricing page instead of the app. */
+    if (!/^\/app(\.html)?(\/|$)/.test(location.pathname)) return;
     _autoCheckoutFired = true;
     var tier = _autoCheckoutTier;
     try { console.log('[pmg-t41] auto-checkout tier=' + tier + (fromAuthChange ? ' (auth-change path)' : ' (boot path)')); } catch (_) {}
