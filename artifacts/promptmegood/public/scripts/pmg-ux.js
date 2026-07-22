@@ -13157,6 +13157,100 @@
     });
   }
 
+  /* openSignInOverlay — shown on pricing.html (and any non-/app page) when
+     the user clicks Subscribe but has no active session. Keeps the user on
+     the current page instead of redirecting to /app where the T40 sign-in
+     panel is hidden inside the chassis-v3 shell.
+
+     After the user sends the magic link and clicks it in their email, Supabase
+     redirects them back to THIS page with ?checkout=<tier>#access_token=…
+     T41's parse-time IIFE reads the ?checkout= param on any page (not just
+     /app), sets _autoCheckoutTier, and runAutoCheckout fires automatically
+     once the session is established — sending the POST and opening Stripe. */
+  function openSignInOverlay(tier) {
+    if (document.getElementById('pmg-t41-so')) return;
+    var tierLabels = {
+      pro_monthly: 'Pro Monthly ($14/mo)',
+      pro_yearly: 'Pro Yearly ($129/yr)',
+      pro_studio: 'Pro Studio Monthly ($29/mo)',
+      pro_studio_monthly: 'Pro Studio Monthly ($29/mo)',
+      pro_studio_yearly: 'Pro Studio Yearly ($290/yr)',
+      founding: 'Founding Member ($79)'
+    };
+    var tierLabel = tierLabels[tier] || 'Pro';
+    var overlay = document.createElement('div');
+    overlay.id = 'pmg-t41-so';
+    overlay.setAttribute('data-pmg-overlay-root', '1');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200001;display:flex;align-items:center;justify-content:center;padding:1rem';
+    overlay.innerHTML = '<div style="background:var(--color-surface,#1a2f2f);border:1px solid var(--color-border,rgba(255,255,255,.12));border-radius:12px;padding:1.5rem;max-width:380px;width:100%;position:relative">'
+      + '<button id="pmg-t41-so-close" style="position:absolute;top:.6rem;right:.75rem;background:none;border:none;color:var(--color-text-muted,#8ab5ac);font-size:1.4rem;cursor:pointer;line-height:1;padding:.2rem .5rem" aria-label="Close">&times;</button>'
+      + '<h2 style="margin:0 0 .4rem;font-size:1.05rem;font-weight:600;color:var(--color-text,#e8f5f2)">Sign in to continue</h2>'
+      + '<p style="margin:0 0 1rem;font-size:.85rem;color:var(--color-text-muted,#8ab5ac)">Enter your email to get a magic link. You\'ll be returned here to complete your <strong style="color:var(--color-text,#e8f5f2)">' + tierLabel.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</strong> checkout.</p>'
+      + '<input id="pmg-t41-so-email" type="email" placeholder="your@email.com" autocomplete="email" style="width:100%;box-sizing:border-box;padding:.6rem .75rem;border:1px solid var(--color-border,rgba(255,255,255,.15));border-radius:8px;background:var(--color-bg,#0f1e1e);color:var(--color-text,#e8f5f2);font-size:.95rem;margin-bottom:.75rem;outline:none" />'
+      + '<button id="pmg-t41-so-send" style="width:100%;padding:.65rem;border:none;border-radius:8px;background:var(--primary,#1de9b6);color:#0f1e1e;font-size:.95rem;font-weight:600;cursor:pointer;margin-bottom:.5rem">Send Magic Link</button>'
+      + '<p id="pmg-t41-so-status" style="font-size:.82rem;min-height:1.2em;margin:.25rem 0 0;text-align:center;color:var(--color-text-muted,#8ab5ac)"></p>'
+      + '</div>';
+    document.body.appendChild(overlay);
+    var emailEl = document.getElementById('pmg-t41-so-email');
+    var sendBtn = document.getElementById('pmg-t41-so-send');
+    var statusEl = document.getElementById('pmg-t41-so-status');
+    var closeBtn = document.getElementById('pmg-t41-so-close');
+    function setStatus(msg, kind) {
+      if (!statusEl) return;
+      statusEl.textContent = msg;
+      statusEl.style.color = kind === 'error' ? '#ef4444' : kind === 'ok' ? 'var(--primary,#1de9b6)' : 'var(--color-text-muted,#8ab5ac)';
+    }
+    function closeOverlay() {
+      var el = document.getElementById('pmg-t41-so');
+      if (el && el.parentNode) el.parentNode.removeChild(el);
+    }
+    if (closeBtn) closeBtn.addEventListener('click', closeOverlay);
+    overlay.addEventListener('click', function (ev) { if (ev.target === overlay) closeOverlay(); });
+    if (emailEl) setTimeout(function () { try { emailEl.focus(); } catch (_) {} }, 80);
+    if (emailEl) emailEl.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') { ev.preventDefault(); if (sendBtn) sendBtn.click(); }
+    });
+    if (sendBtn) sendBtn.addEventListener('click', function () {
+      var email = (emailEl ? emailEl.value : '').trim();
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setStatus('Enter a valid email address.', 'error');
+        if (emailEl) try { emailEl.focus(); } catch (_) {}
+        return;
+      }
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending\u2026';
+      setStatus('', '');
+      /* emailRedirectTo brings the user back to THIS page (pricing.html)
+         with ?checkout=<tier> so T41's parse-time IIFE auto-fires the
+         POST to /api/create-checkout-session after Supabase sets the
+         session from the magic-link hash fragment. */
+      var redirectUrl = window.location.origin + window.location.pathname + '?checkout=' + encodeURIComponent(tier);
+      waitForSupabaseClient(5000).then(function (c) {
+        if (!c) {
+          sendBtn.disabled = false;
+          sendBtn.textContent = 'Send Magic Link';
+          setStatus('Sign-in service not ready \u2014 please refresh and try again.', 'error');
+          return;
+        }
+        return c.auth.signInWithOtp({ email: email, options: { emailRedirectTo: redirectUrl } })
+          .then(function (out) {
+            sendBtn.disabled = false;
+            if (out && out.error) {
+              sendBtn.textContent = 'Send Magic Link';
+              setStatus(out.error.message || 'Could not send magic link.', 'error');
+              return;
+            }
+            sendBtn.textContent = 'Resend';
+            setStatus('\u2713 Check your email \u2014 click the link to complete your ' + tierLabel + ' checkout.', 'ok');
+          });
+      }).catch(function (err) {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send Magic Link';
+        setStatus((err && err.message) || 'Network error. Please try again.', 'error');
+      });
+    });
+  }
+
   function startCheckout(btn) {
     /* Read the tier directly from the button — normalization to 'founding'
        removed now that Pro prices are wired. Each button carries its own
@@ -13181,15 +13275,14 @@
       if (!sess) {
         btn.disabled = false;
         btn.textContent = origLabel || 'Subscribe';
-        /* No dead-end toast — send the guest to /app with the tier preserved
-           so they can sign up / sign in and return to complete checkout.
-           ?ref=pricing lets analytics track the source.
-           sessionStorage backup ensures the tier survives a Supabase
-           magic-link redirect (which reloads /app without query params). */
-        try {
-          try { sessionStorage.setItem('pmg:pendingCheckout', tier); } catch (_) {}
-          window.location.assign('/app?checkout=' + encodeURIComponent(tier) + '&ref=pricing');
-        } catch (_) {}
+        try { sessionStorage.setItem('pmg:pendingCheckout', tier); } catch (_) {}
+        /* Stay on this page — open an inline sign-in overlay.
+           The magic link's emailRedirectTo brings the user back to THIS
+           page with ?checkout=<tier> so T41's parse-time IIFE picks it up
+           and auto-fires the POST once the session is established.
+           On /app the overlay is also used; the /app-only nudge+panel path
+           is covered by runAutoCheckout when the user arrives via URL. */
+        openSignInOverlay(tier);
         return null;
       }
 
